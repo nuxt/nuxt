@@ -1,5 +1,7 @@
 import { nuxtCtx } from '../nuxt'
-import { installModule } from './install'
+import type { Nuxt } from '../types/nuxt'
+import type { NuxtOptions } from '../types/config'
+import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
 import {
   addTemplate,
   addErrorLayout,
@@ -9,9 +11,7 @@ import {
   extendBuild,
   extendRoutes
 } from './utils'
-import type { Nuxt } from '../types/nuxt'
-import type { NuxtOptions } from '../types/config'
-import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
+import { installModule } from './install'
 
 /** Legacy ModuleContainer for backwards compatibility with existing Nuxt 2 modules. */
 export class ModuleContainer {

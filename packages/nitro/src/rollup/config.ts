@@ -12,6 +12,7 @@ import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
 import * as unenv from 'unenv'
 
+import type { Preset } from 'unenv'
 import { NitroContext } from '../context'
 import { resolvePath, MODULE_DIR } from '../utils'
 
@@ -25,7 +26,6 @@ import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
 import { raw } from './plugins/raw'
 import { storage } from './plugins/storage'
-import type { Preset } from 'unenv'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 

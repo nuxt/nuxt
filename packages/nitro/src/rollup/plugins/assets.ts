@@ -3,8 +3,8 @@ import createEtag from 'etag'
 import mime from 'mime'
 import { resolve } from 'upath'
 import globby from 'globby'
-import virtual from './virtual'
 import type { Plugin } from 'rollup'
+import virtual from './virtual'
 
 export interface AssetOptions {
   inline: Boolean

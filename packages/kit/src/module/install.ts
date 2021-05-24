@@ -1,10 +1,10 @@
 import { resolveModule, requireModule } from '../utils/cjs'
 import { resolveAlias } from '../utils/resolve'
 import { nuxtCtx } from '../nuxt'
-import { defineNuxtModule } from './define'
-import { ModuleContainer } from './container'
 import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
 import type { Nuxt } from '../types/nuxt'
+import { defineNuxtModule } from './define'
+import { ModuleContainer } from './container'
 
 /** Installs a module on a Nuxt instance. */
 export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptions) {

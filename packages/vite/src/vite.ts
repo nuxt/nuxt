@@ -1,11 +1,11 @@
 import * as vite from 'vite'
 import consola from 'consola'
-import { buildClient } from './client'
-import { buildServer } from './server'
-import { warmupViteServer } from './utils/warmup'
 import type { Nuxt } from '@nuxt/kit'
 import type { InlineConfig, SSROptions } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
+import { buildClient } from './client'
+import { buildServer } from './server'
+import { warmupViteServer } from './utils/warmup'
 
 export interface ViteOptions extends InlineConfig {
   vue?: Options

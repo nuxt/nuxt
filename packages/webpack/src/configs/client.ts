@@ -3,9 +3,9 @@ import querystring from 'querystring'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
+import type { ClientOptions } from 'webpack-hot-middleware'
 import { applyPresets, WebpackConfigContext } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
-import type { ClientOptions } from 'webpack-hot-middleware'
 
 export function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'

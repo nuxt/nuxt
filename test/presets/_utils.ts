@@ -5,8 +5,8 @@ import consola from 'consola'
 import { Listener, listen } from 'listhen'
 import { $fetch } from 'ohmyfetch/node'
 import createRequire from 'create-require'
-import { fixtureDir, buildFixture, loadFixture } from '../utils'
 import type { LoadNuxtOptions } from '@nuxt/kit'
+import { fixtureDir, buildFixture, loadFixture } from '../utils'
 
 const isCompat = Boolean(process.env.TEST_COMPAT)
 

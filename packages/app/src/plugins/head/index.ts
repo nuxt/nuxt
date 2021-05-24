@@ -1,6 +1,6 @@
 import { createHead, renderHeadToString } from '@vueuse/head'
-import { Head, Html, Body, Title, Meta, Link, Script, Style } from './head'
 import type { Plugin } from '@nuxt/app'
+import { Head, Html, Body, Title, Meta, Link, Script, Style } from './head'
 
 export default <Plugin> function head (nuxt) {
   const { app, ssrContext } = nuxt
