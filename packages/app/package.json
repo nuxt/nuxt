@@ -28,6 +28,6 @@
     "vuex5": "^0.5.0-testing.3"
   },
   "devDependencies": {
-    "unbuild": "^0.2.3"
+    "unbuild": "^0.3.0"
   }
 }

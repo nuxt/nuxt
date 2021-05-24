@@ -19,6 +19,6 @@
     "vue-router": "^4.0.8"
   },
   "devDependencies": {
-    "unbuild": "^0.2.3"
+    "unbuild": "^0.3.0"
   }
 }
