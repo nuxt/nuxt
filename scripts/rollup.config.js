@@ -51,7 +51,7 @@ export default function rollupConfig ({
       //     /lodash/
       //   ]
       // }),
-      esbuild({ target: 'node12' }),
+      esbuild({ target: 'es2019' }),
       commonjsPlugin({ include: /node_modules/ }),
       jsonPlugin(),
       licensePlugin({

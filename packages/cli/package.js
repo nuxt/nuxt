@@ -1,8 +1,5 @@
 export default {
   build: true,
-  ignoreUnused: [
-    'crc', 'compression', 'connect', 'destr', 'fs-extra',
-    'globby', 'opener', 'pretty-bytes', 'serve-static', 'upath', 'lodash'
-  ],
+  ignoreUnused: ['crc'],
   externals: ['crc/lib/crc32']
 }
