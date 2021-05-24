@@ -31,7 +31,7 @@ function filesToMiddleware (files: string[], baseDir: string, basePath: string, 
       handle
     }
   })
-    .sort((a, b) => a.route.localeCompare(b.route))
+    .sort((a, b) => b.route.localeCompare(a.route))
     .map(m => ({ ...m, ...overrides }))
 }
 
