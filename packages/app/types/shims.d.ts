@@ -1,8 +1,8 @@
 import Vue from 'vue'
+import { $Fetch } from 'ohmyfetch'
+import { Nuxt } from '../dist'
 
 declare global {
-    import type { $Fetch } from 'ohmyfetch'
-
     // eslint-disable-next-line no-var
     var $fetch: $Fetch
 
@@ -29,9 +29,9 @@ declare module '*.vue' {
 }
 
 declare module 'vue' {
-    import type { Nuxt } from '../dist'
-
     interface App {
         $nuxt: Nuxt
     }
 }
+
+export {}
