@@ -16,7 +16,7 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
       load: () => {
         const middleware = getMiddleware()
 
-        if (!stdenv.test) {
+        if (stdenv.debug) {
           const dumped = dumpMiddleware(middleware)
           if (dumped !== lastDump) {
             lastDump = dumped
