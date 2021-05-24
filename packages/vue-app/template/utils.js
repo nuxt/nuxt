@@ -259,6 +259,7 @@ export async function setContext (app, context) {
     }
     if (process.server) {
       app.context.beforeNuxtRender = fn => context.beforeRenderFns.push(fn)
+      app.context.afterNuxtRender = fn => context.afterRenderFns.push(fn)
     }
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>

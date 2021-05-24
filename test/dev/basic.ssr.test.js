@@ -207,6 +207,12 @@ describe('basic ssr', () => {
     expect(window.__NUXT__.test).toBe(true)
   })
 
+  test('/special-state-after -> check window.__NUXT__.testAfter = true', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/special-state-after'))
+    expect(window.document.title).toBe('Nuxt')
+    expect(window.__NUXT__.testAfter).toBe(true)
+  })
+
   test('/error', async () => {
     await expect(nuxt.server.renderRoute('/error', { req: {}, res: {} }))
       .rejects.toThrow('Error mouahahah')

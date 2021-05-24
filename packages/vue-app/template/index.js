@@ -183,6 +183,7 @@ async function createApp(ssrContext, config = {}) {
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
     beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined,
+    afterRenderFns: ssrContext ? ssrContext.afterRenderFns : undefined,
     ssrContext
   })
 
