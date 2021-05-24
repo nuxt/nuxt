@@ -19,7 +19,7 @@ import { resolvePath, MODULE_DIR } from '../utils'
 import { dynamicRequire } from './plugins/dynamic-require'
 import { externals } from './plugins/externals'
 import { timing } from './plugins/timing'
-import { autoMock } from './plugins/automock'
+// import { autoMock } from './plugins/automock'
 import { staticAssets, dirnames } from './plugins/static'
 import { assets } from './plugins/assets'
 import { middleware } from './plugins/middleware'
@@ -247,7 +247,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   }))
 
   // Automatically mock unresolved externals
-  rollupConfig.plugins.push(autoMock())
+  // rollupConfig.plugins.push(autoMock())
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(commonjs({
