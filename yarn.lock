@@ -1779,6 +1779,7 @@ __metadata:
     ufo: ^0.7.5
     unbuild: ^0.3.0
     upath: ^2.0.1
+    vue: 3.0.11
     vue-router: ^4.0.8
   languageName: unknown
   linkType: soft
