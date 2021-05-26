@@ -25,8 +25,8 @@
     "nuxt3": "workspace:./packages/nuxt3"
   },
   "devDependencies": {
-    "@nuxtjs/eslint-config": "^6.0.0",
-    "@nuxtjs/eslint-config-typescript": "^6.0.0",
+    "@nuxtjs/eslint-config": "^6.0.1",
+    "@nuxtjs/eslint-config-typescript": "^6.0.1",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.17.0",
     "@types/object-hash": "^2",
