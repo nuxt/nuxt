@@ -35,7 +35,8 @@
     "nuxt-cli": "^0.3.5",
     "scule": "^0.2.1",
     "ufo": "^0.7.5",
-    "upath": "^2.0.1"
+    "upath": "^2.0.1",
+    "vue": "3.0.11"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.11",

@@ -1779,8 +1779,9 @@ __metadata:
     ufo: ^0.7.5
     unbuild: ^0.3.0
     upath: ^2.0.1
-    vue: 3.0.11
     vue-router: ^4.0.8
+  peerDependencies:
+    vue: 3.0.11
   languageName: unknown
   linkType: soft
 
@@ -10663,6 +10664,7 @@ __metadata:
     ufo: ^0.7.5
     unbuild: ^0.3.0
     upath: ^2.0.1
+    vue: 3.0.11
   bin:
     nu: ./bin/nuxt.js
     nuxt: ./bin/nuxt.js
