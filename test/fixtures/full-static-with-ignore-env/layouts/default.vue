@@ -27,14 +27,14 @@
 
 <style scoped>
 main {
-  margin: 1em 1em;
+  margin: 1 1;
 }
 
 nav {
-  margin-bottom: 1em;
+  margin-bottom: 1;
 }
 
 a {
-  margin-right: 1em;
+  margin-right: 1;
 }
 </style>
