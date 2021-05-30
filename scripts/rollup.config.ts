@@ -1,48 +1,48 @@
-import path from 'path'
-import { readJSONSync } from 'fs-extra'
-import jsonPlugin from '@rollup/plugin-json'
-import commonjsPlugin from '@rollup/plugin-commonjs'
-import replacePlugin from '@rollup/plugin-replace'
-import aliasPlugin from '@rollup/plugin-alias'
-// import nodeResolvePlugin from '@rollup/plugin-node-resolve'
-import licensePlugin from 'rollup-plugin-license'
-import esbuild from 'rollup-plugin-esbuild'
-import { defaultsDeep } from 'lodash'
+ path  'path'
+ { readJSONSync } 'fs-extra'
+ jsonPlugin  '@rollup/plugin-json'
+ commonjsPlugin  '@rollup/plugin-commonjs'
+ replacePlugin  '@rollup/plugin-replace'
+ aliasPlugin  '@rollup/plugin-alias'
+//  nodeResolvePlugin  '@rollup/plugin-node-resolve'
+ licensePlugin  'rollup-plugin-license'
+ esbuild  'rollup-plugin-esbuild'
+ { defaultsDeep } 'lodash'
 
-export default function rollupConfig ({
+ rollupConfig ({
   rootDir = process.cwd(),
   plugins = [],
   input = 'src/index.js',
   replace = {},
   alias = {},
   externals = [],
-  ...options
+  
 }, pkg) {
-  if (!pkg) {
+  ( ) {
     pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
   }
 
-  const name = path.basename(pkg.name.replace('-edge', ''))
+   name = path.basename(pkg.name.replace('-edge', ''))
 
-  return defaultsDeep({}, options, {
-    input: path.resolve(rootDir, input),
-    output: {
+   defaultsDeep({}, options, {
+    : path.resolve(rootDir, :),
+    : {
       dir: path.resolve(rootDir, 'dist'),
       entryFileNames: `${name}.js`,
       chunkFileNames: `${name}-[name].js`,
       format: 'cjs',
-      preferConst: true
+      preferConst: ,
     },
     external: externals,
     plugins: [
-      aliasPlugin(alias),
+      aliasPlugin( ),
       replacePlugin({
         exclude: 'node_modules/**',
         delimiters: ['', ''],
-        preventAssignment: true,
+        preventAssignment: ,
         values: {
           __NODE_ENV__: process.env.NODE_ENV,
-          ...replace
+          ;
         }
       }),
       // nodeResolvePlugin({
