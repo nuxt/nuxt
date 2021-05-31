@@ -6,6 +6,7 @@ import replacePlugin from '@rollup/plugin-replace'
 import aliasPlugin from '@rollup/plugin-alias'
 // import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 import licensePlugin from 'rollup-plugin-license'
+import esbuild from 'rollup-plugin-esbuild'
 import { defaultsDeep } from 'lodash'
 
 export default function rollupConfig ({
@@ -50,6 +51,7 @@ export default function rollupConfig ({
       //     /lodash/
       //   ]
       // }),
+      esbuild({ target: 'es2019' }),
       commonjsPlugin({ include: /node_modules/ }),
       jsonPlugin(),
       licensePlugin({

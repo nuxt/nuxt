@@ -330,6 +330,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.m?jsx?$/i,
+        type: 'javascript/auto',
         exclude: (file) => {
           file = file.split(/node_modules(.*)/)[1]
 
