@@ -155,9 +155,8 @@ describe('basic dev', () => {
   })
 
   test('/error should return error stack trace (Youch)', async () => {
-    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      response: { statusCode: 500 }
-    })
+    await expect(nuxt.server.renderAndGetWindow(url('/error')))
+      .rejects.toThrow('Resource was not loaded. Status: 500')
   })
 
   test('/error should return json format error (Youch)', async () => {
