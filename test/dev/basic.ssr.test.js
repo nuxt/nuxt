@@ -210,6 +210,7 @@ describe('basic ssr', () => {
   test('/special-state-after -> check window.__NUXT__.testAfter = true', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/special-state-after'))
     expect(window.document.title).toBe('Nuxt')
+    expect(window.__NUXT__.testBefore).toBeUndefined()
     expect(window.__NUXT__.testAfter).toBe(true)
   })
 
