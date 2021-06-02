@@ -12,14 +12,14 @@
     "create-require": "^1.1.1",
     "fs-extra": "^10.0.0",
     "hash-sum": "^2.0.0",
-    "jiti": "^1.9.2",
+    "jiti": "^1.10.1",
     "lodash": "^4.17.21",
     "proper-lockfile": "^4.1.2",
     "semver": "^7.3.5",
     "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
     "ua-parser-js": "^0.7.28",
-    "ufo": "^0.7.4"
+    "ufo": "^0.7.5"
   },
   "publishConfig": {
     "access": "public"
