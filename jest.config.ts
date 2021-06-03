@@ -1,7 +1,7 @@
-const fs = require('fs')
-const path = require('path')
+ fs = require('fs')
+ path = require('path')
 
-const corePackages = fs.readdirSync(path.resolve(__dirname, 'packages'))
+ corePackages = fs.readdirSync(path.resolve(__dirname, 'packages'))
 
 module.exports = {
   testEnvironment: 'node',
