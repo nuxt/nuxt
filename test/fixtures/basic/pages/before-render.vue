@@ -14,11 +14,8 @@ export default {
   },
   fetch () {
     if (process.server) {
-      this.$root.context.beforeNuxtRender(({ nuxtState }) => {
-        nuxtState.testBefore = true
-      })
-      this.$root.context.afterNuxtRender(({ nuxtState }) => {
-        nuxtState.testAfter = true
+      this.$root.context.beforeRender(({ nuxtState }) => {
+        nuxtState.beforeRender = true
       })
     }
   },
