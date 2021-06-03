@@ -15,10 +15,10 @@
     "fs-extra": "^10.0.0",
     "lodash": "^4.17.21",
     "lru-cache": "^5.1.1",
-    "ufo": "^0.7.4",
-    "vue": "^2.6.12",
+    "ufo": "^0.7.5",
+    "vue": "^2.6.13",
     "vue-meta": "^2.4.0",
-    "vue-server-renderer": "^2.6.12"
+    "vue-server-renderer": "^2.6.13"
   },
   "publishConfig": {
     "access": "public"

@@ -19,7 +19,9 @@
     "@types/webpack-dev-middleware",
     "@types/terser-webpack-plugin",
     "@types/webpack-bundle-analyzer",
-    "wrap-ansi"
+    "wrap-ansi",
+    "jest",
+    "babel-jest"
   ],
   "lockFileMaintenance": {
     "enabled": true
