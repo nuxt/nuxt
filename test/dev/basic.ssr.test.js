@@ -201,7 +201,7 @@ describe('basic ssr', () => {
     })
   })
 
-  test('/before-mixt-render -> check window.__NUXT__.beforeNuxtRender = true', async () => {
+  test('/before-nuxt-render -> check window.__NUXT__.beforeNuxtRender = true', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/before-nuxt-render'))
     expect(window.document.title).toBe('Nuxt')
     expect(window.__NUXT__.beforeNuxtRender).toBe(true)
