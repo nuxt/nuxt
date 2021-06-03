@@ -258,8 +258,11 @@ export async function setContext (app, context) {
       }
     }
     if (process.server) {
-      app.context.beforeNuxtRender = fn => context.beforeRenderFns.push(fn)
-      app.context.afterNuxtRender = fn => context.afterRenderFns.push(fn)
+      app.context.beforeNuxtRender = fn => {
+        console.warn('`context.beforeNuxtRender(fn)` is deprecated in favour of `context.beforeRender(fn)`. The function updating the `nuxtState` has to be synchronous. Learn more on https://nuxtjs.org/docs/2.x/internals-glossary/context#beforenuxtrender')
+        context.beforeRenderFns.push(fn)
+      }
+      app.context.beforeRender = fn => context.beforeRenderHooks.push(fn)
     }
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>
