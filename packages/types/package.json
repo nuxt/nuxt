@@ -19,7 +19,11 @@
     "@types/file-loader": "5.0.0",
     "@types/html-minifier": "4.0.0",
     "@types/less": "3.0.2",
+ patch-1
     "@types/node": "14.17.2",
+
+    "@types/node": "14.17.0",
+ renovate/node-14.x
     "@types/optimize-css-assets-webpack-plugin": "5.0.3",
     "@types/pug": "2.0.4",
     "@types/sass-loader": "8.0.1",
