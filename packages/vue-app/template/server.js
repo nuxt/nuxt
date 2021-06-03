@@ -125,7 +125,7 @@ export default async (ssrContext) => {
 
     ssrContext.rendered = () => {
       // Call beforeSerialize() hooks
-      ssrContext.beforeSerializeFns.forEach(fn => fn({ Components, nuxtState: ssrContext.nuxt }))
+      ssrContext.beforeSerializeFns.forEach(fn => fn(ssrContext.nuxt))
 
       <% if (store) { %>
       // Add the state from the vuex store
