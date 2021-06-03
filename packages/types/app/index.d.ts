@@ -72,7 +72,7 @@ export interface Context {
     redirected: boolean
     next: NextFunction
     beforeRenderFns: Array<() => any>
-    afterRenderFns: Array<() => any>
+    beforeRenderHooks: Array<() => any>
     fetchCounters: Record<string, number>
     nuxt: {
       layout: string
@@ -88,6 +88,7 @@ export interface Context {
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
+  beforeRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
   enablePreview?: (previewData?: Record<string, any>) => void
   $preview?: Record<string, any>
 }

@@ -83,7 +83,7 @@ export default async (ssrContext) => {
   // Create ssrContext.next for simulate next() of beforeEach() when wanted to redirect
   ssrContext.redirected = false
   ssrContext.next = createNext(ssrContext)
-  // deprectated: Used for beforeNuxtRender({ Components, nuxtState })
+  // deprecated: Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // for beforeRender({ Components, nuxtState })
   ssrContext.beforeRenderHooks = []
@@ -123,7 +123,7 @@ export default async (ssrContext) => {
     // Deprecated: Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
 
-    ssrContext.rendered = async () => {
+    ssrContext.rendered = () => {
       // Call beforeRender() hooks
       ssrContext.beforeRenderHooks.forEach(fn => fn({ Components, nuxtState: ssrContext.nuxt }))
 
