@@ -97,12 +97,7 @@ module.exports = (api, options = {}) => {
     modern: { esmodules: true }
   }
 
-  let { targets = defaultTargets[envName] } = options
-
-  // modern mode can only be { esmodules: true }
-  if (envName === 'modern') {
-    targets = defaultTargets.modern
-  }
+  const { targets = defaultTargets[envName] } = options
 
   const polyfills = []
 
