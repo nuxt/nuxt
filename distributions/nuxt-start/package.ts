@@ -1,11 +1,12 @@
-export default {
+ {
   build: true,
   hooks: {
-    async 'build:done' (pkg) {
-      const mono = pkg.load('../..')
-      const nuxt = pkg.load('../nuxt')
+     'build:done' (pkg) {
+       mono = pkg.load('../..')
+       nuxt = pkg.load('../nuxt')
 
-      await pkg.copyFilesFrom(mono, [
+      
+       pkg.copyFilesFrom(mono, [
         'LICENSE'
       ])
 
@@ -17,7 +18,7 @@ export default {
         'engines'
       ])
 
-      await pkg.writePackage()
+       pkg.writePackage()
     }
   },
   ignoreUnused: [
