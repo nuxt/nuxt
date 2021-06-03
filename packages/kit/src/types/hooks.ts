@@ -57,6 +57,9 @@ export interface NuxtHooks {
   // 'watch:fileChanged': (builder: Builder, fileName: string) => HookResult
   'builder:watch': (event: WatchEvent, path: string) => HookResult
 
+  // @nuxt/nitro
+  'nitro:template': (template: { src: string, contents: string }) => HookResult
+
   // @nuxt/cli
   'cli:buildError': (error: unknown) => HookResult
   'generate:cache:ignore': (ignore: string[]) => HookResult

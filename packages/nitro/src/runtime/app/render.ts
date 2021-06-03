@@ -103,9 +103,10 @@ function renderHTML (payload, rendered, ssrContext) {
     meta.htmlAttrs += _meta.htmlAttrs.text()
     meta.headAttrs += _meta.headAttrs.text()
     meta.headTags +=
-      _meta.title.text() + _meta.meta.text() +
-      _meta.link.text() + _meta.style.text() +
-      _meta.script.text() + _meta.noscript.text()
+      _meta.title.text() + _meta.base.text() +
+      _meta.meta.text() + _meta.link.text() +
+      _meta.style.text() + _meta.script.text() +
+      _meta.noscript.text()
     meta.bodyAttrs += _meta.bodyAttrs.text()
     meta.bodyScriptsPrepend =
       _meta.meta.text({ pbody: true }) + _meta.link.text({ pbody: true }) +

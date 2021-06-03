@@ -6,7 +6,6 @@ import { getNitroContext, NitroContext } from './context'
 import { createDevServer } from './server/dev'
 import { wpfs } from './utils/wpfs'
 import { resolveMiddleware } from './server/middleware'
-import { serializeTemplate } from './utils'
 
 export default function nuxt2CompatModule () {
   const { nuxt } = this
@@ -34,6 +33,8 @@ export default function nuxt2CompatModule () {
   nitroDevContext._internal.hooks.hook('renderLoading',
     (req, res) => nuxt.callHook('server:nuxt:renderLoading', req, res))
 
+  nitroContext._internal.hooks.hook('nitro:template', template => nuxt.callHook('nitro:template', template))
+
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
 
@@ -57,7 +58,6 @@ export default function nuxt2CompatModule () {
     if (!htmlTemplate.contents.includes('BODY_SCRIPTS_PREPEND')) {
       const fullTemplate = ['{{ BODY_SCRIPTS_PREPEND }}', '{{ APP }}', '{{ BODY_SCRIPTS }}'].join('\n    ')
       htmlTemplate.contents = htmlTemplate.contents.replace('{{ APP }}', fullTemplate)
-      htmlTemplate.compiled = 'module.exports = ' + serializeTemplate(htmlTemplate.contents)
     }
   })
 
