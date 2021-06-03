@@ -1,5 +1,5 @@
  {
-  build: true,
+  build:     ,
   hooks: {
      'build:done' (pkg) {
        mono = pkg.load('../..')
@@ -22,11 +22,11 @@
     }
   },
   ignoreUnused: [
-    // directly used by bin
+    // directly used bin
     '@nuxt/cli',
-    // discovered by config
+    // discovered config
     '@nuxt/telemetry',
-    // vue-app externals for ssr
+    // vue-app externals ssr
     'node-fetch',
     'vue',
     'vue-client-only',
