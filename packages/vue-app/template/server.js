@@ -83,10 +83,10 @@ export default async (ssrContext) => {
   // Create ssrContext.next for simulate next() of beforeEach() when wanted to redirect
   ssrContext.redirected = false
   ssrContext.next = createNext(ssrContext)
-  // deprecated: Used for beforeNuxtRender({ Components, nuxtState })
+  // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
-  // for beforeRender({ Components, nuxtState })
-  ssrContext.beforeRenderHooks = []
+  // for beforeSerialize({ Components, nuxtState })
+  ssrContext.beforeSerializeFns = []
   // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: {}, <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
   <% if (features.fetch) { %>
@@ -120,12 +120,12 @@ export default async (ssrContext) => {
   <% } %>
 
   const beforeRender = async () => {
-    // Deprecated: Call beforeNuxtRender() methods
+    // Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
 
     ssrContext.rendered = () => {
-      // Call beforeRender() hooks
-      ssrContext.beforeRenderHooks.forEach(fn => fn({ Components, nuxtState: ssrContext.nuxt }))
+      // Call beforeSerialize() hooks
+      ssrContext.beforeSerializeFns.forEach(fn => fn({ Components, nuxtState: ssrContext.nuxt }))
 
       <% if (store) { %>
       // Add the state from the vuex store

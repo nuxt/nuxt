@@ -14,8 +14,8 @@ export default {
   },
   fetch () {
     if (process.server) {
-      this.$root.context.beforeRender(({ nuxtState }) => {
-        nuxtState.beforeRender = true
+      this.$root.context.beforeSerialize(({ nuxtState }) => {
+        nuxtState.beforeSerialize = true
       })
     }
   },
