@@ -3,9 +3,9 @@
 </template>
 
 <script>
-export default {
+ default {
   middleware ({ beforeNuxtRender }) {
-    if (process.server) {
+     (process.server) {
       beforeNuxtRender(({ nuxtState }) => {
         nuxtState.beforeNuxtRender = true
       })
