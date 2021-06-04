@@ -6,14 +6,15 @@
 </template>
 
 <script>
-export default {
+ default {
   data () {
-    return {
+    
+ {
       nuxtState: null
     }
   },
   fetch () {
-    if (process.server) {
+     (process.server) {
       this.$root.context.beforeSerialize((nuxtState) => {
         nuxtState.beforeSerialize = true
       })
