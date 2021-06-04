@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.7.1...@nuxt/nitro@0.7.2) (2021-06-04)
+
+**Note:** Version bump only for package @nuxt/nitro
+
+
+
+
+
 ## [0.7.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.7.0...@nuxt/nitro@0.7.1) (2021-05-24)
 
 
