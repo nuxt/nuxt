@@ -16,12 +16,12 @@
   fetch () {
      (process.server) {
       this.$root.context.beforeSerialize((nuxtState) => {
-        nuxtState.beforeSerialize = true
+        nuxtState.beforeSerialize  true
       })
     }
   },
   beforeMount () {
-    this.nuxtState = window.__NUXT__
+    this.nuxtState  window.__NUXT__
   }
 }
 </script>
