@@ -1,6 +1,6 @@
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
-import config from './config'
+import { runtimeConfig } from './config'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.js'
 
@@ -41,10 +41,7 @@ export async function renderMiddleware (req, res) {
     url,
     req,
     res,
-    runtimeConfig: {
-      public: config.public,
-      private: config.private
-    },
+    runtimeConfig,
     ...(req.context || {})
   }
   const renderer = await loadRenderer()
