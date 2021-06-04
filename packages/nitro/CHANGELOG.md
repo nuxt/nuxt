@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.7.2...@nuxt/nitro@0.8.0) (2021-06-04)
+
+
+### Bug Fixes
+
+* **nitro:** support ~/@ aliases and explicitly externalize buildDir ([f98be4b](https://github.com/nuxt/framework/commit/f98be4bfedb510fac1bc94cdff77306f7d756be2))
+
+
+### Features
+
+* **nitro:** #config ([0b7790f](https://github.com/nuxt/framework/commit/0b7790f6d02518a636045d5ec75c5e7859636731))
+
+
+
+
+
 ## [0.7.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.7.1...@nuxt/nitro@0.7.2) (2021-06-04)
 
 **Note:** Version bump only for package @nuxt/nitro
