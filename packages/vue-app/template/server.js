@@ -85,7 +85,7 @@ export default async (ssrContext) => {
   ssrContext.next = createNext(ssrContext)
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
-  // for beforeSerialize({ Components, nuxtState })
+  // for beforeSerialize(nuxtState)
   ssrContext.beforeSerializeFns = []
   // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: {}, <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
