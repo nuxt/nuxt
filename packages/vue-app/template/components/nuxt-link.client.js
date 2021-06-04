@@ -15,15 +15,6 @@ const cancelIdleCallback = window.cancelIdleCallback || function (id) {
   clearTimeout(id)
 }
 
-const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
-  entries.forEach(({ intersectionRatio, target: link }) => {
-    if (intersectionRatio <= 0 || !link.__prefetch) {
-      return
-    }
-    link.__prefetch()
-  })
-})
-
 <%= isTest ? '// @vue/component' : '' %>
 export default {
   name: 'NuxtLink',
@@ -42,29 +33,37 @@ export default {
       default: '<%= router.linkPrefetchedClass %>'
     }<% } %>
   },
+  data () {
+    return {
+      __observed: false,
+      __unobserve: () => {}
+    }
+  },
   mounted () {
     if (this.prefetch && !this.noPrefetch) {
-      this.handleId = requestIdleCallback(this.observe, { timeout: 2e3 })
+      this.handleId = requestIdleCallback(this.observe, { timeout: 2000 })
     }
   },
   beforeDestroy () {
     cancelIdleCallback(this.handleId)
 
-    if (this.__observed) {
-      observer.unobserve(this.$el)
-      delete this.$el.__prefetch
+    if (!this.__observed) {
+      return
     }
+    this.$options.__unobserve(this.$el)
+    delete this.$el.__prefetch
   },
   methods: {
     observe () {
-      // If no IntersectionObserver, avoid prefetching
-      if (!observer) {
-        return
-      }
       // Add to observer
       if (this.shouldPrefetch()) {
+        const unobserveFunctionOrUnavailable = this.$nuxt.context.observer.use(this.$el)
+        if(!unobserveFunctionOrUnavailable) {
+          return
+        }
+
+        this.$options.__unobserve = unobserveFunctionOrUnavailable
         this.$el.__prefetch = this.prefetchLink.bind(this)
-        observer.observe(this.$el)
         this.__observed = true
       }<% if (router.linkPrefetchedClass) { %> else {
         this.addPrefetchedClass()
@@ -95,7 +94,7 @@ export default {
         return
       }
       // Stop observing this link (in case of internet connection changes)
-      observer.unobserve(this.$el)
+      this.$options.__unobserve(this.$el)
       const Components = this.getPrefetchComponents()
       <% if (router.linkPrefetchedClass) { %>const promises = []<% } %>
 
@@ -124,5 +123,6 @@ export default {
         this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
       }
     }<% } %>
-  }
+  },
+  __unobserve: () => {}
 }

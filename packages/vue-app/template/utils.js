@@ -1,5 +1,10 @@
 import Vue from 'vue'
+ renovate/optimize-css-assets-webpack-plugin-6.x
 import { isSamePath as _isSamePath, joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
+
+import { normalizeURL } from 'ufo'
+import { createObserver } from './observer'
+ refactor/nuxt-link-smart-prefetch
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -262,6 +267,8 @@ export async function setContext (app, context) {
     }
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>
+      // Global IntersectionObserver
+      app.context.observer = createObserver()
     }
   }
 
