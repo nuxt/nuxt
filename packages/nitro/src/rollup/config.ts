@@ -198,6 +198,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       '#nitro-renderer': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer)),
       '#nitro-vue-renderer': vue2ServerRenderer,
       '#build': nitroContext._nuxt.buildDir,
+      '~': nitroContext._nuxt.srcDir,
+      '@/': nitroContext._nuxt.srcDir,
+      '~~': nitroContext._nuxt.rootDir,
+      '@@/': nitroContext._nuxt.rootDir,
       ...env.alias
     }
   }))
@@ -214,21 +218,22 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     rollupConfig.plugins.push(externals(defu(nitroContext.externals as any, {
       outDir: nitroContext.output.serverDir,
       moduleDirectories,
-      ignore: [
+      external: [
+        ...(nitroContext._nuxt.dev ? [nitroContext._nuxt.buildDir] : [])
+      ],
+      inline: [
+        '#',
+        '~',
+        '@/',
+        '~~',
+        '@@/',
+        'virtual:',
         nitroContext._internal.runtimeDir,
-        ...((!nitroContext._nuxt.dev && [
-          // prod
-          nitroContext._nuxt.srcDir,
-          nitroContext._nuxt.rootDir,
-          nitroContext._nuxt.buildDir,
-          'vue',
-          '@vue/',
-          '@nuxt/',
-          '#',
-          'virtual:'
-        ]) || []),
+        nitroContext._nuxt.srcDir,
+        nitroContext._nuxt.rootDir,
         nitroContext._nuxt.serverDir,
-        ...nitroContext.middleware.map(m => m.handle)
+        ...nitroContext.middleware.map(m => m.handle),
+        ...(nitroContext._nuxt.dev ? [] : ['vue', '@vue/', '@nuxt/'])
       ],
       traceOptions: {
         base: '/',

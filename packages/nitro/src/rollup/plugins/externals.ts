@@ -4,7 +4,8 @@ import { nodeFileTrace, NodeFileTraceOptions } from '@vercel/nft'
 import type { Plugin } from 'rollup'
 
 export interface NodeExternalsOptions {
-  ignore?: string[]
+  inline?: string[]
+  external?: string[]
   outDir?: string
   trace?: boolean
   traceOptions?: NodeFileTraceOptions
@@ -25,15 +26,17 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       // Normalize from node_modules
       const _id = id.split('node_modules/').pop()
 
-      // Resolve relative paths and exceptions
-      // Ensure to take absolute and relative id
-      if (_id.startsWith('.') || opts.ignore.find(i => _id.startsWith(i) || id.startsWith(i))) {
-        return null
-      }
-
-      // Bundle ts
-      if (_id.endsWith('.ts')) {
-        return null
+      // Skip checks if is an explicit external
+      if (!opts.external.find(i => _id.startsWith(i) || id.startsWith(i))) {
+        // Resolve relative paths and exceptions
+        // Ensure to take absolute and relative id
+        if (_id.startsWith('.') || opts.inline.find(i => _id.startsWith(i) || id.startsWith(i))) {
+          return null
+        }
+        // Bundle ts
+        if (_id.endsWith('.ts')) {
+          return null
+        }
       }
 
       // Try to resolve for nft
