@@ -65,6 +65,7 @@ export interface NuxtOptions extends Configuration {
   server: NuxtOptionsServer
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
+  ssr: boolean
   transition: Transition
   vue: {
     config?: NuxtOptionsVueConfiguration
@@ -73,4 +74,4 @@ export interface NuxtOptions extends Configuration {
   watchers: NuxtOptionsWatchers
 }
 
-export type NuxtConfig = Partial<NuxtOptions>
+export interface NuxtConfig extends Partial<NuxtOptions> {}

@@ -1,3 +1,5 @@
+import { hasProtocol, joinURL } from 'ufo'
+
 export const encodeHtml = function encodeHtml (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -9,16 +11,10 @@ export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 export const isPureObject = obj => !Array.isArray(obj) && typeof obj === 'object'
 
 export const isUrl = function isUrl (url) {
-  return ['http', '//'].some(str => url.startsWith(str))
+  return hasProtocol(url, true)
 }
 
-export const urlJoin = function urlJoin () {
-  return [].slice
-    .call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-    .replace(':/', '://')
-}
+export const urlJoin = joinURL
 
 /**
  * Wraps value in array if it is not already an array

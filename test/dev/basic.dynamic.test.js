@@ -55,11 +55,19 @@ describe('basic ssr', () => {
 
     expect(window.document.body.innerHTML).toContain('<h1>Index page</h1>')
 
-    expect(window.__NUXT__.config.app.basePath).toBe('/path/')
-    expect(window.__NUXT__.config.app.cdnURL).toBe('https://cdn.nuxtjs.org/')
-    expect(window.__NUXT__.config.app.assetsPath).toBe('/')
+    expect(window.__NUXT__.config._app.basePath).toBe('/path/')
+    expect(window.__NUXT__.config._app.cdnURL).toBe('https://cdn.nuxtjs.org/')
+    expect(window.__NUXT__.config._app.assetsPath).toBe('/')
 
     expect(fetchCount).toBeGreaterThan(0)
+  })
+
+  test('dynamic publicPath is used in ssr html', async () => {
+    const { html } = await nuxt.server.renderRoute('/', {
+      resources: resourceLoader
+    })
+
+    expect(html).toContain('<img src="https://cdn.nuxtjs.org/img')
   })
 
   // Close server and ask nuxt to stop listening to file changes

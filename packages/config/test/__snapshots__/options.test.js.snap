@@ -71,6 +71,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
         "sourceMap": false,
       },
       "cssModules": Object {
@@ -189,7 +192,6 @@ Object {
     "asyncData": true,
     "clientOnline": true,
     "clientPrefetch": true,
-    "clientUseUrl": false,
     "componentAliases": true,
     "componentClientOnly": true,
     "deprecations": true,
@@ -217,8 +219,10 @@ Object {
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
+    "ignoreEnv": false,
     "interval": 0,
     "manifest": true,
+    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": "/_nuxt/static",
@@ -320,7 +324,7 @@ Object {
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
   "publicRuntimeConfig": Object {
-    "app": Object {
+    "_app": Object {
       "assetsPath": "/_nuxt/",
       "basePath": "/",
       "cdnURL": null,

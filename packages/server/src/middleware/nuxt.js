@@ -1,6 +1,7 @@
 import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
+import { normalizeURL } from 'ufo'
 
 import { getContext, TARGETS } from '@nuxt/utils'
 
@@ -9,7 +10,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
   const context = getContext(req, res)
 
   try {
-    const url = decodeURI(req.url)
+    const url = normalizeURL(req.url)
     res.statusCode = 200
     const result = await renderRoute(url, context)
 

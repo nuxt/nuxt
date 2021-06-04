@@ -55,6 +55,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
       },
       "cssModules": Object {
         "esModule": false,
@@ -164,7 +167,6 @@ Object {
     "asyncData": true,
     "clientOnline": true,
     "clientPrefetch": true,
-    "clientUseUrl": false,
     "componentAliases": true,
     "componentClientOnly": true,
     "deprecations": true,
@@ -192,8 +194,10 @@ Object {
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
+    "ignoreEnv": false,
     "interval": 0,
     "manifest": true,
+    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
@@ -441,6 +445,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
       },
       "cssModules": Object {
         "esModule": false,
@@ -550,7 +557,6 @@ Object {
     "asyncData": true,
     "clientOnline": true,
     "clientPrefetch": true,
-    "clientUseUrl": false,
     "componentAliases": true,
     "componentClientOnly": true,
     "deprecations": true,
@@ -578,8 +584,10 @@ Object {
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
+    "ignoreEnv": false,
     "interval": 0,
     "manifest": true,
+    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,

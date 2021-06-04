@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { parsePath, withoutTrailingSlash } from 'ufo'
+import { decode, parsePath, withoutBase, withoutTrailingSlash, normalizeURL } from 'ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',
@@ -301,45 +301,38 @@ export default {
     },
     getRoutePath(route = '/') {
       const base = this.getRouterBase()
-      if (base && route.startsWith(base)) {
-        route = route.substr(base.length)
-      }
-      let path = parsePath(route).pathname
-      <% if (!nuxtOptions.router.trailingSlash) { %>
-        path = withoutTrailingSlash(path)
-      <% } %>
-      return path || '/'
+      return withoutTrailingSlash(withoutBase(parsePath(route).pathname, base))
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
 
-      return urlJoin(staticAssetsBase, withoutTrailingSlash(this.getRoutePath(route)))
+      return urlJoin(staticAssetsBase, this.getRoutePath(route))
     },
     <% if (nuxtOptions.generate.manifest) { %>
       async fetchStaticManifest() {
-      return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
+      return window.__NUXT_IMPORT__('manifest.js', normalizeURL(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
     },
     <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
       this._fetchCounters = {}
     },
-    async fetchPayload(route) {
+    async fetchPayload(route, prefetch) {
+      const path = decode(this.getRoutePath(route))
       <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
-      const path = this.getRoutePath(route)
       if (!manifest.routes.includes(path)) {
-        this.setPagePayload(false)
+        if (!prefetch) { this.setPagePayload(false) }
         throw new Error(`Route ${path} is not pre-rendered`)
       }
       <% } %>
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
-        const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
-        this.setPagePayload(payload)
+        const payload = await window.__NUXT_IMPORT__(path, normalizeURL(src))
+        if (!prefetch) { this.setPagePayload(payload) }
         return payload
       } catch (err) {
-        this.setPagePayload(false)
+        if (!prefetch) { this.setPagePayload(false) }
         throw err
       }
     }

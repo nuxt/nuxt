@@ -3,11 +3,13 @@ export default () => ({
   routes: [],
   exclude: [],
   concurrency: 500,
+  ignoreEnv: false,
   interval: 0,
   subFolders: true,
   fallback: '200.html',
   crawler: true,
   manifest: true,
+  nojekyll: true,
   cache: {
     ignore: [],
     globbyOptions: {

@@ -4,6 +4,7 @@ import consola from 'consola'
 import { template } from 'lodash'
 import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
 import { normalizeURL } from 'ufo'
+import defu from 'defu'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -296,7 +297,7 @@ export default class VueRenderer {
 
     // Set runtime config on renderContext
     renderContext.runtimeConfig = {
-      private: renderContext.spa ? {} : { ...this.options.privateRuntimeConfig },
+      private: renderContext.spa ? {} : defu(this.options.privateRuntimeConfig, this.options.publicRuntimeConfig),
       public: { ...this.options.publicRuntimeConfig }
     }
 
@@ -310,7 +311,7 @@ export default class VueRenderer {
   }
 
   get resourceMap () {
-    const publicPath = urlJoin(this.options.app.cdnURL || '/', this.options.app.assetsPath)
+    const publicPath = urlJoin(this.options.app.cdnURL, this.options.app.assetsPath)
     return {
       clientManifest: {
         fileName: 'client.manifest.json',

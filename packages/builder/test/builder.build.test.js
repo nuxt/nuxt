@@ -16,11 +16,13 @@ jest.mock('@nuxt/webpack')
 describe('builder: builder build', () => {
   beforeAll(() => {
     jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
+    jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
     r.mockImplementation((...args) => `r(${args.join(', ')})`)
   })
 
   afterAll(() => {
     path.join.mockRestore()
+    path.resolve.mockRestore()
   })
 
   beforeEach(() => {
@@ -143,11 +145,12 @@ describe('builder: builder build', () => {
     await builder.validatePages()
 
     expect(builder._nuxtPages).toEqual(true)
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/pages')
-    expect(path.join).nthCalledWith(2, '/var/nuxt/src', '..', '/var/nuxt/src/pages')
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/pages')
+    expect(path.join).toBeCalledTimes(1)
+    expect(path.join).nthCalledWith(1, '/var/nuxt/src', '..', '/var/nuxt/src/pages')
     expect(fsExtra.exists).toBeCalledTimes(2)
-    expect(fsExtra.exists).nthCalledWith(1, 'join(/var/nuxt/src, /var/nuxt/src/pages)')
+    expect(fsExtra.exists).nthCalledWith(1, 'resolve(/var/nuxt/src, /var/nuxt/src/pages)')
     expect(fsExtra.exists).nthCalledWith(2, 'join(/var/nuxt/src, .., /var/nuxt/src/pages)')
     expect(builder._defaultPage).toEqual(true)
     expect(consola.warn).toBeCalledTimes(1)
@@ -168,11 +171,10 @@ describe('builder: builder build', () => {
     )
 
     expect(builder._nuxtPages).toEqual(true)
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/pages')
-    expect(path.join).nthCalledWith(2, '/var/nuxt/src', '..', '/var/nuxt/src/pages')
+    expect(path.resolve).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/pages')
+    expect(path.join).nthCalledWith(1, '/var/nuxt/src', '..', '/var/nuxt/src/pages')
     expect(fsExtra.exists).toBeCalledTimes(2)
-    expect(fsExtra.exists).nthCalledWith(1, 'join(/var/nuxt/src, /var/nuxt/src/pages)')
+    expect(fsExtra.exists).nthCalledWith(1, 'resolve(/var/nuxt/src, /var/nuxt/src/pages)')
     expect(fsExtra.exists).nthCalledWith(2, 'join(/var/nuxt/src, .., /var/nuxt/src/pages)')
     expect(builder._defaultPage).toBeUndefined()
   })
@@ -198,10 +200,10 @@ describe('builder: builder build', () => {
     await builder.validatePages()
 
     expect(builder._nuxtPages).toEqual(true)
-    expect(path.join).toBeCalledTimes(1)
-    expect(path.join).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/pages')
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/pages')
     expect(fsExtra.exists).toBeCalledTimes(1)
-    expect(fsExtra.exists).toBeCalledWith('join(/var/nuxt/src, /var/nuxt/src/pages)')
+    expect(fsExtra.exists).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/pages)')
     expect(builder._defaultPage).toBeUndefined()
   })
 })

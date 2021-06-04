@@ -69,7 +69,7 @@ describe('server: errorMiddleware', () => {
     expect(ctx.res.setHeader).nthCalledWith(3, 'Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
     expect(ctx.res.setHeader).nthCalledWith(4, 'Custom-Header', 'test')
     expect(params.resources.errorTemplate).toBeCalledTimes(1)
-    expect(params.resources.errorTemplate).toBeCalledWith({ status: 500 })
+    expect(params.resources.errorTemplate).toBeCalledWith({ message: '', status: 500 })
     expect(ctx.res.end).toBeCalledTimes(1)
     expect(ctx.res.end).toBeCalledWith('error template', 'utf-8')
   })

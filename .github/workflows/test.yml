@@ -19,7 +19,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -96,7 +96,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -127,7 +127,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -152,7 +152,6 @@ jobs:
 
       - name: codecov
         uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -165,7 +164,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -191,11 +190,11 @@ jobs:
       - name: build
         run: yarn test:fixtures -i
 
-      - name: cache fixtures
-        uses: actions/cache@v2
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
     needs: setup
 
   lint-app:
@@ -204,7 +203,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -225,10 +224,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: lint app
         run: yarn lint:app
@@ -241,7 +240,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -262,13 +261,13 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev
     needs: build
 
   test-e2e:
@@ -278,7 +277,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -299,10 +298,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test e2e
         run: yarn test:e2e
@@ -314,7 +313,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - name: checkout

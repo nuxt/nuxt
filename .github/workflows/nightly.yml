@@ -16,7 +16,7 @@ jobs:
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
       - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 14
           registry-url: 'https://registry.npmjs.org'
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
@@ -33,7 +33,7 @@ jobs:
       - name: test types
         run: yarn test:types
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev
       - name: test unit
         run: yarn test:unit
       - name: test e2e

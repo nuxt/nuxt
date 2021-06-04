@@ -16,7 +16,7 @@ export default () => ({
     // { isDev, isClient, isServer }
     app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
     chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
-    css: ({ isDev }) => isDev ? '[name].css' : '[name].[contenthash:7].css',
+    css: ({ isDev }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
     img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
     font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
     video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
@@ -34,7 +34,12 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: { esModule: false },
+    css: {
+      esModule: false,
+      modules: {
+        compileType: 'icss'
+      }
+    },
     cssModules: {
       esModule: false,
       modules: {

@@ -89,7 +89,14 @@ export async function ensureBuild (cmd) {
 
     // Quick diff
     let needBuild = false
-    for (const field of ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']) {
+
+    const fields = ['nuxtVersion', 'ssr', 'target']
+
+    if (nuxt.options.generate.ignoreEnv !== true) {
+      fields.push('env', 'process.env')
+    }
+
+    for (const field of fields) {
       if (JSON.stringify(previousBuild[field]) !== JSON.stringify(currentBuild[field])) {
         needBuild = true
         consola.info(`Doing webpack rebuild because ${field} changed`)
@@ -129,6 +136,8 @@ async function getNuxt (args, cmd) {
   }
   config.buildDir = (config.static && config.static.cacheDir) || path.resolve(config.rootDir, 'node_modules/.cache/nuxt')
   config.build = config.build || {}
+  // https://github.com/nuxt/nuxt.js/issues/7390
+  config.build.parallel = false
   config.build.transpile = config.build.transpile || []
   if (!config.static || !config.static.cacheDir) {
     config.build.transpile.push('.cache/nuxt')

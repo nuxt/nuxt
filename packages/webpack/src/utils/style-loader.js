@@ -112,7 +112,7 @@ export default class StyleLoader {
           // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
           // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/161#issuecomment-500162574
           reloadAll: isDev,
-          hot: isDev
+          hmr: isDev
         }
       }
     }

@@ -62,6 +62,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
   Object {
     \\"exclude\\": [Function exclude],
     \\"test\\": /\\\\.m?jsx?$/i,
+    \\"type\\": \\"javascript/auto\\",
     \\"use\\": Array [
       Object {
         \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
@@ -135,6 +136,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -208,6 +212,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -287,6 +294,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -375,6 +385,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -463,6 +476,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -548,6 +564,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -656,6 +675,7 @@ exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
 "Object {
   \\"exclude\\": [Function exclude],
   \\"test\\": /\\\\.m?jsx?$/i,
+  \\"type\\": \\"javascript/auto\\",
   \\"use\\": Array [
     Object {
       \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",

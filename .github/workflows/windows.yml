@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - uses: actions/setup-node@v2
@@ -58,7 +58,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -92,7 +92,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -118,11 +118,11 @@ jobs:
       - name: build
         run: yarn test:fixtures
 
-      - name: cache fixtures
-        uses: actions/cache@v2
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
     needs: setup
 
   test-dev:
@@ -131,7 +131,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -155,10 +155,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
         run: yarn test:dev

@@ -51,7 +51,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + route._name : ''
-    res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
+    res += (route.redirect) ? nextIndent + 'redirect: ' + (typeof route.redirect === 'function' ? serialize(route.redirect) : JSON.stringify(route.redirect)) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
     res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
     res += (typeof route.caseSensitive !== 'undefined') ? nextIndent + 'caseSensitive: ' + JSON.stringify(route.caseSensitive) : ''
@@ -101,16 +101,8 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-function decodeObj(obj) {
-  for (const key in obj) {
-    if (typeof obj[key] === 'string') {
-      obj[key] = decode(obj[key])
-    }
-  }
-}
-
 export function createRouter (ssrContext, config) {
-  const base = (config.app && config.app.basePath) || routerOptions.base
+  const base = (config._app && config._app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
 
   // TODO: remove in Nuxt 3
@@ -124,11 +116,7 @@ export function createRouter (ssrContext, config) {
     if (typeof to === 'string') {
       to = normalizeURL(to)
     }
-    const r = resolve(to, current, append)
-    if (r && r.resolved && r.resolved.query) {
-      decodeObj(r.resolved.query)
-    }
-    return r
+    return resolve(to, current, append)
   }
 
   return router

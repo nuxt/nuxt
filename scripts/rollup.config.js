@@ -6,6 +6,7 @@ import replacePlugin from '@rollup/plugin-replace'
 import aliasPlugin from '@rollup/plugin-alias'
 // import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 import licensePlugin from 'rollup-plugin-license'
+import esbuild from 'rollup-plugin-esbuild'
 import { defaultsDeep } from 'lodash'
 
 export default function rollupConfig ({
@@ -38,6 +39,7 @@ export default function rollupConfig ({
       replacePlugin({
         exclude: 'node_modules/**',
         delimiters: ['', ''],
+        preventAssignment: true,
         values: {
           __NODE_ENV__: process.env.NODE_ENV,
           ...replace
@@ -49,15 +51,15 @@ export default function rollupConfig ({
       //     /lodash/
       //   ]
       // }),
+      esbuild({ target: 'es2019' }),
       commonjsPlugin({ include: /node_modules/ }),
       jsonPlugin(),
       licensePlugin({
         banner: [
           '/*!',
           ` * ${pkg.name} v${pkg.version} (c) 2016-${new Date().getFullYear()}`,
-          `${(pkg.contributors || []).map(c => ` * - ${c.name}`).join('\n')}`,
-          ' * - All the amazing contributors',
-          ' * Released under the MIT License.',
+          ' * Released under the MIT License',
+          ' * Repository: https://github.com/nuxt/nuxt.js',
           ' * Website: https://nuxtjs.org',
           '*/'
         ].join('\n')

@@ -56,7 +56,7 @@ describe('run', () => {
 
   test('throws error if external command not found', async () => {
     execa.mockImplementationOnce(() => {
-      const e = new Error()
+      const e = new Error('ENOENT')
       e.exitCode = 2
       e.exitName = 'ENOENT'
       throw e

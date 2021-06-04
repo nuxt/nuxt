@@ -5,7 +5,7 @@ import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
-import { joinURL, normalizeURL, withTrailingSlash } from 'ufo'
+import { isRelative, joinURL, normalizeURL, withTrailingSlash } from 'ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -452,14 +452,16 @@ export function getNuxtConfig (_options) {
 
   // App config (internal for nuxt2 at this stage)
   const useCDN = isUrl(options.build.publicPath) && !options.dev
+  const isRelativePublicPath = isRelative(options.build.publicPath)
+
   options.app = defu(options.app, {
     basePath: options.router.base,
-    assetsPath: useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
+    assetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
     cdnURL: useCDN ? options.build.publicPath : null
   })
-  // Expose app config to $config.app
+  // Expose app config to $config._app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig.app = options.app
+  options.publicRuntimeConfig._app = options.app
 
   // Generate staticAssets
   const { staticAssets } = options.generate

@@ -182,6 +182,7 @@ describe('generator: initialize', () => {
   test('should initialize destination folder', async () => {
     const nuxt = createNuxt()
     nuxt.options.generate.fallback = 'fallback.html'
+    nuxt.options.generate.nojekyll = true
     const generator = new Generator(nuxt)
     fsExtra.exists.mockReturnValueOnce(false)
 
