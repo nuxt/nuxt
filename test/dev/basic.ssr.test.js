@@ -201,10 +201,16 @@ describe('basic ssr', () => {
     })
   })
 
-  test('/special-state -> check window.__NUXT__.test = true', async () => {
-    const window = await nuxt.server.renderAndGetWindow(url('/special-state'))
+  test('/before-nuxt-render -> check window.__NUXT__.beforeNuxtRender = true', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/before-nuxt-render'))
     expect(window.document.title).toBe('Nuxt')
-    expect(window.__NUXT__.test).toBe(true)
+    expect(window.__NUXT__.beforeNuxtRender).toBe(true)
+  })
+
+  test('/before-serialize -> check window.__NUXT__.beforeSerialize = true', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/before-serialize'))
+    expect(window.document.title).toBe('Nuxt')
+    expect(window.__NUXT__.beforeSerialize).toBe(true)
   })
 
   test('/error', async () => {
