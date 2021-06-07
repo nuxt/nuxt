@@ -20,7 +20,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@vueuse/head": "^0.5.1",
+    "@vueuse/head": "^0.6.0",
     "hookable": "^4.4.1",
     "ohmyfetch": "^0.2.0",
     "vue": "^3.0.11",

@@ -21,23 +21,22 @@
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
-    "esbuild": "0.10.2",
     "nuxt3": "workspace:./packages/nuxt3"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.1",
     "@nuxtjs/eslint-config-typescript": "^6.0.1",
     "@types/jest": "^26.0.23",
-    "@types/node": "^14.17.0",
+    "@types/node": "^14.17.2",
     "@types/object-hash": "^2",
-    "eslint": "^7.27.0",
+    "eslint": "^7.28.0",
     "eslint-plugin-jsdoc": "^34.8.2",
     "jest": "^26.6.3",
-    "jiti": "^1.9.2",
+    "jiti": "^1.10.1",
     "lerna": "^4.0.0",
-    "object-hash": "^2.1.1",
+    "object-hash": "^2.2.0",
     "ts-jest": "^26.5.6",
-    "typescript": "^4.2.4",
+    "typescript": "^4.3.2",
     "unbuild": "^0.3.0"
   }
 }

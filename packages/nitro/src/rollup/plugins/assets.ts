@@ -79,6 +79,7 @@ export function getAsset (id) {
             const id = assetdir + '/' + _id
             assets[id] = { fsPath, meta: {} }
             if (dirOpts.meta) {
+              // @ts-ignore TODO: Use mime@2 types
               let type = mime.getType(id) || 'text/plain'
               if (type.startsWith('text')) { type += '; charset=utf-8' }
               const etag = createEtag(await fsp.readFile(fsPath))
