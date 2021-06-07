@@ -6,6 +6,8 @@
     "generate": "nuxt generate"
   },
   "devDependencies": {
-    "docus": "^0.6.1"
+    "core-js": "^3",
+    "docus": "^0.6.1",
+    "nuxt-edge": "^2.16.0-27050421.cc3f43e1"
   }
 }
