@@ -38,6 +38,6 @@
     "wrap-ansi": "^7.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "private"
   }
 }
