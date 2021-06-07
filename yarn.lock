@@ -3185,21 +3185,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@windicss/plugin-utils@npm:0.16.7":
-  version: 0.16.7
-  resolution: "@windicss/plugin-utils@npm:0.16.7"
-  dependencies:
-    "@antfu/utils": ^0.1.6
-    debug: ^4.3.2
-    fast-glob: ^3.2.5
-    jiti: ^1.9.2
-    magic-string: ^0.25.7
-    micromatch: ^4.0.4
-    windicss: ^3.0.12
-  checksum: 73f6caf0b044cbb8d9500955dac68c77b4519277a8a881f4c7ceef5c87aa22da80489e902dcf6e9f8b7fb62d6e80800615b7e6d7797848a230e472d2a6735612
-  languageName: node
-  linkType: hard
-
 "@windicss/plugin-utils@npm:0.17.1":
   version: 0.17.1
   resolution: "@windicss/plugin-utils@npm:0.17.1"
@@ -3212,6 +3197,21 @@ __metadata:
     micromatch: ^4.0.4
     windicss: ^3.0.12
   checksum: ff5de845d38527ffcfc17c0bf4b631b2d7f113ac8c1e20bcfb04bb6b667300c2d72eaeeae804182c6e73e58d0d0d5b02df60019a96f646e73a3168dcefedc5fb
+  languageName: node
+  linkType: hard
+
+"@windicss/plugin-utils@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@windicss/plugin-utils@npm:1.0.1"
+  dependencies:
+    "@antfu/utils": ^0.1.6
+    debug: ^4.3.2
+    fast-glob: ^3.2.5
+    jiti: ^1.10.1
+    magic-string: ^0.25.7
+    micromatch: ^4.0.4
+    windicss: ^3.1.0
+  checksum: c4ac8d003a9c1a8043d21e1334ab6292545dd86ce5e1e95889e7c6d8102f33298432d4164262cfcbc12a9136fc9b5092489de18862cdf31f0ef9e3bb7175b481
   languageName: node
   linkType: hard
 
@@ -5505,7 +5505,7 @@ __metadata:
     vite: ^2.3.6
     vite-plugin-windicss: ^0.17.1
     windicss: ^3.1.1
-    windicss-webpack-plugin: ^0.6.2
+    windicss-webpack-plugin: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -15187,31 +15187,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"windicss-webpack-plugin@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "windicss-webpack-plugin@npm:0.6.2"
+"windicss-webpack-plugin@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "windicss-webpack-plugin@npm:1.0.0"
   dependencies:
-    "@windicss/plugin-utils": 0.16.7
+    "@windicss/plugin-utils": 1.0.1
     debug: ^4.3.1
     loader-utils: ^2.0.0
     magic-string: ^0.25.7
     upath: ^2.0.1
     webpack-virtual-modules: ^0.4.3
-    windicss: 3.0.12
-  checksum: 3ad339cb54231d8b20057335e547745dacf6c10a786c1f1c6e1b3184345a98d3313bca82f4d03d4807b98673472453df1ccb5fbfac25f8b75a1d4ffe842ee874
+    windicss: 3.1.1
+  checksum: 4aed5ac0c420c8f1343f8cbbcdecf5ed1c9f15fa66567014191936256eb2a69d99ad00d0c362da2d4c4ad8e4659f23f9d1d9e3be853c013fb25be92c53d806e2
   languageName: node
   linkType: hard
 
-"windicss@npm:3.0.12":
-  version: 3.0.12
-  resolution: "windicss@npm:3.0.12"
-  bin:
-    windicss: cli/index.js
-  checksum: ef59c1271e462e8f3456caaac8860104215d09e267d45924d3f72d006d9abf02464cbd491cb8241a8a7697486865d081c848e9852c2f3f3da4a0900ae44d3b3a
-  languageName: node
-  linkType: hard
-
-"windicss@npm:^3.0.12, windicss@npm:^3.1.1":
+"windicss@npm:3.1.1, windicss@npm:^3.0.12, windicss@npm:^3.1.0, windicss@npm:^3.1.1":
   version: 3.1.1
   resolution: "windicss@npm:3.1.1"
   bin:
