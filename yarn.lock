@@ -695,19 +695,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jest/types@npm:^27.0.2":
-  version: 27.0.2
-  resolution: "@jest/types@npm:27.0.2"
-  dependencies:
-    "@types/istanbul-lib-coverage": ^2.0.0
-    "@types/istanbul-reports": ^3.0.0
-    "@types/node": "*"
-    "@types/yargs": ^16.0.0
-    chalk: ^4.0.0
-  checksum: 7c1ef76bcb799a9010e6f1d5485ebb49b4052dcbc98f17f2979cd028688bb96f7b0072822e0e252659ef989d82c6c0a5cdd750b97b27e11c041efc735a0f84f4
-  languageName: node
-  linkType: hard
-
 "@lerna/add@npm:4.0.0":
   version: 4.0.0
   resolution: "@lerna/add@npm:4.0.0"
@@ -2654,15 +2641,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^16.0.0":
-  version: 16.0.3
-  resolution: "@types/yargs@npm:16.0.3"
-  dependencies:
-    "@types/yargs-parser": "*"
-  checksum: 84b8f617742b4a86f334838152cbc8d2fae4cc2568a81c4d54a9a9c7a6dc926f4fb21c3cb9d34cad895ab4f020041e28bcfe16348a34d370a2833450750ccd66
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/eslint-plugin@npm:^4.25.0":
   version: 4.26.0
   resolution: "@typescript-eslint/eslint-plugin@npm:4.26.0"
@@ -4366,7 +4344,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ci-info@npm:^3.0.0, ci-info@npm:^3.1.1":
+"ci-info@npm:^3.0.0":
   version: 3.2.0
   resolution: "ci-info@npm:3.2.0"
   checksum: d4a898d60111d00f2b7a06a349162971fe0603aefa208fe8d1343ce9e93c48e3d37311c47211d5c9040d25b43038c817588e5b7d8eab5d17b00aec49c7b5fade
@@ -7948,17 +7926,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-ci@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "is-ci@npm:3.0.0"
-  dependencies:
-    ci-info: ^3.1.1
-  bin:
-    is-ci: bin.js
-  checksum: 1e26d3ba6634ebee83f9d22f260354c5d950eada4d609c30cc2642069f8ba52f3aeb4c9bbf8099aaf04a2f44a1ed7beef2a24485f988753c8c078a57e9b3a2fd
-  languageName: node
-  linkType: hard
-
 "is-color-stop@npm:^1.1.0":
   version: 1.1.0
   resolution: "is-color-stop@npm:1.1.0"
@@ -8829,7 +8796,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-util@npm:^26.6.2":
+"jest-util@npm:^26.1.0, jest-util@npm:^26.6.2":
   version: 26.6.2
   resolution: "jest-util@npm:26.6.2"
   dependencies:
@@ -8840,20 +8807,6 @@ __metadata:
     is-ci: ^2.0.0
     micromatch: ^4.0.2
   checksum: 1aef748c8224d00ead3389899177bd3b619479db7318f8d7de7fbedce283ac6a8dc8c9364a40a68e83e68e03fa18afbd6b49c8aafb81112807872f0f90fb5a37
-  languageName: node
-  linkType: hard
-
-"jest-util@npm:^27.0.0":
-  version: 27.0.2
-  resolution: "jest-util@npm:27.0.2"
-  dependencies:
-    "@jest/types": ^27.0.2
-    "@types/node": "*"
-    chalk: ^4.0.0
-    graceful-fs: ^4.2.4
-    is-ci: ^3.0.0
-    picomatch: ^2.2.3
-  checksum: 5a4b50711989aab8b0403c93f3f747daabb3dde90d2a93ffe6ee3e28cae6760ec8107032742e146cbe7f0ec18112f8894caeaf5821b76cd624d6bbe7935dafe7
   languageName: node
   linkType: hard
 
@@ -10702,7 +10655,7 @@ __metadata:
     jiti: ^1.10.1
     lerna: ^4.0.0
     object-hash: ^2.2.0
-    ts-jest: ^27.0.3
+    ts-jest: ^26.5.6
     typescript: ^4.3.2
     unbuild: ^0.3.0
   languageName: unknown
@@ -14123,14 +14076,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^27.0.3":
-  version: 27.0.3
-  resolution: "ts-jest@npm:27.0.3"
+"ts-jest@npm:^26.5.6":
+  version: 26.5.6
+  resolution: "ts-jest@npm:26.5.6"
   dependencies:
     bs-logger: 0.x
     buffer-from: 1.x
     fast-json-stable-stringify: 2.x
-    jest-util: ^27.0.0
+    jest-util: ^26.1.0
     json5: 2.x
     lodash: 4.x
     make-error: 1.x
@@ -14138,11 +14091,11 @@ __metadata:
     semver: 7.x
     yargs-parser: 20.x
   peerDependencies:
-    jest: ^27.0.0
+    jest: ">=26 <27"
     typescript: ">=3.8 <5.0"
   bin:
     ts-jest: cli.js
-  checksum: a63f3a8620a16335d745f22377a9cc118129d28a5b122c609a7c6aabbb8048c85733c771a0dd39b136e8a75401473409452bdd3c5b9e3b85317c2e3f3ac03267
+  checksum: fd32a8b256091d45d850c491fd090f74a368d44bccc8fedfa0dd074757727e7f07621eb2a69ebf081428f44a357a879237a2cf0aef970896410d454d0bf87ac6
   languageName: node
   linkType: hard
 
