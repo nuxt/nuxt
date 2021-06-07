@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt generate",
+    "generate": "nuxt generate"
+  },
+  "devDependencies": {
+    "docus": "^0.6.1"
+  }
+}

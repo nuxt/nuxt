@@ -3,8 +3,7 @@
   "license": "MIT",
   "workspaces": [
     "packages/*",
-    "examples/*",
-    "docs"
+    "examples/*"
   ],
   "scripts": {
     "build": "FORCE_COLOR=1 lerna run prepack --stream --no-prefix",
