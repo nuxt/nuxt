@@ -1698,7 +1698,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
-    esbuild: ^0.12.6
+    esbuild: ^0.12.7
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.3
@@ -5645,12 +5645,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.1, esbuild@npm:^0.12.5, esbuild@npm:^0.12.6":
+"esbuild@npm:^0.12.1, esbuild@npm:^0.12.5":
   version: 0.12.6
   resolution: "esbuild@npm:0.12.6"
   bin:
     esbuild: bin/esbuild
   checksum: 5303e77b84575ab4c71b381d797723f57208dd314c2d85e12b7f23fcd9edebf9e2be4bf2a7a23384205cd953990a4694b07dec00bbab55a6a729b5ca5bf8f0dd
+  languageName: node
+  linkType: hard
+
+"esbuild@npm:^0.12.7":
+  version: 0.12.7
+  resolution: "esbuild@npm:0.12.7"
+  bin:
+    esbuild: bin/esbuild
+  checksum: fa8ac782c10dbaf8486b9926de726525977b3280b4204c32a247abe244cd05f02bd4fd37a2091e8170adcc651075f10616b65aabd8ba3e6e14fb680306fdcf62
   languageName: node
   linkType: hard
 
