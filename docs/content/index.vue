@@ -1,5 +1,5 @@
 <template>
-  <nuxt-link to="/getting-started/intro">
+  <nuxt-link to="/get-started/installation">
     Getting Started
   </nuxt-link>
 </template>
@@ -7,7 +7,7 @@
 <script>
 export default {
   asyncData ({ redirect }) {
-    redirect('/getting-started/intro')
+    redirect('/get-started/installation')
     return {}
   }
 }

@@ -1,1 +1,1 @@
-[Getting Started](/getting-started/intro)
+[Get Started](/get-started/installation)
