@@ -6,6 +6,6 @@
     "generate": "nuxt generate"
   },
   "devDependencies": {
-    "docus": "^0.6.1"
+    "docus": "^0.5.14"
   }
 }

@@ -3,7 +3,7 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "esbuild"
+    "docus"
   ],
   "lockFileMaintenance": {
     "enabled": true
