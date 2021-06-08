@@ -36,7 +36,7 @@
     "scule": "^0.2.1",
     "ufo": "^0.7.5",
     "upath": "^2.0.1",
-    "vue": "3.0.11"
+    "vue": "3.1.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.11",
