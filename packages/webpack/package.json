@@ -11,7 +11,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.14.3",
+    "@babel/core": "^7.14.5",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.1",
     "@nuxt/kit": "^0.6.2",
     "@vue/babel-preset-jsx": "^1.2.4",
@@ -29,7 +29,7 @@
     "memfs": "^3.2.2",
     "mini-css-extract-plugin": "^1.6.0",
     "pify": "^5.0.0",
-    "postcss": "^8.3.0",
+    "postcss": "^8.3.4",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^5.3.0",
     "style-resources-loader": "^1.4.1",
