@@ -77,6 +77,7 @@ function resolvePath (path: string, opts: ResolveOptions = {}) {
  */
 export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
   for (const key in alias) {
+    if (key === '@') { continue } // Don't resolve @foo/bar
     if (path.startsWith(key)) {
       path = alias[key] + path.substr(key.length)
     }
