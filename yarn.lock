@@ -5636,25 +5636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.11.19, esbuild@npm:^0.11.6":
-  version: 0.11.23
-  resolution: "esbuild@npm:0.11.23"
-  bin:
-    esbuild: bin/esbuild
-  checksum: 9226fc3d74f7555c96778c5d9204312c578e9c11b472deebfbab52c4ac58b9efc3a40be529368f6ccbe257d0059c6b8fd142c179824a3227d055d912c7b5a94a
-  languageName: node
-  linkType: hard
-
-"esbuild@npm:^0.12.1, esbuild@npm:^0.12.5":
-  version: 0.12.6
-  resolution: "esbuild@npm:0.12.6"
-  bin:
-    esbuild: bin/esbuild
-  checksum: 5303e77b84575ab4c71b381d797723f57208dd314c2d85e12b7f23fcd9edebf9e2be4bf2a7a23384205cd953990a4694b07dec00bbab55a6a729b5ca5bf8f0dd
-  languageName: node
-  linkType: hard
-
-"esbuild@npm:^0.12.7":
+"esbuild@npm:^0.12":
   version: 0.12.7
   resolution: "esbuild@npm:0.12.7"
   bin:

@@ -20,6 +20,7 @@
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
+    "esbuild": "^0.12",
     "nuxt3": "workspace:./packages/nuxt3"
   },
   "devDependencies": {
