@@ -22,6 +22,9 @@ export async function buildServer (ctx: ViteBuildContext) {
     ssr: {
       external: [
         'axios'
+      ],
+      noExternal: [
+        '@nuxt/app'
       ]
     },
     build: {
