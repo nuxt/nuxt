@@ -19,7 +19,7 @@
     "unified": "^9.2.1",
     "untyped": "^0.2.5",
     "vite": "^2.3.7",
-    "vite-plugin-windicss": "^0.17.1",
+    "vite-plugin-windicss": "^1.0.3",
     "windicss": "^3.1.3",
     "windicss-webpack-plugin": "^1.0.0"
   }
