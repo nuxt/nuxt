@@ -2,10 +2,7 @@
   "extends": [
     "@nuxtjs"
   ],
-  "ignoreDeps": [
-    "jest",
-    "ts-jest"
-  ],
+  "ignoreDeps": [],
   "lockFileMaintenance": {
     "enabled": true
   }
