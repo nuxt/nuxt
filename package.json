@@ -10,7 +10,7 @@
     "distributions/*"
   ],
   "scripts": {
-    "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1548,1693",
+    "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1548,1693,1754,1755",
     "build": "yarn clean && yarn pkg",
     "changelog": "jiti scripts/changelog.js",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
