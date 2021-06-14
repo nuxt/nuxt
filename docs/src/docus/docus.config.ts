@@ -1,5 +1,5 @@
 export default {
-  title: 'Nuxt',
+  title: 'Nuxt 3',
   url: 'https://v3.nuxtjs.org',
   theme: {
     colors: {

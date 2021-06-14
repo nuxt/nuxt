@@ -3,7 +3,6 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "docus",
     "jest",
     "ts-jest"
   ],

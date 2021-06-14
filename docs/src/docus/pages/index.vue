@@ -1,6 +1,6 @@
 <template>
   <nuxt-link to="/get-started/installation">
-    Getting Started
+    Get Started
   </nuxt-link>
 </template>
 

@@ -2,10 +2,12 @@
   "private": true,
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt generate",
-    "generate": "nuxt generate"
+    "build": "nuxt generate"
   },
   "devDependencies": {
-    "docus": "^0.5.14"
+    "docus": "^0.7.0"
+  },
+  "resolutions": {
+    "nuxt-windicss": "~0.6.0"
   }
 }
