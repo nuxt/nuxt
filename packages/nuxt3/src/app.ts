@@ -30,6 +30,16 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
       data: {}
     } as NuxtTemplate))
 
+  // Custom templates (created with addTemplate)
+  const customTemplates = nuxt.options.build.templates.map(t => ({
+    path: t.dst,
+    src: t.src,
+    data: {
+      options: t.options
+    }
+  }))
+  app.templates = app.templates.concat(customTemplates)
+
   // Extend templates
   await nuxt.callHook('app:templates', app)
 
