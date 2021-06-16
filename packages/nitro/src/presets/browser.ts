@@ -61,7 +61,7 @@ if ('serviceWorker' in navigator) {
       }
     },
     hooks: {
-      'nitro:template:document' (tmpl) {
+      'nitro:document' (tmpl) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
       async 'nitro:compiled' ({ output }: NitroContext) {

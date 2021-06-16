@@ -13,10 +13,12 @@ export function initNitro (nuxt: Nuxt) {
   // @ts-ignore
   nuxt.hooks.addHooks(nitroContext.nuxtHooks)
   nuxt.hook('close', () => nitroContext._internal.hooks.callHook('close'))
+  nitroContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
 
   // @ts-ignore
   nuxt.hooks.addHooks(nitroDevContext.nuxtHooks)
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
+  nitroDevContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
 
   // Add nitro client plugin (to inject $fetch helper)
   nuxt.hook('app:resolve', (app) => {
@@ -25,8 +27,6 @@ export function initNitro (nuxt: Nuxt) {
 
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
-
-  nitroContext._internal.hooks.hook('nitro:template', template => nuxt.callHook('nitro:template', template))
 
   // Wait for all modules to be ready
   nuxt.hook('modules:done', async () => {
