@@ -330,6 +330,14 @@ export default {
     configFile: false,
     babelrc: false,
     /**
+     * An array of Babel plugins to load, or a function that takes webpack context and returns
+     * an array of Babel plugins.
+     *
+     * For more information see [Babel plugins options](https://babeljs.io/docs/en/options#plugins)
+     * and [babel-loader options](https://github.com/babel/babel-loader#options).
+     */
+    plugins: [],
+    /**
      * The Babel presets to be applied.
      *
      * **Note**: The presets configured here will be applied to both the client and the server
