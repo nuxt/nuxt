@@ -10,14 +10,15 @@ const commonPlugins = [
   <%= app.plugins.filter(p => !p.mode || p.mode === 'all').map(p => utils.importName(p.src)).join(',\n  ') %>
 ]
 
-export const clientPluigns = [
-  ...commonPlugins,<%= app.plugins.filter(p => p.mode === 'client').map(p => utils.importName(p.src)).join(',\n  ') %>
+export const clientPlugins = [
+  ...commonPlugins,
+  <%= app.plugins.filter(p => p.mode === 'client').map(p => utils.importName(p.src)).join(',\n  ') %>
 ]
 
-export const serverPluigns = [
+export const serverPlugins = [
   ...commonPlugins,
   preload,
   <%= app.plugins.filter(p => p.mode === 'server').map(p => utils.importName(p.src)).join(',\n  ') %>
 ]
 
-export default process.client ? clientPluigns : serverPluigns
+export default process.client ? clientPlugins : serverPlugins
