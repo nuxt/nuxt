@@ -23,7 +23,7 @@
     "@nuxt/pages": "^0.2.3",
     "@nuxt/vite-builder": "^0.4.3",
     "@nuxt/webpack-builder": "^0.4.3",
-    "chokidar": "^3.5.1",
+    "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
     "fs-extra": "^10.0.0",

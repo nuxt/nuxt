@@ -2,7 +2,9 @@
   "extends": [
     "@nuxtjs"
   ],
-  "ignoreDeps": [],
+  "ignoreDeps": [
+    "nuxt-windicss"
+  ],
   "lockFileMaintenance": {
     "enabled": true
   }

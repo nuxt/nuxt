@@ -30,7 +30,7 @@
     "@types/node": "^14.17.3",
     "@types/object-hash": "^2",
     "eslint": "^7.28.0",
-    "eslint-plugin-jsdoc": "^35.2.0",
+    "eslint-plugin-jsdoc": "^35.3.0",
     "jest": "^27.0.4",
     "jiti": "^1.10.1",
     "lerna": "^4.0.0",
