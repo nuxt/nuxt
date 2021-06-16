@@ -42,6 +42,6 @@
     "@types/fs-extra": "^9.0.11",
     "@types/hash-sum": "^1.0.0",
     "@types/lodash": "^4.14.170",
-    "unbuild": "^0.3.0"
+    "unbuild": "^0.3.1"
   }
 }

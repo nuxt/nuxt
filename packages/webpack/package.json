@@ -51,6 +51,6 @@
     "@types/webpack-bundle-analyzer": "^4.4.0",
     "@types/webpack-dev-middleware": "^5.0.0",
     "@types/webpack-hot-middleware": "^2.25.4",
-    "unbuild": "^0.3.0"
+    "unbuild": "^0.3.1"
   }
 }

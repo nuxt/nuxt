@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@types/debounce": "^1.2.0",
-    "unbuild": "^0.3.0"
+    "unbuild": "^0.3.1"
   },
   "dependencies": {
     "@nuxt/kit": "^0.6.3",

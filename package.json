@@ -20,7 +20,6 @@
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
-    "esbuild": "^0.12",
     "nuxt3": "workspace:./packages/nuxt3"
   },
   "devDependencies": {
@@ -37,6 +36,6 @@
     "object-hash": "^2.2.0",
     "ts-jest": "^27.0.3",
     "typescript": "^4.3.2",
-    "unbuild": "^0.3.0"
+    "unbuild": "^0.3.1"
   }
 }
