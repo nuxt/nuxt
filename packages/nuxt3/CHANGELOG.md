@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.4](https://github.com/nuxt/framework/compare/nuxt3@0.7.3...nuxt3@0.7.4) (2021-06-16)
+
+
+### Bug Fixes
+
+* **nuxt3:** add support for custom templates ([#225](https://github.com/nuxt/framework/issues/225)) ([5c67408](https://github.com/nuxt/framework/commit/5c6740819199d68ed64cb6afdc800df9fe0e1d4d))
+* add nitro client plugin ($fetch support) ([#223](https://github.com/nuxt/framework/issues/223)) ([e2d5a2f](https://github.com/nuxt/framework/commit/e2d5a2f4b3f27d1454321ab22958ef3941a02978)), closes [#213](https://github.com/nuxt/framework/issues/213)
+
+
+
+
+
 ## [0.7.3](https://github.com/nuxt/framework/compare/nuxt3@0.7.2...nuxt3@0.7.3) (2021-06-04)
 
 **Note:** Version bump only for package nuxt3

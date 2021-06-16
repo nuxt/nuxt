@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.3](https://github.com/nuxt/framework/compare/@nuxt/app@0.4.2...@nuxt/app@0.4.3) (2021-06-16)
+
+
+### Bug Fixes
+
+* add nitro client plugin ($fetch support) ([#223](https://github.com/nuxt/framework/issues/223)) ([e2d5a2f](https://github.com/nuxt/framework/commit/e2d5a2f4b3f27d1454321ab22958ef3941a02978)), closes [#213](https://github.com/nuxt/framework/issues/213)
+
+
+
+
+
 ## [0.4.2](https://github.com/nuxt/framework/compare/@nuxt/app@0.4.1...@nuxt/app@0.4.2) (2021-06-04)
 
 **Note:** Version bump only for package @nuxt/app

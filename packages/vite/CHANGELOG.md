@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.3](https://github.com/nuxt/framework/compare/@nuxt/vite-builder@0.4.2...@nuxt/vite-builder@0.4.3) (2021-06-16)
+
+
+### Bug Fixes
+
+* **vite:** add nuxt/app to noExternal ([5bd639a](https://github.com/nuxt/framework/commit/5bd639a4938ce15ea2584b831915123192c69aa0))
+
+
+
+
+
 ## [0.4.2](https://github.com/nuxt/framework/compare/@nuxt/vite-builder@0.4.1...@nuxt/vite-builder@0.4.2) (2021-06-04)
 
 **Note:** Version bump only for package @nuxt/vite-builder

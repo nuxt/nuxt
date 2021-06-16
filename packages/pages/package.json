@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/pages",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "repository": "nuxt/framework",
   "license": "MIT",
   "types": "./dist/module.d.ts",
@@ -12,7 +12,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "^0.6.2",
+    "@nuxt/kit": "^0.6.3",
     "globby": "^11.0.3",
     "ufo": "^0.7.5",
     "upath": "^2.0.1",
