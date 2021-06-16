@@ -4,6 +4,7 @@ import vitePlugin from '@vitejs/plugin-vue'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { replace } from './plugins/replace'
 import { ViteBuildContext, ViteOptions } from './vite'
+import { transformNuxtSetup } from './plugins/transformSetup'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
@@ -23,7 +24,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       replace({ 'process.env': 'import.meta.env' }),
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
-      vitePlugin(ctx.config.vue)
+      vitePlugin(ctx.config.vue),
+      transformNuxtSetup()
     ],
     server: {
       middlewareMode: true

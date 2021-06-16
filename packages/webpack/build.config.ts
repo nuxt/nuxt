@@ -3,7 +3,8 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   declaration: false,
   entries: [
-    'src/index'
+    'src/index',
+    'src/loaders/nuxt-setup'
   ],
   dependencies: [
     '@nuxt/kit',
