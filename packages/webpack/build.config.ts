@@ -4,7 +4,7 @@ export default defineBuildConfig({
   declaration: false,
   entries: [
     'src/index',
-    'src/loaders/nuxt-setup'
+    'src/loaders/nuxt-setup-loader'
   ],
   dependencies: [
     '@nuxt/kit',

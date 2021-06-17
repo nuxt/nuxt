@@ -10,7 +10,7 @@ export default class NuxtSetupTransformerPlugin {
       enforce: 'post',
       use: [{
         ident: 'NuxtSetupTransformerPlugin',
-        loader: require.resolve('@nuxt/webpack-builder/dist/nuxt-setup')
+        loader: require.resolve('@nuxt/webpack-builder/dist/nuxt-setup-loader')
       }]
     })
   }
