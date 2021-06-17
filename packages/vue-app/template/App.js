@@ -45,7 +45,7 @@ export default {
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
-        id: '__layout'
+        id: '<%= globals.layoutId %>'
       },
       key: this.layoutName
     }, [layoutEl])

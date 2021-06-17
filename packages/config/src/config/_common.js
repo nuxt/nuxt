@@ -33,6 +33,7 @@ export default () => ({
     id: globalName => `__${globalName}`,
     nuxt: globalName => `$${globalName}`,
     context: globalName => `__${globalName.toUpperCase()}__`,
+    layoutId: '__layout',
     pluginPrefix: globalName => globalName,
     readyCallback: globalName => `on${capitalize(globalName)}Ready`,
     loadedCallback: globalName => `_on${capitalize(globalName)}Loaded`
