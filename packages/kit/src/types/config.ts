@@ -6,6 +6,13 @@ export interface TypedConfigSchema extends ConfigSchema {
   hooks: NuxtHooks,
   modules: ModuleInstallOptions[]
   buildModules: ModuleInstallOptions[]
+
+  /**
+   * Enable vite mode
+   *
+   * @default false
+   */
+  vite: boolean | import('vite').InlineConfig
   [key: string]: any
 }
 

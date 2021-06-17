@@ -616,10 +616,5 @@ export default {
     app: {
       $resolve: (val, get) => ({ ...get('app'), ...(val || {}) })
     }
-  },
-
-  /**
-   * Enable vite mode.
-   */
-  vite: false
+  }
 }

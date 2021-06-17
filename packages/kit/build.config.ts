@@ -16,6 +16,7 @@ export default defineBuildConfig({
   ],
   externals: [
     'webpack',
+    'vite',
     'nuxt',
     'nuxt3'
   ]
