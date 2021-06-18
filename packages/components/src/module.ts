@@ -5,7 +5,8 @@ import { scanComponents } from './scan'
 import type { ComponentsDir } from './types'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const getDir = (p: string) => fs.statSync(p).isDirectory() ? p : dirname(p)
+const isDirectory = (p: string) => { try { return fs.statSync(p).isDirectory() } catch (_e) { return false } }
+const getDir = (p: string) => isDirectory(p) ? p : dirname(p)
 
 export default defineNuxtModule({
   name: 'components',
