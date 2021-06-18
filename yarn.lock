@@ -1648,6 +1648,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nuxt/component-discovery@^0.1.0, @nuxt/component-discovery@workspace:packages/components":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/component-discovery@workspace:packages/components"
+  dependencies:
+    "@nuxt/kit": ^0.6.3
+    globby: ^11.0.3
+    scule: ^0.2.1
+    ufo: ^0.7.5
+    unbuild: ^0.3.1
+    upath: ^2.0.1
+  peerDependencies:
+    vue: 3.1.1
+  languageName: unknown
+  linkType: soft
+
 "@nuxt/devalue@npm:^1.2.5":
   version: 1.2.5
   resolution: "@nuxt/devalue@npm:1.2.5"
@@ -6000,6 +6015,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-with-components@workspace:examples/with-components":
+  version: 0.0.0-use.local
+  resolution: "example-with-components@workspace:examples/with-components"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-with-vite@workspace:examples/with-vite":
   version: 0.0.0-use.local
   resolution: "example-with-vite@workspace:examples/with-vite"
@@ -9796,6 +9819,7 @@ __metadata:
   resolution: "nuxt3@workspace:packages/nuxt3"
   dependencies:
     "@nuxt/app": ^0.4.3
+    "@nuxt/component-discovery": ^0.1.0
     "@nuxt/kit": ^0.6.3
     "@nuxt/nitro": ^0.9.0
     "@nuxt/pages": ^0.2.3

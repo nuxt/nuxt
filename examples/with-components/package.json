@@ -1,0 +1,12 @@
+{
+  "name": "example-with-components",
+  "private": true,
+  "devDependencies": {
+    "nuxt3": "latest"
+  },
+  "scripts": {
+    "dev": "nu dev",
+    "build": "nu build",
+    "start": "node .output/server"
+  }
+}

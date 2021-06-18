@@ -1,0 +1,27 @@
+{
+  "name": "@nuxt/component-discovery",
+  "version": "0.1.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "types": "./dist/module.d.ts",
+  "files": [
+    "dist",
+    "module.js"
+  ],
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^0.6.3",
+    "globby": "^11.0.3",
+    "scule": "^0.2.1",
+    "ufo": "^0.7.5",
+    "upath": "^2.0.1"
+  },
+  "devDependencies": {
+    "unbuild": "^0.3.1"
+  },
+  "peerDependencies": {
+    "vue": "3.1.1"
+  }
+}
