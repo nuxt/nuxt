@@ -6,12 +6,12 @@ import {
   RouterLink
 } from 'vue-router'
 // @ts-ignore
-import type { Plugin } from '@nuxt/app'
+import { defineNuxtPlugin } from '@nuxt/app'
 import NuxtPage from './page.vue'
 // @ts-ignore
 import routes from '#build/routes'
 
-export default <Plugin> function router (nuxt) {
+export default defineNuxtPlugin((nuxt) => {
   const { app } = nuxt
 
   app.component('NuxtPage', NuxtPage)
@@ -50,4 +50,4 @@ export default <Plugin> function router (nuxt) {
       // TODO
     }
   })
-}
+})

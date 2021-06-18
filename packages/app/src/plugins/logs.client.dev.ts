@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import type { Plugin } from '@nuxt/app'
+import { defineNuxtPlugin } from '@nuxt/app'
 
-export default <Plugin> function logs ({ app }) {
+export default defineNuxtPlugin(({ app }) => {
   // Only activate in development
   const logs = app.$nuxt.payload.logs || []
   if (logs.length > 0) {
@@ -11,4 +11,4 @@ export default <Plugin> function logs ({ app }) {
     delete app.$nuxt.payload.logs
     console.groupEnd && console.groupEnd()
   }
-}
+})

@@ -1,6 +1,6 @@
-import type { Plugin } from '@nuxt/app'
+import { defineNuxtPlugin } from '@nuxt/app'
 
-export default <Plugin> function progressbar ({ app }) {
+export default defineNuxtPlugin(({ app }) => {
   const { $nuxt } = app
   $nuxt.hook('app:mounted', () => {
     const el = document.createElement('div')
@@ -41,4 +41,4 @@ export default <Plugin> function progressbar ({ app }) {
       }, 500)
     })
   })
-}
+})

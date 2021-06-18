@@ -1,6 +1,7 @@
 import { App, getCurrentInstance } from 'vue'
 import Hookable from 'hookable'
 import { defineGetter } from './utils'
+import { legacyPlugin, LegacyContext } from './legacy'
 
 export interface Nuxt {
   app: App
@@ -13,6 +14,7 @@ export interface Nuxt {
   [key: string]: any
 
   _asyncDataPromises?: Record<string, Promise<any>>
+  _legacyContext?: LegacyContext
 
   ssrContext?: Record<string, any>
   payload: {
@@ -25,8 +27,13 @@ export interface Nuxt {
   provide: (name: string, value: any) => void
 }
 
+export const NuxtPluginIndicator = '__nuxt_plugin'
 export interface Plugin {
-  (nuxt: Nuxt, provide?: Nuxt['provide']): Promise<void> | void
+  (nuxt: Nuxt): Promise<void> | void
+  [NuxtPluginIndicator]?: true
+}
+export interface LegacyPlugin {
+  (context: LegacyContext, provide: Nuxt['provide']): Promise<void> | void
 }
 
 export interface CreateOptions {
@@ -66,7 +73,7 @@ export function createNuxt (options: CreateOptions) {
 
   if (process.server) {
     nuxt.payload = {
-      serverRendered: true // TODO: legacy
+      serverRendered: true
     }
 
     nuxt.ssrContext = nuxt.ssrContext || {}
@@ -84,13 +91,40 @@ export function createNuxt (options: CreateOptions) {
 
 export function applyPlugin (nuxt: Nuxt, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
-  return callWithNuxt(nuxt, () => plugin(nuxt, nuxt.provide))
+  return callWithNuxt(nuxt, () => plugin(nuxt))
 }
 
 export async function applyPlugins (nuxt: Nuxt, plugins: Plugin[]) {
   for (const plugin of plugins) {
     await applyPlugin(nuxt, plugin)
   }
+}
+
+export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
+  let needsLegacyContext = false
+
+  const plugins = _plugins.map((plugin) => {
+    if (isLegacyPlugin(plugin)) {
+      needsLegacyContext = true
+      return (nuxt: Nuxt) => plugin(nuxt._legacyContext!, nuxt.provide)
+    }
+    return plugin
+  })
+
+  if (needsLegacyContext) {
+    plugins.unshift(legacyPlugin)
+  }
+
+  return plugins as Plugin[]
+}
+
+export function defineNuxtPlugin (plugin: Plugin) {
+  plugin[NuxtPluginIndicator] = true
+  return plugin
+}
+
+export function isLegacyPlugin (plugin: unknown): plugin is LegacyPlugin {
+  return !plugin[NuxtPluginIndicator]
 }
 
 let currentNuxtInstance: Nuxt | null

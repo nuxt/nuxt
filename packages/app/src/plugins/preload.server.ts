@@ -1,6 +1,6 @@
-import type { Plugin } from '@nuxt/app'
+import { defineNuxtPlugin } from '@nuxt/app'
 
-export default <Plugin> function preload ({ app }) {
+export default defineNuxtPlugin(({ app }) => {
   app.mixin({
     beforeCreate () {
       const { _registeredComponents } = this.$nuxt.ssrContext
@@ -8,4 +8,4 @@ export default <Plugin> function preload ({ app }) {
       _registeredComponents.add(__moduleIdentifier)
     }
   })
-}
+})
