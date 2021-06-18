@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { parseURL } from 'ufo'
 import { localCall } from '../server'
 

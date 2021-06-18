@@ -1,5 +1,5 @@
 // @ts-nocheck
-import '~polyfill'
+import '#polyfill'
 import { localCall } from '../server'
 
 addEventListener('fetch', (event: any) => {

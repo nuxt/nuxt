@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
 import { localCall } from '../server'
 

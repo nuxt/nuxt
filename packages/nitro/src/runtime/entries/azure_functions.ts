@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { localCall } from '../server'
 
 export default async function handle (context, req) {

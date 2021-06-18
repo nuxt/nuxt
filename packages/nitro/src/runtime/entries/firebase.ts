@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 
 import { handle } from '../server'
 

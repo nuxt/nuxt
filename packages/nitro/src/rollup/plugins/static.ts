@@ -28,11 +28,11 @@ export function staticAssets (context: NitroContext) {
   }
 
   return virtual({
-    '~static-assets': `export default ${JSON.stringify(assets, null, 2)};`,
-    '~static': `
+    '#static-assets': `export default ${JSON.stringify(assets, null, 2)};`,
+    '#static': `
 import { promises } from 'fs'
 import { resolve } from 'path'
-import assets from '~static-assets'
+import assets from '#static-assets'
 
 export function readAsset (id) {
   return promises.readFile(resolve(mainDir, getAsset(id).path))

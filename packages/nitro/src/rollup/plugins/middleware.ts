@@ -12,7 +12,7 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
   let lastDump = ''
 
   return virtual({
-    '~serverMiddleware': {
+    '#server-middleware': {
       load: () => {
         const middleware = getMiddleware()
 

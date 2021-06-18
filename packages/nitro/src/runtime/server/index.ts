@@ -6,7 +6,7 @@ import { createCall, createFetch as createLocalFetch } from 'unenv/runtime/fetch
 import { timingMiddleware } from './timing'
 import { handleError } from './error'
 // @ts-ignore
-import serverMiddleware from '~serverMiddleware'
+import serverMiddleware from '#server-middleware'
 
 const app = createApp({
   debug: destr(process.env.DEBUG),

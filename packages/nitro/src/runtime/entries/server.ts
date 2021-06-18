@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { Server } from 'http'
 import destr from 'destr'
 import { handle } from '../server'

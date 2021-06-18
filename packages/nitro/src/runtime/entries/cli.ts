@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { localCall } from '../server'
 
 async function cli () {

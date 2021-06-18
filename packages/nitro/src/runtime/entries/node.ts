@@ -1,2 +1,2 @@
-import '~polyfill'
+import '#polyfill'
 export * from '../server'

@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import { withoutTrailingSlash, withLeadingSlash, parseURL } from 'ufo'
 // @ts-ignore
-import { getAsset, readAsset } from '~static'
+import { getAsset, readAsset } from '#static'
 
 const METHODS = ['HEAD', 'GET']
 const PUBLIC_PATH = process.env.PUBLIC_PATH // Default: /_nuxt/

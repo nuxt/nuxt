@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { withQuery } from 'ufo'
 import { localCall } from '../server'
 

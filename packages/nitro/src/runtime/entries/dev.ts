@@ -1,4 +1,4 @@
-import '~polyfill'
+import '#polyfill'
 import { Server } from 'http'
 import { parentPort } from 'worker_threads'
 import type { AddressInfo } from 'net'
