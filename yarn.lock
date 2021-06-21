@@ -1758,7 +1758,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.52.1
+    rollup: ^2.52.2
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.3
@@ -1807,7 +1807,7 @@ __metadata:
     ufo: ^0.7.5
     unbuild: ^0.3.1
     upath: ^2.0.1
-    vite: ^2.3.7
+    vite: ^2.3.8
     vue: 3.1.1
   languageName: unknown
   linkType: soft
@@ -5525,7 +5525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.5, esbuild@npm:^0.12.9":
+"esbuild@npm:^0.12.8, esbuild@npm:^0.12.9":
   version: 0.12.9
   resolution: "esbuild@npm:0.12.9"
   bin:
@@ -5672,9 +5672,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^35.3.0":
-  version: 35.3.0
-  resolution: "eslint-plugin-jsdoc@npm:35.3.0"
+"eslint-plugin-jsdoc@npm:^35.3.2":
+  version: 35.3.2
+  resolution: "eslint-plugin-jsdoc@npm:35.3.2"
   dependencies:
     "@es-joy/jsdoccomment": ^0.8.0-alpha.2
     comment-parser: 1.1.5
@@ -5687,7 +5687,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: 9a8074bbd1ab8487ac73456a6c7580d77604130c765cee35c3b68a3c0fdd1bb32da801823b86921bd0fe4bb848dc9f6a4b4780a685a670e8b0612ea5be0a1ea3
+  checksum: 6a70e9b5d21f4c5124c783a87a5d28986cd18d039cd239e227d3fec53ca2d16071a2b2e9e808f71197c47e7662b19c3ee6db3a9d64edcf308dd217a6a0d55e20
   languageName: node
   linkType: hard
 
@@ -5821,9 +5821,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^7.28.0":
-  version: 7.28.0
-  resolution: "eslint@npm:7.28.0"
+"eslint@npm:^7.29.0":
+  version: 7.29.0
+  resolution: "eslint@npm:7.29.0"
   dependencies:
     "@babel/code-frame": 7.12.11
     "@eslint/eslintrc": ^0.4.2
@@ -5866,7 +5866,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: 9d49d53ed56a1f1ccba9c71482722a91f2423432df70a3694d36ea478f0e3bb058034f170219f34f3d6b5cd5d47510b269b75e2b4117f88a3241b1db9cb95828
+  checksum: 812f8c5123860cf5bd877018ffd29abd52bbaaca55fdd616008c97da9bf47a20a7b7c7ecb7c8f753c06f77ea5d59480f3d6d76475699b2ea380237fbb7c6b3a2
   languageName: node
   linkType: hard
 
@@ -6432,7 +6432,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@^2.3.2, fsevents@~2.3.1, fsevents@~2.3.2":
+"fsevents@^2.3.2, fsevents@~2.3.2":
   version: 2.3.2
   resolution: "fsevents@npm:2.3.2"
   dependencies:
@@ -6441,7 +6441,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@patch:fsevents@^2.3.2#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.1#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#builtin<compat/fsevents>":
+"fsevents@patch:fsevents@^2.3.2#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#builtin<compat/fsevents>":
   version: 2.3.2
   resolution: "fsevents@patch:fsevents@npm%3A2.3.2#builtin<compat/fsevents>::version=2.3.2&hash=11e9ea"
   dependencies:
@@ -9816,8 +9816,8 @@ __metadata:
     "@types/jest": ^26.0.23
     "@types/node": ^14.17.3
     "@types/object-hash": ^2
-    eslint: ^7.28.0
-    eslint-plugin-jsdoc: ^35.3.0
+    eslint: ^7.29.0
+    eslint-plugin-jsdoc: ^35.3.2
     jest: ^27.0.4
     jiti: ^1.10.1
     lerna: ^4.0.0
@@ -10923,7 +10923,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.2.9, postcss@npm:^8.3.0":
+"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.2.9":
   version: 8.3.4
   resolution: "postcss@npm:8.3.4"
   dependencies:
@@ -10934,7 +10934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.3.5":
+"postcss@npm:^8.3.4, postcss@npm:^8.3.5":
   version: 8.3.5
   resolution: "postcss@npm:8.3.5"
   dependencies:
@@ -11711,9 +11711,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.52.1":
-  version: 2.52.1
-  resolution: "rollup@npm:2.52.1"
+"rollup@npm:^2.52.2":
+  version: 2.52.2
+  resolution: "rollup@npm:2.52.2"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -11721,7 +11721,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 27591773875ad7c4c1b1095c099fbf852c41cee0ae009ecd24c42d56b0ce70e90179802b9385fb6b466c30ed6407014ababc8043eb666d491c54688c91c8d4e9
+  checksum: b08f33d8e8813d99a223658d951395be939d187afbc7af079afb3e695d47dd7664514a8379380953903683fe59a0133ee2c595e5ed680947e40c110c0641a6f3
   languageName: node
   linkType: hard
 
@@ -13428,21 +13428,21 @@ typescript@^4.3.4:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.3.7":
-  version: 2.3.7
-  resolution: "vite@npm:2.3.7"
+"vite@npm:^2.3.8":
+  version: 2.3.8
+  resolution: "vite@npm:2.3.8"
   dependencies:
-    esbuild: ^0.12.5
-    fsevents: ~2.3.1
-    postcss: ^8.3.0
-    resolve: ^1.19.0
+    esbuild: ^0.12.8
+    fsevents: ~2.3.2
+    postcss: ^8.3.4
+    resolve: ^1.20.0
     rollup: ^2.38.5
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: d22efa9b20fec505d8813e87d0faf82a7160283da806487106bede729605b7c2b67ca9a829cd5d7c878c81ec4108e422ebae0e0928fe714265466c0056aa5ce3
+  checksum: acbf893f19d9d3f544506bee3869f8ce355e7fb86c7dacedcb3fc7740328f25cb2007b0266ebab75180909dc435be0d18a48c7c320987f8a2aa2f837bbaea521
   languageName: node
   linkType: hard
 
