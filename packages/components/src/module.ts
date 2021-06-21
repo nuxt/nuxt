@@ -1,12 +1,11 @@
 import fs from 'fs'
 import { defineNuxtModule, resolveAlias } from '@nuxt/kit'
-import { resolve, dirname } from 'upath'
+import { resolve } from 'upath'
 import { scanComponents } from './scan'
 import type { ComponentsDir } from './types'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return fs.statSync(p).isDirectory() } catch (_e) { return false } }
-const getDir = (p: string) => isDirectory(p) ? p : dirname(p)
 
 export default defineNuxtModule({
   name: 'components',
@@ -22,21 +21,22 @@ export default defineNuxtModule({
 
       componentDirs = options.dirs.filter(isPureObjectOrString).map((dir) => {
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
-        const dirPath = getDir(resolveAlias(dirOptions.path, nuxt.options.alias))
+        const dirPath = resolveAlias(dirOptions.path, nuxt.options.alias)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
         const extensions = dirOptions.extensions || ['vue'] // TODO: nuxt extensions and strip leading dot
 
         dirOptions.level = Number(dirOptions.level || 0)
 
-        const enabled = fs.existsSync(dirPath)
-        if (!enabled && dirOptions.path !== '~/components') {
+        const present = isDirectory(dirPath)
+        if (!present && dirOptions.path !== '~/components') {
           // eslint-disable-next-line no-console
           console.warn('Components directory not found: `' + dirPath + '`')
         }
 
         return {
           ...dirOptions,
-          enabled,
+          // TODO: https://github.com/nuxt/framework/pull/251
+          enabled: true,
           path: dirPath,
           extensions,
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
