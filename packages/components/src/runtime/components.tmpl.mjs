@@ -10,7 +10,7 @@ const components = {
     c.preload === true || typeof c.preload === 'number' ? `webpackPreload: ${c.preload}` : false,
   ].filter(Boolean).join(', ')
 
-  return `  ${c.pascalName}: defineAsyncComponent(() => import('${c.filePath}' /* ${magicComments} */).then(c => ${exp}))`
+  return `  '${c.pascalName}': defineAsyncComponent(() => import('${c.filePath}' /* ${magicComments} */).then(c => ${exp}))`
 }).join(',\n') %>
 }
 
