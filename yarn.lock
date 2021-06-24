@@ -1767,7 +1767,7 @@ __metadata:
     table: ^6.7.1
     ufo: ^0.7.5
     unbuild: ^0.3.1
-    unenv: ^0.2.3
+    unenv: ^0.3.0
     unstorage: ^0.2.3
     upath: ^2.0.1
     vue: 3.1.1
@@ -13140,20 +13140,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "unenv@npm:0.2.3"
+"unenv@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "unenv@npm:0.3.0"
   dependencies:
     buffer: ^6.0.2
-    defu: ^3.2.2
+    defu: ^5.0.0
     events: ^3.2.0
     inherits: ^2.0.4
     mime: ^2.4.6
     node-fetch: ^2.6.1
     process: ^0.11.10
     upath: ^2.0.1
-    util: ^0.12.3
-  checksum: 75fe628ffca2694106baac8be25122bd6a159eb712f4ae89d9c53f5c6bf77ccac30fa5f2a6a2ee2bc372d55a3f97cddbd7c597396a47fa56b088fc8b7d30c96a
+    util: ^0.12.4
+  checksum: 16c556f32e95a5371ab111ebc45be47bf124d0ce0dfa5252f3db7da9e6622a92e8809de2b55c106c65053eb005e126428b82ce236de3941480c410c3101c1667
   languageName: node
   linkType: hard
 
@@ -13284,7 +13284,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"util@npm:^0.12.3":
+"util@npm:^0.12.4":
   version: 0.12.4
   resolution: "util@npm:0.12.4"
   dependencies:
