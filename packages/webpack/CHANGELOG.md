@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.4.3...@nuxt/webpack-builder@0.5.0) (2021-06-24)
+
+
+### Bug Fixes
+
+* source map for webpack nuxt-setup-loader ([#236](https://github.com/nuxt/framework/issues/236)) ([5832782](https://github.com/nuxt/framework/commit/58327824fb273b8875fb313ad84059b4c3e180e2))
+
+
+### Features
+
+* **app:** make `asyncData` working with `<script setup nuxt>` ([#220](https://github.com/nuxt/framework/issues/220)) ([11a5a3e](https://github.com/nuxt/framework/commit/11a5a3e14f739761fd4ad65e60290b3abc7a9692))
+
+
+
+
+
 ## [0.4.3](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.4.2...@nuxt/webpack-builder@0.4.3) (2021-06-16)
 
 

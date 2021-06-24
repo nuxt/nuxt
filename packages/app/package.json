@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/app",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "exports": {

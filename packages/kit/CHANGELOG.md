@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.4](https://github.com/nuxt/framework/compare/@nuxt/kit@0.6.3...@nuxt/kit@0.6.4) (2021-06-24)
+
+
+### Bug Fixes
+
+* **nitro:** update nitro internal hook name ([#218](https://github.com/nuxt/framework/issues/218)) ([77e489a](https://github.com/nuxt/framework/commit/77e489aae37ce1bc8ad12e20b7a4dc3d6f1085a7))
+* **types:** type vite options ([#235](https://github.com/nuxt/framework/issues/235)) ([3e855c2](https://github.com/nuxt/framework/commit/3e855c280f01e373f136d1f0e35ff2dd66fdb3d9))
+
+
+
+
+
 ## [0.6.3](https://github.com/nuxt/framework/compare/@nuxt/kit@0.6.2...@nuxt/kit@0.6.3) (2021-06-16)
 
 

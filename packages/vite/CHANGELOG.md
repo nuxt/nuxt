@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/vite-builder@0.4.3...@nuxt/vite-builder@0.5.0) (2021-06-24)
+
+
+### Features
+
+* **app:** make `asyncData` working with `<script setup nuxt>` ([#220](https://github.com/nuxt/framework/issues/220)) ([11a5a3e](https://github.com/nuxt/framework/commit/11a5a3e14f739761fd4ad65e60290b3abc7a9692))
+
+
+
+
+
 ## [0.4.3](https://github.com/nuxt/framework/compare/@nuxt/vite-builder@0.4.2...@nuxt/vite-builder@0.4.3) (2021-06-16)
 
 

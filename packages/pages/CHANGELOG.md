@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/nuxt/framework/compare/@nuxt/pages@0.2.3...@nuxt/pages@0.3.0) (2021-06-24)
+
+
+### Features
+
+* **app:** `defineNuxtPlugin` + legacy plugin handling ([#237](https://github.com/nuxt/framework/issues/237)) ([f843568](https://github.com/nuxt/framework/commit/f8435681d4e487ef2446956f557888401dd99d04))
+* **pages:** add catchall support (`[...id].vue`) ([#254](https://github.com/nuxt/framework/issues/254)) ([1518a2a](https://github.com/nuxt/framework/commit/1518a2a070ea4cbdf6f61a87b2c2caac9e7ba3d1))
+
+
+
+
+
 ## [0.2.3](https://github.com/nuxt/framework/compare/@nuxt/pages@0.2.2...@nuxt/pages@0.2.3) (2021-06-16)
 
 **Note:** Version bump only for package @nuxt/pages
