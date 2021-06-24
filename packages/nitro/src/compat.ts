@@ -53,14 +53,6 @@ export default function nuxt2CompatModule () {
     serverConfig.devtool = false
   })
 
-  // Add missing template variables (which normally renderer would create)
-  nitroContext._internal.hooks.hook('nitro:document', (htmlTemplate) => {
-    if (!htmlTemplate.contents.includes('BODY_SCRIPTS_PREPEND')) {
-      const fullTemplate = ['{{ BODY_SCRIPTS_PREPEND }}', '{{ APP }}', '{{ BODY_SCRIPTS }}'].join('\n    ')
-      htmlTemplate.contents = htmlTemplate.contents.replace('{{ APP }}', fullTemplate)
-    }
-  })
-
   // Nitro client plugin
   this.addPlugin({
     fileName: 'nitro.client.js',

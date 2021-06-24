@@ -4,9 +4,7 @@
     {{ HEAD }}
   </head>
   <body {{ BODY_ATTRS }}>
-    {{ BODY_SCRIPTS_PREPEND }}
     {{ APP }}
-    {{ BODY_SCRIPTS }}
     <% if (nuxt.options.vite && nuxt.options.dev) { %><script type="module" src="/@vite/client"></script>
     <script type="module" src="/entry.mjs"></script><% } %>
   </body>

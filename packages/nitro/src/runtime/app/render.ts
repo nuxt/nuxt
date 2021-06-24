@@ -121,9 +121,7 @@ function renderHTML (payload, rendered, ssrContext) {
     HEAD: meta.headTags +
       rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
     BODY_ATTRS: meta.bodyAttrs,
-    BODY_SCRIPTS_PREPEND: meta.bodyScriptsPrepend,
-    APP: _html + state + rendered.renderScripts(),
-    BODY_SCRIPTS: meta.bodyScripts
+    APP: meta.bodyScriptsPrepend + _html + state + rendered.renderScripts() + meta.bodyScripts
   })
 }
 
