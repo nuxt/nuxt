@@ -1,5 +1,5 @@
 import Hookable from 'hookable'
-import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, installModule, ModuleContainer } from '@nuxt/kit'
+import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, nuxtCtx, installModule, ModuleContainer } from '@nuxt/kit'
 import { initNitro } from './nitro'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -20,6 +20,10 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   nuxt.hooks.addHooks(nuxt.options.hooks)
+
+  // Set nuxt instance for useNuxt
+  nuxtCtx.set(nuxt)
+  nuxt.hook('close', () => nuxtCtx.unset())
 
   // Init nitro
   await initNitro(nuxt)

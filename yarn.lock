@@ -1702,7 +1702,7 @@ __metadata:
     std-env: ^2.3.0
     ufo: ^0.7.5
     unbuild: ^0.3.1
-    unctx: ^0.0.3
+    unctx: ^1.0.1
     untyped: ^0.2.5
     upath: ^2.0.1
   languageName: unknown
@@ -13133,10 +13133,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unctx@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "unctx@npm:0.0.3"
-  checksum: 0142b5f75a76b93626c35408def8e2aa3f3478ebc503e53770b096ed2fea17b329ef9e616969cb44ea0ec062135c57d2b1914813eedce82982a4c858cdc55096
+"unctx@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "unctx@npm:1.0.1"
+  checksum: 614eafb604c42498b7a08e58e18f2802823befc1a297171a60768f8cd0bb56a95ba85bc9ddb575b5bc5262e55f1a42327bf97ff1ffebe1132453154fba1f19fb
   languageName: node
   linkType: hard
 

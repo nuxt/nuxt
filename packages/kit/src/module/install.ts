@@ -1,6 +1,5 @@
 import { resolveModule, requireModule } from '../utils/cjs'
 import { resolveAlias } from '../utils/resolve'
-import { nuxtCtx } from '../nuxt'
 import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
 import type { Nuxt } from '../types/nuxt'
 import { defineNuxtModule } from './define'
@@ -59,5 +58,5 @@ export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptio
 
   // Execute in legacy container
   const container = new ModuleContainer(nuxt)
-  await nuxtCtx.call(nuxt, () => handler.call(container, options))
+  await handler.call(container, options)
 }
