@@ -3,7 +3,7 @@ import { resolveAlias } from '../utils/resolve'
 import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
 import type { Nuxt } from '../types/nuxt'
 import { defineNuxtModule } from './define'
-import { ModuleContainer } from './container'
+import { createModuleContainer } from './container'
 
 /** Installs a module on a Nuxt instance. */
 export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptions) {
@@ -57,6 +57,6 @@ export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptio
   }
 
   // Execute in legacy container
-  const container = new ModuleContainer(nuxt)
+  const container = createModuleContainer(nuxt)
   await handler.call(container, options)
 }
