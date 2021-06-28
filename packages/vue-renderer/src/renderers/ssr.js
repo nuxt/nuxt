@@ -210,7 +210,7 @@ export default class SSRRenderer extends BaseRenderer {
         // Page level payload.js (async loaded for CSR)
         const payloadPath = urlJoin(url, 'payload.js')
         const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
-        const routePath = withoutTrailingSlash(decode(parsePath(url).pathname));
+        const routePath = withoutTrailingSlash(decode(parsePath(url).pathname))
         const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
         staticAssets.push({ path: payloadPath, src: payloadScript })
         preloadScripts.push(payloadUrl)
