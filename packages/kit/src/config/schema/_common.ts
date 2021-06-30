@@ -380,10 +380,16 @@ export default {
     /** The directory which will be processed to auto-generate your application page routes. */
     pages: 'pages',
     /**
-     * Your static directory, which will be directly accessible via the Nuxt server and copied
-     * across into your `dist` folder when your app is generated.
+     * The directory containing your static files, which will be directly accessible via the Nuxt server
+     * and copied across into your `dist` folder when your app is generated.
      */
-    static: 'static',
+    public: {
+      $resolve: (val, get) => val || get('dir.static') || 'public',
+    },
+    static: {
+      $schema: { deprecated: 'use `dir.public` option instead' },
+      $resolve: (val, get) => val || get('dir.public') || 'public',
+    },
     /** The folder which will be used to auto-generate your Vuex store structure. */
     store: 'store'
   },
