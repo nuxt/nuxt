@@ -3866,15 +3866,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bs-logger@npm:0.x":
-  version: 0.2.6
-  resolution: "bs-logger@npm:0.2.6"
-  dependencies:
-    fast-json-stable-stringify: 2.x
-  checksum: f5f2f1315d6ceac655c3945d149086a5f5a90b3c908780757e12e938aad0125a7aa563cae2f7153ccf43443adb1b88a44960a61063903c3973e1dfdda6fc2d8c
-  languageName: node
-  linkType: hard
-
 "bser@npm:2.1.1":
   version: 2.1.1
   resolution: "bser@npm:2.1.1"
@@ -3891,7 +3882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer-from@npm:1.x, buffer-from@npm:^1.0.0":
+"buffer-from@npm:^1.0.0":
   version: 1.1.1
   resolution: "buffer-from@npm:1.1.1"
   checksum: 540ceb79c4f5bfcadaabbc18324fa84c50dc52905084be7c03596a339cf5a88513bee6831ce9b36ddd046fab09257a7c80686e129d0559a0cfd141da196ad956
@@ -6144,7 +6135,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-json-stable-stringify@npm:2.x, fast-json-stable-stringify@npm:^2.0.0":
+"fast-json-stable-stringify@npm:^2.0.0":
   version: 2.1.0
   resolution: "fast-json-stable-stringify@npm:2.1.0"
   checksum: 7df3fabfe445d65953b2d9d9d3958bd895438b215a40fb87dae8b2165c5169a897785eb5d51e6cf0eb03523af756e3d82ea01083f6ac6341fe16db532fee3016
@@ -8148,7 +8139,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-util@npm:^27.0.0, jest-util@npm:^27.0.2":
+"jest-util@npm:^27.0.2":
   version: 27.0.2
   resolution: "jest-util@npm:27.0.2"
   dependencies:
@@ -8385,17 +8376,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:2.x, json5@npm:^2.1.2, json5@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "json5@npm:2.2.0"
-  dependencies:
-    minimist: ^1.2.5
-  bin:
-    json5: lib/cli.js
-  checksum: 07b1f90c2801dc52df2b0ac8d606cc400a85cda79130e754780fa2ab9805d0fb85a0e61b6a5cdd68e88e5d0c8f9109ec415af08283175556cdccaa8563853908
-  languageName: node
-  linkType: hard
-
 "json5@npm:^1.0.1":
   version: 1.0.1
   resolution: "json5@npm:1.0.1"
@@ -8404,6 +8384,17 @@ __metadata:
   bin:
     json5: lib/cli.js
   checksum: df41624f9f40bfacc546f779eef6d161a3312fbb6ec1dbd69f8c4388e9807af653b753371ab19b6d2bab22af2ca7dde62fe03c791596acf76915e1fc4ee6fd88
+  languageName: node
+  linkType: hard
+
+"json5@npm:^2.1.2, json5@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "json5@npm:2.2.0"
+  dependencies:
+    minimist: ^1.2.5
+  bin:
+    json5: lib/cli.js
+  checksum: 07b1f90c2801dc52df2b0ac8d606cc400a85cda79130e754780fa2ab9805d0fb85a0e61b6a5cdd68e88e5d0c8f9109ec415af08283175556cdccaa8563853908
   languageName: node
   linkType: hard
 
@@ -8779,7 +8770,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.x, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
+"lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 4983720b9abca930a4a46f18db163d7dad8dd00dbed6db0cc7b499b33b717cce69f80928b27bbb1ff2cbd3b19d251ee90669a8b5ea466072ca81c2ebe91e7468
@@ -8849,13 +8840,6 @@ __metadata:
   dependencies:
     semver: ^6.0.0
   checksum: 54b6f186c209c1b133d0d1710e6b04c41ebfcb0dac699e5a369ea1223f22c0574ef820b91db37cae6c245f5bda8aff9bfec94f6c23e7d75970446b34a58a79b0
-  languageName: node
-  linkType: hard
-
-"make-error@npm:1.x":
-  version: 1.3.6
-  resolution: "make-error@npm:1.3.6"
-  checksum: 2c780bab8409b865e8ee86697c599a2bf2765ec64d21eb67ccda27050e039f983feacad05a0d43aba3c966ea03d305d2612e94fec45474bcbc61181f57c5bb88
   languageName: node
   linkType: hard
 
@@ -9249,15 +9233,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:1.x, mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "mkdirp@npm:1.0.4"
-  bin:
-    mkdirp: bin/cmd.js
-  checksum: 1aa3a6a2d7514f094a91329ec09994f5d32d2955a4985ecbb3d86f2aaeafc4aa11521f98d606144c1d49cd9835004d9a73342709b8c692c92e59eacf37412468
-  languageName: node
-  linkType: hard
-
 "mkdirp@npm:^0.5.0, mkdirp@npm:^0.5.1":
   version: 0.5.5
   resolution: "mkdirp@npm:0.5.5"
@@ -9266,6 +9241,15 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: 9dd9792e891927b14ca02226dbe1daeb717b9517a001620d5e2658bbc72c5e4f06887b6cbcbb60595fa5a56e701073cf250f1ed69c1988a6b89faf9fd6a4d049
+  languageName: node
+  linkType: hard
+
+"mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "mkdirp@npm:1.0.4"
+  bin:
+    mkdirp: bin/cmd.js
+  checksum: 1aa3a6a2d7514f094a91329ec09994f5d32d2955a4985ecbb3d86f2aaeafc4aa11521f98d606144c1d49cd9835004d9a73342709b8c692c92e59eacf37412468
   languageName: node
   linkType: hard
 
@@ -9802,13 +9786,13 @@ __metadata:
     "@types/jest": ^26.0.23
     "@types/node": ^14.17.3
     "@types/object-hash": ^2
+    esbuild: ^0.12.9
     eslint: ^7.29.0
     eslint-plugin-jsdoc: ^35.3.2
     jest: ^27.0.4
     jiti: ^1.10.1
     lerna: ^4.0.0
     object-hash: ^2.2.0
-    ts-jest: ^27.0.3
     typescript: ^4.3.4
     unbuild: ^0.3.1
   languageName: unknown
@@ -11804,7 +11788,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:7.x, semver@npm:^7.1.1, semver@npm:^7.1.3, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5":
+"semver@npm:^6.0.0, semver@npm:^6.1.0, semver@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "semver@npm:6.3.0"
+  bin:
+    semver: ./bin/semver.js
+  checksum: f0d155c06a67cc7e500c92d929339f1c6efd4ce9fe398aee6acc00a2333489cca0f5b4e76ee7292beba237fcca4b5a3d4a6153471f105f56299801bdab37289f
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.1.1, semver@npm:^7.1.3, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5":
   version: 7.3.5
   resolution: "semver@npm:7.3.5"
   dependencies:
@@ -11812,15 +11805,6 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: c53624ddf4b9779bcbf55a1eb8b37074cc44bfeca416f3cc263429408202a8a3c59b00eef8c647d697303bc39b95c022a5c61959221d3814bfb1270ff7c14986
-  languageName: node
-  linkType: hard
-
-"semver@npm:^6.0.0, semver@npm:^6.1.0, semver@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "semver@npm:6.3.0"
-  bin:
-    semver: ./bin/semver.js
-  checksum: f0d155c06a67cc7e500c92d929339f1c6efd4ce9fe398aee6acc00a2333489cca0f5b4e76ee7292beba237fcca4b5a3d4a6153471f105f56299801bdab37289f
   languageName: node
   linkType: hard
 
@@ -12874,29 +12858,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^27.0.3":
-  version: 27.0.3
-  resolution: "ts-jest@npm:27.0.3"
-  dependencies:
-    bs-logger: 0.x
-    buffer-from: 1.x
-    fast-json-stable-stringify: 2.x
-    jest-util: ^27.0.0
-    json5: 2.x
-    lodash: 4.x
-    make-error: 1.x
-    mkdirp: 1.x
-    semver: 7.x
-    yargs-parser: 20.x
-  peerDependencies:
-    jest: ^27.0.0
-    typescript: ">=3.8 <5.0"
-  bin:
-    ts-jest: cli.js
-  checksum: a63f3a8620a16335d745f22377a9cc118129d28a5b122c609a7c6aabbb8048c85733c771a0dd39b136e8a75401473409452bdd3c5b9e3b85317c2e3f3ac03267
-  languageName: node
-  linkType: hard
-
 "tsconfig-paths@npm:^3.9.0":
   version: 3.9.0
   resolution: "tsconfig-paths@npm:3.9.0"
@@ -13920,7 +13881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs-parser@npm:20.x, yargs-parser@npm:^20.2.2, yargs-parser@npm:^20.2.3":
+"yargs-parser@npm:^20.2.2, yargs-parser@npm:^20.2.3":
   version: 20.2.9
   resolution: "yargs-parser@npm:20.2.9"
   checksum: 3c58da6f6142f93c5207e309764bd90f723b9d7ed43f2e8aad0da1cefab83ee8ebf311dee2e81102646b74450c899e35b35053800b91fac23e6f433056f4c4cf

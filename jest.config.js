@@ -1,8 +1,7 @@
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'node',
   transform: {
-    '\\.[jt]sx?$': 'ts-jest'
+    '\\.[jt]sx?$': './scripts/jest-transform.mjs'
   },
   testPathIgnorePatterns: [
     '.output/.*'
