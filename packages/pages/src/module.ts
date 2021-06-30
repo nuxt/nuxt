@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { defineNuxtModule } from '@nuxt/kit'
 import { resolve } from 'upath'
-import { resolvePagesRoutes } from './utils'
+import { resolveLayouts, resolvePagesRoutes } from './utils'
 
 export default defineNuxtModule({
   name: 'router',
@@ -12,7 +12,8 @@ export default defineNuxtModule({
 
     nuxt.hook('builder:watch', async (event, path) => {
       // Regenerate templates when adding or removing pages (plugin and routes)
-      if (event !== 'change' && path.startsWith('pages/')) {
+      const pathPattern = new RegExp(`^(${nuxt.options.dir.pages}|${nuxt.options.dir.layouts})/`)
+      if (event !== 'change' && path.match(pathPattern)) {
         await nuxt.callHook('builder:generateApp')
       }
     })
@@ -52,6 +53,22 @@ export default defineNuxtModule({
         compile: () => {
           const serializedRoutes = routes.map(route => ({ ...route, component: `{() => import('${route.file}')}` }))
           return `export default ${JSON.stringify(serializedRoutes, null, 2).replace(/"{(.+)}"/g, '$1')}`
+        }
+      })
+
+      const layouts = await resolveLayouts(nuxt)
+
+      // Add routes.js
+      app.templates.push({
+        path: 'layouts.js',
+        compile: () => {
+          const layoutsObject = Object.fromEntries(layouts.map(({ name, file }) => {
+            return [name, `{defineAsyncComponent({ suspensible: false, loader: () => import('${file}') })}`]
+          }))
+          return [
+            'import { defineAsyncComponent } from \'vue\'',
+            `export default ${JSON.stringify(layoutsObject, null, 2).replace(/"{(.+)}"/g, '$1')}
+          `].join('\n')
         }
       })
     })

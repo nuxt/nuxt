@@ -1,6 +1,7 @@
-import { extname, relative, resolve } from 'upath'
+import { basename, extname, relative, resolve } from 'upath'
 import { encodePath } from 'ufo'
 import { Nuxt, resolveFiles } from '@nuxt/kit'
+import { kebabCase } from 'scule'
 
 export interface NuxtRoute {
   name?: string
@@ -214,4 +215,14 @@ function prepareRoutes (routes: NuxtRoute[], parent?: NuxtRoute) {
   }
 
   return routes
+}
+
+export async function resolveLayouts (nuxt: Nuxt) {
+  const layoutDir = resolve(nuxt.options.srcDir, nuxt.options.dir.layouts)
+  const files = await resolveFiles(layoutDir, `*{${nuxt.options.extensions.join(',')}}`)
+
+  return files.map((file) => {
+    const name = kebabCase(basename(file).replace(extname(file), '')).replace(/["']/g, '')
+    return { name, file }
+  })
 }

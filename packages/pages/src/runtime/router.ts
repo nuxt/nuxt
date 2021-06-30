@@ -8,6 +8,7 @@ import {
 // @ts-ignore
 import { defineNuxtPlugin } from '@nuxt/app'
 import NuxtPage from './page.vue'
+import NuxtLayout from './layout'
 // @ts-ignore
 import routes from '#build/routes'
 
@@ -15,6 +16,7 @@ export default defineNuxtPlugin((nuxt) => {
   const { app } = nuxt
 
   app.component('NuxtPage', NuxtPage)
+  app.component('NuxtLayout', NuxtLayout)
   app.component('NuxtLink', RouterLink)
 
   const routerHistory = process.client
