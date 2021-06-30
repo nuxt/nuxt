@@ -9,7 +9,7 @@
     "docs": "nu dev"
   },
   "devDependencies": {
-    "@nuxt/kit": "^0.6.3",
+    "@nuxt/kit": "^0.6.4",
     "nuxt3": "latest",
     "rehype-raw": "^5.1.0",
     "rehype-stringify": "^8.0.0",
@@ -19,8 +19,8 @@
     "unified": "^9.2.1",
     "untyped": "^0.2.5",
     "vite": "^2.3.8",
-    "vite-plugin-windicss": "^1.0.4",
+    "vite-plugin-windicss": "^1.1.1",
     "windicss": "^3.1.3",
-    "windicss-webpack-plugin": "^1.1.0"
+    "windicss-webpack-plugin": "^1.2.1"
   }
 }

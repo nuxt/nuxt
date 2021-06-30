@@ -16,12 +16,12 @@
     "globby": "^11.0.4",
     "ufo": "^0.7.5",
     "upath": "^2.0.1",
-    "vue-router": "^4.0.9"
+    "vue-router": "^4.0.10"
   },
   "devDependencies": {
     "unbuild": "^0.3.1"
   },
   "peerDependencies": {
-    "vue": "3.1.1"
+    "vue": "3.1.2"
   }
 }

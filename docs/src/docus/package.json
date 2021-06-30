@@ -5,7 +5,7 @@
     "build": "nuxt generate"
   },
   "devDependencies": {
-    "docus": "^0.7.0"
+    "docus": "^0.8.6"
   },
   "resolutions": {
     "nuxt-windicss": "~0.6.0"
