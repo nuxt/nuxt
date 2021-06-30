@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onUnmounted, Ref, ref, unref, UnwrapRef, watch } from 'vue'
+import { getCurrentInstance, onBeforeMount, onUnmounted, Ref, ref, unref, UnwrapRef } from 'vue'
 import { Nuxt, useNuxt } from '@nuxt/app'
 
 import { NuxtComponentPendingPromises } from './component'
@@ -85,9 +85,6 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
 
     // Client side
     if (process.client) {
-      // Watch handler
-      watch(handler.bind(null, nuxt), fetch)
-
       // 1. Hydration (server: true): no fetch
       if (nuxt.isHydrating && fetchOnServer) {
         state.pending.value = false
