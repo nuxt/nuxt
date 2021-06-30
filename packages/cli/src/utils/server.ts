@@ -19,7 +19,7 @@ export function createLoadingHandler (message: string, retryAfter = 60): Request
     res.setHeader('Content-Type', 'text/html; charset=UTF-8')
     res.statusCode = 503 /* Service Unavailable */
     res.setHeader('Retry-After', retryAfter)
-    res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="${retryAfter || 60}"><head><body>${message}`)
+    res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="${retryAfter || 60}"></head><body>${message}</body>`)
   }
 }
 
