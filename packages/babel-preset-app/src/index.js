@@ -56,6 +56,17 @@ function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath
   ))
 }
 
+function getTargetsFromBrowserslistRc (browserslistEnv = 'client') {
+  const { default: getTargets } = require('@babel/helper-compilation-targets')
+  const targets = getTargets(undefined, { browserslistEnv })
+
+  if (Object.keys(targets).length !== 0) {
+    return targets
+  } else {
+    return undefined
+  }
+}
+
 module.exports = (api, options = {}) => {
   const presets = []
   const plugins = []
@@ -70,7 +81,7 @@ module.exports = (api, options = {}) => {
     useBuiltIns = 'usage',
     modules = false,
     spec,
-    ignoreBrowserslistConfig = envName === 'modern',
+    ignoreBrowserslistConfig,
     configPath,
     include,
     exclude,
@@ -95,6 +106,10 @@ module.exports = (api, options = {}) => {
     server: { node: 'current' },
     client: { ie: 9 },
     modern: { esmodules: true }
+  }
+
+  if (envName !== 'server' && !options.targets) {
+    options.targets = getTargetsFromBrowserslistRc(envName)
   }
 
   const { targets = defaultTargets[envName] } = options
