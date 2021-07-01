@@ -56,11 +56,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
       if (route.name.endsWith(`${routeNameSplitter}index`)) {
-        if (trailingSlash) {
-          route.path = route.path.replace(/\?\/$/, '/')
-        } else {
-          route.path = route.path.replace(/\?$/, '')
-        }
+        route.path = route.path.replace(/\?\/?$/, trailingSlash ? '/' : '')
       }
       const names = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       const paths = route.path.split('/')
