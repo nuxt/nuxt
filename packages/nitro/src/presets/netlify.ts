@@ -12,7 +12,7 @@ export const netlify: NitroPreset = extendPreset(lambda, {
   },
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {
-      const redirectsPath = join(ctx._nuxt.rootDir, '_redirects')
+      const redirectsPath = join(ctx.output.publicDir, '_redirects')
       let contents = '/* /.netlify/functions/server 200'
       if (existsSync(redirectsPath)) {
         const currentRedirects = await readFile(redirectsPath, 'utf-8')
