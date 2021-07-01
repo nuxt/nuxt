@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild || true"
   },
   "bin": {
     "nu": "./bin/nuxt.js",

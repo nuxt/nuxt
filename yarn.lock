@@ -9797,6 +9797,7 @@ __metadata:
     esbuild: ^0.12.12
     eslint: ^7.29.0
     eslint-plugin-jsdoc: ^35.4.1
+    globby: ^11.0.4
     jest: ^27.0.6
     jiti: ^1.10.1
     lerna: ^4.0.0
