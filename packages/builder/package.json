@@ -21,7 +21,7 @@
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
     "pify": "^5.0.0",
-    "serialize-javascript": "^5.0.1",
+    "serialize-javascript": "^6.0.0",
     "upath": "^2.0.1"
   },
   "publishConfig": {
