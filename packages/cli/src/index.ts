@@ -8,11 +8,15 @@ import { error } from './utils/log'
 
 async function _main () {
   const _argv = process.argv.slice(2)
-  const args = mri(_argv)
+  const args = mri(_argv, {
+    boolean: [
+      'no-clear'
+    ]
+  })
   // @ts-ignore
   let command = args._.shift() || 'usage'
 
-  showBanner(command === 'dev')
+  showBanner(command === 'dev' && args.clear !== false)
 
   if (!(command in commands)) {
     console.log('\n' + red('Invalid command ' + command))
