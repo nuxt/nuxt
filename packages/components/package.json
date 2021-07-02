@@ -15,13 +15,13 @@
     "@nuxt/kit": "^0.6.4",
     "globby": "^11.0.4",
     "scule": "^0.2.1",
-    "ufo": "^0.7.5",
+    "ufo": "^0.7.7",
     "upath": "^2.0.1"
   },
   "devDependencies": {
     "unbuild": "^0.3.1"
   },
   "peerDependencies": {
-    "vue": "3.1.2"
+    "vue": "3.1.3"
   }
 }

@@ -28,7 +28,7 @@
     "@types/jest": "^26.0.23",
     "@types/node": "^14.17.4",
     "@types/object-hash": "^2",
-    "esbuild": "^0.12.12",
+    "esbuild": "^0.12.14",
     "eslint": "^7.29.0",
     "eslint-plugin-jsdoc": "^35.4.1",
     "globby": "^11.0.4",
@@ -36,7 +36,7 @@
     "jiti": "^1.10.1",
     "lerna": "^4.0.0",
     "object-hash": "^2.2.0",
-    "typescript": "^4.3.4",
+    "typescript": "^4.3.5",
     "unbuild": "^0.3.1"
   }
 }
