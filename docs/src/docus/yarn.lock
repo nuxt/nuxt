@@ -2037,6 +2037,11 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
+"@windicss/plugin-scrollbar@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@windicss/plugin-scrollbar/-/plugin-scrollbar-1.2.3.tgz#4796e999e98a4bca6c269fa1faffd2e9b5452cac"
+  integrity sha512-+cqv1pEmaNPITeBJ/lO6tc8IjBzRhQ+V9G8r249MMXivYoxUO4DtModBrRGHVvBgsYZgPXDsIv2jqtxc4NqYEg==
+
 "@windicss/plugin-utils@0.15.10":
   version "0.15.10"
   resolved "https://registry.yarnpkg.com/@windicss/plugin-utils/-/plugin-utils-0.15.10.tgz#93dde1823da8f89c660fba9467b61723bb2a836c"
@@ -4310,10 +4315,10 @@ doctypes@^1.1.0:
   resolved "https://registry.yarnpkg.com/doctypes/-/doctypes-1.1.0.tgz#ea80b106a87538774e8a3a4a5afe293de489e0a9"
   integrity sha1-6oCxBqh1OHdOijpKWv4pPeSJ4Kk=
 
-docus@^0.8.8:
-  version "0.8.8"
-  resolved "https://registry.yarnpkg.com/docus/-/docus-0.8.8.tgz#06c72373884774a8a6efce4f0b057125328e0d95"
-  integrity sha512-BbjK4ge3RW03o8Wrm7aIuhbxQfJsQblpGOmBN0X0XkR/DjntSyH8y/HnPhTyRA7kiEXUGulOd7B9Ai4Ljxhuuw==
+docus@^0.8.12:
+  version "0.8.12"
+  resolved "https://registry.yarnpkg.com/docus/-/docus-0.8.12.tgz#9764141cebd1010c125f388edb2a668fbb1d2417"
+  integrity sha512-Ry2WxdFAD2wp8zCcTUYuO+oIoFwFlGQ9BDymM3LQjcLuKOzsFf2XNvGGXtk6F3UuTfoFI+gSzQcAb/W9kzVxEA==
   dependencies:
     "@docsearch/css" "^1.0.0-alpha.28"
     "@docsearch/js" "^1.0.0-alpha.28"
@@ -4328,6 +4333,7 @@ docus@^0.8.8:
     "@vitejs/plugin-vue" "^1.2.4"
     "@vue/composition-api" "^1.0.0-rc.12"
     "@vueuse/integrations" "^5.0.3"
+    "@windicss/plugin-scrollbar" "^1.2.3"
     "@windicss/plugin-utils" "^1.2.0"
     clear-module "^4.1.1"
     clipboard "^2.0.8"
