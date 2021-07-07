@@ -5,3 +5,6 @@ declare module 'vue' {
 }).join(',\n') %>
   }
 }
+
+// export required to turn this into a module for TS augmentation purposes
+export { }

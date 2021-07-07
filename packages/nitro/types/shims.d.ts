@@ -21,5 +21,3 @@ declare module '#assets' {
   export function statAsset(id: string): Promise<AssetMeta>
   export function getAsset<T=any>(id: string): { read: () => Promise<T>, meta: AssetMeta }
 }
-
-export {}
