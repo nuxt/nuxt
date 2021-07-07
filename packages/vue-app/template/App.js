@@ -182,10 +182,25 @@ export default {
         if (page.$options.fetch && page.$options.fetch.length) {
           p.push(promisify(page.$options.fetch, this.context))
         }
-        if (page.$fetch) {
-          p.push(page.$fetch())
-        } else {
-          // Get all component instance to call $fetch
+        // get layout component
+        const layout = this.$children.find((component) => component._name?.toLowerCase().includes("layouts"))
+        if (layout) {
+          // get layout fetch if exist
+          if (layout.$fetch) {
+            p.push(layout.$fetch())
+          }
+
+          // Get all component instance from layout to call $fetch
+          for (const component of getChildrenComponentInstancesUsingFetch(layout.$vnode.componentInstance)) {
+            p.push(component.$fetch())
+          }
+        } else { // if layout is disabled
+          // get page fetch if exist
+          if (page.$fetch) {
+            p.push(page.$fetch())
+          }
+
+          // Get all component instance from page to call $fetch
           for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
             p.push(component.$fetch())
           }
