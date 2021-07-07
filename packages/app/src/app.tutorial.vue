@@ -35,7 +35,7 @@
             </div>
             <div class="ml-10">
               <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-                We highly recommend to take a look at the Nuxt documentation, wether you are new or have previous expererience with the framework.
+                We highly recommend you take a look at the Nuxt documentation, whether you are new or have previous experience with the framework.
               </div>
             </div>
           </div>
