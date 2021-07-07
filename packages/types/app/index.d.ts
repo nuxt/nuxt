@@ -176,6 +176,8 @@ export interface NuxtApp extends Vue {
 // window.$nuxt
 declare global {
   interface Window {
+    onNuxtLoaded: (cb: (app: NuxtApp) => void) => void
+    onNuxtReady: (cb: (app: NuxtApp) => void) => void
     $nuxt: NuxtApp
   }
 }
