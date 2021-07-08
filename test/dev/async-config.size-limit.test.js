@@ -39,7 +39,7 @@ describe('nuxt basic resources size limit', () => {
     const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 64
     expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE)
 
-    const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 55
+    const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 56
     expect(modernResourcesSize.brotli).toBeWithinSize(MODERN_JS_RESOURCES_BROTLI_KB_SIZE)
   })
 })
