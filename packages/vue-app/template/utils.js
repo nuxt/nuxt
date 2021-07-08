@@ -249,8 +249,8 @@ export async function setContext (app, context) {
           })
         }
         if (process.client) {
-          // https://developer.mozilla.org/en-US/docs/Web/API/Location/replace
-          window.location.replace(path)
+          // https://developer.mozilla.org/en-US/docs/Web/API/Location/assign
+          window.location.assign(path)
 
           // Throw a redirect error
           throw new Error('ERR_REDIRECT')
@@ -259,6 +259,7 @@ export async function setContext (app, context) {
     }
     if (process.server) {
       app.context.beforeNuxtRender = fn => context.beforeRenderFns.push(fn)
+      app.context.beforeSerialize = fn => context.beforeSerializeFns.push(fn)
     }
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>

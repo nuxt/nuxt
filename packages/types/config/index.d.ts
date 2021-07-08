@@ -28,6 +28,7 @@ export { ServerMiddleware } from './server-middleware'
 export interface Configuration extends Record<string, any> {}
 
 export interface NuxtOptions extends Configuration {
+  alias: Record<string, string>
   build: NuxtOptionsBuild
   buildDir: string
   buildModules: NuxtOptionsModule[]
