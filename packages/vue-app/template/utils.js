@@ -53,9 +53,12 @@ export function purifyData(data) {
       return obj
     }, {})
 }
-export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
+export function getChildrenComponentInstancesUsingFetch(vm, instances = [], exclude = []) {
   const children = vm.$children || []
   for (const child of children) {
+    // ignore the component when it is in the exclude list
+    if (exclude.includes(child)) continue;
+
     if (child.$fetch) {
       instances.push(child)
       continue; // Don't get the children since it will reload the template

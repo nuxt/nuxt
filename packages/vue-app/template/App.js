@@ -186,7 +186,7 @@ export default {
           p.push(page.$fetch())
         }
         // Get all component instance to call $fetch
-        for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
+        for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance, [], pages)) {
           p.push(component.$fetch())
         }
         <% } %>
@@ -206,7 +206,6 @@ export default {
       })
 
       <% if (features.fetch) { %>
-      // get layout component
       const layout = this.$children.find((component) => component._name?.toLowerCase().includes("layouts"))
       // if layout is enabled
       if (layout) {
@@ -216,10 +215,8 @@ export default {
           p.push(layout.$fetch())
         }
         // Get all component instance from layout to call $fetch
-        for (const component of getChildrenComponentInstancesUsingFetch(layout.$vnode.componentInstance)) {
-          if (!pages.includes(component)) {
-            p.push(component.$fetch())
-          }
+        for (const component of getChildrenComponentInstancesUsingFetch(layout.$vnode.componentInstance, [], pages)) {
+          p.push(component.$fetch())
         }
 
         promises.push(Promise.all(p))
