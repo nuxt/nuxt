@@ -738,9 +738,8 @@ function hotReloadAPI(_app) {
 
   if (_app.context.isHMR) {
     const Components = getMatchedComponents(router.currentRoute)
-    const instances = getMatchedComponentsInstances(router.currentRoute)
-    instances.forEach((instance,index) => {
-      instance.constructor = Components[index]
+    Components.forEach((Component) => {
+      Component.prototype.constructor = Component
     })
   }
 }
