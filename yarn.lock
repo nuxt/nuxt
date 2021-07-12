@@ -10014,6 +10014,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"nuxt-playground@workspace:playground":
+  version: 0.0.0-use.local
+  resolution: "nuxt-playground@workspace:playground"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "nuxt3@workspace:./packages/nuxt3, nuxt3@workspace:packages/nuxt3":
   version: 0.0.0-use.local
   resolution: "nuxt3@workspace:packages/nuxt3"
