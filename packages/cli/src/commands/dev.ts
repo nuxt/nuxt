@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import chokidar from 'chokidar'
 import debounce from 'debounce-promise'
 import { createServer, createLoadingHandler } from '../utils/server'

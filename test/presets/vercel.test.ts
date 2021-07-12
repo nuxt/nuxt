@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import { testNitroBuild, setupTest, startServer, testNitroBehavior } from './_utils'
 
 describe('nitro:preset:vercel', () => {

@@ -1,3 +1,4 @@
+import { normalize } from 'upath'
 import Hookable from 'hookable'
 import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, nuxtCtx, installModule, ModuleContainer } from '@nuxt/kit'
 import { initNitro } from './nitro'
@@ -52,9 +53,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const { appDir } = await import('@nuxt/app/meta')
   options.appDir = appDir
   options._majorVersion = 3
-  options.alias.vue = require.resolve('vue/dist/vue.esm-bundler.js')
-  options.buildModules.push(require.resolve('@nuxt/pages/module'))
-  options.buildModules.push(require.resolve('@nuxt/component-discovery/module'))
+  options.alias.vue = normalize(require.resolve('vue/dist/vue.esm-bundler.js'))
+  options.buildModules.push(normalize(require.resolve('@nuxt/pages/module')))
+  options.buildModules.push(normalize(require.resolve('@nuxt/component-discovery/module')))
 
   const nuxt = createNuxt(options)
 

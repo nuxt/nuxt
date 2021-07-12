@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'upath'
 import pify from 'pify'
 import { Volume, createFsFromVolume } from 'memfs'
 

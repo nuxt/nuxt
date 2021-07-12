@@ -1,5 +1,5 @@
 
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import { requireModule } from '../utils/cjs'
 
 export async function invoke (args) {

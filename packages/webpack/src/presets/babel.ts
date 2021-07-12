@@ -1,3 +1,4 @@
+import { normalize } from 'upath'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import { reservedVueTags } from '../utils/reserved-tags'
 import { WebpackConfigContext } from '../utils/config'
@@ -6,7 +7,7 @@ export function babel (ctx: WebpackConfigContext) {
   const { config, options } = ctx
 
   const babelLoader = {
-    loader: require.resolve('babel-loader'),
+    loader: normalize(require.resolve('babel-loader')),
     options: getBabelOptions(ctx)
   }
 
@@ -66,7 +67,7 @@ function getBabelOptions (ctx: WebpackConfigContext) {
     babelOptions.plugins = babelOptions.plugins(ctx)
   }
 
-  const defaultPreset = [require.resolve('../../babel-preset-app'), {}]
+  const defaultPreset = [normalize(require.resolve('../../babel-preset-app')), {}]
 
   if (typeof babelOptions.presets === 'function') {
     babelOptions.presets = babelOptions.presets(ctx, defaultPreset)

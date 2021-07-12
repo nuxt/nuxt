@@ -1,5 +1,5 @@
-import path from 'path'
 import type { IncomingMessage, ServerResponse } from 'http'
+import path from 'upath'
 import pify from 'pify'
 import webpack from 'webpack'
 import Glob from 'glob'

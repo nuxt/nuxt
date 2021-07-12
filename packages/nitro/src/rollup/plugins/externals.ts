@@ -1,4 +1,4 @@
-import { resolve, dirname } from 'upath'
+import { resolve, dirname, normalize } from 'upath'
 import { copyFile, mkdirp } from 'fs-extra'
 import { nodeFileTrace, NodeFileTraceOptions } from '@vercel/nft'
 import type { Plugin } from 'rollup'
@@ -23,6 +23,11 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         return null
       }
 
+      // Normalize path on windows
+      if (process.platform === 'win32') {
+        id = id.replace(/\\/g, '/')
+      }
+
       // Normalize from node_modules
       const _id = id.split('node_modules/').pop()
 
@@ -42,7 +47,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       // Try to resolve for nft
       if (opts.trace !== false) {
         let _resolvedId = _id
-        try { _resolvedId = require.resolve(_resolvedId, { paths: opts.moduleDirectories }) } catch (_err) {}
+        try { _resolvedId = normalize(require.resolve(_resolvedId, { paths: opts.moduleDirectories })) } catch (_err) { }
         resolvedExternals.add(_resolvedId)
       }
 

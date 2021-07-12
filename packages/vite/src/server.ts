@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import { mkdirp, writeFile } from 'fs-extra'

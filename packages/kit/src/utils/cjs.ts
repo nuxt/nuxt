@@ -1,4 +1,4 @@
-import { join } from 'path'
+import { join, normalize } from 'upath'
 import jiti from 'jiti'
 
 // TODO: use create-require for jest environment
@@ -81,7 +81,7 @@ export function requireModulePkg (id: string, opts: RequireModuleOptions = {}) {
 
 /** Resolve the path of a module. */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
-  return _require.resolve(id, {
+  return normalize(_require.resolve(id, {
     paths: [].concat(
       // @ts-ignore
       global.__NUXT_PREPATHS__,
@@ -90,7 +90,7 @@ export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
       // @ts-ignore
       global.__NUXT_PATHS__
     ).filter(Boolean)
-  })
+  }))
 }
 
 /** Try to resolve the path of a module, but don't emit an error if it can't be found. */

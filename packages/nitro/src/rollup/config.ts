@@ -1,4 +1,4 @@
-import { dirname, join, relative, resolve } from 'upath'
+import { dirname, join, normalize, relative, resolve } from 'upath'
 import { InputOptions, OutputOptions } from 'rollup'
 import defu from 'defu'
 import { terser } from 'rollup-plugin-terser'
@@ -198,8 +198,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   rollupConfig.plugins.push(alias({
     entries: {
       '#nitro': nitroContext._internal.runtimeDir,
-      '#nitro-renderer': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer)),
-      '#config': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app/config')),
+      '#nitro-renderer': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer))),
+      '#config': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app/config'))),
       '#nitro-vue-renderer': vue2ServerRenderer,
       '#build': nitroContext._nuxt.buildDir,
       '~': nitroContext._nuxt.srcDir,

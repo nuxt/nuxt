@@ -1,5 +1,5 @@
-import path, { basename, parse } from 'path'
 import fs from 'fs'
+import path, { basename, parse } from 'upath'
 import hash from 'hash-sum'
 import consola from 'consola'
 import { useNuxt } from '../nuxt'

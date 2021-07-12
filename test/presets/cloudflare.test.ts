@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import { readFile } from 'fs-extra'
 import { JSDOM } from 'jsdom'
 

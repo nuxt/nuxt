@@ -1,4 +1,4 @@
-import { join, resolve } from 'path'
+import { join, resolve } from 'upath'
 import env from 'std-env'
 import createRequire from 'create-require'
 import { pascalCase } from 'scule'

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import fs from 'fs'
-import path from 'path'
+import path from 'upath'
 import consola from 'consola'
 import { defaults, merge, cloneDeep } from 'lodash'
 import createResolver from 'postcss-import-resolver'

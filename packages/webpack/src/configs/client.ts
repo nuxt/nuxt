@@ -1,5 +1,5 @@
-import path from 'path'
 import querystring from 'querystring'
+import path from 'upath'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 

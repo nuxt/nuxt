@@ -1,6 +1,6 @@
-import { resolve, dirname } from 'path'
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'fs'
 import { execSync } from 'child_process'
+import { resolve, dirname } from 'upath'
 import defu from 'defu'
 import hash from 'object-hash'
 import type { LoadNuxtOptions, NuxtConfig } from '@nuxt/kit'

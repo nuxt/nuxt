@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import * as vite from 'vite'
 import vitePlugin from '@vitejs/plugin-vue'
 import { cacheDirPlugin } from './plugins/cache-dir'

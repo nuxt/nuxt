@@ -35,6 +35,7 @@
     "style-resources-loader": "^1.4.1",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^0.7.7",
+    "upath": "^2.0.1",
     "url-loader": "^4.1.1",
     "vue": "3.1.4",
     "vue-loader": "^16.3.0",

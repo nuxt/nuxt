@@ -49,8 +49,8 @@ function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath
 }
 
 function isPackageHoisted (packageName) {
-  const path = require('path')
-  const installedPath = require.resolve(packageName)
+  const path = require('upath')
+  const installedPath = path.normalize(require.resolve(packageName))
   const relativePath = path.resolve(__dirname, '..', 'node_modules', packageName)
   return installedPath !== relativePath
 }

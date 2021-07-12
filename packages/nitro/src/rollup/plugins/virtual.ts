@@ -1,5 +1,5 @@
 // Based on https://github.com/rollup/plugins/blob/master/packages/virtual/src/index.ts
-import * as path from 'path'
+import * as path from 'upath'
 
 import { Plugin } from 'rollup'
 

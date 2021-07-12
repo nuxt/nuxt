@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import { joinURL } from 'ufo'
 
 export default {

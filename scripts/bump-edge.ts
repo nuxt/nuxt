@@ -1,6 +1,6 @@
 import { promises as fsp } from 'fs'
-import { resolve } from 'path'
 import { execSync } from 'child_process'
+import { resolve } from 'upath'
 import globby from 'globby'
 
 async function loadPackage (dir: string) {

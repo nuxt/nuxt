@@ -1,4 +1,4 @@
-import { resolve, join } from 'path'
+import { resolve, join } from 'upath'
 import { existsSync, readdirSync } from 'fs'
 import defu from 'defu'
 import { isRelative, joinURL, hasProtocol } from 'ufo'

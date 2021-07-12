@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import { testNitroBuild, setupTest, testNitroBehavior } from './_utils'
 
 describe('nitro:preset:lambda', () => {

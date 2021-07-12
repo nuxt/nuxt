@@ -1,3 +1,4 @@
+import { normalize } from 'upath'
 import { wpfs, getNitroContext, createDevServer, resolveMiddleware, build, prepare, generate } from '@nuxt/nitro'
 import type { Nuxt } from '@nuxt/kit'
 
@@ -22,7 +23,7 @@ export function initNitro (nuxt: Nuxt) {
 
   // Add nitro client plugin (to inject $fetch helper)
   nuxt.hook('app:resolve', (app) => {
-    app.plugins.push({ src: require.resolve('@nuxt/nitro/dist/runtime/app/nitro.client.mjs') })
+    app.plugins.push({ src: normalize(require.resolve('@nuxt/nitro/dist/runtime/app/nitro.client.mjs')) })
   })
 
   // Expose process.env.NITRO_PRESET
