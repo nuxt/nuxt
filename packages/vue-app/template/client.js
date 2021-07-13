@@ -1,7 +1,7 @@
-import Vue from 'vue'
-<% if (fetch.client) { %>import fetch from 'unfetch'<% } %>
+ Vue from 'vue'
+<% if (fetch.client) { %> fetch from 'unfetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
-import {
+ {
   <% if (features.asyncData) { %>applyAsyncData,
   promisify,<% } %>
   <% if (features.middleware) { %>middlewareSeries,<% } %>
@@ -18,9 +18,10 @@ import {
   isSamePath,
   urlJoin
 } from './utils.js'
-import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
+
+ { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
-import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+ NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
 <% if (isFullStatic) { %>import { installJsonp } from './jsonp'<% } %>
 
 <% if (isFullStatic) { %>installJsonp()<% } %>
