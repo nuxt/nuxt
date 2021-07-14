@@ -20,7 +20,7 @@
     "vue-router": "^4.0.10"
   },
   "devDependencies": {
-    "unbuild": "^0.3.1"
+    "unbuild": "^0.3.2"
   },
   "peerDependencies": {
     "vue": "3.1.4"

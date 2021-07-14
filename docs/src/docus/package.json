@@ -6,8 +6,5 @@
   },
   "devDependencies": {
     "docus": "^0.8.12"
-  },
-  "resolutions": {
-    "nuxt-windicss": "~0.6.0"
   }
 }

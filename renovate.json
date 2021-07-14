@@ -3,7 +3,7 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "nuxt-windicss"
+    "docus"
   ],
   "lockFileMaintenance": {
     "enabled": true
