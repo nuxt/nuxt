@@ -1682,12 +1682,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/devalue@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "@nuxt/devalue@npm:1.2.5"
-  dependencies:
-    consola: ^2.9.0
-  checksum: 5a0734b61c3e3b7e02a02bff432e51cfc4004fb518916fabb8a6f8d17165aa2b63481342849e51dd3b60b8fdb37f2a2a7926cecf70bdd412a597a44ee7bb558f
+"@nuxt/devalue@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@nuxt/devalue@npm:2.0.0"
+  checksum: 465e6d4edd12974246773ec0d017f4b795b3e18c376e9e8f7f074ea77f06be153445c252ec97076b71665edb77c2db7627b565369dc3ce79973097829eca0149
   languageName: node
   linkType: hard
 
@@ -1733,7 +1731,7 @@ __metadata:
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.3
     "@netlify/functions": ^0.7.2
-    "@nuxt/devalue": ^1.2.5
+    "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": ^0.6.4
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^19.0.0
@@ -4623,7 +4621,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"consola@npm:^2.15.0, consola@npm:^2.15.3, consola@npm:^2.6.0, consola@npm:^2.9.0":
+"consola@npm:^2.15.0, consola@npm:^2.15.3, consola@npm:^2.6.0":
   version: 2.15.3
   resolution: "consola@npm:2.15.3"
   checksum: 914e2b0b24605a41f1a83ae29a0238558d01a01c40ada5817db81b2dd1543a540d59e38e81e736d05360246379a18013e6930b32231650898dfc4adb52a93523
