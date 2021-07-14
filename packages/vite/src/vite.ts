@@ -23,7 +23,7 @@ export async function bundle (nuxt: Nuxt) {
     config: vite.mergeConfig(
       nuxt.options.vite as any || {},
       {
-        root: nuxt.options.buildDir,
+        root: nuxt.options.rootDir,
         mode: nuxt.options.dev ? 'development' : 'production',
         logLevel: 'warn',
         define: {
@@ -35,6 +35,7 @@ export async function bundle (nuxt: Nuxt) {
             ...nuxt.options.alias,
             '#build': nuxt.options.buildDir,
             '#app': nuxt.options.appDir,
+            '/__build': nuxt.options.buildDir,
             '~': nuxt.options.srcDir,
             '@': nuxt.options.srcDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
@@ -76,7 +77,7 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
     const start = Date.now()
-    warmupViteServer(server, ['/entry.mjs']).then(() => {
+    warmupViteServer(server, [`/@fs${nuxt.options.buildDir.replace(/\\/g, '/')}/entry.mjs`]).then(() => {
       consola.info(`Vite warmed up in ${Date.now() - start}ms`)
     }).catch(consola.error)
   })

@@ -28,7 +28,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ]
     },
     build: {
-      outDir: 'dist/server',
+      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
         input: resolve(ctx.nuxt.options.buildDir, 'entry.mjs'),
