@@ -47,7 +47,7 @@ jobs:
         run: yarn test:presets
 
       - name: Release Edge
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-release]')
         run: ./scripts/release-edge.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
