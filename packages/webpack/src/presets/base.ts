@@ -23,7 +23,7 @@ function baseConfig (ctx: WebpackConfigContext) {
 
   ctx.config = {
     name: ctx.name,
-    entry: { app: [resolve(options.buildDir, 'entry')] },
+    entry: { app: [resolve(options.appDir, 'entry')] },
     module: { rules: [] },
     plugins: [],
     externals: [],

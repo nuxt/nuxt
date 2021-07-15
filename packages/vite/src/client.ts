@@ -1,4 +1,3 @@
-import { resolve } from 'upath'
 import * as vite from 'vite'
 import vitePlugin from '@vitejs/plugin-vue'
 import { cacheDirPlugin } from './plugins/cache-dir'
@@ -16,10 +15,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     build: {
       outDir: 'dist/client',
-      assetsDir: '.',
-      rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, 'client.js')
-      }
+      assetsDir: '.'
     },
     plugins: [
       replace({ 'process.env': 'import.meta.env' }),

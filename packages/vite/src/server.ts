@@ -31,7 +31,6 @@ export async function buildServer (ctx: ViteBuildContext) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, 'entry.mjs'),
         output: {
           entryFileNames: 'server.mjs',
           preferConst: true,

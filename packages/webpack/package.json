@@ -44,6 +44,7 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-dev-middleware": "^5.0.0",
     "webpack-hot-middleware": "^2.25.0",
+    "webpack-virtual-modules": "^0.4.3",
     "webpackbar": "^5.0.0-3"
   },
   "devDependencies": {
@@ -52,6 +53,7 @@
     "@types/webpack-bundle-analyzer": "^4.4.1",
     "@types/webpack-dev-middleware": "^5.0.1",
     "@types/webpack-hot-middleware": "^2.25.5",
+    "@types/webpack-virtual-modules": "^0",
     "unbuild": "^0.3.2"
   }
 }

@@ -1,9 +1,9 @@
-import { resolve, join, relative, dirname } from 'upath'
+import { resolve, join, relative } from 'upath'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
 import defu from 'defu'
 import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, NuxtTemplate, NuxtPlugin } from '@nuxt/kit'
-import { mkdirp, writeFile, readFile } from 'fs-extra'
+import { readFile } from 'fs-extra'
 import * as templateUtils from './template.utils'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -43,12 +43,17 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
   // Extend templates
   await nuxt.callHook('app:templates', app)
 
-  // Generate templates
-  await Promise.all(app.templates.map(t => generateTemplate(t, nuxt.options.buildDir, {
-    utils: templateUtils,
-    nuxt,
-    app
-  })))
+  // Compile templates into vfs
+  const templateContext = { utils: templateUtils, nuxt, app }
+  await Promise.all(app.templates.map(async (template) => {
+    const contents = await compileTemplate(template, templateContext)
+
+    const fullPath = resolve(nuxt.options.buildDir, template.path)
+    nuxt.vfs[fullPath] = contents
+
+    const aliasPath = '#build/' + template.path.replace(/\.\w+$/, '')
+    nuxt.vfs[aliasPath] = contents
+  }))
 
   await nuxt.callHook('app:templatesGenerated', app)
 }
@@ -78,23 +83,21 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   await nuxt.callHook('app:resolve', app)
 }
 
-async function generateTemplate (tmpl: NuxtTemplate, destDir: string, ctx) {
-  let compiledSrc: string = ''
+async function compileTemplate (tmpl: NuxtTemplate, ctx: any) {
   const data = { ...ctx, ...tmpl.data }
   if (tmpl.src) {
     try {
       const srcContents = await readFile(tmpl.src, 'utf-8')
-      compiledSrc = lodashTemplate(srcContents, {})(data)
+      return lodashTemplate(srcContents, {})(data)
     } catch (err) {
       console.error('Error compiling template: ', tmpl)
       throw err
     }
-  } else if (tmpl.compile) {
-    compiledSrc = tmpl.compile(data)
   }
-  const dest = join(destDir, tmpl.path)
-  await mkdirp(dirname(dest))
-  await writeFile(dest, compiledSrc)
+  if (tmpl.compile) {
+    return tmpl.compile(data)
+  }
+  throw new Error('Invalid template:' + tmpl)
 }
 
 async function resolvePlugins (nuxt: Nuxt) {

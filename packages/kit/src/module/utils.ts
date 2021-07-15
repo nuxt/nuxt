@@ -12,7 +12,6 @@ import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
  * If a fileName is not provided or the template is string, target file name defaults to
  * [dirName].[fileName].[pathHash].[ext].
  *
- * This file is available to import with `#build/${filename}`
  */
 export function addTemplate (tmpl: TemplateOpts | string) {
   const nuxt = useNuxt()

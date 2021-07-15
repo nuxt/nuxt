@@ -10,6 +10,11 @@ export function initNitro (nuxt: Nuxt) {
 
   nuxt.server = createDevServer(nitroDevContext)
 
+  if (nuxt.vfs) {
+    nitroContext.vfs = nuxt.vfs
+    nitroDevContext.vfs = nuxt.vfs
+  }
+
   // Connect hooks
   // @ts-ignore
   nuxt.hooks.addHooks(nitroContext.nuxtHooks)

@@ -7,7 +7,7 @@ export async function warmupViteServer (server: ViteDevServer, entries: string[]
     if (warmedUrls.has(url)) { return undefined }
     warmedUrls.add(url)
     await server.transformRequest(url)
-    const deps = Array.from(server.moduleGraph.urlToModuleMap.get(url).importedModules)
+    const deps = Array.from(server.moduleGraph.urlToModuleMap.get(url)?.importedModules || [])
     await Promise.all(deps.map(m => warmup(m.url)))
   }
 

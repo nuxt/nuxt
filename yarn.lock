@@ -1473,6 +1473,7 @@ __metadata:
     "@types/webpack-bundle-analyzer": ^4.4.1
     "@types/webpack-dev-middleware": ^5.0.1
     "@types/webpack-hot-middleware": ^2.25.5
+    "@types/webpack-virtual-modules": ^0
     "@vue/babel-preset-jsx": ^1.2.4
     "@vue/compiler-sfc": ^3.1.4
     babel-loader: ^8.2.2
@@ -1504,6 +1505,7 @@ __metadata:
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.0.0
     webpack-hot-middleware: ^2.25.0
+    webpack-virtual-modules: ^0.4.3
     webpackbar: ^5.0.0-3
   languageName: unknown
   linkType: soft
@@ -2133,6 +2135,15 @@ __metadata:
     "@types/source-list-map": "*"
     source-map: ^0.7.3
   checksum: d9a37142f7ed6376dae19a02d01a14a6635ffe8a1cbd80e9d74239bdde431f55226fcf7ec423a32a6b32c616dc782713cd213ed2f7dcdaad693fbe2ac219c867
+  languageName: node
+  linkType: hard
+
+"@types/webpack-virtual-modules@npm:^0":
+  version: 0.1.1
+  resolution: "@types/webpack-virtual-modules@npm:0.1.1"
+  dependencies:
+    "@types/webpack": ^4
+  checksum: b84900c1c0638979773c9d8574fa67739e2c7bc0919a720c05eb3a4768e7447572463df9e2a68b2f7261ef6d4af6b4600301f81f05bb1ce24c8d34940f98a760
   languageName: node
   linkType: hard
 
@@ -4727,9 +4738,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.723":
-  version: 1.3.775
-  resolution: "electron-to-chromium@npm:1.3.775"
-  checksum: 6e62b08d9a6d8a7304984cb1e6557346fad497079ba2719cf604125130ef7f0be33ea46046fbedb077cec83e185e1daddf9fde6dfe5ba189a8caafc195349ce8
+  version: 1.3.776
+  resolution: "electron-to-chromium@npm:1.3.776"
+  checksum: 9cdf721325f3c4cdecef157b12395c3749c9539c90320d63030d1fb860670c73e1433b90eddae4b3cf93e1628e5f5cbd9ea42ab615bc3fa6dc4d5215cac47579
   languageName: node
   linkType: hard
 
@@ -10320,8 +10331,8 @@ fsevents@~2.3.2:
   linkType: hard
 
 "rollup@npm:^2.38.5, rollup@npm:^2.52.0, rollup@npm:^2.53.1":
-  version: 2.53.1
-  resolution: "rollup@npm:2.53.1"
+  version: 2.53.2
+  resolution: "rollup@npm:2.53.2"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -10329,7 +10340,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 7c63a7251e87715795a4141371f4f7b31ce46c7dd8273a0f4b5240977eb7ecaddd1e8d0fdaf8eabfc7cf73075cc9d83e03c67b89e56f31a2e85cf1089e9fc34f
+  checksum: 41d32b1d44066f3e8eeb5239013397e3df74dbb37489aaa77f8357059b5998cb4af0108fb72b048d265ae5d88de933b0732007c07e5d5687f5ee3ae44fab9eee
   languageName: node
   linkType: hard
 
@@ -12146,6 +12157,13 @@ fsevents@~2.3.2:
     source-list-map: ^2.0.1
     source-map: ^0.6.1
   checksum: b929133f8b86fa91a42d2e557f2b2cd6136f62a50c10e32db9f37a63609cd4d1b3475772503c814baa2e25c02d3206110ec2add7a3aaf2794217fbf48664e72a
+  languageName: node
+  linkType: hard
+
+"webpack-virtual-modules@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "webpack-virtual-modules@npm:0.4.3"
+  checksum: 9d25285c2fcbfb54515e4fc0e12eb6261ad9565a6eb36e679e5277a0a4728425c59d75ae81f3d1536c73a6d446cb33338153b9e61b4f6c2c04c04394e57f06ff
   languageName: node
   linkType: hard
 

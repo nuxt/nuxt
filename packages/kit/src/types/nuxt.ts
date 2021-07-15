@@ -21,6 +21,8 @@ export interface Nuxt {
 
   /** The production or development server */
   server?: any
+
+  vfs: Record<string, string>
 }
 
 export interface NuxtPlugin {
