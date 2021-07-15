@@ -16,7 +16,7 @@
     "remark": "^13.0.0",
     "remark-parse": "^9.0.0",
     "remark-rehype": "^8.1.0",
-    "unified": "^9.2.1",
+    "unified": "^10.0.0",
     "untyped": "^0.2.5",
     "vite": "^2.4.2",
     "vite-plugin-windicss": "^1.2.4",
