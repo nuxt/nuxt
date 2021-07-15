@@ -1362,13 +1362,13 @@ __metadata:
   dependencies:
     "@nuxt/kit": ^0.6.4
     "@vueuse/head": ^0.6.0
-    unbuild: ^0.3.1
+    unbuild: ^0.3.2
     upath: ^2.0.1
     vue-meta: 3.0.0-alpha.9
   peerDependencies:
-    "@vue/reactivity": 3.1.1
-    "@vue/shared": 3.1.1
-    vue: 3.1.1
+    "@vue/reactivity": 3.1.4
+    "@vue/shared": 3.1.4
+    vue: 3.1.4
   languageName: unknown
   linkType: soft
 
@@ -1423,7 +1423,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.53.1
+    rollup: ^2.53.2
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
@@ -10356,7 +10356,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.38.5, rollup@npm:^2.52.0, rollup@npm:^2.53.1":
+"rollup@npm:^2.38.5, rollup@npm:^2.52.0, rollup@npm:^2.53.2":
   version: 2.53.2
   resolution: "rollup@npm:2.53.2"
   dependencies:
@@ -11693,7 +11693,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.3.1, unbuild@npm:^0.3.2":
+"unbuild@npm:^0.3.2":
   version: 0.3.2
   resolution: "unbuild@npm:0.3.2"
   dependencies:

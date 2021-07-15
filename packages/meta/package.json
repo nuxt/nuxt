@@ -23,12 +23,12 @@
     "upath": "^2.0.1"
   },
   "devDependencies": {
-    "unbuild": "^0.3.1",
+    "unbuild": "^0.3.2",
     "vue-meta": "3.0.0-alpha.9"
   },
   "peerDependencies": {
-    "@vue/reactivity": "3.1.1",
-    "@vue/shared": "3.1.1",
-    "vue": "3.1.1"
+    "@vue/reactivity": "3.1.4",
+    "@vue/shared": "3.1.4",
+    "vue": "3.1.4"
   }
 }
