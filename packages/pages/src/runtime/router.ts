@@ -43,13 +43,15 @@ export default defineNuxtPlugin((nuxt) => {
     if (process.server) {
       router.push(nuxt.ssrContext.url)
     }
-    try {
-      await router.isReady()
-      if (!router.currentRoute.value.matched.length) {
-        // TODO
-      }
-    } catch (err) {
-      // TODO
+
+    await router.isReady()
+
+    const is404 = router.currentRoute.value.matched.length === 0
+    if (process.server && is404) {
+      const error = new Error(`Page not found: ${nuxt.ssrContext.url}`)
+      // @ts-ignore
+      error.statusCode = 404
+      nuxt.ssrContext.error = error
     }
   })
 })

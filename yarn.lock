@@ -1305,6 +1305,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@nuxt/design@npm:0.0.4":
+  version: 0.0.4
+  resolution: "@nuxt/design@npm:0.0.4"
+  checksum: c28506ff41e26721dc1f3a3101d9d2824b3b44e17b4abf1ab246bc2777a49d743fc42b8b1e056460934461892b3af28c4ee96524a1c61d099ad02c23fc22f115
+  languageName: node
+  linkType: hard
+
 "@nuxt/devalue@npm:^2.0.0":
   version: 2.0.0
   resolution: "@nuxt/devalue@npm:2.0.0"
@@ -1354,6 +1361,7 @@ __metadata:
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.3
     "@netlify/functions": ^0.7.2
+    "@nuxt/design": 0.0.4
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": ^0.6.4
     "@rollup/plugin-alias": ^3.1.2
@@ -8531,6 +8539,7 @@ fsevents@~2.3.2:
   version: 0.0.0-use.local
   resolution: "nuxt-cli@workspace:packages/cli"
   dependencies:
+    "@nuxt/design": 0.0.4
     "@nuxt/kit": ^0.6.4
     "@types/clear": ^0
     "@types/debounce-promise": ^3

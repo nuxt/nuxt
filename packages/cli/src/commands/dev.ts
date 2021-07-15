@@ -22,7 +22,7 @@ export async function invoke (args) {
   const load = async (isRestart) => {
     try {
       const message = `${isRestart ? 'Restarting' : 'Starting'} nuxt...`
-      server.setApp(createLoadingHandler(message, 1))
+      server.setApp(createLoadingHandler(message))
       if (isRestart) {
         console.log(message)
       }

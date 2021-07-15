@@ -47,6 +47,11 @@ export async function renderMiddleware (req, res) {
   const renderer = await loadRenderer()
   const rendered = await renderer.renderToString(ssrContext)
 
+  // Handle errors
+  if (ssrContext.error) {
+    throw ssrContext.error
+  }
+
   if (ssrContext.nuxt.hooks) {
     await ssrContext.nuxt.hooks.callHook('app:rendered')
   }

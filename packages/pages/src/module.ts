@@ -36,17 +36,6 @@ export default defineNuxtModule({
       // Resolve routes
       const routes = await resolvePagesRoutes(nuxt)
 
-      // Add 404 page is not added
-      const page404 = routes.find(route => route.name === '404')
-      if (!page404) {
-        routes.push({
-          name: '404',
-          path: '/:catchAll(.*)*',
-          file: resolve(runtimeDir, '404.vue'),
-          children: []
-        })
-      }
-
       // Add routes.js
       app.templates.push({
         path: 'routes.js',
