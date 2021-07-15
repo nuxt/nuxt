@@ -1,6 +1,7 @@
 
 import { resolve } from 'upath'
 import { requireModule } from '../utils/cjs'
+import { error } from '../utils/log'
 
 export async function invoke (args) {
   process.env.NODE_ENV = process.env.NODE_ENV || 'production'
@@ -9,6 +10,12 @@ export async function invoke (args) {
   const { loadNuxt, buildNuxt } = requireModule('@nuxt/kit', rootDir)
 
   const nuxt = await loadNuxt({ rootDir })
+
+  nuxt.hook('error', (err) => {
+    error('Nuxt Build Error:', err)
+    process.exit(1)
+  })
+
   await buildNuxt(nuxt)
 }
 
