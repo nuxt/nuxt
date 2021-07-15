@@ -74,6 +74,21 @@ export default class VueSSRServerPlugin {
           size: () => src.length
         }
 
+        const mjsSrc = 'export default ' + src
+        assets[this.options.filename.replace('.json', '.mjs')] = {
+          source: () => mjsSrc,
+          map: () => null,
+          size: () => mjsSrc.length
+        }
+
+        // TODO: Workaround for webpack
+        const serverJS = 'export { default } from "./server.js"'
+        assets['server.mjs'] = {
+          source: () => serverJS,
+          map: () => null,
+          size: () => serverJS.length
+        }
+
         cb()
       })
     })

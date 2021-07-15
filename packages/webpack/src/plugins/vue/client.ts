@@ -113,6 +113,10 @@ export default class VueSSRClientPlugin {
 
       await mkdirp(dirname(this.options.filename))
       await writeFile(this.options.filename, src)
+
+      const mjsSrc = 'export default ' + src
+      await writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
+
       // assets[this.options.filename] = {
       //   source: () => src,
       //   size: () => src.length

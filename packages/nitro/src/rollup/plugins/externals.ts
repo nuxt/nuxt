@@ -1,4 +1,4 @@
-import { resolve, dirname, normalize } from 'upath'
+import { resolve, dirname } from 'upath'
 import { copyFile, mkdirp } from 'fs-extra'
 import { nodeFileTrace, NodeFileTraceOptions } from '@vercel/nft'
 import type { Plugin } from 'rollup'
@@ -13,11 +13,11 @@ export interface NodeExternalsOptions {
 }
 
 export function externals (opts: NodeExternalsOptions): Plugin {
-  const resolvedExternals = new Set<string>()
+  const trackedExternals = new Set<string>()
 
   return {
     name: 'node-externals',
-    resolveId (id) {
+    async resolveId (id, importer, options) {
       // Internals
       if (!id || id.startsWith('\x00') || id.includes('?') || id.startsWith('#')) {
         return null
@@ -44,11 +44,10 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         }
       }
 
-      // Try to resolve for nft
+      // Track externals
       if (opts.trace !== false) {
-        let _resolvedId = _id
-        try { _resolvedId = normalize(require.resolve(_resolvedId, { paths: opts.moduleDirectories })) } catch (_err) { }
-        resolvedExternals.add(_resolvedId)
+        const resolved = await this.resolve(id, importer, { ...options, skipSelf: true }).then(r => r.id)
+        trackedExternals.add(resolved)
       }
 
       return {
@@ -58,14 +57,25 @@ export function externals (opts: NodeExternalsOptions): Plugin {
     },
     async buildEnd () {
       if (opts.trace !== false) {
-        const tracedFiles = await nodeFileTrace(Array.from(resolvedExternals), opts.traceOptions)
+        const tracedFiles = await nodeFileTrace(Array.from(trackedExternals), opts.traceOptions)
           .then(r => r.fileList.map(f => resolve(opts.traceOptions.base, f)))
+          .then(r => r.filter(file => file.includes('node_modules')))
+
+        // // Find all unique package names
+        const pkgs = new Set<string>()
+        for (const file of tracedFiles) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const [_, baseDir, pkgName, _importPath] = /(.+\/node_modules\/)([^/]+)\/(.*)/.exec(file)
+          pkgs.add(resolve(baseDir, pkgName, 'package.json'))
+        }
+
+        for (const pkg of pkgs) {
+          if (!tracedFiles.includes(pkg)) {
+            tracedFiles.push(pkg)
+          }
+        }
 
         await Promise.all(tracedFiles.map(async (file) => {
-          if (!file.includes('node_modules')) {
-            return
-          }
-          // TODO: Minify package.json
           const src = resolve(opts.traceOptions.base, file)
           const dst = resolve(opts.outDir, 'node_modules', file.split('node_modules/').pop())
           await mkdirp(dirname(dst))

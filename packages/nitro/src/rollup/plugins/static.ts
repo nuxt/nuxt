@@ -32,7 +32,11 @@ export function staticAssets (context: NitroContext) {
     '#static': `
 import { promises } from 'fs'
 import { resolve } from 'path'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import assets from '#static-assets'
+
+const mainDir = dirname(fileURLToPath(globalThis.entryURL))
 
 export function readAsset (id) {
   return promises.readFile(resolve(mainDir, getAsset(id).path))
@@ -50,7 +54,7 @@ export function dirnames (): Plugin {
     name: 'dirnames',
     renderChunk (code, chunk) {
       return {
-        code: code + (chunk.isEntry ? 'globalThis.mainDir="undefined"!=typeof __dirname?__dirname:require.main.filename;' : ''),
+        code: code + (chunk.isEntry ? 'globalThis.entryURL = import.meta.url' : ''),
         map: null
       }
     }

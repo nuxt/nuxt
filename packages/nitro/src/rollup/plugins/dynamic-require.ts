@@ -103,16 +103,20 @@ export default function dynamicRequire(id) {
 
 function TMPL_LAZY ({ chunks }: TemplateContext) {
   return `
-function dynamicWebpackModule(id, getChunk) {
+function dynamicWebpackModule(id, getChunk, ids) {
   return function (module, exports, require) {
     const r = getChunk()
-    if (r instanceof Promise) {
+    if (typeof r.then === 'function') {
       module.exports = r.then(r => {
         const realModule = { exports: {}, require };
         r.modules[id](realModule, realModule.exports, realModule.require);
+        for (const _id of ids) {
+          if (_id === id) continue;
+          r.modules[_id](realModule, realModule.exports, realModule.require);
+        }
         return realModule.exports;
       });
-    } else {
+    } else if (r && typeof r.modules[id] === 'function') {
       r.modules[id](module, exports, require);
     }
   };
@@ -121,7 +125,7 @@ function dynamicWebpackModule(id, getChunk) {
 function webpackChunk (meta, getChunk) {
  const chunk = { ...meta, modules: {} };
  for (const id of meta.moduleIds) {
-   chunk.modules[id] = dynamicWebpackModule(id, getChunk);
+   chunk.modules[id] = dynamicWebpackModule(id, getChunk, meta.moduleIds);
  };
  return chunk;
 };

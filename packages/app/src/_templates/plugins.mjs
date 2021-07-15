@@ -1,10 +1,8 @@
-import head from '#app/plugins/head'
 import preload from '#app/plugins/preload.server'
 
 <%= utils.importSources(app.plugins.map(p => p.src)) %>
 
 const commonPlugins = [
-  head,
   <%= app.plugins.filter(p => !p.mode || p.mode === 'all').map(p => utils.importName(p.src)).join(',\n  ') %>
 ]
 

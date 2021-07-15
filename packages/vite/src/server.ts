@@ -32,6 +32,11 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: resolve(ctx.nuxt.options.buildDir, 'entry.mjs'),
+        output: {
+          entryFileNames: 'server.mjs',
+          preferConst: true,
+          format: 'module'
+        },
         onwarn (warning, rollupWarn) {
           if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
             rollupWarn(warning)
@@ -51,8 +56,8 @@ export async function buildServer (ctx: ViteBuildContext) {
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
   await mkdirp(serverDist)
 
-  await writeFile(resolve(serverDist, 'server.js'), 'module.exports = require("./entry")', 'utf8')
   await writeFile(resolve(serverDist, 'client.manifest.json'), 'false', 'utf8')
+  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default false', 'utf8')
 
   const onBuild = () => ctx.nuxt.callHook('build:resources', wpfs)
 

@@ -1,15 +1,27 @@
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'fs'
 import { execSync } from 'child_process'
-import { resolve, dirname } from 'upath'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import defu from 'defu'
 import hash from 'object-hash'
-import type { LoadNuxtOptions, NuxtConfig } from '@nuxt/kit'
+import execa from 'execa'
 
-export function fixtureDir (name: string) {
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+export function resolveWorkspace (name) {
+  return resolve(__dirname, '../', name)
+}
+
+export function fixtureDir (name) {
   return resolve(__dirname, 'fixtures', name)
 }
 
-export async function loadFixture (opts: LoadNuxtOptions, unhashedConfig?: NuxtConfig) {
+export async function execNuxtCLI (args, opts) {
+  const nuxtCLI = resolveWorkspace('packages/cli/bin/nuxt.js')
+  await execa('node', [nuxtCLI, ...args], opts)
+}
+
+export async function loadFixture (opts, unhashedConfig) {
   const buildId = hash(opts)
   const buildDir = resolve(opts.rootDir, '.nuxt', buildId)
   const { loadNuxt } = await import('@nuxt/kit')
@@ -17,7 +29,7 @@ export async function loadFixture (opts: LoadNuxtOptions, unhashedConfig?: NuxtC
   return nuxt
 }
 
-export async function buildFixture (opts: LoadNuxtOptions) {
+export async function buildFixture (opts) {
   const buildId = hash(opts)
   const buildDir = resolve(opts.rootDir, '.nuxt', buildId)
 
@@ -75,6 +87,6 @@ function waitWhile (check, interval = 100, timeout = 30000) {
   })
 }
 
-function gitHead (): string {
+function gitHead () {
   return execSync('git rev-parse HEAD').toString('utf8').trim()
 }

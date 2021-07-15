@@ -14,7 +14,7 @@ import type { NitroContext } from '../context'
 
 export function createDevServer (nitroContext: NitroContext) {
   // Worker
-  const workerEntry = resolve(nitroContext.output.dir, nitroContext.output.serverDir, 'index.js')
+  const workerEntry = resolve(nitroContext.output.dir, nitroContext.output.serverDir, 'index.mjs')
   let pendingWorker: Worker | null
   let activeWorker: Worker
   let workerAddress: string | null

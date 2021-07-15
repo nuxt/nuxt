@@ -36,7 +36,7 @@ function filesToMiddleware (files: string[], baseDir: string, basePath: string, 
 }
 
 export function scanMiddleware (serverDir: string, onChange?: (results: ServerMiddleware[], event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', file: string) => void): Promise<ServerMiddleware[]> {
-  const pattern = '**/*.{js,ts}'
+  const pattern = '**/*.{ts,mjs,js,cjs}'
   const globalDir = resolve(serverDir, 'middleware')
   const apiDir = resolve(serverDir, 'api')
 
@@ -78,7 +78,7 @@ export function resolveMiddleware (nuxt: Nuxt) {
       middleware.push({
         ...m,
         handle: tryResolvePath(handle, {
-          extensions: ['.ts', '.js'],
+          extensions: ['.ts', '.mjs', '.js', '.cjs'],
           alias: nuxt.options.alias,
           base: nuxt.options.srcDir
         }),

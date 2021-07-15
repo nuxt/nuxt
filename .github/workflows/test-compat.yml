@@ -43,7 +43,4 @@ jobs:
         run: yarn build
 
       - name: Test
-        run: TEST_COMPAT=1 yarn jest --ci
-
-      # - name: Coverage
-      #   uses: codecov/codecov-action@v1
+        run: TEST_COMPAT=1 yarn test:presets

@@ -1,11 +1,10 @@
-import { resolve } from 'upath'
-import { testNitroBuild, setupTest, startServer, testNitroBehavior } from './_utils'
+import { resolve } from 'path'
+import { setupTest, startServer, testNitroBehavior, importModule } from './_tests.mjs'
 
 describe('nitro:preset:vercel', () => {
-  const ctx = setupTest()
-  testNitroBuild(ctx, 'vercel')
+  const ctx = setupTest('vercel')
   testNitroBehavior(ctx, async () => {
-    const handle = await import(resolve(ctx.outDir, 'functions/node/server/index.js'))
+    const handle = await importModule(resolve(ctx.outDir, 'functions/node/server/index.mjs'))
       .then(r => r.default || r)
     await startServer(ctx, handle)
     return async ({ url }) => {

@@ -7,6 +7,6 @@
   "scripts": {
     "dev": "nu dev",
     "build": "nu build",
-    "start": "node .output/server"
+    "start": "node .output/server/index.mjs"
   }
 }

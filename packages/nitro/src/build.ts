@@ -47,10 +47,10 @@ export async function build (nitroContext: NitroContext) {
   // Compile html template
   const htmlSrc = resolve(nitroContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
-  htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.js').replace('app.', 'document.')
+  htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.mjs').replace('app.', 'document.')
   htmlTemplate.contents = await readFile(htmlTemplate.src, 'utf-8')
   await nitroContext._internal.hooks.callHook('nitro:document', htmlTemplate)
-  htmlTemplate.compiled = 'module.exports = ' + serializeTemplate(htmlTemplate.contents)
+  htmlTemplate.compiled = 'export default ' + serializeTemplate(htmlTemplate.contents)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
   nitroContext.rollupConfig = getRollupConfig(nitroContext)

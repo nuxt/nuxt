@@ -44,10 +44,7 @@ jobs:
         run: yarn build
 
       - name: Test
-        run: yarn jest --ci
-
-      # - name: Coverage
-      #   uses: codecov/codecov-action@v1
+        run: yarn test:presets
 
       - name: Release Edge
         if: github.event_name == 'push'

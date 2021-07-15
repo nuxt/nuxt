@@ -22,7 +22,7 @@ if ('serviceWorker' in navigator) {
 <head>
   <meta charset="utf-8">
   <link rel="prefetch" href="${routerBase}sw.js">
-  <link rel="prefetch" href="${routerBase}_server/index.js">
+  <link rel="prefetch" href="${routerBase}_server/index.mjs">
   <script>
   async function register () {
     const registration = await navigator.serviceWorker.register('${routerBase}sw.js')
@@ -65,7 +65,7 @@ if ('serviceWorker' in navigator) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
       async 'nitro:compiled' ({ output }: NitroContext) {
-        await writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.js');`)
+        await writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.mjs');`)
 
         // Temp fix
         await writeFile(resolve(output.publicDir, 'index.html'), html)

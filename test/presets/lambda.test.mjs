@@ -1,11 +1,10 @@
-import { resolve } from 'upath'
-import { testNitroBuild, setupTest, testNitroBehavior } from './_utils'
+import { resolve } from 'path'
+import { setupTest, testNitroBehavior, importModule } from './_tests.mjs'
 
 describe('nitro:preset:lambda', () => {
-  const ctx = setupTest()
-  testNitroBuild(ctx, 'lambda')
+  const ctx = setupTest('lambda')
   testNitroBehavior(ctx, async () => {
-    const { handler } = await import(resolve(ctx.outDir, 'server/index.js'))
+    const { handler } = await importModule(resolve(ctx.outDir, 'server/index.mjs'))
     return async ({ url: rawRelativeUrl, headers, method, body }) => {
       // creating new URL object to parse query easier
       const url = new URL(`https://example.com${rawRelativeUrl}`)

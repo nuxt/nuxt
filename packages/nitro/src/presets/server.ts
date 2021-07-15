@@ -8,7 +8,7 @@ export const server: NitroPreset = extendPreset(node, {
   serveStatic: true,
   hooks: {
     'nitro:compiled' ({ output }: NitroContext) {
-      consola.success('Ready to run', hl('node ' + prettyPath(output.serverDir)))
+      consola.success('Ready to run', hl('node ' + prettyPath(output.serverDir) + '/index.mjs'))
     }
   }
 })

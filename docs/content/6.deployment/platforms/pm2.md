@@ -2,9 +2,9 @@
 
 > How to deploy Nuxt to a Node.js host with Nuxt Nitro
 
- - Support for ultra-minimal SSR build
- - Zero millisecond cold start
- - More configuration required
+- Support for ultra-minimal SSR build
+- Zero millisecond cold start
+- More configuration required
 
 ## Setup
 
@@ -28,7 +28,7 @@ This `.output` folder can be deployed to your Node.js host and the server can be
 To start the server in production mode, run:
 
 ```bash
-node .output/server
+node .output/server/index.mjs
 ```
 
 For example, using `pm2`:

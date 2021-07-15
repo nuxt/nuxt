@@ -11,7 +11,7 @@ export const cloudflare: NitroPreset = extendPreset(worker, {
   ],
   hooks: {
     async 'nitro:compiled' ({ output, _nuxt }: NitroContext) {
-      await writeFile(resolve(output.dir, 'package.json'), JSON.stringify({ private: true, main: './server/index.js' }, null, 2))
+      await writeFile(resolve(output.dir, 'package.json'), JSON.stringify({ private: true, main: './server/index.mjs' }, null, 2))
       await writeFile(resolve(output.dir, 'package-lock.json'), JSON.stringify({ lockfileVersion: 1 }, null, 2))
       let inDir = prettyPath(_nuxt.rootDir)
       if (inDir) {

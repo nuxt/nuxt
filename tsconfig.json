@@ -11,7 +11,8 @@
     "resolveJsonModule": true,
     "types": [
       "node",
-      "jest",
+      "mocha",
+      "chai",
       "@nuxt/app",
       "@nuxt/nitro",
     ]
