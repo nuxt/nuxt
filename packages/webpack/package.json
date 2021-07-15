@@ -18,7 +18,7 @@
     "@vue/compiler-sfc": "^3.1.4",
     "babel-loader": "^8.2.2",
     "consola": "^2.15.3",
-    "css-loader": "^5.2.7",
+    "css-loader": "^6.0.0",
     "css-minimizer-webpack-plugin": "^3.0.2",
     "esbuild-loader": "^2.13.1",
     "file-loader": "^6.2.0",

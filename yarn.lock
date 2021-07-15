@@ -1469,7 +1469,7 @@ __metadata:
     "@vue/compiler-sfc": ^3.1.4
     babel-loader: ^8.2.2
     consola: ^2.15.3
-    css-loader: ^5.2.7
+    css-loader: ^6.0.0
     css-minimizer-webpack-plugin: ^3.0.2
     esbuild-loader: ^2.13.1
     file-loader: ^6.2.0
@@ -4095,23 +4095,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^5.2.7":
-  version: 5.2.7
-  resolution: "css-loader@npm:5.2.7"
+"css-loader@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "css-loader@npm:6.0.0"
   dependencies:
     icss-utils: ^5.1.0
-    loader-utils: ^2.0.0
     postcss: ^8.2.15
     postcss-modules-extract-imports: ^3.0.0
     postcss-modules-local-by-default: ^4.0.0
     postcss-modules-scope: ^3.0.0
     postcss-modules-values: ^4.0.0
     postcss-value-parser: ^4.1.0
-    schema-utils: ^3.0.0
     semver: ^7.3.5
   peerDependencies:
-    webpack: ^4.27.0 || ^5.0.0
-  checksum: e121c9310e3597003126844c3bb9e0635273e14065730ae62102fea5f594da948479c56503299ceee6bc942da1b125e24fec27b3b0d9ea64a83f27a88f10bba4
+    webpack: ^5.0.0
+  checksum: 2936560c06a332b3fdb4701b26c930b3a030af73e5a39c2876d9d074f0d458139300e1c593d8118dbe24437a64f41cad6d98d6a358a08f317a241515d2034050
   languageName: node
   linkType: hard
 
