@@ -3,6 +3,15 @@ import Hookable from 'hookable'
 import { defineGetter } from './utils'
 import { legacyPlugin, LegacyContext } from './legacy'
 
+type NuxtMeta = {
+  htmlAttrs?: string
+  headAttrs?: string
+  bodyAttrs?: string
+  headTags?: string
+  bodyPrepend?: string
+  bodyScripts?: string
+}
+
 export interface Nuxt {
   app: App
   globalName: string
@@ -16,7 +25,9 @@ export interface Nuxt {
   _asyncDataPromises?: Record<string, Promise<any>>
   _legacyContext?: LegacyContext
 
-  ssrContext?: Record<string, any>
+  ssrContext?: Record<string, any> & {
+    renderMeta: () => Promise<NuxtMeta> | NuxtMeta
+  }
   payload: {
     serverRendered?: true
     data?: Record<string, any>

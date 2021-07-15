@@ -11,6 +11,7 @@
   "rules": {
     "no-console": "off",
     "vue/one-component-per-file": "off",
+    "vue/require-default-prop": "off",
     "jsdoc/require-jsdoc": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",

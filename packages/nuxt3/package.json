@@ -4,6 +4,11 @@
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
+  "bin": {
+    "nu": "./bin/nuxt.js",
+    "nuxt": "./bin/nuxt.js",
+    "nuxt-cli": "./bin/nuxt.js"
+  },
   "files": [
     "bin",
     "dist"
@@ -11,15 +16,11 @@
   "scripts": {
     "prepack": "unbuild $@ || true"
   },
-  "bin": {
-    "nu": "./bin/nuxt.js",
-    "nuxt": "./bin/nuxt.js",
-    "nuxt-cli": "./bin/nuxt.js"
-  },
   "dependencies": {
     "@nuxt/app": "^0.5.0",
     "@nuxt/component-discovery": "^0.2.0",
     "@nuxt/kit": "^0.6.4",
+    "@nuxt/meta": "^0.1.0",
     "@nuxt/nitro": "^0.9.1",
     "@nuxt/pages": "^0.3.0",
     "@nuxt/vite-builder": "^0.5.0",

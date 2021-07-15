@@ -1279,7 +1279,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/app@workspace:packages/app"
   dependencies:
-    "@vueuse/head": ^0.6.0
     hookable: ^4.4.1
     ohmyfetch: ^0.2.0
     unbuild: ^0.3.2
@@ -1287,6 +1286,8 @@ __metadata:
     vue: ^3.1.4
     vue-router: ^4.0.10
     vuex5: ^0.5.0-testing.3
+  peerDependencies:
+    "@nuxt/meta": ^0.1.0
   languageName: unknown
   linkType: soft
 
@@ -1352,6 +1353,22 @@ __metadata:
     unctx: ^1.0.1
     untyped: ^0.2.5
     upath: ^2.0.1
+  languageName: unknown
+  linkType: soft
+
+"@nuxt/meta@^0.1.0, @nuxt/meta@workspace:packages/meta":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/meta@workspace:packages/meta"
+  dependencies:
+    "@nuxt/kit": ^0.6.4
+    "@vueuse/head": ^0.6.0
+    unbuild: ^0.3.1
+    upath: ^2.0.1
+    vue-meta: 3.0.0-alpha.9
+  peerDependencies:
+    "@vue/reactivity": 3.1.1
+    "@vue/shared": 3.1.1
+    vue: 3.1.1
   languageName: unknown
   linkType: soft
 
@@ -5416,6 +5433,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-meta@workspace:examples/meta":
+  version: 0.0.0-use.local
+  resolution: "example-meta@workspace:examples/meta"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-pages@workspace:examples/pages":
   version: 0.0.0-use.local
   resolution: "example-pages@workspace:examples/pages"
@@ -8621,6 +8646,7 @@ fsevents@~2.3.2:
     "@nuxt/app": ^0.5.0
     "@nuxt/component-discovery": ^0.2.0
     "@nuxt/kit": ^0.6.4
+    "@nuxt/meta": ^0.1.0
     "@nuxt/nitro": ^0.9.1
     "@nuxt/pages": ^0.3.0
     "@nuxt/vite-builder": ^0.5.0
@@ -11667,7 +11693,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.3.2":
+"unbuild@npm:^0.3.1, unbuild@npm:^0.3.2":
   version: 0.3.2
   resolution: "unbuild@npm:0.3.2"
   dependencies:
@@ -11984,6 +12010,15 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     loader-utils: ^2.0.0
   checksum: e8150d57f54c158f239f69ab302833013836cdc639e8875588f9a8a181f356b8e1b0071d714a3e8af701e49e03507394d1220042f64c1479ef639072fb7751c0
+  languageName: node
+  linkType: hard
+
+"vue-meta@npm:3.0.0-alpha.9":
+  version: 3.0.0-alpha.9
+  resolution: "vue-meta@npm:3.0.0-alpha.9"
+  peerDependencies:
+    vue: ^3.0.0
+  checksum: bc0ccfee2b2fa9bdbf7a382a4af671def09c79ba2bbf3c89e54d642ec2de18cc1ad91f3ecd266e3cc8eb01547cef743648fd63b4392dd1c4b5663c6f7b94351f
   languageName: node
   linkType: hard
 

@@ -68,7 +68,7 @@ export async function renderMiddleware (req, res) {
     data = renderPayload(payload, url)
     res.setHeader('Content-Type', 'text/javascript;charset=UTF-8')
   } else {
-    data = renderHTML(payload, rendered, ssrContext)
+    data = await renderHTML(payload, rendered, ssrContext)
     res.setHeader('Content-Type', 'text/html;charset=UTF-8')
   }
 
@@ -77,56 +77,30 @@ export async function renderMiddleware (req, res) {
   res.end(data, 'utf-8')
 }
 
-function renderHTML (payload, rendered, ssrContext) {
+async function renderHTML (payload, rendered, ssrContext) {
   const state = `<script>window.__NUXT__=${devalue(payload)}</script>`
-  const _html = rendered.html
+  const html = rendered.html
 
-  const meta = {
-    htmlAttrs: '',
-    bodyAttrs: '',
-    headAttrs: '',
-    headTags: '',
-    bodyTags: '',
-    bodyScriptsPrepend: '',
-    bodyScripts: ''
+  if ('renderMeta' in ssrContext) {
+    rendered.meta = await ssrContext.renderMeta()
   }
 
-  // @vueuse/head
-  if (typeof ssrContext.head === 'function') {
-    Object.assign(meta, ssrContext.head())
-  }
-
-  // vue-meta
-  if (ssrContext.meta && typeof ssrContext.meta.inject === 'function') {
-    const _meta = ssrContext.meta.inject({
-      isSSR: ssrContext.nuxt.serverRendered,
-      ln: process.env.NODE_ENV === 'development'
-    })
-    meta.htmlAttrs += _meta.htmlAttrs.text()
-    meta.headAttrs += _meta.headAttrs.text()
-    meta.headTags +=
-      _meta.title.text() + _meta.base.text() +
-      _meta.meta.text() + _meta.link.text() +
-      _meta.style.text() + _meta.script.text() +
-      _meta.noscript.text()
-    meta.bodyAttrs += _meta.bodyAttrs.text()
-    meta.bodyScriptsPrepend =
-      _meta.meta.text({ pbody: true }) + _meta.link.text({ pbody: true }) +
-      _meta.style.text({ pbody: true }) + _meta.script.text({ pbody: true }) +
-      _meta.noscript.text({ pbody: true })
-    meta.bodyScripts =
-      _meta.meta.text({ body: true }) + _meta.link.text({ body: true }) +
-      _meta.style.text({ body: true }) + _meta.script.text({ body: true }) +
-      _meta.noscript.text({ body: true })
-  }
+  const {
+    htmlAttrs = '',
+    bodyAttrs = '',
+    headAttrs = '',
+    headTags = '',
+    bodyScriptsPrepend = '',
+    bodyScripts = ''
+  } = rendered.meta || {}
 
   return htmlTemplate({
-    HTML_ATTRS: meta.htmlAttrs,
-    HEAD_ATTRS: meta.headAttrs,
-    HEAD: meta.headTags +
+    HTML_ATTRS: htmlAttrs,
+    HEAD_ATTRS: headAttrs,
+    HEAD: headTags +
       rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
-    BODY_ATTRS: meta.bodyAttrs,
-    APP: meta.bodyScriptsPrepend + _html + state + rendered.renderScripts() + meta.bodyScripts
+    BODY_ATTRS: bodyAttrs,
+    APP: bodyScriptsPrepend + html + state + rendered.renderScripts() + bodyScripts
   })
 }
 

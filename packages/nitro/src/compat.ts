@@ -59,6 +59,12 @@ export default function nuxt2CompatModule () {
     src: resolve(nitroContext._internal.runtimeDir, 'app/nitro.client.mjs')
   })
 
+  // Nitro server plugin (for vue-meta)
+  this.addPlugin({
+    fileName: 'nitro-compat.server.js',
+    src: resolve(nitroContext._internal.runtimeDir, 'app/nitro-compat.server.js')
+  })
+
   // Fix module resolution
   nuxt.hook('webpack:config', (configs) => {
     for (const config of configs) {
