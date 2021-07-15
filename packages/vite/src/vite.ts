@@ -36,6 +36,7 @@ export async function bundle (nuxt: Nuxt) {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
+            '#build': nuxt.options.buildDir,
             '/__app': nuxt.options.appDir,
             '/__build': nuxt.options.buildDir,
             '~': nuxt.options.srcDir,
