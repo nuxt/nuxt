@@ -49,9 +49,7 @@ export async function bundle (nuxt: Nuxt) {
         vue: {},
         css: {},
         optimizeDeps: {
-          exclude: [
-            'vue-router'
-          ]
+          exclude: []
         },
         esbuild: {
           jsxFactory: 'h',
