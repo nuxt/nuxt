@@ -26,7 +26,7 @@ export interface Nuxt {
   _legacyContext?: LegacyContext
 
   ssrContext?: Record<string, any> & {
-    renderMeta: () => Promise<NuxtMeta> | NuxtMeta
+    renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   }
   payload: {
     serverRendered?: true
