@@ -3,6 +3,7 @@
   "private": true,
   "devDependencies": {
     "nuxt3": "latest",
+    "vue": "^3",
     "vue-content-loader": "^2.0.0"
   },
   "scripts": {

@@ -25,6 +25,8 @@
     "@nuxt/pages": "^0.3.0",
     "@nuxt/vite-builder": "^0.5.0",
     "@nuxt/webpack-builder": "^0.5.0",
+    "@vue/reactivity": "3.1.5",
+    "@vue/shared": "3.1.5",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
