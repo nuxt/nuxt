@@ -23,7 +23,7 @@
     "@rollup/plugin-inject": "^4.0.2",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.2",
-    "@rollup/plugin-replace": "^2.4.2",
+    "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-virtual": "^2.0.3",
     "@rollup/pluginutils": "^4.1.1",
     "@types/jsdom": "^16.2.13",
