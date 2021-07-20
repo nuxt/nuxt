@@ -8,6 +8,7 @@
     "dist"
   ],
   "dependencies": {
+    "@nuxt/builder": "2.15.6",
     "@nuxt/utils": "2.15.6",
     "chalk": "^4.1.1",
     "consola": "^2.15.3",
