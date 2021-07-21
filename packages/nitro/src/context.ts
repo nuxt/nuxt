@@ -40,6 +40,7 @@ export interface NitroContext {
   _nuxt: {
     majorVersion: number
     dev: boolean
+    ssr: boolean
     rootDir: string
     srcDir: string
     buildDir: string
@@ -99,6 +100,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
     _nuxt: {
       majorVersion: nuxtOptions._majorVersion || 2,
       dev: nuxtOptions.dev,
+      ssr: nuxtOptions.ssr,
       rootDir: nuxtOptions.rootDir,
       srcDir: nuxtOptions.srcDir,
       buildDir: nuxtOptions.buildDir,

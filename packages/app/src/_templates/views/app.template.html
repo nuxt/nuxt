@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html {{ HTML_ATTRS }}>
-  <head {{ HEAD_ATTRS }}>
-    {{ HEAD }}
-  </head>
-  <body {{ BODY_ATTRS }}>
-    {{ APP }}
-    <% if (nuxt.options.vite && nuxt.options.dev) { %><script type="module" src="/@vite/client"></script>
-    <script type="module" src="/__app/entry"></script><% } %>
-  </body>
+
+<head {{ HEAD_ATTRS }}>
+  {{ HEAD }}
+</head>
+
+<body {{ BODY_ATTRS }}>
+  {{ APP }}
+</body>
+
 </html>

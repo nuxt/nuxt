@@ -37,8 +37,9 @@ export async function bundle (nuxt: Nuxt) {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
             '#build': nuxt.options.buildDir,
-            '/__app': nuxt.options.appDir,
-            '/__build': nuxt.options.buildDir,
+            '/build': nuxt.options.buildDir,
+            '/app': nuxt.options.appDir,
+            '/entry.mjs': resolve(nuxt.options.appDir, 'entry'),
             '~': nuxt.options.srcDir,
             '@': nuxt.options.srcDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
@@ -46,6 +47,7 @@ export async function bundle (nuxt: Nuxt) {
             'abort-controller': 'unenv/runtime/mock/empty'
           }
         },
+        base: nuxt.options.build.publicPath,
         vue: {},
         css: {},
         optimizeDeps: {
@@ -67,7 +69,7 @@ export async function bundle (nuxt: Nuxt) {
         ],
         server: {
           fs: {
-            strict: true,
+            strict: false,
             allow: [
               nuxt.options.buildDir,
               nuxt.options.appDir,
@@ -85,11 +87,13 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
     const start = Date.now()
-    warmupViteServer(server, ['/__app/entry']).then(() => {
+    warmupViteServer(server, ['/app/entry.mjs']).then(() => {
       consola.info(`Vite warmed up in ${Date.now() - start}ms`)
     }).catch(consola.error)
   })
 
   await buildClient(ctx)
-  await buildServer(ctx)
+  if (ctx.nuxt.options.ssr) {
+    await buildServer(ctx)
+  }
 }

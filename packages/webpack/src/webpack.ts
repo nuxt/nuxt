@@ -85,9 +85,9 @@ class WebpackBundler {
       this.getWebpackConfig('client')
     ]
 
-    // if (options.build.ssr) {
-    webpackConfigs.push(this.getWebpackConfig('server'))
-    // }
+    if (options.ssr) {
+      webpackConfigs.push(this.getWebpackConfig('server'))
+    }
 
     await this.nuxt.callHook('webpack:config', webpackConfigs)
 

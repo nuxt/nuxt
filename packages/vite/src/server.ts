@@ -1,7 +1,6 @@
 import { resolve } from 'upath'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
-import { mkdirp, writeFile } from 'fs-extra'
 import consola from 'consola'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
@@ -51,12 +50,6 @@ export async function buildServer (ctx: ViteBuildContext) {
   } as ViteOptions)
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
-
-  const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
-  await mkdirp(serverDist)
-
-  await writeFile(resolve(serverDist, 'client.manifest.json'), 'false', 'utf8')
-  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default false', 'utf8')
 
   const onBuild = () => ctx.nuxt.callHook('build:resources', wpfs)
 

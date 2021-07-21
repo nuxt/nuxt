@@ -33,7 +33,8 @@ if (process.client) {
   }
 
   entry = async function initApp () {
-    const app = createSSRApp(App)
+    const isSSR = Boolean(window.__NUXT__?.serverRendered)
+    const app = isSSR ? createSSRApp(App) : createApp(App)
 
     const nuxt = createNuxt({ app })
 

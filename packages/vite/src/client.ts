@@ -1,4 +1,6 @@
 import * as vite from 'vite'
+import { resolve } from 'upath'
+import { mkdirp, writeFile } from 'fs-extra'
 import vitePlugin from '@vitejs/plugin-vue'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { replace } from './plugins/replace'
@@ -30,15 +32,25 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
+  const clientManifest = {
+    publicPath: ctx.nuxt.options.build.publicPath,
+    all: [],
+    initial: [ctx.nuxt.options.dev && '@vite/client', 'entry.mjs'].filter(Boolean),
+    async: [],
+    modules: {}
+  }
+
+  const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
+  await mkdirp(serverDist)
+  await writeFile(resolve(serverDist, 'client.manifest.json'), JSON.stringify(clientManifest, null, 2), 'utf8')
+  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + JSON.stringify(clientManifest, null, 2), 'utf8')
+
   const viteServer = await vite.createServer(clientConfig)
   await ctx.nuxt.callHook('vite:serverCreated', viteServer)
 
   const viteMiddleware = (req, res, next) => {
     // Workaround: vite devmiddleware modifies req.url
     const originalURL = req.url
-    if (req.url === '/_nuxt/client.js') {
-      return res.end('')
-    }
     viteServer.middlewares.handle(req, res, (err) => {
       req.url = originalURL
       next(err)

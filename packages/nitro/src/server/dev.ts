@@ -70,6 +70,11 @@ export function createDevServer (nitroContext: NitroContext) {
   const proxy = createProxy()
   app.use((req, res) => {
     if (workerAddress) {
+      // Workaround to pass legacy req.spa to proxy
+      // @ts-ignore
+      if (req.spa) {
+        req.headers['x-nuxt-no-ssr'] = 'true'
+      }
       proxy.web(req, res, { target: workerAddress }, (_err: unknown) => {
         // console.error('[proxy]', err)
       })

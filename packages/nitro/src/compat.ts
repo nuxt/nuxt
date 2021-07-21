@@ -50,7 +50,9 @@ export default function nuxt2CompatModule () {
   // Disable server sourceMap, esbuild will generate for it.
   nuxt.hook('webpack:config', (webpackConfigs) => {
     const serverConfig = webpackConfigs.find(config => config.name === 'server')
-    serverConfig.devtool = false
+    if (serverConfig) {
+      serverConfig.devtool = false
+    }
   })
 
   // Nitro client plugin
