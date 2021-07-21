@@ -13259,11 +13259,6 @@ vue-eslint-parser@^7.6.0:
     esquery "^1.4.0"
     lodash "^4.17.15"
 
-vue-hot-reload-api@^2.3.0:
-  version "2.3.4"
-  resolved "https://registry.npmjs.org/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
-  integrity sha512-BXq3jwIagosjgNVae6tkHzzIk6a8MHFtzAdwhnV5VlvPTFxDCvIttgSiHWjdGoTJvXtmRu5HacExfdarRcFhog==
-
 vue-jest@^4.0.1:
   version "4.0.1"
   resolved "https://registry.npmjs.org/vue-jest/-/vue-jest-4.0.1.tgz#683efc351c24456865b1356bae69d5bb663dafb5"
@@ -13275,16 +13270,14 @@ vue-jest@^4.0.1:
     extract-from-css "^0.4.4"
     source-map "0.5.6"
 
-vue-loader@^15.9.7:
-  version "15.9.7"
-  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.9.7.tgz#15b05775c3e0c38407679393c2ce6df673b01044"
-  integrity sha512-qzlsbLV1HKEMf19IqCJqdNvFJRCI58WNbS6XbPqK13MrLz65es75w392MSQ5TsARAfIjUw+ATm3vlCXUJSOH9Q==
+vue-loader@^16.3.3:
+  version "16.3.3"
+  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-16.3.3.tgz#e440e4eb12786e16138b5d98b612208f29ddf532"
+  integrity sha512-/1GzCuQ6MRORbC+leKTKoTGtpQt60bYe0gDGEextSteA2OM+v201FPha5jzmjQzVhRcwieZeUvezAtG5a/e5cw==
   dependencies:
-    "@vue/component-compiler-utils" "^3.1.0"
-    hash-sum "^1.0.2"
-    loader-utils "^1.1.0"
-    vue-hot-reload-api "^2.3.0"
-    vue-style-loader "^4.1.0"
+    chalk "^4.1.0"
+    hash-sum "^2.0.0"
+    loader-utils "^2.0.0"
 
 vue-meta@^2.4.0:
   version "2.4.0"
@@ -13317,7 +13310,7 @@ vue-server-renderer@^2.6.13:
     serialize-javascript "^3.1.0"
     source-map "0.5.6"
 
-vue-style-loader@^4.1.0, vue-style-loader@^4.1.3:
+vue-style-loader@^4.1.3:
   version "4.1.3"
   resolved "https://registry.npmjs.org/vue-style-loader/-/vue-style-loader-4.1.3.tgz#6d55863a51fa757ab24e89d9371465072aa7bc35"
   integrity sha512-sFuh0xfbtpRlKfm39ss/ikqs9AbKCoXZBpHeVZ8Tx650o0k0q/YCM7FRvigtxpACezfq6af+a7JeqVTWvncqDg==
