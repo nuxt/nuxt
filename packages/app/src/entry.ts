@@ -43,11 +43,14 @@ if (process.client) {
     await nuxt.hooks.callHook('app:created', app)
     await nuxt.hooks.callHook('app:beforeMount', app)
 
+    nuxt.hooks.hookOnce('page:finished', () => {
+      nuxt.isHydrating = false
+    })
+
     app.mount('#__nuxt')
 
     await nuxt.hooks.callHook('app:mounted', app)
     await nextTick()
-    nuxt.isHydrating = false
   }
 
   entry().catch((error) => {
