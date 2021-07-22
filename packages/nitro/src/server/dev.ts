@@ -93,7 +93,7 @@ export function createDevServer (nitroContext: NitroContext) {
   }
 
   // Watch for dist and reload worker
-  const pattern = '**/*.{js,json}'
+  const pattern = '**/*.{js,json,cjs,mjs}'
   const events = ['add', 'change']
   let watcher: FSWatcher
   function watch () {
