@@ -23,6 +23,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         'axios'
       ],
       noExternal: [
+        ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string'),
         '@nuxt/app'
       ]
     },
