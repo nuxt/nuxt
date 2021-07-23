@@ -15,6 +15,11 @@ export async function buildClient (ctx: ViteBuildContext) {
       'module.hot': false,
       global: 'globalThis'
     },
+    resolve: {
+      alias: {
+        '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client')
+      }
+    },
     build: {
       outDir: 'dist/client',
       assetsDir: '.'

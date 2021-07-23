@@ -110,6 +110,7 @@ function baseAlias (ctx: WebpackConfigContext) {
 
   ctx.alias = {
     '#app': options.appDir,
+    '#build/plugins': resolve(options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
     '#build': options.buildDir,
     ...options.alias,
     ...ctx.alias

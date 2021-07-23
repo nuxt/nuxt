@@ -36,6 +36,9 @@ export async function bundle (nuxt: Nuxt) {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
+            // We need this resolution to be present before the following entry, but it
+            // will be filled in client/server configs
+            '#build/plugins': undefined,
             '#build': nuxt.options.buildDir,
             '/build': nuxt.options.buildDir,
             '/app': nuxt.options.appDir,
