@@ -74,8 +74,8 @@
     "@types/debounce": "^1.2.0",
     "@types/fs-extra": "^9.0.12",
     "@types/http-proxy": "^1.17.7",
-    "@types/node-fetch": "^2.5.11",
+    "@types/node-fetch": "^2.5.12",
     "@types/serve-static": "^1.13.10",
-    "unbuild": "^0.3.2"
+    "unbuild": "^0.4.0"
   }
 }

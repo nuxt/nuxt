@@ -417,7 +417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:^0.9.0-alpha.1":
+"@es-joy/jsdoccomment@npm:0.9.0-alpha.1":
   version: 0.9.0-alpha.1
   resolution: "@es-joy/jsdoccomment@npm:0.9.0-alpha.1"
   dependencies:
@@ -1394,7 +1394,7 @@ __metadata:
   dependencies:
     hookable: ^4.4.1
     ohmyfetch: ^0.2.0
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     vue: ^3.1.5
     vue-router: ^4.0.10
@@ -1412,7 +1412,7 @@ __metadata:
     globby: ^11.0.4
     scule: ^0.2.1
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
   peerDependencies:
     vue: 3.1.5
@@ -1462,9 +1462,9 @@ __metadata:
     scule: ^0.2.1
     std-env: ^2.3.0
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     unctx: ^1.0.1
-    untyped: ^0.2.5
+    untyped: ^0.2.7
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -1475,7 +1475,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": ^0.6.4
     "@vueuse/head": ^0.6.0
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     vue-meta: 3.0.0-alpha.9
   peerDependencies:
@@ -1506,7 +1506,7 @@ __metadata:
     "@types/fs-extra": ^9.0.12
     "@types/http-proxy": ^1.17.7
     "@types/jsdom": ^16.2.13
-    "@types/node-fetch": ^2.5.11
+    "@types/node-fetch": ^2.5.12
     "@types/serve-static": ^1.13.10
     "@vercel/nft": ^0.13.1
     "@vue/server-renderer": ^3.1.5
@@ -1544,7 +1544,7 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.7.1
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     unenv: ^0.3.2
     unstorage: ^0.2.3
     upath: ^2.0.1
@@ -1562,7 +1562,7 @@ __metadata:
     globby: ^11.0.4
     scule: ^0.2.1
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     vue-router: ^4.0.10
   peerDependencies:
@@ -1584,7 +1584,7 @@ __metadata:
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     vite: ^2.4.3
     vue: 3.1.5
@@ -1625,13 +1625,13 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     url-loader: ^4.1.1
     vue: 3.1.5
     vue-loader: ^16.3.3
     vue-style-loader: ^4.1.3
-    webpack: ^5.45.1
+    webpack: ^5.46.0
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.0.0
     webpack-hot-middleware: ^2.25.0
@@ -1816,7 +1816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-alias@npm:^3.1.2, @rollup/plugin-alias@npm:^3.1.4":
+"@rollup/plugin-alias@npm:^3.1.4":
   version: 3.1.4
   resolution: "@rollup/plugin-alias@npm:3.1.4"
   dependencies:
@@ -1827,7 +1827,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^19.0.0, @rollup/plugin-commonjs@npm:^19.0.1":
+"@rollup/plugin-commonjs@npm:^19.0.1":
   version: 19.0.1
   resolution: "@rollup/plugin-commonjs@npm:19.0.1"
   dependencies:
@@ -1868,7 +1868,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.0.0, @rollup/plugin-node-resolve@npm:^13.0.2":
+"@rollup/plugin-node-resolve@npm:^13.0.2":
   version: 13.0.2
   resolution: "@rollup/plugin-node-resolve@npm:13.0.2"
   dependencies:
@@ -2105,13 +2105,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:^2.5.11":
-  version: 2.5.11
-  resolution: "@types/node-fetch@npm:2.5.11"
+"@types/node-fetch@npm:^2.5.12":
+  version: 2.5.12
+  resolution: "@types/node-fetch@npm:2.5.12"
   dependencies:
     "@types/node": "*"
     form-data: ^3.0.0
-  checksum: 944b0c6bed70afe330db022b90fb0c99f51b70a3fe38e2cc197207985cb6e1903eac5c0a87bb642c4b3683db9dafe3bee5ba020f9f9868b7c3eb70beae379b1a
+  checksum: f648728116a24b9b5abc117e08788ed859283548ed65d374dba333d4604a7e8d22934cb4dbe7d64498c5c7f04885d84a2dc11c9a4115d426c242e74fb2f2a6a6
   languageName: node
   linkType: hard
 
@@ -5201,11 +5201,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^35.5.0":
-  version: 35.5.0
-  resolution: "eslint-plugin-jsdoc@npm:35.5.0"
+"eslint-plugin-jsdoc@npm:^35.5.1":
+  version: 35.5.1
+  resolution: "eslint-plugin-jsdoc@npm:35.5.1"
   dependencies:
-    "@es-joy/jsdoccomment": ^0.9.0-alpha.1
+    "@es-joy/jsdoccomment": 0.9.0-alpha.1
     comment-parser: 1.1.6-beta.0
     debug: ^4.3.2
     esquery: ^1.4.0
@@ -5216,7 +5216,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: e14ce15a4c397abf7f8deb84fabc339d442d6e3f993bf822faf4f7f732ade5faeeda56181df80a71b32d3fe211eef8e377fa5108904348b58e0aa63f020c3cbe
+  checksum: 1ffa697db2f269ef467583d731794447b196da74552483ce24617ba1d891d9bfef25991e3aab4f711f9f5a9cd985f1493c86cf44aba58ec38ac089f4e10af8d0
   languageName: node
   linkType: hard
 
@@ -8152,7 +8152,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mkdist@npm:^0.3.1":
+"mkdist@npm:^0.3.3":
   version: 0.3.3
   resolution: "mkdist@npm:0.3.3"
   dependencies:
@@ -8687,7 +8687,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     listhen: ^0.2.4
     mri: ^1.1.6
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     v8-compile-cache: ^2.3.0
   dependenciesMeta:
@@ -8714,7 +8714,7 @@ fsevents@~2.3.2:
     chai: ^4.3.4
     esbuild: ^0.12.15
     eslint: ^7.31.0
-    eslint-plugin-jsdoc: ^35.5.0
+    eslint-plugin-jsdoc: ^35.5.1
     execa: ^5.1.1
     globby: ^11.0.4
     jiti: ^1.10.1
@@ -8723,7 +8723,7 @@ fsevents@~2.3.2:
     mocha: ^9.0.2
     object-hash: ^2.2.0
     typescript: ^4.3.5
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -8765,7 +8765,7 @@ fsevents@~2.3.2:
     nuxt-cli: ^0.3.8
     scule: ^0.2.1
     ufo: ^0.7.7
-    unbuild: ^0.3.2
+    unbuild: ^0.4.0
     upath: ^2.0.1
     vue: 3.1.5
   bin:
@@ -10466,7 +10466,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.38.5, rollup@npm:^2.52.0":
+"rollup@npm:^2.38.5":
   version: 2.53.2
   resolution: "rollup@npm:2.53.2"
   dependencies:
@@ -10480,7 +10480,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.53.3":
+"rollup@npm:^2.53.2, rollup@npm:^2.53.3":
   version: 2.53.3
   resolution: "rollup@npm:2.53.3"
   dependencies:
@@ -11713,7 +11713,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@^4.3.2, typescript@^4.3.5":
+typescript@^4.3.5:
   version: 4.3.5
   resolution: "typescript@npm:4.3.5"
   bin:
@@ -11723,7 +11723,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.3.2#builtin<compat/typescript>, typescript@patch:typescript@^4.3.5#builtin<compat/typescript>":
+"typescript@patch:typescript@^4.3.5#builtin<compat/typescript>":
   version: 4.3.5
   resolution: "typescript@patch:typescript@npm%3A4.3.5#builtin<compat/typescript>::version=4.3.5&hash=ddfc1b"
   bin:
@@ -11782,34 +11782,34 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "unbuild@npm:0.3.2"
+"unbuild@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "unbuild@npm:0.4.0"
   dependencies:
-    "@rollup/plugin-alias": ^3.1.2
-    "@rollup/plugin-commonjs": ^19.0.0
+    "@rollup/plugin-alias": ^3.1.4
+    "@rollup/plugin-commonjs": ^19.0.1
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.0.0
+    "@rollup/plugin-node-resolve": ^13.0.2
     chalk: ^4.1.1
     consola: ^2.15.3
     defu: ^5.0.0
-    esbuild: ^0.12.9
+    esbuild: ^0.12.15
     jiti: ^1.10.1
     mkdirp: ^1.0.4
-    mkdist: ^0.3.1
+    mkdist: ^0.3.3
     mri: ^1.1.6
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
-    rollup: ^2.52.0
+    rollup: ^2.53.2
     rollup-plugin-dts: ^3.0.2
     rollup-plugin-esbuild: ^4.5.0
     scule: ^0.2.1
-    typescript: ^4.3.2
-    untyped: ^0.2.5
+    typescript: ^4.3.5
+    untyped: ^0.2.6
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.js
-  checksum: 8e11ea63dd60b1fcbe3b963b4a4c850e024d39dafba7283b2b1975a9920fd48ba370f5a5ca83e7c22b5ef907650d177bd6c462f926e0f59a8bb4307171f35968
+  checksum: f01f05ddb8fd6ca69bb71ed44506da08c11719fd27c37419598687de111956866616dda82f769c7e6d15ae75164a8c77a8d86ba94ed671128621d182e11dd8eb
   languageName: node
   linkType: hard
 
@@ -11908,10 +11908,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"untyped@npm:^0.2.5":
-  version: 0.2.5
-  resolution: "untyped@npm:0.2.5"
-  checksum: d97ef36a9d0e5271f082e88c72abdb548ab93c154253e029c847eb3d03bac9bb621fde50bfc754857e3835289894fa044f7504573ee5a0d0c2b68b6d54298d2e
+"untyped@npm:^0.2.6, untyped@npm:^0.2.7":
+  version: 0.2.7
+  resolution: "untyped@npm:0.2.7"
+  checksum: 811206778da575c856197840e3462baa15df436c166e9fd7c6223b5b1704c3050d1cc8d2de77e6bfd87629bd6c0d2b1bb5fd2e7acd0530547c9ee476ebe2df7a
   languageName: node
   linkType: hard
 
@@ -12290,6 +12290,16 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"webpack-sources@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "webpack-sources@npm:2.3.1"
+  dependencies:
+    source-list-map: ^2.0.1
+    source-map: ^0.6.1
+  checksum: 28b9bebf5e67f3cea733eede930aaf9c73c93a21cdf47c816daae001c5c4ec2b25cd8a1d5bcdd33bce3853b35498a10686582d6ad6f28468f00068ff6ae995a7
+  languageName: node
+  linkType: hard
+
 "webpack-virtual-modules@npm:^0.4.3":
   version: 0.4.3
   resolution: "webpack-virtual-modules@npm:0.4.3"
@@ -12297,7 +12307,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1, webpack@npm:^5.45.1":
+"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1":
   version: 5.45.1
   resolution: "webpack@npm:5.45.1"
   dependencies:
@@ -12330,6 +12340,42 @@ fsevents@~2.3.2:
   bin:
     webpack: bin/webpack.js
   checksum: f25a1c1db231d5a0773af2d8fa312e8915c9592ddae708c058be9abaa483d21051955fab69859671bd104ac49d3c21b74086cd258b4057477b5d017cd697cf87
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.46.0":
+  version: 5.46.0
+  resolution: "webpack@npm:5.46.0"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.50
+    "@webassemblyjs/ast": 1.11.1
+    "@webassemblyjs/wasm-edit": 1.11.1
+    "@webassemblyjs/wasm-parser": 1.11.1
+    acorn: ^8.4.1
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.8.0
+    es-module-lexer: ^0.7.1
+    eslint-scope: 5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.1.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.3
+    watchpack: ^2.2.0
+    webpack-sources: ^2.3.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: 7b54411588754f4a460138c4b238cc014fc396caed8354e95a47f2da525a98cc2e3c881a7e1007de9a84efe9608957db3148287168a5ba02c50d94c44764e6bc
   languageName: node
   linkType: hard
 
