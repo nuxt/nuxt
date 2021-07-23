@@ -2091,10 +2091,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mocha@npm:^8.2.3":
-  version: 8.2.3
-  resolution: "@types/mocha@npm:8.2.3"
-  checksum: 5cba26124eb9d6b9b2fab66111488a54e6254162bac855282cb46f1467c5c4debe78ddeba15ab2264d5e4669fbfd403e433b6363106d2dfbe122d660c1e298e2
+"@types/mocha@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "@types/mocha@npm:9.0.0"
+  checksum: dac70c24e5e7f825a6f449035ebab1b7cfe99b5976b879a4039a516ade38fcc6c78fc4c4d953d27c62db1d9117372e129c6bfe08e2aab0c0a2a6e441335aba42
   languageName: node
   linkType: hard
 
@@ -8708,7 +8708,7 @@ fsevents@~2.3.2:
     "@nuxtjs/eslint-config-typescript": ^6.0.1
     "@types/chai": ^4.2.21
     "@types/jsdom": ^16
-    "@types/mocha": ^8.2.3
+    "@types/mocha": ^9.0.0
     "@types/node": ^14.17.5
     "@types/object-hash": ^2
     chai: ^4.3.4
