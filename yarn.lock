@@ -1457,7 +1457,7 @@ __metadata:
     dotenv: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
-    jiti: ^1.10.1
+    jiti: ^1.11.0
     rc9: ^1.2.0
     scule: ^0.2.1
     std-env: ^2.3.0
@@ -1498,7 +1498,7 @@ __metadata:
     "@rollup/plugin-commonjs": ^19.0.1
     "@rollup/plugin-inject": ^4.0.2
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.0.2
+    "@rollup/plugin-node-resolve": ^13.0.4
     "@rollup/plugin-replace": ^3.0.0
     "@rollup/plugin-virtual": ^2.0.3
     "@rollup/pluginutils": ^4.1.1
@@ -1519,7 +1519,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
-    esbuild: ^0.12.15
+    esbuild: ^0.12.16
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.4
@@ -1529,14 +1529,14 @@ __metadata:
     hookable: ^4.4.1
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
-    jiti: ^1.10.1
+    jiti: ^1.11.0
     listhen: ^0.2.4
     mime: ^2.5.2
     node-fetch: ^2.6.1
     ohmyfetch: ^0.2.0
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.53.3
+    rollup: ^2.54.0
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
@@ -1884,6 +1884,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/plugin-node-resolve@npm:^13.0.4":
+  version: 13.0.4
+  resolution: "@rollup/plugin-node-resolve@npm:13.0.4"
+  dependencies:
+    "@rollup/pluginutils": ^3.1.0
+    "@types/resolve": 1.17.1
+    builtin-modules: ^3.1.0
+    deepmerge: ^4.2.2
+    is-module: ^1.0.0
+    resolve: ^1.19.0
+  peerDependencies:
+    rollup: ^2.42.0
+  checksum: 3a45d28966dc690695f5a5923692f3eafbf81d43f38be6c68b20998950711b0cfb705ad271fe3ff8e0571d507c32b0915512822404f9b3a3cfb89a3027d428eb
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-replace@npm:^3.0.0":
   version: 3.0.0
   resolution: "@rollup/plugin-replace@npm:3.0.0"
@@ -2122,10 +2138,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.5":
-  version: 14.17.5
-  resolution: "@types/node@npm:14.17.5"
-  checksum: bd2c9bd617d36fea3b6380f5f7bbf56b59dbfb97ba5ff6d04fdf8ec47402ba4bb4cc902087a7f40d17c91845cc949c811a366679f3421a965e80fbce328a2750
+"@types/node@npm:^14.17.6":
+  version: 14.17.6
+  resolution: "@types/node@npm:14.17.6"
+  checksum: 4b2464f39d96be4fcdde7f4e8bb3c8b24e98ff908ca0cced997884d0dfbcc666b4b65a51b83dac92650508a1a2466e82eac2f926ddc3c0ae87bfff580dd324f6
   languageName: node
   linkType: hard
 
@@ -5070,6 +5086,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild@npm:^0.12.16":
+  version: 0.12.16
+  resolution: "esbuild@npm:0.12.16"
+  bin:
+    esbuild: bin/esbuild
+  checksum: 3fc788d3b9532b2168060e146fe3ef183504cfc98382e7de2526790789fd948e193719d1c6345fefeda887b8449187e75a56d81368f7a2b3f3c26aae0e83dfb7
+  languageName: node
+  linkType: hard
+
 "escalade@npm:^3.1.1":
   version: 3.1.1
   resolution: "escalade@npm:3.1.1"
@@ -7157,6 +7182,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"jiti@npm:^1.11.0":
+  version: 1.11.0
+  resolution: "jiti@npm:1.11.0"
+  bin:
+    jiti: bin/jiti.js
+  checksum: 45e54244496495b83574ba8b3fcd01597084433a76f418e14e5ea40f2a5d8f1aa5ef338b5497d29554639b1ffa92782d52e0cecb7001fe30673b776a0acf07b8
+  languageName: node
+  linkType: hard
+
 "joycon@npm:^3.0.1":
   version: 3.0.1
   resolution: "joycon@npm:3.0.1"
@@ -8175,9 +8209,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mocha@npm:^9.0.2":
-  version: 9.0.2
-  resolution: "mocha@npm:9.0.2"
+"mocha@npm:^9.0.3":
+  version: 9.0.3
+  resolution: "mocha@npm:9.0.3"
   dependencies:
     "@ungap/promise-all-settled": 1.1.2
     ansi-colors: 4.1.1
@@ -8207,7 +8241,7 @@ fsevents@~2.3.2:
   bin:
     _mocha: bin/_mocha
     mocha: bin/mocha
-  checksum: 305d820f2e7237f54c2c034198978c1ef7c0cf99ddf0c511c8e65e0d7cd00a2b87f7826dc91afa080473152159c1402f419f18d67f831dc55ebc84710ee97823
+  checksum: 1d51b12960c2101a8057ab92463d50e8a5ca2543bd25ed99fbc2ebe562edac6a7ee21f11f912acdf2d2ac9664634d4fcadb87266a8507ab00b505feab4bab1d5
   languageName: node
   linkType: hard
 
@@ -8709,18 +8743,18 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.21
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.5
+    "@types/node": ^14.17.6
     "@types/object-hash": ^2
     chai: ^4.3.4
-    esbuild: ^0.12.15
+    esbuild: ^0.12.16
     eslint: ^7.31.0
     eslint-plugin-jsdoc: ^35.5.1
     execa: ^5.1.1
     globby: ^11.0.4
-    jiti: ^1.10.1
+    jiti: ^1.11.0
     jsdom: ^16.6.0
     lerna: ^4.0.0
-    mocha: ^9.0.2
+    mocha: ^9.0.3
     object-hash: ^2.2.0
     typescript: ^4.3.5
     unbuild: ^0.4.0
@@ -10480,7 +10514,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.53.2, rollup@npm:^2.53.3":
+"rollup@npm:^2.53.2":
   version: 2.53.3
   resolution: "rollup@npm:2.53.3"
   dependencies:
@@ -10491,6 +10525,20 @@ fsevents@~2.3.2:
   bin:
     rollup: dist/bin/rollup
   checksum: 6734aa795875ae0add3e11b5b03bbcc391bb2a6b7c7393274e1cb21edc05c481b68b75a9a3fddc99e0cd8a201c4cd520449ffbf04d2861f82661d16b8d03ced0
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.54.0":
+  version: 2.54.0
+  resolution: "rollup@npm:2.54.0"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: caf0de927d472ba085f2b313c70eb3412af4f0aba24e7abce5b4bc3f896cee0076a06c7172f1fcf0b58f1413c938f8f2987f17af746dcc144df97f7148ddeb2d
   languageName: node
   linkType: hard
 
