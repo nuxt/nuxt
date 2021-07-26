@@ -2,6 +2,8 @@ import fs from 'fs'
 import path, { basename, parse } from 'upath'
 import hash from 'hash-sum'
 import consola from 'consola'
+import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
+import type { Plugin as VitePlugin } from 'vite'
 import { useNuxt } from '../nuxt'
 import { chainFn } from '../utils/task'
 import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
@@ -118,7 +120,9 @@ export function addServerMiddleware (middleware) {
   nuxt.options.serverMiddleware.push(middleware)
 }
 
-/** Allows extending webpack build config by chaining `options.build.extend` function. */
+/**
+ * Allows extending webpack build config by chaining `options.build.extend` function.
+ */
 export function extendBuild (fn) {
   const nuxt = useNuxt()
 
@@ -126,9 +130,94 @@ export function extendBuild (fn) {
   nuxt.options.build.extend = chainFn(nuxt.options.build.extend, fn)
 }
 
-/** Allows extending routes by chaining `options.build.extendRoutes` function. */
+/**
+ * Allows extending routes by chaining `options.build.extendRoutes` function.
+ */
 export function extendRoutes (fn) {
   const nuxt = useNuxt()
 
   nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+}
+
+export interface AddPluginHookOptions {
+  /**
+   * Install plugin on dev
+   *
+   * @default true
+   */
+   dev?: boolean
+   /**
+    * Install plugin on build
+    *
+    * @default true
+    */
+   build?: boolean
+}
+
+export interface AddWebpackPluginHookOptions extends AddPluginHookOptions {
+  /**
+   * Install plugin on server side
+   *
+   * @default true
+   */
+  server?: boolean
+  /**
+   * Install plugin on client side
+   *
+   * @default true
+   */
+  client?: boolean
+}
+
+export interface AddVitePluginHookOptions extends AddPluginHookOptions {
+}
+
+/**
+ * Append Webpack plugin to the config.
+ */
+export function addWebpackPlugin (plugin: WebpackPluginInstance, options: AddWebpackPluginHookOptions = {}) {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('webpack:config', (configs: WebpackConfig[]) => {
+    if (options.server !== false) {
+      const config = configs.find(i => i.name === 'server')
+      if (config) {
+        config.plugins = config.plugins || []
+        config.plugins.push(plugin)
+      }
+    }
+    if (options.client !== false) {
+      const config = configs.find(i => i.name === 'client')
+      if (config) {
+        config.plugins = config.plugins || []
+        config.plugins.push(plugin)
+      }
+    }
+  })
+}
+
+/**
+ * Append Vite plugin to the config.
+ */
+export function addVitePlugin (plugin: VitePlugin, options: AddVitePluginHookOptions = {}) {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('vite:extend', ({ config }) => {
+    config.plugins = config.plugins || []
+    config.plugins.push(plugin)
+  })
 }
