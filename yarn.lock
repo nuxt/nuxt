@@ -417,14 +417,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:0.9.0-alpha.1":
-  version: 0.9.0-alpha.1
-  resolution: "@es-joy/jsdoccomment@npm:0.9.0-alpha.1"
+"@es-joy/jsdoccomment@npm:0.9.0-alpha.6":
+  version: 0.9.0-alpha.6
+  resolution: "@es-joy/jsdoccomment@npm:0.9.0-alpha.6"
   dependencies:
-    comment-parser: 1.1.6-beta.0
+    comment-parser: 1.1.6-beta.3
     esquery: ^1.4.0
     jsdoc-type-pratt-parser: 1.0.4
-  checksum: b178379056e23de438f87935c6ce4ea4f99c50045f7d247e4fddbfba6a3afecc100530847ebbbb381dbebb58bea5e63b947298bcb60910134f46a9197325bbf7
+  checksum: 1483d86046e8d4db1064ca8731a1a5503539749f2d5e9ddfc4e4be11a20a5b83810891b1f3147b70188fef5bd030d2ca2d64f287202dd417cefbafbb072874ae
   languageName: node
   linkType: hard
 
@@ -3965,10 +3965,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"comment-parser@npm:1.1.6-beta.0":
-  version: 1.1.6-beta.0
-  resolution: "comment-parser@npm:1.1.6-beta.0"
-  checksum: f686c8b710043d262660f42039afa39474bf820532943561dd6e0c219fd56a53891c56151ccd7252b380f14a8151fcc28ea5e26a8af82f27bb8ac9aa502c76cb
+"comment-parser@npm:1.1.6-beta.3":
+  version: 1.1.6-beta.3
+  resolution: "comment-parser@npm:1.1.6-beta.3"
+  checksum: 3291e15bdd65ca20867615a38d5f650179f51eb6402fd4a7b446c2a2eb40e271739af6d3f170f738870165d276af746f10693f50323d4e62ed97c74e4a05e01f
   languageName: node
   linkType: hard
 
@@ -5243,12 +5243,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^35.5.1":
-  version: 35.5.1
-  resolution: "eslint-plugin-jsdoc@npm:35.5.1"
+"eslint-plugin-jsdoc@npm:^36.0.2":
+  version: 36.0.2
+  resolution: "eslint-plugin-jsdoc@npm:36.0.2"
   dependencies:
-    "@es-joy/jsdoccomment": 0.9.0-alpha.1
-    comment-parser: 1.1.6-beta.0
+    "@es-joy/jsdoccomment": 0.9.0-alpha.6
+    comment-parser: 1.1.6-beta.3
     debug: ^4.3.2
     esquery: ^1.4.0
     jsdoc-type-pratt-parser: ^1.0.4
@@ -5258,7 +5258,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: c5aa87831a4e434bcb527e760520c9af6b650a7d6956017556645f8b41cda2e5dbccdd8b31eccc2c6135e17bea159c2c912965f1222806eae27a294dd871e757
+  checksum: 6e1602e2cd84ea83808e3c13404121695f21e6d75869b5338a2a5d4f962f2954642059b4d9f32cacacfe44c239dc2915522b6a7d55aa0b5d36d1491febbb54b3
   languageName: node
   linkType: hard
 
@@ -8765,7 +8765,7 @@ fsevents@~2.3.2:
     chai: ^4.3.4
     esbuild: ^0.12.16
     eslint: ^7.31.0
-    eslint-plugin-jsdoc: ^35.5.1
+    eslint-plugin-jsdoc: ^36.0.2
     execa: ^5.1.1
     globby: ^11.0.4
     jiti: ^1.11.0
