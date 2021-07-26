@@ -9,6 +9,7 @@ import type { NodeExternalsOptions } from './rollup/plugins/externals'
 import type { StorageOptions } from './rollup/plugins/storage'
 import type { AssetOptions } from './rollup/plugins/assets'
 import type { ServerMiddleware } from './server/middleware'
+import type { RollupConfig } from './rollup/config'
 
 export interface NitroContext {
   timing: boolean
@@ -20,7 +21,7 @@ export interface NitroContext {
   entry: string
   node: boolean
   preset: string
-  rollupConfig?: any
+  rollupConfig?: RollupConfig
   renderer: string
   serveStatic: boolean
   middleware: ServerMiddleware[]

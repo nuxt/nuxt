@@ -7,7 +7,7 @@ import { lambda } from './lambda'
 
 export const netlify: NitroPreset = extendPreset(lambda, {
   output: {
-    dir: '{{ _nuxt.rootDir }}/netlify/functions',
+    dir: '{{ _nuxt.rootDir }}/.netlify/functions-internal',
     publicDir: '{{ _nuxt.rootDir }}/dist'
   },
   hooks: {
@@ -24,6 +24,9 @@ export const netlify: NitroPreset = extendPreset(lambda, {
         contents = currentRedirects + '\n' + contents
       }
       await writeFile(redirectsPath, contents)
+    },
+    'nitro:rollup:before' (ctx: NitroContext) {
+      ctx.rollupConfig.output.entryFileNames = 'server.ts'
     }
   },
   ignore: [

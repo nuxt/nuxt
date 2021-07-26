@@ -62,3 +62,4 @@ Temporary Items
 .vercel_build_output
 .build-*
 .env
+.netlify
