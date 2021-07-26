@@ -66,6 +66,9 @@ export interface NuxtHooks {
   'config': (options: NuxtConfig) => HookResult
   'run:before': (options: { argv: string[], cmd: { name: string, usage: string, description: string, options: Record<string, any> }, rootDir: string }) => HookResult
 
+  // nuxt-cli
+  'prepare:types': (options: { references: string[] }) => HookResult
+
   // @nuxt/core
   'ready': (nuxt: Nuxt) => HookResult
   'close': (nuxt: Nuxt) => HookResult
