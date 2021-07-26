@@ -1,6 +1,6 @@
 import { normalize } from 'upath'
 
-export function resolveModule (id, paths?) {
+export function resolveModule (id: string, paths?: string) {
   return normalize(require.resolve(id, {
     paths: [].concat(
       // @ts-ignore
@@ -13,6 +13,6 @@ export function resolveModule (id, paths?) {
   }))
 }
 
-export function requireModule (id, paths?) {
+export function requireModule (id: string, paths?: string) {
   return require(resolveModule(id, paths))
 }

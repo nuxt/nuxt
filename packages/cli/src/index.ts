@@ -1,7 +1,7 @@
 import 'v8-compile-cache'
 import mri from 'mri'
 import { red, cyan } from 'colorette'
-import { commands } from './commands'
+import { commands, Command, NuxtCommand } from './commands'
 import { showHelp } from './utils/help'
 import { showBanner } from './utils/banner'
 import { error } from './utils/log'
@@ -29,7 +29,7 @@ async function _main () {
   }
 
   try {
-    const cmd = await commands[command]()
+    const cmd = await commands[command as Command]().then(c => c.default || c) as NuxtCommand
     if (args.h || args.help) {
       showHelp(cmd.meta)
     } else {
@@ -40,7 +40,7 @@ async function _main () {
   }
 }
 
-function onFatalError (err) {
+function onFatalError (err: unknown) {
   error(err)
   process.exit(1)
 }
