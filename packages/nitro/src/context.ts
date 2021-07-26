@@ -22,6 +22,7 @@ export interface NitroContext {
   node: boolean
   preset: string
   rollupConfig?: RollupConfig
+  moduleSideEffects: string[]
   renderer: string
   serveStatic: boolean
   middleware: ServerMiddleware[]
@@ -79,6 +80,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
     node: undefined,
     preset: undefined,
     rollupConfig: undefined,
+    moduleSideEffects: ['unenv/runtime/polyfill/'],
     renderer: undefined,
     serveStatic: undefined,
     middleware: [],

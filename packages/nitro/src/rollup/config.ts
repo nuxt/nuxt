@@ -114,6 +114,11 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       ) {
         rollupWarn(warning)
       }
+    },
+    treeshake: {
+      moduleSideEffects (id) {
+        return nitroContext.moduleSideEffects.some(match => id.startsWith(match))
+      }
     }
   }
 
