@@ -1495,7 +1495,7 @@ __metadata:
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": ^0.6.4
     "@rollup/plugin-alias": ^3.1.4
-    "@rollup/plugin-commonjs": ^19.0.1
+    "@rollup/plugin-commonjs": ^19.0.2
     "@rollup/plugin-inject": ^4.0.2
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.0.4
@@ -1841,6 +1841,23 @@ __metadata:
   peerDependencies:
     rollup: ^2.38.3
   checksum: 49942cec59876a5ab3b576fe8ade861123c55d76e538fc43f225bb034dbc3c94934aba6df284350af19e50838fa0e3f8a239d9f6284e3b090bd0f4a708d097f3
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-commonjs@npm:^19.0.2":
+  version: 19.0.2
+  resolution: "@rollup/plugin-commonjs@npm:19.0.2"
+  dependencies:
+    "@rollup/pluginutils": ^3.1.0
+    commondir: ^1.0.1
+    estree-walker: ^2.0.1
+    glob: ^7.1.6
+    is-reference: ^1.2.1
+    magic-string: ^0.25.7
+    resolve: ^1.17.0
+  peerDependencies:
+    rollup: ^2.38.3
+  checksum: bf60da71b12c1c52fc2ca223272a1b5a4c27e47f707077024338f841b97f5656c352a3c2c11dd6a5fec0d63ae53407b9ceab72b87dda5701ddffdc09bba34513
   languageName: node
   linkType: hard
 
