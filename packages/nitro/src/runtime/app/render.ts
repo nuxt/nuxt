@@ -1,3 +1,4 @@
+import type { ServerResponse } from 'http'
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 import { runtimeConfig } from './config'
@@ -47,7 +48,7 @@ function renderToString (ssrContext) {
   })
 }
 
-export async function renderMiddleware (req, res) {
+export async function renderMiddleware (req, res: ServerResponse) {
   let url = req.url
 
   // payload.json request detection
@@ -73,6 +74,10 @@ export async function renderMiddleware (req, res) {
   // Handle errors
   if (ssrContext.error) {
     throw ssrContext.error
+  }
+
+  if (ssrContext.redirected || res.writableEnded) {
+    return
   }
 
   if (ssrContext.nuxt.hooks) {
