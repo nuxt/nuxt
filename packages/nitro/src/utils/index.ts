@@ -67,7 +67,7 @@ export function resolvePath (nitroContext: NitroInput, path: string | ((nitroCon
 }
 
 export function detectTarget () {
-  if (process.env.NETLIFY) {
+  if (process.env.NETLIFY || process.env.NETLIFY_LOCAL) {
     return 'netlify'
   }
 
