@@ -12,7 +12,7 @@ export default defineNuxtModule({
     const runtimeDir = resolve(__dirname, 'runtime')
 
     // Transpile @nuxt/meta
-    nuxt.options.build.transpile.push('@nuxt/meta', runtimeDir)
+    nuxt.options.build.transpile.push('@nuxt/meta', runtimeDir, '@vueuse/head')
     nuxt.options.alias['@nuxt/meta'] = resolve(runtimeDir, 'index')
 
     // Global meta

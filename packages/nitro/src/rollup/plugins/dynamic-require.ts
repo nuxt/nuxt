@@ -53,7 +53,7 @@ export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin
       }
 
       // Scan chunks
-      const files = await globby('**/*.js', { cwd: dir, absolute: false, ...globbyOptions })
+      const files = await globby('**/*.{cjs,mjs,js}', { cwd: dir, absolute: false, ...globbyOptions })
       const chunks = files.map(id => ({
         id,
         src: resolve(dir, id).replace(/\\/g, '/'),

@@ -23,7 +23,7 @@ export const validate = (compiler) => {
   }
 }
 
-const isJSRegExp = /\.js(\?[^.]+)?$/
+const isJSRegExp = /\.[cm]?js(\?[^.]+)?$/
 
 export const isJS = file => isJSRegExp.test(file)
 

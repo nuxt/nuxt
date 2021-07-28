@@ -10,8 +10,10 @@ export function node (ctx: WebpackConfigContext) {
 
   config.output = {
     ...config.output,
-    chunkFilename: '[name].js',
-    libraryTarget: 'commonjs2'
+    chunkFilename: '[name].cjs',
+    library: {
+      type: 'commonjs2'
+    }
   }
 
   config.performance = {

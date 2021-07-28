@@ -82,7 +82,7 @@ export default class VueSSRServerPlugin {
         }
 
         // TODO: Workaround for webpack
-        const serverJS = 'export { default } from "./server.js"'
+        const serverJS = 'export { default } from "./server.cjs"'
         assets['server.mjs'] = {
           source: () => serverJS,
           map: () => null,
