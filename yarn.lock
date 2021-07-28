@@ -1413,6 +1413,7 @@ __metadata:
     scule: ^0.2.1
     ufo: ^0.7.7
     unbuild: ^0.4.0
+    unplugin: ^0.0.5
     upath: ^2.0.1
   peerDependencies:
     vue: 3.1.5
@@ -11952,6 +11953,26 @@ typescript@^4.3.5:
   version: 1.0.0
   resolution: "unpipe@npm:1.0.0"
   checksum: 4fa18d8d8d977c55cb09715385c203197105e10a6d220087ec819f50cb68870f02942244f1017565484237f1f8c5d3cd413631b1ae104d3096f24fdfde1b4aa2
+  languageName: node
+  linkType: hard
+
+"unplugin@npm:^0.0.5":
+  version: 0.0.5
+  resolution: "unplugin@npm:0.0.5"
+  dependencies:
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: ^5.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 37f66f585365a9d7c26c03cc971329391839b13505942548be48ad834d7d5c68576e4defce92f9845bddd154c93340f8a1773337fce797f1cac1a1a34d6aac26
   languageName: node
   linkType: hard
 

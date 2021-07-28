@@ -1,8 +1,9 @@
 import fs from 'fs'
-import { defineNuxtModule, resolveAlias } from '@nuxt/kit'
+import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { resolve } from 'upath'
 import { scanComponents } from './scan'
-import type { ComponentsDir } from './types'
+import type { Component, ComponentsDir } from './types'
+import { loaderPlugin } from './loader'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return fs.statSync(p).isDirectory() } catch (_e) { return false } }
@@ -14,6 +15,7 @@ export default defineNuxtModule({
   },
   setup (options, nuxt) {
     let componentDirs = []
+    let components: Component[] = []
 
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
@@ -56,7 +58,7 @@ export default defineNuxtModule({
 
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
-      const components = await scanComponents(componentDirs, nuxt.options.srcDir!)
+      components = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', components)
       if (!components.length) {
         return
@@ -87,5 +89,11 @@ export default defineNuxtModule({
         await nuxt.callHook('builder:generateApp')
       }
     })
+
+    if (!nuxt.options.dev) {
+      const options = { getComponents: () => components }
+      addWebpackPlugin(loaderPlugin.webpack(options))
+      addVitePlugin(loaderPlugin.vite(options))
+    }
   }
 })
