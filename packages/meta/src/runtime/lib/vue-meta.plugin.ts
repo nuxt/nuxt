@@ -1,11 +1,14 @@
 import { defineNuxtPlugin } from '@nuxt/app'
 import { createApp } from 'vue'
 import { createMetaManager } from 'vue-meta'
+import type { MetaObject } from '@nuxt/meta'
 
 export default defineNuxtPlugin((nuxt) => {
   const manager = createMetaManager(process.server)
 
   nuxt.app.use(manager)
+
+  nuxt._useMeta = (meta: MetaObject) => manager.addMeta(meta)
 
   if (process.client) {
     const teleportTarget = document.createElement('div')

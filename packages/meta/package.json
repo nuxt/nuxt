@@ -10,9 +10,10 @@
       "require": "./dist/module.js"
     }
   },
-  "types": "./dist/runtime/index.d.ts",
+  "types": "./types.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "types.d.ts"
   ],
   "scripts": {
     "prepack": "unbuild"
