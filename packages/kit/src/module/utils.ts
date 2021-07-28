@@ -1,144 +1,144 @@
 import fs from 'fs'
-import path, { basename, parse } from 'upath'
+import { basename, parse, resolve } from 'upath'
 import hash from 'hash-sum'
-import consola from 'consola'
 import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
 import type { Plugin as VitePlugin, UserConfig as ViteConfig } from 'vite'
 import { useNuxt } from '../nuxt'
-import { chainFn } from '../utils/task'
-import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
+import type { NuxtTemplate, NuxtPlugin, NuxtPluginTemplate } from '../types/nuxt'
 
 /**
- * Renders given template using lodash template during build into the project buildDir (`.nuxt`).
- *
- * If a fileName is not provided or the template is string, target file name defaults to
- * [dirName].[fileName].[pathHash].[ext].
- *
+ * Renders given template using lodash template during build into the project buildDir
  */
-export function addTemplate (tmpl: TemplateOpts | string) {
+export function addTemplate (_template: NuxtTemplate | string) {
   const nuxt = useNuxt()
 
-  if (!tmpl) {
-    throw new Error('Invalid tmpl: ' + JSON.stringify(tmpl))
-  }
+  // Noprmalize template
+  const template = normalizeTemplate(_template)
 
-  // Validate & parse source
-  const src = typeof tmpl === 'string' ? tmpl : tmpl.src
-  const srcPath = parse(src)
+  // Remove any existing template with the same filename
+  nuxt.options.build.templates = nuxt.options.build.templates
+    .filter(p => normalizeTemplate(p).filename !== template.filename)
 
-  if (typeof src !== 'string' || !fs.existsSync(src)) {
-    throw new Error('tmpl src not found: ' + src)
-  }
+  // Add to templates array
+  nuxt.options.build.templates.push(template)
 
-  // Mostly for DX, some people prefer `filename` vs `fileName`
-  const fileName = typeof tmpl === 'string' ? '' : tmpl.fileName || tmpl.filename
-  // Generate unique and human readable dst filename if not provided
-  const dst = fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
-  // Add to tmpls list
-  const tmplObj = {
-    src,
-    dst,
-    options: typeof tmpl === 'string' ? undefined : tmpl.options
-  }
-
-  nuxt.options.build.templates.push(tmplObj)
-
-  return tmplObj
+  return template
 }
 
 /**
- * Registers a plugin using `addTemplate` and prepends it to the plugins[] array.
+ * Normalize a nuxt template object
+ */
+export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplate {
+  if (!template) {
+    throw new Error('Invalid template: ' + JSON.stringify(template))
+  }
+
+  // Normalize
+  if (typeof template === 'string') {
+    template = { src: template }
+  }
+
+  // Use src if provided
+  if (template.src) {
+    if (!fs.existsSync(template.src)) {
+      throw new Error('Template not found: ' + template.src)
+    }
+    if (!template.filename) {
+      const srcPath = parse(template.src)
+      template.filename = template.fileName ||
+        `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+    }
+  }
+
+  if (!template.src && !template.getContents) {
+    throw new Error('Invalid template. Either getContents or src options should be provided: ' + JSON.stringify(template))
+  }
+
+  if (!template.filename) {
+    throw new Error('Invalid template. Either filename should be provided: ' + JSON.stringify(template))
+  }
+
+  // Resolve dst
+  if (!template.dst) {
+    const nuxt = useNuxt()
+    template.dst = resolve(nuxt.options.buildDir, template.filename)
+  }
+
+  return template
+}
+
+/**
+ * Normalize a nuxt plugin object
+ */
+export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
+  // Normalize src
+  if (typeof plugin === 'string') {
+    plugin = { src: plugin }
+  }
+  if (!plugin.src) {
+    throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
+  }
+
+  // Normalize mode
+  if (plugin.ssr) {
+    plugin.mode = 'server'
+  }
+  if (!plugin.mode) {
+    const [, mode = 'all'] = plugin.src.match(/\.(server|client)(\.\w+)*$/) || []
+    plugin.mode = mode as 'all' | 'client' | 'server'
+  }
+
+  return plugin
+}
+
+/**
+ * Registers a nuxt plugin and to the plugins array.
  *
  * Note: You can use mode or .client and .server modifiers with fileName option
  * to use plugin only in client or server side.
  *
- * If you choose to specify a fileName, you can configure a custom path for the
- * fileName too, so you can choose the folder structure inside .nuxt folder in
- * order to prevent name collisioning:
+ * Note: By default plugin is prepended to the plugins array. You can use second argument to append (push) instead.
  *
  * @example
  * ```js
  * addPlugin({
  *   src: path.resolve(__dirname, 'templates/foo.js'),
- *   fileName: 'foo.server.js' // [optional] only include in server bundle
+ *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```
  */
-export function addPlugin (tmpl: PluginTemplateOpts) {
+export interface AddPluginOptions { append?: Boolean }
+export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}) {
   const nuxt = useNuxt()
 
-  const { dst } = addTemplate(tmpl)
+  // Normalize plugin
+  const plugin = normalizePlugin(_plugin)
 
-  if (!tmpl.mode && typeof tmpl.ssr === 'boolean') {
-    tmpl.mode = tmpl.ssr ? 'server' : 'client'
-  }
+  // Remove any existing plugin with the same src
+  nuxt.options.plugins = nuxt.options.plugins.filter(p => normalizePlugin(p).src !== plugin.src)
 
-  // Add to nuxt plugins
-  nuxt.options.plugins.unshift({
-    src: path.join(nuxt.options.buildDir, dst),
-    mode: tmpl.mode
-  })
-}
+  // Prepend to array by default to be before user provided plugins since is usually used by modules
+  nuxt.options.plugins[opts.append ? 'push' : 'unshift'](plugin)
 
-/** Register a custom layout. If its name is 'error' it will override the default error layout. */
-export function addLayout (tmpl: TemplateOpts, name: string) {
-  const nuxt = useNuxt()
-
-  const { dst, src } = addTemplate(tmpl)
-  const layoutName = name || path.parse(src).name
-  const layout = nuxt.options.layouts[layoutName]
-
-  if (layout) {
-    consola.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
-  }
-
-  // Add to nuxt layouts
-  nuxt.options.layouts[layoutName] = `./${dst}`
-
-  // If error layout, set ErrorPage
-  if (name === 'error') {
-    addErrorLayout(dst)
-  }
+  return plugin
 }
 
 /**
- * Set the layout that will render Nuxt errors. It should already have been added via addLayout or addTemplate.
- *
- * @param dst - Path to layout file within the buildDir (`.nuxt/<dst>.vue`)
+ * Adds a template and registers as a nuxt plugin.
  */
-export function addErrorLayout (dst: string) {
-  const nuxt = useNuxt()
-
-  const relativeBuildDir = path.relative(nuxt.options.rootDir, nuxt.options.buildDir)
-  nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
+export function addPluginTemplate (plugin: NuxtPluginTemplate | string, opts: AddPluginOptions = {}): NuxtPluginTemplate {
+  if (typeof plugin === 'string') {
+    plugin = { src: plugin }
+  }
+  if (!plugin.src) {
+    plugin.src = addTemplate(plugin).dst
+  }
+  return addPlugin(plugin, opts)
 }
 
 /** Adds a new server middleware to the end of the server middleware array. */
 export function addServerMiddleware (middleware) {
-  const nuxt = useNuxt()
-
-  nuxt.options.serverMiddleware.push(middleware)
-}
-
-/**
- * Allows extending webpack build config by chaining `options.build.extend` function.
- *
- * @deprecated use extendWebpackConfig() instead
- */
-export function extendBuild (fn) {
-  const nuxt = useNuxt()
-
-  // @ts-ignore TODO
-  nuxt.options.build.extend = chainFn(nuxt.options.build.extend, fn)
-}
-
-/**
- * Allows extending routes by chaining `options.build.extendRoutes` function.
- */
-export function extendRoutes (fn) {
-  const nuxt = useNuxt()
-
-  nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+  useNuxt().options.serverMiddleware.push(middleware)
 }
 
 export interface ExtendConfigOptions {

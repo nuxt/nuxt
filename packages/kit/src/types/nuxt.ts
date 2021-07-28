@@ -25,17 +25,26 @@ export interface Nuxt {
   vfs: Record<string, string>
 }
 
-export interface NuxtPlugin {
-  src: string
-  mode?: 'server' | 'client' | 'all',
+export interface NuxtTemplate {
+  /** @deprecated filename */
+  fileName?: string
+  /** resolved output file path (generated) */
+  dst?: string
+  /** The target filename once the template is copied into the Nuxt buildDir */
+  filename?: string
+  /** An options object that will be accessible within the template via `<% options %>` */
   options?: Record<string, any>
+  /** The resolved path to the source file to be template */
+  src?: string
+  /** Provided compile option intead of src */
+  getContents?: (data: Record<string, any>) => string | Promise<string>
 }
 
-export interface NuxtTemplate {
-  path: string // Relative path of destination
-  src?: string // Absolute path to source file
-  compile?: (data: Record<string, any>) => string
-  data?: any
+export interface NuxtPlugin {
+  /** @deprecated use mode */
+  ssr?: boolean
+  src: string
+  mode?: 'all' | 'server' | 'client'
 }
 
 export interface NuxtApp {
@@ -45,3 +54,6 @@ export interface NuxtApp {
   plugins: NuxtPlugin[]
   templates: NuxtTemplate[]
 }
+
+type _TemplatePlugin = NuxtPlugin & NuxtTemplate
+export interface NuxtPluginTemplate extends _TemplatePlugin {}

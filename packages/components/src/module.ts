@@ -63,15 +63,17 @@ export default defineNuxtModule({
       }
 
       app.templates.push({
-        path: 'components.mjs',
+        filename: 'components.mjs',
         src: resolve(__dirname, 'runtime/components.tmpl.mjs'),
-        data: { components }
+        options: { components }
       })
+
       app.templates.push({
-        path: 'components.d.ts',
+        filename: 'components.d.ts',
         src: resolve(__dirname, 'runtime/components.tmpl.d.ts'),
-        data: { components }
+        options: { components }
       })
+
       app.plugins.push({ src: '#build/components' })
     })
 

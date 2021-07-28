@@ -2,7 +2,7 @@ import { resolve, join, relative } from 'upath'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
 import defu from 'defu'
-import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, NuxtTemplate, NuxtPlugin } from '@nuxt/kit'
+import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, NuxtTemplate, normalizePlugin, normalizeTemplate } from '@nuxt/kit'
 import { readFile } from 'fs-extra'
 import * as templateUtils from './template.utils'
 
@@ -11,7 +11,7 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
     dir: nuxt.options.srcDir,
     extensions: nuxt.options.extensions,
     plugins: [],
-    templates: {}
+    templates: []
   } as NuxtApp)
 }
 
@@ -19,39 +19,31 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve app
   await resolveApp(nuxt, app)
 
-  // Scan templates
+  // Scan app templates
   const templatesDir = join(nuxt.options.appDir, '_templates')
   const templateFiles = await globby(join(templatesDir, '/**'))
   app.templates = templateFiles
     .filter(src => !src.endsWith('.d.ts'))
-    .map(src => ({
-      src,
-      path: relative(templatesDir, src),
-      data: {}
-    } as NuxtTemplate))
+    .map(src => ({ src, filename: relative(templatesDir, src) } as NuxtTemplate))
 
-  // Custom templates (created with addTemplate)
-  const customTemplates = nuxt.options.build.templates.map(t => ({
-    path: t.dst,
-    src: t.src,
-    data: {
-      options: t.options
-    }
-  }))
-  app.templates = app.templates.concat(customTemplates)
+  // User templates from options.build.templates
+  app.templates = app.templates.concat(nuxt.options.build.templates)
 
-  // Extend templates
+  // Extend templates with hook
   await nuxt.callHook('app:templates', app)
+
+  // Normalize templates
+  app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
   // Compile templates into vfs
   const templateContext = { utils: templateUtils, nuxt, app }
   await Promise.all(app.templates.map(async (template) => {
     const contents = await compileTemplate(template, templateContext)
 
-    const fullPath = resolve(nuxt.options.buildDir, template.path)
+    const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename)
     nuxt.vfs[fullPath] = contents
 
-    const aliasPath = '#build/' + template.path.replace(/\.\w+$/, '')
+    const aliasPath = '#build/' + template.filename.replace(/\.\w+$/, '')
     nuxt.vfs[aliasPath] = contents
   }))
 
@@ -76,41 +68,26 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve plugins
   app.plugins = [
     ...nuxt.options.plugins,
-    ...await resolvePlugins(nuxt)
-  ]
+    ...await resolveFiles(nuxt.options.srcDir, 'plugins/**/*.{js,ts,mjs,cjs}')
+  ].map(plugin => normalizePlugin(plugin))
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
 }
 
-async function compileTemplate (tmpl: NuxtTemplate, ctx: any) {
-  const data = { ...ctx, ...tmpl.data }
-  if (tmpl.src) {
+async function compileTemplate (template: NuxtTemplate, ctx: any) {
+  const data = { ...ctx, ...template.options }
+  if (template.src) {
     try {
-      const srcContents = await readFile(tmpl.src, 'utf-8')
+      const srcContents = await readFile(template.src, 'utf-8')
       return lodashTemplate(srcContents, {})(data)
     } catch (err) {
-      console.error('Error compiling template: ', tmpl)
+      console.error('Error compiling template: ', template)
       throw err
     }
   }
-  if (tmpl.compile) {
-    return tmpl.compile(data)
+  if (template.getContents) {
+    return template.getContents(data)
   }
-  throw new Error('Invalid template:' + tmpl)
-}
-
-async function resolvePlugins (nuxt: Nuxt) {
-  const plugins = await resolveFiles(nuxt.options.srcDir, 'plugins/**/*.{js,ts}')
-
-  return plugins.map(src => ({
-    src,
-    mode: getPluginMode(src)
-  })
-  )
-}
-
-function getPluginMode (src: string) {
-  const [, mode = 'all'] = src.match(/\.(server|client)(\.\w+)*$/) || []
-  return mode as NuxtPlugin['mode']
+  throw new Error('Invalid template: ' + JSON.stringify(template))
 }

@@ -1,13 +1,8 @@
-import type { Nuxt } from '../types/nuxt'
-import {
-  addTemplate,
-  addErrorLayout,
-  addLayout,
-  addPlugin,
-  addServerMiddleware,
-  extendBuild,
-  extendRoutes
-} from './utils'
+import path from 'upath'
+import consola from 'consola'
+import type { Nuxt, NuxtPluginTemplate, NuxtTemplate } from '../types/nuxt'
+import { chainFn } from '../utils/task'
+import { addTemplate, addPluginTemplate, addServerMiddleware } from './utils'
 import { installModule } from './install'
 
 /** Legacy ModuleContainer for backwards compatibility with existing Nuxt 2 modules. */
@@ -39,7 +34,7 @@ export function createModuleContainer (nuxt: Nuxt) {
     addTemplate,
 
     /**
-     * Registers a plugin using `addTemplate` and prepends it to the plugins[] array.
+     * Registers a plugin template and prepends it to the plugins[] array.
      *
      * Note: You can use mode or .client and .server modifiers with fileName option
      * to use plugin only in client or server side.
@@ -56,26 +51,52 @@ export function createModuleContainer (nuxt: Nuxt) {
      * })
      * ```
      */
-    addPlugin,
+    addPlugin (pluginTemplate: NuxtPluginTemplate): NuxtPluginTemplate {
+      return addPluginTemplate(pluginTemplate)
+    },
 
     /** Register a custom layout. If its name is 'error' it will override the default error layout. */
-    addLayout,
+    addLayout (tmpl: NuxtTemplate, name: string) {
+      const { filename, src } = addTemplate(tmpl)
+      const layoutName = name || path.parse(src).name
+      const layout = nuxt.options.layouts[layoutName]
+
+      if (layout) {
+        consola.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
+      }
+
+      // Add to nuxt layouts
+      nuxt.options.layouts[layoutName] = `./${filename}`
+
+      // If error layout, set ErrorPage
+      if (name === 'error') {
+        this.addErrorLayout(filename)
+      }
+    },
 
     /**
      * Set the layout that will render Nuxt errors. It should already have been added via addLayout or addTemplate.
      *
      * @param dst - Path to layout file within the buildDir (`.nuxt/<dst>.vue`)
      */
-    addErrorLayout,
+    addErrorLayout (dst: string) {
+      const relativeBuildDir = path.relative(nuxt.options.rootDir, nuxt.options.buildDir)
+      nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
+    },
 
     /** Adds a new server middleware to the end of the server middleware array. */
     addServerMiddleware,
 
     /** Allows extending webpack build config by chaining `options.build.extend` function. */
-    extendBuild,
+    extendBuild (fn) {
+      // @ts-ignore
+      nuxt.options.build.extend = chainFn(nuxt.options.build.extend, fn)
+    },
 
     /** Allows extending routes by chaining `options.build.extendRoutes` function. */
-    extendRoutes,
+    extendRoutes (fn) {
+      nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+    },
 
     /** `requireModule` is a shortcut for `addModule` */
     requireModule: installModule,

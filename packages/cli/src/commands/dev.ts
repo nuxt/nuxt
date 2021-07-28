@@ -59,7 +59,7 @@ export default defineNuxtCommand({
     const dLoad = debounce(load, 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (_event, file) => {
-      if (file.includes('nuxt.config') || file.includes('modules')) {
+      if (file.includes('nuxt.config') || file.includes('modules') || file.includes('pages')) {
         dLoad(true)
       }
     })
