@@ -417,14 +417,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:0.9.0-alpha.6":
-  version: 0.9.0-alpha.6
-  resolution: "@es-joy/jsdoccomment@npm:0.9.0-alpha.6"
+"@es-joy/jsdoccomment@npm:0.10.7":
+  version: 0.10.7
+  resolution: "@es-joy/jsdoccomment@npm:0.10.7"
   dependencies:
-    comment-parser: 1.1.6-beta.3
+    comment-parser: 1.2.3
     esquery: ^1.4.0
-    jsdoc-type-pratt-parser: 1.0.4
-  checksum: 1483d86046e8d4db1064ca8731a1a5503539749f2d5e9ddfc4e4be11a20a5b83810891b1f3147b70188fef5bd030d2ca2d64f287202dd417cefbafbb072874ae
+    jsdoc-type-pratt-parser: 1.1.1
+  checksum: 073eb42cb5ed72d4b897cc5f23e19ef2aa3380c82a8ce1d97fbc0535617c7a1ea875da04c898e9b312b886f2425be92a7eeb5b4b6f059a3e938d40fd0b26c817
   languageName: node
   linkType: hard
 
@@ -1524,7 +1524,7 @@ __metadata:
     fs-extra: ^10.0.0
     globby: ^11.0.4
     gzip-size: ^6.0.0
-    h3: ^0.2.12
+    h3: ^0.3.0
     hasha: ^5.2.2
     hookable: ^4.4.1
     http-proxy: ^1.18.1
@@ -1536,7 +1536,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.54.0
+    rollup: ^2.55.0
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
@@ -1549,7 +1549,7 @@ __metadata:
     unstorage: ^0.2.3
     upath: ^2.0.1
     vue: 3.1.5
-    vue-bundle-renderer: ^0.2.9
+    vue-bundle-renderer: ^0.2.10
     vue-server-renderer: ^2.6.14
   languageName: unknown
   linkType: soft
@@ -1576,7 +1576,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": ^0.6.4
     "@types/debounce": ^1.2.0
-    "@vitejs/plugin-vue": ^1.2.5
+    "@vitejs/plugin-vue": ^1.3.0
     "@vue/compiler-sfc": ^3.1.5
     chokidar: ^3.5.2
     consola: ^2.15.3
@@ -1586,7 +1586,7 @@ __metadata:
     ufo: ^0.7.7
     unbuild: ^0.4.0
     upath: ^2.0.1
-    vite: ^2.4.3
+    vite: ^2.4.4
     vue: 3.1.5
   languageName: unknown
   linkType: soft
@@ -1631,7 +1631,7 @@ __metadata:
     vue: 3.1.5
     vue-loader: ^16.3.3
     vue-style-loader: ^4.1.3
-    webpack: ^5.46.0
+    webpack: ^5.47.0
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.0.0
     webpack-hot-middleware: ^2.25.0
@@ -2452,12 +2452,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "@vitejs/plugin-vue@npm:1.2.5"
+"@vitejs/plugin-vue@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@vitejs/plugin-vue@npm:1.3.0"
   peerDependencies:
     "@vue/compiler-sfc": ^3.0.8
-  checksum: 7d618c5e88950ae60518c1516ef220e98568569c63ff0f2db4d4802de6287ac15562784d7fdc266150439d6645745f66c9e2a7d9b3c92aac607f52818dfdcf23
+  checksum: 2ba1b25589dd25cc8b86867e5272d6f3c60a7c3e6a9b29301159cae47d0293318115f97a3016999b1b18aa99ca2f711145dc8d14328e559c9237afe2841c0eb0
   languageName: node
   linkType: hard
 
@@ -3965,10 +3965,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"comment-parser@npm:1.1.6-beta.3":
-  version: 1.1.6-beta.3
-  resolution: "comment-parser@npm:1.1.6-beta.3"
-  checksum: 3291e15bdd65ca20867615a38d5f650179f51eb6402fd4a7b446c2a2eb40e271739af6d3f170f738870165d276af746f10693f50323d4e62ed97c74e4a05e01f
+"comment-parser@npm:1.2.3":
+  version: 1.2.3
+  resolution: "comment-parser@npm:1.2.3"
+  checksum: a9f25823ef2c1e9494bcb881d8650046490e92d4fe96db8ff1da60a7684e8737783675b78c723b7c99368ab0cc1e9df5f70ab830124fcf37632b1fa12f4ed575
   languageName: node
   linkType: hard
 
@@ -5243,22 +5243,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^36.0.2":
-  version: 36.0.2
-  resolution: "eslint-plugin-jsdoc@npm:36.0.2"
+"eslint-plugin-jsdoc@npm:^36.0.6":
+  version: 36.0.6
+  resolution: "eslint-plugin-jsdoc@npm:36.0.6"
   dependencies:
-    "@es-joy/jsdoccomment": 0.9.0-alpha.6
-    comment-parser: 1.1.6-beta.3
+    "@es-joy/jsdoccomment": 0.10.7
+    comment-parser: 1.2.3
     debug: ^4.3.2
     esquery: ^1.4.0
-    jsdoc-type-pratt-parser: ^1.0.4
+    jsdoc-type-pratt-parser: ^1.1.1
     lodash: ^4.17.21
     regextras: ^0.8.0
     semver: ^7.3.5
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: 6e1602e2cd84ea83808e3c13404121695f21e6d75869b5338a2a5d4f962f2954642059b4d9f32cacacfe44c239dc2915522b6a7d55aa0b5d36d1491febbb54b3
+  checksum: f64666158868e6cda1e53dbdb67d6a44f29575fd4ed322cccc3b4848c3c7741ebdfbb87252d7babb328bc707cd07cee8a2c679ef612b8a0586da779155d1933d
   languageName: node
   linkType: hard
 
@@ -6291,10 +6291,17 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.2.10, h3@npm:^0.2.12":
+"h3@npm:^0.2.10":
   version: 0.2.12
   resolution: "h3@npm:0.2.12"
   checksum: ef5fc40403d6a35f184a70e508b537d2b5d358bd520ebdb2a02ba710cea396de66eae8b7b200e58a615bd3e99f9af92dd4510aa7825c0c2d4e547e17451744ff
+  languageName: node
+  linkType: hard
+
+"h3@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "h3@npm:0.3.0"
+  checksum: 62b9ed28a35ca127aa7fa2f7835fcb7e2ba070c4952eab64dd3e9b622414546a2e1908ee3d88de298e6bb866129d0694435f215dc3a514d0440b508c99f4f0a9
   languageName: node
   linkType: hard
 
@@ -7252,17 +7259,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"jsdoc-type-pratt-parser@npm:1.0.4":
-  version: 1.0.4
-  resolution: "jsdoc-type-pratt-parser@npm:1.0.4"
-  checksum: f80df71fc5d90714a035283136485c518dca74f1aa263e66d7ea79d563dd04fe73602156a6683f32a6218bc9d0d15d1a767a7d3e8b67227ec663183296250330
-  languageName: node
-  linkType: hard
-
-"jsdoc-type-pratt-parser@npm:^1.0.4":
-  version: 1.0.8
-  resolution: "jsdoc-type-pratt-parser@npm:1.0.8"
-  checksum: 21f8c08918c885df70cad4e8c625351e3bcea6d1c918d438fb02f5aaf274d4cd3309899216985df044462bf3d1e1d4a391dff8a23fc5c75da36ecb586d4385b4
+"jsdoc-type-pratt-parser@npm:1.1.1, jsdoc-type-pratt-parser@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "jsdoc-type-pratt-parser@npm:1.1.1"
+  checksum: 90522d1da193e1280c3e041561de20cb2f580dd823ad60f5c08e8f429dacc2e944259ed682c98c62d32f3fc8148a79becb47a47455a8093cebb5377b1c2ecbf2
   languageName: node
   linkType: hard
 
@@ -8765,7 +8765,7 @@ fsevents@~2.3.2:
     chai: ^4.3.4
     esbuild: ^0.12.16
     eslint: ^7.31.0
-    eslint-plugin-jsdoc: ^36.0.2
+    eslint-plugin-jsdoc: ^36.0.6
     execa: ^5.1.1
     globby: ^11.0.4
     jiti: ^1.11.0
@@ -10545,9 +10545,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.54.0":
-  version: 2.54.0
-  resolution: "rollup@npm:2.54.0"
+"rollup@npm:^2.55.0":
+  version: 2.55.0
+  resolution: "rollup@npm:2.55.0"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -10555,7 +10555,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 9bba98e18c3d4a301af15c1d06786f58bd48bcf31ec974e01a61e7f07fa97922b5762dfe8d02e17456ab60fe6ddb6533677811c370bd4051ddeab7aa7e025200
+  checksum: 3407d6807e78f2088c2386a17a03fae71e2df2a56156e8ae33e0316045dca423426efeb87dc046948f2e5864545de33c7036cad2ec0b0d2015158236704502d8
   languageName: node
   linkType: hard
 
@@ -12103,13 +12103,13 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.4.3":
-  version: 2.4.3
-  resolution: "vite@npm:2.4.3"
+"vite@npm:^2.4.4":
+  version: 2.4.4
+  resolution: "vite@npm:2.4.4"
   dependencies:
     esbuild: ^0.12.8
     fsevents: ~2.3.2
-    postcss: ^8.3.5
+    postcss: ^8.3.6
     resolve: ^1.20.0
     rollup: ^2.38.5
   dependenciesMeta:
@@ -12117,16 +12117,16 @@ typescript@^4.3.5:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: a3902d77a4215e2bf6accfa11ffe6d0ecce8f32c77a52eca9e5228256081b6ae6b3d3c42ba355272955ae1f17a22c8d8f388fed0fac0e82d40638bfee8827a93
+  checksum: 075deeb5f915f2a0a2b2e90c6bcbe919b894b6004133e3280eb413dfb17aa1dd6b82aaf35451291f3ba572566f8948e62b32476ce39d5046eef6092106c80a8a
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.2.9":
-  version: 0.2.9
-  resolution: "vue-bundle-renderer@npm:0.2.9"
+"vue-bundle-renderer@npm:^0.2.10":
+  version: 0.2.10
+  resolution: "vue-bundle-renderer@npm:0.2.10"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: b4c03665b214f272725e009f4c78dc83931200650512531a8623b21f9c35b8747300b861e582eafc26485a429b9b571ff9d09b5514312b11a4f2c607c0985d06
+  checksum: a1c462deca857f1ce333cf8be72ab24306ba015f33190e00c0b6d5821783668001b1a1c13861e277b7452d625ac7cdf642fa2ceeb8f1d2bedb5e632a1275cede
   languageName: node
   linkType: hard
 
@@ -12355,13 +12355,10 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"webpack-sources@npm:^2.3.1":
-  version: 2.3.1
-  resolution: "webpack-sources@npm:2.3.1"
-  dependencies:
-    source-list-map: ^2.0.1
-    source-map: ^0.6.1
-  checksum: 6fd67f2274a84c5f51ad89767112ec8b47727134bf0f2ba0cff458c970f18966939a24128bdbddba621cd66eeb2bef0552642a9333cd8e54514f7b2a71776346
+"webpack-sources@npm:^3.0.1":
+  version: 3.0.2
+  resolution: "webpack-sources@npm:3.0.2"
+  checksum: 79f8c58c1bfe6173b36f03292b6fc7cb948d34651fb9c1b627e6db883d03c18130487bf9428ae8676f689e34406cecd100b8b774495063f1ee6215f13dd4cd7c
   languageName: node
   linkType: hard
 
@@ -12408,9 +12405,9 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.46.0":
-  version: 5.46.0
-  resolution: "webpack@npm:5.46.0"
+"webpack@npm:^5.47.0":
+  version: 5.47.0
+  resolution: "webpack@npm:5.47.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -12434,13 +12431,13 @@ typescript@^4.3.5:
     tapable: ^2.1.1
     terser-webpack-plugin: ^5.1.3
     watchpack: ^2.2.0
-    webpack-sources: ^2.3.1
+    webpack-sources: ^3.0.1
   peerDependenciesMeta:
     webpack-cli:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: dc81b091452739d91e7933a8fceb347f1f8f72260d3aaf551f591b5214c4a73ca4ca6c07f9398931a3bd452b701db4c9b7af2f2a941f0ea319921bae1fe8eb11
+  checksum: e13a6ca9e5c056557a972a9f512357b73908b1e9c9749c6b1ac12a0d59db1583ffd519682cddede465099eb95e55e68cbce3e9067a9452d095c6c736d4449ffb
   languageName: node
   linkType: hard
 
