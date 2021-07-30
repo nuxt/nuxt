@@ -6,9 +6,14 @@
 
 Welcome to Nuxt3 repository ✨
 
+## 👀 Private beta
+
 We are currently in private beta in order to stabilize the framework before onboarding the whole community.
 
-## Documentation
+Our focus is currently on new projects made with Nuxt3 (not transitioning from Nuxt2 at the moment) as well as migrating modules to Nuxt3.
+
+
+## 📖 Documentation
 
 You can read documentation online [here](https://nuxt3-docs.vercel.app/get-started/installation)
 
@@ -22,7 +27,7 @@ Please create a [discussion](https://github.com/nuxt/framework/discussions/new) 
 
 ## ❔ Questions
 
-Please create a [discussion](https://github.com/nuxt/framework/discussions/new) for improvements or feature requests.
+Please create a [discussion](https://github.com/nuxt/framework/discussions/new) for questions about Nuxt3 usage.
 
 ## 💻 Development
 
