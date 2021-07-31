@@ -71,14 +71,7 @@ function clientHMR (ctx: WebpackConfigContext) {
   config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
-function clientOptimization (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
-  config.optimization = {
-    ...config.optimization,
-    ...options.build.optimization as any
-  }
-
+function clientOptimization (_ctx: WebpackConfigContext) {
   // TODO: Improve optimization.splitChunks.cacheGroups
 }
 
