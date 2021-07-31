@@ -1,6 +1,6 @@
 <template>
   <div>
     <hello-world />
-    <nuxt3/>
+    <nuxt3 />
   </div>
 </template>
