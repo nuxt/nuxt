@@ -13,7 +13,7 @@ export default {
      * @see [vue@3 Documentation](https://v3.vuejs.org/api/application-config.html)
      */
     config: {
-      silent: { $resolve: (val, get) => val ?? get('dev') },
+      silent: { $resolve: (val, get) => val ?? !get('dev') },
       performance: { $resolve: (val, get) => val ?? get('dev') }
     }
   },

@@ -198,7 +198,7 @@ export default {
     imgUrl: { esModule: false, limit: 1000 },
     pugPlain: {},
     vue: {
-      productionMode: { $resolve: (val, get) => val ?? get('dev') },
+      productionMode: { $resolve: (val, get) => val ?? !get('dev') },
       transformAssetUrls: {
         video: 'src',
         source: 'src',
