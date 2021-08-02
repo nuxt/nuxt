@@ -280,7 +280,8 @@ export function getNuxtConfig (_options) {
       policies: undefined,
       addMeta: Boolean(options.target === TARGETS.static),
       unsafeInlineCompatibility: false,
-      reportOnly: options.debug
+      reportOnly: options.debug,
+      generateNonce: false
     })
 
     // TODO: Remove this if statement in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
