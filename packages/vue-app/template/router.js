@@ -101,7 +101,7 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-export function createRouter (ssrContext, config) {
+export function createRouter (ssrContext, config, store) {
   const base = (config._app && config._app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
 
