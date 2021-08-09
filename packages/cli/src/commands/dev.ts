@@ -59,6 +59,10 @@ export default defineNuxtCommand({
     const dLoad = debounce(load, 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (_event, file) => {
+      // Ignore any changes to files within the Nuxt build directory
+      if (file.includes(currentNuxt.options.buildDir)) {
+        return
+      }
       if (file.includes('nuxt.config') || file.includes('modules') || file.includes('pages')) {
         dLoad(true)
       }
