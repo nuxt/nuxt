@@ -11693,8 +11693,8 @@ typescript@^4.3.5:
   linkType: hard
 
 "unbuild@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "unbuild@npm:0.4.1"
+  version: 0.4.2
+  resolution: "unbuild@npm:0.4.2"
   dependencies:
     "@rollup/plugin-alias": ^3.1.4
     "@rollup/plugin-commonjs": ^19.0.1
@@ -11719,7 +11719,7 @@ typescript@^4.3.5:
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.js
-  checksum: ad99d5db62eef0f9b812f58dea4ff09df9d41d43f028b626faf7cae138cd83b0bee20f2cca1750b8fcce4a6a58d434757698a6c626b0543d3fa57266d7dea47a
+  checksum: c21e40225b73ded9ccd5893e4af9d7c5ce984d025b2732cbfd95a8c2969ae33a9e1a0351fd84d0e24fe1b4206bc0fbebab83b938afe90cafae0abf197f5250b4
   languageName: node
   linkType: hard
 

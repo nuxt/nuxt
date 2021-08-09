@@ -23,8 +23,14 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         return null
       }
 
+      const originalId = id
+
       // Normalize path on windows
       if (process.platform === 'win32') {
+        if (id.startsWith('/')) {
+          // Add back C: prefix on Windows
+          id = resolve(id)
+        }
         id = id.replace(/\\/g, '/')
       }
 
@@ -46,7 +52,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
 
       // Track externals
       if (opts.trace !== false) {
-        const resolved = await this.resolve(id, importer, { ...options, skipSelf: true }).then(r => r.id)
+        const resolved = await this.resolve(originalId, importer, { ...options, skipSelf: true }).then(r => r.id)
         trackedExternals.add(resolved)
       }
 

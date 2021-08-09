@@ -35,7 +35,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest] # TODO: add windows-latest by #408
+        os: [ubuntu-latest, windows-latest]
         node: [14]
 
     steps:
@@ -59,7 +59,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest] # TODO: add windows-latest by #408
+        os: [ubuntu-latest, windows-latest]
         node: [14]
 
     steps:

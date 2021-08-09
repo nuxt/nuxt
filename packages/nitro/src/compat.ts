@@ -24,6 +24,14 @@ export default function nuxt2CompatModule () {
   const nitroContext = getNitroContext(nuxt.options, nitroOptions)
   const nitroDevContext = getNitroContext(nuxt.options, { ...nitroOptions, preset: 'dev' })
 
+  // Normalize Nuxt directories
+  for (const context of [nitroContext, nitroDevContext]) {
+    context._nuxt.rootDir = resolve(context._nuxt.rootDir)
+    context._nuxt.srcDir = resolve(context._nuxt.srcDir)
+    context._nuxt.buildDir = resolve(context._nuxt.buildDir)
+    context._nuxt.generateDir = resolve(context._nuxt.generateDir)
+  }
+
   // Connect hooks
   nuxt.addHooks(nitroContext.nuxtHooks)
   nuxt.hook('close', () => nitroContext._internal.hooks.callHook('close'))
