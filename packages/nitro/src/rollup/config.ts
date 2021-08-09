@@ -241,7 +241,6 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
         '~~',
         '@@/',
         'virtual:',
-        'ohmyfetch', // TODO: Webpack externals forces default import!
         nitroContext._internal.runtimeDir,
         nitroContext._nuxt.srcDir,
         nitroContext._nuxt.rootDir,
