@@ -81,12 +81,20 @@ export function externals (opts: NodeExternalsOptions): Plugin {
           }
         }
 
-        await Promise.all(tracedFiles.map(async (file) => {
+        const writeFile = async (file) => {
           const src = resolve(opts.traceOptions.base, file)
           const dst = resolve(opts.outDir, 'node_modules', file.split('node_modules/').pop())
           await mkdirp(dirname(dst))
           await copyFile(src, dst)
-        }))
+        }
+        if (process.platform === 'win32') {
+          // Workaround for EBUSY on windows (#424)
+          for (const file of tracedFiles) {
+            await writeFile(file)
+          }
+        } else {
+          await Promise.all(tracedFiles.map(writeFile))
+        }
       }
     }
   }
