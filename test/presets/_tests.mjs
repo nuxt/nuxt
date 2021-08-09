@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import { pathToFileURL } from 'url'
 import destr from 'destr'
 import { listen } from 'listhen'
 import { $fetch } from 'ohmyfetch/node'
@@ -9,7 +10,7 @@ import { fixtureDir, resolveWorkspace } from '../utils.mjs'
 const isCompat = Boolean(process.env.TEST_COMPAT)
 
 export function importModule (path) {
-  return import(path)
+  return import(pathToFileURL(path).href)
 }
 
 export function setupTest (preset) {
