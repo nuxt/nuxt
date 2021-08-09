@@ -38,6 +38,8 @@ export interface NuxtTemplate {
   src?: string
   /** Provided compile option intead of src */
   getContents?: (data: Record<string, any>) => string | Promise<string>
+  /** Write to filesystem */
+  write?: boolean
 }
 
 export interface NuxtPlugin {

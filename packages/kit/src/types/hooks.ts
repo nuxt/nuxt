@@ -32,6 +32,9 @@ type RenderResult = {
   preloadFiles: PreloadFile[]
 }
 
+// https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html
+export type TSReference = { types: string } | { path: string }
+
 export interface NuxtHooks {
   // Don't break usage of untyped hooks
   [key: string]: (...args: any[]) => HookResult
@@ -67,7 +70,7 @@ export interface NuxtHooks {
   'run:before': (options: { argv: string[], cmd: { name: string, usage: string, description: string, options: Record<string, any> }, rootDir: string }) => HookResult
 
   // nuxt-cli
-  'prepare:types': (options: { references: string[] }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
 
   // @nuxt/core
   'ready': (nuxt: Nuxt) => HookResult

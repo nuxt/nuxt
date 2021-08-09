@@ -31,7 +31,15 @@ export function createModuleContainer (nuxt: Nuxt) {
      * If a fileName is not provided or the template is string, target file name defaults to
      * [dirName].[fileName].[pathHash].[ext].
      */
-    addTemplate,
+    addTemplate (template: string | NuxtTemplate) {
+      if (typeof template === 'string') {
+        template = { src: template }
+      }
+      if (template.write === undefined) {
+        template.write = true
+      }
+      return addTemplate(template)
+    },
 
     /**
      * Registers a plugin template and prepends it to the plugins[] array.
