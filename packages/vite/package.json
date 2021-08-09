@@ -12,11 +12,11 @@
   },
   "devDependencies": {
     "@types/debounce": "^1.2.0",
-    "unbuild": "^0.4.0"
+    "unbuild": "^0.4.1"
   },
   "dependencies": {
     "@nuxt/kit": "^0.6.4",
-    "@vitejs/plugin-vue": "^1.3.0",
+    "@vitejs/plugin-vue": "^1.4.0",
     "@vue/compiler-sfc": "^3.1.5",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",

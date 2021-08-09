@@ -5,7 +5,7 @@
     "build": "nuxt generate --force-build"
   },
   "devDependencies": {
-    "@docus/app": "^1.0.30",
+    "@docus/app": "^1.0.38",
     "@docus/github": "^1.0.3",
     "@docus/social-image": "^1.0.2",
     "@docus/theme": "^1.0.7",

@@ -20,7 +20,7 @@
     "upath": "^2.0.1"
   },
   "devDependencies": {
-    "unbuild": "^0.4.0"
+    "unbuild": "^0.4.1"
   },
   "peerDependencies": {
     "vue": "3.1.5"
