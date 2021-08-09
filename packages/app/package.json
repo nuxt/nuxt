@@ -23,7 +23,7 @@
     "hookable": "^4.4.1",
     "ohmyfetch": "^0.2.0",
     "upath": "^2.0.1",
-    "vue": "^3.1.5",
+    "vue": "^3.2.1",
     "vue-router": "^4.0.11",
     "vuex5": "^0.5.0-testing.3"
   },
@@ -31,6 +31,6 @@
     "@nuxt/meta": "^0.1.0"
   },
   "devDependencies": {
-    "unbuild": "^0.4.1"
+    "unbuild": "^0.4.2"
   }
 }

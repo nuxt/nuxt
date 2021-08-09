@@ -25,8 +25,8 @@
     "@nuxt/pages": "^0.3.0",
     "@nuxt/vite-builder": "^0.5.0",
     "@nuxt/webpack-builder": "^0.5.0",
-    "@vue/reactivity": "3.1.5",
-    "@vue/shared": "3.1.5",
+    "@vue/reactivity": "3.2.1",
+    "@vue/shared": "3.2.1",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
@@ -40,12 +40,12 @@
     "scule": "^0.2.1",
     "ufo": "^0.7.7",
     "upath": "^2.0.1",
-    "vue": "3.1.5"
+    "vue": "3.2.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
     "@types/hash-sum": "^1.0.0",
     "@types/lodash": "^4.14.172",
-    "unbuild": "^0.4.1"
+    "unbuild": "^0.4.2"
   }
 }

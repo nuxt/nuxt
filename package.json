@@ -44,7 +44,7 @@
     "mocha": "^9.0.3",
     "object-hash": "^2.2.0",
     "typescript": "^4.3.5",
-    "unbuild": "^0.4.1",
+    "unbuild": "^0.4.2",
     "upath": "^2.0.1"
   }
 }
