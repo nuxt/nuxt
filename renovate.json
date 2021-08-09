@@ -4,8 +4,5 @@
   ],
   "ignoreDeps": [
     "docus"
-  ],
-  "lockFileMaintenance": {
-    "enabled": true
-  }
+  ]
 }
