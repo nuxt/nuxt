@@ -1,6 +1,7 @@
 // import { useMeta as useVueMeta } from 'vue-meta'
 import { isFunction } from '@vue/shared'
-import { computed, ComputedGetter } from '@vue/reactivity'
+import { computed } from '@vue/reactivity'
+import type { ComputedGetter } from '@vue/reactivity'
 import { useNuxt } from '@nuxt/app'
 import type { MetaObject } from '@nuxt/meta'
 

@@ -1,4 +1,5 @@
-import { App, getCurrentInstance } from 'vue'
+import { getCurrentInstance } from 'vue'
+import type { App } from 'vue'
 import Hookable from 'hookable'
 import { defineGetter } from './utils'
 import { legacyPlugin, LegacyContext } from './legacy'

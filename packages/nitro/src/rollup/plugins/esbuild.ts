@@ -1,9 +1,10 @@
 // Based on https://github.com/egoist/rollup-plugin-esbuild (MIT)
 
 import { extname, relative } from 'upath'
-import { Plugin, PluginContext } from 'rollup'
+import type { Plugin, PluginContext } from 'rollup'
 import { Loader, TransformResult, transform } from 'esbuild'
-import { createFilter, FilterPattern } from '@rollup/pluginutils'
+import { createFilter } from '@rollup/pluginutils'
+import type { FilterPattern } from '@rollup/pluginutils'
 
 const defaultLoaders: { [ext: string]: Loader } = {
   '.ts': 'ts',

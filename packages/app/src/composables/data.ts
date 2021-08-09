@@ -1,4 +1,5 @@
-import { getCurrentInstance, isReactive, reactive, UnwrapRef } from 'vue'
+import { getCurrentInstance, isReactive, reactive } from 'vue'
+import type { UnwrapRef } from 'vue'
 import { useNuxt } from '@nuxt/app'
 
 export function ensureReactive<

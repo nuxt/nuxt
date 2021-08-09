@@ -1,5 +1,6 @@
 import { toRefs } from '@vue/reactivity'
-import { ComponentInternalInstance, DefineComponent, defineComponent, getCurrentInstance } from 'vue'
+import { defineComponent, getCurrentInstance } from 'vue'
+import type { ComponentInternalInstance, DefineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import type { LegacyContext } from '../legacy'
 import { useNuxt } from '../nuxt'

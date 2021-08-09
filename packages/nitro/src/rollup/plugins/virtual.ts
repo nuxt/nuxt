@@ -1,7 +1,7 @@
-// Based on https://github.com/rollup/plugins/blob/master/packages/virtual/src/index.ts
 import * as path from 'upath'
+import type { Plugin } from 'rollup'
 
-import { Plugin } from 'rollup'
+// Based on https://github.com/rollup/plugins/blob/master/packages/virtual/src/index.ts
 
 type VirtualModule = string | { load: () => string | Promise<string> }
 

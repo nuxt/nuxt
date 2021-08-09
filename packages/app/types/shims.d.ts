@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/default
 import Vue from 'vue'
 import { $Fetch } from 'ohmyfetch'
 import { Nuxt } from '../dist'

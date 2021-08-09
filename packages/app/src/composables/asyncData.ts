@@ -1,4 +1,5 @@
-import { getCurrentInstance, onBeforeMount, onUnmounted, Ref, ref, unref, UnwrapRef } from 'vue'
+import { getCurrentInstance, onBeforeMount, onUnmounted, ref, unref } from 'vue'
+import type { UnwrapRef, Ref } from 'vue'
 import { Nuxt, useNuxt } from '@nuxt/app'
 
 import { NuxtComponentPendingPromises } from './component'

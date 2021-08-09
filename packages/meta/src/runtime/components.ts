@@ -1,4 +1,5 @@
-import { defineComponent, SetupContext } from 'vue'
+import { defineComponent } from 'vue'
+import type { SetupContext } from 'vue'
 import { useMeta } from './composables'
 
 type Props = Readonly<Record<string, any>>
