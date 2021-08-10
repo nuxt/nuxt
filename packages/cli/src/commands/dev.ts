@@ -1,4 +1,4 @@
-import { resolve } from 'upath'
+import { resolve, relative } from 'upath'
 import chokidar from 'chokidar'
 import debounce from 'debounce-promise'
 import type { Nuxt } from '@nuxt/kit'
@@ -27,9 +27,9 @@ export default defineNuxtCommand({
     const { loadNuxt, buildNuxt } = requireModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
 
     let currentNuxt: Nuxt
-    const load = async (isRestart: boolean) => {
+    const load = async (isRestart: boolean, reason?: string) => {
       try {
-        const message = `${isRestart ? 'Restarting' : 'Starting'} nuxt...`
+        const message = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
         server.setApp(createLoadingHandler(message))
         if (isRestart) {
           console.log(message)
@@ -59,12 +59,8 @@ export default defineNuxtCommand({
     const dLoad = debounce(load, 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (_event, file) => {
-      // Ignore any changes to files within the Nuxt build directory
-      if (file.includes(currentNuxt.options.buildDir)) {
-        return
-      }
-      if (file.includes('nuxt.config') || file.includes('modules') || file.includes('pages')) {
-        dLoad(true)
+      if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$|pages$/)) {
+        dLoad(true, `${relative(rootDir, file)} updated`)
       }
     })
 
