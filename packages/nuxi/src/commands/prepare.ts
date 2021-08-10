@@ -9,7 +9,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'prepare',
-    usage: 'nu prepare',
+    usage: 'npx nuxi prepare',
     description: 'Prepare nuxt for development/build'
   },
   async invoke (args) {

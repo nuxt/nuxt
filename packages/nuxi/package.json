@@ -1,13 +1,13 @@
 {
-  "name": "nuxt-cli",
+  "name": "nuxi",
   "version": "0.3.8",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
   "bin": {
-    "nu": "./bin/nuxt.js",
-    "nuxt": "./bin/nuxt.js",
-    "nuxt-cli": "./bin/nuxt.js"
+    "nu": "./bin/nuxi.js",
+    "nuxi": "./bin/nuxi.js",
+    "nuxt": "./bin/nuxi.js"
   },
   "scripts": {
     "prepack": "unbuild"

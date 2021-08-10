@@ -24,7 +24,7 @@ async function _main () {
   }
 
   if (command === 'usage') {
-    console.log(`\nUsage: ${cyan(`nu ${Object.keys(commands).join('|')} [args]`)}\n`)
+    console.log(`\nUsage: ${cyan(`npx nuxi ${Object.keys(commands).join('|')} [args]`)}\n`)
     process.exit(1)
   }
 

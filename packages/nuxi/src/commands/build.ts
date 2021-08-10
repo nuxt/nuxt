@@ -7,7 +7,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'build',
-    usage: 'nu build [rootDir]',
+    usage: 'npx nuxi build [rootDir]',
     description: 'Build nuxt for production deployment'
   },
   async invoke (args) {

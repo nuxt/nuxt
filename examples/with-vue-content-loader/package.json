@@ -7,8 +7,8 @@
     "vue-content-loader": "^2.0.0"
   },
   "scripts": {
-    "dev": "nu dev",
-    "build": "nu build",
+    "dev": "nuxt dev",
+    "build": "nuxt build",
     "start": "node .output/server/index.mjs"
   }
 }

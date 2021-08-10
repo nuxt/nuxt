@@ -1321,7 +1321,7 @@ __metadata:
     upath: ^2.0.1
     wrap-ansi: ^7.0.0
   bin:
-    nuxt-cli: bin/nuxt-cli.js
+    nuxi: bin/nuxi.js
   checksum: 0ce9114dd4887d629afe35712bd90e83092715453db53f3704f561a2e888b423cd60c25ef72a409c37f27d1c8ec242bc971ea7c4fc7c286246771fdfb5bea0b5
   languageName: node
   linkType: hard

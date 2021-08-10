@@ -11,7 +11,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'nu dev [rootDir] [--clipboard] [--open, -o]',
+    usage: 'npx nuxi dev [rootDir] [--clipboard] [--open, -o]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {

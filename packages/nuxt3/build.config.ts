@@ -9,6 +9,6 @@ export default defineBuildConfig({
     '@nuxt/app',
     '@nuxt/vite-builder',
     '@nuxt/webpack-builder',
-    'nuxt-cli'
+    'nuxi'
   ]
 })

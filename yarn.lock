@@ -8691,9 +8691,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"nuxt-cli@^0.3.8, nuxt-cli@workspace:packages/cli":
+"nuxi@^0.3.8, nuxi@workspace:packages/nuxi":
   version: 0.0.0-use.local
-  resolution: "nuxt-cli@workspace:packages/cli"
+  resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
     "@nuxt/design": 0.0.5
     "@nuxt/kit": ^0.6.4
@@ -8716,9 +8716,9 @@ fsevents@~2.3.2:
     fsevents:
       optional: true
   bin:
-    nu: ./bin/nuxt.js
-    nuxt: ./bin/nuxt.js
-    nuxt-cli: ./bin/nuxt.js
+    nu: ./bin/nuxi.js
+    nuxi: ./bin/nuxi.js
+    nuxt: ./bin/nuxi.js
   languageName: unknown
   linkType: soft
 
@@ -8785,16 +8785,16 @@ fsevents@~2.3.2:
     hookable: ^4.4.1
     ignore: ^5.1.8
     lodash: ^4.17.21
-    nuxt-cli: ^0.3.8
+    nuxi: ^0.3.8
     scule: ^0.2.1
     ufo: ^0.7.7
     unbuild: ^0.4.2
     upath: ^2.0.1
     vue: 3.2.1
   bin:
-    nu: ./bin/nuxt.js
-    nuxt: ./bin/nuxt.js
-    nuxt-cli: ./bin/nuxt.js
+    nu: ./bin/nuxi.js
+    nuxi: ./bin/nuxi.js
+    nuxt: ./bin/nuxi.js
   languageName: unknown
   linkType: soft
 

@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('../packages/cli/bin/nuxt')
+require('../packages/nuxi/bin/nuxi')

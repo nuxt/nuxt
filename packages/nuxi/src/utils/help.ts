@@ -10,7 +10,7 @@ export function showHelp (meta?) {
     sections.push(magenta('⋮ ') + meta.description)
   }
 
-  sections.push(`Use ${cyan('nu [command] --help')} to see help for each command`)
+  sections.push(`Use ${cyan('npx nuxi [command] --help')} to see help for each command`)
 
   console.log(sections.join('\n\n') + '\n')
 }

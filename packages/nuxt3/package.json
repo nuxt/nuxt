@@ -5,9 +5,9 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "bin": {
-    "nu": "./bin/nuxt.js",
-    "nuxt": "./bin/nuxt.js",
-    "nuxt-cli": "./bin/nuxt.js"
+    "nu": "./bin/nuxi.js",
+    "nuxi": "./bin/nuxi.js",
+    "nuxt": "./bin/nuxi.js"
   },
   "files": [
     "bin",
@@ -37,7 +37,7 @@
     "hookable": "^4.4.1",
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
-    "nuxt-cli": "^0.3.8",
+    "nuxi": "^0.3.8",
     "scule": "^0.2.1",
     "ufo": "^0.7.7",
     "upath": "^2.0.1",
