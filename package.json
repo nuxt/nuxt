@@ -19,6 +19,7 @@
     "test": "yarn lint && yarn test:presets",
     "test:presets": "mocha test/presets/*.mjs",
     "test:compat": "TEST_COMPAT=1 yarn test:presets",
+    "test:unit": "mocha -r jiti/register packages/**/test/*.test.*",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {

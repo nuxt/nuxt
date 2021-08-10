@@ -51,6 +51,9 @@ jobs:
       - name: Stub
         run: yarn stub
 
+      - name: Test (unit)
+        run: yarn test:unit
+
       - name: Test (presets)
         run: yarn test:presets
 

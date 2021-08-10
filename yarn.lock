@@ -1335,6 +1335,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nuxt/global-imports@^0.1.0, @nuxt/global-imports@workspace:packages/global-imports":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/global-imports@workspace:packages/global-imports"
+  dependencies:
+    "@nuxt/kit": ^0.6.4
+    ufo: ^0.7.7
+    unbuild: ^0.4.2
+    unplugin: ^0.0.5
+    upath: ^2.0.1
+  languageName: unknown
+  linkType: soft
+
 "@nuxt/kit@^0.6.4, @nuxt/kit@workspace:packages/kit":
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
@@ -8735,6 +8747,7 @@ fsevents@~2.3.2:
   dependencies:
     "@nuxt/app": ^0.5.0
     "@nuxt/component-discovery": ^0.2.0
+    "@nuxt/global-imports": ^0.1.0
     "@nuxt/kit": ^0.6.4
     "@nuxt/meta": ^0.1.0
     "@nuxt/nitro": ^0.9.1

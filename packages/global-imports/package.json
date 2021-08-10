@@ -1,0 +1,28 @@
+{
+  "name": "@nuxt/global-imports",
+  "version": "0.1.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "exports": {
+    "./module": {
+      "import": "./dist/module.mjs",
+      "require": "./dist/module.js"
+    }
+  },
+  "types": "./dist/module.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^0.6.4",
+    "ufo": "^0.7.7",
+    "unplugin": "^0.0.5",
+    "upath": "^2.0.1"
+  },
+  "devDependencies": {
+    "unbuild": "^0.4.2"
+  }
+}

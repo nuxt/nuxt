@@ -32,8 +32,6 @@
 
 <script lang="ts">
 import { ContentLoader } from 'vue-content-loader'
-import { defineNuxtComponent, asyncData } from '@nuxt/app'
-
 export default defineNuxtComponent({
   components: { ContentLoader },
   setup () {

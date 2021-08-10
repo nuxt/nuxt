@@ -19,6 +19,7 @@
   "dependencies": {
     "@nuxt/app": "^0.5.0",
     "@nuxt/component-discovery": "^0.2.0",
+    "@nuxt/global-imports": "^0.1.0",
     "@nuxt/kit": "^0.6.4",
     "@nuxt/meta": "^0.1.0",
     "@nuxt/nitro": "^0.9.1",

@@ -14,7 +14,7 @@
       "mocha",
       "chai",
       "@nuxt/app",
-      "@nuxt/nitro",
+      "@nuxt/nitro"
     ]
   },
   "exclude": ["./packages/*/dist/*"]

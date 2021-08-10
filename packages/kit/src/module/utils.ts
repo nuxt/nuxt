@@ -36,6 +36,8 @@ export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplat
   // Normalize
   if (typeof template === 'string') {
     template = { src: template }
+  } else {
+    template = { ...template }
   }
 
   // Use src if provided
@@ -74,7 +76,10 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   // Normalize src
   if (typeof plugin === 'string') {
     plugin = { src: plugin }
+  } else {
+    plugin = { ...plugin }
   }
+
   if (!plugin.src) {
     throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
   }

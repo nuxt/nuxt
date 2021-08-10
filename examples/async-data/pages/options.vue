@@ -9,9 +9,6 @@
 </template>
 
 <script lang="ts">
-import { defineNuxtComponent } from '@nuxt/app'
-import { ref } from 'vue'
-
 export default defineNuxtComponent({
   fetchKey: 'custom',
   asyncData ({ route }) {
