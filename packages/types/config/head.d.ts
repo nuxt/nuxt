@@ -4,6 +4,6 @@
  *                https://github.com/declandewet/vue-meta#recognized-metainfo-properties
  */
 
-import { MetaInfo } from 'vue-meta'
+import type { MetaInfo } from 'vue-meta'
 
 export type NuxtOptionsHead = MetaInfo | (() => MetaInfo)
