@@ -11,6 +11,7 @@ export default {
      *
      * @see [vue@2 Documentation](https://vuejs.org/v2/api/#Global-Config)
      * @see [vue@3 Documentation](https://v3.vuejs.org/api/application-config.html)
+    * @version 2
      */
     config: {
       silent: { $resolve: (val, get) => val ?? !get('dev') },
@@ -20,6 +21,7 @@ export default {
 
   /**
    * Nuxt App configuration.
+   * @version 2
    */
   app: {
     $resolve: (val, get) => {
@@ -49,6 +51,7 @@ export default {
    *   </body>
    * </html>
    * ```
+   * @version 2
    */
   appTemplatePath: {
     $resolve: (val, get) => {
@@ -64,7 +67,9 @@ export default {
 
   /**
    * Enable or disable vuex store.
-   * By default is enbled if there is store / directory
+   *
+   * By default it is enabled if there is a `store/` directory
+   * @version 2
    */
   store: {
     $resolve: (val, get) => val !== false &&
@@ -77,6 +82,7 @@ export default {
    * Options to pass directly to `vue-meta`.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#plugin-options).
+   * @version 2
    */
   vueMeta: null,
 
@@ -84,20 +90,22 @@ export default {
    * Set default configuration for `<head>` on every page.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#metainfo-properties) for specifics.
+   * @version 2
    */
   head: {
-    /** Each item in the array maps to a newly-created <meta> element, where object properties map to attributes. */
+    /** Each item in the array maps to a newly-created `<meta>` element, where object properties map to attributes. */
     meta: [],
-    /** Each item in the array maps to a newly-created <link> element, where object properties map to attributes. */
+    /** Each item in the array maps to a newly-created `<link>` element, where object properties map to attributes. */
     link: [],
-    /** Each item in the array maps to a newly-created <style> element, where object properties map to attributes. */
+    /** Each item in the array maps to a newly-created `<style>` element, where object properties map to attributes. */
     style: [],
-    /** Each item in the array maps to a newly-created <script> element, where object properties map to attributes. */
+    /** Each item in the array maps to a newly-created `<script>` element, where object properties map to attributes. */
     script: []
   },
 
   /**
    * Configuration for the Nuxt `fetch()` hook.
+   * @version 2
    */
   fetch: {
     /** Whether to enable `fetch()` on the server. */
@@ -126,6 +134,7 @@ export default {
    *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
    * ]
    * ```
+   * @version 2
    */
   plugins: [],
 
@@ -133,6 +142,7 @@ export default {
    * You may want to extend plugins or change their order. For this, you can pass
    * a function using `extendPlugins`. It accepts an array of plugin objects and
    * should return an array of plugin objects.
+   * @version 2
    */
   extendPlugins: null,
 
@@ -155,6 +165,7 @@ export default {
    *   '@/assets/css/main.scss'
    * ]
    * ```
+   * @version 2
    */
   css: [],
 
@@ -162,6 +173,7 @@ export default {
    * An object where each key name maps to a path to a layout .vue file.
    *
    * Normally there is no need to configure this directly.
+   * @version 2
    */
   layouts: {},
 
@@ -169,6 +181,7 @@ export default {
    * Set a custom error page layout.
    *
    * Normally there is no need to configure this directly.
+   * @version 2
    */
   ErrorPage: null,
 
@@ -176,6 +189,7 @@ export default {
    * Configure the Nuxt loading progress bar component that's shown between
    * routes. Set to `false` to disable. You can also customize it or create
    * your own component.
+   * @version 2
    */
   loading: {
     /** CSS color of the progress bar */
@@ -212,6 +226,7 @@ export default {
    * configuration. The name can refer to an indicator from [SpinKit](https://tobiasahlin.com/spinkit/)
    * or a path to an HTML template of the indicator source code (in this case, all the
    * other options will be passed to the template.)
+   * @version 2
    */
   loadingIndicator: {
     $resolve: (val, get) => {
@@ -238,6 +253,7 @@ export default {
    *
    * @see [vue@2 documentation](https://vuejs.org/v2/guide/transitions.html)
    * @see [vue@3 documentation](https://v3.vuejs.org/guide/transitions-enterleave.html)
+   * @version 2
    */
   pageTransition: {
     $resolve: val => typeof val === 'string' ? { name: val } : val,
@@ -257,6 +273,7 @@ export default {
    *
    * @see [vue@2 documentation](https://vuejs.org/v2/guide/transitions.html)
    * @see [vue@3 documentation](https://v3.vuejs.org/guide/transitions-enterleave.html)
+   * @version 2
    */
   layoutTransition: {
     $resolve: val => typeof val === 'string' ? { name: val } : val,
@@ -266,6 +283,7 @@ export default {
 
   /**
    * You can disable specific Nuxt features that you do not want.
+   * @version 2
    */
   features: {
     /** Set to false to disable Nuxt vuex integration */

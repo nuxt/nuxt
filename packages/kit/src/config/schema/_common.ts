@@ -13,6 +13,8 @@ export default {
    * current/working directory.
    *
    * It is normally not needed to configure this option.
+   * @version 2
+   * @version 3
    */
   rootDir: {
     $resolve: val => typeof val === 'string' ? resolve(val) : process.cwd()
@@ -45,6 +47,8 @@ export default {
    * ------| static/
    * ------| store/
    * ```
+   * @version 2
+   * @version 3
    */
   srcDir: {
     $resolve: (val, get) => resolve(get('rootDir'), val || '.')
@@ -62,6 +66,8 @@ export default {
    *   buildDir: 'nuxt-build'
    * }
    * ```
+   * @version 2
+   * @version 3
    */
   buildDir: {
     $resolve: (val, get) => resolve(get('rootDir'), val || '.nuxt')
@@ -71,17 +77,22 @@ export default {
    * Whether Nuxt is running in development mode.
    *
    * Normally you should not need to set this.
+   * @version 2
+   * @version 3
    */
   dev: Boolean(env.dev),
 
   /**
    * Whether your app is being unit tested
+   * @version 2
    */
   test: Boolean(env.test),
 
   /**
    * Set to true to enable debug mode.
+   *
    * By default it's only enabled in development mode.
+   * @version 2
    */
   debug: {
     $resolve: (val, get) => val ?? get('dev')
@@ -92,15 +103,18 @@ export default {
    * throughout your app (server- and client-side). They can be assigned using
    * server side environment variables.
    *
-   * **Note**: Nuxt uses webpack's `definePlugin` to define these environment variables.
+   * @note Nuxt uses webpack's `definePlugin` to define these environment variables.
    * This means that the actual `process` or `process.env` from Node.js is neither
    * available nor defined. Each of the `env` properties defined here is individually
    * mapped to `process.env.xxxx` and converted during compilation.
    *
-   * **Note**: Environment variables starting with `NUXT_ENV_` are automatically injected
+   * @note Environment variables starting with `NUXT_ENV_` are automatically injected
    * into the process environment.
+   *
+   * @version 2
    */
   env: {
+    $default: {},
     $resolve: (val) => {
       val = { ...val }
       for (const key in process.env) {
@@ -117,6 +131,7 @@ export default {
    * middleware, and so on - defaulting to `jiti` (which has support for TypeScript and ESM syntax).
    *
    * @see [jiti](https://github.com/unjs/jiti)
+   * @version 2
    */
   createRequire: {
     $resolve: (val: any) => {
@@ -137,6 +152,7 @@ export default {
    * or as static HTML files suitable for a CDN or other static file server (`static`).
    *
    * This is unrelated to `ssr`.
+   * @version 2
    */
   target: {
     $resolve: val => ['server', 'static'].includes(val) ? val : 'server'
@@ -146,6 +162,8 @@ export default {
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
    * If set to `false` and combined with `static` target, generated pages will simply display
    * a loading screen with no content.
+   * @version 2
+   * @version 3
    */
   ssr: true,
 
@@ -175,6 +193,7 @@ export default {
    * If you have set `modern: true` and are serving your app, modern will be set to `'server'`.
    *
    * @see [concept of modern mode](https://philipwalton.com/articles/deploying-es2015-code-in-production-today/)
+   * @version 2
    */
   modern: undefined,
 
@@ -187,7 +206,7 @@ export default {
    * Nuxt tries to resolve each item in the modules array using node require path
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
    *
-   * **Note**: Modules are executed sequentially so the order is important.
+   * @note Modules are executed sequentially so the order is important.
    *
    * @example
    * ```js
@@ -202,6 +221,8 @@ export default {
    *   function () {}
    * ]
    * ```
+   * @version 2
+   * @version 3
    */
   modules: [],
 
@@ -216,7 +237,7 @@ export default {
    * Nuxt tries to resolve each item in the modules array using node require path
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
    *
-   * **Note**: Modules are executed sequentially so the order is important.
+   * @note Modules are executed sequentially so the order is important.
    *
    * @example
    * ```js
@@ -232,14 +253,17 @@ export default {
    * ]
    * ```
    *
-   * **Note**: Using `buildModules` helps to make production startup faster and also significantly
+   * @note Using `buildModules` helps to make production startup faster and also significantly
    * decreases the size of `node_modules` in production deployments. Please refer to each
    * module's documentation to see if it is recommended to use `modules` or `buildModules`.
+   *
+   * @version 2
+   * @version 3
    */
   buildModules: [],
 
   /**
-   * Built-in ah-hoc modules
+   * Built-in ad-hoc modules
    *
    *  @private
    */
@@ -248,6 +272,8 @@ export default {
   /**
    * Allows customizing the global ID used in the main HTML template as well as the main
    * Vue instance name and other options.
+   * @version 2
+   * @version 3
    */
   globalName: {
     $resolve: val => (typeof val === 'string' && /^[a-zA-Z]+$/.test(val)) ? val.toLocaleLowerCase() : 'nuxt'
@@ -255,6 +281,7 @@ export default {
 
   /**
    * Customizes specific global names (they are based on `globalName` by default).
+   * @version 2
    */
   globals: {
     id: globalName => `__${globalName}`,
@@ -288,7 +315,7 @@ export default {
    * ]
    * ```
    *
-   * **Note**: If you don't want middleware to run on all routes you should use the object
+   * @note If you don't want middleware to run on all routes you should use the object
    * form with a specific path.
    *
    * If you pass a string handler, Nuxt will expect that file to export a default function
@@ -322,12 +349,16 @@ export default {
    * whose keys are the paths and whose values are the handlers (string or function).
    * @example
    * ```js
-   * serverMiddleware: {
-   *   '/a': '~/server-middleware/a.js',
-   *   '/b': '~/server-middleware/b.js',
-   *   '/c': '~/server-middleware/c.js'
+   * export default {
+   *   serverMiddleware: {
+   *     '/a': '~/server-middleware/a.js',
+   *     '/b': '~/server-middleware/b.js',
+   *     '/c': '~/server-middleware/c.js'
+   *   }
    * }
    * ```
+   * @version 2
+   * @version 3
    */
   serverMiddleware: {
     $resolve: (val: any) => {
@@ -355,6 +386,7 @@ export default {
    *   modulesDir: ['../../node_modules']
    * }
    * ```
+   * @version 2
    */
   modulesDir: {
     $default: ['node_modules'],
@@ -366,36 +398,63 @@ export default {
 
   /**
    * Customize default directory structure used by nuxt.
+   *
    * It is better to stick with defaults unless needed.
+   * @version 2
+   * @version 3
    */
   dir: {
-    /** The assets directory (aliased as `~assets` in your build) */
+    /**
+     * The assets directory (aliased as `~assets` in your build)
+     * @version 2
+     */
     assets: 'assets',
-    /** The directory containing app template files like `app.html` and `router.scrollBehavior.js` */
+    /**
+     * The directory containing app template files like `app.html` and `router.scrollBehavior.js`
+     * @version 2
+     */
     app: 'app',
-    /** The layouts directory, each file of which will be auto-registered as a Nuxt layout. */
+    /**
+     * The layouts directory, each file of which will be auto-registered as a Nuxt layout.
+     * @version 2
+     * @version 3
+     */
     layouts: 'layouts',
-    /** The middleware directory, each file of which will be auto-registered as a Nuxt middleware. */
+    /**
+     * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
+     * @version 2
+     */
     middleware: 'middleware',
-    /** The directory which will be processed to auto-generate your application page routes. */
+    /**
+     * The directory which will be processed to auto-generate your application page routes.
+     * @version 2
+     * @version 3
+     */
     pages: 'pages',
     /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
      * and copied across into your `dist` folder when your app is generated.
+     * @version 3
      */
     public: {
       $resolve: (val, get) => val || get('dir.static') || 'public',
     },
+    /** @version 2 */
     static: {
       $schema: { deprecated: 'use `dir.public` option instead' },
       $resolve: (val, get) => val || get('dir.public') || 'public',
     },
-    /** The folder which will be used to auto-generate your Vuex store structure. */
+    /**
+     * The folder which will be used to auto-generate your Vuex store structure.
+     * @version 2
+     */
     store: 'store'
   },
 
   /**
    * The extensions that should be resolved by the Nuxt resolver.
+   * @version 2
+   * @version 3
    */
   extensions: {
     $resolve: val => ['.js', '.mjs', '.ts', '.tsx', '.vue'].concat(val).filter(Boolean)
@@ -403,6 +462,7 @@ export default {
 
   /**
    * The style extensions that should be resolved by the Nuxt resolver (for example, in `css` property).
+   * @version 2
    */
   styleExtensions: ['.css', '.pcss', '.postcss', '.styl', '.stylus', '.scss', '.sass', '.less'],
 
@@ -410,10 +470,10 @@ export default {
    * You can improve your DX by defining additional aliases to access custom directories
    * within your JavaScript and CSS.
    *
-   * **Note**: Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
+   * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
    *
-   * **Note**: If you are using TypeScript and want to use the alias you define within
+   * @note If you are using TypeScript and want to use the alias you define within
    * your TypeScript files, you will need to add the aliases to your `paths` object within `tsconfig.json` .
    *
    * @example
@@ -447,6 +507,9 @@ export default {
    * }
    * </style>
    * ```
+   *
+   * @version 2
+   * @version 3
    */
   alias: {
     $resolve: (val, get) => ({
@@ -471,18 +534,21 @@ export default {
    *   ignorecase: false
    * }
    * ```
+   * @version 2
    */
   ignoreOptions: undefined,
 
   /**
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
+   * @version 2
    */
   ignorePrefix: '-',
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
    * inside the `ignore` array will be ignored in building.
+   * @version 2
    */
   ignore: {
     $resolve: (val, get) => [
@@ -504,6 +570,7 @@ export default {
    * ```js
    * watch: ['~/custom/*.js']
    * ```
+   * @version 2
    */
   watch: {
     $resolve: (val, get) => {
@@ -516,6 +583,8 @@ export default {
 
   /**
    * The watchers property lets you overwrite watchers configuration in your `nuxt.config`.
+   * @version 2
+   * @version 3
    */
   watchers: {
     /** An array of event types, which, when received, will cause the watcher to restart. */
@@ -542,15 +611,18 @@ export default {
    * Your preferred code editor to launch when debugging.
    *
    * @see [documentation](https://github.com/yyx990803/launch-editor#supported-editors)
+   * @version 2
    */
   editor: undefined,
 
   /**
-   * Hooks are listeners to Nuxt events that are typically used in modules, but are also available in `nuxt.config`.
+   * Hooks are listeners to Nuxt events that are typically used in modules,
+   * but are also available in `nuxt.config`.
    *
    * Internally, hooks follow a naming pattern using colons (e.g., build:done).
    *
-   * For ease of configuration, you can also structure them as an hierarchical object in `nuxt.config` (as below).
+   * For ease of configuration, you can also structure them as an hierarchical
+   * object in `nuxt.config` (as below).
    *
    * @example
    * ```js
@@ -570,6 +642,8 @@ export default {
    *   }
    * }
    * ```
+   * @version 2
+   * @version 3
    */
   hooks: null,
 
@@ -595,6 +669,8 @@ export default {
    *   }
    * }
    * ```
+   * @version 2
+   * @version 3
    */
   privateRuntimeConfig: {},
 
@@ -617,6 +693,8 @@ export default {
    *   }
    * }
    * ```
+   * @version 2
+   * @version 3
    */
   publicRuntimeConfig: {
     app: {

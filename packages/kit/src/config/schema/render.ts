@@ -1,3 +1,6 @@
+/**
+ * @version 2
+ */
 export default {
   /**
    * Use this option to customize the Vue SSR bundle renderer.
@@ -78,7 +81,7 @@ export default {
     /**
      * Whether to add the router base to your static assets.
      *
-     * **Note**: some URL rewrites might not respect the prefix.
+     * @note some URL rewrites might not respect the prefix.
      *
      * @example
      * Assets: favicon.ico
@@ -143,16 +146,20 @@ export default {
    *
    * @example
    * ```js
-   * csp: {
-   *   hashAlgorithm: 'sha256',
-   *   policies: {
-   *     'script-src': [
-   *       'https://www.google-analytics.com',
-   *       'https://name.example.com'
-   *     ],
-   *     'report-uri': ['https://report.example.com/report-csp-violations']
-   *   },
-   *   addMeta: true
+   * export default {
+   *   render: {
+   *     csp: {
+   *       hashAlgorithm: 'sha256',
+   *       policies: {
+   *         'script-src': [
+   *           'https://www.google-analytics.com',
+   *           'https://name.example.com'
+   *         ],
+   *         'report-uri': ['https://report.example.com/report-csp-violations']
+   *       },
+   *       addMeta: true
+   *     }
+   *   }
    * }
    * ```
    *
@@ -164,31 +171,35 @@ export default {
    * @example
    * ```js
    * // PRIMARY_HOSTS = `loc.example-website.com`
-   * csp: {
-   *   reportOnly: true,
-   *   hashAlgorithm: 'sha256',
-   *   policies: {
-   *     'default-src': ["'self'"],
-   *     'img-src': ['https:', '*.google-analytics.com'],
-   *     'worker-src': ["'self'", `blob:`, PRIMARY_HOSTS, '*.logrocket.io'],
-   *     'style-src': ["'self'", "'unsafe-inline'", PRIMARY_HOSTS],
-   *     'script-src': [
-   *       "'self'",
-   *       "'unsafe-inline'",
-   *       PRIMARY_HOSTS,
-   *       'sentry.io',
-   *       '*.sentry-cdn.com',
-   *       '*.google-analytics.com',
-   *       '*.logrocket.io'
-   *     ],
-   *     'connect-src': [PRIMARY_HOSTS, 'sentry.io', '*.google-analytics.com'],
-   *     'form-action': ["'self'"],
-   *     'frame-ancestors': ["'none'"],
-   *     'object-src': ["'none'"],
-   *     'base-uri': [PRIMARY_HOSTS],
-   *     'report-uri': [
-   *       `https://sentry.io/api/<project>/security/?sentry_key=<key>`
-   *     ]
+   * export default {
+   *   render: {
+   *     csp: {
+   *       reportOnly: true,
+   *       hashAlgorithm: 'sha256',
+   *       policies: {
+   *         'default-src': ["'self'"],
+   *         'img-src': ['https:', '*.google-analytics.com'],
+   *         'worker-src': ["'self'", `blob:`, PRIMARY_HOSTS, '*.logrocket.io'],
+   *         'style-src': ["'self'", "'unsafe-inline'", PRIMARY_HOSTS],
+   *         'script-src': [
+   *           "'self'",
+   *           "'unsafe-inline'",
+   *           PRIMARY_HOSTS,
+   *           'sentry.io',
+   *           '*.sentry-cdn.com',
+   *           '*.google-analytics.com',
+   *           '*.logrocket.io'
+   *         ],
+   *         'connect-src': [PRIMARY_HOSTS, 'sentry.io', '*.google-analytics.com'],
+   *         'form-action': ["'self'"],
+   *         'frame-ancestors': ["'none'"],
+   *         'object-src': ["'none'"],
+   *         'base-uri': [PRIMARY_HOSTS],
+   *         'report-uri': [
+   *           `https://sentry.io/api/<project>/security/?sentry_key=<key>`
+   *         ]
+   *       }
+   *     }
    *   }
    * }
    * ```
@@ -206,7 +217,7 @@ export default {
          * This is independent of the `csp.policies` configuration and the complete set
          * of the defined policies will still be added to the HTTP response header.
          *
-         * **Note** CSP hashes will not be added as `<meta>` if `script-src` policy
+         * @note CSP hashes will not be added as `<meta>` if `script-src` policy
          * contains 'unsafe-inline'. This is due to browsers ignoring 'unsafe-inline'
          * if hashes are present. (Set option `unsafeInlineCompatibility` to true to
          * disable this behavior.)
@@ -243,11 +254,15 @@ export default {
    *
    * @example
    * ```js
-   * fallback: {
-   *   static: {
-   *     // Avoid sending 404 for these extensions
-   *     handlers: {
-   *       '.js': false
+   * export default {
+   *   render: {
+   *     fallback: {
+   *       static: {
+   *         // Avoid sending 404 for these extensions
+   *         handlers: {
+   *           '.js': false
+   *         }
+   *       }
    *     }
    *   }
    * }

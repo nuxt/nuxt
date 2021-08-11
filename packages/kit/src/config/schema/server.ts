@@ -1,12 +1,17 @@
+/** @version 2 */
 export default {
   /**
    * Whether to enable HTTPS.
    *
    * @example
    * ```js
-   * https: {
-   *   key: fs.readFileSync(path.resolve(__dirname, 'server.key')),
-   *   cert: fs.readFileSync(path.resolve(__dirname, 'server.crt'))
+   * export default {
+   *   server: {
+   *     https: {
+   *       key: fs.readFileSync(path.resolve(__dirname, 'server.key')),
+   *       cert: fs.readFileSync(path.resolve(__dirname, 'server.crt'))
+   *     }
+   *   }
    * }
    * ```
    */
