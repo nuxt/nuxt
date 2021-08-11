@@ -2,13 +2,13 @@
  * Extends interfaces in Vue.js
  */
 
-import Vue from 'vue'
-import { MetaInfo } from 'vue-meta'
-import { Route } from 'vue-router'
-import { RecordPropsDefinition, PropsDefinition, ComponentOptions } from 'vue/types/options'
-import { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
-import { NuxtRuntimeConfig } from '../config/runtime'
-import { Context, Middleware, Transition, NuxtApp } from './index'
+import type Vue from 'vue'
+import type { MetaInfo } from 'vue-meta'
+import type { Route } from 'vue-router'
+import type { RecordPropsDefinition, PropsDefinition, ComponentOptions } from 'vue/types/options'
+import type { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
+import type { NuxtRuntimeConfig } from '../config/runtime'
+import type { Context, Middleware, Transition, NuxtApp } from './index'
 
 // https://github.com/vuejs/vue/blob/dev/types/options.d.ts#L63-L66
 type DefaultData<V> = object | ((this: V) => object)
