@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/devalue": "^1.2.5",
+    "@nuxt/devalue": "^2.0.0",
     "@nuxt/utils": "2.15.6",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
