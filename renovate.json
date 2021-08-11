@@ -21,7 +21,8 @@
     "@types/webpack-bundle-analyzer",
     "wrap-ansi",
     "jest",
-    "babel-jest"
+    "babel-jest",
+    "globby"
   ],
   "lockFileMaintenance": {
     "enabled": true
