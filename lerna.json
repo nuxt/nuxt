@@ -1,5 +1,5 @@
 {
-  "version": "2.15.7",
+  "version": "2.15.8",
   "npmClient": "yarn",
   "useWorkspaces": true,
   "conventionalCommits": true,
