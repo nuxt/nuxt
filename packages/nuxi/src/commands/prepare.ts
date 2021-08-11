@@ -20,12 +20,13 @@ export default defineNuxtCommand({
     const nuxt = await loadNuxt({ rootDir })
 
     const adHocModules = nuxt.options._majorVersion === 3
-      ? ['@nuxt/kit', '@nuxt/app', '@nuxt/nitro']
+      ? ['@nuxt/kit', '@nuxt/nitro']
       : ['@nuxt/kit']
 
     const modulePaths = getModulePaths(nuxt.options.modulesDir)
 
     const references: TSReference[] = [
+      'nuxt3',
       ...adHocModules,
       ...nuxt.options.buildModules,
       ...nuxt.options.modules,

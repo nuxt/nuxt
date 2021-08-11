@@ -12,13 +12,14 @@
     "types": [
       "node",
       "mocha",
-      "chai",
-      "@nuxt/app",
-      "@nuxt/nitro"
-    ]
+      "chai"
+    ],
+    "paths": {
+      "#app": ["./packages/nuxt3/src/app/index"],
+      "#app/*": ["./packages/nuxt3/src/app/*"]
+    }
   },
   "exclude": [
-    "./packages/*/dist/*",
-    "./modules/*/dist/*"
+    "**/*/dist/*"
   ]
 }

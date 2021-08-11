@@ -1,9 +1,10 @@
 {
   "name": "nuxt3",
-  "version": "0.8.0",
+  "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
+  "types": "./types.d.ts",
   "bin": {
     "nu": "./bin/nuxi.js",
     "nuxi": "./bin/nuxi.js",
@@ -11,23 +12,21 @@
   },
   "files": [
     "bin",
+    "types.d.ts",
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild $@ || true"
+    "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/app": "^0.5.0",
-    "@nuxt/component-discovery": "^0.2.0",
-    "@nuxt/global-imports": "^0.1.0",
-    "@nuxt/kit": "^0.6.4",
-    "@nuxt/meta": "^0.1.0",
-    "@nuxt/nitro": "^0.9.1",
-    "@nuxt/pages": "^0.3.0",
-    "@nuxt/vite-builder": "^0.5.0",
-    "@nuxt/webpack-builder": "^0.5.0",
+    "@nuxt/kit": "^0.10.0",
+    "@nuxt/nitro": "^0.10.0",
+    "@nuxt/vite-builder": "^0.10.0",
+    "@nuxt/webpack-builder": "^0.10.0",
     "@vue/reactivity": "3.2.1",
+    "@vue/server-renderer": "^3.2.2",
     "@vue/shared": "3.2.1",
+    "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
@@ -37,16 +36,26 @@
     "hookable": "^4.4.1",
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
-    "nuxi": "^0.3.8",
+    "nuxi": "^0.10.0",
+    "ohmyfetch": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.7",
+    "unplugin": "^0.0.5",
     "upath": "^2.0.1",
-    "vue": "3.2.1"
+    "vue": "^3.2.1",
+    "vue-router": "^4.0.11",
+    "vuex5": "^0.5.0-testing.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
     "@types/hash-sum": "^1.0.0",
     "@types/lodash": "^4.14.172",
-    "unbuild": "^0.4.2"
+    "unbuild": "^0.4.2",
+    "vue-meta": "next"
+  },
+  "peerDependencies": {
+    "@vue/reactivity": "3.2.1",
+    "@vue/shared": "3.2.1",
+    "vue": "3.2.1"
   }
 }

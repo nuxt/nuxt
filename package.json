@@ -3,7 +3,6 @@
   "license": "MIT",
   "workspaces": [
     "packages/*",
-    "modules/*",
     "examples/*",
     "playground"
   ],
@@ -22,7 +21,7 @@
     "test": "yarn lint && yarn test:presets",
     "test:presets": "mocha test/presets/*.mjs",
     "test:compat": "TEST_COMPAT=1 yarn test:presets",
-    "test:unit": "mocha -r jiti/register {packages,modules}/**/test/*.test.*",
+    "test:unit": "mocha -r jiti/register packages/**/test/*.test.*",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
@@ -36,6 +35,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^14.17.9",
     "@types/object-hash": "^2",
+    "@vue/server-renderer": "^3.2.2",
     "chai": "^4.3.4",
     "esbuild": "^0.12.19",
     "eslint": "^7.32.0",

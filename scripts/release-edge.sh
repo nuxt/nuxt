@@ -21,7 +21,7 @@ if [[ ! -z ${NODE_AUTH_TOKEN} ]] ; then
 fi
 
 # Release packages
-for p in {packages,modules}/* ; do
+for p in {packages}/* ; do
   pushd $p
   echo "Publishing $p"
   yarn npm publish --access public --tolerate-republish

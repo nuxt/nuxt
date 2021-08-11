@@ -221,7 +221,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   const moduleDirectories = [
     resolve(nitroContext._nuxt.rootDir, 'node_modules'),
-    resolve(MODULE_DIR, 'node_modules'),
+    ...nitroContext._nuxt.modulesDir,
     resolve(MODULE_DIR, '../node_modules'),
     'node_modules'
   ]

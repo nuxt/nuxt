@@ -21,7 +21,7 @@ export function transformNuxtSetup () {
 
       const s = new MagicString(code)
       s.overwrite(index, index + DEFINE_COMPONENT_VUE.length, DEFINE_COMPONENT_NUXT)
-      s.prepend('import { defineNuxtComponent as _defineNuxtComponent } from "@nuxt/app"\n')
+      s.prepend('import { defineNuxtComponent as _defineNuxtComponent } from "#app"\n')
       return {
         code: s.toString(),
         map: s.generateMap()

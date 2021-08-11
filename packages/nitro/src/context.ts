@@ -54,6 +54,7 @@ export interface NitroContext {
     isStatic: boolean
     fullStatic: boolean
     staticAssets: any
+    modulesDir: string[]
     runtimeConfig: { public: any, private: any }
   }
   _internal: {
@@ -115,6 +116,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,
       fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
       staticAssets: nuxtOptions.generate.staticAssets,
+      modulesDir: nuxtOptions.modulesDir,
       runtimeConfig: {
         public: nuxtOptions.publicRuntimeConfig,
         private: nuxtOptions.privateRuntimeConfig

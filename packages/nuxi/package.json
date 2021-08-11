@@ -1,6 +1,6 @@
 {
   "name": "nuxi",
-  "version": "0.3.8",
+  "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@nuxt/design": "0.0.5",
-    "@nuxt/kit": "^0.6.4",
+    "@nuxt/kit": "^0.10.0",
     "@types/clear": "^0",
     "@types/debounce-promise": "^3",
     "@types/mri": "^1.1.1",
