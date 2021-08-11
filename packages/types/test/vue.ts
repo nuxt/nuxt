@@ -3,7 +3,7 @@
  * @nuxt/types/app/vue.d.ts
  */
 
-import type Vue from 'vue'
+import Vue from 'vue'
 import type { Middleware } from '..'
 
 const options: Vue.ComponentOptions<Vue> = {}

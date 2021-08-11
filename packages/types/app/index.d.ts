@@ -1,8 +1,9 @@
 import type { ServerResponse } from 'http'
 import type { IncomingMessage, NextFunction } from 'connect'
-import type Vue, { ComponentOptions } from 'vue'
-import type VueRouter, { Location, Route } from 'vue-router'
+import type Vue from 'vue'
+import type { Route } from 'vue-router'
 import type { Store } from 'vuex'
+import VueRouter from 'vue-router'
 
 import type { NuxtOptions } from '../config'
 import type { NuxtRuntimeConfig } from '../config/runtime'
@@ -15,7 +16,7 @@ import './vuex'
 
 type NuxtState = Record<string, any>
 
-export interface NuxtAppOptions extends ComponentOptions<Vue> {
+export interface NuxtAppOptions extends Vue.ComponentOptions<Vue> {
   [key: string]: any // TBD
 }
 
