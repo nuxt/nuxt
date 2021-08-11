@@ -1,13 +1,14 @@
 import { existsSync } from 'fs'
 import { defineNuxtModule, addTemplate, addPlugin } from '@nuxt/kit'
 import { resolve } from 'upath'
+import { distDir } from '../dirs'
 import { resolveLayouts, resolvePagesRoutes } from './utils'
 
 export default defineNuxtModule({
   name: 'router',
   setup (_options, nuxt) {
     const pagesDir = resolve(nuxt.options.srcDir, nuxt.options.dir.pages)
-    const runtimeDir = resolve(__dirname, 'runtime')
+    const runtimeDir = resolve(distDir, 'pages/runtime')
 
     // Disable module if pages dir do not exists
     if (!existsSync(pagesDir)) {

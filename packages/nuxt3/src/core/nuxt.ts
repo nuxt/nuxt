@@ -5,6 +5,7 @@ import pagesModule from '../pages/module'
 import metaModule from '../meta/module'
 import componentsModule from '../components/module'
 import globalImportsModule from '../global-imports/module'
+import { distDir, pkgDir } from '../dirs'
 import { initNitro } from './nitro'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -55,11 +56,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = loadNuxtConfig(opts)
 
   // Temp
-  const distDir = resolve(__dirname, '..')
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
   options.buildModules.push(pagesModule, metaModule, componentsModule, globalImportsModule)
-  options.modulesDir.push(resolve(distDir, '../node_modules'))
+  options.modulesDir.push(resolve(pkgDir, 'node_modules'))
 
   const nuxt = createNuxt(options)
 

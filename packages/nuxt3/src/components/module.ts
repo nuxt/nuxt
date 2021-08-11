@@ -1,6 +1,7 @@
 import { statSync } from 'fs'
 import { resolve, relative } from 'upath'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { distDir } from '../dirs'
 import { scanComponents } from './scan'
 import type { Component, ComponentsDir } from './types'
 import { loaderPlugin } from './loader'
@@ -66,7 +67,7 @@ export default defineNuxtModule({
 
       app.templates.push({
         filename: 'components.mjs',
-        src: resolve(__dirname, 'runtime/components.tmpl.mjs'),
+        src: resolve(distDir, 'pages/runtime/components.tmpl.mjs'),
         options: { components }
       })
 

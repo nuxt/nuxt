@@ -1,5 +1,6 @@
 import { resolve } from 'upath'
 import { addPlugin, addTemplate, defineNuxtModule } from '@nuxt/kit'
+import { distDir } from '../dirs'
 import type { MetaObject } from './types'
 
 export default defineNuxtModule({
@@ -9,7 +10,7 @@ export default defineNuxtModule({
     viewport: 'width=device-width, initial-scale=1'
   },
   setup (options, nuxt) {
-    const runtimeDir = resolve(__dirname, 'runtime')
+    const runtimeDir = resolve(distDir, 'meta/runtime')
 
     // Transpile @nuxt/meta and @vueuse/head
     nuxt.options.build.transpile.push(runtimeDir, '@vueuse/head')
