@@ -92,7 +92,7 @@ function registerModule (path, rawModule, options = {}) {
 <% } %>
 
 async function createApp(ssrContext, config = {}) {
-  const store = <%= store ? 'createStore(ssrContext)' : null %>
+  const store = <%= store ? 'createStore(ssrContext)' : 'null' %>
   const router = await createRouter(ssrContext, config, { store })
 
   <% if (store) { %>
