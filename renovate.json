@@ -16,7 +16,13 @@
     "npm",
     "html-webpack-plugin",
     "terser-webpack-plugin",
-    "@types/terser-webpack-plugin"
+    "@types/webpack-dev-middleware",
+    "@types/terser-webpack-plugin",
+    "@types/webpack-bundle-analyzer",
+    "wrap-ansi",
+    "jest",
+    "babel-jest",
+    "globby"
   ],
   "lockFileMaintenance": {
     "enabled": true

@@ -3,4 +3,4 @@ tasks:
 
 vscode:
   extensions:
-    - octref.vetur@0.28.0:bW1RGNnmWYQO43JdJgK34w==
+    - octref.vetur

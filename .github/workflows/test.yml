@@ -151,8 +151,7 @@ jobs:
         run: yarn test:unit --coverage
 
       - name: codecov
-        uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
+        uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests

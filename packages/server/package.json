@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.15.4",
+  "version": "2.15.6",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/server.js",
@@ -8,23 +8,23 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.15.4",
-    "@nuxt/vue-renderer": "2.15.4",
+    "@nuxt/utils": "2.15.6",
+    "@nuxt/vue-renderer": "2.15.6",
     "@nuxtjs/youch": "^4.2.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "consola": "^2.15.3",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "ip": "^1.1.5",
     "launch-editor-middleware": "^2.2.1",
     "on-headers": "^1.0.2",
     "pify": "^5.0.0",
-    "serve-placeholder": "^1.2.3",
+    "serve-placeholder": "^1.2.4",
     "serve-static": "^1.14.1",
     "server-destroy": "^1.0.1",
-    "ufo": "^0.6.10"
+    "ufo": "^0.7.7"
   },
   "publishConfig": {
     "access": "public"

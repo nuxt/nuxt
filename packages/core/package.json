@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/core",
-  "version": "2.15.4",
+  "version": "2.15.6",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/core.js",
@@ -8,11 +8,11 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.15.4",
-    "@nuxt/server": "2.15.4",
-    "@nuxt/utils": "2.15.4",
+    "@nuxt/config": "2.15.6",
+    "@nuxt/server": "2.15.6",
+    "@nuxt/utils": "2.15.6",
     "consola": "^2.15.3",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "hable": "^3.0.0",
     "hash-sum": "^2.0.0",
     "lodash": "^4.17.21"
