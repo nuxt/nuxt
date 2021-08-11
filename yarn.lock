@@ -1376,7 +1376,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.56.1
+    rollup: ^2.56.2
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
@@ -1388,7 +1388,7 @@ __metadata:
     unenv: ^0.3.2
     unstorage: ^0.2.3
     upath: ^2.0.1
-    vue: 3.2.1
+    vue: 3.2.2
     vue-bundle-renderer: ^0.2.10
     vue-server-renderer: ^2.6.14
   languageName: unknown
@@ -1401,7 +1401,7 @@ __metadata:
     "@nuxt/kit": ^0.10.0
     "@types/debounce": ^1.2.0
     "@vitejs/plugin-vue": ^1.4.0
-    "@vue/compiler-sfc": ^3.2.1
+    "@vue/compiler-sfc": ^3.2.2
     chokidar: ^3.5.2
     consola: ^2.15.3
     debounce: ^1.2.1
@@ -1411,7 +1411,7 @@ __metadata:
     unbuild: ^0.4.2
     upath: ^2.0.1
     vite: ^2.4.4
-    vue: 3.2.1
+    vue: 3.2.2
   languageName: unknown
   linkType: soft
 
@@ -1429,12 +1429,12 @@ __metadata:
     "@types/webpack-hot-middleware": ^2.25.5
     "@types/webpack-virtual-modules": ^0
     "@vue/babel-preset-jsx": ^1.2.4
-    "@vue/compiler-sfc": ^3.2.1
+    "@vue/compiler-sfc": ^3.2.2
     babel-loader: ^8.2.2
     consola: ^2.15.3
     css-loader: ^6.2.0
     css-minimizer-webpack-plugin: ^3.0.2
-    esbuild-loader: ^2.14.0
+    esbuild-loader: ^2.15.0
     file-loader: ^6.2.0
     fs-extra: ^10.0.0
     glob: ^7.1.7
@@ -1452,10 +1452,10 @@ __metadata:
     unbuild: ^0.4.2
     upath: ^2.0.1
     url-loader: ^4.1.1
-    vue: 3.2.1
+    vue: 3.2.2
     vue-loader: ^16.5.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.49.0
+    webpack: ^5.50.0
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.0.0
     webpack-hot-middleware: ^2.25.0
@@ -2383,19 +2383,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-core@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/compiler-core@npm:3.2.1"
-  dependencies:
-    "@babel/parser": ^7.12.0
-    "@babel/types": ^7.12.0
-    "@vue/shared": 3.2.1
-    estree-walker: ^2.0.1
-    source-map: ^0.6.1
-  checksum: a6432c506b01abbd312788ce5d30d74645a8398a52d666289253c64922c60563baf6f02f75e8e0056e558b60cc8f0b550f5f534b93c91dc74685557c31225b82
-  languageName: node
-  linkType: hard
-
 "@vue/compiler-core@npm:3.2.2":
   version: 3.2.2
   resolution: "@vue/compiler-core@npm:3.2.2"
@@ -2409,16 +2396,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-dom@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/compiler-dom@npm:3.2.1"
-  dependencies:
-    "@vue/compiler-core": 3.2.1
-    "@vue/shared": 3.2.1
-  checksum: 19298b3e8d9741aa6def8265e078fd23ccf4bc8c91c44c45c262be7daf19b86c31dcd3f4606e06052ded2d2e7b17babf485adb4073aceaf1348cc35227b837fb
-  languageName: node
-  linkType: hard
-
 "@vue/compiler-dom@npm:3.2.2":
   version: 3.2.2
   resolution: "@vue/compiler-dom@npm:3.2.2"
@@ -2429,7 +2406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-sfc@npm:^3.2.1":
+"@vue/compiler-sfc@npm:^3.2.2":
   version: 3.2.2
   resolution: "@vue/compiler-sfc@npm:3.2.2"
   dependencies:
@@ -2471,31 +2448,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/reactivity@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/reactivity@npm:3.2.1"
-  dependencies:
-    "@vue/shared": 3.2.1
-  checksum: abb32bb60a900c2d25f95f479394eeac5c98a98bf0605101bbc8ac7db177889066cddfeab10d1c74234e201a444d3d1c37d2fae23724303820bc56be30c24468
-  languageName: node
-  linkType: hard
-
 "@vue/reactivity@npm:3.2.2":
   version: 3.2.2
   resolution: "@vue/reactivity@npm:3.2.2"
   dependencies:
     "@vue/shared": 3.2.2
   checksum: 437c0c024d6fbb468c5072b7f403dc5da3c6da8b320d59b94a144a78d44492e899bc35ece58c17c7aefb99f09341d6f8f931ad2bb5c8ec0f24b565ce1a5d82b0
-  languageName: node
-  linkType: hard
-
-"@vue/runtime-core@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/runtime-core@npm:3.2.1"
-  dependencies:
-    "@vue/reactivity": 3.2.1
-    "@vue/shared": 3.2.1
-  checksum: f51971049020f8715bb8bd0af4c8bf587d6f1734e3d3cd733a0380914e76ac028e89d4e310101f6f13db87e11d6718bca3d962a156e89b32c41b190480c97c8e
   languageName: node
   linkType: hard
 
@@ -2506,17 +2464,6 @@ __metadata:
     "@vue/reactivity": 3.2.2
     "@vue/shared": 3.2.2
   checksum: 1d6a480a012992af3fad374548154240fbeb84f26921e99b91e5ca484bd92b3ce4568b44dd48c3128f3b14b672da963f8b88ff8947bdf2eb83c6882cb89ee108
-  languageName: node
-  linkType: hard
-
-"@vue/runtime-dom@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/runtime-dom@npm:3.2.1"
-  dependencies:
-    "@vue/runtime-core": 3.2.1
-    "@vue/shared": 3.2.1
-    csstype: ^2.6.8
-  checksum: 09fa010b2ddf24bf2f00a9ea4a693b6cd47165e228ac50a62cd81ffba98ee757492a6c8aad6fcdd808297358b04feaa7f628a6bbb4f66facae20d80d89cfeba5
   languageName: node
   linkType: hard
 
@@ -2540,13 +2487,6 @@ __metadata:
   peerDependencies:
     vue: 3.2.2
   checksum: dc933109bc91483157c391ac71d7d68f6d581c85dcea4bb62f794261396b9345bffef5e4422d145984c364185e7ba7612c8f0aab63c5c71a994a0e530f91b3a1
-  languageName: node
-  linkType: hard
-
-"@vue/shared@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vue/shared@npm:3.2.1"
-  checksum: 8bcd8f0b1cd48c4cdf9aeca407252d7d7caa5fefba88c46bcb5417b4492e3a8a409bc6e2af7a043292bb5d044c08e9bcab8aeb06ccac4e50986fa5d14d451feb
   languageName: node
   linkType: hard
 
@@ -3793,7 +3733,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^1.2.2":
+"colorette@npm:^1.2.2, colorette@npm:^1.3.0":
   version: 1.3.0
   resolution: "colorette@npm:1.3.0"
   checksum: bda403dfba4d032bee4169f2a6436a83ae3da488a53bcb3be92dc44ace056518245cc614b12429d7529493d6b090a119b2523b0d55e8cd6b81ad939a3003c008
@@ -4945,7 +4885,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-loader@npm:^2.14.0":
+"esbuild-loader@npm:^2.15.0":
   version: 2.15.0
   resolution: "esbuild-loader@npm:2.15.0"
   dependencies:
@@ -5102,7 +5042,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^36.0.6":
+"eslint-plugin-jsdoc@npm:^36.0.7":
   version: 36.0.7
   resolution: "eslint-plugin-jsdoc@npm:36.0.7"
   dependencies:
@@ -8626,7 +8566,7 @@ fsevents@~2.3.2:
     "@types/mri": ^1.1.1
     chokidar: ^3.5.2
     clear: ^0.1.0
-    colorette: ^1.2.2
+    colorette: ^1.3.0
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     flat: ^5.0.2
@@ -8661,7 +8601,7 @@ fsevents@~2.3.2:
     chai: ^4.3.4
     esbuild: ^0.12.19
     eslint: ^7.32.0
-    eslint-plugin-jsdoc: ^36.0.6
+    eslint-plugin-jsdoc: ^36.0.7
     execa: ^5.1.1
     globby: ^11.0.4
     jiti: ^1.11.0
@@ -8694,9 +8634,9 @@ fsevents@~2.3.2:
     "@types/fs-extra": ^9.0.12
     "@types/hash-sum": ^1.0.0
     "@types/lodash": ^4.14.172
-    "@vue/reactivity": 3.2.1
+    "@vue/reactivity": 3.2.2
     "@vue/server-renderer": ^3.2.2
-    "@vue/shared": 3.2.1
+    "@vue/shared": 3.2.2
     "@vueuse/head": ^0.6.0
     chokidar: ^3.5.2
     consola: ^2.15.3
@@ -8714,14 +8654,14 @@ fsevents@~2.3.2:
     unbuild: ^0.4.2
     unplugin: ^0.0.5
     upath: ^2.0.1
-    vue: ^3.2.1
+    vue: ^3.2.2
     vue-meta: next
     vue-router: ^4.0.11
     vuex5: ^0.5.0-testing.3
   peerDependencies:
-    "@vue/reactivity": 3.2.1
-    "@vue/shared": 3.2.1
-    vue: 3.2.1
+    "@vue/reactivity": 3.2.2
+    "@vue/shared": 3.2.2
+    vue: 3.2.2
   bin:
     nu: ./bin/nuxi.js
     nuxi: ./bin/nuxi.js
@@ -10409,7 +10349,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.38.5, rollup@npm:^2.55.0, rollup@npm:^2.56.1":
+"rollup@npm:^2.38.5, rollup@npm:^2.55.0, rollup@npm:^2.56.2":
   version: 2.56.2
   resolution: "rollup@npm:2.56.2"
   dependencies:
@@ -12114,18 +12054,7 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"vue@npm:3.2.1":
-  version: 3.2.1
-  resolution: "vue@npm:3.2.1"
-  dependencies:
-    "@vue/compiler-dom": 3.2.1
-    "@vue/runtime-dom": 3.2.1
-    "@vue/shared": 3.2.1
-  checksum: f99418e3025eb1d02eec7af841c5b1fc7851c8186536b58850f40c5cd2f3e80a443766b2e7ecfa6e58dc848495ae48b04c64f940b4899143f2150a86803d13da
-  languageName: node
-  linkType: hard
-
-"vue@npm:^3, vue@npm:^3.2.1":
+"vue@npm:3.2.2, vue@npm:^3, vue@npm:^3.2.2":
   version: 3.2.2
   resolution: "vue@npm:3.2.2"
   dependencies:
@@ -12265,7 +12194,7 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1, webpack@npm:^5.49.0":
+"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1, webpack@npm:^5.50.0":
   version: 5.50.0
   resolution: "webpack@npm:5.50.0"
   dependencies:
