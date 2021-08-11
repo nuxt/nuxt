@@ -1,11 +1,11 @@
-import { ServerResponse } from 'http'
-import { IncomingMessage, NextFunction } from 'connect'
-import Vue, { ComponentOptions } from 'vue'
-import VueRouter, { Location, Route } from 'vue-router'
-import { Store } from 'vuex'
+import type { ServerResponse } from 'http'
+import type { IncomingMessage, NextFunction } from 'connect'
+import type Vue, { ComponentOptions } from 'vue'
+import type VueRouter, { Location, Route } from 'vue-router'
+import type { Store } from 'vuex'
 
-import { NuxtOptions } from '../config'
-import { NuxtRuntimeConfig } from '../config/runtime'
+import type { NuxtOptions } from '../config'
+import type { NuxtRuntimeConfig } from '../config/runtime'
 
 // augment typings of Vue.js
 import './vue'
