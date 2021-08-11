@@ -17,5 +17,8 @@
       "@nuxt/nitro"
     ]
   },
-  "exclude": ["./packages/*/dist/*"]
+  "exclude": [
+    "./packages/*/dist/*",
+    "./modules/*/dist/*"
+  ]
 }

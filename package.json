@@ -3,6 +3,7 @@
   "license": "MIT",
   "workspaces": [
     "packages/*",
+    "modules/*",
     "examples/*",
     "playground"
   ],
@@ -21,7 +22,7 @@
     "test": "yarn lint && yarn test:presets",
     "test:presets": "mocha test/presets/*.mjs",
     "test:compat": "TEST_COMPAT=1 yarn test:presets",
-    "test:unit": "mocha -r jiti/register packages/**/test/*.test.*",
+    "test:unit": "mocha -r jiti/register {packages,modules}/**/test/*.test.*",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {

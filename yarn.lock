@@ -1291,9 +1291,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/component-discovery@^0.2.0, @nuxt/component-discovery@workspace:packages/components":
+"@nuxt/component-discovery@^0.2.0, @nuxt/component-discovery@workspace:modules/components":
   version: 0.0.0-use.local
-  resolution: "@nuxt/component-discovery@workspace:packages/components"
+  resolution: "@nuxt/component-discovery@workspace:modules/components"
   dependencies:
     "@nuxt/kit": ^0.6.4
     globby: ^11.0.4
@@ -1335,9 +1335,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/global-imports@^0.1.0, @nuxt/global-imports@workspace:packages/global-imports":
+"@nuxt/global-imports@^0.1.0, @nuxt/global-imports@workspace:modules/global-imports":
   version: 0.0.0-use.local
-  resolution: "@nuxt/global-imports@workspace:packages/global-imports"
+  resolution: "@nuxt/global-imports@workspace:modules/global-imports"
   dependencies:
     "@nuxt/kit": ^0.6.4
     ufo: ^0.7.7
@@ -1369,9 +1369,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/meta@^0.1.0, @nuxt/meta@workspace:packages/meta":
+"@nuxt/meta@^0.1.0, @nuxt/meta@workspace:modules/meta":
   version: 0.0.0-use.local
-  resolution: "@nuxt/meta@workspace:packages/meta"
+  resolution: "@nuxt/meta@workspace:modules/meta"
   dependencies:
     "@nuxt/kit": ^0.6.4
     "@vueuse/head": ^0.6.0
@@ -1454,9 +1454,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/pages@^0.3.0, @nuxt/pages@workspace:packages/pages":
+"@nuxt/pages@^0.3.0, @nuxt/pages@workspace:modules/pages":
   version: 0.0.0-use.local
-  resolution: "@nuxt/pages@workspace:packages/pages"
+  resolution: "@nuxt/pages@workspace:modules/pages"
   dependencies:
     "@nuxt/kit": ^0.6.4
     globby: ^11.0.4
