@@ -26,7 +26,7 @@ export default class Generator {
     this.distPath = this.options.generate.dir
     this.distNuxtPath = path.join(
       this.distPath,
-      isUrl(this.options.build.publicPath) ? this.options.build.publicPathFolder : this.options.build.publicPath
+      isUrl(this.options.build.publicPath) ? new URL(this.options.build.publicPath).pathname : this.options.build.publicPath
     )
     // Payloads for full static
     if (this.isFullStatic) {
