@@ -86,7 +86,7 @@ export default class Generator {
     if (build) {
       if (!this.builder) {
         throw new Error(
-          `Could not generate. Make sure a Builder instance is pass to the constructor of Generator class \
+          `Could not generate. Make sure a Builder instance is passed to the constructor of Generator class or `getGenerator` function \
 or disable the build step: \`generate({ build: false })\``)
       }
 
