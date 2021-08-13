@@ -39,6 +39,10 @@ export default class PostcssConfig {
     this.buildContext = buildContext
   }
 
+  get cssSourceMap () {
+    return this.buildContext.buildOptions.cssSourceMap
+  }
+
   get postcssOptions () {
     return this.buildContext.buildOptions.postcss
   }
@@ -59,10 +63,9 @@ export default class PostcssConfig {
     return alias
   }
 
-  get defaultConfig () {
+  get defaultPostcssOptions () {
     const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
-      sourceMap: this.buildContext.buildOptions.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
@@ -76,7 +79,9 @@ export default class PostcssConfig {
         'postcss-url': {},
 
         // https://github.com/csstools/postcss-preset-env
-        'postcss-preset-env': this.preset || {},
+        // TODO: enable when https://github.com/csstools/postcss-preset-env/issues/191 gets closed
+        // 'postcss-preset-env': this.preset || {},
+        autoprefixer: {},
         cssnano: dev
           ? false
           : {
@@ -120,20 +125,19 @@ export default class PostcssConfig {
 
     if (loaderConfig.path) {
       return {
-        sourceMap: this.buildContext.buildOptions.cssSourceMap,
         config: loaderConfig
       }
     }
   }
 
-  normalize (config) {
+  normalize (postcssOptions) {
     // TODO: Remove in Nuxt 3
-    if (Array.isArray(config)) {
+    if (Array.isArray(postcssOptions)) {
       consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
         ' declaration')
-      config = { plugins: config }
+      postcssOptions = { plugins: postcssOptions }
     }
-    return config
+    return postcssOptions
   }
 
   sortPlugins ({ plugins, order }) {
@@ -144,11 +148,11 @@ export default class PostcssConfig {
     return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
-  loadPlugins (config) {
-    const { plugins } = config
+  loadPlugins (postcssOptions) {
+    const { plugins } = postcssOptions
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
-      config.plugins = this.sortPlugins(config)
+      postcssOptions.plugins = this.sortPlugins(postcssOptions)
         .map((p) => {
           const plugin = this.buildContext.nuxt.resolver.requireModule(p, { paths: [__dirname] })
           const opts = plugins[p]
@@ -167,27 +171,39 @@ export default class PostcssConfig {
       return false
     }
 
-    let config = this.configFromFile()
-    if (config) {
-      return config
+    let postcssOptions = this.configFromFile()
+    if (postcssOptions) {
+      return {
+        postcssOptions,
+        sourceMap: this.cssSourceMap
+      }
     }
 
-    config = this.normalize(cloneDeep(this.postcssOptions))
+    postcssOptions = this.normalize(cloneDeep(this.postcssOptions))
 
     // Apply default plugins
-    if (isPureObject(config)) {
-      if (config.preset) {
-        this.preset = config.preset
-        delete config.preset
+    if (isPureObject(postcssOptions)) {
+      if (postcssOptions.preset) {
+        this.preset = postcssOptions.preset
+        delete postcssOptions.preset
       }
-      if (Array.isArray(config.plugins)) {
-        defaults(config, this.defaultConfig)
+      if (Array.isArray(postcssOptions.plugins)) {
+        defaults(postcssOptions, this.defaultPostcssOptions)
       } else {
         // Keep the order of default plugins
-        config = merge({}, this.defaultConfig, config)
-        this.loadPlugins(config)
+        postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
+        this.loadPlugins(postcssOptions)
       }
-      return config
+
+      const { execute } = postcssOptions
+      delete postcssOptions.execute
+      delete postcssOptions.order
+
+      return {
+        execute,
+        postcssOptions,
+        sourceMap: this.cssSourceMap
+      }
     }
   }
 }

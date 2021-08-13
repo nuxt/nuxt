@@ -440,6 +440,10 @@ export function getNuxtConfig (_options) {
     delete options.build.crossorigin
   }
 
+  if (options.build.postcss.preset) {
+    consola.warn('`postcss.preset` is disabled because postcss-preset-env doesn\'t fully support postcss v8.')
+  }
+
   const { timing } = options.server
   if (timing) {
     options.server.timing = { total: true, ...timing }

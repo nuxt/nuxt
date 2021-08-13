@@ -4,7 +4,6 @@ import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 import { wrapArray } from '@nuxt/utils'
 
 import PostcssConfig from './postcss'
-import PostcssV8Config from './postcss-v8'
 
 export default class StyleLoader {
   constructor (buildContext, { isServer, perfLoader, resolveModule }) {
@@ -15,13 +14,7 @@ export default class StyleLoader {
 
     const { postcss: postcssOptions } = buildContext.options.build
     if (postcssOptions) {
-      const postcss = require(resolveModule('postcss'))
-      // postcss >= v8
-      if (!postcss.vendor) {
-        this.postcssConfig = new PostcssV8Config(buildContext)
-      } else {
-        this.postcssConfig = new PostcssConfig(buildContext)
-      }
+      this.postcssConfig = new PostcssConfig(buildContext)
     }
   }
 

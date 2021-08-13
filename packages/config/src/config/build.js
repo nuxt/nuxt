@@ -85,10 +85,12 @@ export default () => ({
   },
   transpile: [], // Name of NPM packages to be transpiled
   postcss: {
-    preset: {
-      // https://cssdb.org/#staging-process
-      stage: 2
-    }
+    // TODO: enable when https://github.com/csstools/postcss-preset-env/issues/191 gets closed
+    // {
+    //   // https://cssdb.org/#staging-process
+    //   stage: 2
+    // }
+    preset: undefined
   },
   html: {
     minify: {
