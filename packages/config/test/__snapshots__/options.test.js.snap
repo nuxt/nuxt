@@ -139,7 +139,6 @@ Object {
     "plugins": Array [],
     "postcss": Object {
       "postcssOptions": Object {},
-      "preset": undefined,
     },
     "profile": false,
     "publicPath": "/_nuxt/",

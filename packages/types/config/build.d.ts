@@ -121,8 +121,8 @@ interface PostcssConfiguration {
   order?: PostcssOrderPreset | string[] | ((names: string[], presets: PostcssOrderPresetFunctions) => string[])
   plugins?: {
     [key: string]: false | { [key: string]: any }
-  } | ((loader: WebpackLoaderNamespace.LoaderContext) => PostcssPlugin<any>[]) | Array<[string | PostcssPlugin<any>, any] | string | PostcssPlugin<any>>
-  preset?: {
+  } | ((loader: WebpackLoaderNamespace.LoaderContext) => PostcssPlugin[]) | Array<[string | PostcssPlugin, any] | string | PostcssPlugin>
+  readonly preset?: {
     autoprefixer?: false | AutoprefixerOptions
     browsers?: string
     exportTo?: string | string[] | Partial<PostcssVariableMap> | ((map: PostcssVariableMap) => Partial<PostcssVariableMap>)
@@ -130,8 +130,8 @@ interface PostcssConfiguration {
       [key: string]: boolean | { [key: string]: any }
     }
     importFrom?: string | string[] | Partial<PostcssVariableMap> | (() => Partial<PostcssVariableMap>)
-    insertAfter?: { [key: string]: PostcssPlugin<any> }
-    insertBefore?: { [key: string]: PostcssPlugin<any> }
+    insertAfter?: { [key: string]: PostcssPlugin }
+    insertBefore?: { [key: string]: PostcssPlugin }
     preserve?: boolean
     stage?: 0 | 1 | 2 | 3 | 4 | false
   }
@@ -166,7 +166,7 @@ export interface NuxtOptionsBuild {
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean
   plugins?: WebpackPlugin[]
-  postcss?: string[] | boolean | PostcssConfiguration | (() => PostcssConfiguration)
+  postcss?: string[] | boolean | { postcssOptions: PostcssConfiguration | (() => PostcssConfiguration) }
   profile?: boolean
   publicPath?: string
   quiet?: boolean
