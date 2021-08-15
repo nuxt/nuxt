@@ -59,7 +59,7 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml).toContain('background-color:#00f')
+    expect(headHtml).toContain('background-color:blue')
 
     // const element = window.document.querySelector('div.red')
     // t.is(window.getComputedStyle(element)['background-color'], 'blue')
@@ -316,7 +316,6 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html).toContain('Displayed only on client-side</h1>')
-    expect(consola.warn).toHaveBeenCalledTimes(1)
     expect(consola.warn).toHaveBeenCalledWith(
       expect.stringContaining('<no-ssr> has been deprecated')
     )

@@ -109,15 +109,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -144,15 +278,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -185,15 +453,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -220,15 +622,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -261,15 +797,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -302,15 +972,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -349,15 +1153,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -393,15 +1331,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -443,15 +1515,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -484,15 +1690,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -531,15 +1871,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },
@@ -572,15 +2046,149 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/dist/cjs.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-import\\",
+                  },
+                  Object {
+                    \\"Once\\": [Function Once],
+                    \\"postcssPlugin\\": \\"postcss-url\\",
+                  },
+                  Object {
+                    \\"browsers\\": undefined,
+                    \\"info\\": [Function info],
+                    \\"options\\": Object {},
+                    \\"postcssPlugin\\": \\"autoprefixer\\",
+                    \\"prepare\\": [Function prepare],
+                  },
+                  Processor {
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-comments\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-gradients\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-initial\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-svgo\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-reduce-transforms\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-colormin\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-timing-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-calc\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-convert-values\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-ordered-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-minify-params\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-charset\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-discard-overridden\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-string\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-unicode\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-minify-font-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-url\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-repeat-style\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-positions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-normalize-whitespace\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-merge-longhand\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-duplicates\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-merge-rules\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-discard-empty\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-unique-selectors\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"css-declaration-sorter\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"cssnano-util-raw-cache\\",
+                      },
+                    ],
+                    \\"version\\": \\"8.3.6\\",
+                  },
+                ],
+              },
+              \\"preset\\": undefined,
               \\"sourceMap\\": false,
             },
           },

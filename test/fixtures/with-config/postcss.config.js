@@ -9,6 +9,6 @@ module.exports = {
       path: [rootDir, modulesDir]
     },
     'postcss-url': {},
-    'postcss-preset-env': {}
+    autoprefixer: {}
   }
 }

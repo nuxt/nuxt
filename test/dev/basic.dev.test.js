@@ -109,16 +109,16 @@ describe('basic dev', () => {
     expect(vueLoader.options).toBe(vue)
   })
 
-  test('Config: preset-env and cssnano are at then end of postcss plugins', () => {
-    const plugins = postcssLoader.options.plugins.map((plugin) => {
+  test('Config: autoprefixer and cssnano are at then end of postcss plugins', () => {
+    const plugins = postcssLoader.options.postcssOptions.plugins.map((plugin) => {
       return plugin.postcssPlugin
-    })
+    }).filter(Boolean)
     expect(plugins).toEqual([
       'postcss-import',
       'postcss-url',
+      'postcss-custom-selectors',
       'nuxt-test',
-      'postcss-preset-env',
-      'cssnano'
+      'autoprefixer'
     ])
   })
 

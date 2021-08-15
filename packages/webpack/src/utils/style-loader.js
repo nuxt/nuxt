@@ -12,8 +12,8 @@ export default class StyleLoader {
     this.perfLoader = perfLoader
     this.resolveModule = resolveModule
 
-    const { postcss: postcssOptions } = buildContext.options.build
-    if (postcssOptions) {
+    const { postcss } = buildContext.options.build
+    if (postcss) {
       this.postcssConfig = new PostcssConfig(buildContext)
     }
   }

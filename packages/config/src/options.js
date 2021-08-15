@@ -442,6 +442,18 @@ export function getNuxtConfig (_options) {
 
   if (options.build.postcss.preset) {
     consola.warn('`postcss.preset` is disabled because postcss-preset-env doesn\'t fully support postcss v8.')
+    delete options.build.postcss.preset
+  }
+
+  if (options.build.postcss.plugins) {
+    consola.warn('`postcss.plugins` option has been moved to `postcss.postcssOptions.plugins` for aligning `postcss-loader` format.')
+    options.build.postcss.postcssOptions.plugins = options.build.postcss.plugins
+    delete options.build.postcss.plugins
+  }
+
+  if (options.buildModules && options.buildModules.includes('@nuxt/postcss8')) {
+    consola.info('`@nuxt/postcss8` is disabled since nuxt has upgraded to postcss v8.')
+    options.buildModules = options.buildModules.filter(module => module !== '@nuxt/postcss8')
   }
 
   const { timing } = options.server

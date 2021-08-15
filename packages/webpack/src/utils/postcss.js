@@ -14,15 +14,15 @@ export const orderPresets = {
     }
     return names
   },
-  presetEnvLast (names) {
-    const nanoIndex = names.indexOf('postcss-preset-env')
+  autoprefixerLast (names) {
+    const nanoIndex = names.indexOf('autoprefixer')
     if (nanoIndex !== names.length - 1) {
       names.push(names.splice(nanoIndex, 1)[0])
     }
     return names
   },
-  presetEnvAndCssnanoLast (names) {
-    return orderPresets.cssnanoLast(orderPresets.presetEnvLast(names))
+  autoprefixerAndCssnanoLast (names) {
+    return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
   }
 }
 
@@ -43,8 +43,12 @@ export default class PostcssConfig {
     return this.buildContext.buildOptions.cssSourceMap
   }
 
-  get postcssOptions () {
+  get postcssLoaderOptions () {
     return this.buildContext.buildOptions.postcss
+  }
+
+  get postcssOptions () {
+    return this.buildContext.buildOptions.postcss.postcssOptions
   }
 
   get postcssImportAlias () {
@@ -78,10 +82,8 @@ export default class PostcssConfig {
         // https://github.com/postcss/postcss-url
         'postcss-url': {},
 
-        // https://github.com/csstools/postcss-preset-env
-        // TODO: enable when https://github.com/csstools/postcss-preset-env/issues/191 gets closed
-        // 'postcss-preset-env': this.preset || {},
         autoprefixer: {},
+
         cssnano: dev
           ? false
           : {
@@ -93,7 +95,7 @@ export default class PostcssConfig {
           }
       },
       // Array, String or Function
-      order: 'presetEnvAndCssnanoLast'
+      order: 'autoprefixerAndCssnanoLast'
     }
   }
 
@@ -121,11 +123,19 @@ export default class PostcssConfig {
 
   configFromFile () {
     const loaderConfig = (this.postcssOptions && this.postcssOptions.config) || {}
-    loaderConfig.path = loaderConfig.path || this.searchConfigFile()
 
     if (loaderConfig.path) {
+      consola.warn('`postcss-loader` has been removed `config.path` option, please use `config` instead.')
       return {
-        config: loaderConfig
+        config: loaderConfig.path
+      }
+    }
+
+    const postcssConfigFile = this.searchConfigFile()
+
+    if (postcssConfigFile) {
+      return {
+        config: postcssConfigFile
       }
     }
   }
@@ -183,10 +193,6 @@ export default class PostcssConfig {
 
     // Apply default plugins
     if (isPureObject(postcssOptions)) {
-      if (postcssOptions.preset) {
-        this.preset = postcssOptions.preset
-        delete postcssOptions.preset
-      }
       if (Array.isArray(postcssOptions.plugins)) {
         defaults(postcssOptions, this.defaultPostcssOptions)
       } else {
@@ -195,14 +201,12 @@ export default class PostcssConfig {
         this.loadPlugins(postcssOptions)
       }
 
-      const { execute } = postcssOptions
-      delete postcssOptions.execute
       delete postcssOptions.order
 
       return {
-        execute,
-        postcssOptions,
-        sourceMap: this.cssSourceMap
+        sourceMap: this.cssSourceMap,
+        ...this.postcssLoaderOptions,
+        postcssOptions
       }
     }
   }
