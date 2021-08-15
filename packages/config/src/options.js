@@ -441,7 +441,7 @@ export function getNuxtConfig (_options) {
   }
 
   if (options.build.postcss.preset) {
-    consola.warn('`postcss.preset` is disabled because postcss-preset-env doesn\'t fully support postcss v8.')
+    consola.warn('`postcss.preset` is disabled because `postcss-preset-env` doesn\'t fully support `postcss v8`.')
     delete options.build.postcss.preset
   }
 

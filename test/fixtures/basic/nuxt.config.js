@@ -90,6 +90,7 @@ export default {
       layouts: true
     },
     postcss: {
+      preset: {feature: {}},
       postcssOptions: {
         plugins: {
           'postcss-custom-selectors': {},
