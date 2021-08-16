@@ -135,9 +135,10 @@ export function addPluginTemplate (plugin: NuxtPluginTemplate | string, opts: Ad
   if (typeof plugin === 'string') {
     plugin = { src: plugin }
   }
-  if (!plugin.src) {
-    plugin.src = addTemplate(plugin).dst
-  }
+
+  // Update plugin src to template destination
+  plugin.src = addTemplate(plugin).dst
+
   return addPlugin(plugin, opts)
 }
 
