@@ -67,7 +67,7 @@ export default defineNuxtModule({
 
       app.templates.push({
         filename: 'components.mjs',
-        src: resolve(distDir, 'pages/runtime/components.tmpl.mjs'),
+        src: resolve(distDir, 'components/runtime/components.tmpl.mjs'),
         options: { components }
       })
 
