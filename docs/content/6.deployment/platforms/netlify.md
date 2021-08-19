@@ -16,7 +16,7 @@ Just push to your git repository [as you would normally for Netlify](https://doc
 
 ## More information
 
-See [more information on the lambda preset](/presets/lambda) for full details.
+See [more information on the lambda preset](/deployment/presets/lambda) for full details.
 
 ## Demo
 

@@ -109,7 +109,7 @@ jobs:
 
 ## More information
 
-See [more information on the service worker preset](/presets/worker) for full details.
+See [more information on the service worker preset](/deployment/presets/service-worker) for full details.
 
 ## Demo
 
