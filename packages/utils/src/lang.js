@@ -29,7 +29,8 @@ const WHITESPACE_REPLACEMENTS = [
   [/{\n{2,}/g, '{\n'], // strip start padding from blocks
   [/\n{2,}([ \t\f\r]*})/g, '\n$1'], // strip end padding from blocks
   [/\n{3,}/g, '\n\n'], // strip multiple blank lines (1 allowed)
-  [/\n{2,}$/g, '\n'] // strip blank lines EOF (0 allowed)
+  [/^\n+/, ''], // strip blank lines at the beginning of a string
+  [/\n{2,}$/, '\n'] // strip blank lines at the end of a string
 ]
 
 export const stripWhitespace = function stripWhitespace (string) {
