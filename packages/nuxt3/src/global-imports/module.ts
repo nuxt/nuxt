@@ -1,7 +1,7 @@
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, addPluginTemplate } from '@nuxt/kit'
 import { resolve } from 'upath'
 import type { Identifiers, GlobalImportsOptions } from './types'
-import { TrsnsformPlugin } from './transform'
+import { TransformPlugin } from './transform'
 import { defaultIdentifiers } from './identifiers'
 
 export default defineNuxtModule<GlobalImportsOptions>({
@@ -22,8 +22,8 @@ export default defineNuxtModule<GlobalImportsOptions>({
       })
     } else {
       // Transform to inject imports in production mode
-      addVitePlugin(TrsnsformPlugin.vite(identifiers))
-      addWebpackPlugin(TrsnsformPlugin.webpack(identifiers))
+      addVitePlugin(TransformPlugin.vite(identifiers))
+      addWebpackPlugin(TransformPlugin.webpack(identifiers))
     }
 
     // Add types

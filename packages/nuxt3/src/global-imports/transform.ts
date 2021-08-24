@@ -11,7 +11,7 @@ const excludeRegex = [
   /\b(?:const|let|var)\s*([\w\d_$]+?)\b/g
 ]
 
-export const TrsnsformPlugin = createUnplugin((map: IdentifierMap) => {
+export const TransformPlugin = createUnplugin((map: IdentifierMap) => {
   const regex = new RegExp('\\b(' + (Object.keys(map).join('|')) + ')\\b', 'g')
 
   return {
