@@ -42,7 +42,7 @@ describe('generator: generate routes', () => {
     expect(consola.info).toBeCalledTimes(1)
     expect(consola.info).toBeCalledWith('Generating pages')
     expect(generator.generateRoutes).toBeCalledTimes(1)
-    expect(generator.generateRoutes).toBeCalledWith(routes)
+    expect(generator.generateRoutes).toBeCalledWith(routes, false)
     expect(generator.afterGenerate).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:done', generator, errors)
   })
