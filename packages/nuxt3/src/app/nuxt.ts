@@ -1,5 +1,5 @@
 import { getCurrentInstance } from 'vue'
-import type { App } from 'vue'
+import type { App, VNode } from 'vue'
 import Hookable from 'hookable'
 import { defineGetter } from './utils'
 import { legacyPlugin, LegacyContext } from './legacy'
@@ -13,13 +13,32 @@ type NuxtMeta = {
   bodyScripts?: string
 }
 
+type HookResult = Promise<void> | void
+export interface RuntimeNuxtHooks {
+  'app:created': (app: App<Element>) => HookResult
+  'app:beforeMount': (app: App<Element>) => HookResult
+  'app:mounted': (app: App<Element>) => HookResult
+  'app:rendered': () => HookResult
+  'page:start': (Component?: VNode) => HookResult
+  'page:finish': (Component?: VNode) => HookResult
+}
+type NuxtAppHookName = keyof RuntimeNuxtHooks
+
 export interface Nuxt {
   app: App
   globalName: string
 
-  hooks: Hookable
-  hook: Hookable['hook']
-  callHook: Hookable['callHook']
+  hooks: {
+    /** Register a function to be run when the named Nuxt hook is called. */
+    hook<Hook extends NuxtAppHookName> (hookName: Hook, callback: RuntimeNuxtHooks[Hook]): HookResult
+    hookOnce<Hook extends NuxtAppHookName> (hookName: Hook, callback: RuntimeNuxtHooks[Hook]): HookResult
+    /** Run all Nuxt hooks that have been registered against the hook name. */
+    callHook<Hook extends NuxtAppHookName> (hookName: Hook, ...args: Parameters<RuntimeNuxtHooks[Hook]>): ReturnType<RuntimeNuxtHooks[Hook]>
+    /** Add all hooks in the object passed in. */
+    addHooks (hooks: Partial<RuntimeNuxtHooks>): void
+  }
+  hook: Nuxt['hooks']['hook']
+  callHook: Nuxt['hooks']['callHook']
 
   [key: string]: any
 
