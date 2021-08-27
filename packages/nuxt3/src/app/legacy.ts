@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { App } from 'vue'
 import type { Component } from '@vue/runtime-core'
 import mockContext from 'unenv/runtime/mock/proxy'
-import type { Nuxt } from './nuxt'
+import type { NuxtApp } from './nuxt'
 
 type Route = any
 type Store = any
@@ -123,7 +123,7 @@ const todo = new Set<keyof LegacyContext | keyof LegacyContext['ssrContext']>([
 
 const routerKeys: Array<keyof LegacyContext | keyof LegacyContext['ssrContext']> = ['route', 'params', 'query']
 
-export const legacyPlugin = (nuxt: Nuxt) => {
+export const legacyPlugin = (nuxt: NuxtApp) => {
   nuxt._legacyContext = new Proxy(nuxt, {
     get (nuxt, p: keyof LegacyContext | keyof LegacyContext['ssrContext']) {
       // Unsupported keys

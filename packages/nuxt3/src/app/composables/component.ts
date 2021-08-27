@@ -3,7 +3,7 @@ import { defineComponent, getCurrentInstance } from 'vue'
 import type { ComponentInternalInstance, DefineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import type { LegacyContext } from '../legacy'
-import { useNuxt } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 import { asyncData } from './asyncData'
 
 export const NuxtComponentIndicator = '__nuxt_component'
@@ -29,7 +29,7 @@ export function enqueueNuxtComponent (p: Promise<void>) {
 }
 
 async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, fn: (context: LegacyContext) => Promise<Record<string, any>>) {
-  const nuxt = useNuxt()
+  const nuxt = useNuxtApp()
   const route = useRoute()
   const vm = getCurrentNuxtComponentInstance()
   const { fetchKey } = vm.proxy.$options

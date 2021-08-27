@@ -2,7 +2,7 @@ import { isFunction } from '@vue/shared'
 import { computed } from '@vue/reactivity'
 import type { ComputedGetter } from '@vue/reactivity'
 import type { MetaObject } from '../types'
-import { useNuxt } from '#app'
+import { useNuxtApp } from '#app'
 
 /**
  * You can pass in a meta object, which has keys corresponding to meta tags:
@@ -13,5 +13,5 @@ import { useNuxt } from '#app'
  */
 export function useMeta (meta: MetaObject | ComputedGetter<MetaObject>) {
   const resolvedMeta = isFunction(meta) ? computed(meta) : meta
-  useNuxt()._useMeta(resolvedMeta)
+  useNuxtApp()._useMeta(resolvedMeta)
 }

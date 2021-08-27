@@ -1,6 +1,6 @@
 import { getCurrentInstance, isReactive, reactive } from 'vue'
 import type { UnwrapRef } from 'vue'
-import { useNuxt } from '#app'
+import { useNuxtApp } from '#app'
 
 export function ensureReactive<
   T extends Record<string, any>,
@@ -18,7 +18,7 @@ export function ensureReactive<
  * @param nuxt (optional) A Nuxt instance
  * @param vm (optional) A Vue component - by default it will use the current instance
  */
-export function useSSRRef (nuxt = useNuxt(), vm = getCurrentInstance()): string {
+export function useSSRRef (nuxt = useNuxtApp(), vm = getCurrentInstance()): string {
   if (!vm) {
     throw new Error('This must be called within a setup function.')
   }
@@ -44,7 +44,7 @@ export function useSSRRef (nuxt = useNuxt(), vm = getCurrentInstance()): string 
  * @param vm (optional) A Vue component - by default it will use the current instance
  */
 export function useData<T = Record<string, any>> (
-  nuxt = useNuxt(),
+  nuxt = useNuxtApp(),
   vm = getCurrentInstance()
 ): UnwrapRef<T> {
   const ssrRef = useSSRRef(nuxt, vm)
@@ -59,7 +59,7 @@ export function useData<T = Record<string, any>> (
  *
  * @param nuxt - (optional) A Nuxt instance
  */
-export function useGlobalData (nuxt = useNuxt()): Record<string, any> {
+export function useGlobalData (nuxt = useNuxtApp()): Record<string, any> {
   nuxt.payload.data = nuxt.payload.data || {}
   return nuxt.payload.data
 }

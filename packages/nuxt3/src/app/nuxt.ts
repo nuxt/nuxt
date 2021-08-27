@@ -23,13 +23,13 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
 }
 
-export interface Nuxt {
+export interface NuxtApp {
   app: App
   globalName: string
 
   hooks: Hookable<RuntimeNuxtHooks>
-  hook: Nuxt['hooks']['hook']
-  callHook: Nuxt['hooks']['callHook']
+  hook: NuxtApp['hooks']['hook']
+  callHook: NuxtApp['hooks']['callHook']
 
   [key: string]: any
 
@@ -51,28 +51,28 @@ export interface Nuxt {
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
 export interface Plugin {
-  (nuxt: Nuxt): Promise<void> | void
+  (nuxt: NuxtApp): Promise<void> | void
   [NuxtPluginIndicator]?: true
 }
 export interface LegacyPlugin {
-  (context: LegacyContext, provide: Nuxt['provide']): Promise<void> | void
+  (context: LegacyContext, provide: NuxtApp['provide']): Promise<void> | void
 }
 
 export interface CreateOptions {
-  app: Nuxt['app']
-  ssrContext?: Nuxt['ssrContext']
-  globalName?: Nuxt['globalName']
+  app: NuxtApp['app']
+  ssrContext?: NuxtApp['ssrContext']
+  globalName?: NuxtApp['globalName']
 }
 
 export function createNuxt (options: CreateOptions) {
-  const nuxt: Nuxt = {
+  const nuxt: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
     state: {},
     payload: {},
     isHydrating: process.client,
     ...options
-  } as any as Nuxt
+  } as any as NuxtApp
 
   nuxt.hooks = createHooks<RuntimeNuxtHooks>()
   nuxt.hook = nuxt.hooks.hook
@@ -111,12 +111,12 @@ export function createNuxt (options: CreateOptions) {
   return nuxt
 }
 
-export function applyPlugin (nuxt: Nuxt, plugin: Plugin) {
+export function applyPlugin (nuxt: NuxtApp, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
   return callWithNuxt(nuxt, () => plugin(nuxt))
 }
 
-export async function applyPlugins (nuxt: Nuxt, plugins: Plugin[]) {
+export async function applyPlugins (nuxt: NuxtApp, plugins: Plugin[]) {
   for (const plugin of plugins) {
     await applyPlugin(nuxt, plugin)
   }
@@ -128,7 +128,7 @@ export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
   const plugins = _plugins.map((plugin) => {
     if (isLegacyPlugin(plugin)) {
       needsLegacyContext = true
-      return (nuxt: Nuxt) => plugin(nuxt._legacyContext!, nuxt.provide)
+      return (nuxt: NuxtApp) => plugin(nuxt._legacyContext!, nuxt.provide)
     }
     return plugin
   })
@@ -149,9 +149,9 @@ export function isLegacyPlugin (plugin: unknown): plugin is LegacyPlugin {
   return !plugin[NuxtPluginIndicator]
 }
 
-let currentNuxtInstance: Nuxt | null
+let currentNuxtInstance: NuxtApp | null
 
-export const setNuxtInstance = (nuxt: Nuxt | null) => {
+export const setNuxtInstance = (nuxt: NuxtApp | null) => {
   currentNuxtInstance = nuxt
 }
 
@@ -161,7 +161,7 @@ export const setNuxtInstance = (nuxt: Nuxt | null) => {
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
-export async function callWithNuxt (nuxt: Nuxt, setup: () => any) {
+export async function callWithNuxt (nuxt: NuxtApp, setup: () => any) {
   setNuxtInstance(nuxt)
   const p = setup()
   setNuxtInstance(null)
@@ -171,7 +171,7 @@ export async function callWithNuxt (nuxt: Nuxt, setup: () => any) {
 /**
  * Returns the current Nuxt instance.
  */
-export function useNuxt (): Nuxt {
+export function useNuxtApp (): NuxtApp {
   const vm = getCurrentInstance()
 
   if (!vm) {

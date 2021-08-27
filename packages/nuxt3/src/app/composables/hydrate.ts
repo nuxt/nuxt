@@ -1,4 +1,4 @@
-import { useNuxt } from '#app'
+import { useNuxtApp } from '#app'
 
 /**
  * Allows full control of the hydration cycle to set and receive data from the server.
@@ -7,8 +7,8 @@ import { useNuxt } from '#app'
  * @param get a function that returns the value to set the initial data
  * @param set a function that will receive the data on the client-side
  */
-export const useHydration = <T>(key: string, get: () => T, set: (value: T) => void) => {
-  const nuxt = useNuxt()
+export const useHydration = <T> (key: string, get: () => T, set: (value: T) => void) => {
+  const nuxt = useNuxtApp()
 
   if (process.server) {
     nuxt.hooks.hook('app:rendered', () => {
