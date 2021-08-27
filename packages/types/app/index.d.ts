@@ -1,11 +1,12 @@
-import { ServerResponse } from 'http'
-import { IncomingMessage, NextFunction } from 'connect'
-import Vue, { ComponentOptions } from 'vue'
-import VueRouter, { Location, Route } from 'vue-router'
-import { Store } from 'vuex'
+import type { ServerResponse } from 'http'
+import type { IncomingMessage, NextFunction } from 'connect'
+import type Vue from 'vue'
+import type { Route } from 'vue-router'
+import type { Store } from 'vuex'
+import VueRouter from 'vue-router'
 
-import { NuxtOptions } from '../config'
-import { NuxtRuntimeConfig } from '../config/runtime'
+import type { NuxtOptions } from '../config'
+import type { NuxtRuntimeConfig } from '../config/runtime'
 
 // augment typings of Vue.js
 import './vue'
@@ -15,7 +16,7 @@ import './vuex'
 
 type NuxtState = Record<string, any>
 
-export interface NuxtAppOptions extends ComponentOptions<Vue> {
+export interface NuxtAppOptions extends Vue.ComponentOptions<Vue> {
   [key: string]: any // TBD
 }
 

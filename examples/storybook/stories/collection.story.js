@@ -1,4 +1,4 @@
-import Vuex from 'vuex'
+import { Store } from 'vuex'
 import { storiesOf } from '@storybook/vue'
 import { action } from '@storybook/addon-actions'
 import { linkTo } from '@storybook/addon-links'
@@ -56,7 +56,7 @@ storiesOf('Features/Method for rendering Vue', module)
   .add('vuex + actions', () => ({
     components: { MyButton },
     template: '<my-button :handle-click="log">with vuex: {{ $store.state.count }}</my-button>',
-    store: new Vuex.Store({
+    store: new Store({
       state: { count: 0 },
       mutations: {
         increment (state) {
@@ -75,7 +75,7 @@ storiesOf('Features/Method for rendering Vue', module)
     components: { MyButton },
     template:
       '<my-button :handle-click="log">with awesomeness: {{ $store.state.count }}</my-button>',
-    store: new Vuex.Store({
+    store: new Store({
       state: { count: 0 },
       mutations: {
         increment (state) {

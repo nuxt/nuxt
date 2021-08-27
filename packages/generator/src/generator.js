@@ -84,6 +84,12 @@ export default class Generator {
     await this.nuxt.callHook('export:before', this)
 
     if (build) {
+      if (!this.builder) {
+        throw new Error(
+          `Could not generate. Make sure a Builder instance is passed to the constructor of \`Generator\` class or \`getGenerator\` function \
+or disable the build step: \`generate({ build: false })\``)
+      }
+
       // Add flag to set process.static
       this.builder.forGenerate()
 
