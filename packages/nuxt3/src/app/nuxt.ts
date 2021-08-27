@@ -1,6 +1,6 @@
 import { getCurrentInstance } from 'vue'
 import type { App, VNode } from 'vue'
-import Hookable from 'hookable'
+import { createHooks, Hookable } from 'hookable'
 import { defineGetter } from './utils'
 import { legacyPlugin, LegacyContext } from './legacy'
 
@@ -22,21 +22,12 @@ export interface RuntimeNuxtHooks {
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
 }
-type NuxtAppHookName = keyof RuntimeNuxtHooks
 
 export interface Nuxt {
   app: App
   globalName: string
 
-  hooks: {
-    /** Register a function to be run when the named Nuxt hook is called. */
-    hook<Hook extends NuxtAppHookName> (hookName: Hook, callback: RuntimeNuxtHooks[Hook]): HookResult
-    hookOnce<Hook extends NuxtAppHookName> (hookName: Hook, callback: RuntimeNuxtHooks[Hook]): HookResult
-    /** Run all Nuxt hooks that have been registered against the hook name. */
-    callHook<Hook extends NuxtAppHookName> (hookName: Hook, ...args: Parameters<RuntimeNuxtHooks[Hook]>): ReturnType<RuntimeNuxtHooks[Hook]>
-    /** Add all hooks in the object passed in. */
-    addHooks (hooks: Partial<RuntimeNuxtHooks>): void
-  }
+  hooks: Hookable<RuntimeNuxtHooks>
   hook: Nuxt['hooks']['hook']
   callHook: Nuxt['hooks']['callHook']
 
@@ -83,7 +74,7 @@ export function createNuxt (options: CreateOptions) {
     ...options
   } as any as Nuxt
 
-  nuxt.hooks = new Hookable()
+  nuxt.hooks = createHooks<RuntimeNuxtHooks>()
   nuxt.hook = nuxt.hooks.hook
   nuxt.callHook = nuxt.hooks.callHook
 

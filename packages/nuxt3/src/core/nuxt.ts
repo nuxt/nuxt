@@ -1,6 +1,6 @@
 import { resolve } from 'upath'
-import Hookable from 'hookable'
-import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, nuxtCtx, installModule, ModuleContainer } from '@nuxt/kit'
+import { createHooks } from 'hookable'
+import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, nuxtCtx, installModule, ModuleContainer, NuxtHooks } from '@nuxt/kit'
 import pagesModule from '../pages/module'
 import metaModule from '../meta/module'
 import componentsModule from '../components/module'
@@ -9,12 +9,13 @@ import { distDir, pkgDir } from '../dirs'
 import { initNitro } from './nitro'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
-  const hooks = new Hookable() as any as Nuxt['hooks']
+  const hooks = createHooks<NuxtHooks>()
 
   const nuxt: Nuxt = {
     options,
     hooks,
     callHook: hooks.callHook,
+    addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
     close: () => Promise.resolve(hooks.callHook('close', nuxt)),

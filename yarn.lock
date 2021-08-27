@@ -1313,6 +1313,7 @@ __metadata:
     dotenv: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
+    hookable: ^5.0.0-2
     jiti: ^1.11.0
     rc9: ^1.2.0
     scule: ^0.2.1
@@ -1366,7 +1367,7 @@ __metadata:
     gzip-size: ^6.0.0
     h3: ^0.3.0
     hasha: ^5.2.2
-    hookable: ^4.4.1
+    hookable: ^5.0.0-2
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
     jiti: ^1.11.0
@@ -6248,10 +6249,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"hookable@npm:^4.4.1":
-  version: 4.4.1
-  resolution: "hookable@npm:4.4.1"
-  checksum: 6f1cdd047c18a07f59d851186e993c7e15f9a59ae2223ddc8efa02dbe9cfbbf921cab026cf9910beb485512ad293a6693ef60e45eccaf1b0f5902baf521985c4
+"hookable@npm:^5.0.0-2":
+  version: 5.0.0-2
+  resolution: "hookable@npm:5.0.0-2"
+  checksum: 2545fc3183a0adce4d38d025d534fa6b7b19b3e10684fa12b51a4f181c2c8e7be869b0ce69dfff6f9f10638a793dfe4000f7b7811cdb2ba3c93b631b455cf245
   languageName: node
   linkType: hard
 
@@ -8644,7 +8645,7 @@ fsevents@~2.3.2:
     fs-extra: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
-    hookable: ^4.4.1
+    hookable: ^5.0.0-2
     ignore: ^5.1.8
     lodash: ^4.17.21
     nuxi: ^0.10.0

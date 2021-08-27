@@ -45,7 +45,7 @@
     "gzip-size": "^6.0.0",
     "h3": "^0.3.0",
     "hasha": "^5.2.2",
-    "hookable": "^4.4.1",
+    "hookable": "^5.0.0-2",
     "http-proxy": "^1.18.1",
     "is-primitive": "^3.0.1",
     "jiti": "^1.11.0",

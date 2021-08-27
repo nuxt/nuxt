@@ -2,7 +2,7 @@ import { relative, dirname, resolve } from 'upath'
 import fse from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
-import Hookable from 'hookable'
+import { mergeHooks } from 'hookable'
 import consola from 'consola'
 import chalk from 'chalk'
 import { get } from 'dot-prop'
@@ -97,7 +97,7 @@ export function extendPreset (base: NitroPreset, preset: NitroPreset): NitroPres
       base = base(config)
     }
     return defu({
-      hooks: Hookable.mergeHooks(base.hooks, preset.hooks)
+      hooks: mergeHooks(base.hooks, preset.hooks)
     }, preset, base)
   }
 }

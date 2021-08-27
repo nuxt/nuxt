@@ -1,13 +1,14 @@
 import fetch from 'node-fetch'
 import { resolve } from 'upath'
 import { move, readFile, writeFile } from 'fs-extra'
+import type { ModuleContainer } from '@nuxt/kit'
 import { build, generate, prepare } from './build'
 import { getNitroContext, NitroContext } from './context'
 import { createDevServer } from './server/dev'
 import { wpfs } from './utils/wpfs'
 import { resolveMiddleware } from './server/middleware'
 
-export default function nuxt2CompatModule () {
+export default function nuxt2CompatModule (this: ModuleContainer) {
   const { nuxt } = this
 
   // Ensure we're not just building with 'static' target
@@ -16,7 +17,9 @@ export default function nuxt2CompatModule () {
   }
 
   // Disable loading-screen
+  // @ts-ignore
   nuxt.options.build.loadingScreen = false
+  // @ts-ignore
   nuxt.options.build.indicator = false
 
   // Create contexts
@@ -40,8 +43,6 @@ export default function nuxt2CompatModule () {
   nuxt.addHooks(nitroDevContext.nuxtHooks)
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
   nitroDevContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
-  nitroDevContext._internal.hooks.hook('renderLoading',
-    (req, res) => nuxt.callHook('server:nuxt:renderLoading', req, res))
 
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
@@ -78,6 +79,8 @@ export default function nuxt2CompatModule () {
   // Fix module resolution
   nuxt.hook('webpack:config', (configs) => {
     for (const config of configs) {
+      // We use only object form of alias in base config
+      if (Array.isArray(config.resolve.alias)) { return }
       config.resolve.alias.ufo = 'ufo/dist/index.mjs'
       config.resolve.alias.ohmyfetch = 'ohmyfetch/dist/index.mjs'
     }
@@ -111,6 +114,7 @@ export default function nuxt2CompatModule () {
   })
 
   // nuxt build/dev
+  // @ts-ignore
   nuxt.options.build._minifyServer = false
   nuxt.options.build.standalone = false
   nuxt.hook('build:done', async () => {
