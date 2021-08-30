@@ -40,7 +40,7 @@
     "ohmyfetch": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.7",
-    "unplugin": "^0.0.5",
+    "unplugin": "^0.2.3",
     "upath": "^2.0.1",
     "vue": "^3.2.2",
     "vue-router": "^4.0.11",

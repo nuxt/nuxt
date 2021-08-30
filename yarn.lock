@@ -8653,7 +8653,7 @@ fsevents@~2.3.2:
     scule: ^0.2.1
     ufo: ^0.7.7
     unbuild: ^0.4.2
-    unplugin: ^0.0.5
+    unplugin: ^0.2.3
     upath: ^2.0.1
     vue: ^3.2.2
     vue-meta: next
@@ -11760,15 +11760,15 @@ typescript@^4.3.5:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "unplugin@npm:0.0.5"
+"unplugin@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "unplugin@npm:0.2.3"
   dependencies:
     webpack-virtual-modules: ^0.4.3
   peerDependencies:
     rollup: ^2.50.0
     vite: ^2.3.0
-    webpack: ^5.0.0
+    webpack: ^4.0.0
   peerDependenciesMeta:
     rollup:
       optional: true
@@ -11776,7 +11776,7 @@ typescript@^4.3.5:
       optional: true
     webpack:
       optional: true
-  checksum: 37f66f585365a9d7c26c03cc971329391839b13505942548be48ad834d7d5c68576e4defce92f9845bddd154c93340f8a1773337fce797f1cac1a1a34d6aac26
+  checksum: 1d6186a4bd7c722351106f97530cb59db0ad6398e5d76a06ea0eaec0e646b8dbdaf79a2c3038f791b9d5e1e62b89002f286727c5a065ecdeba622b2a69e2a3a7
   languageName: node
   linkType: hard
 
