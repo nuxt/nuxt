@@ -3,7 +3,7 @@ const identifiers = {
     'useAsyncData',
     'asyncData',
     'defineNuxtComponent',
-    'useNuxt',
+    'useNuxtApp',
     'defineNuxtPlugin'
   ],
   '#meta': [
