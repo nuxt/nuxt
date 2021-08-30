@@ -12,10 +12,11 @@ We are currently in private beta in order to stabilize the framework before onbo
 
 Our focus is currently on new projects made with Nuxt3 (not transitioning from Nuxt2 at the moment) as well as migrating modules to Nuxt3.
 
+Please take a look at the [main discussion](https://github.com/nuxt/framework/discussions/434) for further information.
 
 ## 📖 Documentation
 
-You can read documentation online [here](https://nuxt3-docs.vercel.app/get-started/installation)
+You can read the documentation online [here](https://v3.nuxtjs.org/).
 
 ## 🐞 Reporting bugs
 
