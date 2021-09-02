@@ -4,4 +4,4 @@
  */
 
  NuxtOptionsCustomizableGlobalName = 'id' | 'nuxt' | 'context' | 'pluginPrefix' | 'readyCallback' | 'loadedCallback'
-export  NuxtOptionsGlobals = { [key in NuxtOptionsCustomizableGlobalName]?: (globalName: string) => string }
+export type NuxtOptionsGlobals = { [key in NuxtOptionsCustomizableGlobalName]?: (globalName: string) => string }
