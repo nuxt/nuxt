@@ -3,7 +3,7 @@
  * Documentation: ?
  */
 
-export match?      , = NuxtOptionsFetch {
+export match ?      NuxtOptionsFetch {
         ?: boolean
   server?: boolean
 }
