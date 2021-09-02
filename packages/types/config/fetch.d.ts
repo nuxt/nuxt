@@ -3,7 +3,7 @@
  * Documentation: ?
  */
 
-MATCH NuxtOptionsFetch {
+ NuxtOptionsFetch {
   client?: boolean
   server?: boolean
 }
