@@ -54,7 +54,7 @@ export function dirnames (): Plugin {
     name: 'dirnames',
     renderChunk (code, chunk) {
       return {
-        code: code + (chunk.isEntry ? 'globalThis.entryURL = import.meta.url' : ''),
+        code: (chunk.isEntry ? 'globalThis.entryURL = import.meta.url;' : '') + code,
         map: null
       }
     }
