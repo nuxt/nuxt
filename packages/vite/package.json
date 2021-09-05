@@ -16,16 +16,16 @@
   },
   "dependencies": {
     "@nuxt/kit": "^0.10.0",
-    "@vitejs/plugin-vue": "^1.4.0",
-    "@vue/compiler-sfc": "^3.2.2",
+    "@vitejs/plugin-vue": "^1.6.0",
+    "@vue/compiler-sfc": "^3.2.8",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "debounce": "^1.2.1",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
-    "ufo": "^0.7.7",
+    "ufo": "^0.7.9",
     "upath": "^2.0.1",
-    "vite": "^2.4.4",
-    "vue": "3.2.2"
+    "vite": "^2.5.3",
+    "vue": "3.2.8"
   }
 }

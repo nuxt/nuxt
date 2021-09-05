@@ -23,9 +23,9 @@
     "@nuxt/nitro": "^0.10.0",
     "@nuxt/vite-builder": "^0.10.0",
     "@nuxt/webpack-builder": "^0.10.0",
-    "@vue/reactivity": "3.2.2",
-    "@vue/server-renderer": "^3.2.2",
-    "@vue/shared": "3.2.2",
+    "@vue/reactivity": "3.2.8",
+    "@vue/server-renderer": "^3.2.8",
+    "@vue/shared": "3.2.8",
     "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
@@ -33,16 +33,16 @@
     "fs-extra": "^10.0.0",
     "globby": "^11.0.4",
     "hash-sum": "^2.0.0",
-    "hookable": "^5.0.0-2",
+    "hookable": "^5.0.0",
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
     "nuxi": "^0.10.0",
-    "ohmyfetch": "^0.2.0",
+    "ohmyfetch": "^0.3.1",
     "scule": "^0.2.1",
-    "ufo": "^0.7.7",
-    "unplugin": "^0.2.3",
+    "ufo": "^0.7.9",
+    "unplugin": "^0.2.7",
     "upath": "^2.0.1",
-    "vue": "^3.2.2",
+    "vue": "^3.2.8",
     "vue-router": "^4.0.11",
     "vuex5": "^0.5.0-testing.3"
   },
@@ -54,8 +54,8 @@
     "vue-meta": "next"
   },
   "peerDependencies": {
-    "@vue/reactivity": "3.2.2",
-    "@vue/shared": "3.2.2",
-    "vue": "3.2.2"
+    "@vue/reactivity": "3.2.8",
+    "@vue/shared": "3.2.8",
+    "vue": "3.2.8"
   }
 }

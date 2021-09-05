@@ -7,19 +7,19 @@
     "gendocs": "unbuild && jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
-    "@docus/app": "^1.0.38",
-    "@docus/github": "^1.0.3",
-    "@docus/social-image": "^1.0.2",
-    "@docus/theme": "^1.0.7",
-    "@docus/twitter": "^1.0.3",
+    "@docus/app": "^1.1.3",
+    "@docus/github": "^1.0.4",
+    "@docus/social-image": "^1.0.3",
+    "@docus/theme": "^1.1.3",
+    "@docus/twitter": "^1.0.4",
     "@nuxt/typescript-build": "^2.1.0",
     "fs-extra": "^10.0.0",
     "jiti": "^1.11.0",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
-    "unbuild": "^0.4.0",
-    "untyped": "^0.2.7",
+    "unbuild": "^0.4.2",
+    "untyped": "^0.2.8",
     "upath": "^2.0.1"
   }
 }
