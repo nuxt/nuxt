@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'url'
 import { dirname, join, normalize, relative, resolve } from 'upath'
 import type { InputOptions, OutputOptions } from 'rollup'
 import defu from 'defu'
@@ -209,7 +210,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       '#nitro-renderer': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer))),
       '#config': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app/config'))),
       '#nitro-vue-renderer': vue2ServerRenderer,
-      '#build': nitroContext._nuxt.buildDir,
+      // Only file and data URLs are supported by the default ESM loader on Windows (#427)
+      '#build': nitroContext._nuxt.dev && process.platform === 'win32'
+        ? pathToFileURL(nitroContext._nuxt.buildDir).href
+        : nitroContext._nuxt.buildDir,
       '~': nitroContext._nuxt.srcDir,
       '@/': nitroContext._nuxt.srcDir,
       '~~': nitroContext._nuxt.rootDir,
