@@ -161,14 +161,13 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   rollupConfig.plugins.push(dynamicRequire({
     dir: resolve(nitroContext._nuxt.buildDir, 'dist/server'),
     inline: nitroContext.node === false || nitroContext.inlineDynamicImports,
-    globbyOptions: {
-      ignore: [
-        'client.manifest.mjs',
-        'server.cjs',
-        'server.mjs',
-        'server.manifest.mjs'
-      ]
-    }
+    ignore: [
+      'client.manifest.mjs',
+      'server.js',
+      'server.cjs',
+      'server.mjs',
+      'server.manifest.mjs'
+    ]
   }))
 
   // Assets

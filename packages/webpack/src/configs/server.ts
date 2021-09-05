@@ -22,7 +22,7 @@ export function server (ctx: WebpackConfigContext) {
 function serverPreset (ctx: WebpackConfigContext) {
   const { config } = ctx
 
-  config.output.filename = 'server.cjs'
+  config.output.filename = 'server.mjs'
   config.devtool = 'cheap-module-source-map'
 
   config.optimization = {

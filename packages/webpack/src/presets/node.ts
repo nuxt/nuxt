@@ -6,13 +6,25 @@ export function node (ctx: WebpackConfigContext) {
   config.target = 'node'
   config.node = false
 
-  config.resolve.mainFields = ['main', 'module']
+  config.experiments.outputModule = true
 
   config.output = {
     ...config.output,
-    chunkFilename: '[name].cjs',
+    chunkFilename: '[name].mjs',
+    chunkFormat: 'module',
+    chunkLoading: 'import',
+    module: true,
+    environment: {
+      module: true,
+      arrowFunction: true,
+      bigIntLiteral: true,
+      const: true,
+      destructuring: true,
+      dynamicImport: true,
+      forOf: true
+    },
     library: {
-      type: 'commonjs2'
+      type: 'module'
     }
   }
 

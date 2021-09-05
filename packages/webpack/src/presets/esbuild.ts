@@ -7,7 +7,7 @@ export function esbuild (ctx: WebpackConfigContext) {
   // https://esbuild.github.io/getting-started/#bundling-for-the-browser
   // https://gs.statcounter.com/browser-version-market-share
   // https://nodejs.org/en/
-  const target = ctx.isServer ? 'node14' : 'chrome85'
+  const target = ctx.isServer ? 'es2019' : 'chrome85'
 
   config.optimization.minimizer.push(new ESBuildMinifyPlugin())
 

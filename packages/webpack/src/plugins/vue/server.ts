@@ -81,14 +81,6 @@ export default class VueSSRServerPlugin {
           size: () => mjsSrc.length
         }
 
-        // TODO: Workaround for webpack
-        const serverJS = 'export { default } from "./server.cjs"'
-        assets['server.mjs'] = {
-          source: () => serverJS,
-          map: () => null,
-          size: () => serverJS.length
-        }
-
         cb()
       })
     })
