@@ -1,6 +1,6 @@
 // Based on https://github.com/webpack/webpack/blob/v4.46.0/lib/node/NodeMainTemplatePlugin.js#L81-L191
 
-import { Compiler } from 'webpack'
+import type { Compiler } from 'webpack'
 import Template from 'webpack/lib/Template'
 
 export class AsyncLoadingPlugin {
