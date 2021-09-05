@@ -89,6 +89,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
         } else if (lastModule.includes('assets')) {
           prefix = 'assets'
         }
+        if (chunkInfo.name.includes('#')) {
+          return join('chunks', prefix, chunkInfo.name.replace(/#/g, '-') + '.mjs')
+        }
         return join('chunks', prefix, '[name].mjs')
       },
       inlineDynamicImports: nitroContext.inlineDynamicImports,
