@@ -1,16 +1,14 @@
 import fetch from 'node-fetch'
+import { addPluginTemplate, useNuxt } from '@nuxt/kit'
+import { stringifyQuery } from 'ufo'
 import { resolve } from 'upath'
-import { move, readFile, writeFile } from 'fs-extra'
-import type { ModuleContainer } from '@nuxt/kit'
-import { build, generate, prepare } from './build'
-import { getNitroContext, NitroContext } from './context'
-import { createDevServer } from './server/dev'
-import { wpfs } from './utils/wpfs'
-import { resolveMiddleware } from './server/middleware'
-import AsyncLoadingPlugin from './webpack/wp4'
+import { readFile, writeFile } from 'fs-extra'
+import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware } from '@nuxt/nitro'
+import { AsyncLoadingPlugin } from './async-loading'
+import { distDir } from './dirs'
 
-export default function nuxt2CompatModule (this: ModuleContainer) {
-  const { nuxt } = this
+export function setupNitroBridge () {
+  const nuxt = useNuxt()
 
   // Ensure we're not just building with 'static' target
   if (!nuxt.options.dev && nuxt.options.target === 'static' && !nuxt.options._export && !nuxt.options._legacyGenerate) {
@@ -73,15 +71,15 @@ export default function nuxt2CompatModule (this: ModuleContainer) {
   })
 
   // Nitro client plugin
-  this.addPlugin({
-    fileName: 'nitro.client.mjs',
+  addPluginTemplate({
+    filename: 'nitro.client.mjs',
     src: resolve(nitroContext._internal.runtimeDir, 'app/nitro.client.mjs')
   })
 
   // Nitro server plugin (for vue-meta)
-  this.addPlugin({
-    fileName: 'nitro-compat.server.js',
-    src: resolve(nitroContext._internal.runtimeDir, 'app/nitro-compat.server.js')
+  addPluginTemplate({
+    filename: 'nitro-bridge.server.mjs',
+    src: resolve(distDir, 'runtime/nitro-bridge.server.mjs')
   })
 
   // Fix module resolution
@@ -98,7 +96,7 @@ export default function nuxt2CompatModule (this: ModuleContainer) {
   nuxt.hook('build:compiled', async ({ name }) => {
     if (name === 'server') {
       const jsServerEntry = resolve(nuxt.options.buildDir, 'dist/server/server.js')
-      await move(jsServerEntry, jsServerEntry.replace(/.js$/, '.cjs'))
+      await writeFile(jsServerEntry.replace(/.js$/, '.cjs'), 'module.exports = require("./server.js")', 'utf8')
       await writeFile(jsServerEntry.replace(/.js$/, '.mjs'), 'export { default } from "./server.cjs"', 'utf8')
     } else if (name === 'client') {
       const manifest = await readFile(resolve(nuxt.options.buildDir, 'dist/server/client.manifest.json'), 'utf8')
@@ -185,7 +183,7 @@ function createNuxt2DevServer (nitroContext: NitroContext) {
       throw new Error('There is no server listener to call `server.renderRoute()`')
     }
     const html = await fetch(listener.url + route, {
-      headers: { 'nuxt-render-context': encodeQuery(renderContext) }
+      headers: { 'nuxt-render-context': stringifyQuery(renderContext) }
     }).then(r => r.text())
 
     return { html }
@@ -199,10 +197,4 @@ function createNuxt2DevServer (nitroContext: NitroContext) {
     serverMiddlewarePaths () { return [] },
     ready () { }
   }
-}
-
-function encodeQuery (obj) {
-  return Object.entries(obj).map(
-    ([key, val]) => `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(val))}`
-  ).join('&')
 }

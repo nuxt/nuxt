@@ -7,14 +7,14 @@ import execa from 'execa'
 import { expect } from 'chai'
 import { fixtureDir, resolveWorkspace } from '../utils.mjs'
 
-const isCompat = Boolean(process.env.TEST_COMPAT)
+const isBridge = Boolean(process.env.TEST_BRIDGE)
 
 export function importModule (path) {
   return import(pathToFileURL(path).href)
 }
 
 export function setupTest (preset) {
-  const fixture = isCompat ? 'compat' : 'basic'
+  const fixture = isBridge ? 'bridge' : 'basic'
   const rootDir = fixtureDir(fixture)
   const buildDir = resolve(rootDir, '.nuxt-' + preset)
 
@@ -25,7 +25,7 @@ export function setupTest (preset) {
   }
 
   it('nitro build', async () => {
-    const nuxtCLI = isCompat
+    const nuxtCLI = isBridge
       ? resolve(ctx.rootDir, 'node_modules/nuxt/bin/nuxt.js')
       : resolveWorkspace('packages/nuxi/bin/nuxi.js')
 

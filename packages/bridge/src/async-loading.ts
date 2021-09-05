@@ -3,7 +3,7 @@
 import { Compiler } from 'webpack'
 import Template from 'webpack/lib/Template'
 
-export default class AsyncLoadingPlugin {
+export class AsyncLoadingPlugin {
   apply (compiler: Compiler) {
     compiler.hooks.compilation.tap('AsyncLoading', (compilation) => {
       const mainTemplate = compilation.mainTemplate

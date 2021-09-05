@@ -65,7 +65,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
         src: resolve(dir, id).replace(/\\/g, '/'),
         name: '_' + id.replace(/[^a-zA-Z0-9_]/g, '_'),
         meta: getWebpackChunkMeta(resolve(dir, id))
-      }))
+      })).filter(chunk => chunk.meta)
 
       return inline ? TMPL_INLINE({ chunks }) : TMPL_LAZY({ chunks })
     }
@@ -75,10 +75,13 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
 function getWebpackChunkMeta (src: string) {
   const chunk = require(src) || {}
   const { id, ids, modules } = chunk
+  if (!id && !ids) {
+    return null // Not a webpack chunk
+  }
   return {
     id,
     ids,
-    moduleIds: Object.keys(modules)
+    moduleIds: Object.keys(modules || {})
   }
 }
 

@@ -57,7 +57,7 @@ jobs:
       - name: Test (presets)
         run: yarn test:presets
 
-  test-compat:
+  test-bridge:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -73,24 +73,24 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: |
             yarn.lock
-            test/fixtures/compat/yarn.lock
+            test/fixtures/bridge/yarn.lock
 
       - name: Install dependencies
         run: yarn --immutable
 
-      - name: Install dependencies (compat fixture)
-        run: yarn --immutable && cd test/fixtures/compat && yarn --immutable
+      - name: Install dependencies (bridge fixture)
+        run: yarn --immutable && cd test/fixtures/bridge && yarn --immutable
 
       - name: Stub
         run: yarn stub
 
-      - name: Test (presets compat)
-        run: yarn test:compat
+      - name: Test (presets bridge)
+        run: yarn test:bridge
 
   build-release:
     needs:
       - test
-      - test-compat
+      - test-bridge
       - lint
     runs-on: ${{ matrix.os }}
 

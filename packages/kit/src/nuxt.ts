@@ -55,7 +55,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     return nuxt
   }
 
-  // Compat
+  // Nuxt 2
   // @ts-ignore
   const { loadNuxt } = tryRequireModule('nuxt-edge', resolveOpts) || requireModule('nuxt', resolveOpts)
   const nuxt = await loadNuxt({
@@ -76,7 +76,7 @@ export function buildNuxt (nuxt: Nuxt): Promise<any> {
     return build(nuxt)
   }
 
-  // Compat
+  // Nuxt 2
   // @ts-ignore
   const { build } = tryRequireModule('nuxt-edge', resolveOpts) || requireModule('nuxt', resolveOpts)
   return build(nuxt)
