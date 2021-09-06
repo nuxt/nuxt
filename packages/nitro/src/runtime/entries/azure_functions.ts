@@ -1,7 +1,7 @@
 import '#polyfill'
 import { localCall } from '../server'
 
-export default async function handle (context, req) {
+export async function handle (context, req) {
   const url = '/' + (req.params.url || '')
 
   const { body, status, statusText, headers } = await localCall({
