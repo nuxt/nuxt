@@ -1,11 +1,12 @@
-import { ServerResponse } from 'http'
-import { IncomingMessage, NextFunction } from 'connect'
-import Vue, { ComponentOptions } from 'vue'
-import VueRouter, { Location, Route } from 'vue-router'
-import { Store } from 'vuex'
+import type { ServerResponse } from 'http'
+import type { IncomingMessage, NextFunction } from 'connect'
+import type Vue from 'vue'
+import type { Route } from 'vue-router'
+import type { Store } from 'vuex'
+import VueRouter from 'vue-router'
 
-import { NuxtOptions } from '../config'
-import { NuxtRuntimeConfig } from '../config/runtime'
+import type { NuxtOptions } from '../config'
+import type { NuxtRuntimeConfig } from '../config/runtime'
 
 // augment typings of Vue.js
 import './vue'
@@ -14,6 +15,16 @@ import './vue'
 import './vuex'
 
 type NuxtState = Record<string, any>
+
+export interface NuxtAppOptions extends Vue.ComponentOptions<Vue> {
+  [key: string]: any // TBD
+}
+
+export interface NuxtError {
+  message?: string
+  path?: string
+  statusCode?: number
+}
 
 export interface Context {
   $config: NuxtRuntimeConfig
@@ -47,6 +58,7 @@ export interface Context {
   redirect(status: number, path: string, query?: Route['query']): void
   redirect(path: string, query?: Route['query']): void
   redirect(location: Location): void
+  redirect(status: number, location: Location): void
   ssrContext?: {
     req: Context['req']
     res: Context['res']
@@ -61,6 +73,8 @@ export interface Context {
     redirected: boolean
     next: NextFunction
     beforeRenderFns: Array<() => any>
+    beforeSerializeFns: Array<() => any>
+    fetchCounters: Record<string, number>
     nuxt: {
       layout: string
       data: Array<Record<string, any>>
@@ -75,8 +89,12 @@ export interface Context {
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
+  beforeSerialize(fn: (nuxtState: NuxtState) => void): void
+  enablePreview?: (previewData?: Record<string, any>) => void
+  $preview?: Record<string, any>
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type Middleware = string | ((ctx: Context, cb: Function) => Promise<void> | void)
 export type Inject = (key: string, value: any) => void
 export type Plugin = (ctx: Context, inject: Inject) => Promise<void> | void
@@ -94,19 +112,15 @@ export interface Transition {
   leaveToClass?: string
   leaveActiveClass?: string
   beforeEnter?(el: HTMLElement): void
+  // eslint-disable-next-line @typescript-eslint/ban-types
   enter?(el: HTMLElement, done: Function): void
   afterEnter?(el: HTMLElement): void
   enterCancelled?(el: HTMLElement): void
   beforeLeave?(el: HTMLElement): void
+  // eslint-disable-next-line @typescript-eslint/ban-types
   leave?(el: HTMLElement, done: Function): void
   afterLeave?(el: HTMLElement): void
   leaveCancelled?(el: HTMLElement): void
-}
-
-export interface NuxtError {
-  message?: string
-  path?: string
-  statusCode?: number
 }
 
 export interface DefaultNuxtLoading extends Vue {
@@ -144,10 +158,6 @@ export interface CustomNuxtLoading extends Vue {
 
 export type NuxtLoading = DefaultNuxtLoading | CustomNuxtLoading
 
-export interface NuxtAppOptions extends ComponentOptions<Vue> {
-  [key: string]: any // TBD
-}
-
 export interface NuxtApp extends Vue {
   $options: NuxtAppOptions
   $loading: NuxtLoading
@@ -167,6 +177,8 @@ export interface NuxtApp extends Vue {
 // window.$nuxt
 declare global {
   interface Window {
+    onNuxtLoaded: (cb: (app: NuxtApp) => void) => void
+    onNuxtReady: (cb: (app: NuxtApp) => void) => void
     $nuxt: NuxtApp
   }
 }

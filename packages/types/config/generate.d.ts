@@ -17,10 +17,13 @@ export interface NuxtOptionsGenerate {
   dir?: string
   exclude?: RegExp[]
   fallback?: string | boolean
+  ignoreEnv?: boolean
   interval?: number
+  nojekyll?: boolean
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
   cache?: false | {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     ignore?: string[] | Function,
     globbyOptions?: GlobbyOptions
   }

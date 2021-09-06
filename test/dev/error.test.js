@@ -32,9 +32,8 @@ describe('error', () => {
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
-    })
+    await expect(nuxt.server.renderAndGetWindow(url('/error')))
+      .rejects.toThrow('Resource was not loaded. Status: 500')
   })
 
   test('Error: resolvePath()', () => {

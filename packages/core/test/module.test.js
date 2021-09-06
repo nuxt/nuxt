@@ -4,12 +4,6 @@ import consola from 'consola'
 import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
 
-jest.mock('fs', () => ({
-  existsSync: Boolean,
-  closeSync: Boolean,
-  realpath: jest.fn()
-}))
-
 jest.mock('hash-sum', () => src => `hash(${src})`)
 
 jest.mock('@nuxt/utils', () => ({
@@ -34,6 +28,13 @@ describe('core: module', () => {
     consola.fatal.mockClear()
     chainFn.mockClear()
     requireModule.mockClear()
+
+    fs._existsSync = fs._existsSync || fs.existsSync
+    fs.existsSync = jest.fn().mockImplementation(() => true)
+  })
+
+  afterEach(() => {
+    fs.existsSync = fs._existsSync
   })
 
   test('should construct module container', () => {
@@ -318,7 +319,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts)
+    expect(module.addModule).toBeCalledWith(moduleOpts, undefined, { paths: undefined })
   })
 
   test('should add string module', async () => {
@@ -332,7 +333,7 @@ describe('core: module', () => {
     const result = await module.addModule('moduleTest')
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
@@ -381,7 +382,7 @@ describe('core: module', () => {
     const result = await module.addModule(['moduleTest', { test: true }])
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),

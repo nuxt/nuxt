@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import { normalizeURL, decode } from 'ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 
@@ -50,8 +51,8 @@ import scrollBehavior from './router.scrollBehavior.js'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + route._name : ''
-    res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
-    res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
+    res += (route.redirect) ? nextIndent + 'redirect: ' + (typeof route.redirect === 'function' ? serialize(route.redirect) : JSON.stringify(route.redirect)) : ''
+    res += (route.meta) ? nextIndent + 'meta: ' + serialize(route.meta) : ''
     res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
     res += (typeof route.caseSensitive !== 'undefined') ? nextIndent + 'caseSensitive: ' + JSON.stringify(route.caseSensitive) : ''
     res += (route.alias) ? nextIndent + 'alias: ' + JSON.stringify(route.alias) : ''
@@ -82,12 +83,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
   }
 }).join('\n')%>
 
-// TODO: remove in Nuxt 3
 const emptyFn = () => {}
-const originalPush = Router.prototype.push
-Router.prototype.push = function push (location, onComplete = emptyFn, onAbort) {
-  return originalPush.call(this, location, onComplete, onAbort)
-}
 
 Vue.use(Router)
 
@@ -105,14 +101,20 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-export function createRouter () {
-  const router = new Router(routerOptions)
-  const resolve = router.resolve.bind(router)
+export function createRouter (ssrContext, config) {
+  const base = (config._app && config._app.basePath) || routerOptions.base
+  const router = new Router({ ...routerOptions, base  })
 
-  // encodeURI(decodeURI()) ~> support both encoded and non-encoded urls
+  // TODO: remove in Nuxt 3
+  const originalPush = router.push
+  router.push = function push (location, onComplete = emptyFn, onAbort) {
+    return originalPush.call(this, location, onComplete, onAbort)
+  }
+
+  const resolve = router.resolve.bind(router)
   router.resolve = (to, current, append) => {
     if (typeof to === 'string') {
-      to = encodeURI(decodeURI(to))
+      to = normalizeURL(to)
     }
     return resolve(to, current, append)
   }

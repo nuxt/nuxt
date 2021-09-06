@@ -1,4 +1,4 @@
-import capitalize from 'lodash/capitalize'
+import { capitalize } from 'lodash'
 import env from 'std-env'
 import { TARGETS } from '@nuxt/utils'
 

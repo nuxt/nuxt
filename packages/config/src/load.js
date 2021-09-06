@@ -3,29 +3,26 @@ import fs from 'fs'
 import defu from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
-import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
-import esm from 'esm'
-import _createRequire from 'create-require'
+import { clearRequireCache, createRequire, scanRequireTree } from '@nuxt/utils'
 import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
-
-const isJest = typeof jest !== 'undefined'
 
 export async function loadNuxtConfig ({
   rootDir = '.',
   envConfig = {},
   configFile = defaultNuxtConfigFile,
   configContext = {},
-  configOverrides = {},
-  createRequire = module => isJest ? _createRequire(module.filename) : esm(module, { cache: false })
+  configOverrides = {}
 } = {}) {
   rootDir = path.resolve(rootDir)
+
+  const _require = createRequire(rootDir, true)
 
   let options = {}
 
   try {
-    configFile = require.resolve(path.resolve(rootDir, configFile))
+    configFile = _require.resolve(path.resolve(rootDir, configFile))
   } catch (e) {
     if (e.code !== 'MODULE_NOT_FOUND') {
       throw (e)
@@ -56,7 +53,6 @@ export async function loadNuxtConfig ({
   if (configFile) {
     // Clear cache
     clearRequireCache(configFile)
-    const _require = createRequire(module)
     options = _require(configFile) || {}
     if (options.default) {
       options = options.default
@@ -92,10 +88,13 @@ export async function loadNuxtConfig ({
   }
 
   // Load Combine configs
-  // Priority: configOverrides > nuxtConfig > .nuxtrc > .nuxtrc (global)
+  // Priority: configOverrides > nuxtConfig > .nuxt/dist/nuxtrc > .nuxtrc > .nuxtrc (global)
+  const dev = configOverrides.dev ?? options.dev ?? configContext.dev
+  const buildDir = configOverrides.buildDir ?? options.buildDir ?? configContext.buildDir ?? '.nuxt'
   options = defu(
     configOverrides,
     options,
+    !dev ? rc.read({ name: 'nuxtrc', dir: path.resolve(buildDir, 'dist') }) : {},
     rc.read({ name: '.nuxtrc', dir: options.rootDir }),
     rc.readUser('.nuxtrc')
   )

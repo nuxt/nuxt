@@ -34,7 +34,7 @@ interface CspOptions {
   addMeta?: boolean
   allowedSources?: string[]
   hashAlgorithm?: string
-  policies?: Record<CspPolicyName, string[]>
+  policies?: Partial<Record<CspPolicyName, string[]>>
   reportOnly?: boolean
   unsafeInlineCompatibility?: boolean
 }
@@ -50,7 +50,7 @@ export interface NuxtOptionsRender {
   bundleRenderer?: BundleRendererOptions
   compressor?: CompressionOptions | NuxtOptionsServerMiddleware | false
   csp?: boolean | CspOptions
-  crossorigin?: "anonymous" | "use-credentials" | ""
+  crossorigin?: 'anonymous' | 'use-credentials' | ''
   dist?: ServeStaticOptions
   etag?: NuxtEtagOptions | false
   fallback?: {
@@ -72,5 +72,5 @@ export interface NuxtOptionsRender {
   resourceHints?: boolean
   ssr?: boolean
   ssrLog?: boolean | 'collapsed'
-  static?: ServeStaticOptions
+  static?: ServeStaticOptions | false
 }

@@ -19,10 +19,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -63,10 +63,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -96,10 +96,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -127,10 +127,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -151,8 +151,7 @@ jobs:
         run: yarn test:unit --coverage
 
       - name: codecov
-        uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
+        uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -165,13 +164,13 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -191,11 +190,11 @@ jobs:
       - name: build
         run: yarn test:fixtures -i
 
-      - name: cache fixtures
-        uses: actions/cache@v2
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
     needs: setup
 
   lint-app:
@@ -204,10 +203,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -225,10 +224,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: lint app
         run: yarn lint:app
@@ -241,10 +240,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -262,13 +261,13 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev
     needs: build
 
   test-e2e:
@@ -278,10 +277,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -299,10 +298,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test e2e
         run: yarn test:e2e
@@ -314,9 +313,18 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
+      - name: checkout
+        uses: actions/checkout@master
+        with:
+          ref: 'refs/heads/dev'
+          fetch-depth: 0 # All history
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+
       - name: restore workspace cache
         uses: actions/cache@v2
         with:
@@ -327,13 +335,13 @@ jobs:
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: bump version
-        run: yarn lerna version --yes --no-git-tag-version --no-push
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
 
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build

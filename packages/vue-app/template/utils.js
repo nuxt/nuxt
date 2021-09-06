@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { isSamePath as _isSamePath, joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -6,6 +7,15 @@ if (process.client) {
   window.<%= globals.readyCallback %>Cbs = []
   window.<%= globals.readyCallback %> = (cb) => {
     window.<%= globals.readyCallback %>Cbs.push(cb)
+  }
+}
+
+export function createGetCounter (counterObject, defaultKey = '') {
+  return function getCounter (id = defaultKey) {
+    if (counterObject[id] === undefined) {
+      counterObject[id] = 0
+    }
+    return counterObject[id]++
   }
 }
 
@@ -136,7 +146,29 @@ export function resolveRouteComponents (route, fn) {
     flatMapComponents(route, async (Component, instance, match, key) => {
       // If component is a function, resolve it
       if (typeof Component === 'function' && !Component.options) {
-        Component = await Component()
+        try {
+          Component = await Component()
+        } catch (error) {
+          // Handle webpack chunk loading errors
+          // This may be due to a new deployment or a network problem
+          if (
+            error &&
+            error.name === 'ChunkLoadError' &&
+            typeof window !== 'undefined' &&
+            window.sessionStorage
+          ) {
+            const timeNow = Date.now()
+            const previousReloadTime = parseInt(window.sessionStorage.getItem('nuxt-reload'))
+
+            // check for previous reload time not to reload infinitely
+            if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
+              window.sessionStorage.setItem('nuxt-reload', timeNow)
+              window.location.reload(true /* skip cache */)
+            }
+          }
+
+          throw error
+        }
       }
       match.components[key] = Component = sanitizeComponent(Component)
       return typeof fn === 'function' ? fn(Component, instance, match, key) : Component
@@ -170,16 +202,18 @@ export async function setContext (app, context) {
       <%= (store ? 'store: app.store,' : '') %>
       payload: context.payload,
       error: context.error,
-      base: '<%= router.base %>',
+      base: app.router.options.base,
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
-    if (!process.static && context.req) {
+    <% if (!isFullStatic) { %>
+    if (context.req) {
       app.context.req = context.req
     }
-    if (!process.static && context.res) {
+    if (context.res) {
       app.context.res = context.res
     }
+    <% } %>
     if (context.ssrContext) {
       app.context.ssrContext = context.ssrContext
     }
@@ -207,7 +241,7 @@ export async function setContext (app, context) {
           status
         })
       } else {
-        path = formatUrl(path, query)
+        path = withQuery(path, query)
         if (process.server) {
           app.context.next({
             path,
@@ -215,8 +249,8 @@ export async function setContext (app, context) {
           })
         }
         if (process.client) {
-          // https://developer.mozilla.org/en-US/docs/Web/API/Location/replace
-          window.location.replace(path)
+          // https://developer.mozilla.org/en-US/docs/Web/API/Location/assign
+          window.location.assign(path)
 
           // Throw a redirect error
           throw new Error('ERR_REDIRECT')
@@ -225,6 +259,7 @@ export async function setContext (app, context) {
     }
     if (process.server) {
       app.context.beforeNuxtRender = fn => context.beforeRenderFns.push(fn)
+      app.context.beforeSerialize = fn => context.beforeSerializeFns.push(fn)
     }
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>
@@ -309,7 +344,7 @@ export function getLocation (base, mode) {
 
   const fullPath = (path || '/') + window.location.search + window.location.hash
 
-  return encodeURI(fullPath)
+  return normalizeURL(fullPath)
 }
 
 // Imported from path-to-regexp
@@ -582,86 +617,6 @@ function flags (options) {
   return options && options.sensitive ? '' : 'i'
 }
 
-/**
- * Format given url, append query to url query string
- *
- * @param  {string} url
- * @param  {string} query
- * @return {string}
- */
-function formatUrl (url, query) {
-  <% if (features.clientUseUrl) { %>
-  url = new URL(url, top.location.href)
-  for (const key in query) {
-    const value = query[key]
-    if (value == null) {
-      continue
-    }
-    if (Array.isArray(value)) {
-      for (const arrayValue of value) {
-        url.searchParams.append(key, arrayValue)
-      }
-      continue
-    }
-    url.searchParams.append(key, value)
-  }
-  url.searchParams.sort()
-  return url.toString()
-  <% } else { %>
-  let protocol
-  const index = url.indexOf('://')
-  if (index !== -1) {
-    protocol = url.substring(0, index)
-    url = url.substring(index + 3)
-  } else if (url.startsWith('//')) {
-    url = url.substring(2)
-  }
-
-  let parts = url.split('/')
-  let result = (protocol ? protocol + '://' : '//') + parts.shift()
-
-  let path = parts.join('/')
-  if (path === '' && parts.length === 1) {
-    result += '/'
-  }
-
-  let hash
-  parts = path.split('#')
-  if (parts.length === 2) {
-    [path, hash] = parts
-  }
-
-  result += path ? '/' + path : ''
-
-  if (query && JSON.stringify(query) !== '{}') {
-    result += (url.split('?').length === 2 ? '&' : '?') + formatQuery(query)
-  }
-  result += hash ? '#' + hash : ''
-
-  return result
-  <% } %>
-}
-<% if (!features.clientUseUrl) { %>
-/**
- * Transform data object to query string
- *
- * @param  {object} query
- * @return {string}
- */
-function formatQuery (query) {
-  return Object.keys(query).sort().map((key) => {
-    const val = query[key]
-    if (val == null) {
-      return ''
-    }
-    if (Array.isArray(val)) {
-      return val.slice().map(val2 => [key, '=', val2].join('')).join('&')
-    }
-    return key + '=' + val
-  }).filter(Boolean).join('&')
-}
-<% } %>
-
 export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
@@ -671,24 +626,15 @@ export function addLifecycleHook(vm, hook, fn) {
   }
 }
 
-export function urlJoin () {
-  return [].slice
-    .call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-    .replace(':/', '://')
-}
+export const urlJoin = joinURL
 
-export function stripTrailingSlash (path) {
-  return path.replace(/\/+$/, '') || '/'
-}
+export const stripTrailingSlash = withoutTrailingSlash
 
-export function isSamePath (p1, p2) {
-  return stripTrailingSlash(p1) === stripTrailingSlash(p2)
-}
+export const isSamePath = _isSamePath
 
 export function setScrollRestoration (newVal) {
   try {
     window.history.scrollRestoration = newVal;
   } catch(e) {}
 }
+

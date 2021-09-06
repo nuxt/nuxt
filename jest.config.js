@@ -41,7 +41,8 @@ module.exports = {
   ],
 
   transformIgnorePatterns: [
-    'node_modules/(?!(@nuxt|nuxt))'
+    'node_modules/(?!(@nuxt|nuxt))',
+    'packages/utils/test/serialize\\.test\\.input\\.js'
   ],
 
   transform: {

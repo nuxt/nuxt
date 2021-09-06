@@ -4,14 +4,14 @@ const coreJsMeta = {
       es6: 'es6',
       es7: 'es7'
     },
-    builtIns: '@babel/compat-data/corejs2-built-ins'
+    builtIns: require.resolve('@babel/compat-data/corejs2-built-ins')
   },
   3: {
     prefixes: {
       es6: 'es',
       es7: 'es'
     },
-    builtIns: 'core-js-compat/data'
+    builtIns: require.resolve('core-js-compat/data')
   }
 }
 
@@ -87,18 +87,17 @@ module.exports = (api, options = {}) => {
     corejs = { version: Number(corejs) }
   }
 
+  if (corejs.proposals === undefined) {
+    corejs.proposals = true
+  }
+
   const defaultTargets = {
     server: { node: 'current' },
     client: { ie: 9 },
     modern: { esmodules: true }
   }
 
-  let { targets = defaultTargets[envName] } = options
-
-  // modern mode can only be { esmodules: true }
-  if (envName === 'modern') {
-    targets = defaultTargets.modern
-  }
+  const { targets = defaultTargets[envName] } = options
 
   const polyfills = []
 
@@ -131,7 +130,16 @@ module.exports = (api, options = {}) => {
       ignoreBrowserslistConfig,
       configPath,
       include,
-      exclude: polyfills.concat(exclude || []),
+      exclude: [
+        ...exclude || [],
+        ...polyfills,
+        // Although preset-env includes class-properties
+        // but webpack 4 doesn't support the syntax when target supports and babel transpilation is skipped
+        // https://github.com/webpack/webpack/issues/9708
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-private-methods',
+        '@babel/plugin-proposal-private-property-in-object'
+      ],
       shippedProposals,
       forceAllTransforms
     }
@@ -147,7 +155,10 @@ module.exports = (api, options = {}) => {
       decoratorsBeforeExport,
       legacy: decoratorsLegacy !== false
     }],
-    [require('@babel/plugin-proposal-class-properties'), { loose: true }]
+    // class-properties and private-methods need same loose value
+    [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+    [require('@babel/plugin-proposal-private-methods'), { loose: true }],
+    [require('@babel/plugin-proposal-private-property-in-object'), { loose: true }]
   )
 
   // Transform runtime, but only for helpers

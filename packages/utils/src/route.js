@@ -1,7 +1,7 @@
 import path from 'path'
-import get from 'lodash/get'
+import { get } from 'lodash'
 import consola from 'consola'
-
+import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { r } from './resolve'
 
 const routeChildren = function (route) {
@@ -56,7 +56,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
       if (route.name.endsWith(`${routeNameSplitter}index`)) {
-        route.path = route.path.replace(/\?$/, '')
+        route.path = route.path.replace(/\?\/?$/, trailingSlash ? '/' : '')
       }
       const names = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       const paths = route.path.split('/')
@@ -80,15 +80,11 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      const indexRoutePath = trailingSlash === false ? '/' : ''
-      const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      const defaultChildRoute = route.children.find(child => child.path === '/' || child.path === '')
       const routeName = route.name
       if (defaultChildRoute) {
-        if (trailingSlash === false) {
-          defaultChildRoute.name = route.name
-        }
         route.children.forEach((child) => {
-          if (child.path !== indexRoutePath) {
+          if (child.path !== defaultChildRoute.path) {
             const parts = child.path.split('/')
             parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
             child.path = parts.join('/')
@@ -201,17 +197,19 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        const isDynamic = key.startsWith('_')
-        route.path += '/' + getRoutePathExtension(isDynamic ? key : encodeURIComponent(decodeURIComponent(key)))
-
-        if (isDynamic && key.length > 1) {
+        route.path += '/' + normalizeURL(getRoutePathExtension(key))
+        if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
       }
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
+      if (trailingSlash && !route.path.endsWith('*')) {
+        route.path = withTrailingSlash(route.path)
+      } else {
+        route.path = withoutTrailingSlash(route.path)
+      }
     }
 
     parent.push(route)

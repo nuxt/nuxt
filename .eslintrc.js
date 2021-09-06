@@ -72,5 +72,21 @@ module.exports = {
     rules: {
       'standard/no-callback-literal': 'off'
     }
+  }, {
+    files: ['**/*.ts'],
+    env: { browser: true, es6: true, node: true },
+    extends: [
+      '@nuxtjs/eslint-config-typescript'
+    ],
+    globals: { Atomics: 'readonly', SharedArrayBuffer: 'readonly' },
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+      ecmaFeatures: { jsx: true },
+      ecmaVersion: 2018,
+      sourceType: 'module'
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 0
+    }
   }]
 }

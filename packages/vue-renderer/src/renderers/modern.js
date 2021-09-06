@@ -1,3 +1,4 @@
+import { isRelative } from 'ufo'
 import { isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
@@ -6,7 +7,7 @@ export default class ModernRenderer extends SSRRenderer {
     super(serverContext)
 
     const { build: { publicPath }, router: { base } } = this.options
-    this.publicPath = isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
+    this.publicPath = isUrl(publicPath) || isRelative(publicPath) ? publicPath : urlJoin(base, publicPath)
   }
 
   get assetsMapping () {

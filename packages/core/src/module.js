@@ -121,11 +121,13 @@ export default class ModuleContainer {
     )
   }
 
-  requireModule (moduleOpts) {
-    return this.addModule(moduleOpts)
+  requireModule (moduleOpts, { paths } = {}) {
+    return this.addModule(moduleOpts, undefined, { paths })
   }
 
-  async addModule (moduleOpts) {
+  async addModule (moduleOpts, arg2, arg3) {
+    // Arg2 was previously used for requireOnce which is ignored now
+    const { paths } = { ...arg2, ...arg3 }
     let src
     let options
     let handler
@@ -154,7 +156,9 @@ export default class ModuleContainer {
     // Resolve handler
     if (!handler) {
       try {
-        handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+        handler = this.nuxt.resolver.requireModule(src, { paths })
+        // pnp support
+        try { (global.__NUXT_PATHS__ || []).push(this.nuxt.resolver.resolvePath(src, { paths })) } catch (_err) {}
       } catch (error) {
         if (error.code !== 'MODULE_NOT_FOUND') {
           throw error

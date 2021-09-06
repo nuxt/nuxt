@@ -17,7 +17,7 @@ const cancelIdleCallback = window.cancelIdleCallback || function (id) {
 
 const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
   entries.forEach(({ intersectionRatio, target: link }) => {
-    if (intersectionRatio <= 0) {
+    if (intersectionRatio <= 0 || !link.__prefetch) {
       return
     }
     link.__prefetch()
@@ -112,7 +112,7 @@ export default {
       if (!this.$root.isPreview) {
         const { href } = this.$router.resolve(this.to, this.$route, this.append)
         if (this.<%= globals.nuxt %>)
-          this.<%= globals.nuxt %>.fetchPayload(href).catch(() => {})
+          this.<%= globals.nuxt %>.fetchPayload(href, true).catch(() => {})
       }
       <% } %>
       <% if (router.linkPrefetchedClass) { %>

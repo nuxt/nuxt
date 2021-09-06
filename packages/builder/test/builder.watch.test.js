@@ -1,24 +1,25 @@
 import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
-import debounce from 'lodash/debounce'
+import { debounce } from 'lodash'
 import { r, isString, isPureObject } from '@nuxt/utils'
-
 import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
-jest.mock('@nuxt/webpack')
 
+jest.mock('lodash', () => ({
+  ...jest.requireActual('lodash'),
+  debounce: jest.fn(fn => fn)
+}))
 jest.mock('chokidar', () => ({
   watch: jest.fn().mockReturnThis(),
   on: jest.fn().mockReturnThis(),
   close: jest.fn().mockReturnThis()
 }))
 jest.mock('upath', () => ({ normalizeSafe: jest.fn(src => src) }))
-jest.mock('lodash/debounce', () => jest.fn(fn => fn))
 jest.mock('@nuxt/utils')
-jest.mock('../src/ignore')
 jest.mock('@nuxt/webpack')
+jest.mock('../src/ignore')
 
 describe('builder: builder watch', () => {
   beforeEach(() => {
@@ -177,10 +178,10 @@ describe('builder: builder watch', () => {
       middleware: '/var/nuxt/src/middleware'
     }
     nuxt.options.build.watch = [
-      '/var/nuxt/src/custom'
+      '~/custom'
     ]
     nuxt.options.build.styleResources = [
-      '/var/nuxt/src/style'
+      '~/style'
     ]
     const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
@@ -188,8 +189,8 @@ describe('builder: builder watch', () => {
     builder.watchClient()
 
     const patterns = [
-      '/var/nuxt/src/custom',
-      '/var/nuxt/src/style'
+      'resolveAlias(~/custom)',
+      'resolveAlias(~/style)'
     ]
 
     expect(builder.createFileWatcher).toBeCalledTimes(3)

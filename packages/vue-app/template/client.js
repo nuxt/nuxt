@@ -15,12 +15,15 @@ import {
   compile,
   getQueryDiff,
   globalHandleError,
-  isSamePath
+  isSamePath,
+  urlJoin
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
-<% if (isFullStatic) { %>import './jsonp'<% } %>
+<% if (isFullStatic) { %>import { installJsonp } from './jsonp'<% } %>
+
+<% if (isFullStatic) { %>installJsonp()<% } %>
 
 <% if (features.fetch) { %>
 // Fetch mixin
@@ -44,6 +47,11 @@ let router
 
 // Try to rehydrate SSR data from window
 const NUXT = window.<%= globals.context %> || {}
+
+const $config = NUXT.config || {}
+if ($config._app) {
+  __webpack_public_path__ = urlJoin($config._app.cdnURL, $config._app.assetsPath)
+}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
@@ -221,10 +229,8 @@ function applySSRData (Component, ssrData) {
 }
 
 // Get matched components
-function resolveComponents (router) {
-  const path = getLocation(router.options.base, router.options.mode)
-
-  return flatMapComponents(router.match(path), async (Component, _, match, key, index) => {
+function resolveComponents (route) {
+  return flatMapComponents(route, async (Component, _, match, key, index) => {
     // If component is not resolved yet, resolve it
     if (typeof Component === 'function' && !Component.options) {
       Component = await Component()
@@ -729,6 +735,13 @@ function hotReloadAPI(_app) {
   let $components = getNuxtChildComponents(_app.<%= globals.nuxt %>, [])
 
   $components.forEach(addHotReload.bind(_app))
+
+  if (_app.context.isHMR) {
+    const Components = getMatchedComponents(router.currentRoute)
+    Components.forEach((Component) => {
+      Component.prototype.constructor = Component
+    })
+  }
 }
 
 function addHotReload ($component, depth) {
@@ -876,7 +889,7 @@ async function mountApp (__app) {
   }
   <% if (features.transitions) { %>
   // Resolve route components
-  const Components = await Promise.all(resolveComponents(router))
+  const Components = await Promise.all(resolveComponents(app.context.route))
 
   // Enable transitions
   _app.setTransitions = _app.$options.nuxt.setTransitions.bind(_app)
@@ -885,7 +898,7 @@ async function mountApp (__app) {
     _lastPaths = router.currentRoute.matched.map(route => compile(route.path)(router.currentRoute.params))
   }
   <% } else if (features.asyncData || features.fetch) { %>
-  await Promise.all(resolveComponents(router))
+  await Promise.all(resolveComponents(app.context.route))
   <% } %>
   // Initialize error handler
   _app.$loading = {} // To avoid error while _app.$nuxt does not exist

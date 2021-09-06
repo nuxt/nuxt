@@ -19,6 +19,11 @@ Object {
     "~": "/var/nuxt/test",
     "~~": "/var/nuxt/test",
   },
+  "app": Object {
+    "assetsPath": "/_nuxt/",
+    "basePath": "/",
+    "cdnURL": null,
+  },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
@@ -33,7 +38,9 @@ Object {
     "cache": false,
     "corejs": "auto",
     "cssSourceMap": false,
-    "devMiddleware": Object {},
+    "devMiddleware": Object {
+      "stats": "none",
+    },
     "extractCSS": false,
     "filenames": Object {
       "app": [Function],
@@ -64,6 +71,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
         "sourceMap": false,
       },
       "cssModules": Object {
@@ -182,7 +192,6 @@ Object {
     "asyncData": true,
     "clientOnline": true,
     "clientPrefetch": true,
-    "clientUseUrl": false,
     "componentAliases": true,
     "componentClientOnly": true,
     "deprecations": true,
@@ -210,8 +219,10 @@ Object {
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
+    "ignoreEnv": false,
     "interval": 0,
     "manifest": true,
+    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": "/_nuxt/static",
@@ -312,7 +323,13 @@ Object {
   },
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
-  "publicRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {
+    "_app": Object {
+      "assetsPath": "/_nuxt/",
+      "basePath": "/",
+      "cdnURL": null,
+    },
+  },
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,

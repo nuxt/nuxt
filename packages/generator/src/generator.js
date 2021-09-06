@@ -6,8 +6,9 @@ import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -29,11 +30,9 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
-      const { build: { publicPath: _publicPath }, router: { base } } = this.options
-      const publicPath = isUrl(_publicPath) ? _publicPath : base
       const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = urlJoin(publicPath, this.options.generate.staticAssets.versionBase)
+      this.staticAssetsBase = urlJoin(this.options.app.cdnURL, this.options.generate.staticAssets.versionBase)
       if (manifest) {
         this.manifest = defu(manifest, {
           routes: []
@@ -64,6 +63,7 @@ export default class Generator {
     if (this.manifest) {
       await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
+      await fsExtra.ensureDir(this.staticAssetsDir)
       await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
     }
@@ -84,6 +84,12 @@ export default class Generator {
     await this.nuxt.callHook('export:before', this)
 
     if (build) {
+      if (!this.builder) {
+        throw new Error(
+          `Could not generate. Make sure a Builder instance is passed to the constructor of \`Generator\` class or \`getGenerator\` function \
+or disable the build step: \`generate({ build: false })\``)
+      }
+
       // Add flag to set process.static
       this.builder.forGenerate()
 
@@ -152,14 +158,14 @@ export default class Generator {
 
   getBuildConfig () {
     try {
-      return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+      return requireModule(path.join(this.options.buildDir, 'nuxt/config.json'))
     } catch (err) {
       return null
     }
   }
 
   getAppRoutes () {
-    return require(path.join(this.options.buildDir, 'routes.json'))
+    return requireModule(path.join(this.options.buildDir, 'routes.json'))
   }
 
   async generateRoutes (routes) {
@@ -169,7 +175,7 @@ export default class Generator {
     this.generatedRoutes = new Set()
 
     routes.forEach(({ route, ...props }) => {
-      route = decodeURI(route)
+      route = decodeURI(this.normalizeSlash(route))
       this.routes.push({ route, ...props })
       // Add routes to the tracked generated routes (for crawler)
       this.generatedRoutes.add(route)
@@ -267,25 +273,31 @@ export default class Generator {
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
-    const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
-    await fsExtra.writeFile(nojekyllPath, '')
+    if (this.options.generate.nojekyll) {
+      const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
+      await fsExtra.writeFile(nojekyllPath, '')
+    }
 
     await this.nuxt.callHook('generate:distCopied', this)
     await this.nuxt.callHook('export:distCopied', this)
+  }
+
+  normalizeSlash (route) {
+    return this.options.router && this.options.router.trailingSlash ? withTrailingSlash(route) : withoutTrailingSlash(route)
   }
 
   decorateWithPayloads (routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
-      routeMap[route] = { route, payload: null }
+      routeMap[route] = { route: this.normalizeSlash(route), payload: null }
     })
     // Fill routeMap with given generate.routes
     generateRoutes.forEach((route) => {
       // route is either a string or like { route : '/my_route/1', payload: {} }
       const path = isString(route) ? route : route.route
       routeMap[path] = {
-        route: path,
+        route: this.normalizeSlash(path),
         payload: route.payload || null
       }
     })
@@ -296,9 +308,7 @@ export default class Generator {
     let html
     const pageErrors = []
 
-    if (this.options.router && this.options.router.trailingSlash && route[route.length - 1] !== '/') {
-      route = route + '/'
-    }
+    route = this.normalizeSlash(route)
 
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
@@ -322,7 +332,6 @@ export default class Generator {
 
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && this.options.render.ssr) {
-        const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
             .replace(this.options.router.base, '/')
@@ -331,7 +340,7 @@ export default class Generator {
             .replace(/\/+$/, '')
             .trim()
 
-          const foundRoute = decodeURI(sanitizedHref + possibleTrailingSlash)
+          const foundRoute = decodeURI(this.normalizeSlash(sanitizedHref))
 
           if (foundRoute.startsWith('/') && !foundRoute.startsWith('//') && !path.extname(foundRoute) && this.shouldGenerateRoute(foundRoute) && !this.generatedRoutes.has(foundRoute)) {
             this.generatedRoutes.add(foundRoute)
@@ -344,13 +353,13 @@ export default class Generator {
       // Save Static Assets
       if (this.staticAssetsDir && renderContext.staticAssets) {
         for (const asset of renderContext.staticAssets) {
-          const assetPath = path.join(this.staticAssetsDir, asset.path)
+          const assetPath = path.join(this.staticAssetsDir, decodeURI(asset.path))
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
         // Add route to manifest (only if no error and redirect)
         if (this.manifest && (!res.error && !res.redirected)) {
-          this.manifest.routes.push(route)
+          this.manifest.routes.push(withoutTrailingSlash(route))
         }
       }
 
@@ -381,8 +390,9 @@ export default class Generator {
     let fileName
 
     if (this.options.generate.subFolders) {
-      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
+      fileName = route === '/404'
+        ? path.join(path.sep, '404.html') // /404 -> /404.html
+        : path.join(route, path.sep, 'index.html') // /about -> /about/index.html
     } else {
       const normalizedRoute = route.replace(/\/$/, '')
       fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')

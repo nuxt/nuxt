@@ -5,7 +5,7 @@
  *                https://router.vuejs.org/api/#router-construction-options
  */
 
-import { RouterOptions, RouteConfig as _RouteConfig } from 'vue-router'
+import type { RouterOptions, RouteConfig as _RouteConfig } from 'vue-router'
 
 type UnionToIntersection<T> = (T extends any ? (k: T) => void : never) extends ((k: infer U) => void) ? U : never
 type RouteConfig = UnionToIntersection<_RouteConfig>
@@ -23,5 +23,6 @@ export interface NuxtOptionsRouter extends RouterOptions {
   linkPrefetchedClass?: string
   middleware?: string | string[]
   prefetchLinks?: boolean
+  prefetchPayloads?: boolean
   trailingSlash?: boolean
 }

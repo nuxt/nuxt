@@ -28,6 +28,7 @@ export { ServerMiddleware } from './server-middleware'
 export interface Configuration extends Record<string, any> {}
 
 export interface NuxtOptions extends Configuration {
+  alias: Record<string, string>
   build: NuxtOptionsBuild
   buildDir: string
   buildModules: NuxtOptionsModule[]
@@ -65,6 +66,7 @@ export interface NuxtOptions extends Configuration {
   server: NuxtOptionsServer
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
+  ssr: boolean
   transition: Transition
   vue: {
     config?: NuxtOptionsVueConfiguration

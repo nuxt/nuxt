@@ -4,6 +4,7 @@ import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { TARGETS, urlJoin } from '@nuxt/utils'
+import { decode, parsePath, withoutTrailingSlash } from 'ufo'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -176,7 +177,7 @@ export default class SSRRenderer extends BaseRenderer {
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
     const inlineScripts = []
 
-    if (renderContext.staticAssetsBase) {
+    if (shouldInjectScripts && renderContext.staticAssetsBase) {
       const preloadScripts = []
       renderContext.staticAssets = []
       const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
@@ -209,7 +210,7 @@ export default class SSRRenderer extends BaseRenderer {
         // Page level payload.js (async loaded for CSR)
         const payloadPath = urlJoin(url, 'payload.js')
         const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
-        const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
+        const routePath = withoutTrailingSlash(decode(parsePath(url).pathname))
         const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
         staticAssets.push({ path: payloadPath, src: payloadScript })
         preloadScripts.push(payloadUrl)

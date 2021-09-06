@@ -3,10 +3,10 @@
  * @nuxt/types/app/vue.d.ts
  */
 
-import Vue, { ComponentOptions } from 'vue'
-import { Middleware } from '..'
+import Vue from 'vue'
+import type { Middleware } from '..'
 
-const options: ComponentOptions<Vue> = {}
+const options: Vue.ComponentOptions<Vue> = {}
 
 // asyncData
 
@@ -61,7 +61,9 @@ options.loading = true
 
 const middlewares: Middleware[] = [
   'foo',
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async () => {}
 ]
 

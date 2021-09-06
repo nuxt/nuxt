@@ -4,7 +4,7 @@
  */
 
 import hash from 'hash-sum'
-import uniq from 'lodash/uniq'
+import { uniq } from 'lodash'
 
 import { isJS, isCSS } from './util'
 
@@ -92,7 +92,7 @@ export default class VueSSRClientPlugin {
 
           // Find all asset modules associated with the same chunk
           assetModules.forEach((m) => {
-            if (m.chunks.some(id => id === cid)) {
+            if (m.chunks.includes(cid)) {
               files.push.apply(files, m.assets.map(fileToIndex))
             }
           })

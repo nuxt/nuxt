@@ -8,7 +8,7 @@ import { Options as AutoprefixerOptions } from 'autoprefixer'
 import { Options as FileLoaderOptions } from 'file-loader'
 import { Options as HtmlMinifierOptions } from 'html-minifier'
 import * as Less from 'less'
-import { Options as SassOptions } from 'sass'
+import { Options as SassOptions } from 'sass-loader'
 import { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
 import { Plugin as PostcssPlugin } from 'postcss'
 import { Options as PugOptions } from 'pug'
@@ -26,25 +26,29 @@ import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
 
 type CssLoaderUrlFunction = (url: string, resourcePath: string) => boolean
-type CssLoaderImportFunction = (parsedImport: string, resourcePath: string) => boolean
+type CssLoaderImportFunction = (url: string, media: string, resourcePath: string) => boolean
+
 type CssLoaderMode = 'global' | 'local' | 'pure'
 interface CssLoaderModulesOptions {
-  context?: string
-  exportLocalsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
-  exportOnlyLocals?: boolean
-  getLocalIdent?: (context: string, localIdentName: string, localName: string, options: CssLoaderModulesOptions) => string
-  localIdentHashPrefix?: string
-  localIdentName?: string
-  localIdentRegExp?: string | RegExp
-  mode?: CssLoaderMode
+  compileType?: 'module' | 'icss',
+  mode?: CssLoaderMode,
+  auto?: Boolean | RegExp | ((resourcePath: string) => boolean),
+  exportGlobals?: boolean,
+  localIdentName?: string,
+  context?: string,
+  localIdentHashPrefix?: string,
+  namedExport?: boolean,
+  exportLocalsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly',
+  exportOnlyLocals?: boolean,
 }
 
 interface CssLoaderOptions {
+  url?: boolean | CssLoaderUrlFunction
   import?: boolean | CssLoaderImportFunction
-  importLoaders?: number
   modules?: boolean | CssLoaderMode | CssLoaderModulesOptions
   sourceMap?: boolean
-  url?: boolean | CssLoaderUrlFunction
+  importLoaders?: number
+  esModule?: boolean
 }
 
 interface UrlLoaderOptions {
@@ -90,6 +94,7 @@ interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof Transfor
   cacheDirectory?: boolean
   cacheIdentifier?: string
   customize?: string | null
+  // eslint-disable-next-line @typescript-eslint/ban-types
   presets?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
   plugins?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv) => NonNullable<TransformOptions['plugins']>) | TransformOptions['plugins']
 }
@@ -153,9 +158,10 @@ export interface NuxtOptionsBuild {
   friendlyErrors?: boolean
   hardSource?: boolean
   hotMiddleware?: WebpackHotMiddlewareOptions & { client?: WebpackHotMiddlewareClientOptions }
-  html?: { minify: HtmlMinifierOptions }
+  html?: { minify: false | HtmlMinifierOptions }
   indicator?: boolean
   loaders?: NuxtOptionsLoaders
+  loadingScreen?: boolean | any
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean
@@ -171,6 +177,7 @@ export interface NuxtOptionsBuild {
   }
   ssr?: boolean
   standalone?: boolean
+  stats?: WebpackConfiguration['stats']
   templates?: any
   terser?: TerserPluginOptions | boolean
   transpile?: Array<string | RegExp | ((context: NuxtWebpackEnv) => string | RegExp | undefined)>

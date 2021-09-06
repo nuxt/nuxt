@@ -1,5 +1,3 @@
-#!/usr/bin/env node -r esm
-
 import consola from 'consola'
 
 import Package from './package.js'

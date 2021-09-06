@@ -1,6 +1,6 @@
 import util from 'util'
 import consola from 'consola'
-import get from 'lodash/get'
+import { get } from 'lodash'
 import { common } from '../options'
 
 export default {

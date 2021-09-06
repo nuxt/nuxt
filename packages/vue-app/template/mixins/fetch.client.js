@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, createGetCounter } from '../utils'
 
 const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.fetchKey
 const nuxtState = window.<%= globals.context %>
@@ -38,7 +38,7 @@ function created() {
 
   // Hydrate component
   this._hydrated = true
-  this._fetchKey = +this.$vnode.elm.dataset.fetchKey
+  this._fetchKey = this.$vnode.elm.dataset.fetchKey
   const data = nuxtState.fetch[this._fetchKey]
 
   // If fetch error
@@ -64,12 +64,28 @@ function createdFullStatic() {
     return
   }
   this._hydrated = true
-  this._fetchKey = this.<%= globals.nuxt %>._payloadFetchIndex++
+
+  const defaultKey = this.$options._scopeId || this.$options.name || ''
+  const getCounter = createGetCounter(this.<%= globals.nuxt %>._fetchCounters, defaultKey)
+
+  if (typeof this.$options.fetchKey === 'function') {
+    this._fetchKey = this.$options.fetchKey.call(this, getCounter)
+  } else {
+    const key = 'string' === typeof this.$options.fetchKey ? this.$options.fetchKey : defaultKey
+    this._fetchKey = key ? key + ':' + getCounter(key) : String(getCounter(key))
+  }
+
   const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
 
   // If fetch error
   if (data && data._error) {
     this.$fetchState.error = data._error
+    return
+  }
+
+  // If there is a missing payload
+  if (!data) {
+    this.$fetch()
     return
   }
 
