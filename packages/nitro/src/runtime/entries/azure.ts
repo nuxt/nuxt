@@ -2,7 +2,7 @@ import '#polyfill'
 import { parseURL } from 'ufo'
 import { localCall } from '../server'
 
-export default async function handle (context, req) {
+export async function handle (context, req) {
   let url: string
   if (req.headers['x-ms-original-url']) {
     // This URL has been proxied as there was no static file matching it.
