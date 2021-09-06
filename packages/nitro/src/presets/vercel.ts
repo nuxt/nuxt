@@ -8,7 +8,7 @@ export const vercel: NitroPreset = extendPreset(node, {
   output: {
     dir: '{{ _nuxt.rootDir }}/.vercel_build_output',
     serverDir: '{{ output.dir }}/functions/node/server',
-    publicDir: '{{ output.dir }}/public'
+    publicDir: '{{ output.dir }}/static'
   },
   ignore: [
     'vercel.json'
