@@ -66,8 +66,10 @@ export function setupNitroBridge () {
   // Set up webpack plugin for node async loading
   nuxt.hook('webpack:config', (webpackConfigs) => {
     const serverConfig = webpackConfigs.find(config => config.name === 'server')
-    serverConfig.plugins = serverConfig.plugins || []
-    serverConfig.plugins.push(new AsyncLoadingPlugin())
+    if (serverConfig) {
+      serverConfig.plugins = serverConfig.plugins || []
+      serverConfig.plugins.push(new AsyncLoadingPlugin())
+    }
   })
 
   // Nitro client plugin
