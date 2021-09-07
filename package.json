@@ -32,7 +32,7 @@
     "@types/chai": "^4.2.21",
     "@types/jsdom": "^16",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^14.17.14",
+    "@types/node": "^14.17.15",
     "@types/object-hash": "^2",
     "@vue/server-renderer": "^3.2.9",
     "chai": "^4.3.4",

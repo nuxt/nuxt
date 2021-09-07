@@ -1401,10 +1401,10 @@ __metadata:
     "@types/node-fetch": ^2.5.12
     "@vue/composition-api": ^1.1.4
     fs-extra: ^10.0.0
-    node-fetch: ^2.6.1
+    node-fetch: ^2.6.2
     nuxi: ^0.10.0
     nuxt-swc: ^0.0.3
-    nuxt-vite: ^0.2.2
+    nuxt-vite: ^0.2.3
     ufo: ^0.7.9
     unbuild: ^0.4.2
     upath: ^2.0.1
@@ -1509,7 +1509,7 @@ __metadata:
     jiti: ^1.11.0
     listhen: ^0.2.4
     mime: ^2.5.2
-    node-fetch: ^2.6.1
+    node-fetch: ^2.6.2
     ohmyfetch: ^0.3.1
     ora: ^5.4.1
     pretty-bytes: ^5.6.0
@@ -1553,7 +1553,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": ^0.10.0
     "@types/debounce": ^1.2.0
-    "@vitejs/plugin-vue": ^1.6.0
+    "@vitejs/plugin-vue": ^1.6.1
     "@vue/compiler-sfc": ^3.2.9
     chokidar: ^3.5.2
     consola: ^2.15.3
@@ -2246,10 +2246,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.14":
-  version: 14.17.14
-  resolution: "@types/node@npm:14.17.14"
-  checksum: 66ed675a324fdddc4f693f1b240c0d81a9f53e1c68f7de8b84d02d65c0b447f9fa30d318481d04e1502f68dd37091b5cadc59633b57246582ad25e3fa835cd7d
+"@types/node@npm:^14.17.15":
+  version: 14.17.15
+  resolution: "@types/node@npm:14.17.15"
+  checksum: e0840304db236027e822ef1e149de433afd20d2553699cdc2ce651d107a77646c6eaaeaec8c348eabdc05169440dbc2cf069791bef65ca4b6e5ee4412e69c898
   languageName: node
   linkType: hard
 
@@ -2558,12 +2558,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "@vitejs/plugin-vue@npm:1.6.0"
+"@vitejs/plugin-vue@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "@vitejs/plugin-vue@npm:1.6.1"
   peerDependencies:
     "@vue/compiler-sfc": ^3.2.6
-  checksum: b055381edb754fb169022991447dfc95fa0bfd47acc8c981fc6958060b590388928149a7bd68d87e02d902e96c5dddad3ae13500c814786eb8349a088b9c903c
+  checksum: 73997d619d8d334d64ec7a2d99920f4c58c3d101cba6a434afd6d433225fb136de7f7ff9b880ac671d8be337550959717766e730a197847106be79f5147ac229
   languageName: node
   linkType: hard
 
@@ -9405,6 +9405,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"node-fetch@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "node-fetch@npm:2.6.2"
+  checksum: de367eae1dfbc0e12283c1cf92256ea7fba7eac8655e2e51ebb217727162396fc6cf24689ef9fc6accf075e3991e2ffaa061f7cfaa958215329649b2297ff06d
+  languageName: node
+  linkType: hard
+
 "node-forge@npm:^0.10.0":
   version: 0.10.0
   resolution: "node-forge@npm:0.10.0"
@@ -9791,7 +9798,7 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.21
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.14
+    "@types/node": ^14.17.15
     "@types/object-hash": ^2
     "@vue/server-renderer": ^3.2.9
     chai: ^4.3.4
@@ -9830,9 +9837,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"nuxt-vite@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "nuxt-vite@npm:0.2.2"
+"nuxt-vite@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "nuxt-vite@npm:0.2.3"
   dependencies:
     "@vitejs/plugin-legacy": ^1.5.2
     consola: ^2.15.3
@@ -9845,8 +9852,8 @@ fsevents@~2.3.2:
     ufo: ^0.7.9
     upath: ^2.0.1
     vite: ^2.5.1
-    vite-plugin-vue2: ^1.8.1
-  checksum: 7277961cf35fb4b9b71ce75b8c6db88368b7b46aa60f9415392a925967c18d6961f89fea9e98534a664b194ff463decfa8c6241a7fbf999fab235863438e3f70
+    vite-plugin-vue2: ^1.8.2
+  checksum: 404afee636ce7f3146870a93cef6192c3b8163c5612d03ed809c6ea00f79b66286ccf82cfc141d9fc085a9d2d5a6988a60139a1b00329799b6cce6bc9b6f4982
   languageName: node
   linkType: hard
 
@@ -13733,9 +13740,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite-plugin-vue2@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "vite-plugin-vue2@npm:1.8.1"
+"vite-plugin-vue2@npm:^1.8.2":
+  version: 1.8.2
+  resolution: "vite-plugin-vue2@npm:1.8.2"
   dependencies:
     "@babel/core": ^7.11.6
     "@babel/parser": ^7.13.10
@@ -13761,7 +13768,7 @@ fsevents@~2.3.2:
   peerDependencies:
     vite: ^2.0.0-beta.23
     vue-template-compiler: ^2.2.0
-  checksum: ee1d9a30db8f08b7fec7b609a1d58eb8336f0d68de4d4da5df354a59841d9e800e798e70c7efe91fb307ec17dd5e147f9f6ef72a7d8b3d95a6912547d7e7f881
+  checksum: 71e0195b2f76ac06beb8bb69cb58a14edd1fa7369f32acab84fe56e9cae0267be75514354564dd95e3c355e1ce370e890a13f7740e3b180d6c1666e74cab5770
   languageName: node
   linkType: hard
 

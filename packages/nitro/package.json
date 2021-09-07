@@ -51,7 +51,7 @@
     "jiti": "^1.11.0",
     "listhen": "^0.2.4",
     "mime": "^2.5.2",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.2",
     "ohmyfetch": "^0.3.1",
     "ora": "^5.4.1",
     "pretty-bytes": "^5.6.0",
