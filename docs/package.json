@@ -1,10 +1,11 @@
 {
-  "private": true,
   "name": "docs",
+  "private": true,
   "scripts": {
     "dev": "yarn gendocs && nuxt dev",
     "build": "yarn gendocs && nuxt generate --force-build",
-    "gendocs": "unbuild && jiti ./scripts/gen-docs.ts"
+    "build:ci": "yarn add @nuxt/kit@npm:@nuxt/kit-edge && yarn build",
+    "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
     "@docus/app": "^1.1.3",
@@ -12,13 +13,13 @@
     "@docus/social-image": "^1.0.3",
     "@docus/theme": "^1.1.3",
     "@docus/twitter": "^1.0.4",
+    "@nuxt/kit": "link:../packages/kit",
     "@nuxt/typescript-build": "^2.1.0",
     "fs-extra": "^10.0.0",
     "jiti": "^1.11.0",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
-    "unbuild": "^0.4.2",
     "untyped": "^0.2.8",
     "upath": "^2.0.1"
   }

@@ -111,7 +111,7 @@ async function generateDocs ({ outDir }) {
   await rm(outDir, { recursive: true }).catch(() => {})
   await mkdirp(outDir)
 
-  const rootSchema = require('../schema/config.schema.json') as Schema
+  const rootSchema = require('@nuxt/kit/schema/config.schema.json') as Schema
 
   const keys = Object.keys(rootSchema.properties).sort()
   let ctor = 1

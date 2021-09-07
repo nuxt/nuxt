@@ -1462,6 +1462,10 @@
     untyped "^0.2.5"
     upath "^2.0.1"
 
+"@nuxt/kit@link:../packages/kit":
+  version "0.0.0"
+  uid ""
+
 "@nuxt/loading-screen@^2.0.4":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@nuxt/loading-screen/-/loading-screen-2.0.4.tgz#756abd861f77c57001be4d21d47534723afb4f3a"
@@ -5625,6 +5629,11 @@ hookable@^4.4.1:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/hookable/-/hookable-4.4.1.tgz#3d7154ac7e1f6f147e50fef583832f2645b9f04f"
   integrity sha512-KWjZM8C7IVT2qne5HTXjM6R6VnRfjfRlf/oCnHd+yFxoHO1DzOl6B9LzV/VqGQK/IrFewq+EG+ePVrE9Tpc3fg==
+
+hookable@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/hookable/-/hookable-5.0.0.tgz#bac6f1d4b56e3f590f21cfe3f813731372c0c69f"
+  integrity sha512-IqoJ8oXCNTUtNfqwbUQvLd+6ebVXk5qqGpSMOe4BS514vd4bEEH+hd9lva48mbbbe9q4eFKmsOViTZkr7ludHg==
 
 hsl-regex@^1.0.0:
   version "1.0.0"
@@ -10690,6 +10699,11 @@ ufo@^0.7.5, ufo@^0.7.7:
   resolved "https://registry.yarnpkg.com/ufo/-/ufo-0.7.7.tgz#0062f9e5e790819b0fb23ca24d7c63a4011c036a"
   integrity sha512-N25aY3HBkJBnahm+2l4JRBBrX5I+JPakF/tDHYDTjd3wUR7iFLdyiPhj8mBwBz21v728BKwM9L9tgBfCntgdlw==
 
+ufo@^0.7.9:
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/ufo/-/ufo-0.7.9.tgz#0268e3734b413c9ed6f3510201f42372821b875c"
+  integrity sha512-6t9LrLk3FhqTS+GW3IqlITtfRB5JAVr5MMNjpBECfK827W+Vh5Ilw/LhTcHWrt6b3hkeBvcbjx4Ti7QVFzmcww==
+
 uglify-js@^3.5.1:
   version "3.14.1"
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.14.1.tgz#e2cb9fe34db9cb4cf7e35d1d26dfea28e09a7d06"
@@ -10749,6 +10763,11 @@ unctx@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/unctx/-/unctx-1.0.1.tgz#e976394f22ab00ac4088d86ebfc639861ed3ec24"
   integrity sha512-LTxBg2tHfEFwpiIGIM7MOODR1hPiO0njHRIbb6fpxL6czd/rkaSeWoaLAVUDP8qDF1Xvq/wO3Eyp4B8yogiObA==
+
+unctx@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/unctx/-/unctx-1.0.2.tgz#d8d9c83a0965aa277f61058c94548fcee6861e48"
+  integrity sha512-qxRfnQZWJqkg180JeOCJEvtjj5/7wnWVqkNHln8muY5/z8kMWBFqikFBPwIPCQrZJ+jtaSWkVHJkuHUAXls6zw==
 
 unfetch@^4.2.0:
   version "4.2.0"
