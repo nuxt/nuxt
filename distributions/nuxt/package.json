@@ -34,7 +34,7 @@
     "@nuxt/babel-preset-app": "2.15.6",
     "@nuxt/builder": "2.15.6",
     "@nuxt/cli": "2.15.6",
-    "@nuxt/components": "^2.2.0",
+    "@nuxt/components": "^2.2.1",
     "@nuxt/config": "2.15.6",
     "@nuxt/core": "2.15.6",
     "@nuxt/generator": "2.15.6",
