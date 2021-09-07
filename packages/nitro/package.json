@@ -67,7 +67,7 @@
     "unstorage": "^0.2.3",
     "upath": "^2.0.1",
     "vue": "3.2.9",
-    "vue-bundle-renderer": "^0.2.10",
+    "vue-bundle-renderer": "^0.3.0",
     "vue-server-renderer": "^2.6.14"
   },
   "devDependencies": {

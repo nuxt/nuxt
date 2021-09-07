@@ -1526,7 +1526,7 @@ __metadata:
     unstorage: ^0.2.3
     upath: ^2.0.1
     vue: 3.2.9
-    vue-bundle-renderer: ^0.2.10
+    vue-bundle-renderer: ^0.3.0
     vue-server-renderer: ^2.6.14
   languageName: unknown
   linkType: soft
@@ -13783,12 +13783,12 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.2.10":
-  version: 0.2.10
-  resolution: "vue-bundle-renderer@npm:0.2.10"
+"vue-bundle-renderer@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "vue-bundle-renderer@npm:0.3.0"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: a1c462deca857f1ce333cf8be72ab24306ba015f33190e00c0b6d5821783668001b1a1c13861e277b7452d625ac7cdf642fa2ceeb8f1d2bedb5e632a1275cede
+  checksum: 11600caea3afa7f8a4eeeb61c587d6b3558f32184446c3f1f22fade46a2dd94662371f125618c02a40095ae00437dafbabddc07a59b95dee063bf71d255d43ab
   languageName: node
   linkType: hard
 
