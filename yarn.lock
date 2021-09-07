@@ -1403,8 +1403,8 @@ __metadata:
     fs-extra: ^10.0.0
     node-fetch: ^2.6.2
     nuxi: ^0.10.0
-    nuxt-swc: ^0.0.3
-    nuxt-vite: ^0.2.3
+    nuxt-swc: ^0.1.0
+    nuxt-vite: ^0.2.4
     ufo: ^0.7.9
     unbuild: ^0.4.2
     upath: ^2.0.1
@@ -1563,7 +1563,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: ^0.4.2
     upath: ^2.0.1
-    vite: ^2.5.3
+    vite: ^2.5.4
     vue: 3.2.9
   languageName: unknown
   linkType: soft
@@ -2543,9 +2543,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:^1.5.2":
-  version: 1.5.2
-  resolution: "@vitejs/plugin-legacy@npm:1.5.2"
+"@vitejs/plugin-legacy@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "@vitejs/plugin-legacy@npm:1.5.3"
   dependencies:
     "@babel/standalone": ^7.14.9
     core-js: ^3.16.0
@@ -2554,7 +2554,7 @@ __metadata:
     systemjs: ^6.10.2
   peerDependencies:
     vite: ^2.0.0
-  checksum: 0ac04e33f4eec4a83243d0a311c50f68942f0e882676930c5f9edce083764511804288b0d4916ea9125516c7b3f2618ce54c141141773bdbb1a9a6ff5a6fb266
+  checksum: 6175c29ca4ab3f4b2f6c6510bd8234983ee6301e68befd32186dfeb5fe66dc46a56681efdf939e960b2b67dd72187ea0f117295c9c4b94a107e94ee60fb49529
   languageName: node
   linkType: hard
 
@@ -4741,6 +4741,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colorette@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "colorette@npm:1.4.0"
+  checksum: 01c3c16058b182a4ab4c126a65a75faa4d38a20fa7c845090b25453acec6c371bb2c5dceb0a2338511f17902b9d1a9af0cadd8509c9403894b79311032c256c3
+  languageName: node
+  linkType: hard
+
 "columnify@npm:^1.5.4":
   version: 1.5.4
   resolution: "columnify@npm:1.5.4"
@@ -6150,9 +6157,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^36.0.8":
-  version: 36.0.8
-  resolution: "eslint-plugin-jsdoc@npm:36.0.8"
+"eslint-plugin-jsdoc@npm:^36.1.0":
+  version: 36.1.0
+  resolution: "eslint-plugin-jsdoc@npm:36.1.0"
   dependencies:
     "@es-joy/jsdoccomment": 0.10.8
     comment-parser: 1.2.4
@@ -6165,7 +6172,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: f7251f71bb225d8f852f6ab31aaf7fcb3be1265a034b2a6256b1163b47f5f7ce5d89b4813310bd6214305b79daee6e96ca53af5b5a809a8b7aad914630341922
+  checksum: 5152a252a1c1fa8773a22aa0a69ab1c52a9334b12f0f3667548c6478d2d9acf970042b55ff2c48fa5165fab008cf20883f18a173fc5d6ba8f813074618b70ece
   languageName: node
   linkType: hard
 
@@ -9770,7 +9777,7 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^2.3.0
-    colorette: ^1.3.0
+    colorette: ^1.4.0
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     destr: ^1.1.0
@@ -9808,7 +9815,7 @@ fsevents@~2.3.2:
     chai: ^4.3.4
     esbuild: ^0.12.25
     eslint: ^7.32.0
-    eslint-plugin-jsdoc: ^36.0.8
+    eslint-plugin-jsdoc: ^36.1.0
     execa: ^5.1.1
     globby: ^11.0.4
     jiti: ^1.11.0
@@ -9830,22 +9837,22 @@ fsevents@~2.3.2:
   languageName: unknown
   linkType: soft
 
-"nuxt-swc@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "nuxt-swc@npm:0.0.3"
+"nuxt-swc@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "nuxt-swc@npm:0.1.0"
   dependencies:
     "@swc/core": ^1.2.58
     defu: ^5.0.0
     swc-loader: ^0.1.14
-  checksum: 22afbeec498eb2beffd652bf28e013a1e96b473d10702293b77d6264d6f21f47597a8206b25ebc5b81862437fa0277053a97bbd2cc5c7103f2bdc96959338609
+  checksum: a5791dfabc855b6f6b7a68593c89b0def3f62f984502194cd8f94be42a8f38702e0565c1a1e47e49ba0a259b0bceacdb2e962e8d6c714b6e8e6a7a6b260795cd
   languageName: node
   linkType: hard
 
-"nuxt-vite@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "nuxt-vite@npm:0.2.3"
+"nuxt-vite@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "nuxt-vite@npm:0.2.4"
   dependencies:
-    "@vitejs/plugin-legacy": ^1.5.2
+    "@vitejs/plugin-legacy": ^1.5.3
     consola: ^2.15.3
     fs-extra: ^10.0.0
     postcss-import: ^14.0.2
@@ -9855,9 +9862,9 @@ fsevents@~2.3.2:
     semver: ^7.3.5
     ufo: ^0.7.9
     upath: ^2.0.1
-    vite: ^2.5.1
+    vite: ^2.5.4
     vite-plugin-vue2: ^1.8.2
-  checksum: 404afee636ce7f3146870a93cef6192c3b8163c5612d03ed809c6ea00f79b66286ccf82cfc141d9fc085a9d2d5a6988a60139a1b00329799b6cce6bc9b6f4982
+  checksum: 95358602acab77ab8131eac800e58fe597ef57a32726c57efb52286ddbb9423420facc11cec98460a2069774e494dc04b1967607cd928b0bbf17bb132883e6bd
   languageName: node
   linkType: hard
 
@@ -13776,9 +13783,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.1, vite@npm:^2.5.3":
-  version: 2.5.3
-  resolution: "vite@npm:2.5.3"
+"vite@npm:^2.5.4":
+  version: 2.5.4
+  resolution: "vite@npm:2.5.4"
   dependencies:
     esbuild: ^0.12.17
     fsevents: ~2.3.2
@@ -13790,7 +13797,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 118beba819a72af9d7ccf674583837d44794a08694f3a99ee5760add9e8df221d3db36f430db5e88d43fd4b094e213aa0d09998aef91b861e17ed0544b8a1864
+  checksum: 328bd378791d56c49570c8aa80a9d1a42dd86e7a0bed4e8462af57d586545d5296a81d69208a626b574e27bdca59e71c36db8f3b7020e6acb0f4c4ba7601eae4
   languageName: node
   linkType: hard
 
