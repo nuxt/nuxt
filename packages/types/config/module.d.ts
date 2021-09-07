@@ -57,7 +57,10 @@ interface ModuleThis {
   // eslint-disable-next-line no-use-before-define
   addModule (moduleOpts: NuxtOptionsModule, paths?: string[]): Promise<any>
   options: NuxtOptions
-  nuxt: any // TBD
+  nuxt: {
+    options: NuxtOptions
+    [key: string]: any // TBD
+  }
   [key: string]: any // TBD
 }
 
