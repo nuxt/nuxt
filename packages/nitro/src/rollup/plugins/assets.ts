@@ -1,9 +1,9 @@
 import { promises as fsp } from 'fs'
+import type { Plugin } from 'rollup'
 import createEtag from 'etag'
 import mime from 'mime'
 import { resolve } from 'upath'
 import globby from 'globby'
-import type { Plugin } from 'rollup'
 import virtual from './virtual'
 
 export interface AssetOptions {
@@ -16,60 +16,26 @@ export interface AssetOptions {
   }
 }
 
+interface Asset {
+  fsPath: string,
+  meta: {
+    type?: string,
+    etag?: string,
+    mtime?: string
+  }
+}
+
 export function assets (opts: AssetOptions): Plugin {
-  type Asset = {
-    fsPath: string,
-    meta: {
-      type?: string,
-      etag?: string,
-      mtime?: string
-    }
-  }
-
-  const assetUtils = `
-export function readAsset (id) {
-  return getAsset(id).read()
-}
-
-export function statAsset (id) {
-  return getAsset(id).meta
-}
-`
-
   if (!opts.inline) {
-    return virtual({
-      '#assets': `
-import { statSync, promises as fsp } from 'fs'
-import { resolve } from 'path'
-
-const dirs = ${JSON.stringify(opts.dirs)}
-
-${assetUtils}
-
-export function getAsset (id) {
-  for (const dirname in dirs) {
-    if (id.startsWith(dirname + '/')) {
-      const dirOpts = dirs[dirname]
-      const path = resolve(dirOpts.dir, id.substr(dirname.length + 1))
-      let stat = statSync(path)
-      const asset = {
-        read: () => fsp.readFile(path, 'utf-8'),
-        meta: {
-          mtime: stat.mtime
-        }
-      }
-      return asset
-    }
-  }
-  throw new Error('Asset dir not found: ' + id)
-}
-      `
-    })
+    // Development: Use filesystem
+    return virtual({ '#assets': getAssetsDev(opts.dirs) })
   }
 
+  // Production: Bundle assets
   return virtual({
     '#assets': {
       async load () {
+        // Scan all assets
         const assets: Record<string, Asset> = {}
         for (const assetdir in opts.dirs) {
           const dirOpts = opts.dirs[assetdir]
@@ -88,17 +54,55 @@ export function getAsset (id) {
             }
           }
         }
-        const inlineAssets = `const assets = {\n${Object.keys(assets).map(id =>
-          `  ['${id}']: {\n    read: () => import('${assets[id].fsPath}').then(r => r.default || r),\n    meta: ${JSON.stringify(assets[id].meta)}\n  }`
-        ).join(',\n')}\n}`
-        return `${inlineAssets}\n${assetUtils}
-export function getAsset (id) {
-  if (!assets[id]) {
-    throw new Error('Asset not found : ' + id)
-  }
-  return assets[id]
-}`
+        return getAssetProd(assets)
       }
     }
   })
+}
+
+function getAssetsDev (dirs) {
+  return `
+import { createStorage } from 'unstorage'
+import fsDriver from 'unstorage/drivers/fs'
+
+const dirs = ${JSON.stringify(dirs)}
+
+export const assets = createStorage()
+
+for (const [dirname, dirOpts] of Object.entries(dirs)) {
+  assets.mount(dirname, fsDriver({ base: dirOpts.dir }))
+}
+  `
+}
+
+function normalizeKey (key) {
+  return key.replace(/[/\\\\]/g, ':').replace(/^:|:$/g, '')
+}
+
+function getAssetProd (assets: Record<string, Asset>) {
+  return `
+const _assets = {\n${Object.entries(assets).map(([id, asset]) =>
+  `  ['${normalizeKey(id)}']: {\n    import: () => import('${asset.fsPath}').then(r => r.default || r),\n    meta: ${JSON.stringify(asset.meta)}\n  }`
+).join(',\n')}\n}
+
+${normalizeKey.toString()}
+
+export const assets = {
+  getKeys() {
+    return Object.keys(_assets)
+  },
+  hasItem (id) {
+    id = normalizeKey(id)
+    return id in _assets
+  },
+  getItem (id) {
+    id = normalizeKey(id)
+    return _assets[id] ? _assets[id].import() : null
+  },
+  getMeta (id) {
+    id = normalizeKey(id)
+    return _assets[id] ? _assets[id].meta : {}
+  }
+}
+`
 }

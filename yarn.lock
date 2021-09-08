@@ -1523,7 +1523,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: ^0.4.2
     unenv: ^0.3.3
-    unstorage: ^0.2.3
+    unstorage: ^0.2.5
     upath: ^2.0.1
     vue: 3.2.10
     vue-bundle-renderer: ^0.3.0
@@ -4532,7 +4532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:3.5.2, chokidar@npm:^3.5.1, chokidar@npm:^3.5.2":
+"chokidar@npm:3.5.2, chokidar@npm:^3.5.2":
   version: 3.5.2
   resolution: "chokidar@npm:3.5.2"
   dependencies:
@@ -7732,9 +7732,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"ioredis@npm:^4.27.3":
-  version: 4.27.7
-  resolution: "ioredis@npm:4.27.7"
+"ioredis@npm:^4.27.9":
+  version: 4.27.9
+  resolution: "ioredis@npm:4.27.9"
   dependencies:
     cluster-key-slot: ^1.1.0
     debug: ^4.3.1
@@ -7747,7 +7747,7 @@ fsevents@~2.3.2:
     redis-errors: ^1.2.0
     redis-parser: ^3.0.0
     standard-as-callback: ^2.1.0
-  checksum: 42c2f242b3c91202578415dc39fbc9e9ecff58f19acbd91b654cbe12877181e18dbeb6c12b3e71225a7cc928cc4e34f536953375978093c7c1a6f7417a9dfd84
+  checksum: 0472f20366759fe17c71c42105869dbaba99ad54e3fc14428cd6e1d28f8767ff1aea03bfc0228b29bf6030d7ae1ac856941ab6698c850a9b27fd8a17328e7f9f
   languageName: node
   linkType: hard
 
@@ -9987,17 +9987,6 @@ fsevents@~2.3.2:
     define-properties: ^1.1.3
     es-abstract: ^1.18.2
   checksum: 1a2f1e9d0bcfc299b8491170a50e6e7ca23392641d7781a8528e96c72f0013ba7ee731792ff8586c8eaec0328acda16c59622924c82c58bd0eb5c4ee67794856
-  languageName: node
-  linkType: hard
-
-"ohmyfetch@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "ohmyfetch@npm:0.2.0"
-  dependencies:
-    destr: ^1.1.0
-    node-fetch: ^2.6.1
-    ufo: ^0.6.10
-  checksum: 58afffe238610d2b8829d1f90949cdc776a0d531cd4b9f88f7d0c4ab82550179b810e9b0e0197212216a1722e630149421b4e2b710fa92ed72fa739c28f935cb
   languageName: node
   linkType: hard
 
@@ -13418,14 +13407,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.6.10":
-  version: 0.6.11
-  resolution: "ufo@npm:0.6.11"
-  checksum: cf73c7f3e62413237cb8b763b2ae39ec9b83a630644a9ceac721c6394c62d562f1d7deb117e7b0c35f5a29a4c88b5e67a8c1ebf0d41543b8acc4c44e5dd607df
-  languageName: node
-  linkType: hard
-
-"ufo@npm:^0.7.5, ufo@npm:^0.7.9":
+"ufo@npm:^0.7.9":
   version: 0.7.9
   resolution: "ufo@npm:0.7.9"
   checksum: 8a141889382dfe9fe42af625316ea0bc60e287ed81275befa699d3c099af44232720ea7b72d5ea738e4766e79adb8dc901bd7f788f9c2057d0ec2389d9f06df5
@@ -13603,21 +13585,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "unstorage@npm:0.2.3"
+"unstorage@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "unstorage@npm:0.2.5"
   dependencies:
     anymatch: ^3.1.1
-    chokidar: ^3.5.1
+    chokidar: ^3.5.2
     destr: ^1.1.0
     h3: ^0.2.10
-    ioredis: ^4.27.3
+    ioredis: ^4.27.9
     listhen: ^0.2.4
     mri: ^1.1.6
-    ohmyfetch: ^0.2.0
-    ufo: ^0.7.5
-    ws: ^7.4.5
-  checksum: 88996f454624a8da10c140f28441376ceee84047bff7aad7c9df7b8bfd8f4768042ce97c63713bad1c5d42c66c1fad367c7e9727b7241260ec75e04350f5b785
+    ohmyfetch: ^0.3.1
+    ufo: ^0.7.9
+    ws: ^8.2.1
+  checksum: 214042a12eaf4ac9b17ee35058681330f57c7d9570f0e30cb46fd96b9d0952ff73296e6bf43c40162d7f4f86df29b249d2d1df7db0d7c1d9d98b72c2a0b50ed8
   languageName: node
   linkType: hard
 
@@ -14327,7 +14309,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.3.1, ws@npm:^7.4.5, ws@npm:^7.4.6":
+"ws@npm:^7.3.1, ws@npm:^7.4.6":
   version: 7.5.3
   resolution: "ws@npm:7.5.3"
   peerDependencies:
@@ -14339,6 +14321,21 @@ fsevents@~2.3.2:
     utf-8-validate:
       optional: true
   checksum: 423dc0d859fa74020f5555140905b862470a60ea1567bb9ad55a087263d7718b9c94f69678be1cee9868925c570f1e6fc79d09f90c39057bc63fa2edbb2c547b
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "ws@npm:8.2.1"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ^5.0.2
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 22906903c7952790a911627f99e3419d8f251a6a540d9ba4f334a7e0865d7ea7026d8ad23829c3c0f2843a9f15bdb91c646e7f8853a5a5ba25a57dea2cf7d416
   languageName: node
   linkType: hard
 
