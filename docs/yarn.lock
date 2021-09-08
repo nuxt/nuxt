@@ -1155,14 +1155,15 @@
     node-fetch "^2.6.1"
     puppeteer-core "^10.2.0"
 
-"@docus/theme@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@docus/theme/-/theme-1.1.3.tgz#bf549a9b99515946aa94f88c36bfad65fffba97a"
-  integrity sha512-MB5AUVMooM8nK7Vac47pLLAXMPH5e9W7REW0KQwP5cKR5nYbKSI4z+iXBWcDQ27Qpjoln6pKFUe+22LYnUrwAg==
+"@docus/theme@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@docus/theme/-/theme-1.1.6.tgz#b4607a8fdfe7f409fce9e0c982c0717dca683ef5"
+  integrity sha512-YbP40DrG6z9y5HGmUT+jnSlYlM6qwY/rWMT11Syn/+jKyJgtGtDQpRbSLmfG0jd/WN1dR+sOsZaE0sYksSWYzQ==
   dependencies:
     "@docsearch/css" "^1.0.0-alpha.28"
     "@docsearch/js" "^1.0.0-alpha.28"
     "@docus/windicss" "^1.0.4"
+    "@nuxt/kit" "npm:@nuxt/kit-edge"
     "@nuxtjs/color-mode" "^2.1.1"
     "@windicss/plugin-scrollbar" "^1.2.3"
     clipboard "^2.0.8"
@@ -1465,6 +1466,27 @@
 "@nuxt/kit@link:../packages/kit":
   version "0.0.0"
   uid ""
+
+"@nuxt/kit@npm:@nuxt/kit-edge":
+  version "0.10.0-27183684.49f7b39"
+  resolved "https://registry.yarnpkg.com/@nuxt/kit-edge/-/kit-edge-0.10.0-27183684.49f7b39.tgz#ade74379c617a5c482c2b0ef1efe6f80bfa83c77"
+  integrity sha512-s1INGGEyayf+QvrGa4nWnKir1W2vhrWikuYnlpHpRiPYo0Euiyvo8uq+hANyYOKBqppWIWqHpaJ7znq7C1YZYg==
+  dependencies:
+    consola "^2.15.3"
+    create-require "^1.1.1"
+    defu "^5.0.0"
+    dotenv "^10.0.0"
+    globby "^11.0.4"
+    hash-sum "^2.0.0"
+    hookable "^5.0.0"
+    jiti "^1.11.0"
+    rc9 "^1.2.0"
+    scule "^0.2.1"
+    std-env "^2.3.0"
+    ufo "^0.7.9"
+    unctx "^1.0.2"
+    untyped "^0.2.8"
+    upath "^2.0.1"
 
 "@nuxt/loading-screen@^2.0.4":
   version "2.0.4"
