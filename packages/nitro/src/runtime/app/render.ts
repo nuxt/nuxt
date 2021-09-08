@@ -110,7 +110,7 @@ async function renderHTML (payload, rendered, ssrContext) {
   const html = rendered.html
 
   if ('renderMeta' in ssrContext) {
-    rendered.meta = await ssrContext.renderMeta?.()
+    rendered.meta = await ssrContext.renderMeta()
   }
 
   const {
