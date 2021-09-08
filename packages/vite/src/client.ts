@@ -78,7 +78,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   // Legacy dev manifest
   const devClientManifest = {
     publicPath: ctx.nuxt.options.build.publicPath,
-    all: [],
+    all: ['@vite/client', 'entry.mjs'],
     initial: ['@vite/client', 'entry.mjs'],
     async: [],
     modules: {}
