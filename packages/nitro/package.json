@@ -53,7 +53,7 @@
     "mime": "^2.5.2",
     "node-fetch": "^2.6.2",
     "ohmyfetch": "^0.3.1",
-    "ora": "^5.4.1",
+    "ora": "^6.0.0",
     "pretty-bytes": "^5.6.0",
     "rollup": "^2.56.3",
     "rollup-plugin-analyzer": "^4.0.0",
