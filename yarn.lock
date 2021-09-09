@@ -1501,7 +1501,7 @@ __metadata:
     fs-extra: ^10.0.0
     globby: ^11.0.4
     gzip-size: ^6.0.0
-    h3: ^0.3.0
+    h3: ^0.3.1
     hasha: ^5.2.2
     hookable: ^5.0.0
     http-proxy: ^1.18.1
@@ -1526,7 +1526,7 @@ __metadata:
     unstorage: ^0.2.7
     upath: ^2.0.1
     vue: 3.2.11
-    vue-bundle-renderer: ^0.3.0
+    vue-bundle-renderer: ^0.3.1
     vue-server-renderer: ^2.6.14
   languageName: unknown
   linkType: soft
@@ -7271,10 +7271,10 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "h3@npm:0.3.0"
-  checksum: 62b9ed28a35ca127aa7fa2f7835fcb7e2ba070c4952eab64dd3e9b622414546a2e1908ee3d88de298e6bb866129d0694435f215dc3a514d0440b508c99f4f0a9
+"h3@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "h3@npm:0.3.1"
+  checksum: 7a37d7f41173ad0d00a666788e4c014c9b852104d506c882313a861c7c32a5c64dff28365911f0daa1b294c2348adbe34cb0ae6c8ee1e62947112085d318cd8c
   languageName: node
   linkType: hard
 
@@ -13872,12 +13872,12 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "vue-bundle-renderer@npm:0.3.0"
+"vue-bundle-renderer@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "vue-bundle-renderer@npm:0.3.1"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: 11600caea3afa7f8a4eeeb61c587d6b3558f32184446c3f1f22fade46a2dd94662371f125618c02a40095ae00437dafbabddc07a59b95dee063bf71d255d43ab
+  checksum: 66e345c85940c3bd41352f419c930b3e5ca9fc3f7d32860d4502c92db352d21bbdd81c234675a536144001f610108eaca86e17acc057c3cc1ce03316ef20e1ff
   languageName: node
   linkType: hard
 

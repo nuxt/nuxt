@@ -43,7 +43,7 @@
     "fs-extra": "^10.0.0",
     "globby": "^11.0.4",
     "gzip-size": "^6.0.0",
-    "h3": "^0.3.0",
+    "h3": "^0.3.1",
     "hasha": "^5.2.2",
     "hookable": "^5.0.0",
     "http-proxy": "^1.18.1",
@@ -67,7 +67,7 @@
     "unstorage": "^0.2.7",
     "upath": "^2.0.1",
     "vue": "3.2.11",
-    "vue-bundle-renderer": "^0.3.0",
+    "vue-bundle-renderer": "^0.3.1",
     "vue-server-renderer": "^2.6.14"
   },
   "devDependencies": {
