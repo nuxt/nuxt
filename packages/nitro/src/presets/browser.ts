@@ -1,4 +1,4 @@
-import { writeFile } from 'fs-extra'
+import { existsSync, writeFile } from 'fs-extra'
 import { resolve } from 'upath'
 import consola from 'consola'
 import { extendPreset, prettyPath } from '../utils'
@@ -68,10 +68,15 @@ if ('serviceWorker' in navigator) {
         await writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.mjs');`)
 
         // Temp fix
-        await writeFile(resolve(output.publicDir, 'index.html'), html)
-        await writeFile(resolve(output.publicDir, '200.html'), html)
-        await writeFile(resolve(output.publicDir, '404.html'), html)
-
+        if (!existsSync(resolve(output.publicDir, 'index.html'))) {
+          await writeFile(resolve(output.publicDir, 'index.html'), html)
+        }
+        if (!existsSync(resolve(output.publicDir, '200.html'))) {
+          await writeFile(resolve(output.publicDir, '200.html'), html)
+        }
+        if (!existsSync(resolve(output.publicDir, '404.html'))) {
+          await writeFile(resolve(output.publicDir, '404.html'), html)
+        }
         consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
       }
     }
