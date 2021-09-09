@@ -7,6 +7,8 @@ export default {
       primary: '#00c58e'
     },
     header: {
+      logo: true,
+      title: false
     }
   },
   twitter: 'nuxt_js',

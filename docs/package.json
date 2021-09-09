@@ -8,11 +8,11 @@
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
-    "@docus/app": "^1.1.3",
-    "@docus/github": "^1.0.4",
-    "@docus/social-image": "^1.0.3",
-    "@docus/theme": "^1.1.6",
-    "@docus/twitter": "^1.0.4",
+    "@docus/app": "1.1.3",
+    "@docus/github": "1.0.4",
+    "@docus/social-image": "1.0.3",
+    "@docus/theme": "1.1.6",
+    "@docus/twitter": "1.0.4",
     "@nuxt/kit": "link:../packages/kit",
     "@nuxt/typescript-build": "^2.1.0",
     "fs-extra": "^10.0.0",
@@ -21,6 +21,7 @@
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
     "untyped": "^0.2.8",
-    "upath": "^2.0.1"
+    "upath": "^2.0.1",
+    "vue-plausible": "^1.2.1"
   }
 }

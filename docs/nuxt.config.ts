@@ -30,6 +30,12 @@ export default withDocus({
   buildModules: [
     '@nuxt/typescript-build',
     '@docus/github',
-    '@docus/twitter'
-  ]
+    '@docus/twitter',
+    'vue-plausible'
+  ],
+  publicRuntimeConfig: {
+    plausible: {
+      domain: process.env.PLAUSIBLE_DOMAIN
+    }
+  }
 })

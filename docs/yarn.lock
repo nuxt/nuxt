@@ -1058,7 +1058,7 @@
     "@francoischalifour/autocomplete-preset-algolia" "^1.0.0-alpha.28"
     algoliasearch "^4.0.0"
 
-"@docus/app@^1.1.3":
+"@docus/app@1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@docus/app/-/app-1.1.3.tgz#5fd2dd476c438fb34f726adebfd6862f2bf7fbc7"
   integrity sha512-zjhG7J4ukyaz59n+aw/rzglUSf8upTAz7vYddKMaRedpwuOwnd0C/gWIAU5ryVSVrN9tXK4kWL/mjkDL1idfOg==
@@ -1134,7 +1134,7 @@
     vue-docgen-api "^4.40.0"
     ws "^7.5.3"
 
-"@docus/github@^1.0.4":
+"@docus/github@1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@docus/github/-/github-1.0.4.tgz#b11a530038a2df321f1fd2423eafee65b73a3261"
   integrity sha512-3hJwPX2VnflHsGDJOQS6v/ISyfqrlXR/29mcBiobvv4hbA08qxL/zOc27O/FQNtLp3mV1Sa37IxSFZluvidG8A==
@@ -1145,7 +1145,7 @@
     remark-github "^10.1.0"
     unbuild "^0.4.2"
 
-"@docus/social-image@^1.0.3":
+"@docus/social-image@1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@docus/social-image/-/social-image-1.0.3.tgz#88e679d45d4b387f51e671e4df1dd1014839e8b9"
   integrity sha512-yuPcP2FKi9m0h7bOjXdVuDQZetyaRsL7hjuDFKsEEYJFggGf10vMN6mxmeE5Nrg3SrVBozWYNygTSgpa8Yi2zA==
@@ -1155,7 +1155,7 @@
     node-fetch "^2.6.1"
     puppeteer-core "^10.2.0"
 
-"@docus/theme@^1.1.6":
+"@docus/theme@1.1.6":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@docus/theme/-/theme-1.1.6.tgz#b4607a8fdfe7f409fce9e0c982c0717dca683ef5"
   integrity sha512-YbP40DrG6z9y5HGmUT+jnSlYlM6qwY/rWMT11Syn/+jKyJgtGtDQpRbSLmfG0jd/WN1dR+sOsZaE0sYksSWYzQ==
@@ -1171,7 +1171,7 @@
     prism-theme-vars "^0.2.2"
     scule "^0.2.1"
 
-"@docus/twitter@^1.0.4":
+"@docus/twitter@1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@docus/twitter/-/twitter-1.0.4.tgz#70ed602388c8d672f7476154c14dfd8cf6c75550"
   integrity sha512-fkK/2qMi5oeLNp8+sVApCjj2eKw4zV812T+R0jTgI1woGqpaw6yybf+wV7WLsR3cDLjLhi+IeK3ivdGwqvw+Zg==
@@ -8058,6 +8058,11 @@ pkg-dir@^3.0.0:
   dependencies:
     find-up "^3.0.0"
 
+plausible-tracker@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/plausible-tracker/-/plausible-tracker-0.3.1.tgz#dd4e1f59cafc7bf1b00e30890567287b3f204efd"
+  integrity sha512-oXnVyfTF2gzkfK3iOZCRZEnf8sH4gBASaJhY+clwWW1orIybfQpfbgg4U5Bwj5dW/4iNstM4tx4jMCVUfMCUbg==
+
 pnp-webpack-plugin@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/pnp-webpack-plugin/-/pnp-webpack-plugin-1.7.0.tgz#65741384f6d8056f36e2255a8d67ffc20866f5c9"
@@ -11304,6 +11309,13 @@ vue-no-ssr@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/vue-no-ssr/-/vue-no-ssr-1.1.1.tgz#875f3be6fb0ae41568a837f3ac1a80eaa137b998"
   integrity sha512-ZMjqRpWabMPqPc7gIrG0Nw6vRf1+itwf0Itft7LbMXs2g3Zs/NFmevjZGN1x7K3Q95GmIjWbQZTVerxiBxI+0g==
+
+vue-plausible@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/vue-plausible/-/vue-plausible-1.2.1.tgz#66ceb925a98ecca715a11c3c77e1e11b8f0945fc"
+  integrity sha512-+HIO35sHLPMtpSzyQSjGUFQUmqHXHas5kQ/XSdowS6z8FryfP/uyPURUT1hoXK217DD2w7EbZqjs59TDcHhcEw==
+  dependencies:
+    plausible-tracker "^0.3.1"
 
 vue-router@^3.5.2:
   version "3.5.2"
