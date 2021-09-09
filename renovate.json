@@ -3,6 +3,11 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "docus"
+    "docus",
+    "@docus/app",
+    "@docus/github",
+    "@docus/social-image",
+    "@docus/theme",
+    "@docus/twitter"
   ]
 }
