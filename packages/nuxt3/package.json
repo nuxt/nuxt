@@ -6,9 +6,7 @@
   "main": "./dist/index.js",
   "types": "./types.d.ts",
   "bin": {
-    "nu": "./bin/nuxi.js",
-    "nuxi": "./bin/nuxi.js",
-    "nuxt": "./bin/nuxi.js"
+    "nuxt": "./bin/nuxt.js"
   },
   "files": [
     "bin",

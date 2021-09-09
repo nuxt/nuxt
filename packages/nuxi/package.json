@@ -6,8 +6,7 @@
   "main": "./dist/index.js",
   "bin": {
     "nu": "./bin/nuxi.js",
-    "nuxi": "./bin/nuxi.js",
-    "nuxt": "./bin/nuxi.js"
+    "nuxi": "./bin/nuxi.js"
   },
   "scripts": {
     "prepack": "unbuild"

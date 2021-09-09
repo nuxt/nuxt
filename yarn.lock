@@ -9851,7 +9851,6 @@ fsevents@~2.3.2:
   bin:
     nu: ./bin/nuxi.js
     nuxi: ./bin/nuxi.js
-    nuxt: ./bin/nuxi.js
   languageName: unknown
   linkType: soft
 
@@ -9963,9 +9962,7 @@ fsevents@~2.3.2:
     "@vue/shared": 3.2.10
     vue: 3.2.10
   bin:
-    nu: ./bin/nuxi.js
-    nuxi: ./bin/nuxi.js
-    nuxt: ./bin/nuxi.js
+    nuxt: ./bin/nuxt.js
   languageName: unknown
   linkType: soft
 
