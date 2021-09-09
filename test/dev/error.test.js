@@ -21,9 +21,8 @@ describe('error', () => {
   })
 
   test('/ should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/error')).rejects.toMatchObject({
-      message: expect.stringContaining('not_defined is not defined')
-    })
+    await expect(nuxt.server.renderRoute('/error'))
+      .rejects.toThrow('not_defined is not defined')
   })
 
   test('/404 should display an error too', async () => {
@@ -38,7 +37,8 @@ describe('error', () => {
 
   test('Error: resolvePath()', () => {
     expect(() => nuxt.resolver.resolvePath()).toThrowError()
-    expect(() => nuxt.resolver.resolvePath('@/pages/not-found.vue')).toThrowError('Cannot resolve "@/pages/not-found.vue"')
+    expect(() => nuxt.resolver.resolvePath('@/pages/not-found.vue'))
+      .toThrow('Cannot resolve "@/pages/not-found.vue"')
   })
 
   test('Error: callHook()', async () => {
@@ -58,21 +58,18 @@ describe('error', () => {
   })
 
   test('/info should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/info')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'title\' of undefined')
-    })
+    await expect(nuxt.server.renderRoute('/info'))
+      .rejects.toThrow('Cannot read properties of undefined (reading \'title\')')
   })
 
   test('/about should work', async () => {
-    await expect(nuxt.server.renderRoute('/about')).resolves.toMatchObject({
-      html: expect.stringContaining('About')
-    })
+    const { html } = await nuxt.server.renderRoute('/about')
+    expect(html).toContain('<h1>About</h1>')
   })
 
   test('/error-square should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/squared')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'data\' of undefined')
-    })
+    await expect(nuxt.server.renderRoute('/squared'))
+      .rejects.toThrow('Cannot read properties of undefined (reading \'data\')')
   })
 
   // Close server and ask nuxt to stop listening to file changes
