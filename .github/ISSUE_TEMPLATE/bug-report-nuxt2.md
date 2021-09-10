@@ -10,22 +10,22 @@ assignees: ''
 Please carefully read the contribution docs before creating a bug report
  👉 https://v3.nuxtjs.org/community/reporting-bugs
 
-Please use the codesandbox template below to create a minimal reproduction
+Please use the code sandbox template below to create a minimal reproduction
  👉 https://codesandbox.io/s/github/nuxt/starter/tree/bridge-sandbox
 
-If you're unsure about the issue, please open a github discussion first
- 👉 https://github.com/nuxt/framework/discussions/categories/issues
+If you're unsure about the issue, please open a GitHub discussion first
+ 👉 https://github.com/nuxt/framework/discussions
 -->
 
-**🪟 Environment**
+##  🪟 Environment
 
 <!-- You can use `npx nuxi info` to fill this section -->
 
-**🖊️ Describe the bug and expected behavior**
+## 🖊️ Describe the bug and expected behavior
 
 <!-- A clear and concise description of what the bug is. -->
 
-**📝 Steps to reproduce**
+## 📝 Steps to reproduce
 
 <!--
 Steps to reproduce the behavior:
@@ -35,7 +35,7 @@ Steps to reproduce the behavior:
 4. See error
 -->
 
-** ➕ Additional context**
+## ➕ Additional context
 
 <!-- If applicable, add any other context about the problem here. -->
 <!-- If applicable, add screenshots to help explain your problem. -->
