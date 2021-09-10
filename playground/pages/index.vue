@@ -1,7 +1,8 @@
 <template>
   <div>
     <img src="~/assets/logo.svg">
-    Hello World
+    <br>
+    Hello Nuxt 3
   </div>
 </template>
 
