@@ -1,5 +1,5 @@
 ---
-name: "🐞 Bug report"
+name: "🐞 Bug report (Nuxt Bridge)"
 about: Create a report to help us improve Nuxt Bridge
 title: ''
 labels: bug, bridge
