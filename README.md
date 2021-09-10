@@ -18,26 +18,26 @@ Welcome to Nuxt3 repository ✨
   <td>
     <h2>📖 Documentation</h2>
     <p>
-      Read <a href="https://v3.nuxtjs.org">Online Docs</a> here!
+      Read <a href="https://v3.nuxtjs.org">Online Docs</a>.
     </p>
   </td>
   <td>
     <h2>🐞 Reporting bugs</h2>
     <p>
-      Check out <a href="https://v3.nuxtjs.org/community/reporting-bugs">Reporting Bugs</a> page </p>
+      Check out <a href="https://v3.nuxtjs.org/community/reporting-bugs">Reporting Bugs</a> page.</p>
   </td>
 </tr>
 <tr>
   <td>
     <h2>💡 Suggestions </h2>
     <p>
-      Check out <a href="https://v3.nuxtjs.org/community/reporting-bugs">Contribution</a> page
+      Check out <a href="https://v3.nuxtjs.org/community/contribution">Contribution</a> page.
     </p>
   </td>
   <td>
     <h2>❔ Questions</h2>
     <p>
-      Check out <a href="https://v3.nuxtjs.org/community/reporting-bugs">Getting Help</a> page
+      Check out <a href="https://v3.nuxtjs.org/community/getting-helps">Getting Help</a> page.
     </p>
   </td>
 </tr>
