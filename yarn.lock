@@ -1399,7 +1399,7 @@ __metadata:
     "@nuxt/postcss8": ^1.1.3
     "@types/fs-extra": ^9.0.12
     "@types/node-fetch": ^2.5.12
-    "@vue/composition-api": ^1.1.4
+    "@vue/composition-api": ^1.1.5
     fs-extra: ^10.0.0
     node-fetch: ^2.6.2
     nuxi: ^0.10.0
@@ -1496,7 +1496,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
-    esbuild: ^0.12.25
+    esbuild: ^0.12.26
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.4
@@ -1523,7 +1523,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: ^0.4.2
     unenv: ^0.3.3
-    unstorage: ^0.2.7
+    unstorage: ^0.2.8
     upath: ^2.0.1
     vue: 3.2.11
     vue-bundle-renderer: ^0.3.1
@@ -1610,7 +1610,7 @@ __metadata:
     vue-style-loader: ^4.1.3
     webpack: ^5.52.0
     webpack-bundle-analyzer: ^4.4.2
-    webpack-dev-middleware: ^5.0.0
+    webpack-dev-middleware: ^5.1.0
     webpack-hot-middleware: ^2.25.0
     webpack-virtual-modules: ^0.4.3
     webpackbar: ^5.0.0-3
@@ -2783,14 +2783,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/composition-api@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "@vue/composition-api@npm:1.1.4"
+"@vue/composition-api@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "@vue/composition-api@npm:1.1.5"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     vue: ">= 2.5 < 3"
-  checksum: f82d93fbf986b829df62cdf55f4c062c096883574d59c29b6df6e10dd9e2161a4c24b975c3bc2b8024f4004b577f2e543d9df9e591f5466c5c3d33b39f5ab222
+  checksum: 9d58cfb4d8242dde329b7d335a67fc412a315057a32f7086f2428da5f7a6dd273799766f031fb800a5abe5bd41c0e760550cc4a9cab91310e796286cb4351bca
   languageName: node
   linkType: hard
 
@@ -6044,12 +6044,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.16, esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.25, esbuild@npm:^0.12.9":
+"esbuild@npm:^0.12.16, esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.9":
   version: 0.12.25
   resolution: "esbuild@npm:0.12.25"
   bin:
     esbuild: bin/esbuild
   checksum: fd92b0541c17e6d863d3b1cf628a35c9844831a1f1f2d16c3091bc7a130a601a8164083b84a65cd3178209e7c395fc61d454f92c8b1a4869d443fd0ca5a51a8d
+  languageName: node
+  linkType: hard
+
+"esbuild@npm:^0.12.26":
+  version: 0.12.26
+  resolution: "esbuild@npm:0.12.26"
+  bin:
+    esbuild: bin/esbuild
+  checksum: 73efbf4e6457cdec8fbf68ce7dda8fe88475775de36c1d7f5dce4b151651afbbe09ad94fee16810f2aa064e39447b44b30219eb7d168703bd30117cbcbf72cdf
   languageName: node
   linkType: hard
 
@@ -8929,15 +8938,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"map-age-cleaner@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "map-age-cleaner@npm:0.1.3"
-  dependencies:
-    p-defer: ^1.0.0
-  checksum: cb2804a5bcb3cbdfe4b59066ea6d19f5e7c8c196cd55795ea4c28f792b192e4c442426ae52524e5e1acbccf393d3bddacefc3d41f803e66453f6c4eda3650bc1
-  languageName: node
-  linkType: hard
-
 "map-obj@npm:^1.0.0":
   version: 1.0.1
   resolution: "map-obj@npm:1.0.1"
@@ -8956,16 +8956,6 @@ fsevents@~2.3.2:
   version: 2.0.14
   resolution: "mdn-data@npm:2.0.14"
   checksum: 9d0128ed425a89f4cba8f787dca27ad9408b5cb1b220af2d938e2a0629d17d879a34d2cb19318bdb26c3f14c77dd5dfbae67211f5caaf07b61b1f2c5c8c7dc16
-  languageName: node
-  linkType: hard
-
-"mem@npm:^8.1.1":
-  version: 8.1.1
-  resolution: "mem@npm:8.1.1"
-  dependencies:
-    map-age-cleaner: ^0.1.3
-    mimic-fn: ^3.1.0
-  checksum: c41bc97f6f82b91899206058989e34bcb1543af40413c2ab59e5a8e97e4f8f2188d62e7bd95b2d575d5b0d823d5034a0f274a0676f6d11a0e0b973898b06c8b1
   languageName: node
   linkType: hard
 
@@ -9097,13 +9087,6 @@ fsevents@~2.3.2:
   version: 2.1.0
   resolution: "mimic-fn@npm:2.1.0"
   checksum: d2421a3444848ce7f84bd49115ddacff29c15745db73f54041edc906c14b131a38d05298dae3081667627a59b2eb1ca4b436ff2e1b80f69679522410418b478a
-  languageName: node
-  linkType: hard
-
-"mimic-fn@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "mimic-fn@npm:3.1.0"
-  checksum: f7b167f9115b8bbdf2c3ee55dce9149d14be9e54b237259c4bc1d8d0512ea60f25a1b323f814eb1fe8f5a541662804bcfcfff3202ca58df143edb986849d58db
   languageName: node
   linkType: hard
 
@@ -9867,7 +9850,7 @@ fsevents@~2.3.2:
     "@types/object-hash": ^2
     "@vue/server-renderer": ^3.2.11
     chai: ^4.3.4
-    esbuild: ^0.12.25
+    esbuild: ^0.12.26
     eslint: ^7.32.0
     eslint-plugin-jsdoc: ^36.1.0
     execa: ^5.1.1
@@ -10166,13 +10149,6 @@ fsevents@~2.3.2:
     os-homedir: ^1.0.0
     os-tmpdir: ^1.0.0
   checksum: 779d261920f2a13e5e18cf02446484f12747d3f2ff82280912f52b213162d43d312647a40c332373cbccd5e3fb8126915d3bfea8dde4827f70f82da76e52d359
-  languageName: node
-  linkType: hard
-
-"p-defer@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "p-defer@npm:1.0.0"
-  checksum: 4271b935c27987e7b6f229e5de4cdd335d808465604644cb7b4c4c95bef266735859a93b16415af8a41fd663ee9e3b97a1a2023ca9def613dba1bad2a0da0c7b
   languageName: node
   linkType: hard
 
@@ -13656,9 +13632,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "unstorage@npm:0.2.7"
+"unstorage@npm:^0.2.8":
+  version: 0.2.8
+  resolution: "unstorage@npm:0.2.8"
   dependencies:
     anymatch: ^3.1.1
     chokidar: ^3.5.2
@@ -13670,7 +13646,7 @@ fsevents@~2.3.2:
     ohmyfetch: ^0.3.1
     ufo: ^0.7.9
     ws: ^8.2.1
-  checksum: c5d9748bc470adf7d9594f35bbee2cc673af7e40f5839894d76ce7e5f4b5174f1c22616dffddad0b3177d6ea0533fa49083172312d10fc12f6d19f2b53da4849
+  checksum: a1896c89e54d535e2026ed6ffea48d62f689bfb8040ab48f0d21a8766e1846981537328076d113a2decbe349deea3cc68e01ff2cf353df87470790defc9cf390
   languageName: node
   linkType: hard
 
@@ -14087,19 +14063,18 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"webpack-dev-middleware@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "webpack-dev-middleware@npm:5.0.0"
+"webpack-dev-middleware@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "webpack-dev-middleware@npm:5.1.0"
   dependencies:
     colorette: ^1.2.2
-    mem: ^8.1.1
     memfs: ^3.2.2
     mime-types: ^2.1.31
     range-parser: ^1.2.1
-    schema-utils: ^3.0.0
+    schema-utils: ^3.1.0
   peerDependencies:
     webpack: ^4.0.0 || ^5.0.0
-  checksum: e5bf56a299da509d5810564790b481e599768265399777897dbbd555c6f4dfdab87f1b162e30f3dd4628a6c08097315272d1f1faa6bbb8abe82bd3ce999e261f
+  checksum: 5893f20eae99fd32da8e038b305d3001f095aedc1bbafd48e4939bdcdf2099495e575874c8c9c39a8f4a79744e9f84dfbe106af836fd2920ea315ebf77cb75d5
   languageName: node
   linkType: hard
 

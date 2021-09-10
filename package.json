@@ -36,7 +36,7 @@
     "@types/object-hash": "^2",
     "@vue/server-renderer": "^3.2.11",
     "chai": "^4.3.4",
-    "esbuild": "^0.12.25",
+    "esbuild": "^0.12.26",
     "eslint": "^7.32.0",
     "eslint-plugin-jsdoc": "^36.1.0",
     "execa": "^5.1.1",

@@ -42,7 +42,7 @@
     "vue-style-loader": "^4.1.3",
     "webpack": "^5.52.0",
     "webpack-bundle-analyzer": "^4.4.2",
-    "webpack-dev-middleware": "^5.0.0",
+    "webpack-dev-middleware": "^5.1.0",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-virtual-modules": "^0.4.3",
     "webpackbar": "^5.0.0-3"
