@@ -37,7 +37,7 @@ Welcome to Nuxt3 repository ✨
   <td>
     <h2>❔ Questions</h2>
     <p>
-      Check out <a href="https://v3.nuxtjs.org/community/getting-helps">Getting Help</a> page.
+      Check out <a href="https://v3.nuxtjs.org/community/getting-help">Getting Help</a> page.
     </p>
   </td>
 </tr>
