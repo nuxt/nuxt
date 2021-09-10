@@ -53,11 +53,8 @@ if ('serviceWorker' in navigator) {
       serverDir: '{{ output.dir }}/public/_server'
     },
     nuxtHooks: {
-      'vue-renderer:ssr:templateParams' (params) {
-        params.APP += script
-      },
-      'vue-renderer:spa:templateParams' (params) {
-        params.APP += script
+      'generate:page' (page) {
+        page.html = page.html.replace('</body>', script + '</body>')
       }
     },
     hooks: {
