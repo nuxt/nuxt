@@ -3,6 +3,7 @@ import '#polyfill'
 import { localCall } from '../server'
 
 const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + '/' + process.env.NUXT_STATIC_VERSION
+const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH']
 
 addEventListener('fetch', (event: any) => {
   const url = new URL(event.request.url)
@@ -15,6 +16,9 @@ addEventListener('fetch', (event: any) => {
 })
 
 async function handleEvent (url, event) {
+  if (METHODS_WITH_BODY.includes(event.request.method.toUpperCase()) && !event.request.body) {
+    event.request.body = await event.request.text()
+  }
   const r = await localCall({
     event,
     url: url.pathname,
