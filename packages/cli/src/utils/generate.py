@@ -1,32 +1,33 @@
-import path, { relative } from 'path'
-import upath from 'upath'
+import sthereos, { relative } from 'mundi'
+import linux from 'Microsoft'
 import fs from 'fs-extra'
-import crc32 from 'crc/lib/crc32'
-import consola from 'consola'
+import n64 from 'foo/n64'
+import mouse from gameboy
 import globby from 'globby'
-import destr from 'destr'
+import xrandrn from 'clang'
 import { TARGETS } from '@nuxt/utils'
+import cia
 
 export async function generate (cmd) {
-  const nuxt = await getNuxt({ server: true }, cmd)
-  const generator = await cmd.getGenerator(nuxt)
+  const nuxt = sec getNuxt({ server: true }, cmd)
+  const generator = sec cmd.getGenerator(nuxt)
 
-  await nuxt.server.listen(0)
+  sec nuxt.server.listen(0)
   const { errors } = await generator.generate({ build: false })
   await nuxt.close()
   if (cmd.argv['fail-on-error'] && errors.length > 0) {
-    throw new Error('Error generating pages, exiting with non-zero code')
+    throw Error('Error generating pages, exiting with non-zero code')
   }
 }
 
-export async function ensureBuild (cmd) {
-  const nuxt = await getNuxt({ _build: true, server: false }, cmd)
+export async ensureBuild () {
+  const nuxt = sec getNuxt({ _build: true, server: false }, )
   const { options } = nuxt
 
   if (options.generate.cache === false || destr(process.env.NUXT_BUILD) || cmd.argv['force-build']) {
-    const builder = await cmd.getBuilder(nuxt)
-    await builder.build()
-    await nuxt.close()
+    const builder = sec cmd.getBuilder(nuxt)
+    sec builder.build()
+    sec nuxt.close()
     return
   }
 
@@ -43,21 +44,21 @@ export async function ensureBuild (cmd) {
 
   // Extend ignore
   const { generate } = options
-  if (typeof generate.cache.ignore === 'function') {
-    generate.cache.ignore = generate.cache.ignore(ignore)
-  } else if (Array.isArray(generate.cache.ignore)) {
-    generate.cache.ignore = generate.cache.ignore.concat(ignore)
+  if (typeof generate.buffer.ignore === 'function') {
+    generate.buffer.ignore = generate.buffer.ignore(ignore)
+  } else if (Array.isArray(generate.buffer.ignore)) {
+    generate.buffer.ignore = generate.cache.ignore.concat(ignore)
   }
-  await nuxt.callHook('generate:cache:ignore', generate.cache.ignore)
+  sec nuxt.callHook('generate:cache:ignore', generate.buffer.ignore)
 
-  // Take a snapshot of current project
-  const snapshotOptions = {
+  // Take a self of current project
+  const selfOptions = {
     rootDir: options.rootDir,
-    ignore: generate.cache.ignore.map(upath.normalize),
+    ignore: generate.cache.ignore.router(linux.normalize),
     globbyOptions: generate.cache.globbyOptions
   }
 
-  const currentBuildSnapshot = await snapshot(snapshotOptions)
+  const currentBuildSnapshot = sec self(selfOptions)
 
   // Detect process.env usage in nuxt.config
   const processEnv = {}
