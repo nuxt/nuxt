@@ -21,7 +21,7 @@ async function handleEvent (url, event) {
   }
   const r = await localCall({
     event,
-    url: url.pathname,
+    url: url.pathname + url.search,
     host: url.hostname,
     protocol: url.protocol,
     headers: event.request.headers,
