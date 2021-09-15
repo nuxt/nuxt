@@ -18,7 +18,7 @@
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
+- 👥 Community: [GitHub discussions](https://github.com/nuxt/nuxt.js/discussions)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
 - 💬 Chat: [Discord](https://discord.nuxtjs.org/)
