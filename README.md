@@ -1,4 +1,4 @@
-<p align="center"><img align="center" style="width:320px" src="./.github/nuxt.png"/></p><br/>
+<p align="center"><img align="center" src="./.github/logo.svg"/></p><br/>
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/windows/badge.svg?branch=dev&event=push" alt="Windows Status"></a>
@@ -9,15 +9,8 @@
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#platinum-sponsors" alt="Platinum Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/platinum-sponsors/badge.svg" /></a>
-  <a href="#gold-sponsors" alt="Gold Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/gold-sponsors/badge.svg" /></a>
-  <a href="#silver-sponsors" alt="Silver Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/silver-sponsors/badge.svg" /></a>
-  <a href="#bronze-sponsors" alt="Bronze Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/bronze-sponsors/badge.svg" /></a>
-  <a href="#nuxters" alt="Nuxters on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/nuxters/badge.svg" /></a>
+  <a href="https://github.com/sponsors/nuxt"><img src="https://img.shields.io/badge/Support%20us-GitHub%20Sponsors-DB61A2.svg" alt="Support us"></a>
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-</p>
-<p align="center">
-  <a href="https://otechie.com/nuxt?ref=badge"><img src="https://api.otechie.com/consultancy/nuxt/badge.svg" alt="Hire Nuxt"></a>
 </p>
 
 > Build your next Vue.js application with confidence using Nuxt: a framework making web development simple and powerful.
@@ -25,7 +18,7 @@
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
+- 👥 Community: [GitHub discussions](https://github.com/nuxt/nuxt.js/discussions)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
 - 💬 Chat: [Discord](https://discord.nuxtjs.org/)
