@@ -2,6 +2,7 @@ import path from 'upath'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import { fileName, WebpackConfigContext, applyPresets } from '../utils/config'
+import { PostcssConfig } from '../utils/postcss'
 
 export function style (ctx: WebpackConfigContext) {
   applyPresets(ctx, [
@@ -63,6 +64,7 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader, ctx: Web
   const { options } = ctx
 
   const styleLoaders = [
+    createPostcssLoadersRule(ctx),
     processorLoader,
     createStyleResourcesLoaderRule(lang, options.build.styleResources, options.rootDir)
   ].filter(Boolean)
@@ -131,5 +133,25 @@ function createStyleResourcesLoaderRule (styleLang, styleResources, rootDir) {
       patterns: Array.from(styleResources[styleLang]).map(p => path.resolve(rootDir, p as string)),
       ...styleResources.options
     }
+  }
+}
+
+function createPostcssLoadersRule (ctx: WebpackConfigContext) {
+  const { options, nuxt } = ctx
+
+  if (!options.build.postcss) {
+    return
+  }
+
+  const postcssConfig = new PostcssConfig(nuxt)
+  const config = postcssConfig.config()
+
+  if (!config) {
+    return
+  }
+
+  return {
+    loader: 'postcss-loader',
+    options: config
   }
 }

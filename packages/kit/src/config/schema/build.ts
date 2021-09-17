@@ -456,14 +456,19 @@ export default {
 
   /**
    * Customize PostCSS Loader plugins.
+   * Sames options as https://github.com/webpack-contrib/postcss-loader#options
    * @version 2
    * @version 3 webpack only
    */
   postcss: {
-    preset: {
-      // https://cssdb.org/#staging-process
-      stage: 2
-    }
+    execute: undefined,
+    postcssOptions: {
+      config: undefined,
+      plugins: undefined
+    },
+    sourceMap: undefined,
+    implementation: undefined,
+    order: ''
   },
 
   /** @version 2 */
