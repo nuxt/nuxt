@@ -17,7 +17,7 @@
     "@nuxt/postcss8": "^1.1.3",
     "@vue/composition-api": "^1.1.5",
     "fs-extra": "^10.0.0",
-    "node-fetch": "^2.6.2",
+    "node-fetch": "^3.0.0",
     "nuxi": "^0.10.0",
     "nuxt-swc": "^0.1.0",
     "nuxt-vite": "^0.2.4",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
-    "@types/node-fetch": "^2.5.12",
+    "@types/node-fetch": "^3.0.2",
     "unbuild": "^0.4.2"
   }
 }
