@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@nuxt/kit": "^0.10.0",
-    "@vitejs/plugin-vue": "^1.6.2",
-    "@vue/compiler-sfc": "^3.2.11",
+    "@vitejs/plugin-vue": "^1.8.1",
+    "@vue/compiler-sfc": "^3.2.12",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "debounce": "^1.2.1",
@@ -25,7 +25,7 @@
     "magic-string": "^0.25.7",
     "ufo": "^0.7.9",
     "upath": "^2.0.1",
-    "vite": "^2.5.6",
-    "vue": "3.2.11"
+    "vite": "^2.5.10",
+    "vue": "3.2.12"
   }
 }
