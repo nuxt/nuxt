@@ -1615,6 +1615,7 @@ __metadata:
     mini-css-extract-plugin: ^2.3.0
     pify: ^5.0.0
     postcss: ^8.3.6
+    postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^6.1.1
     postcss-url: ^10.1.3

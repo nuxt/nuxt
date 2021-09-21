@@ -3,7 +3,7 @@ import path from 'upath'
 import consola from 'consola'
 import { defaults, merge, cloneDeep } from 'lodash'
 import createResolver from 'postcss-import-resolver'
-import { Nuxt, tryRequireModule } from '@nuxt/kit'
+import { Nuxt, requireModule } from '@nuxt/kit'
 
 const isPureObject = obj => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -138,20 +138,14 @@ export class PostcssConfig {
   }
 
   loadPlugins (config) {
-    const { plugins } = config
-    if (isPureObject(plugins)) {
-      // Map postcss plugins into instances on object mode once
-      config.plugins = this.sortPlugins(config)
-        .map((p) => {
-          const plugin = tryRequireModule(p)
-          const opts = plugins[p]
-          if (opts === false) {
-            return false // Disabled
-          }
-          return plugin(opts)
-        })
-        .filter(Boolean)
-    }
+    if (!isPureObject(config.plugins)) { return }
+    // Map postcss plugins into instances on object mode once
+    config.plugins = this.sortPlugins(config).map((pluginName) => {
+      const pluginFn = requireModule(pluginName, { paths: [__dirname] })
+      const pluginOptions = config.plugins[pluginName]
+      if (!pluginOptions || typeof pluginFn !== 'function') { return null }
+      return pluginFn(pluginOptions)
+    }).filter(Boolean)
   }
 
   config () {
