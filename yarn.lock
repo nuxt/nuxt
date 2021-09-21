@@ -1422,7 +1422,7 @@ __metadata:
     nuxt-swc: ^0.1.0
     nuxt-vite: ^0.2.4
     ufo: ^0.7.9
-    unbuild: ^0.5.1
+    unbuild: latest
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -1471,7 +1471,7 @@ __metadata:
     scule: ^0.2.1
     std-env: ^2.3.0
     ufo: ^0.7.9
-    unbuild: ^0.5.1
+    unbuild: latest
     unctx: ^1.0.2
     untyped: ^0.2.9
     upath: ^2.0.1
@@ -1537,7 +1537,7 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.7.1
     ufo: ^0.7.9
-    unbuild: ^0.5.1
+    unbuild: latest
     unenv: ^0.3.8
     unstorage: ^0.2.8
     upath: ^2.0.1
@@ -1577,7 +1577,7 @@ __metadata:
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     ufo: ^0.7.9
-    unbuild: ^0.5.1
+    unbuild: latest
     upath: ^2.0.1
     vite: ^2.5.10
     vue: 3.2.12
@@ -1621,7 +1621,7 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.9
-    unbuild: ^0.5.1
+    unbuild: latest
     upath: ^2.0.1
     url-loader: ^4.1.1
     vue: 3.2.12
@@ -9786,7 +9786,7 @@ fsevents@~2.3.2:
     mocha: ^9.1.1
     object-hash: ^2.2.0
     typescript: ^4.4.3
-    unbuild: latest
+    unbuild: ^0.5.2
     upath: ^2.0.1
   languageName: unknown
   linkType: soft

@@ -27,6 +27,6 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
     "@types/node-fetch": "^3.0.2",
-    "unbuild": "^0.5.1"
+    "unbuild": "latest"
   }
 }

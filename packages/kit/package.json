@@ -13,7 +13,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "^0.5.1"
+    "unbuild": "latest"
   },
   "dependencies": {
     "consola": "^2.15.3",

@@ -76,6 +76,6 @@
     "@types/http-proxy": "^1.17.7",
     "@types/node-fetch": "^3.0.2",
     "@types/serve-static": "^1.13.10",
-    "unbuild": "^0.5.1"
+    "unbuild": "latest"
   }
 }

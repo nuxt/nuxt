@@ -57,6 +57,6 @@
     "@types/webpack-dev-middleware": "^5.0.2",
     "@types/webpack-hot-middleware": "^2.25.5",
     "@types/webpack-virtual-modules": "^0",
-    "unbuild": "^0.5.1"
+    "unbuild": "latest"
   }
 }
