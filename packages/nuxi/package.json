@@ -3,10 +3,10 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "bin": {
-    "nu": "./bin/nuxi.js",
-    "nuxi": "./bin/nuxi.js"
+    "nu": "./bin/nuxi.cjs",
+    "nuxi": "./bin/nuxi.cjs"
   },
   "scripts": {
     "prepack": "unbuild"
@@ -32,11 +32,11 @@
     "deep-object-diff": "^1.1.0",
     "destr": "^1.1.0",
     "flat": "^5.0.2",
-    "jiti": "^1.12.0",
+    "jiti": "^1.12.1",
     "listhen": "^0.2.4",
     "mri": "^1.2.0",
     "scule": "^0.2.1",
-    "unbuild": "^0.4.2",
+    "unbuild": "latest",
     "upath": "^2.0.1",
     "v8-compile-cache": "^2.3.0"
   }

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/module.js",
+  "main": "./dist/module.cjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"

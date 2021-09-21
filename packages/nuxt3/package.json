@@ -3,10 +3,10 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "types": "./types.d.ts",
   "bin": {
-    "nuxt": "./bin/nuxt.js"
+    "nuxt": "./bin/nuxt.cjs"
   },
   "files": [
     "bin",
@@ -48,7 +48,7 @@
     "@types/fs-extra": "^9.0.12",
     "@types/hash-sum": "^1.0.0",
     "@types/lodash": "^4.14.173",
-    "unbuild": "^0.4.2",
+    "unbuild": "latest",
     "vue-meta": "next"
   },
   "peerDependencies": {

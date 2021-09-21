@@ -2,7 +2,7 @@
   "name": "@nuxt/nitro",
   "version": "0.10.0",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "./dist/index.cjs",
   "types": "./types/index.d.ts",
   "files": [
     "dist",
@@ -48,7 +48,7 @@
     "hookable": "^5.0.0",
     "http-proxy": "^1.18.1",
     "is-primitive": "^3.0.1",
-    "jiti": "^1.12.0",
+    "jiti": "^1.12.1",
     "listhen": "^0.2.4",
     "mime": "^2.5.2",
     "node-fetch": "^3.0.0",

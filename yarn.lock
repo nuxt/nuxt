@@ -14,7 +14,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.14.5":
+"@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.14.5":
   version: 7.14.5
   resolution: "@babel/code-frame@npm:7.14.5"
   dependencies:
@@ -1466,7 +1466,7 @@ __metadata:
     globby: ^11.0.4
     hash-sum: ^2.0.0
     hookable: ^5.0.0
-    jiti: ^1.12.0
+    jiti: ^1.12.1
     rc9: ^1.2.0
     scule: ^0.2.1
     std-env: ^2.3.0
@@ -1522,7 +1522,7 @@ __metadata:
     hookable: ^5.0.0
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
-    jiti: ^1.12.0
+    jiti: ^1.12.1
     listhen: ^0.2.4
     mime: ^2.5.2
     node-fetch: ^3.0.0
@@ -1820,23 +1820,6 @@ __metadata:
   peerDependencies:
     rollup: ^1.20.0||^2.0.0
   checksum: cb443691ef2480de3c3aa99ab6ce591854ee54d1736e6c71f6e6061b418f183cf571cbe889e52efe997ffe20bac5e4bf5fbbf39f1086987febeb35fb08277419
-  languageName: node
-  linkType: hard
-
-"@rollup/plugin-commonjs@npm:^19.0.1":
-  version: 19.0.2
-  resolution: "@rollup/plugin-commonjs@npm:19.0.2"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    commondir: ^1.0.1
-    estree-walker: ^2.0.1
-    glob: ^7.1.6
-    is-reference: ^1.2.1
-    magic-string: ^0.25.7
-    resolve: ^1.17.0
-  peerDependencies:
-    rollup: ^2.38.3
-  checksum: bf60da71b12c1c52fc2ca223272a1b5a4c27e47f707077024338f841b97f5656c352a3c2c11dd6a5fec0d63ae53407b9ceab72b87dda5701ddffdc09bba34513
   languageName: node
   linkType: hard
 
@@ -6019,7 +6002,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.16, esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.28, esbuild@npm:^0.12.9":
+"esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.28, esbuild@npm:^0.12.9":
   version: 0.12.28
   resolution: "esbuild@npm:0.12.28"
   bin:
@@ -8173,12 +8156,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"jiti@npm:^1.10.1, jiti@npm:^1.11.0, jiti@npm:^1.12.0":
+"jiti@npm:^1.10.1, jiti@npm:^1.12.0":
   version: 1.12.0
   resolution: "jiti@npm:1.12.0"
   bin:
     jiti: bin/jiti.js
   checksum: 7490f80be8504f107c0983f9e6dd38ff55764f295a334075580468d01d63a2c7057be1847e389ae3c86e09cfcd60e653b51a2c00ca4d175a26e392eb3471f96a
+  languageName: node
+  linkType: hard
+
+"jiti@npm:^1.12.1":
+  version: 1.12.1
+  resolution: "jiti@npm:1.12.1"
+  bin:
+    jiti: bin/jiti.js
+  checksum: 173a018877ee43aba95aa7bc026ebed8dbef8a832206de30a35a1c6397cc75446ba42252b2ebfce05a88a5fbbe50ef8af60c399087b1a97ef85c87380e7b761b
   languageName: node
   linkType: hard
 
@@ -9754,19 +9746,19 @@ fsevents@~2.3.2:
     destr: ^1.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    jiti: ^1.12.0
+    jiti: ^1.12.1
     listhen: ^0.2.4
     mri: ^1.2.0
     scule: ^0.2.1
-    unbuild: ^0.4.2
+    unbuild: latest
     upath: ^2.0.1
     v8-compile-cache: ^2.3.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
-    nu: ./bin/nuxi.js
-    nuxi: ./bin/nuxi.js
+    nu: ./bin/nuxi.cjs
+    nuxi: ./bin/nuxi.cjs
   languageName: unknown
   linkType: soft
 
@@ -9788,13 +9780,13 @@ fsevents@~2.3.2:
     eslint-plugin-jsdoc: ^36.1.0
     execa: ^5.1.1
     globby: ^11.0.4
-    jiti: ^1.12.0
+    jiti: ^1.12.1
     jsdom: ^17.0.0
     lerna: ^4.0.0
     mocha: ^9.1.1
     object-hash: ^2.2.0
     typescript: ^4.4.3
-    unbuild: ^0.4.2
+    unbuild: latest
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -9866,7 +9858,7 @@ fsevents@~2.3.2:
     ohmyfetch: ^0.3.1
     scule: ^0.2.1
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: latest
     unplugin: ^0.2.11
     upath: ^2.0.1
     vue: ^3.2.12
@@ -9878,7 +9870,7 @@ fsevents@~2.3.2:
     "@vue/shared": 3.2.12
     vue: 3.2.12
   bin:
-    nuxt: ./bin/nuxt.js
+    nuxt: ./bin/nuxt.cjs
   languageName: unknown
   linkType: soft
 
@@ -12027,19 +12019,19 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup-plugin-dts@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "rollup-plugin-dts@npm:3.0.2"
+"rollup-plugin-dts@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "rollup-plugin-dts@npm:4.0.0"
   dependencies:
-    "@babel/code-frame": ^7.12.13
+    "@babel/code-frame": ^7.14.5
     magic-string: ^0.25.7
   peerDependencies:
-    rollup: ^2.48.0
-    typescript: ^4.2.4
+    rollup: ^2.56.3
+    typescript: ^4.4.2
   dependenciesMeta:
     "@babel/code-frame":
       optional: true
-  checksum: c37acf3744fd0a8b8b6fa9dd2be67b05412ad55f6133e98a1fdb5d44beda5a94a32582c622c35af70d0787713c85ecbbb2c06070845b0f93e4705c32289fc48a
+  checksum: b8c74e892d4131da769389549ea6591fd6e6fe4ee480806d01d3d8cd300b278983afa11dcfd93a7c9de5a08352a9a0d321d98e76b00b3b2fa2a3f369971629f1
   languageName: node
   linkType: hard
 
@@ -13369,7 +13361,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@^4.3.5, typescript@^4.4.3":
+typescript@^4.4.3:
   version: 4.4.3
   resolution: "typescript@npm:4.4.3"
   bin:
@@ -13379,7 +13371,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.3.5#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>":
   version: 4.4.3
   resolution: "typescript@patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=32657b"
   bin:
@@ -13431,34 +13423,34 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.4.2":
-  version: 0.4.2
-  resolution: "unbuild@npm:0.4.2"
+"unbuild@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "unbuild@npm:0.5.2"
   dependencies:
     "@rollup/plugin-alias": ^3.1.4
-    "@rollup/plugin-commonjs": ^19.0.1
+    "@rollup/plugin-commonjs": ^20.0.0
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.0.2
     chalk: ^4.1.1
     consola: ^2.15.3
     defu: ^5.0.0
-    esbuild: ^0.12.16
-    jiti: ^1.11.0
+    esbuild: ^0.12.28
+    jiti: ^1.12.0
     mkdirp: ^1.0.4
     mkdist: ^0.3.3
-    mri: ^1.1.6
+    mri: ^1.2.0
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
     rollup: ^2.55.0
-    rollup-plugin-dts: ^3.0.2
+    rollup-plugin-dts: ^4.0.0
     rollup-plugin-esbuild: ^4.5.0
     scule: ^0.2.1
-    typescript: ^4.3.5
-    untyped: ^0.2.8
+    typescript: ^4.4.3
+    untyped: ^0.2.9
     upath: ^2.0.1
   bin:
-    unbuild: bin/unbuild.js
-  checksum: c21e40225b73ded9ccd5893e4af9d7c5ce984d025b2732cbfd95a8c2969ae33a9e1a0351fd84d0e24fe1b4206bc0fbebab83b938afe90cafae0abf197f5250b4
+    unbuild: bin/unbuild.cjs
+  checksum: f1fca31861c44c24bea1d6626842980550d94c34c2cf3c3e827ac5f8c2bde5227e1e68d4aaed6af11815ec04be44b5343f22a6581f33bb4fb139f9f86454ed41
   languageName: node
   linkType: hard
 
@@ -13589,6 +13581,13 @@ fsevents@~2.3.2:
   version: 0.2.8
   resolution: "untyped@npm:0.2.8"
   checksum: 1674162edede0a6b11a1bbe1405fb9ea2aab6a5d3e0b2d29c1e490e6a0006055772762f13126c0853ebc6c755b424ab3c1a34d2022953702dd7da15e567cf7f8
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "untyped@npm:0.2.9"
+  checksum: 43a0312451644240bc4f1f4b7c8edd66edb62b34cec121017f33f1f27b8b088a43171d9d66563b74fa627feac9952862385d76a4cc15d6dad81ccec09d56f448
   languageName: node
   linkType: hard
 
