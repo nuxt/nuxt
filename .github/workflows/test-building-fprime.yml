@@ -1,0 +1,101 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master, devel ]
+  pull_request:
+    branches: [ master, devel, release/v3.0.0 ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Framework:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Install fprime tools
+      run: pip3 install fprime-tools fprime-gds
+    - name: F prime CI step
+      run: ./ci/tests/Framework.bash
+    # Archive the outputs
+    - name: 'Archive Logs'
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: ci-framework-logs
+        path: ci-logs.tar.gz
+        retention-days: 5
+
+  Ref:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Install fprime tools
+      run: pip3 install fprime-tools fprime-gds
+    - name: F prime CI step
+      run: ./ci/tests/Ref.bash
+    # Archive the outputs
+    - name: 'Archive Logs'
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: ci-ref-logs
+        path: ci-logs.tar.gz
+        retention-days: 5
+
+  RPI:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Install fprime tools
+      run: pip3 install fprime-tools fprime-gds
+    - name: Install RPI Toolchain
+      run: sudo git clone https://github.com/raspberrypi/tools.git /opt/rpi/tools
+    - name: F prime CI step
+      run: ./ci/tests/RPI.bash
+    # Archive the outputs
+    - name: 'Archive Logs'
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: ci-rpi-logs
+        path: ci-logs.tar.gz
+        retention-days: 5
+
+  Integration:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+    - name: Install fprime tools
+      run: pip3 install fprime-tools fprime-gds
+    - name: Setup Dependencies
+      run: sudo apt-get install valgrind
+    - name: F prime CI step
+      run: ./ci/tests/30-ints.bash
+    # Archive the outputs
+    - name: 'Archive Logs'
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: ci-int-logs
+        path: ci-logs.tar.gz
+        retention-days: 5
+
+#  CMake:
+#    runs-on: ubuntu-latest
+#    steps:
+#    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#    - uses: actions/checkout@v2
+#    - name: Install fprime tools
+#      run: pip3 install fprime-tools fprime-gds
+#    - name: CMake Tests
+#      working-directory: ./cmake/test
+#      run: pytest
+
