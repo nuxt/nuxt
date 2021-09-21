@@ -4,6 +4,7 @@
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
