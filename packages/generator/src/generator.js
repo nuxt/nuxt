@@ -6,7 +6,7 @@ import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutTrailingSlash, decode } from 'ufo'
 
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
@@ -84,6 +84,12 @@ export default class Generator {
     await this.nuxt.callHook('export:before', this)
 
     if (build) {
+      if (!this.builder) {
+        throw new Error(
+          `Could not generate. Make sure a Builder instance is passed to the constructor of \`Generator\` class or \`getGenerator\` function \
+or disable the build step: \`generate({ build: false })\``)
+      }
+
       // Add flag to set process.static
       this.builder.forGenerate()
 
@@ -347,7 +353,7 @@ export default class Generator {
       // Save Static Assets
       if (this.staticAssetsDir && renderContext.staticAssets) {
         for (const asset of renderContext.staticAssets) {
-          const assetPath = path.join(this.staticAssetsDir, decodeURI(asset.path))
+          const assetPath = path.join(this.staticAssetsDir, decode(asset.path))
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
