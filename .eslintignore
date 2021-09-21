@@ -1,6 +1,5 @@
 dist
 node_modules
-_templates
 schema
 **/*.tmpl.*
 sw.js

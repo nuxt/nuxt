@@ -1,9 +1,10 @@
-import { resolve, join, relative } from 'upath'
-import globby from 'globby'
+import { resolve } from 'upath'
 import lodashTemplate from 'lodash/template'
 import defu from 'defu'
 import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, NuxtTemplate, normalizePlugin, normalizeTemplate } from '@nuxt/kit'
 import { readFile, writeFile } from 'fs-extra'
+
+import * as defaultTemplates from '../app/templates'
 import * as templateUtils from './template.utils'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -19,15 +20,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve app
   await resolveApp(nuxt, app)
 
-  // Scan app templates
-  const templatesDir = join(nuxt.options.appDir, '_templates')
-  const templateFiles = await globby(join(templatesDir, '/**'))
-  app.templates = templateFiles
-    .filter(src => !src.endsWith('.d.ts'))
-    .map(src => ({ src, filename: relative(templatesDir, src) } as NuxtTemplate))
-
   // User templates from options.build.templates
-  app.templates = app.templates.concat(nuxt.options.build.templates)
+  app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates)
 
   // Extend templates with hook
   await nuxt.callHook('app:templates', app)
