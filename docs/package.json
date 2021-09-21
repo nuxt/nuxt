@@ -20,7 +20,7 @@
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
-    "untyped": "^0.2.8",
+    "untyped": "^0.2.9",
     "upath": "^2.0.1",
     "vue-plausible": "^1.2.1"
   }

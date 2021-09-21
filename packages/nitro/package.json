@@ -71,11 +71,11 @@
     "vue-server-renderer": "^2.6.14"
   },
   "devDependencies": {
-    "@types/debounce": "^1.2.0",
+    "@types/debounce": "^1.2.1",
     "@types/fs-extra": "^9.0.12",
     "@types/http-proxy": "^1.17.7",
     "@types/node-fetch": "^3.0.2",
     "@types/serve-static": "^1.13.10",
-    "unbuild": "^0.4.2"
+    "unbuild": "^0.5.1"
   }
 }

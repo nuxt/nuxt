@@ -1422,7 +1422,7 @@ __metadata:
     nuxt-swc: ^0.1.0
     nuxt-vite: ^0.2.4
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: ^0.5.1
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -1471,9 +1471,9 @@ __metadata:
     scule: ^0.2.1
     std-env: ^2.3.0
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: ^0.5.1
     unctx: ^1.0.2
-    untyped: ^0.2.8
+    untyped: ^0.2.9
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -1495,7 +1495,7 @@ __metadata:
     "@rollup/plugin-replace": ^3.0.0
     "@rollup/plugin-virtual": ^2.0.3
     "@rollup/pluginutils": ^4.1.1
-    "@types/debounce": ^1.2.0
+    "@types/debounce": ^1.2.1
     "@types/fs-extra": ^9.0.12
     "@types/http-proxy": ^1.17.7
     "@types/jsdom": ^16.2.13
@@ -1537,7 +1537,7 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.7.1
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: ^0.5.1
     unenv: ^0.3.8
     unstorage: ^0.2.8
     upath: ^2.0.1
@@ -1568,7 +1568,7 @@ __metadata:
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
     "@nuxt/kit": ^0.10.0
-    "@types/debounce": ^1.2.0
+    "@types/debounce": ^1.2.1
     "@vitejs/plugin-vue": ^1.8.1
     "@vue/compiler-sfc": ^3.2.12
     chokidar: ^3.5.2
@@ -1577,7 +1577,7 @@ __metadata:
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: ^0.5.1
     upath: ^2.0.1
     vite: ^2.5.10
     vue: 3.2.12
@@ -1621,7 +1621,7 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.9
-    unbuild: ^0.4.2
+    unbuild: ^0.5.1
     upath: ^2.0.1
     url-loader: ^4.1.1
     vue: 3.2.12
@@ -2068,10 +2068,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chai@npm:^4.2.21":
-  version: 4.2.21
-  resolution: "@types/chai@npm:4.2.21"
-  checksum: dbd852dfea5065c2e86059bdc011c42a380c43bbcf80d427da228dc2a9e1efae27e7baf16570a3158571d92c206782e07fab3b703c28452a75a74380b33d1443
+"@types/chai@npm:^4.2.22":
+  version: 4.2.22
+  resolution: "@types/chai@npm:4.2.22"
+  checksum: dca66a263b25c26112c0a8c6df20316412fa54b557443a108836c07cee961aa56cc5b1763273f69eb450c83ca9f28069ff78b617bffc01806cdd83afc1c20c2a
   languageName: node
   linkType: hard
 
@@ -2098,10 +2098,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/debounce@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@types/debounce@npm:1.2.0"
-  checksum: 640fd8c5e608ffa4aeaa4a88a08e4275db76ee67e35484bf9d425a52103ce5a0ca8f89ecb7051848a66f192f12c084cbccefd4647584c4f153b36122c284c062
+"@types/debounce@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@types/debounce@npm:1.2.1"
+  checksum: bea6d414acefbee50adfe87cee10f8a855d033e4778567ab03bdc3cb2648b6bf9237ca53f4ee76fe4be75f77f86d4688411499626fe409bc870f53631d24231f
   languageName: node
   linkType: hard
 
@@ -4719,10 +4719,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "colorette@npm:2.0.2"
-  checksum: f2ec4e0c4c612737bc852cf3376e5d4261f8b6acefc9a52974c97473eeac855f8751dfcbb3cf3490bc4b644477ed9688aa4cade96d09742d0eafc8ec36fdab2b
+"colorette@npm:^2.0.3":
+  version: 2.0.4
+  resolution: "colorette@npm:2.0.4"
+  checksum: 935dddd24df4abdc45e86793780617ff5e9804dcbc5bcc891019daf5f762f7aeb3c267c25f38a5762dbc88715c6b957cc09f09836c37fe2507a817123a4a1f23
   languageName: node
   linkType: hard
 
@@ -9740,7 +9740,7 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^2.3.0
-    colorette: ^2.0.2
+    colorette: ^2.0.3
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     destr: ^1.1.0
@@ -9768,7 +9768,7 @@ fsevents@~2.3.2:
   dependencies:
     "@nuxtjs/eslint-config": ^6.0.1
     "@nuxtjs/eslint-config-typescript": ^6.0.1
-    "@types/chai": ^4.2.21
+    "@types/chai": ^4.2.22
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
     "@types/node": ^14.17.17
@@ -13574,13 +13574,6 @@ typescript@^4.4.3:
     ufo: ^0.7.9
     ws: ^8.2.1
   checksum: a1896c89e54d535e2026ed6ffea48d62f689bfb8040ab48f0d21a8766e1846981537328076d113a2decbe349deea3cc68e01ff2cf353df87470790defc9cf390
-  languageName: node
-  linkType: hard
-
-"untyped@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "untyped@npm:0.2.8"
-  checksum: 1674162edede0a6b11a1bbe1405fb9ea2aab6a5d3e0b2d29c1e490e6a0006055772762f13126c0853ebc6c755b424ab3c1a34d2022953702dd7da15e567cf7f8
   languageName: node
   linkType: hard
 

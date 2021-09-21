@@ -30,7 +30,7 @@
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.1",
     "@nuxtjs/eslint-config-typescript": "^6.0.1",
-    "@types/chai": "^4.2.21",
+    "@types/chai": "^4.2.22",
     "@types/jsdom": "^16",
     "@types/mocha": "^9.0.0",
     "@types/node": "^14.17.17",

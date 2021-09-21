@@ -6423,10 +6423,10 @@ jiti@^1.10.1, jiti@^1.11.0, jiti@^1.9.1, jiti@^1.9.2:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.11.0.tgz#64120a30d97b9bf37b8b032cf4564dfadc28984c"
   integrity sha512-/2c7e61hxxTIN34UeHBB0LCJ5Tq64kgJDV7GR+++e8XRxCKRIKmB8tH6ww1W+Z6Kgd6By+C3RSCu1lXjbPT68A==
 
-jiti@^1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.12.0.tgz#6f6e1908f9425075626400692f0b6d902db262e4"
-  integrity sha512-0yGfdPjYZ+RkYR9HRo9cbeS7UiOleg+1Wg0QNk0vOjeSaXNw0dKp7fz+JeqEpHjmFuTN48eh7bY0FsizSYOLDQ==
+jiti@^1.12.1:
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.12.1.tgz#ef5cee2a3086fb6044ae782ee73032a2017e4ac9"
+  integrity sha512-fev4NxeNRaIlvAuGbb9GHsg86KdDKCHCvtMVnuO6sWB4g9PUIYECfaH6E9SWLl4e8y2RWGPg0AWDsngE3EpRfA==
 
 joycon@^3.0.1:
   version "3.0.1"
@@ -11033,6 +11033,11 @@ untyped@^0.2.5, untyped@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.8.tgz#14a15ab7455004dc2da9972ccbadb237bbee5d7b"
   integrity sha512-SCXbOqy1sT56l5y7A4LVkXTBBMdTNneAoVrqwYlpXdK85QmOPKrPUGlitejsDK0YUpWSf1KFZWAj8CH7KpuSyg==
+
+untyped@^0.2.9:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.9.tgz#3e3df96a303dec3e2eda55fcbdc02e2ab468683d"
+  integrity sha512-8d8V+q/y5CGzV+IYnoOCMjrK+NSNp1HKO8iPQ+bV4rBP8knPIme3+j/bpej8IuMnEMxOJZNptXNOXCx7w+VJxQ==
 
 upath@^1.1.1:
   version "1.2.0"

@@ -11,8 +11,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@types/debounce": "^1.2.0",
-    "unbuild": "^0.4.2"
+    "@types/debounce": "^1.2.1",
+    "unbuild": "^0.5.1"
   },
   "dependencies": {
     "@nuxt/kit": "^0.10.0",
