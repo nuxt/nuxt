@@ -1,4 +1,5 @@
 import virtual from '@rollup/plugin-virtual'
+import { serializeImportName } from '../../utils'
 
 export interface StorageOptions {
   mounts: {
@@ -34,17 +35,13 @@ export function storage (opts: StorageOptions) {
 import { createStorage } from 'unstorage'
 import { assets } from '#assets'
 
-${driverImports.map(i => `import ${getImportName(i)} from '${i}'`).join('\n')}
+${driverImports.map(i => `import ${serializeImportName(i)} from '${i}'`).join('\n')}
 
 export const storage = createStorage({})
 
 storage.mount('/assets', assets)
 
-${mounts.map(m => `storage.mount('${m.path}', ${getImportName(m.driver)}(${JSON.stringify(m.opts)}))`).join('\n')}
+${mounts.map(m => `storage.mount('${m.path}', ${serializeImportName(m.driver)}(${JSON.stringify(m.opts)}))`).join('\n')}
 `
   })
-}
-
-function getImportName (id: string) {
-  return '_' + id.replace(/[\\/.]/g, '_')
 }

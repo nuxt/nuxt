@@ -1,6 +1,7 @@
 import { resolve } from 'upath'
 import globby from 'globby'
 import type { Plugin } from 'rollup'
+import { serializeImportName } from '../../utils'
 
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.js`
@@ -63,7 +64,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
       const chunks = files.map(id => ({
         id,
         src: resolve(dir, id).replace(/\\/g, '/'),
-        name: '_' + id.replace(/[^a-zA-Z0-9_]/g, '_'),
+        name: serializeImportName(id),
         meta: getWebpackChunkMeta(resolve(dir, id))
       })).filter(chunk => chunk.meta)
 

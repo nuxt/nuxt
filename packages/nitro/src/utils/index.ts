@@ -120,3 +120,8 @@ export function getDependencies (dir: string, mode: keyof typeof _getDependencie
   }
   return dependencies
 }
+
+// TODO: Refactor to scule (https://github.com/unjs/scule/issues/6)
+export function serializeImportName (id: string) {
+  return '_' + id.replace(/[^a-zA-Z0-9_$]/g, '_')
+}
