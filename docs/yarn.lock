@@ -6423,10 +6423,10 @@ jiti@^1.10.1, jiti@^1.11.0, jiti@^1.9.1, jiti@^1.9.2:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.11.0.tgz#64120a30d97b9bf37b8b032cf4564dfadc28984c"
   integrity sha512-/2c7e61hxxTIN34UeHBB0LCJ5Tq64kgJDV7GR+++e8XRxCKRIKmB8tH6ww1W+Z6Kgd6By+C3RSCu1lXjbPT68A==
 
-jiti@^1.12.1:
-  version "1.12.1"
-  resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.12.1.tgz#ef5cee2a3086fb6044ae782ee73032a2017e4ac9"
-  integrity sha512-fev4NxeNRaIlvAuGbb9GHsg86KdDKCHCvtMVnuO6sWB4g9PUIYECfaH6E9SWLl4e8y2RWGPg0AWDsngE3EpRfA==
+jiti@^1.12.3:
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.12.3.tgz#fe6f9cb066aa2c37981231dffb1d3f04ab4ebdb2"
+  integrity sha512-p88jl9WzvZYekMS5ZOB61bJ1SPV69o7nEpAU+mFpGzXErqLEg3WvNz3jeXylAiSfLZzvqZssrAu08N3AuvaqwQ==
 
 joycon@^3.0.1:
   version "3.0.1"
