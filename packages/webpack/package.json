@@ -43,7 +43,7 @@
     "upath": "^2.0.1",
     "url-loader": "^4.1.1",
     "vue": "3.2.13",
-    "vue-loader": "^16.7.0",
+    "vue-loader": "^16.7.1",
     "vue-style-loader": "^4.1.3",
     "webpack": "^5.53.0",
     "webpack-bundle-analyzer": "^4.4.2",
