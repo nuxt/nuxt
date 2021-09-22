@@ -66,15 +66,7 @@ Learn more at https://nuxtjs.org/guide/commands#production-deployment
 
 ## Consulting from the Nuxt team
 
-Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice, code reviews, and development from the Nuxt core team: [Hire Nuxt on Otechie](https://otechie.com/nuxt?ref=readme)
-
-## Professional support with TideLift
-
-Professionally supported Nuxt is now available!
-
-Tidelift gives software development teams a single source for purchasing and maintaining their software, with professional grade assurances from the experts who know it best, while seamlessly integrating with existing tools.
-
-[Get supported Nuxt with the Tidelift Subscription](https://tidelift.com/subscription/pkg/npm-nuxt?utm_source=npm-nuxt&utm_medium=readme).
+Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice and code reviews from the Nuxt core team: support@nuxtlabs.com
 
 ## Supporting Nuxt
 
