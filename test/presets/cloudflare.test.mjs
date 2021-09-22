@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { promises as fsp } from 'fs'
+import { TextEncoder, TextDecoder } from 'util'
 import { JSDOM } from 'jsdom'
 
 import { setupTest, testNitroBehavior } from './_tests.mjs'
@@ -42,11 +43,17 @@ describe('nitro:preset:cloudflare', () => {
               }
             }
           </script>
-          <script>${script}</script>
+          <script>window._load = function() { ${script} }</script>
         </body>
       </html>`,
       { runScripts: 'dangerously' }
     )
+
+    // https://github.com/jsdom/jsdom/issues/2524
+    // https://github.com/inrupt/solid-client-authn-js/issues/1676#issuecomment-917016646
+    dom.window.TextEncoder = TextEncoder
+    dom.window.TextDecoder = TextDecoder
+    dom.window._load()
 
     return async ({ url, headers, method, body }) => {
       const data = await dom.window.handleEvent({
