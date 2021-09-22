@@ -12,6 +12,7 @@ import type { StorageOptions } from './rollup/plugins/storage'
 import type { AssetOptions } from './rollup/plugins/assets'
 import type { ServerMiddleware } from './server/middleware'
 import type { RollupConfig } from './rollup/config'
+import type { Options as EsbuildOptions } from './rollup/plugins/esbuild'
 
 export interface NitroHooks {
   'nitro:document': (htmlTemplate: { src: string, contents: string, dst: string, compiled: string }) => void
@@ -31,6 +32,9 @@ export interface NitroContext {
   node: boolean
   preset: string
   rollupConfig?: RollupConfig
+  esbuild?: {
+    options?: EsbuildOptions
+  }
   moduleSideEffects: string[]
   renderer: string
   serveStatic: boolean
