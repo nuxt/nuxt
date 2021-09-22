@@ -1,29 +1,32 @@
 <!---
-Provide a general summary of your changes in the title above.
-Example: fix(nitro): fix assets dir handling
+☝️ PR title should follow conventional commits (https://conventionalcommits.org)
+
+Please carefully read the contribution docs before creating a pull request
+ 👉 https://v3.nuxtjs.org/community/contribution
 -->
 
-## 🔗 Linked issue
+### 🔗 Linked issue
 
 <!-- ❗ Please ensure there is an open issue  -->
-...
+#...
 
-## 🖊️ Types of changes
+### ❓ Type of change
 
-<!-- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
+<!-- What types of changes does your code introduce? Put `x's in all the boxes that apply: -->
+
 - [ ] Documentation (updates to the documentation or readme)
-- [ ] Bug fix (a non-breaking change which fixes an issue)
-- [ ] Enhancenment (improving an exisiting functionality like performance)
-- [ ] New feature (a non-breaking change which adds functionality)
+- [ ] Bug fix (a non-breaking change that fixes an issue)
+- [ ] Enhancement (improving an existing functionality like performance)
+- [ ] New feature (a non-breaking change that adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
 
-## 📚 Description
+### 📚 Description
 
 <!-- Describe your changes in detail -->
 <!-- Why is this change required? What problem does it solve? -->
 <!-- If it resolves an open issue, please link to the issue here. For example "Resolves: #1337" -->
 
-## 📝 Checklist
+### 📝 Checklist
 
 <!-- Put an `x` in all the boxes that apply. -->
 <!-- If your change requires a documentation PR, please link it appropriately -->
