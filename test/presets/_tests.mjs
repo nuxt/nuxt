@@ -1,5 +1,5 @@
-import { resolve } from 'path'
 import { pathToFileURL } from 'url'
+import { resolve } from 'path'
 import destr from 'destr'
 import { listen } from 'listhen'
 import { $fetch } from 'ohmyfetch'
@@ -24,7 +24,8 @@ export function setupTest (preset) {
     fetch: url => $fetch(url, { baseURL: ctx.server.url })
   }
 
-  it('nitro build', async () => {
+  before('nitro build', async function () {
+    this.timeout(60000)
     const nuxtCLI = isBridge
       ? resolve(ctx.rootDir, 'node_modules/nuxt/bin/nuxt.js')
       : resolveWorkspace('packages/nuxi/bin/nuxi.cjs')
@@ -37,7 +38,7 @@ export function setupTest (preset) {
         NODE_ENV: 'production'
       }
     })
-  }).timeout(60000)
+  })
 
   after('Cleanup', async () => {
     if (ctx.server) {
@@ -52,7 +53,7 @@ export async function startServer (ctx, handle) {
   ctx.server = await listen(handle)
 }
 
-export function testNitroBehavior (ctx, getHandler) {
+export function testNitroBehavior (_ctx, getHandler) {
   let handler
 
   it('setup handler', async () => {
