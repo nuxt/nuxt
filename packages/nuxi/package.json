@@ -19,7 +19,7 @@
     "fsevents": "~2.3.2"
   },
   "devDependencies": {
-    "@nuxt/design": "0.0.5",
+    "@nuxt/design": "0.0.6",
     "@nuxt/kit": "^0.10.0",
     "@types/clear": "^0",
     "@types/debounce-promise": "^3",
