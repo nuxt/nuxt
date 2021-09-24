@@ -50,7 +50,14 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      vuePlugin(),
+      vuePlugin({
+        // workaround for https://github.com/vuejs/vue-next/issues/4666
+        template: {
+          compilerOptions: {
+            ssrRuntimeModuleName: 'vue/server-renderer/index.mjs'
+          }
+        }
+      }),
       transformNuxtSetup()
     ]
   } as ViteOptions)

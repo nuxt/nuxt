@@ -14,7 +14,13 @@ export function vue (ctx: WebpackConfigContext) {
   config.module.rules.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
-    options: options.build.loaders.vue
+    options: {
+      // workaround for https://github.com/vuejs/vue-next/issues/4666
+      compilerOptions: {
+        ssrRuntimeModuleName: 'vue/server-renderer/index.mjs'
+      },
+      ...options.build.loaders.vue
+    }
   })
 
   if (ctx.isClient) {
