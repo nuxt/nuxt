@@ -1,6 +1,7 @@
 import { existsSync, promises as fsp } from 'fs'
 import { resolve } from 'upath'
 import dotenv from 'dotenv'
+import { LoadNuxtConfigOptions } from './load'
 
 export interface LoadDotEnvOptions {
   /** The project root directory (either absolute or relative to the current working directory). */
@@ -9,7 +10,7 @@ export interface LoadDotEnvOptions {
    * What file to look in for environment variables (either absolute or relative
    * to the current working directory). For example, `.env`.
    */
-  dotenvFile: string
+  dotenvFile: string | false
   /**
    * Whether to interpolate variables within .env.
    *
@@ -31,25 +32,31 @@ export interface LoadDotEnvOptions {
  *
  * @param rootDir - The project root directory (either absolute or relative to the current working directory).
  */
-export async function loadEnv (rootDir: string) {
+export async function loadEnv (rootDir: string, options: LoadNuxtConfigOptions['envConfig'] = {}) {
+  const targetEnv = options.env ?? process.env
+
   // Load env
   const env = await loadDotenv({
     rootDir,
-    dotenvFile: '.env',
-    env: process.env,
-    expand: true
+    dotenvFile: options.dotenv ?? '.env',
+    env: targetEnv,
+    expand: options.expand ?? true
   })
 
   // Fill process.env so it is accessible in nuxt.config
   for (const key in env) {
-    if (!key.startsWith('_') && process.env[key] === undefined) {
-      process.env[key] = env[key]
+    if (!key.startsWith('_') && targetEnv[key] === undefined) {
+      targetEnv[key] = env[key]
     }
   }
 }
 
 /** Load environment variables into an object. */
 export async function loadDotenv (opts: LoadDotEnvOptions) {
+  if (!opts.dotenvFile) {
+    return
+  }
+
   const env = Object.create(null)
 
   const dotenvFile = resolve(opts.rootDir, opts.dotenvFile)

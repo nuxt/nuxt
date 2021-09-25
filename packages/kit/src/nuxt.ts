@@ -62,7 +62,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     rootDir: opts.rootDir,
     for: opts.dev ? 'dev' : 'build',
     configOverrides: opts.config,
-    ready: opts.ready
+    ready: opts.ready,
+    envConfig: opts.envConfig
   })
   return nuxt as Nuxt
 }

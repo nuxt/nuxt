@@ -6,6 +6,7 @@ import * as rc from 'rc9'
 import { tryResolveModule, requireModule, scanRequireTree } from '../utils/cjs'
 import { NuxtOptions } from '../types/config'
 import nuxtConfigSchema from './schema'
+import { loadEnv } from './env'
 
 export interface LoadNuxtConfigOptions {
   /** Your project root directory (either absolute or relative to the current working directory). */
@@ -14,6 +15,11 @@ export interface LoadNuxtConfigOptions {
   configFile?: string
   /** Any overrides to your Nuxt configuration. */
   config?: Record<string, any>
+  envConfig?: {
+    dotenv?: string | false
+    env?: Record<string, string | undefined>
+    expand?: boolean
+  }
 }
 
 export function loadNuxtConfig (opts: LoadNuxtConfigOptions): NuxtOptions {
@@ -43,6 +49,8 @@ export function loadNuxtConfig (opts: LoadNuxtConfigOptions): NuxtOptions {
   if (!nuxtConfig.rootDir) {
     nuxtConfig.rootDir = rootDir
   }
+
+  loadEnv(rootDir, opts.envConfig)
 
   // Resolve and apply defaults
   return applyDefaults(nuxtConfigSchema, nuxtConfig) as NuxtOptions
