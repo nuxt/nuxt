@@ -68,7 +68,6 @@ export function createNuxt (options: CreateOptions) {
   const nuxt: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
-    state: {},
     payload: {},
     isHydrating: process.client,
     ...options
