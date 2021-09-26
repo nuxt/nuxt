@@ -2,7 +2,7 @@
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/windows/badge.svg?branch=dev&event=push" alt="Windows Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
@@ -116,7 +116,7 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/nuxt/nuxt.js)
 
-Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-guide#codefund_ad)
+Please refer to our [Contribution Guide](https://nuxtjs.org/contribution-guide/)
 
 ## Cross-browser testing
 

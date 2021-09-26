@@ -109,6 +109,7 @@ export async function ensureBuild (cmd) {
       const changed = compareSnapshots(previousBuild.snapshot, currentBuild.snapshot)
       if (!changed) {
         consola.success('Skipping webpack build as no changes detected')
+        await nuxt.close()
         return
       } else {
         consola.info(`Doing webpack rebuild because ${changed} modified`)
