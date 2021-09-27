@@ -1,6 +1,6 @@
 // Based on https://github.com/egoist/rollup-plugin-esbuild (MIT)
 
-import { extname, relative } from 'upath'
+import { extname, relative } from 'pathe'
 import type { Plugin, PluginContext } from 'rollup'
 import { Loader, TransformResult, transform } from 'esbuild'
 import { createFilter } from '@rollup/pluginutils'

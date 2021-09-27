@@ -1,4 +1,4 @@
-import { join } from 'upath'
+import { join } from 'pathe'
 import { existsSync, readFile, writeFile } from 'fs-extra'
 import consola from 'consola'
 import { extendPreset } from '../utils'

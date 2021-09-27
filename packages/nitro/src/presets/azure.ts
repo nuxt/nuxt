@@ -1,7 +1,7 @@
 import consola from 'consola'
 import fse from 'fs-extra'
 import globby from 'globby'
-import { join, resolve } from 'upath'
+import { join, resolve } from 'pathe'
 import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 

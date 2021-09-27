@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { addPluginTemplate, useNuxt } from '@nuxt/kit'
 import { stringifyQuery } from 'ufo'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import { readFile, writeFile } from 'fs-extra'
 import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware } from '@nuxt/nitro'
 import { AsyncLoadingPlugin } from './async-loading'

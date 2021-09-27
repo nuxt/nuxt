@@ -1,4 +1,4 @@
-import { join, resolve } from 'upath'
+import { join, resolve } from 'pathe'
 import env from 'std-env'
 import createRequire from 'create-require'
 import { pascalCase } from 'scule'
@@ -478,7 +478,7 @@ export default {
    *
    * @example
    * ```js
-   * import { resolve } from 'path'
+   * import { resolve } from 'pathe'
    * export default {
    *   alias: {
    *     'images': resolve(__dirname, './assets/images'),
@@ -627,7 +627,7 @@ export default {
    * @example
    * ```js
    * import fs from 'fs'
-   * import path from 'path'
+   * import path from 'pathe'
    * export default {
    *   hooks: {
    *     build: {

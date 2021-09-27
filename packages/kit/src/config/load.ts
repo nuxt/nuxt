@@ -1,5 +1,5 @@
 import { existsSync } from 'fs'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import * as rc from 'rc9'

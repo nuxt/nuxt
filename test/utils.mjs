@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'fs'
 import { execSync } from 'child_process'
-import { resolve, dirname } from 'path'
+import { resolve, dirname } from 'pathe'
 import { fileURLToPath } from 'url'
 import defu from 'defu'
 import hash from 'object-hash'

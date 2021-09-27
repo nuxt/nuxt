@@ -1,4 +1,4 @@
-import { basename, extname, join, dirname, relative } from 'upath'
+import { basename, extname, join, dirname, relative } from 'pathe'
 import globby from 'globby'
 import { pascalCase, splitByCase } from 'scule'
 import type { ScanDir, Component } from './types'

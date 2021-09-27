@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import { startServer, setupTest, testNitroBehavior, importModule } from './_tests.mjs'
 
 describe('nitro:preset:node', () => {

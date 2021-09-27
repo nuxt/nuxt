@@ -1,4 +1,4 @@
-import { resolve, relative } from 'upath'
+import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
 import debounce from 'debounce-promise'
 import type { Nuxt } from '@nuxt/kit'

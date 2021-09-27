@@ -1,4 +1,4 @@
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import { extendPreset, writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 import { node } from './node'

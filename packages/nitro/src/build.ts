@@ -1,4 +1,4 @@
-import { resolve, join } from 'upath'
+import { resolve, join } from 'pathe'
 import consola from 'consola'
 import { rollup, watch as rollupWatch } from 'rollup'
 import { readFile, emptyDir, copy } from 'fs-extra'
@@ -75,7 +75,7 @@ async function _build (nitroContext: NitroContext) {
   await nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
 
   return {
-    entry: resolve(nitroContext.rollupConfig.output.dir, nitroContext.rollupConfig.output.entryFileNames)
+    entry: resolve(nitroContext.rollupConfig.output.dir, nitroContext.rollupConfig.output.entryFileNames as string)
   }
 }
 

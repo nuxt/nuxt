@@ -47,9 +47,9 @@
     "lerna": "^4.0.0",
     "mocha": "^9.1.1",
     "object-hash": "^2.2.0",
+    "pathe": "^0.2.0",
     "typescript": "^4.4.3",
-    "unbuild": "^0.5.4",
-    "upath": "^2.0.1"
+    "unbuild": "^0.5.4"
   },
   "packageManager": "yarn@3.0.2"
 }

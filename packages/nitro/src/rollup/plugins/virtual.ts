@@ -1,4 +1,4 @@
-import * as path from 'upath'
+import * as path from 'pathe'
 import type { Plugin } from 'rollup'
 
 // Based on https://github.com/rollup/plugins/blob/master/packages/virtual/src/index.ts

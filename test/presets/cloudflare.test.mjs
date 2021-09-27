@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import { promises as fsp } from 'fs'
 import { TextEncoder, TextDecoder } from 'util'
 import { JSDOM } from 'jsdom'

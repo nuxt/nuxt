@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import { setupTest, startServer, testNitroBehavior, importModule } from './_tests.mjs'
 
 describe('nitro:preset:vercel', () => {

@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import type { Plugin } from 'rollup'
 import createEtag from 'etag'
 import mime from 'mime'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import globby from 'globby'
 import virtual from './virtual'
 

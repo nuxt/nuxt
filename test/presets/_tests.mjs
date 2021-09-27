@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'url'
-import { resolve } from 'path'
+import { resolve } from 'pathe'
 import destr from 'destr'
 import { listen } from 'listhen'
 import { $fetch } from 'ohmyfetch'

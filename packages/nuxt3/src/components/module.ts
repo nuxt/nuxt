@@ -1,5 +1,5 @@
 import { statSync } from 'fs'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'

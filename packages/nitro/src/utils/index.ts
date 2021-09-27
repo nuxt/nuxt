@@ -1,4 +1,4 @@
-import { relative, dirname, resolve } from 'upath'
+import { relative, dirname, resolve } from 'pathe'
 import fse from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'

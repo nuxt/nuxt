@@ -21,7 +21,7 @@
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
     "untyped": "^0.2.9",
-    "upath": "^2.0.1",
+    "pathe": "^0.2.0",
     "vue-plausible": "^1.2.1"
   }
 }

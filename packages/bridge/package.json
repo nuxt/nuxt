@@ -21,8 +21,8 @@
     "nuxi": "^0.10.0",
     "nuxt-swc": "^0.1.0",
     "nuxt-vite": "^0.2.4",
-    "ufo": "^0.7.9",
-    "upath": "^2.0.1"
+    "pathe": "^0.2.0",
+    "ufo": "^0.7.9"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",

@@ -1,4 +1,4 @@
-import { isAbsolute } from 'upath'
+import { isAbsolute } from 'pathe'
 import { ProvidePlugin } from 'webpack'
 import { WebpackConfigContext, applyPresets, getWebpackConfig } from '../utils/config'
 import { nuxt } from '../presets/nuxt'

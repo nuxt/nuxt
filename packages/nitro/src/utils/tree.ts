@@ -1,4 +1,4 @@
-import { resolve, dirname, relative } from 'upath'
+import { resolve, dirname, relative } from 'pathe'
 import globby from 'globby'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'

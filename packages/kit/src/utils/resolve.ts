@@ -1,5 +1,5 @@
 import { existsSync, lstatSync, readdirSync } from 'fs'
-import { basename, dirname, resolve, join } from 'upath'
+import { basename, dirname, resolve, join } from 'pathe'
 import globby from 'globby'
 
 export interface ResolveOptions {

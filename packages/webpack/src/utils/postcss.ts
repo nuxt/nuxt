@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'upath'
+import path from 'pathe'
 import consola from 'consola'
 import { defaults, merge, cloneDeep } from 'lodash'
 import createResolver from 'postcss-import-resolver'

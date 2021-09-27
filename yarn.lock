@@ -1421,9 +1421,9 @@ __metadata:
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
     nuxt-vite: ^0.2.4
+    pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    upath: ^2.0.1
   languageName: unknown
   linkType: soft
 
@@ -1467,6 +1467,7 @@ __metadata:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     jiti: ^1.12.3
+    pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
     std-env: ^2.3.0
@@ -1474,7 +1475,6 @@ __metadata:
     unbuild: latest
     unctx: ^1.0.2
     untyped: ^0.2.9
-    upath: ^2.0.1
   languageName: unknown
   linkType: soft
 
@@ -1528,6 +1528,7 @@ __metadata:
     node-fetch: ^3.0.0
     ohmyfetch: ^0.3.1
     ora: ^6.0.1
+    pathe: ^0.2.0
     pretty-bytes: ^5.6.0
     rollup: ^2.57.0
     rollup-plugin-analyzer: ^4.0.0
@@ -1576,9 +1577,9 @@ __metadata:
     debounce: ^1.2.1
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
+    pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    upath: ^2.0.1
     vite: ^2.5.10
     vue: 3.2.16
   languageName: unknown
@@ -1613,6 +1614,7 @@ __metadata:
     lodash: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.3.0
+    pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.7
     postcss-import: ^14.0.2
@@ -1623,7 +1625,6 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.9
     unbuild: latest
-    upath: ^2.0.1
     url-loader: ^4.1.1
     vue: 3.2.16
     vue-loader: ^16.8.1
@@ -9886,9 +9887,9 @@ fsevents@~2.3.2:
     jiti: ^1.12.3
     listhen: ^0.2.4
     mri: ^1.2.0
+    pathe: ^0.2.0
     scule: ^0.2.1
     unbuild: latest
-    upath: ^2.0.1
     v8-compile-cache: ^2.3.0
   dependenciesMeta:
     fsevents:
@@ -9922,9 +9923,9 @@ fsevents@~2.3.2:
     lerna: ^4.0.0
     mocha: ^9.1.1
     object-hash: ^2.2.0
+    pathe: ^0.2.0
     typescript: ^4.4.3
     unbuild: ^0.5.4
-    upath: ^2.0.1
   languageName: unknown
   linkType: soft
 
@@ -9993,11 +9994,11 @@ fsevents@~2.3.2:
     lodash: ^4.17.21
     nuxi: ^0.10.0
     ohmyfetch: ^0.3.1
+    pathe: ^0.2.0
     scule: ^0.2.1
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.2.13
-    upath: ^2.0.1
     vue: ^3.2.16
     vue-meta: next
     vue-router: ^4.0.11
@@ -10507,6 +10508,13 @@ fsevents@~2.3.2:
   version: 4.0.0
   resolution: "path-type@npm:4.0.0"
   checksum: 5b1e2daa247062061325b8fdbfd1fb56dde0a448fb1455453276ea18c60685bdad23a445dc148cf87bc216be1573357509b7d4060494a6fd768c7efad833ee45
+  languageName: node
+  linkType: hard
+
+"pathe@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "pathe@npm:0.2.0"
+  checksum: 9a8149ce152088f30d15b0b03a7c128ba21f16b4dc1f3f90fe38eee9f6d0f1d6da8e4e47bd2a4f9e14aaac7c30ed01cfc86216479011de2bdc598b65e6f19f41
   languageName: node
   linkType: hard
 

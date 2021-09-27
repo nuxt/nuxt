@@ -3,7 +3,7 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
-import { dirname } from 'upath'
+import { dirname } from 'pathe'
 import hash from 'hash-sum'
 import { uniq } from 'lodash'
 import { writeFile, mkdirp } from 'fs-extra'

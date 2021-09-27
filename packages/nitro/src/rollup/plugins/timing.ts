@@ -1,4 +1,4 @@
-import { extname } from 'upath'
+import { extname } from 'pathe'
 import type { Plugin, RenderedChunk } from 'rollup'
 
 export interface Options { }

@@ -1,4 +1,4 @@
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import lodashTemplate from 'lodash/template'
 import defu from 'defu'
 import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, NuxtTemplate, normalizePlugin, normalizeTemplate } from '@nuxt/kit'

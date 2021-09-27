@@ -1,5 +1,5 @@
 import * as vite from 'vite'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import consola from 'consola'
 import type { Nuxt } from '@nuxt/kit'
 import type { InlineConfig, SSROptions } from 'vite'

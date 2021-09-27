@@ -1,4 +1,4 @@
-import { resolve, join, extname } from 'upath'
+import { resolve, join, extname } from 'pathe'
 import { joinURL } from 'ufo'
 import globby from 'globby'
 import { watch } from 'chokidar'

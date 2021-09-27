@@ -1,5 +1,5 @@
 import * as vite from 'vite'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import { mkdirp, readJSON, writeFile } from 'fs-extra'
 import consola from 'consola'
 import vitePlugin from '@vitejs/plugin-vue'

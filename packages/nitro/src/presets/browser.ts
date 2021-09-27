@@ -1,5 +1,5 @@
 import { existsSync, writeFile } from 'fs-extra'
-import { resolve } from 'upath'
+import { resolve } from 'pathe'
 import consola from 'consola'
 import { extendPreset, prettyPath } from '../utils'
 import { NitroPreset, NitroContext, NitroInput } from '../context'
