@@ -66,7 +66,7 @@
     "improved-yarn-audit": "^2.3.3",
     "jest": "^26.6.3",
     "jiti": "^1.11.0",
-    "jsdom": "^16.7.0",
+    "jsdom": "^17.0.0",
     "jsonfile": "^6.1.0",
     "klaw-sync": "^6.0.0",
     "lerna": "^4.0.0",
