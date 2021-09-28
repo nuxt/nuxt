@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import consola from 'consola'
-import { extendPreset, writeFile, prettyPath } from '../utils'
+import { extendPreset, writeFile, prettyPath, hl } from '../utils'
 import { NitroContext, NitroPreset } from '../context'
 import { worker } from './worker'
 
@@ -17,7 +17,7 @@ export const cloudflare: NitroPreset = extendPreset(worker, {
       if (inDir) {
         inDir = 'in ' + inDir
       }
-      consola.success('Ready to run `wrangler publish`', inDir)
+      consola.success('Ready to run', hl('npx wrangler publish ' + inDir), 'or', hl('npx miniflare ' + prettyPath(output.serverDir) + '/index.mjs --site ' + prettyPath(output.publicDir)), 'for local testing')
     }
   }
 })

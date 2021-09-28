@@ -25,6 +25,15 @@ bucket = ".output/public"
 entry-point = ".output"
 ```
 
+## Testing locally
+
+You can use [miniflare](https://miniflare.dev/), a local Cloudflare Workers development server, to test your app locally:
+
+```bash
+NITRO_PRESET=cloudflare yarn build
+npx miniflare .output/server/index.mjs --site .output/public
+```
+
 ## Deploy from your local machine using wrangler
 
 Install [wrangler](https://github.com/cloudflare/wrangler) and login to your Cloudflare account:
