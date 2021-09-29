@@ -62,6 +62,12 @@ export default defineNuxtCommand({
       if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$|pages$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
+      if (['addDir', 'unlinkDir'].includes(_event) && file.match(/pages$/)) {
+        dLoad(true, `pages/ ${_event === 'addDir' ? 'created' : 'removed'}`)
+      }
+      if (['add', 'unlink'].includes(_event) && file.match(/app\.(js|ts|mjs|jsx|tsx|vue)$/)) {
+        dLoad(true, `${relative(rootDir, file)}/ ${_event === 'add' ? 'created' : 'removed'}`)
+      }
     })
 
     await load(false)
