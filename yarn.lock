@@ -1570,7 +1570,7 @@ __metadata:
     table: ^6.7.1
     ufo: ^0.7.9
     unbuild: latest
-    unenv: ^0.3.8
+    unenv: ^0.3.10
     unstorage: ^0.2.8
     upath: ^2.0.1
     vue: 3.2.19
@@ -13749,9 +13749,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.3.8":
-  version: 0.3.8
-  resolution: "unenv@npm:0.3.8"
+"unenv@npm:^0.3.10":
+  version: 0.3.10
+  resolution: "unenv@npm:0.3.10"
   dependencies:
     buffer: ^6.0.2
     defu: ^5.0.0
@@ -13762,7 +13762,7 @@ fsevents@~2.3.2:
     process: ^0.11.10
     upath: ^2.0.1
     util: ^0.12.4
-  checksum: 4215422f908a9083a651e6256ca02ef257c7df26d5ed1edec4749f4a93781b3e1eb38f07c8b276da2e3b26105701694a081f7e787e1af2293f427d381dcff992
+  checksum: 502a699d88bbe45e26920d74dd756b63e78e748f73963a0c62b58584f974b856367d1c3c3d697f52b889b9cc1e750d3157caa5bb0d86c51cf32d482d5c383ec8
   languageName: node
   linkType: hard
 
