@@ -15,10 +15,10 @@ const getSSRApp = cachedImport(() => import('#build/dist/server/server.mjs'))
 const getSSRRenderer = cachedResult(async () => {
   // Load client manifest
   const clientManifest = await getClientManifest()
-  if (!clientManifest) { throw new Error('client.manifest is missing') }
+  if (!clientManifest) { throw new Error('client.manifest is not available') }
   // Load server bundle
   const createSSRApp = await getSSRApp()
-  if (!createSSRApp) { throw new Error('Server bundle is missing') }
+  if (!createSSRApp) { throw new Error('Server bundle is not available') }
   // Create renderer
   const { renderToString } = await import('#nitro-renderer')
   return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath: clientManifest.publicPath || '/_nuxt' }).renderToString
@@ -141,10 +141,7 @@ function _interopDefault (e) {
 }
 
 function cachedImport <M> (importer: () => Promise<M>) {
-  return cachedResult(() => importer().then(_interopDefault).catch((err) => {
-    if (err.code === 'ERR_MODULE_NOT_FOUND') { return null }
-    throw err
-  }))
+  return cachedResult(() => importer().then(_interopDefault))
 }
 
 function cachedResult <T> (fn: () => Promise<T>): () => Promise<T> {
