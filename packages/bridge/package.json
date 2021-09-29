@@ -15,7 +15,7 @@
     "@nuxt/kit": "^0.10.0",
     "@nuxt/nitro": "^0.10.0",
     "@nuxt/postcss8": "^1.1.3",
-    "@vue/composition-api": "^1.2.1",
+    "@vue/composition-api": "^1.2.2",
     "fs-extra": "^10.0.0",
     "node-fetch": "^3.0.0",
     "nuxi": "^0.10.0",

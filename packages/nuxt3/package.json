@@ -21,9 +21,9 @@
     "@nuxt/nitro": "^0.10.0",
     "@nuxt/vite-builder": "^0.10.0",
     "@nuxt/webpack-builder": "^0.10.0",
-    "@vue/reactivity": "3.2.16",
-    "@vue/server-renderer": "^3.2.16",
-    "@vue/shared": "3.2.16",
+    "@vue/reactivity": "3.2.19",
+    "@vue/server-renderer": "^3.2.19",
+    "@vue/shared": "3.2.19",
     "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
@@ -38,8 +38,8 @@
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.9",
-    "unplugin": "^0.2.13",
-    "vue": "^3.2.16",
+    "unplugin": "^0.2.16",
+    "vue": "^3.2.19",
     "vue-router": "^4.0.11",
     "vuex5": "^0.5.0-testing.3"
   },
@@ -50,8 +50,8 @@
     "vue-meta": "next"
   },
   "peerDependencies": {
-    "@vue/reactivity": "3.2.16",
-    "@vue/shared": "3.2.16",
-    "vue": "3.2.16"
+    "@vue/reactivity": "3.2.19",
+    "@vue/shared": "3.2.19",
+    "vue": "3.2.19"
   }
 }
