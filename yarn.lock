@@ -1442,7 +1442,10 @@ __metadata:
     "@types/fs-extra": ^9.0.13
     "@types/node-fetch": ^3.0.2
     "@vue/composition-api": ^1.2.2
+    acorn: ^8.5.0
+    estree-walker: ^3.0.0
     fs-extra: ^10.0.0
+    magic-string: ^0.25.7
     node-fetch: ^3.0.0
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
@@ -1450,6 +1453,7 @@ __metadata:
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
+    unplugin: ^0.2.16
   languageName: unknown
   linkType: soft
 
@@ -3180,7 +3184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.0.4, acorn@npm:^8.3.0, acorn@npm:^8.4.1":
+"acorn@npm:^8.0.4, acorn@npm:^8.3.0, acorn@npm:^8.4.1, acorn@npm:^8.5.0":
   version: 8.5.0
   resolution: "acorn@npm:8.5.0"
   bin:
@@ -6675,6 +6679,13 @@ __metadata:
   version: 1.0.1
   resolution: "estree-walker@npm:1.0.1"
   checksum: 7e70da539691f6db03a08e7ce94f394ce2eef4180e136d251af299d41f92fb2d28ebcd9a6e393e3728d7970aeb5358705ddf7209d52fbcb2dd4693f95dcf925f
+  languageName: node
+  linkType: hard
+
+"estree-walker@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "estree-walker@npm:3.0.0"
+  checksum: 3b6b5fd5e37df9e2f472fe6b39eecee9f6ae395676c1535a9bca70ed6bf4a7233747c2f56b8cfa47bdb47411589b87e4ef108875d18415d7e3d2b2225b752e75
   languageName: node
   linkType: hard
 
