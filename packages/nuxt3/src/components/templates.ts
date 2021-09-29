@@ -1,5 +1,5 @@
 
-import { relative } from 'upath'
+import { relative } from 'pathe'
 
 import type { Component } from './types'
 
