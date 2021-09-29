@@ -25,7 +25,7 @@
   },
   "resolutions": {
     "nuxt3": "workspace:./packages/nuxt3",
-    "unbuild": "^0.5.4"
+    "unbuild": "^0.5.5"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.1",
@@ -33,7 +33,7 @@
     "@types/chai": "^4.2.22",
     "@types/jsdom": "^16",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^14.17.19",
+    "@types/node": "^14.17.20",
     "@types/object-hash": "^2",
     "chai": "^4.3.4",
     "esbuild": "^0.13.3",
@@ -41,14 +41,14 @@
     "eslint-plugin-jsdoc": "^36.1.0",
     "execa": "^5.1.1",
     "globby": "^11.0.4",
-    "jiti": "^1.12.3",
+    "jiti": "^1.12.5",
     "lerna": "^4.0.0",
     "miniflare": "^1.4.1",
     "mocha": "^9.1.2",
     "object-hash": "^2.2.0",
     "pathe": "^0.2.0",
     "typescript": "^4.4.3",
-    "unbuild": "^0.5.4"
+    "unbuild": "^0.5.5"
   },
   "packageManager": "yarn@3.0.2"
 }

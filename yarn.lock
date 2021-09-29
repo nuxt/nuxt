@@ -1443,7 +1443,7 @@ __metadata:
     "@types/node-fetch": ^3.0.2
     "@vue/composition-api": ^1.2.2
     acorn: ^8.5.0
-    estree-walker: ^2.0.0
+    estree-walker: ^2.0.2
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     node-fetch: ^3.0.0
@@ -1497,12 +1497,12 @@ __metadata:
     globby: ^11.0.4
     hash-sum: ^2.0.0
     hookable: ^5.0.0
-    jiti: ^1.12.3
+    jiti: ^1.12.5
     lodash: ^4.17.21
     pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
-    std-env: ^2.3.0
+    std-env: ^2.3.1
     ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
@@ -1553,7 +1553,7 @@ __metadata:
     hookable: ^5.0.0
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
-    jiti: ^1.12.3
+    jiti: ^1.12.5
     listhen: ^0.2.4
     mime: ^2.5.2
     node-fetch: ^3.0.0
@@ -1566,7 +1566,7 @@ __metadata:
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
-    std-env: ^2.3.0
+    std-env: ^2.3.1
     table: ^6.7.1
     ufo: ^0.7.9
     unbuild: latest
@@ -1610,7 +1610,7 @@ __metadata:
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.5.10
+    vite: ^2.6.0
     vue: 3.2.19
   languageName: unknown
   linkType: soft
@@ -1929,7 +1929,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.0.2, @rollup/plugin-node-resolve@npm:^13.0.5":
+"@rollup/plugin-node-resolve@npm:^13.0.5":
   version: 13.0.5
   resolution: "@rollup/plugin-node-resolve@npm:13.0.5"
   dependencies:
@@ -2319,10 +2319,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.19":
-  version: 14.17.19
-  resolution: "@types/node@npm:14.17.19"
-  checksum: 3365ee4fe7878b0f1d36dc4372146322c7f4db3b0574401753084144b04356e02d15cd55db79e77dda071a06cbcc37f57c8888441fd4c8b1c24f9765c7441b2a
+"@types/node@npm:^14.17.20":
+  version: 14.17.20
+  resolution: "@types/node@npm:14.17.20"
+  checksum: c704d95c4e4377b0b4c72206068e99bbc635e27b42100a51f56e46ec0917a73f64069bcb50c07b30d34e22694735f607a1da61314acdf717a55a3ca020e12bb9
   languageName: node
   linkType: hard
 
@@ -4643,7 +4643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ci-info@npm:^3.0.0":
+"ci-info@npm:^3.0.0, ci-info@npm:^3.1.1":
   version: 3.2.0
   resolution: "ci-info@npm:3.2.0"
   checksum: c68995a94e95ce3f233ff845e62dfc56f2e8ff1e3f5c1361bcdd520cbbc9726d8a54cbc1a685cb9ee19c3c5e71a1dade6dda23eb364b59b8e6c32508a9b761bc
@@ -6218,7 +6218,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.28, esbuild@npm:^0.12.9":
+"esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.9":
   version: 0.12.29
   resolution: "esbuild@npm:0.12.29"
   bin:
@@ -6227,7 +6227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.13.3":
+"esbuild@npm:^0.13.2, esbuild@npm:^0.13.3":
   version: 0.13.3
   resolution: "esbuild@npm:0.13.3"
   dependencies:
@@ -6661,7 +6661,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"estree-walker@npm:2.0.2, estree-walker@npm:^2.0.0, estree-walker@npm:^2.0.1, estree-walker@npm:^2.0.2":
+"estree-walker@npm:2.0.2, estree-walker@npm:^2.0.1, estree-walker@npm:^2.0.2":
   version: 2.0.2
   resolution: "estree-walker@npm:2.0.2"
   checksum: 6151e6f9828abe2259e57f5fd3761335bb0d2ebd76dc1a01048ccee22fabcfef3c0859300f6d83ff0d1927849368775ec5a6d265dde2f6de5a1be1721cd94efc
@@ -8413,12 +8413,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"jiti@npm:^1.10.1, jiti@npm:^1.12.2, jiti@npm:^1.12.3":
+"jiti@npm:^1.10.1":
   version: 1.12.3
   resolution: "jiti@npm:1.12.3"
   bin:
     jiti: bin/jiti.js
   checksum: bd3e51dcb1f6332978e171532d20df94be97a00c89884b3076b13dfa9b0ccc8dcaf8e514a4cc5cc7ba57c7c5a9b1b270888fe8c8348528a8fa259765d210bc87
+  languageName: node
+  linkType: hard
+
+"jiti@npm:^1.12.5":
+  version: 1.12.5
+  resolution: "jiti@npm:1.12.5"
+  bin:
+    jiti: bin/jiti.js
+  checksum: 00a1674f38b77c725597c175389da67894d08b386d1d3dac9ecafec3abaf75793b2ea369ed2e688f2e03f495488c843da790c111cc5e24aa533c09051a6fe704
   languageName: node
   linkType: hard
 
@@ -10013,7 +10022,7 @@ fsevents@~2.3.2:
     destr: ^1.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    jiti: ^1.12.3
+    jiti: ^1.12.5
     listhen: ^0.2.4
     mri: ^1.2.0
     pathe: ^0.2.0
@@ -10038,7 +10047,7 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.22
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.19
+    "@types/node": ^14.17.20
     "@types/object-hash": ^2
     chai: ^4.3.4
     esbuild: ^0.13.3
@@ -10046,14 +10055,14 @@ fsevents@~2.3.2:
     eslint-plugin-jsdoc: ^36.1.0
     execa: ^5.1.1
     globby: ^11.0.4
-    jiti: ^1.12.3
+    jiti: ^1.12.5
     lerna: ^4.0.0
     miniflare: ^1.4.1
     mocha: ^9.1.2
     object-hash: ^2.2.0
     pathe: ^0.2.0
     typescript: ^4.4.3
-    unbuild: ^0.5.4
+    unbuild: ^0.5.5
   languageName: unknown
   linkType: soft
 
@@ -12325,7 +12334,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.35.1, rollup@npm:^2.38.5, rollup@npm:^2.55.0, rollup@npm:^2.57.0":
+"rollup@npm:^2.35.1, rollup@npm:^2.38.5, rollup@npm:^2.57.0":
   version: 2.57.0
   resolution: "rollup@npm:2.57.0"
   dependencies:
@@ -12909,12 +12918,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"std-env@npm:^2.2.1, std-env@npm:^2.3.0":
+"std-env@npm:^2.2.1":
   version: 2.3.0
   resolution: "std-env@npm:2.3.0"
   dependencies:
     ci-info: ^3.0.0
   checksum: da0b81e217d920770448e53d660b6b0800d3f6fde201812cb7f5505a6fffe578b21188301214fecc227cc2db6849eb736f6d1975e5fa7ee179e9240da81fc88b
+  languageName: node
+  linkType: hard
+
+"std-env@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "std-env@npm:2.3.1"
+  dependencies:
+    ci-info: ^3.1.1
+  checksum: 049be0d6fb7ff544b3061a53ccaddd3ab2f6930f50b432f54dc82b22cb813c6e408ed69807c7c6bc592fccfc92d5c431dcc1aacd7c9ca99d304948f3149a08da
   languageName: node
   linkType: hard
 
@@ -13704,25 +13722,25 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.5.4":
-  version: 0.5.4
-  resolution: "unbuild@npm:0.5.4"
+"unbuild@npm:^0.5.5":
+  version: 0.5.5
+  resolution: "unbuild@npm:0.5.5"
   dependencies:
     "@rollup/plugin-alias": ^3.1.4
     "@rollup/plugin-commonjs": ^20.0.0
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.0.2
+    "@rollup/plugin-node-resolve": ^13.0.5
     chalk: ^4.1.1
     consola: ^2.15.3
     defu: ^5.0.0
-    esbuild: ^0.12.28
-    jiti: ^1.12.2
+    esbuild: ^0.13.3
+    jiti: ^1.12.5
     mkdirp: ^1.0.4
     mkdist: ^0.3.3
     mri: ^1.2.0
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
-    rollup: ^2.55.0
+    rollup: ^2.57.0
     rollup-plugin-dts: ^4.0.0
     rollup-plugin-esbuild: ^4.5.0
     scule: ^0.2.1
@@ -13731,7 +13749,7 @@ fsevents@~2.3.2:
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.cjs
-  checksum: a8c167794c1327205cb50a30fea6cb61ecd2c5486cbf18104dadc1dc9f2c0890b880a62a519d6a8f733f947090243830adf2613978dd583911cf18e71d26f718
+  checksum: 90616760d18236e608fa058538abaeb45e5f160976773e1313be24ef3ea42f4d2fff100076e75da8a0a3cf36f5272c70c9398ae7f87277f93744c9026b743bbd
   languageName: node
   linkType: hard
 
@@ -14019,7 +14037,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.10, vite@npm:^2.5.4":
+"vite@npm:^2.5.4":
   version: 2.5.10
   resolution: "vite@npm:2.5.10"
   dependencies:
@@ -14034,6 +14052,35 @@ fsevents@~2.3.2:
   bin:
     vite: bin/vite.js
   checksum: 08b7cb50bd7ba2f35b9df235a993a38ce8f2f737324f00d75439c120e28d9d7b92a98bb6db8d103745c905f85eb784a3188527a906793c667689e545ecbe77ad
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "vite@npm:2.6.0"
+  dependencies:
+    esbuild: ^0.13.2
+    fsevents: ~2.3.2
+    postcss: ^8.3.8
+    resolve: ^1.20.0
+    rollup: ^2.57.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 21b19a52e273b5b3fda89d56049992f36c44a7c8ea40cc224b72f1d9d7f8d47a33ac16248c121a0e4143a5cff14bed577b865c7da21e99f53536835db68d2465
   languageName: node
   linkType: hard
 
