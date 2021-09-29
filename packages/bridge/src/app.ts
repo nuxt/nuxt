@@ -16,6 +16,11 @@ export function setupAppBridge (_options: any) {
   nuxt.options.alias.vue = nuxt.options.alias.vue ||
     resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
 
+  // Deprecate various Nuxt options
+  if (nuxt.options.globalName !== 'nuxt') {
+    throw new Error('Custom global name is not supported by @nuxt/bridge.')
+  }
+
   // Fix wp4 esm
   nuxt.hook('webpack:config', (configs) => {
     for (const config of configs.filter(c => c.module)) {

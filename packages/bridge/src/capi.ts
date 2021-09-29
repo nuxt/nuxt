@@ -1,6 +1,8 @@
-import { useNuxt, addPluginTemplate, addPlugin } from '@nuxt/kit'
+import { useNuxt, addPlugin, addPluginTemplate, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { resolve } from 'pathe'
+
 import { distDir } from './dirs'
+import { KeyPlugin } from './capi-legacy-key-plugin'
 
 export function setupCAPIBridge (_options: any) {
   const nuxt = useNuxt()
@@ -16,13 +18,25 @@ export function setupCAPIBridge (_options: any) {
   addPluginTemplate({ filename: 'capi.plugin.mjs', src: capiPluginPath })
 
   // Add support for useNuxtApp
-  addPlugin(resolve(distDir, 'runtime/app.plugin.mjs'))
+  const appPlugin = addPluginTemplate(resolve(distDir, 'runtime/app.plugin.mjs'))
+  nuxt.hook('modules:done', () => {
+    nuxt.options.plugins.unshift(appPlugin)
+  })
 
   // Register Composition API before loading the rest of app
   nuxt.hook('webpack:config', (configs) => {
     // @ts-ignore
     configs.forEach(config => config.entry.app.unshift(capiPluginPath))
   })
+
+  // Handle legacy `@nuxtjs/composition-api`
+  nuxt.options.alias['@nuxtjs/composition-api'] = resolve(distDir, 'runtime/capi.legacy.mjs')
+  nuxt.options.build.transpile.push('@nuxtjs/composition-api', '@vue/composition-api')
+  addPlugin(resolve(distDir, 'runtime/capi.legacy.plugin.mjs'))
+
+  // Enable automatic ssrRef key generation
+  addVitePlugin(KeyPlugin.vite())
+  addWebpackPlugin(KeyPlugin.webpack())
 
   // TODO: Add @nuxtjs/composition-api shims
 }
