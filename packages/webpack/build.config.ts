@@ -8,7 +8,6 @@ export default defineBuildConfig({
   ],
   dependencies: [
     '@nuxt/kit',
-    '@vue/compiler-sfc',
     '@vue/babel-preset-jsx',
     'postcss',
     'postcss-import-resolver',

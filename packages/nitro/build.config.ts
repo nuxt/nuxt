@@ -17,7 +17,6 @@ export default defineBuildConfig({
     'ora',
     'vue-bundle-renderer',
     'vue-server-renderer',
-    '@vue/server-renderer',
     'vue'
   ]
 })

@@ -64,6 +64,13 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     env.polyfill.push('source-map-support/register.js')
   }
 
+  // TODO: #590
+  if (nitroContext._nuxt.majorVersion === 3) {
+    env.alias['vue/server-renderer'] = 'vue/server-renderer'
+    env.alias['vue/compiler-sfc'] = 'vue/compiler-sfc'
+    env.alias.vue = require.resolve(`vue/dist/vue.cjs${nitroContext._nuxt.dev ? '' : '.prod'}.js`)
+  }
+
   const buildServerDir = join(nitroContext._nuxt.buildDir, 'dist/server')
   const runtimeAppDir = join(nitroContext._internal.runtimeDir, 'app')
 

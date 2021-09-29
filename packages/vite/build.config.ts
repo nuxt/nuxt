@@ -7,7 +7,6 @@ export default defineBuildConfig({
   ],
   dependencies: [
     '@nuxt/kit',
-    '@vue/compiler-sfc',
     'vue'
   ]
 })

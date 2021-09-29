@@ -28,7 +28,6 @@
     "@rollup/pluginutils": "^4.1.1",
     "@types/jsdom": "^16.2.13",
     "@vercel/nft": "^0.15.0",
-    "@vue/server-renderer": "^3.2.19",
     "archiver": "^5.3.0",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",

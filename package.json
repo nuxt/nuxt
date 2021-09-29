@@ -35,7 +35,6 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^14.17.19",
     "@types/object-hash": "^2",
-    "@vue/server-renderer": "^3.2.19",
     "chai": "^4.3.4",
     "esbuild": "^0.13.3",
     "eslint": "^7.32.0",

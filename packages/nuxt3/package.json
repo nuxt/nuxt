@@ -22,7 +22,6 @@
     "@nuxt/vite-builder": "^0.10.0",
     "@nuxt/webpack-builder": "^0.10.0",
     "@vue/reactivity": "3.2.19",
-    "@vue/server-renderer": "^3.2.19",
     "@vue/shared": "3.2.19",
     "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
