@@ -1,8 +1,10 @@
-import fs from 'fs'
-import { basename, parse, resolve } from 'pathe'
+import { existsSync, promises as fsp } from 'fs'
+import { basename, extname, parse, resolve } from 'pathe'
+import lodashTemplate from 'lodash/template'
 import hash from 'hash-sum'
 import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
 import type { Plugin as VitePlugin, UserConfig as ViteConfig } from 'vite'
+import { camelCase } from 'scule'
 import { useNuxt } from '../nuxt'
 import type { NuxtTemplate, NuxtPlugin, NuxtPluginTemplate } from '../types/nuxt'
 
@@ -42,7 +44,7 @@ export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplat
 
   // Use src if provided
   if (template.src) {
-    if (!fs.existsSync(template.src)) {
+    if (!existsSync(template.src)) {
       throw new Error('Template not found: ' + template.src)
     }
     if (!template.filename) {
@@ -258,4 +260,43 @@ export function addVitePlugin (plugin: VitePlugin, options?: ExtendViteConfigOpt
  */
 export function isNuxt2 (nuxt?: any) {
   return (nuxt || useNuxt()).version?.startsWith('v2')
+}
+
+export async function compileTemplate (template: NuxtTemplate, ctx: any) {
+  const data = { ...ctx, ...template.options }
+  if (template.src) {
+    try {
+      const srcContents = await fsp.readFile(template.src, 'utf-8')
+      return lodashTemplate(srcContents, {})(data)
+    } catch (err) {
+      console.error('Error compiling template: ', template)
+      throw err
+    }
+  }
+  if (template.getContents) {
+    return template.getContents(data)
+  }
+  throw new Error('Invalid template: ' + JSON.stringify(template))
+}
+
+const serialize = data => JSON.stringify(data, null, 2).replace(/"{(.+)}"/g, '$1')
+
+const importName = (src: string) => `${camelCase(basename(src, extname(src))).replace(/[^a-zA-Z?\d\s:]/g, '')}_${hash(src)}`
+
+const importSources = (sources: string | string[], { lazy = false } = {}) => {
+  if (!Array.isArray(sources)) {
+    sources = [sources]
+  }
+  return sources.map((src) => {
+    if (lazy) {
+      return `const ${importName(src)} = () => import('${src}' /* webpackChunkName: '${src}' */)`
+    }
+    return `import ${importName(src)} from '${src}'`
+  }).join('\n')
+}
+
+export const templateUtils = {
+  serialize,
+  importName,
+  importSources
 }

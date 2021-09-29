@@ -3,6 +3,7 @@ import type { HookCallback } from 'hookable'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { NuxtConfig, NuxtOptions } from '..'
 import type { ModuleContainer } from '../module/container'
+import { NuxtTemplate } from '../types/nuxt'
 import { Nuxt, NuxtApp } from './nuxt'
 
 type HookResult = Promise<void> | void
@@ -10,13 +11,6 @@ type HookResult = Promise<void> | void
 type Builder = any
 type Generator = any
 type Server = any
-
-type TemplateFile = string | {
-  src?: string
-  dst?: string
-  custom?: boolean
-  options?: any
-}
 
 type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 interface PreloadFile {
@@ -49,7 +43,7 @@ export interface NuxtHooks extends Record<string, HookCallback> {
   'builder:extendPlugins': (plugins: NuxtOptions['plugins']) => HookResult
   'build:templates': (templates: {
     templateVars: Record<string, any>,
-    templatesFiles: TemplateFile[],
+    templatesFiles: NuxtTemplate[],
     resolve: (...args: string[]) => string
   }) => HookResult
   'build:extendRoutes': (routes: any[], resolve: (...args: string[]) => string) => HookResult

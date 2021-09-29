@@ -13,6 +13,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.173",
     "unbuild": "latest"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "jiti": "^1.12.3",
+    "lodash": "^4.17.21",
     "pathe": "^0.2.0",
     "rc9": "^1.2.0",
     "scule": "^0.2.1",

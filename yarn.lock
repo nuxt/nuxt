@@ -1485,6 +1485,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
+    "@types/lodash": ^4.14.173
     consola: ^2.15.3
     create-require: ^1.1.1
     defu: ^5.0.0
@@ -1493,6 +1494,7 @@ __metadata:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     jiti: ^1.12.3
+    lodash: ^4.17.21
     pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
@@ -10087,7 +10089,6 @@ fsevents@~2.3.2:
     "@nuxt/webpack-builder": ^0.10.0
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
-    "@types/lodash": ^4.14.173
     "@vue/reactivity": 3.2.16
     "@vue/server-renderer": ^3.2.16
     "@vue/shared": 3.2.16
@@ -10100,7 +10101,6 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    lodash: ^4.17.21
     nuxi: ^0.10.0
     ohmyfetch: ^0.3.1
     pathe: ^0.2.0

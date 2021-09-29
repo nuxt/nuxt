@@ -33,7 +33,6 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "ignore": "^5.1.8",
-    "lodash": "^4.17.21",
     "nuxi": "^0.10.0",
     "ohmyfetch": "^0.3.1",
     "pathe": "^0.2.0",
@@ -47,7 +46,6 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/hash-sum": "^1.0.0",
-    "@types/lodash": "^4.14.173",
     "unbuild": "latest",
     "vue-meta": "next"
   },

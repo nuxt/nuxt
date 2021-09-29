@@ -1,8 +1,10 @@
+import { promises as fsp } from 'fs'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import { useNuxt, nuxtCtx } from '../nuxt'
-import type { Nuxt } from '../types/nuxt'
+import type { Nuxt, NuxtTemplate } from '../types/nuxt'
 import type { NuxtModule, LegacyNuxtModule, ModuleOptions } from '../types/module'
+import { compileTemplate, isNuxt2, templateUtils } from './utils'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -46,6 +48,39 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
         // @ts-ignore
         nuxt.__nuxtkit_close__ = true
       }
+    }
+
+    if (isNuxt2()) {
+      // Support virtual templates with getContents() by writing them to .nuxt directory
+      let virtualTemplates: NuxtTemplate[]
+      nuxt.hook('builder:prepared', (_builder, buildOptions) => {
+        virtualTemplates = []
+        buildOptions.templates.forEach((template, index, arr) => {
+          if (!template.getContents) { return }
+          // Remove template from template array to handle it ourselves
+          arr.splice(index, 1)
+          virtualTemplates.push(template)
+        })
+      })
+      nuxt.hook('build:templates', async (templates) => {
+        const context = {
+          nuxt,
+          utils: templateUtils,
+          app: {
+            dir: nuxt.options.srcDir,
+            extensions: nuxt.options.extensions,
+            plugins: nuxt.options.plugins,
+            templates: [
+              ...templates.templatesFiles,
+              ...virtualTemplates
+            ]
+          }
+        }
+        for await (const template of virtualTemplates) {
+          const contents = await compileTemplate({ ...template, src: '' }, context)
+          await fsp.writeFile(template.dst, contents)
+        }
+      })
     }
 
     // Call setup
