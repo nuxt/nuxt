@@ -1567,7 +1567,7 @@ __metadata:
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
     std-env: ^2.3.1
-    table: ^6.7.1
+    table: ^6.7.2
     ufo: ^0.7.9
     unbuild: latest
     unenv: ^0.3.10
@@ -1610,7 +1610,7 @@ __metadata:
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.0
+    vite: ^2.6.2
     vue: 3.2.19
   languageName: unknown
   linkType: soft
@@ -3309,7 +3309,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-regex@npm:^5.0.0":
+"ansi-regex@npm:^5.0.0, ansi-regex@npm:^5.0.1":
   version: 5.0.1
   resolution: "ansi-regex@npm:5.0.1"
   checksum: 2aa4bb54caf2d622f1afdad09441695af2a83aa3fe8b8afa581d205e57ed4261c183c4d3877cee25794443fde5876417d859c108078ab788d6af7e4fe52eb66b
@@ -12974,6 +12974,17 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"string-width@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "string-width@npm:4.2.3"
+  dependencies:
+    emoji-regex: ^8.0.0
+    is-fullwidth-code-point: ^3.0.0
+    strip-ansi: ^6.0.1
+  checksum: e52c10dc3fbfcd6c3a15f159f54a90024241d0f149cf8aed2982a2d801d2e64df0bf1dc351cf8e95c3319323f9f220c16e740b06faecd53e2462df1d2b5443fb
+  languageName: node
+  linkType: hard
+
 "string.prototype.trimend@npm:^1.0.4":
   version: 1.0.4
   resolution: "string.prototype.trimend@npm:1.0.4"
@@ -13036,6 +13047,15 @@ fsevents@~2.3.2:
   dependencies:
     ansi-regex: ^5.0.0
   checksum: 04c3239ede44c4d195b0e66c0ad58b932f08bec7d05290416d361ff908ad282ecdaf5d9731e322c84f151d427436bde01f05b7422c3ec26dd927586736b0e5d0
+  languageName: node
+  linkType: hard
+
+"strip-ansi@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "strip-ansi@npm:6.0.1"
+  dependencies:
+    ansi-regex: ^5.0.1
+  checksum: f3cd25890aef3ba6e1a74e20896c21a46f482e93df4a06567cebf2b57edabb15133f1f94e57434e0a958d61186087b1008e89c94875d019910a213181a14fc8c
   languageName: node
   linkType: hard
 
@@ -13223,7 +13243,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"table@npm:^6.0.9, table@npm:^6.7.1":
+"table@npm:^6.0.9":
   version: 6.7.1
   resolution: "table@npm:6.7.1"
   dependencies:
@@ -13234,6 +13254,20 @@ fsevents@~2.3.2:
     string-width: ^4.2.0
     strip-ansi: ^6.0.0
   checksum: 053b61fa4e8f8396c65ff7a95da90e85620370932652d501ff7a0a3ed7317f1cc549702bd2abf2bd9ed01e20757b73a8b57374f8a8a2ac02fbe0550276263fb6
+  languageName: node
+  linkType: hard
+
+"table@npm:^6.7.2":
+  version: 6.7.2
+  resolution: "table@npm:6.7.2"
+  dependencies:
+    ajv: ^8.0.1
+    lodash.clonedeep: ^4.5.0
+    lodash.truncate: ^4.4.2
+    slice-ansi: ^4.0.0
+    string-width: ^4.2.3
+    strip-ansi: ^6.0.1
+  checksum: d61f91d64b9be56ac66edd2a8c0f10fcc59995313f37198cb87de73a6b441a05ad36f4a567bd8736da35bc4a2f8f4049b0e4ff1d4356c0a7c2b91af48b8bf8b2
   languageName: node
   linkType: hard
 
@@ -14047,9 +14081,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "vite@npm:2.6.0"
+"vite@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "vite@npm:2.6.2"
   dependencies:
     esbuild: ^0.13.2
     fsevents: ~2.3.2
@@ -14072,7 +14106,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 21b19a52e273b5b3fda89d56049992f36c44a7c8ea40cc224b72f1d9d7f8d47a33ac16248c121a0e4143a5cff14bed577b865c7da21e99f53536835db68d2465
+  checksum: 78e4c81d18d08c6a56f0609a99428caf6323a999da4c3c4439ff3455558d003bc1e8aea24bec50634c8ff8735bb043ab6492b890204304c5d4a6c509f8319ff6
   languageName: node
   linkType: hard
 
