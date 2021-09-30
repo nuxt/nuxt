@@ -6,7 +6,6 @@ import vitePlugin from '@vitejs/plugin-vue'
 
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { replace } from './plugins/replace'
-import { transformNuxtSetup } from './plugins/transformSetup'
 import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 
@@ -37,8 +36,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       replace({ 'process.env': 'import.meta.env' }),
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
-      vitePlugin(ctx.config.vue),
-      transformNuxtSetup()
+      vitePlugin(ctx.config.vue)
     ],
     server: {
       middlewareMode: true

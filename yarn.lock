@@ -6717,14 +6717,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"example-async-data-setup@workspace:examples/async-data-setup":
-  version: 0.0.0-use.local
-  resolution: "example-async-data-setup@workspace:examples/async-data-setup"
-  dependencies:
-    nuxt3: latest
-  languageName: unknown
-  linkType: soft
-
 "example-async-data@workspace:examples/async-data":
   version: 0.0.0-use.local
   resolution: "example-async-data@workspace:examples/async-data"

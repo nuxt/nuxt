@@ -1,7 +1,6 @@
-import { getCurrentInstance, onBeforeMount, onUnmounted, ref, unref } from 'vue'
+import { onBeforeMount, onUnmounted, ref, unref } from 'vue'
 import type { UnwrapRef, Ref } from 'vue'
 
-import { NuxtComponentPendingPromises } from './component'
 import { ensureReactive, useGlobalData } from './data'
 import { NuxtApp, useNuxtApp } from '#app'
 
@@ -23,7 +22,6 @@ export type AsyncDataResult<T> = AsyncDataState<T> & Promise<AsyncDataState<T>>
 
 export function useAsyncData (defaults?: AsyncDataOptions) {
   const nuxt = useNuxtApp()
-  const vm = getCurrentInstance()
   const onBeforeMountCbs: Array<() => void> = []
 
   if (process.client) {
@@ -66,6 +64,7 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
       state.pending.value = true
       nuxt._asyncDataPromises[key] = Promise.resolve(handler(nuxt)).then((result) => {
         for (const _key in result) {
+          // @ts-expect-error
           state.data[_key] = unref(result[_key])
         }
         return state.data
@@ -103,11 +102,6 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
           fetch()
         }
       }
-    }
-
-    // Auto enqueue if within nuxt component instance
-    if (nuxt._asyncDataPromises[key] && vm[NuxtComponentPendingPromises]) {
-      vm[NuxtComponentPendingPromises].push(nuxt._asyncDataPromises[key])
     }
 
     const res = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => state) as AsyncDataResult<T>
