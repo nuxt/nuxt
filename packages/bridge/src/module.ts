@@ -2,6 +2,7 @@ import { defineNuxtModule, installModule } from '@nuxt/kit'
 import { setupNitroBridge } from './nitro'
 import { setupAppBridge } from './app'
 import { setupCAPIBridge } from './capi'
+import { setupBetterResolve } from './resolve'
 
 export default defineNuxtModule({
   name: 'nuxt-bridge',
@@ -13,7 +14,8 @@ export default defineNuxtModule({
     capi: {},
     // TODO: Remove from 2.16
     postcss8: true,
-    swc: true
+    swc: true,
+    resolve: true
   },
   async setup (opts, nuxt) {
     if (opts.nitro) {
@@ -36,6 +38,9 @@ export default defineNuxtModule({
     }
     if (opts.swc) {
       await installModule(nuxt, require.resolve('nuxt-swc'))
+    }
+    if (opts.resolve) {
+      setupBetterResolve()
     }
   }
 })
