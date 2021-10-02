@@ -55,7 +55,7 @@ declare module 'vue' {
   export interface GlobalComponents {
 ${options.components.map(c => `    '${c.pascalName}': typeof import('${relative(options.buildDir, c.filePath)}')['${c.export}']`).join(',\n')}
   }
-
-  export {}
-}`
+}
+export {}
+`
 }
