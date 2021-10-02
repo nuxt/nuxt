@@ -1,6 +1,6 @@
 import { Component } from '@vue/runtime-core'
 import { $Fetch } from 'ohmyfetch'
-import { Nuxt } from '../dist'
+import { NuxtApp } from '../nuxt'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -28,9 +28,9 @@ declare module '*.vue' {
   export default Component
 }
 
-declare module 'vue' {
+declare module '@vue/runtime-core' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface App<HostElement> {
-    $nuxt: Nuxt
+    $nuxt: NuxtApp
   }
 }
