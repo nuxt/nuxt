@@ -59,7 +59,8 @@ export default defineNuxtCommand({
     const dLoad = debounce(load, 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (_event, file) => {
-      if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$|pages$/)) {
+      if (file.startsWith(currentNuxt.options.buildDir)) { return }
+      if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
       if (['addDir', 'unlinkDir'].includes(_event) && file.match(/pages$/)) {
