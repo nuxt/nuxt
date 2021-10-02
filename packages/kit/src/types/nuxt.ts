@@ -3,9 +3,11 @@ import type { NuxtHooks } from './hooks'
 import type { NuxtOptions } from './config'
 
 export interface Nuxt {
+  // Private fields
+  _version: string
+
   /** The resolved Nuxt configuration. */
   options: NuxtOptions
-
   hooks: Hookable<NuxtHooks>
   hook: Nuxt['hooks']['hook']
   callHook: Nuxt['hooks']['callHook']

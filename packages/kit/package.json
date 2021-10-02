@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@types/lodash.template": "^4",
+    "@types/semver": "^7",
     "unbuild": "latest"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "pathe": "^0.2.0",
     "rc9": "^1.2.0",
     "scule": "^0.2.1",
+    "semver": "^7.3.5",
     "std-env": "^2.3.1",
     "ufo": "^0.7.9",
     "unctx": "^1.0.2",

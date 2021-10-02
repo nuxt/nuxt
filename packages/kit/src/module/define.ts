@@ -1,10 +1,11 @@
 import { promises as fsp } from 'fs'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
+import consola from 'consola'
 import { useNuxt, nuxtCtx } from '../nuxt'
 import type { Nuxt, NuxtTemplate } from '../types/nuxt'
 import type { NuxtModule, LegacyNuxtModule, ModuleOptions } from '../types/module'
-import { compileTemplate, isNuxt2, templateUtils } from './utils'
+import { checkNuxtCompatibilityIssues, compileTemplate, isNuxt2, templateUtils } from './utils'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -32,6 +33,15 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
     // Stop if no install provided
     if (typeof mod.setup !== 'function') {
       return
+    }
+
+    // check nuxt version range
+    if (mod.requires) {
+      const issues = checkNuxtCompatibilityIssues(mod.requires, nuxt)
+      if (issues.length) {
+        consola.warn(`Module \`${mod.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+        return
+      }
     }
 
     // Resolve options

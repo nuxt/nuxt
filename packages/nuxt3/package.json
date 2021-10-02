@@ -1,6 +1,6 @@
 {
   "name": "nuxt3",
-  "version": "0.10.0",
+  "version": "3.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
