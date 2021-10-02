@@ -1,8 +1,8 @@
+import { promises as fsp } from 'fs'
 import { resolve, dirname, relative } from 'pathe'
 import globby from 'globby'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
-import { readFile } from 'fs-extra'
 import chalk from 'chalk'
 import stdenv from 'std-env'
 
@@ -15,7 +15,7 @@ export async function printFSTree (dir: string) {
 
   const items = (await Promise.all(files.map(async (file) => {
     const path = resolve(dir, file)
-    const src = await readFile(path)
+    const src = await fsp.readFile(path)
     const size = src.byteLength
     const gzip = await gzipSize(src)
     return { file, path, size, gzip }

@@ -1,4 +1,5 @@
-import { resolve } from 'pathe'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'pathe'
 
-export const distDir = __dirname
+export const distDir = dirname(fileURLToPath(import.meta.url))
 export const pkgDir = resolve(distDir, '..')

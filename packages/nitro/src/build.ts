@@ -1,7 +1,7 @@
 import { resolve, join } from 'pathe'
 import consola from 'consola'
 import { rollup, watch as rollupWatch } from 'rollup'
-import { readFile, emptyDir, copy } from 'fs-extra'
+import fse from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
 import { hl, prettyPath, serializeTemplate, writeFile, isDirectory } from './utils'
@@ -24,7 +24,7 @@ export async function prepare (nitroContext: NitroContext) {
 
 async function cleanupDir (dir: string) {
   consola.info('Cleaning up', prettyPath(dir))
-  await emptyDir(dir)
+  await fse.emptyDir(dir)
 }
 
 export async function generate (nitroContext: NitroContext) {
@@ -32,12 +32,12 @@ export async function generate (nitroContext: NitroContext) {
 
   const clientDist = resolve(nitroContext._nuxt.buildDir, 'dist/client')
   if (await isDirectory(clientDist)) {
-    await copy(clientDist, join(nitroContext.output.publicDir, nitroContext._nuxt.publicPath))
+    await fse.copy(clientDist, join(nitroContext.output.publicDir, nitroContext._nuxt.publicPath))
   }
 
   const publicDir = nitroContext._nuxt.publicDir
   if (await isDirectory(publicDir)) {
-    await copy(publicDir, nitroContext.output.publicDir)
+    await fse.copy(publicDir, nitroContext.output.publicDir)
   }
 
   consola.success('Generated public ' + prettyPath(nitroContext.output.publicDir))
@@ -48,7 +48,7 @@ export async function build (nitroContext: NitroContext) {
   const htmlSrc = resolve(nitroContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
   htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.mjs').replace('app.', 'document.')
-  htmlTemplate.contents = nitroContext.vfs[htmlTemplate.src] || await readFile(htmlTemplate.src, 'utf-8')
+  htmlTemplate.contents = nitroContext.vfs[htmlTemplate.src] || await fse.readFile(htmlTemplate.src, 'utf-8')
   await nitroContext._internal.hooks.callHook('nitro:document', htmlTemplate)
   htmlTemplate.compiled = 'export default ' + serializeTemplate(htmlTemplate.contents)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)

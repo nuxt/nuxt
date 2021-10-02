@@ -1,8 +1,8 @@
+import { promises as fsp } from 'fs'
 import fetch from 'node-fetch'
 import { addPluginTemplate, useNuxt } from '@nuxt/kit'
 import { stringifyQuery } from 'ufo'
 import { resolve } from 'pathe'
-import { readFile, writeFile } from 'fs-extra'
 import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware } from '@nuxt/nitro'
 import { AsyncLoadingPlugin } from './async-loading'
 import { distDir } from './dirs'
@@ -68,7 +68,9 @@ export function setupNitroBridge () {
     const serverConfig = webpackConfigs.find(config => config.name === 'server')
     if (serverConfig) {
       serverConfig.plugins = serverConfig.plugins || []
-      serverConfig.plugins.push(new AsyncLoadingPlugin())
+      serverConfig.plugins.push(new AsyncLoadingPlugin({
+        modulesDir: nuxt.options.modulesDir
+      }))
     }
   })
 
@@ -98,11 +100,11 @@ export function setupNitroBridge () {
   nuxt.hook('build:compiled', async ({ name }) => {
     if (name === 'server') {
       const jsServerEntry = resolve(nuxt.options.buildDir, 'dist/server/server.js')
-      await writeFile(jsServerEntry.replace(/.js$/, '.cjs'), 'module.exports = require("./server.js")', 'utf8')
-      await writeFile(jsServerEntry.replace(/.js$/, '.mjs'), 'export { default } from "./server.cjs"', 'utf8')
+      await fsp.writeFile(jsServerEntry.replace(/.js$/, '.cjs'), 'module.exports = require("./server.js")', 'utf8')
+      await fsp.writeFile(jsServerEntry.replace(/.js$/, '.mjs'), 'export { default } from "./server.cjs"', 'utf8')
     } else if (name === 'client') {
-      const manifest = await readFile(resolve(nuxt.options.buildDir, 'dist/server/client.manifest.json'), 'utf8')
-      await writeFile(resolve(nuxt.options.buildDir, 'dist/server/client.manifest.mjs'), 'export default ' + manifest, 'utf8')
+      const manifest = await fsp.readFile(resolve(nuxt.options.buildDir, 'dist/server/client.manifest.json'), 'utf8')
+      await fsp.writeFile(resolve(nuxt.options.buildDir, 'dist/server/client.manifest.mjs'), 'export default ' + manifest, 'utf8')
     }
   })
 

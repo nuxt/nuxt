@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "esModuleInterop": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "target": "ESNext",
     "module": "ESNext",
@@ -15,8 +16,12 @@
       "chai"
     ],
     "paths": {
-      "#app": ["./packages/nuxt3/src/app/index"],
-      "#app/*": ["./packages/nuxt3/src/app/*"]
+      "#app": [
+        "./packages/nuxt3/src/app/index"
+      ],
+      "#app/*": [
+        "./packages/nuxt3/src/app/*"
+      ]
     }
   },
   "exclude": [

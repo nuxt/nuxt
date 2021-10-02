@@ -1,5 +1,6 @@
 import os from 'os'
 import { existsSync, readFileSync } from 'fs'
+import { createRequire } from 'module'
 import { resolve, dirname } from 'pathe'
 import jiti from 'jiti'
 import destr from 'destr'
@@ -129,7 +130,8 @@ function getPkg (name, rootDir) {
   let pkgPath = resolve(rootDir, 'node_modules', name, 'package.json')
 
   // Try to resolve for more accuracy
-  try { pkgPath = require.resolve(name + '/package.json', { paths: [rootDir] }) } catch (_err) {
+  const _require = createRequire(rootDir)
+  try { pkgPath = _require.resolve(name + '/package.json') } catch (_err) {
     // console.log('not found:', name)
   }
 

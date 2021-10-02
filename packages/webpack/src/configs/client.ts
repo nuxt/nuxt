@@ -1,5 +1,5 @@
 import querystring from 'querystring'
-import path from 'pathe'
+import { resolve } from 'pathe'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
@@ -81,7 +81,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // Webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
   if (!ctx.isDev && options.build.analyze) {
-    const statsDir = path.resolve(options.buildDir, 'stats')
+    const statsDir = resolve(options.buildDir, 'stats')
 
     // @ts-ignore
     config.plugins.push(new BundleAnalyzerPlugin({
@@ -89,8 +89,8 @@ function clientPlugins (ctx: WebpackConfigContext) {
       defaultSizes: 'gzip',
       generateStatsFile: true,
       openAnalyzer: !options.build.quiet,
-      reportFilename: path.resolve(statsDir, `${ctx.name}.html`),
-      statsFilename: path.resolve(statsDir, `${ctx.name}.json`),
+      reportFilename: resolve(statsDir, `${ctx.name}.html`),
+      statsFilename: resolve(statsDir, `${ctx.name}.json`),
       ...options.build.analyze as any
     }))
   }

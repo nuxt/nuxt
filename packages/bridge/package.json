@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/module.cjs",
+  "type": "module",
+  "exports": "./module.cjs",
   "types": "./dist/index.d.ts",
   "files": [
+    "module.cjs",
     "dist"
   ],
   "scripts": {
@@ -22,6 +24,7 @@
     "estree-walker": "^2.0.2",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
+    "mlly": "^0.2.2",
     "node-fetch": "^3.0.0",
     "nuxi": "^0.10.0",
     "nuxt-swc": "^0.1.0",

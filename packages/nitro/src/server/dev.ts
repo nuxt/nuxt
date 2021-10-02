@@ -1,17 +1,17 @@
 import { Worker } from 'worker_threads'
 
 import { IncomingMessage, ServerResponse } from 'http'
+import { promises as fsp } from 'fs'
 import { loading as loadingTemplate } from '@nuxt/design'
 import chokidar, { FSWatcher } from 'chokidar'
 import debounce from 'debounce'
-import { stat } from 'fs-extra'
 import { promisifyHandle, createApp, Middleware, useBase } from 'h3'
-import { createProxy } from 'http-proxy'
+import httpProxy from 'http-proxy'
 import { listen, Listener, ListenOptions } from 'listhen'
 import servePlaceholder from 'serve-placeholder'
 import serveStatic from 'serve-static'
 import { resolve } from 'pathe'
-import type { Server } from 'connect'
+import connect from 'connect'
 import type { NitroContext } from '../context'
 import { handleVfs } from './vfs'
 
@@ -27,7 +27,7 @@ export function createDevServer (nitroContext: NitroContext) {
       workerAddress = null
       pendingWorker = null
     }
-    if (!(await stat(workerEntry)).isFile) {
+    if (!(await fsp.stat(workerEntry)).isFile) {
       throw new Error('Entry not found: ' + workerEntry)
     }
     return new Promise((resolve, reject) => {
@@ -72,7 +72,7 @@ export function createDevServer (nitroContext: NitroContext) {
   app.use(nitroContext._nuxt.publicPath, servePlaceholder())
 
   // SSR Proxy
-  const proxy = createProxy()
+  const proxy = httpProxy.createProxy()
   const proxyHandle = promisifyHandle((req: IncomingMessage, res: ServerResponse) => proxy.web(req, res, { target: workerAddress }, (_err: unknown) => {
     // console.error('[proxy]', err)
   }))
@@ -151,7 +151,7 @@ function createDynamicMiddleware (): DynamicMiddleware {
         middleware = input
         return
       }
-      const app: Server = require('connect')()
+      const app = connect()
       for (const m of input) {
         app.use(m.path || m.route || '/', m.handler || m.handle!)
       }

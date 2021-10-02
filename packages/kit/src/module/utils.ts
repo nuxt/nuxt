@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'fs'
 import { basename, extname, parse, resolve } from 'pathe'
-import lodashTemplate from 'lodash/template'
+import lodashTemplate from 'lodash.template'
 import hash from 'hash-sum'
 import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
 import type { Plugin as VitePlugin, UserConfig as ViteConfig } from 'vite'

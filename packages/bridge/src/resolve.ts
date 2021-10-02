@@ -1,16 +1,15 @@
 import fs from 'fs'
 import { promisify } from 'util'
 import defu from 'defu'
-
-import { CachedInputFileSystem, ResolveContext, ResolverFactory } from 'enhanced-resolve'
+import enhancedResolve from 'enhanced-resolve'
 import { ResolveOptions } from 'webpack/types'
 import { extendWebpackConfig, useNuxt } from '@nuxt/kit'
 
-type UserResolveOptions = Parameters<typeof ResolverFactory['createResolver']>[0]
-type ResolverOptions = Omit<UserResolveOptions, 'fileSystem'> & { fileSystem?: CachedInputFileSystem }
+type UserResolveOptions = Parameters<typeof enhancedResolve.ResolverFactory['createResolver']>[0]
+type ResolverOptions = Omit<UserResolveOptions, 'fileSystem'> & { fileSystem?: enhancedResolve.CachedInputFileSystem }
 
 const DEFAULTS: UserResolveOptions = {
-  fileSystem: new CachedInputFileSystem(fs, 4000),
+  fileSystem: new enhancedResolve.CachedInputFileSystem(fs, 4000),
   extensions: ['.ts', '.mjs', '.cjs', '.js', '.json'],
   mainFields: ['module', 'main']
 }
@@ -18,11 +17,11 @@ const DEFAULTS: UserResolveOptions = {
 // Abstracted resolver factory which can be used in rollup, webpack, etc.
 const createResolver = (resolveOptions: ResolverOptions) => {
   const options = defu(resolveOptions, DEFAULTS) as UserResolveOptions
-  const resolver = ResolverFactory.createResolver(options)
+  const resolver = enhancedResolve.ResolverFactory.createResolver(options)
 
   const root = options.roots?.[0] || '.'
 
-  const promisifiedResolve = promisify(resolver.resolve.bind(resolver)) as (context: object, path: string, request: string, resolveContext: ResolveContext) => Promise<string | false>
+  const promisifiedResolve = promisify(resolver.resolve.bind(resolver)) as (context: object, path: string, request: string, resolveContext: enhancedResolve.ResolveContext) => Promise<string | false>
 
   const resolve = (id: string, importer?: string) => promisifiedResolve({}, importer || root, id, {})
 

@@ -3,10 +3,14 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./cli": "./bin/nuxi.mjs"
+  },
   "bin": {
-    "nu": "./bin/nuxi.cjs",
-    "nuxi": "./bin/nuxi.cjs"
+    "nu": "./bin/nuxi.mjs",
+    "nuxi": "./bin/nuxi.mjs"
   },
   "scripts": {
     "prepack": "unbuild"
@@ -34,6 +38,7 @@
     "flat": "^5.0.2",
     "jiti": "^1.12.6",
     "listhen": "^0.2.4",
+    "mlly": "^0.2.2",
     "mri": "^1.2.0",
     "pathe": "^0.2.0",
     "scule": "^0.2.1",

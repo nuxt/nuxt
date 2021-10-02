@@ -1,3 +1,4 @@
+import { createRequire } from 'module'
 import { relative, dirname, resolve } from 'pathe'
 import fse from 'fs-extra'
 import jiti from 'jiti'
@@ -7,8 +8,6 @@ import consola from 'consola'
 import chalk from 'chalk'
 import { get } from 'dot-prop'
 import type { NitroPreset, NitroInput } from '../context'
-
-export const MODULE_DIR = resolve(__dirname, '..')
 
 export function hl (str: string) {
   return chalk.cyan(str)
@@ -35,7 +34,7 @@ export function serializeTemplate (contents: string) {
 }
 
 export function jitiImport (dir: string, path: string) {
-  return jiti(dir)(path)
+  return jiti(dir, { interopDefault: true })(path)
 }
 
 export function tryImport (dir: string, path: string) {
@@ -107,9 +106,10 @@ const _getDependenciesMode = {
   prod: ['dependencies'],
   all: ['devDependencies', 'dependencies']
 }
+const _require = createRequire(import.meta.url)
 export function getDependencies (dir: string, mode: keyof typeof _getDependenciesMode = 'all') {
   const fields = _getDependenciesMode[mode]
-  const pkg = require(resolve(dir, 'package.json'))
+  const pkg = _require(resolve(dir, 'package.json'))
   const dependencies = []
   for (const field of fields) {
     if (pkg[field]) {

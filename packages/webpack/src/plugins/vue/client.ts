@@ -5,8 +5,8 @@
 
 import { dirname } from 'pathe'
 import hash from 'hash-sum'
-import { uniq } from 'lodash'
-import { writeFile, mkdirp } from 'fs-extra'
+import { uniq } from 'lodash-es'
+import fse from 'fs-extra'
 
 import { isJS, isCSS, isHotUpdate } from './util'
 
@@ -111,11 +111,11 @@ export default class VueSSRClientPlugin {
 
       const src = JSON.stringify(manifest, null, 2)
 
-      await mkdirp(dirname(this.options.filename))
-      await writeFile(this.options.filename, src)
+      await fse.mkdirp(dirname(this.options.filename))
+      await fse.writeFile(this.options.filename, src)
 
       const mjsSrc = 'export default ' + src
-      await writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
+      await fse.writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
 
       // assets[this.options.filename] = {
       //   source: () => src,

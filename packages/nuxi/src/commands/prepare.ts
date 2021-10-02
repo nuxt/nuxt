@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import { relative, resolve } from 'pathe'
 import { cyan } from 'colorette'
 import type { TSReference } from '@nuxt/kit'
-import { requireModule, getModulePaths, getNearestPackage } from '../utils/cjs'
+import { importModule, getModulePaths, getNearestPackage } from '../utils/cjs'
 import { success } from '../utils/log'
 import { defineNuxtCommand } from './index'
 
@@ -16,7 +16,7 @@ export default defineNuxtCommand({
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt } = requireModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
+    const { loadNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
     const nuxt = await loadNuxt({ rootDir })
 
     const adHocModules = nuxt.options._majorVersion === 3

@@ -1,10 +1,11 @@
+import { pathToFileURL } from 'url'
 import { resolve } from 'pathe'
 import globby from 'globby'
 import type { Plugin } from 'rollup'
 import { serializeImportName } from '../../utils'
 
 const PLUGIN_NAME = 'dynamic-require'
-const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.js`
+const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
 const DYNAMIC_REQUIRE_RE = /import\("\.\/" ?\+(.*)\).then/g
 
 interface Options {
@@ -57,24 +58,25 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
       let files = []
       try {
         const wpManifest = resolve(dir, './server.manifest.json')
-        files = await import(wpManifest).then(r => Object.keys(r.files).filter(file => !ignore.includes(file)))
+        files = await import(pathToFileURL(wpManifest).href).then(r => Object.keys(r.files).filter(file => !ignore.includes(file)))
       } catch {
         files = await globby('**/*.{cjs,mjs,js}', { cwd: dir, absolute: false, ignore })
       }
-      const chunks = files.map(id => ({
+
+      const chunks = (await Promise.all(files.map(async id => ({
         id,
         src: resolve(dir, id).replace(/\\/g, '/'),
         name: serializeImportName(id),
-        meta: getWebpackChunkMeta(resolve(dir, id))
-      })).filter(chunk => chunk.meta)
+        meta: await getWebpackChunkMeta(resolve(dir, id))
+      })))).filter(chunk => chunk.meta)
 
       return inline ? TMPL_INLINE({ chunks }) : TMPL_LAZY({ chunks })
     }
   }
 }
 
-function getWebpackChunkMeta (src: string) {
-  const chunk = require(src) || {}
+async function getWebpackChunkMeta (src: string) {
+  const chunk = await import(pathToFileURL(src).href).then(r => r.default || r || {})
   const { id, ids, modules } = chunk
   if (!id && !ids) {
     return null // Not a webpack chunk

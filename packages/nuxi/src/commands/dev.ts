@@ -4,7 +4,7 @@ import debounce from 'debounce-promise'
 import type { Nuxt } from '@nuxt/kit'
 import { createServer, createLoadingHandler } from '../utils/server'
 import { showBanner } from '../utils/banner'
-import { requireModule } from '../utils/cjs'
+import { importModule } from '../utils/cjs'
 import { error } from '../utils/log'
 import { defineNuxtCommand } from './index'
 
@@ -24,7 +24,7 @@ export default defineNuxtCommand({
 
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt, buildNuxt } = requireModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
+    const { loadNuxt, buildNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
 
     let currentNuxt: Nuxt
     const load = async (isRestart: boolean, reason?: string) => {

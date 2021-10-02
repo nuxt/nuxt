@@ -1,4 +1,4 @@
-import path from 'pathe'
+import { parse, relative } from 'pathe'
 import consola from 'consola'
 import type { Nuxt, NuxtPluginTemplate, NuxtTemplate } from '../types/nuxt'
 import { chainFn } from '../utils/task'
@@ -66,7 +66,7 @@ export function createModuleContainer (nuxt: Nuxt) {
     /** Register a custom layout. If its name is 'error' it will override the default error layout. */
     addLayout (tmpl: NuxtTemplate, name: string) {
       const { filename, src } = addTemplate(tmpl)
-      const layoutName = name || path.parse(src).name
+      const layoutName = name || parse(src).name
       const layout = nuxt.options.layouts[layoutName]
 
       if (layout) {
@@ -88,7 +88,7 @@ export function createModuleContainer (nuxt: Nuxt) {
      * @param dst - Path to layout file within the buildDir (`.nuxt/<dst>.vue`)
      */
     addErrorLayout (dst: string) {
-      const relativeBuildDir = path.relative(nuxt.options.rootDir, nuxt.options.buildDir)
+      const relativeBuildDir = relative(nuxt.options.rootDir, nuxt.options.buildDir)
       nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
     },
 

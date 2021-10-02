@@ -1448,6 +1448,7 @@ __metadata:
     estree-walker: ^2.0.2
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
+    mlly: ^0.2.2
     node-fetch: ^3.0.0
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
@@ -1492,7 +1493,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
-    "@types/lodash": ^4.14.175
+    "@types/lodash.template": ^4
     consola: ^2.15.3
     create-require: ^1.1.1
     defu: ^5.0.0
@@ -1501,7 +1502,7 @@ __metadata:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     jiti: ^1.12.6
-    lodash: ^4.17.21
+    lodash.template: ^4.5.0
     pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
@@ -1559,6 +1560,7 @@ __metadata:
     jiti: ^1.12.6
     listhen: ^0.2.4
     mime: ^2.5.2
+    mlly: ^0.2.2
     node-fetch: ^3.0.0
     ohmyfetch: ^0.3.1
     ora: ^6.0.1
@@ -1575,7 +1577,6 @@ __metadata:
     unbuild: latest
     unenv: ^0.3.10
     unstorage: ^0.2.8
-    upath: ^2.0.1
     vue: 3.2.19
     vue-bundle-renderer: ^0.3.1
     vue-server-renderer: ^2.6.14
@@ -1643,9 +1644,10 @@ __metadata:
     fs-extra: ^10.0.0
     glob: ^7.2.0
     hash-sum: ^2.0.0
-    lodash: ^4.17.21
+    lodash-es: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.3.0
+    mlly: ^0.2.2
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.8
@@ -2281,7 +2283,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.14.175":
+"@types/lodash.template@npm:^4":
+  version: 4.5.0
+  resolution: "@types/lodash.template@npm:4.5.0"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: 7650ecfad4ee1d51404913891f74f48c7837ba9b66fd4681624c943fa8df85231e5efb5339927f6542e9ef4bedb6aaac99f6e878118f2bdb04198bc86013209a
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*":
   version: 4.14.175
   resolution: "@types/lodash@npm:4.14.175"
   checksum: 50721f33faa542f1b9f62f2ba769ed353c6036711e92bd89ce569f2ed247e38fb2a2899f6fd46466b1690fea7ae0239471e6a6093c54e8f2b0613e43e8eac19c
@@ -8827,6 +8838,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"lodash-es@npm:^4.17.21":
+  version: 4.17.21
+  resolution: "lodash-es@npm:4.17.21"
+  checksum: 05cbffad6e2adbb331a4e16fbd826e7faee403a1a04873b82b42c0f22090f280839f85b95393f487c1303c8a3d2a010048bf06151a6cbe03eee4d388fb0a12d2
+  languageName: node
+  linkType: hard
+
 "lodash._reinterpolate@npm:^3.0.0":
   version: 3.0.0
   resolution: "lodash._reinterpolate@npm:3.0.0"
@@ -9460,7 +9478,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.2.4":
+"mlly@npm:^0.2.2, mlly@npm:^0.2.4":
   version: 0.2.4
   resolution: "mlly@npm:0.2.4"
   dependencies:
@@ -10050,6 +10068,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     jiti: ^1.12.6
     listhen: ^0.2.4
+    mlly: ^0.2.2
     mri: ^1.2.0
     pathe: ^0.2.0
     scule: ^0.2.1
@@ -10059,8 +10078,8 @@ fsevents@~2.3.2:
     fsevents:
       optional: true
   bin:
-    nu: ./bin/nuxi.cjs
-    nuxi: ./bin/nuxi.cjs
+    nu: ./bin/nuxi.mjs
+    nuxi: ./bin/nuxi.mjs
   languageName: unknown
   linkType: soft
 
@@ -10153,6 +10172,7 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
+    mlly: ^0.2.2
     nuxi: ^0.10.0
     ohmyfetch: ^0.3.1
     pathe: ^0.2.0
@@ -10169,7 +10189,7 @@ fsevents@~2.3.2:
     "@vue/shared": 3.2.19
     vue: 3.2.19
   bin:
-    nuxt: ./bin/nuxt.cjs
+    nuxt: ./bin/nuxt.mjs
   languageName: unknown
   linkType: soft
 

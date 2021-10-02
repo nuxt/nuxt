@@ -1,4 +1,4 @@
-import { existsSync, writeFile } from 'fs-extra'
+import { existsSync, promises as fsp } from 'fs'
 import { resolve } from 'pathe'
 import consola from 'consola'
 import { extendPreset, prettyPath } from '../utils'
@@ -62,17 +62,17 @@ if ('serviceWorker' in navigator) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
       async 'nitro:compiled' ({ output }: NitroContext) {
-        await writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.mjs');`)
+        await fsp.writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.mjs');`, 'utf8')
 
         // Temp fix
         if (!existsSync(resolve(output.publicDir, 'index.html'))) {
-          await writeFile(resolve(output.publicDir, 'index.html'), html)
+          await fsp.writeFile(resolve(output.publicDir, 'index.html'), html, 'utf8')
         }
         if (!existsSync(resolve(output.publicDir, '200.html'))) {
-          await writeFile(resolve(output.publicDir, '200.html'), html)
+          await fsp.writeFile(resolve(output.publicDir, '200.html'), html, 'utf8')
         }
         if (!existsSync(resolve(output.publicDir, '404.html'))) {
-          await writeFile(resolve(output.publicDir, '404.html'), html)
+          await fsp.writeFile(resolve(output.publicDir, '404.html'), html, 'utf8')
         }
         consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
       }

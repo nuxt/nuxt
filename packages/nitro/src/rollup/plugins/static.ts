@@ -1,5 +1,5 @@
+import { readFileSync, statSync } from 'fs'
 import createEtag from 'etag'
-import { readFileSync, statSync } from 'fs-extra'
 import mime from 'mime'
 import { relative, resolve } from 'pathe'
 import virtual from '@rollup/plugin-virtual'

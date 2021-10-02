@@ -1,7 +1,7 @@
+import { promises as fsp } from 'fs'
 import { resolve } from 'pathe'
 import defu from 'defu'
 import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils } from '@nuxt/kit'
-import { writeFile } from 'fs-extra'
 
 import * as defaultTemplates from '../app/templates'
 
@@ -44,7 +44,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
     }
 
     if (template.write) {
-      await writeFile(fullPath, contents, 'utf8')
+      await fsp.writeFile(fullPath, contents, 'utf8')
     }
   }))
 

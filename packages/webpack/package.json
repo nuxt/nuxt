@@ -3,8 +3,12 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./dist/*": "./dist/*"
+  },
   "files": [
     "dist"
   ],
@@ -27,9 +31,10 @@
     "fs-extra": "^10.0.0",
     "glob": "^7.2.0",
     "hash-sum": "^2.0.0",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "memfs": "^3.3.0",
     "mini-css-extract-plugin": "^2.3.0",
+    "mlly": "^0.2.2",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.3.8",

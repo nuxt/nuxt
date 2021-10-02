@@ -1,5 +1,5 @@
 import { resolve, dirname } from 'pathe'
-import { copyFile, mkdirp } from 'fs-extra'
+import fse from 'fs-extra'
 import { nodeFileTrace, NodeFileTraceOptions } from '@vercel/nft'
 import type { Plugin } from 'rollup'
 
@@ -84,8 +84,8 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         const writeFile = async (file) => {
           const src = resolve(opts.traceOptions.base, file)
           const dst = resolve(opts.outDir, 'node_modules', file.split('node_modules/').pop())
-          await mkdirp(dirname(dst))
-          await copyFile(src, dst)
+          await fse.mkdirp(dirname(dst))
+          await fse.copyFile(src, dst)
         }
         if (process.platform === 'win32') {
           // Workaround for EBUSY on windows (#424)

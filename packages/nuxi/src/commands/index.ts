@@ -1,11 +1,13 @@
 import type { Argv } from 'mri'
 
+const _rDefault = r => r.default || r
+
 export const commands = {
-  dev: () => import('./dev'),
-  build: () => import('./build'),
-  prepare: () => import('./prepare'),
-  usage: () => import('./usage'),
-  info: () => import('./info')
+  dev: () => import('./dev').then(_rDefault),
+  build: () => import('./build').then(_rDefault),
+  prepare: () => import('./prepare').then(_rDefault),
+  usage: () => import('./usage').then(_rDefault),
+  info: () => import('./info').then(_rDefault)
 }
 
 export type Command = keyof typeof commands

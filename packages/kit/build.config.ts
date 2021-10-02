@@ -2,6 +2,7 @@ import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,
+  emitCJS: false,
   entries: [
     {
       input: 'src/config/schema/index',

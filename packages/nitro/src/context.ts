@@ -1,6 +1,5 @@
 /* eslint-disable no-use-before-define */
-
-import { resolve, dirname } from 'pathe'
+import { resolve } from 'pathe'
 import defu from 'defu'
 import { createHooks, Hookable, NestedHooks } from 'hookable'
 import type { Preset } from 'unenv'
@@ -13,6 +12,7 @@ import type { AssetOptions } from './rollup/plugins/assets'
 import type { ServerMiddleware } from './server/middleware'
 import type { RollupConfig } from './rollup/config'
 import type { Options as EsbuildOptions } from './rollup/plugins/esbuild'
+import { runtimeDir } from './dirs'
 
 export interface NitroHooks {
   'nitro:document': (htmlTemplate: { src: string, contents: string, dst: string, compiled: string }) => void
@@ -136,7 +136,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       }
     },
     _internal: {
-      runtimeDir: resolve(dirname(require.resolve('@nuxt/nitro')), 'runtime'),
+      runtimeDir,
       hooks: createHooks<NitroHooks>()
     }
   }

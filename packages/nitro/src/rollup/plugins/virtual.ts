@@ -1,4 +1,4 @@
-import * as path from 'pathe'
+import { resolve, dirname } from 'pathe'
 import type { Plugin } from 'rollup'
 
 // Based on https://github.com/rollup/plugins/blob/master/packages/virtual/src/index.ts
@@ -16,7 +16,7 @@ export default function virtual (modules: RollupVirtualOptions): Plugin {
 
   for (const [id, mod] of Object.entries(modules)) {
     _modules.set(id, mod)
-    _modules.set(path.resolve(id), mod)
+    _modules.set(resolve(id), mod)
   }
 
   return {
@@ -29,7 +29,7 @@ export default function virtual (modules: RollupVirtualOptions): Plugin {
         const importerNoPrefix = importer.startsWith(PREFIX)
           ? importer.slice(PREFIX.length)
           : importer
-        const resolved = path.resolve(path.dirname(importerNoPrefix), id)
+        const resolved = resolve(dirname(importerNoPrefix), id)
         if (_modules.has(resolved)) { return PREFIX + resolved }
       }
 

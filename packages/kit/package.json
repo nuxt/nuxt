@@ -3,7 +3,8 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "exports": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
@@ -13,7 +14,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.175",
+    "@types/lodash.template": "^4",
     "unbuild": "latest"
   },
   "dependencies": {
@@ -25,7 +26,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "jiti": "^1.12.6",
-    "lodash": "^4.17.21",
+    "lodash.template": "^4.5.0",
     "pathe": "^0.2.0",
     "rc9": "^1.2.0",
     "scule": "^0.2.1",

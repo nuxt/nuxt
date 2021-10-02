@@ -1,7 +1,7 @@
 import '#polyfill'
 
+// @ts-ignore
+import functions from 'firebase-functions'
 import { handle } from '../server'
-
-const functions = require('firebase-functions')
 
 export const server = functions.https.onRequest(handle)

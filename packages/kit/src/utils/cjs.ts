@@ -1,8 +1,9 @@
+import { pathToFileURL } from 'url'
 import { join, normalize } from 'pathe'
 import jiti from 'jiti'
 
 // TODO: use create-require for jest environment
-const _require = jiti(process.cwd())
+const _require = jiti(process.cwd(), { interopDefault: true })
 
 export interface ResolveModuleOptions {
   paths?: string | string[]
@@ -123,6 +124,15 @@ export function requireModule (id: string, opts: RequireModuleOptions = {}) {
   }
 
   return requiredModule
+}
+
+export function importModule (id: string, opts: RequireModuleOptions = {}) {
+  const resolvedPath = resolveModule(id, opts)
+  return import(pathToFileURL(resolvedPath).href)
+}
+
+export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
+  return importModule(id, opts).catch(() => undefined)
 }
 
 /** Try to require a module, but don't emit an error if the module can't be required. */

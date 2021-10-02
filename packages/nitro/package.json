@@ -2,12 +2,12 @@
   "name": "@nuxt/nitro",
   "version": "0.10.0",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "exports": "./dist/index.mjs",
   "types": "./types/index.d.ts",
   "files": [
     "dist",
-    "types",
-    "compat.js"
+    "types"
   ],
   "scripts": {
     "prepack": "unbuild"
@@ -50,6 +50,7 @@
     "jiti": "^1.12.6",
     "listhen": "^0.2.4",
     "mime": "^2.5.2",
+    "mlly": "^0.2.2",
     "node-fetch": "^3.0.0",
     "ohmyfetch": "^0.3.1",
     "ora": "^6.0.1",
@@ -65,7 +66,6 @@
     "ufo": "^0.7.9",
     "unenv": "^0.3.10",
     "unstorage": "^0.2.8",
-    "upath": "^2.0.1",
     "vue": "3.2.19",
     "vue-bundle-renderer": "^0.3.1",
     "vue-server-renderer": "^2.6.14"

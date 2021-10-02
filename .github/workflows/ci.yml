@@ -48,8 +48,8 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - name: Stub
-        run: yarn stub
+      - name: Build
+        run: yarn build
 
       - name: Test (unit)
         run: yarn test:unit
@@ -81,8 +81,8 @@ jobs:
       - name: Install dependencies (bridge fixture)
         run: yarn --immutable && cd test/fixtures/bridge && yarn --immutable
 
-      - name: Stub
-        run: yarn stub
+      - name: Build
+        run: yarn build
 
       - name: Test (presets bridge)
         run: yarn test:bridge

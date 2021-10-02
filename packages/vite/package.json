@@ -3,8 +3,9 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
   "types": "./dist/index.d.ts",
+  "exports": "./dist/index.mjs",
   "files": [
     "dist"
   ],

@@ -1,4 +1,4 @@
-import path from 'pathe'
+import { join } from 'pathe'
 import pify from 'pify'
 import { Volume, createFsFromVolume } from 'memfs'
 
@@ -13,7 +13,7 @@ export function createMFS () {
 
   // fs.join method is (still) expected by webpack-dev-middleware
   // There might be differences with https://github.com/webpack/memory-fs/blob/master/lib/join.js
-  _fs.join = path.join
+  _fs.join = join
 
   // Used by vue-renderer
   _fs.exists = p => Promise.resolve(_fs.existsSync(p))

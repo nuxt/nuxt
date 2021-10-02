@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'url'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { createRequire } from 'module'
+import { dirname, join, relative, resolve } from 'pathe'
 import type { InputOptions, OutputOptions } from 'rollup'
 import defu from 'defu'
 import { terser } from 'rollup-plugin-terser'
@@ -15,7 +16,8 @@ import * as unenv from 'unenv'
 
 import type { Preset } from 'unenv'
 import { NitroContext } from '../context'
-import { resolvePath, MODULE_DIR } from '../utils'
+import { resolvePath } from '../utils'
+import { pkgDir } from '../dirs'
 
 import { dynamicRequire } from './plugins/dynamic-require'
 import { externals } from './plugins/externals'
@@ -63,10 +65,11 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   }
 
   // TODO: #590
+  const _require = createRequire(import.meta.url)
   if (nitroContext._nuxt.majorVersion === 3) {
     env.alias['vue/server-renderer'] = 'vue/server-renderer'
     env.alias['vue/compiler-sfc'] = 'vue/compiler-sfc'
-    env.alias.vue = require.resolve(`vue/dist/vue.cjs${nitroContext._nuxt.dev ? '' : '.prod'}.js`)
+    env.alias.vue = _require.resolve(`vue/dist/vue.cjs${nitroContext._nuxt.dev ? '' : '.prod'}.js`)
   }
 
   const buildServerDir = join(nitroContext._nuxt.buildDir, 'dist/server')
@@ -216,8 +219,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   rollupConfig.plugins.push(alias({
     entries: {
       '#nitro': nitroContext._internal.runtimeDir,
-      '#nitro-renderer': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer))),
-      '#config': normalize(require.resolve(resolve(nitroContext._internal.runtimeDir, 'app/config'))),
+      '#nitro-renderer': resolve(nitroContext._internal.runtimeDir, 'app', renderer),
+      '#config': resolve(nitroContext._internal.runtimeDir, 'app/config'),
       '#nitro-vue-renderer': vue2ServerRenderer,
       // Only file and data URLs are supported by the default ESM loader on Windows (#427)
       '#build': nitroContext._nuxt.dev && process.platform === 'win32'
@@ -234,7 +237,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   const moduleDirectories = [
     resolve(nitroContext._nuxt.rootDir, 'node_modules'),
     ...nitroContext._nuxt.modulesDir,
-    resolve(MODULE_DIR, '../node_modules'),
+    resolve(pkgDir, '../node_modules'),
     'node_modules'
   ]
 

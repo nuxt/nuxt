@@ -1,4 +1,4 @@
-import path from 'pathe'
+import { resolve } from 'pathe'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import { fileName, WebpackConfigContext, applyPresets } from '../utils/config'
@@ -130,7 +130,7 @@ function createStyleResourcesLoaderRule (styleLang, styleResources, rootDir) {
   return {
     loader: 'style-resources-loader',
     options: {
-      patterns: Array.from(styleResources[styleLang]).map(p => path.resolve(rootDir, p as string)),
+      patterns: Array.from(styleResources[styleLang]).map(p => resolve(rootDir, p as string)),
       ...styleResources.options
     }
   }

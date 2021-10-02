@@ -3,10 +3,11 @@
   "version": "0.10.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.cjs",
+  "type": "module",
+  "exports": "./dist/index.mjs",
   "types": "./types.d.ts",
   "bin": {
-    "nuxt": "./bin/nuxt.cjs"
+    "nuxt": "./bin/nuxt.mjs"
   },
   "files": [
     "bin",
@@ -32,6 +33,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "ignore": "^5.1.8",
+    "mlly": "^0.2.2",
     "nuxi": "^0.10.0",
     "ohmyfetch": "^0.3.1",
     "pathe": "^0.2.0",

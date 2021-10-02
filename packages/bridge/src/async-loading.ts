@@ -1,15 +1,24 @@
 // Based on https://github.com/webpack/webpack/blob/v4.46.0/lib/node/NodeMainTemplatePlugin.js#L81-L191
 
+import { createRequire } from 'module'
 import type { Compiler } from 'webpack'
-
 export class AsyncLoadingPlugin {
+  private opts: any
+  private Template: any
+  constructor (opts) {
+    this.opts = opts
+    const _require = createRequire(import.meta.url)
+    const TemplatePath = _require.resolve('webpack/lib/Template', { paths: [...this.opts.modulesDir] })
+    this.Template = _require(TemplatePath)
+  }
+
   apply (compiler: Compiler) {
-    const Template = require('webpack/lib/Template')
     compiler.hooks.compilation.tap('AsyncLoading', (compilation) => {
       const mainTemplate = compilation.mainTemplate
       mainTemplate.hooks.requireEnsure.tap(
         'AsyncLoading',
         (_source, chunk, hash) => {
+          const Template = this.Template
           const chunkFilename = mainTemplate.outputOptions.chunkFilename
           const chunkMaps = chunk.getChunkMaps()
           const insertMoreModules = [

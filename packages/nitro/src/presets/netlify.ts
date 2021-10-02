@@ -1,5 +1,5 @@
+import { existsSync, promises as fsp } from 'fs'
 import { join } from 'pathe'
-import { existsSync, readFile, writeFile } from 'fs-extra'
 import consola from 'consola'
 import { extendPreset } from '../utils'
 import { NitroContext, NitroPreset } from '../context'
@@ -15,7 +15,7 @@ export const netlify: NitroPreset = extendPreset(lambda, {
       const redirectsPath = join(ctx.output.publicDir, '_redirects')
       let contents = '/* /.netlify/functions/server 200'
       if (existsSync(redirectsPath)) {
-        const currentRedirects = await readFile(redirectsPath, 'utf-8')
+        const currentRedirects = await fsp.readFile(redirectsPath, 'utf-8')
         if (currentRedirects.match(/^\/\* /m)) {
           consola.info('Not adding Nitro fallback to `_redirects` (as an existing fallback was found).')
           return
@@ -23,7 +23,7 @@ export const netlify: NitroPreset = extendPreset(lambda, {
         consola.info('Adding Nitro fallback to `_redirects` to handle all unmatched routes.')
         contents = currentRedirects + '\n' + contents
       }
-      await writeFile(redirectsPath, contents)
+      await fsp.writeFile(redirectsPath, contents)
     },
     'nitro:rollup:before' (ctx: NitroContext) {
       ctx.rollupConfig.output.entryFileNames = 'server.ts'

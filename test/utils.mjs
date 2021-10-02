@@ -1,23 +1,23 @@
 import { existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'fs'
 import { execSync } from 'child_process'
 import { resolve, dirname } from 'pathe'
-import { fileURLToPath } from 'url'
 import defu from 'defu'
 import hash from 'object-hash'
 import execa from 'execa'
+import { createCommonJS } from 'mlly'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const cjs = createCommonJS(import.meta.url)
 
 export function resolveWorkspace (name) {
-  return resolve(__dirname, '../', name)
+  return resolve(cjs.__dirname, '../', name)
 }
 
 export function fixtureDir (name) {
-  return resolve(__dirname, 'fixtures', name)
+  return resolve(cjs.__dirname, 'fixtures', name)
 }
 
 export async function execNuxtCLI (args, opts) {
-  const nuxtCLI = resolveWorkspace('packages/nuxi/bin/nuxi.cjs')
+  const nuxtCLI = resolveWorkspace('packages/nuxi/bin/nuxi.mjs')
   await execa('node', [nuxtCLI, ...args], opts)
 }
 

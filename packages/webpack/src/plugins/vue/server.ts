@@ -1,5 +1,5 @@
 
-import { Compilation } from 'webpack'
+import webpack from 'webpack'
 import { validate, isJS, extractQueryPartJS } from './util'
 
 export default class VueSSRServerPlugin {
@@ -18,7 +18,7 @@ export default class VueSSRServerPlugin {
     compiler.hooks.make.tap('VueSSRServerPlugin', (compilation: any) => {
       compilation.hooks.processAssets.tapAsync({
         name: 'VueSSRServerPlugin',
-        stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+        stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
       }, (assets, cb) => {
         const stats = compilation.getStats().toJson()
         const [entryName] = Object.keys(stats.entrypoints)

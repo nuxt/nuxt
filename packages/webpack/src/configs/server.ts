@@ -1,5 +1,5 @@
 import { isAbsolute } from 'pathe'
-import { ProvidePlugin } from 'webpack'
+import webpack from 'webpack'
 import { WebpackConfigContext, applyPresets, getWebpackConfig } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
@@ -68,7 +68,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Server polyfills
   if (options.build.serverURLPolyfill) {
-    config.plugins.push(new ProvidePlugin({
+    config.plugins.push(new webpack.ProvidePlugin({
       URL: [options.build.serverURLPolyfill, 'URL'],
       URLSearchParams: [options.build.serverURLPolyfill, 'URLSearchParams']
     }))

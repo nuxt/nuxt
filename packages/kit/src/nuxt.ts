@@ -1,5 +1,5 @@
 import { getContext } from 'unctx'
-import { requireModule, tryRequireModule, tryResolveModule } from './utils/cjs'
+import { importModule, tryImportModule, tryResolveModule } from './utils/cjs'
 import type { Nuxt } from './types/nuxt'
 import type { NuxtConfig } from './types/config'
 import type { LoadNuxtConfigOptions } from './config/load'
@@ -50,14 +50,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt 3
   if (opts.version !== 2) {
-    const { loadNuxt } = requireModule('nuxt3', resolveOpts)
+    const { loadNuxt } = await importModule('nuxt3', resolveOpts)
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
 
   // Nuxt 2
   // @ts-ignore
-  const { loadNuxt } = tryRequireModule('nuxt-edge', resolveOpts) || requireModule('nuxt', resolveOpts)
+  const { loadNuxt } = await tryImportModule('nuxt-edge', resolveOpts) || await importModule('nuxt', resolveOpts)
   const nuxt = await loadNuxt({
     rootDir: opts.rootDir,
     for: opts.dev ? 'dev' : 'build',
@@ -68,17 +68,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt as Nuxt
 }
 
-export function buildNuxt (nuxt: Nuxt): Promise<any> {
+export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   const resolveOpts = { paths: nuxt.options.rootDir }
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
-    const { build } = requireModule('nuxt3', resolveOpts)
+    const { build } = await importModule('nuxt3', resolveOpts)
     return build(nuxt)
   }
 
   // Nuxt 2
   // @ts-ignore
-  const { build } = tryRequireModule('nuxt-edge', resolveOpts) || requireModule('nuxt', resolveOpts)
+  const { build } = tryImportModule('nuxt-edge', resolveOpts) || tryImportModule('nuxt', resolveOpts)
   return build(nuxt)
 }

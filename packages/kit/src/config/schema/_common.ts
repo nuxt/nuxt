@@ -627,7 +627,7 @@ export default {
    * @example
    * ```js
    * import fs from 'fs'
-   * import path from 'pathe'
+   * import path from 'path'
    * export default {
    *   hooks: {
    *     build: {

@@ -1,5 +1,6 @@
+import { createRequire } from 'module'
 import { join, relative, resolve } from 'pathe'
-import { existsSync, readJSONSync } from 'fs-extra'
+import fse from 'fs-extra'
 import consola from 'consola'
 import globby from 'globby'
 
@@ -16,7 +17,7 @@ export const firebase: NitroPreset = {
 }
 
 async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir } }: NitroContext) {
-  if (!existsSync(join(rootDir, 'firebase.json'))) {
+  if (!fse.existsSync(join(rootDir, 'firebase.json'))) {
     const firebase = {
       functions: {
         source: relative(rootDir, serverDir)
@@ -38,20 +39,22 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
     await writeFile(resolve(rootDir, 'firebase.json'), JSON.stringify(firebase))
   }
 
+  const _require = createRequire(import.meta.url)
+
   const jsons = await globby(`${serverDir}/node_modules/**/package.json`)
   const prefixLength = `${serverDir}/node_modules/`.length
   const suffixLength = '/package.json'.length
   const dependencies = jsons.reduce((obj, packageJson) => {
     const dirname = packageJson.slice(prefixLength, -suffixLength)
     if (!dirname.includes('node_modules')) {
-      obj[dirname] = require(packageJson).version
+      obj[dirname] = _require(packageJson).version
     }
     return obj
   }, {} as Record<string, string>)
 
   let nodeVersion = '12'
   try {
-    const currentNodeVersion = readJSONSync(join(rootDir, 'package.json')).engines.node
+    const currentNodeVersion = fse.readJSONSync(join(rootDir, 'package.json')).engines.node
     if (['12', '10'].includes(currentNodeVersion)) {
       nodeVersion = currentNodeVersion
     }
@@ -66,8 +69,8 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
         dependencies,
         devDependencies: {
           'firebase-functions-test': 'latest',
-          'firebase-admin': require('firebase-admin/package.json').version,
-          'firebase-functions': require('firebase-functions/package.json')
+          'firebase-admin': _require('firebase-admin/package.json').version,
+          'firebase-functions': _require('firebase-functions/package.json')
             .version
         },
         engines: { node: nodeVersion }

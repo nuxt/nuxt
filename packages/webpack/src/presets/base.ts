@@ -2,9 +2,9 @@ import { resolve, normalize } from 'pathe'
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
 import consola from 'consola'
-import { DefinePlugin, Configuration } from 'webpack'
+import webpack from 'webpack'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
-import { escapeRegExp } from 'lodash'
+import { escapeRegExp } from 'lodash-es'
 import { hasProtocol, joinURL } from 'ufo'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
@@ -55,7 +55,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
 
   // Provide env via DefinePlugin
-  config.plugins.push(new DefinePlugin(getEnv(ctx)))
+  config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
   if (
@@ -164,7 +164,7 @@ export function baseTranspile (ctx: WebpackConfigContext) {
   ctx.transpile = [...transpile, ...ctx.transpile]
 }
 
-function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
+function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
   const { options } = ctx
 
   if (!options.dev) {
@@ -187,7 +187,7 @@ function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
   // }
 }
 
-function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
+function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] {
   const { options } = ctx
 
   return {

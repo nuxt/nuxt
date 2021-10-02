@@ -1,7 +1,8 @@
 import fs from 'fs'
-import path from 'pathe'
+import { resolve } from 'pathe'
 import consola from 'consola'
-import { defaults, merge, cloneDeep } from 'lodash'
+import { createCommonJS } from 'mlly'
+import { defaults, merge, cloneDeep } from 'lodash-es'
 import createResolver from 'postcss-import-resolver'
 import { Nuxt, requireModule } from '@nuxt/kit'
 
@@ -111,7 +112,7 @@ export class PostcssConfig {
         '.postcssrc.json',
         '.postcssrc.yaml'
       ]) {
-        const configFile = path.resolve(dir, file)
+        const configFile = resolve(dir, file)
         if (fs.existsSync(configFile)) {
           postcssConfigFileWarning()
           return configFile
@@ -140,8 +141,9 @@ export class PostcssConfig {
   loadPlugins (config) {
     if (!isPureObject(config.plugins)) { return }
     // Map postcss plugins into instances on object mode once
+    const cjs = createCommonJS(import.meta.url)
     config.plugins = this.sortPlugins(config).map((pluginName) => {
-      const pluginFn = requireModule(pluginName, { paths: [__dirname] })
+      const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
       const pluginOptions = config.plugins[pluginName]
       if (!pluginOptions || typeof pluginFn !== 'function') { return null }
       return pluginFn(pluginOptions)
