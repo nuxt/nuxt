@@ -18,6 +18,7 @@ export default defineNuxtPlugin((nuxt) => {
   })
 
   for (const name in Components) {
+    // eslint-disable-next-line import/namespace
     nuxt.app.component(name, Components[name])
   }
 })

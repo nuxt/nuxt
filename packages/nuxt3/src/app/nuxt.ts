@@ -64,7 +64,7 @@ export interface CreateOptions {
   globalName?: NuxtApp['globalName']
 }
 
-export function createNuxt (options: CreateOptions) {
+export function createNuxtApp (options: CreateOptions) {
   const nuxt: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',

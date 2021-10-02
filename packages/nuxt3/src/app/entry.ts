@@ -1,5 +1,5 @@
 import { createSSRApp, createApp, nextTick } from 'vue'
-import { createNuxt, applyPlugins, normalizePlugins, CreateOptions } from '#app'
+import { createNuxtApp, applyPlugins, normalizePlugins, CreateOptions } from '#app'
 import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'
@@ -14,7 +14,7 @@ if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext'] = {}) {
     const app = createApp(App)
 
-    const nuxt = createNuxt({ app, ssrContext })
+    const nuxt = createNuxtApp({ app, ssrContext })
 
     await applyPlugins(nuxt, plugins)
 
@@ -37,7 +37,7 @@ if (process.client) {
     const isSSR = Boolean(window.__NUXT__?.serverRendered)
     const app = isSSR ? createSSRApp(App) : createApp(App)
 
-    const nuxt = createNuxt({ app })
+    const nuxt = createNuxtApp({ app })
 
     await applyPlugins(nuxt, plugins)
 

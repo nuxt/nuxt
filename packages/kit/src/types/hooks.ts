@@ -3,8 +3,7 @@ import type { HookCallback } from 'hookable'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { NuxtConfig, NuxtOptions } from '..'
 import type { ModuleContainer } from '../module/container'
-import { NuxtTemplate } from '../types/nuxt'
-import { Nuxt, NuxtApp } from './nuxt'
+import type { NuxtTemplate, Nuxt, NuxtApp } from '../types/nuxt'
 
 type HookResult = Promise<void> | void
 

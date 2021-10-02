@@ -142,6 +142,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
   }
 
   defaults.preset = input.preset || process.env.NITRO_PRESET || detectTarget() || 'server'
+  // eslint-disable-next-line import/namespace
   let presetDefaults = PRESETS[defaults.preset] || tryImport(nuxtOptions.rootDir, defaults.preset)
   if (!presetDefaults) {
     throw new Error('Cannot resolve preset: ' + defaults.preset)
