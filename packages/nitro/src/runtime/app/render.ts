@@ -1,7 +1,7 @@
 import type { ServerResponse } from 'http'
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
-import { runtimeConfig } from './config'
+import { privateConfig, publicConfig } from './config'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.mjs'
 
@@ -63,7 +63,7 @@ export async function renderMiddleware (req, res: ServerResponse) {
     url,
     req,
     res,
-    runtimeConfig,
+    runtimeConfig: { private: privateConfig, public: publicConfig },
     noSSR: req.spa || req.headers['x-nuxt-no-ssr'],
     ...(req.context || {})
   }

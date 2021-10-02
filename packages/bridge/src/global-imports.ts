@@ -14,7 +14,8 @@ const identifiers = {
     'useNuxtApp',
     'defineNuxtPlugin',
     'useRoute',
-    'useRouter'
+    'useRouter',
+    'useRuntimeConfig'
   ],
   '@vue/composition-api': [
     // lifecycle

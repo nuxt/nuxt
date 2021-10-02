@@ -4,7 +4,8 @@ const identifiers = {
     'asyncData',
     'defineNuxtComponent',
     'useNuxtApp',
-    'defineNuxtPlugin'
+    'defineNuxtPlugin',
+    'useRuntimeConfig'
   ],
   '#meta': [
     'useMeta'
