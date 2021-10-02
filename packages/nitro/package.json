@@ -3,7 +3,7 @@
   "version": "0.10.0",
   "license": "MIT",
   "type": "module",
-  "exports": "./dist/index.mjs",
+  "main": "./dist/index.mjs",
   "types": "./types/index.d.ts",
   "files": [
     "dist",
