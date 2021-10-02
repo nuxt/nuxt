@@ -1452,7 +1452,7 @@ __metadata:
     node-fetch: ^3.0.0
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
-    nuxt-vite: ^0.3.2
+    nuxt-vite: ^0.3.4
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
@@ -10139,9 +10139,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"nuxt-vite@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "nuxt-vite@npm:0.3.2"
+"nuxt-vite@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "nuxt-vite@npm:0.3.4"
   dependencies:
     "@vitejs/plugin-legacy": ^1.6.0
     consola: ^2.15.3
@@ -10156,7 +10156,7 @@ fsevents@~2.3.2:
     ufo: ^0.7.9
     vite: ^2.5.7
     vite-plugin-vue2: ^1.8.2
-  checksum: 505967d602683993807b082d95fe10c19b952d4944f60951519bcdb53fb696b2a042c59ab1ad9df41f028466130bff6c1c36b67f72432a4683caccc73f1fc00b
+  checksum: d6a6d26ca9f4a7904ee957cb4edca570d3d528561c0618b7300f88855f19a78629ff7f2bdd7782c541f5019ca3bc92689fd4c1a44e4cab692183d99685d19202
   languageName: node
   linkType: hard
 
