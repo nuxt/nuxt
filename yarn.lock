@@ -1451,7 +1451,7 @@ __metadata:
     node-fetch: ^3.0.0
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
-    nuxt-vite: ^0.3.1
+    nuxt-vite: ^0.3.2
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
@@ -10131,24 +10131,24 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"nuxt-vite@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "nuxt-vite@npm:0.3.1"
+"nuxt-vite@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "nuxt-vite@npm:0.3.2"
   dependencies:
     "@vitejs/plugin-legacy": ^1.6.0
     consola: ^2.15.3
+    defu: ^5.0.0
     fs-extra: ^10.0.0
-    p-debounce: 3
+    pathe: ^0.2.0
     postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
     postcss-preset-env: ^6.7.0
     postcss-url: ^10.1.3
     semver: ^7.3.5
     ufo: ^0.7.9
-    upath: ^2.0.1
     vite: ^2.5.7
     vite-plugin-vue2: ^1.8.2
-  checksum: 81246db14c308ae920a1e462a3d8b9e04499d152c67c0a566f11f48720d88319435c835a9a88e35c340be644b6d2aa6b7fbd21367803c3ba133cc764e8553517
+  checksum: 505967d602683993807b082d95fe10c19b952d4944f60951519bcdb53fb696b2a042c59ab1ad9df41f028466130bff6c1c36b67f72432a4683caccc73f1fc00b
   languageName: node
   linkType: hard
 
@@ -10381,13 +10381,6 @@ fsevents@~2.3.2:
     os-homedir: ^1.0.0
     os-tmpdir: ^1.0.0
   checksum: 779d261920f2a13e5e18cf02446484f12747d3f2ff82280912f52b213162d43d312647a40c332373cbccd5e3fb8126915d3bfea8dde4827f70f82da76e52d359
-  languageName: node
-  linkType: hard
-
-"p-debounce@npm:3":
-  version: 3.0.2
-  resolution: "p-debounce@npm:3.0.2"
-  checksum: 41a82a9acb72cb18a480e8c4b22c01e86a58434b3765ac11bf2b165af629179bd589c53d6f725d615b8794cc5a8cf92601ea335024fc0ec5ed7c646087e4cf0c
   languageName: node
   linkType: hard
 
