@@ -4,6 +4,7 @@ import { setupNitroBridge } from './nitro'
 import { setupAppBridge } from './app'
 import { setupCAPIBridge } from './capi'
 import { setupBetterResolve } from './resolve'
+import { setupGlobalImports } from './global-imports'
 
 export default defineNuxtModule({
   name: 'nuxt-bridge',
@@ -13,12 +14,15 @@ export default defineNuxtModule({
     vite: false,
     app: {},
     capi: {},
+    globalImports: true,
     // TODO: Remove from 2.16
     postcss8: true,
     swc: true,
     resolve: true
   },
   async setup (opts, nuxt) {
+    const _require = createRequire(import.meta.url)
+
     if (opts.nitro) {
       await setupNitroBridge()
     }
@@ -31,7 +35,9 @@ export default defineNuxtModule({
       }
       await setupCAPIBridge(opts.capi)
     }
-    const _require = createRequire(import.meta.url)
+    if (opts.globalImports) {
+      await setupGlobalImports()
+    }
     if (opts.vite) {
       await installModule(nuxt, _require.resolve('nuxt-vite'))
     }

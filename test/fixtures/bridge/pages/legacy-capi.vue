@@ -21,7 +21,7 @@
       <tr><td><b>onMounted</b></td><td> {{ mounted }}</td></tr>
       <!-- Wrappers -->
       <tr><td><b>useStore</b></td><td> {{ store.state.test }}</td></tr>
-      <tr><td><b>useRoute</b></td><td> {{ route.path === '/legacy' ? '✅' : '❌' }}</td></tr>
+      <tr><td><b>useRoute</b></td><td> {{ route.path === '/legacy-capi' ? '✅' : '❌' }}</td></tr>
       <tr><td><b>useContext</b></td><td> {{ Object.keys(context).length ? '✅' : '❌' }}</td></tr>
       <!-- Helpers -->
       <tr><td><b>useAsync</b></td><td> {{ async }}</td></tr>
@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, useRoute, useContext, useStore, useAsync, ssrRef, shallowSsrRef, ssrPromise, useMeta } from '@nuxtjs/composition-api'
+import { useRoute, useContext, useStore, useAsync, ssrRef, shallowSsrRef, ssrPromise, useMeta } from '@nuxtjs/composition-api'
 
 export default defineComponent({
   setup () {

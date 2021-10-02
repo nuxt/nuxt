@@ -3,8 +3,6 @@
 </template>
 
 <script>
-import { defineComponent, ref } from '#app'
-
 export default defineComponent({
   setup () {
     return {

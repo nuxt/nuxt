@@ -8,11 +8,11 @@ const excludeRE = [
   // defined as function
   /\bfunction\s*([\s\S]+?)\s*\(/g,
   // defined as local variable
-  /\b(?:const|let|var)\s*([\w\d_$]+?)\b/g
+  /\b(?:const|let|var)\s*(\{([\s\S]*?)\}|[\w\d_$]+?\b)/g
 ]
 
 const multilineCommentsRE = /\/\*(.|[\r\n])*?\*\//gm
-const singlelineCommentsRE = /\/\/.*/g
+const singlelineCommentsRE = /^\s*\/\/.*$/gm
 
 function stripeComments (code: string) {
   return code
@@ -73,10 +73,17 @@ export const TransformPlugin = createUnplugin((map: IdentifierMap) => {
         modules[moduleName].push(name)
       })
 
+      // Needed for webpack4/bridge support
+      const isCJSContext = code.includes('require(')
+
       // stringify import
-      const imports = Object.entries(modules)
-        .map(([moduleName, names]) => `import { ${names.join(',')} } from '${moduleName}';`)
-        .join('')
+      const imports = !isCJSContext
+        ? Object.entries(modules)
+          .map(([moduleName, names]) => `import { ${names.join(',')} } from '${moduleName}';`)
+          .join('')
+        : Object.entries(modules)
+          .map(([moduleName, names]) => `const { ${names.join(',')} } = require('${moduleName}');`)
+          .join('')
 
       return imports + code
     }

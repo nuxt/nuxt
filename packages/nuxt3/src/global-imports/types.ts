@@ -3,4 +3,5 @@ export type Identifiers = [string, string][]
 
 export interface GlobalImportsOptions {
   identifiers?: IdentifierMap
+  disabled?: string[]
 }

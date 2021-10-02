@@ -6,7 +6,6 @@
 </template>
 
 <script>
-import { useRoute } from '#app'
 export default {
   setup () {
     const route = useRoute()
