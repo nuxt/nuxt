@@ -51,6 +51,10 @@ const identifiers = {
     'nextTick',
     'provide',
     'useCssModule'
+  ],
+  'vue-router': [
+    'useRoute',
+    'useRouter'
   ]
 }
 

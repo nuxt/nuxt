@@ -300,10 +300,12 @@ export const wrapProperty = (property, makeComputed = true) => () => {
 }
 
 export const useRouter = () => {
+  warnOnce('useRouter', 'You are using `useRouter`, which can be replaced with `useRouter` from `@nuxt/bridge`.')
   return getCurrentInstance().$router
 }
 
 export const useRoute = () => {
+  warnOnce('useRoute', 'You are using `useRoute`, which can be replaced with `useRoute` from `@nuxt/bridge`.')
   const vm = getCurrentInstance()
   return computed(() => vm.$route)
 }

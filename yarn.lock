@@ -1455,6 +1455,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.2.16
+    vue-router: 3
   languageName: unknown
   linkType: soft
 
@@ -14224,6 +14225,13 @@ fsevents@~2.3.2:
     "@vue/server-renderer": ^3.0.6
     vue: ^3.0.0
   checksum: 436ee6d8d102eb665b8bf0b3749229e456f66b9e30f5b842d9f48298be551d28b86d6bf034afc09820e0451a2c6d891614db4e4df1ea357106a52267ace071e8
+  languageName: node
+  linkType: hard
+
+"vue-router@npm:3":
+  version: 3.5.2
+  resolution: "vue-router@npm:3.5.2"
+  checksum: 342049e7cb0e4974879c57f9ecce342c180a1abce8df71137f902b201faa18d0a65c44936cbd4e9d62d5770d8f95395d73a5e05efa255475817f350bf7a094d1
   languageName: node
   linkType: hard
 

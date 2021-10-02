@@ -32,6 +32,7 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/node-fetch": "^3.0.2",
-    "unbuild": "latest"
+    "unbuild": "latest",
+    "vue-router": "3"
   }
 }
