@@ -1443,6 +1443,7 @@ __metadata:
     "@types/node-fetch": ^3.0.2
     "@vue/composition-api": ^1.2.2
     acorn: ^8.5.0
+    defu: ^5.0.0
     enhanced-resolve: ^5.8.3
     estree-walker: ^2.0.2
     fs-extra: ^10.0.0
