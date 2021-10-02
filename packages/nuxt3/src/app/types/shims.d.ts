@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/default
-import Vue from 'vue'
+import { Component } from '@vue/runtime-core'
 import { $Fetch } from 'ohmyfetch'
 import { Nuxt } from '../dist'
 
@@ -26,11 +25,12 @@ declare global {
 }
 
 declare module '*.vue' {
-  export default Vue
+  export default Component
 }
 
 declare module 'vue' {
-  interface App {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface App<HostElement> {
     $nuxt: Nuxt
   }
 }

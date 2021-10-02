@@ -24,7 +24,7 @@ export interface RuntimeNuxtHooks {
 }
 
 export interface NuxtApp {
-  app: App
+  app: App<Element>
   globalName: string
 
   hooks: Hookable<RuntimeNuxtHooks>
