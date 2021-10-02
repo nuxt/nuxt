@@ -342,7 +342,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/standalone@npm:^7.14.9":
+"@babel/standalone@npm:^7.15.7":
   version: 7.15.7
   resolution: "@babel/standalone@npm:7.15.7"
   checksum: 0199793cd0403482679d806ba70871ad69402fb48efa1600af8b78c2ae0a0c6a6f3a99a2dc02110dca0568dc539a45dd3c14a27c643924a328b02324e5a2958f
@@ -1450,7 +1450,7 @@ __metadata:
     node-fetch: ^3.0.0
     nuxi: ^0.10.0
     nuxt-swc: ^0.1.0
-    nuxt-vite: ^0.2.4
+    nuxt-vite: ^0.3.1
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
@@ -1562,7 +1562,7 @@ __metadata:
     ora: ^6.0.1
     pathe: ^0.2.0
     pretty-bytes: ^5.6.0
-    rollup: ^2.57.0
+    rollup: ^2.58.0
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.4
@@ -1659,7 +1659,7 @@ __metadata:
     vue: 3.2.19
     vue-loader: ^16.8.1
     vue-style-loader: ^4.1.3
-    webpack: ^5.55.1
+    webpack: ^5.56.0
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.2.1
     webpack-hot-middleware: ^2.25.1
@@ -2649,18 +2649,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:^1.5.3":
-  version: 1.5.3
-  resolution: "@vitejs/plugin-legacy@npm:1.5.3"
+"@vitejs/plugin-legacy@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@vitejs/plugin-legacy@npm:1.6.0"
   dependencies:
-    "@babel/standalone": ^7.14.9
-    core-js: ^3.16.0
+    "@babel/standalone": ^7.15.7
+    core-js: ^3.18.1
     magic-string: ^0.25.7
     regenerator-runtime: ^0.13.9
-    systemjs: ^6.10.2
+    systemjs: ^6.10.3
   peerDependencies:
     vite: ^2.0.0
-  checksum: 6175c29ca4ab3f4b2f6c6510bd8234983ee6301e68befd32186dfeb5fe66dc46a56681efdf939e960b2b67dd72187ea0f117295c9c4b94a107e94ee60fb49529
+  checksum: 765e9afc9c19892a759bff67c3957f15a3559b5a3752eb1b6194edffa5fb0a8d30d17a42d34135f1afbc6a9e32caeabbe0f639206d979cfc3207be22c84076ce
   languageName: node
   linkType: hard
 
@@ -4419,6 +4419,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"builtins@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "builtins@npm:4.0.0"
+  dependencies:
+    semver: ^7.0.0
+  checksum: 3c8b3b96ed88dd8e21286a3590292862ad62a59085bbcd77a4470848fed0f59fcd67f366afdf9ca8d7e77abce7ccf336bf662c12ead949294aa03bc563a57a1c
+  languageName: node
+  linkType: hard
+
 "bundle-runner@npm:^0.0.1":
   version: 0.0.1
   resolution: "bundle-runner@npm:0.0.1"
@@ -4853,10 +4862,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^2.0.10, colorette@npm:^2.0.12":
+"colorette@npm:^2.0.10":
   version: 2.0.12
   resolution: "colorette@npm:2.0.12"
   checksum: 1df990c6749826694756ecd05a771fb70fd426cf2b264cf496fb93a621fb4554fabfa8adde0923421f3e38b7265d546f6a46caf833f2d7facf45a40042b510b3
+  languageName: node
+  linkType: hard
+
+"colorette@npm:^2.0.13":
+  version: 2.0.13
+  resolution: "colorette@npm:2.0.13"
+  checksum: e257bfacd468b0a9a2970fd7160ef150647292da976fe1866336bdb6145dbcb5f8deba970c0d9237d79f5d90299c75164ac13649669cdc47c371e86a71f8b14f
   languageName: node
   linkType: hard
 
@@ -5145,10 +5161,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.16.0":
-  version: 3.18.0
-  resolution: "core-js@npm:3.18.0"
-  checksum: 192c345eb0c8b9d582ebed798cf124e00cd8241303c3c801987563f8ebb8cb991e2ff91494c258752014c29d5515070d2c0a862687401c7d7e1e2f96f8980d42
+"core-js@npm:^3.18.1":
+  version: 3.18.1
+  resolution: "core-js@npm:3.18.1"
+  checksum: 89cac0fe657df722d10b0e658ee76af12a614c0a75fe3fb11e87c2e3f27f6d7e609e3bf40748da5d8feb055b0535766a583ff1d1ac89dba57105f6f1ad64dc21
   languageName: node
   linkType: hard
 
@@ -6236,7 +6252,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.12.17, esbuild@npm:^0.12.21, esbuild@npm:^0.12.9":
+"esbuild@npm:^0.12.21, esbuild@npm:^0.12.9":
   version: 0.12.29
   resolution: "esbuild@npm:0.12.29"
   bin:
@@ -7873,6 +7889,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"import-meta-resolve@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "import-meta-resolve@npm:1.1.1"
+  dependencies:
+    builtins: ^4.0.0
+  checksum: 2024161e169c45ed25a9f51d984a432a9cc342c35737f9410266bab237ca2f756c1f80c15e2297df83c92f585743d5105291f2ad24094a513f804c6023ea1472
+  languageName: node
+  linkType: hard
+
 "import-modules@npm:^2.1.0":
   version: 2.1.0
   resolution: "import-modules@npm:2.1.0"
@@ -9462,6 +9487,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"mlly@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "mlly@npm:0.2.4"
+  dependencies:
+    import-meta-resolve: ^1.1.1
+  checksum: aecd0ea550f00642658574249443ee81619d60f00ad21dd69d4656d3896f8ba0fe8bb5b9a6c42074fdd89b9055052e8fa148fbe51ebcd8bbdd0b58dcbb514a8b
+  languageName: node
+  linkType: hard
+
 "mocha@npm:^9.1.2":
   version: 9.1.2
   resolution: "mocha@npm:9.1.2"
@@ -10026,7 +10060,7 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^2.3.0
-    colorette: ^2.0.12
+    colorette: ^2.0.13
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     destr: ^1.1.0
@@ -10072,7 +10106,7 @@ fsevents@~2.3.2:
     object-hash: ^2.2.0
     pathe: ^0.2.0
     typescript: ^4.4.3
-    unbuild: ^0.5.5
+    unbuild: ^0.5.6
   languageName: unknown
   linkType: soft
 
@@ -10095,13 +10129,14 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"nuxt-vite@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "nuxt-vite@npm:0.2.4"
+"nuxt-vite@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "nuxt-vite@npm:0.3.1"
   dependencies:
-    "@vitejs/plugin-legacy": ^1.5.3
+    "@vitejs/plugin-legacy": ^1.6.0
     consola: ^2.15.3
     fs-extra: ^10.0.0
+    p-debounce: 3
     postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
     postcss-preset-env: ^6.7.0
@@ -10109,9 +10144,9 @@ fsevents@~2.3.2:
     semver: ^7.3.5
     ufo: ^0.7.9
     upath: ^2.0.1
-    vite: ^2.5.4
+    vite: ^2.5.7
     vite-plugin-vue2: ^1.8.2
-  checksum: 95358602acab77ab8131eac800e58fe597ef57a32726c57efb52286ddbb9423420facc11cec98460a2069774e494dc04b1967607cd928b0bbf17bb132883e6bd
+  checksum: 81246db14c308ae920a1e462a3d8b9e04499d152c67c0a566f11f48720d88319435c835a9a88e35c340be644b6d2aa6b7fbd21367803c3ba133cc764e8553517
   languageName: node
   linkType: hard
 
@@ -10344,6 +10379,13 @@ fsevents@~2.3.2:
     os-homedir: ^1.0.0
     os-tmpdir: ^1.0.0
   checksum: 779d261920f2a13e5e18cf02446484f12747d3f2ff82280912f52b213162d43d312647a40c332373cbccd5e3fb8126915d3bfea8dde4827f70f82da76e52d359
+  languageName: node
+  linkType: hard
+
+"p-debounce@npm:3":
+  version: 3.0.2
+  resolution: "p-debounce@npm:3.0.2"
+  checksum: 41a82a9acb72cb18a480e8c4b22c01e86a58434b3765ac11bf2b165af629179bd589c53d6f725d615b8794cc5a8cf92601ea335024fc0ec5ed7c646087e4cf0c
   languageName: node
   linkType: hard
 
@@ -11541,7 +11583,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.3.6":
+"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5":
   version: 8.3.7
   resolution: "postcss@npm:8.3.7"
   dependencies:
@@ -12344,7 +12386,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.35.1, rollup@npm:^2.38.5, rollup@npm:^2.57.0":
+"rollup@npm:^2.35.1, rollup@npm:^2.57.0":
   version: 2.57.0
   resolution: "rollup@npm:2.57.0"
   dependencies:
@@ -12355,6 +12397,20 @@ fsevents@~2.3.2:
   bin:
     rollup: dist/bin/rollup
   checksum: 72427487d1f956ac1431b0db7a88ea542475630c9f0cc279a2f6be68138107bff00506d49d189780f77f189a17dcf83ee7be712a58145a6a910a3e23deb5f85d
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.58.0":
+  version: 2.58.0
+  resolution: "rollup@npm:2.58.0"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: a5e5642f2b1e239e3698eeee93b19d905e55e3012c63978cebc71e76c0a4eb2de5cff06a2a80d68bf87fe6869c57647cccc335daba280a5449a9214abdeca247
   languageName: node
   linkType: hard
 
@@ -12492,7 +12548,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.1.1, semver@npm:^7.1.3, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5":
+"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.1.3, semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5":
   version: 7.3.5
   resolution: "semver@npm:7.3.5"
   dependencies:
@@ -13254,7 +13310,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"systemjs@npm:^6.10.2":
+"systemjs@npm:^6.10.3":
   version: 6.10.3
   resolution: "systemjs@npm:6.10.3"
   checksum: 181655718c9be898a0afc99ab1910f65ab6a6c15e08e9569b1a8f8e17ebbec310ccfba6879d9ee7ade7c4207749870e6f5ad96fe85b99b1f667f7b3e89f1cc96
@@ -13766,22 +13822,26 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.5.5":
-  version: 0.5.5
-  resolution: "unbuild@npm:0.5.5"
+"unbuild@npm:^0.5.6":
+  version: 0.5.6
+  resolution: "unbuild@npm:0.5.6"
   dependencies:
     "@rollup/plugin-alias": ^3.1.4
     "@rollup/plugin-commonjs": ^20.0.0
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.0.5
+    "@rollup/plugin-replace": ^3.0.0
     chalk: ^4.1.1
     consola: ^2.15.3
     defu: ^5.0.0
     esbuild: ^0.13.3
     jiti: ^1.12.5
+    magic-string: ^0.25.7
     mkdirp: ^1.0.4
     mkdist: ^0.3.3
+    mlly: ^0.2.4
     mri: ^1.2.0
+    pathe: ^0.2.0
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
     rollup: ^2.57.0
@@ -13790,10 +13850,9 @@ fsevents@~2.3.2:
     scule: ^0.2.1
     typescript: ^4.4.3
     untyped: ^0.2.9
-    upath: ^2.0.1
   bin:
-    unbuild: bin/unbuild.cjs
-  checksum: 90616760d18236e608fa058538abaeb45e5f160976773e1313be24ef3ea42f4d2fff100076e75da8a0a3cf36f5272c70c9398ae7f87277f93744c9026b743bbd
+    unbuild: bin/unbuild.mjs
+  checksum: 7ba763f070ecd65ebff08f3fdff9ab22e39aa9ae1c64448d654e085a405ad4d9592fd1a109d314344580dece9acfaea569983a6f3b7ac1787119f113a2520d81
   languageName: node
   linkType: hard
 
@@ -14081,25 +14140,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.4":
-  version: 2.5.10
-  resolution: "vite@npm:2.5.10"
-  dependencies:
-    esbuild: ^0.12.17
-    fsevents: ~2.3.2
-    postcss: ^8.3.6
-    resolve: ^1.20.0
-    rollup: ^2.38.5
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 08b7cb50bd7ba2f35b9df235a993a38ce8f2f737324f00d75439c120e28d9d7b92a98bb6db8d103745c905f85eb784a3188527a906793c667689e545ecbe77ad
-  languageName: node
-  linkType: hard
-
-"vite@npm:^2.6.2":
+"vite@npm:^2.5.7, vite@npm:^2.6.2":
   version: 2.6.2
   resolution: "vite@npm:2.6.2"
   dependencies:
@@ -14420,9 +14461,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.55.1":
-  version: 5.55.1
-  resolution: "webpack@npm:5.55.1"
+"webpack@npm:^5.56.0":
+  version: 5.56.0
+  resolution: "webpack@npm:5.56.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -14453,7 +14494,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 70b447f76d4320bd82229cf7b787c6067c40d35142295408dd662eaa3bdf0d97f587d7913b981e4cc25cff08bb14307b85c18ed4a7b270b22e6586c5770d3f1e
+  checksum: 27eebf2ac518fe6198fe1933a1ba3a72fb34c6540319f63caed09c7d8bd9e5c3aef20805fb2122adecfbe3bc971b28ca09b1f809655cb1136e083549e09470d7
   languageName: node
   linkType: hard
 

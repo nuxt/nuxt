@@ -27,7 +27,7 @@
     "chokidar": "^3.5.2",
     "clear": "^0.1.0",
     "clipboardy": "^2.3.0",
-    "colorette": "^2.0.12",
+    "colorette": "^2.0.13",
     "debounce-promise": "^3.1.2",
     "deep-object-diff": "^1.1.0",
     "destr": "^1.1.0",
