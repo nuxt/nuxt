@@ -259,7 +259,9 @@ export function addVitePlugin (plugin: VitePlugin, options?: ExtendViteConfigOpt
  * Check if current nuxt instance is version 2 legacy
  */
 export function isNuxt2 (nuxt?: any) {
-  return (nuxt || useNuxt()).version?.startsWith('v2')
+  nuxt = nuxt || useNuxt()
+  const version = (nuxt?.version || nuxt?.constructor?.version || '').replace(/^v|-.*$/g, '')
+  return version.startsWith('2.')
 }
 
 export async function compileTemplate (template: NuxtTemplate, ctx: any) {
