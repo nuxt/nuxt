@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import { addPlugin, addTemplate, defineNuxtModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
-import type { MetaObject } from './types'
+import type { MetaObject } from './runtime'
 
 export default defineNuxtModule({
   name: 'meta',
