@@ -4860,10 +4860,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^2.0.10, colorette@npm:^2.0.13":
+"colorette@npm:^2.0.10":
   version: 2.0.13
   resolution: "colorette@npm:2.0.13"
   checksum: e257bfacd468b0a9a2970fd7160ef150647292da976fe1866336bdb6145dbcb5f8deba970c0d9237d79f5d90299c75164ac13649669cdc47c371e86a71f8b14f
+  languageName: node
+  linkType: hard
+
+"colorette@npm:^2.0.14":
+  version: 2.0.14
+  resolution: "colorette@npm:2.0.14"
+  checksum: a156f2a6b85f504bd2dec04591e64fe42751f459ccd828f3eb5c15ed6afdff7f0547f206a4147414520a976ce0130ac8c363093b3eb1924dd13b7014f67665d5
   languageName: node
   linkType: hard
 
@@ -10069,7 +10076,7 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^2.3.0
-    colorette: ^2.0.13
+    colorette: ^2.0.14
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     destr: ^1.1.0
