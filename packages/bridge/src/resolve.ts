@@ -10,8 +10,7 @@ type ResolverOptions = Omit<UserResolveOptions, 'fileSystem'> & { fileSystem?: e
 
 const DEFAULTS: UserResolveOptions = {
   fileSystem: new enhancedResolve.CachedInputFileSystem(fs, 4000),
-  extensions: ['.ts', '.mjs', '.cjs', '.js', '.json'],
-  mainFields: ['module', 'main']
+  extensions: ['.ts', '.tsx', '.mjs', '.cjs', '.js', '.jsx', '.json', '.vue']
 }
 
 // Abstracted resolver factory which can be used in rollup, webpack, etc.
@@ -69,6 +68,7 @@ export function setupBetterResolve () {
 
     config.resolve.plugins.push(new EnhancedResolverPlugin({
       conditionNames: ['import', ...isServer ? ['node'] : []],
+      mainFields: ['module', ...isServer ? [] : ['browser'], 'main'],
       alias: config.resolve.alias,
       modules: config.resolve.modules,
       plugins: config.resolve.plugins as Array<Exclude<ResolveOptions['plugins'][number], string>>,
