@@ -13,6 +13,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
+    "@babel/plugin-transform-typescript": "^7.15.4",
     "@nuxt/kit": "3.0.0",
     "@nuxt/nitro": "3.0.0",
     "@nuxt/postcss8": "^1.1.3",
@@ -26,7 +27,6 @@
     "mlly": "^0.2.4",
     "node-fetch": "^3.0.0",
     "nuxi": "3.0.0",
-    "nuxt-swc": "^0.1.0",
     "nuxt-vite": "^0.3.4",
     "pathe": "^0.2.0",
     "ufo": "^0.7.9",
