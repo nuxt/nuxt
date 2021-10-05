@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs'
 import { relative, resolve } from 'pathe'
 import { cyan } from 'colorette'
-import type { TSReference } from '@nuxt/kit'
+import { isNuxt3, TSReference } from '@nuxt/kit'
 import { importModule, getModulePaths, getNearestPackage } from '../utils/cjs'
 import { success } from '../utils/log'
 import { defineNuxtCommand } from './index'
@@ -19,14 +19,14 @@ export default defineNuxtCommand({
     const { loadNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
     const nuxt = await loadNuxt({ rootDir })
 
-    const adHocModules = nuxt.options._majorVersion === 3
+    const adHocModules = isNuxt3()
       ? ['@nuxt/kit', '@nuxt/nitro']
       : ['@nuxt/kit']
 
     const modulePaths = getModulePaths(nuxt.options.modulesDir)
 
     const references: TSReference[] = [
-      'nuxt3',
+      ...isNuxt3() ? ['nuxt3'] : [],
       ...adHocModules,
       ...nuxt.options.buildModules,
       ...nuxt.options.modules,
