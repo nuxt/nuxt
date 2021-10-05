@@ -4,7 +4,8 @@
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
-  "exports": "./module.cjs",
+  "main": "./module.cjs",
+  "types": "./dist/module.d.ts",
   "files": [
     "module.cjs",
     "dist"
