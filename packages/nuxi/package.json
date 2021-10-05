@@ -34,6 +34,7 @@
     "colorette": "^2.0.14",
     "debounce-promise": "^3.1.2",
     "deep-object-diff": "^1.1.0",
+    "degit": "^2.8.4",
     "destr": "^1.1.0",
     "flat": "^5.0.2",
     "jiti": "^1.12.6",
@@ -42,7 +43,7 @@
     "mri": "^1.2.0",
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
-    "unbuild": "latest",
-    "v8-compile-cache": "^2.3.0"
+    "superb": "^4.0.0",
+    "unbuild": "latest"
   }
 }

@@ -5566,6 +5566,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"degit@npm:^2.8.4":
+  version: 2.8.4
+  resolution: "degit@npm:2.8.4"
+  bin:
+    degit: degit
+  checksum: bb58c48ff1ae3828825d7e614db703afd69905abc2d666009bb4affecb8d87be993511556395889dffc99a5eba7a058117402050c509a6e2c3dd56a579120236
+  languageName: node
+  linkType: hard
+
 "delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
@@ -9929,6 +9938,7 @@ fsevents@~2.3.2:
     colorette: ^2.0.14
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
+    degit: ^2.8.4
     destr: ^1.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
@@ -9938,8 +9948,8 @@ fsevents@~2.3.2:
     mri: ^1.2.0
     pathe: ^0.2.0
     scule: ^0.2.1
+    superb: ^4.0.0
     unbuild: latest
-    v8-compile-cache: ^2.3.0
   dependenciesMeta:
     fsevents:
       optional: true
@@ -13040,6 +13050,15 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"superb@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "superb@npm:4.0.0"
+  dependencies:
+    unique-random-array: ^2.0.0
+  checksum: b80b4d347954ac994863386f6f6ebe176b93ebe8a14258191c118d92ab78296095b8195ae23f4b21e83519ac7eec36cc553fc2672914dd5d3ee98418e93a6bdc
+  languageName: node
+  linkType: hard
+
 "supports-color@npm:8.1.1, supports-color@npm:^8.0.0":
   version: 8.1.1
   resolution: "supports-color@npm:8.1.1"
@@ -13677,6 +13696,22 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"unique-random-array@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "unique-random-array@npm:2.0.0"
+  dependencies:
+    unique-random: ^2.1.0
+  checksum: c983e511fe6f45b9ee9b78d26a78e94ba798a4afaa2ca289948e694bc6ad75efca0dd1944e94a010ab56dd574daf4ebcf72727c6d581693610d3b0a8192ef2e5
+  languageName: node
+  linkType: hard
+
+"unique-random@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "unique-random@npm:2.1.0"
+  checksum: 7bc33f364f288172a948c82c0bbb7393fd175f3a78932aa3a77f070d786d5e86db869dc72f7cb9e0a26e5d3142bfd5c3c9d134a68473a3b1f4e2300d84dbf39d
+  languageName: node
+  linkType: hard
+
 "unique-slug@npm:^2.0.0":
   version: 2.0.2
   resolution: "unique-slug@npm:2.0.2"
@@ -13838,7 +13873,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"v8-compile-cache@npm:^2.0.3, v8-compile-cache@npm:^2.3.0":
+"v8-compile-cache@npm:^2.0.3":
   version: 2.3.0
   resolution: "v8-compile-cache@npm:2.3.0"
   checksum: adb0a271eaa2297f2f4c536acbfee872d0dd26ec2d76f66921aa7fc437319132773483344207bdbeee169225f4739016d8d2dbf0553913a52bb34da6d0334f8e
