@@ -305,7 +305,7 @@ export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
 }
 
 /**
- * Check if current nuxt instance is version 2 legacy
+ * Check if current nuxt instance is version 3
  */
 export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
   return getNuxtVersion(nuxt).startsWith('3.')
