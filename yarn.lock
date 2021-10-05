@@ -1608,7 +1608,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": ^0.10.0
     "@types/debounce": ^1.2.1
-    "@vitejs/plugin-vue": ^1.9.2
+    "@vitejs/plugin-vue": ^1.9.3
     chokidar: ^3.5.2
     consola: ^2.15.3
     debounce: ^1.2.1
@@ -1617,7 +1617,7 @@ __metadata:
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.2
+    vite: ^2.6.3
     vue: 3.2.19
   languageName: unknown
   linkType: soft
@@ -2688,12 +2688,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^1.9.2":
-  version: 1.9.2
-  resolution: "@vitejs/plugin-vue@npm:1.9.2"
+"@vitejs/plugin-vue@npm:^1.9.3":
+  version: 1.9.3
+  resolution: "@vitejs/plugin-vue@npm:1.9.3"
   peerDependencies:
     vite: ^2.5.10
-  checksum: 7d4a63895d75819b7d8b996d3d84eee60fc85527cd1b0d582fff5cc9130dab5f3114c1675fe05da08074f972dffc10e459ae4760b8aa6909961f031e235b5e9a
+  checksum: b987535135b6ae82ba1bab3001ef1dfb39934402c733b56262740f4a0ee21dcb8b960218e641776d0f05d0271c89bc1cad44b7286ad8564c3179618673781dec
   languageName: node
   linkType: hard
 
@@ -14083,7 +14083,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.7, vite@npm:^2.6.2":
+"vite@npm:^2.5.7":
   version: 2.6.2
   resolution: "vite@npm:2.6.2"
   dependencies:
@@ -14109,6 +14109,35 @@ fsevents@~2.3.2:
   bin:
     vite: bin/vite.js
   checksum: 78e4c81d18d08c6a56f0609a99428caf6323a999da4c3c4439ff3455558d003bc1e8aea24bec50634c8ff8735bb043ab6492b890204304c5d4a6c509f8319ff6
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "vite@npm:2.6.3"
+  dependencies:
+    esbuild: ^0.13.2
+    fsevents: ~2.3.2
+    postcss: ^8.3.8
+    resolve: ^1.20.0
+    rollup: ^2.57.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: a86e52d9887118f133be2d8e210e2189f1b245371c41ba2326026ffd4a382fc73cca52e0818c2bab9aabeaa4ef9dbd104314f68a565ee72d3999b649e84c4af6
   languageName: node
   linkType: hard
 
