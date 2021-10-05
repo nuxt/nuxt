@@ -1,5 +1,5 @@
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, addPluginTemplate } from '@nuxt/kit'
-import { resolve } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import type { Identifiers, GlobalImportsOptions } from './types'
 import { TransformPlugin } from './transform'
 import { defaultIdentifiers } from './identifiers'
@@ -31,7 +31,17 @@ export default defineNuxtModule<GlobalImportsOptions>({
 
     // Add types
     const resolved = {}
-    const r = id => resolved[id] || (resolved[id] = resolveAlias(id, nuxt.options.alias))
+    const r = (id: string) => {
+      if (resolved[id]) { return resolved[id] }
+      let path = resolveAlias(id, nuxt.options.alias)
+      if (isAbsolute(path)) {
+        path = relative(nuxt.options.buildDir, path)
+      }
+      // Remove file extension for benefit of TypeScript
+      path = path.replace(/\.[a-z]+$/, '')
+      resolved[id] = path
+      return path
+    }
 
     addTemplate({
       filename: 'global-imports.d.ts',
