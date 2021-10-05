@@ -49,7 +49,7 @@ function watch (nuxt: Nuxt) {
 }
 
 async function bundle (nuxt: Nuxt) {
-  const useVite = !!nuxt.options.vite
+  const useVite = nuxt.options.vite !== false
   const { bundle } = await (useVite ? import('@nuxt/vite-builder') : import('@nuxt/webpack-builder'))
   return bundle(nuxt)
 }

@@ -54,6 +54,7 @@
     "node-fetch": "^3.0.0",
     "ohmyfetch": "^0.3.1",
     "ora": "^6.0.1",
+    "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",
     "pretty-bytes": "^5.6.0",
     "rollup": "^2.58.0",

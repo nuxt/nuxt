@@ -30,8 +30,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         }
       },
       manifest: true,
-      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
-      assetsDir: '.'
+      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client')
     },
     plugins: [
       replace({ 'process.env': 'import.meta.env' }),
