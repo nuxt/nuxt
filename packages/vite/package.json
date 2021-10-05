@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "0.10.0",
+  "version": "3.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -17,7 +17,7 @@
     "unbuild": "latest"
   },
   "dependencies": {
-    "@nuxt/kit": "^0.10.0",
+    "@nuxt/kit": "3.0.0",
     "@vitejs/plugin-vue": "^1.9.3",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",

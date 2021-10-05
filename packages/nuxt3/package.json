@@ -18,10 +18,10 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "^0.10.0",
-    "@nuxt/nitro": "^0.10.0",
-    "@nuxt/vite-builder": "^0.10.0",
-    "@nuxt/webpack-builder": "^0.10.0",
+    "@nuxt/kit": "3.0.0",
+    "@nuxt/nitro": "3.0.0",
+    "@nuxt/vite-builder": "3.0.0",
+    "@nuxt/webpack-builder": "3.0.0",
     "@vue/reactivity": "3.2.19",
     "@vue/shared": "3.2.19",
     "@vueuse/head": "^0.6.0",
@@ -34,7 +34,7 @@
     "hookable": "^5.0.0",
     "ignore": "^5.1.8",
     "mlly": "^0.2.4",
-    "nuxi": "^0.10.0",
+    "nuxi": "3.0.0",
     "ohmyfetch": "^0.3.1",
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
