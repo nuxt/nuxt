@@ -9,11 +9,12 @@ export default defineNuxtPlugin((nuxt) => {
   useMeta(metaConfig.globalMeta)
 
   nuxt.app.mixin({
-    created () {
+    [metaConfig.mixinKey] () {
       const instance = getCurrentInstance()
-      if (!instance?.type || !('head' in instance.type)) { return }
+      const options = instance?.type || /* nuxt2 */ instance?.proxy?.$options
+      if (!options || !('head' in options)) { return }
 
-      useMeta((instance.type as any).head)
+      useMeta(options.head)
     }
   })
 

@@ -7,6 +7,7 @@ import { setupCAPIBridge } from './capi'
 import { setupBetterResolve } from './resolve'
 import { setupGlobalImports } from './global-imports'
 import { setupTypescript } from './typescript'
+import { setupMeta } from './meta'
 
 export default defineNuxtModule({
   name: 'nuxt-bridge',
@@ -18,6 +19,7 @@ export default defineNuxtModule({
     capi: {},
     globalImports: true,
     constraints: true,
+    meta: null,
     // TODO: Remove from 2.16
     postcss8: true,
     typescript: true,
@@ -65,6 +67,9 @@ export default defineNuxtModule({
           }
         }
       })
+    }
+    if (opts.meta !== false && opts.capi) {
+      await setupMeta({ needsExplicitEnable: opts.meta === null })
     }
   }
 })

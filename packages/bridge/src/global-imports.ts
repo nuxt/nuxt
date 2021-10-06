@@ -3,7 +3,6 @@ import globalImports from '../../nuxt3/src/global-imports/module'
 
 // TODO: implement these: https://github.com/nuxt/framework/issues/549
 const disabled = [
-  'useMeta',
   'useAsyncData',
   'asyncData'
 ]
@@ -16,6 +15,9 @@ const identifiers = {
     'useRoute',
     'useRouter',
     'useRuntimeConfig'
+  ],
+  '#meta': [
+    'useMeta'
   ],
   '@vue/composition-api': [
     // lifecycle

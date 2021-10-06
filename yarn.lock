@@ -1427,6 +1427,7 @@ __metadata:
     "@types/fs-extra": ^9.0.13
     "@types/node-fetch": ^3.0.2
     "@vue/composition-api": ^1.2.3
+    "@vueuse/head": ^0.6.0
     acorn: ^8.5.0
     defu: ^5.0.0
     enhanced-resolve: ^5.8.3

@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
-import { addPlugin, addTemplate, defineNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, defineNuxtModule, isNuxt3 } from '@nuxt/kit'
+import defu from 'defu'
 import { distDir } from '../dirs'
 import type { MetaObject } from './runtime'
 
@@ -10,7 +11,7 @@ export default defineNuxtModule({
     viewport: 'width=device-width, initial-scale=1'
   },
   setup (options, nuxt) {
-    const runtimeDir = resolve(distDir, 'meta/runtime')
+    const runtimeDir = nuxt.options.alias['#meta'] || resolve(distDir, 'meta/runtime')
 
     // Transpile @nuxt/meta and @vueuse/head
     nuxt.options.build.transpile.push(runtimeDir, '@vueuse/head')
@@ -19,17 +20,17 @@ export default defineNuxtModule({
     nuxt.options.alias['#meta'] = runtimeDir
 
     // Global meta
-    const globalMeta: MetaObject = {
+    const globalMeta: MetaObject = defu(nuxt.options.meta, {
       meta: [
         { charset: options.charset },
         { name: 'viewport', content: options.viewport }
       ]
-    }
+    })
 
     // Add global meta configuration
     addTemplate({
       filename: 'meta.config.mjs',
-      getContents: () => 'export default ' + JSON.stringify({ globalMeta })
+      getContents: () => 'export default ' + JSON.stringify({ globalMeta, mixinKey: isNuxt3() ? 'created' : 'setup' })
     })
 
     // Add generic plugin

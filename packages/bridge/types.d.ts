@@ -11,6 +11,7 @@ export interface BridgeConfig {
   swc: boolean
   resolve: boolean
   typescript: boolean
+  meta: boolean | null
 }
 
 // TODO: Also inherit from @nuxt/types.NuxtConfig for legacy type compat
