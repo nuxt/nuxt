@@ -1488,6 +1488,7 @@ __metadata:
     hookable: ^5.0.0
     jiti: ^1.12.6
     lodash.template: ^4.5.0
+    mlly: ^0.2.5
     pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
@@ -9366,6 +9367,15 @@ fsevents@~2.3.2:
   dependencies:
     import-meta-resolve: ^1.1.1
   checksum: aecd0ea550f00642658574249443ee81619d60f00ad21dd69d4656d3896f8ba0fe8bb5b9a6c42074fdd89b9055052e8fa148fbe51ebcd8bbdd0b58dcbb514a8b
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "mlly@npm:0.2.5"
+  dependencies:
+    import-meta-resolve: ^1.1.1
+  checksum: bd111db12fc09c13ca6897b1dfb78501268f7d166cead7e806bafab905ca05134bd0b4eb7a5a5b1b05e9ecbbe2d9e8819dc95ffb62ba7e76e618a4d032236d3f
   languageName: node
   linkType: hard
 
