@@ -6,6 +6,7 @@ export interface BridgeConfig {
   app: boolean | {}
   capi: boolean | {}
   globalImports: boolean
+  transpile: boolean
   constraints: boolean
   postcss8: boolean
   swc: boolean

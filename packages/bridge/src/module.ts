@@ -8,6 +8,7 @@ import { setupBetterResolve } from './resolve'
 import { setupGlobalImports } from './global-imports'
 import { setupTypescript } from './typescript'
 import { setupMeta } from './meta'
+import { setupTranspile } from './transpile'
 
 export default defineNuxtModule({
   name: 'nuxt-bridge',
@@ -17,6 +18,7 @@ export default defineNuxtModule({
     vite: false,
     app: {},
     capi: {},
+    transpile: true,
     globalImports: true,
     constraints: true,
     meta: null,
@@ -54,6 +56,9 @@ export default defineNuxtModule({
     }
     if (opts.resolve) {
       setupBetterResolve()
+    }
+    if (opts.transpile) {
+      setupTranspile()
     }
     if (opts.constraints) {
       nuxt.hook('modules:done', (moduleContainer: any) => {

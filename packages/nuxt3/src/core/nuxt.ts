@@ -8,6 +8,7 @@ import globalImportsModule from '../global-imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { initNitro } from './nitro'
+import { addModuleTranspiles } from './modules'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -51,6 +52,8 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('modules:done', { nuxt } as ModuleContainer)
+
+  await addModuleTranspiles()
 
   await nuxt.callHook('ready', nuxt)
 }
