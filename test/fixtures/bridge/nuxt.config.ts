@@ -1,11 +1,10 @@
+import { defineNuxtConfig } from '@nuxt/bridge'
+
 // @ts-ignore
 global.__NUXT_PREPATHS__ = (global.__NUXT_PREPATHS__ || []).concat(__dirname)
 
-export default {
+export default defineNuxtConfig({
   components: true,
-  buildModules: [
-    '@nuxt/bridge'
-  ],
   serverMiddleware: [
     {
       handle (req, _res, next) {
@@ -19,4 +18,4 @@ export default {
   nitro: {
     output: { dir: process.env.NITRO_OUTPUT_DIR }
   }
-}
+})

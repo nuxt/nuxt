@@ -5,9 +5,10 @@
   "license": "MIT",
   "type": "module",
   "main": "./module.cjs",
-  "types": "./dist/module.d.ts",
+  "types": "./types.d.ts",
   "files": [
     "module.cjs",
+    "types.d.ts",
     "dist"
   ],
   "scripts": {

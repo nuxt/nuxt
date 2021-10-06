@@ -1,23 +1,19 @@
-import { ConfigSchema } from '../../schema/config'
+import { ConfigSchema as _ConfigSchema } from '../../schema/config'
 import { ModuleInstallOptions } from './module'
 import { NuxtHooks } from './hooks'
 
-export interface TypedConfigSchema extends ConfigSchema {
+export interface ConfigSchema extends _ConfigSchema {
   hooks: NuxtHooks,
   modules: ModuleInstallOptions[]
   buildModules: ModuleInstallOptions[]
-
-  /**
-   * Enable vite mode
-   *
-   * @default false
-   */
-  vite: boolean | import('vite').InlineConfig
   [key: string]: any
+
+  // TODO: Move to schema when untyped supports type annotation
+  vite: boolean | import('vite').InlineConfig
 }
 
-export interface NuxtOptions extends TypedConfigSchema { }
+export interface NuxtOptions extends ConfigSchema { }
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> | T[P] }
 
-export interface NuxtConfig extends DeepPartial<TypedConfigSchema> { }
+export interface NuxtConfig extends DeepPartial<ConfigSchema> { }

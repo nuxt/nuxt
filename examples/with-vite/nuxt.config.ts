@@ -1,4 +1,4 @@
-import { defineNuxtConfig } from '@nuxt/kit'
+import { defineNuxtConfig } from 'nuxt3'
 
 export default defineNuxtConfig({
   vite: true

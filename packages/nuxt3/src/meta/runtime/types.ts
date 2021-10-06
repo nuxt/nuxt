@@ -15,7 +15,7 @@ export interface MetaObject extends Record<string, any> {
 }
 
 declare module '@nuxt/kit' {
-  interface NuxtConfig {
-    meta?: MetaObject,
+  interface ConfigSchema {
+    meta: MetaObject,
   }
 }
