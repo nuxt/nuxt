@@ -2,8 +2,6 @@
 // Please do not manually modify this file.
 
 /// <reference types="nuxt3" />
-/// <reference types="@nuxt/kit" />
-/// <reference types="@nuxt/nitro" />
 /// <reference path=".nuxt/components.d.ts" />
 /// <reference path=".nuxt/global-imports.d.ts" />
 export {}
