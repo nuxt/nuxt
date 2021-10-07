@@ -9,6 +9,7 @@ import { setupGlobalImports } from './global-imports'
 import { setupTypescript } from './typescript'
 import { setupMeta } from './meta'
 import { setupTranspile } from './transpile'
+import { setupScriptSetup } from './setup'
 
 export default defineNuxtModule({
   name: 'nuxt-bridge',
@@ -19,6 +20,7 @@ export default defineNuxtModule({
     app: {},
     capi: {},
     transpile: true,
+    scriptSetup: true,
     globalImports: true,
     constraints: true,
     meta: null,
@@ -41,6 +43,9 @@ export default defineNuxtModule({
         throw new Error('[bridge] Cannot enable composition-api with app disabled!')
       }
       await setupCAPIBridge(opts.capi)
+    }
+    if (opts.scriptSetup) {
+      await setupScriptSetup()
     }
     if (opts.globalImports) {
       await setupGlobalImports()

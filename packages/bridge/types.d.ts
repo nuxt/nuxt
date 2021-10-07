@@ -5,11 +5,11 @@ export interface BridgeConfig {
   vite: boolean
   app: boolean | {}
   capi: boolean | {}
+  scriptSetup: boolean
   globalImports: boolean
   transpile: boolean
   constraints: boolean
   postcss8: boolean
-  swc: boolean
   resolve: boolean
   typescript: boolean
   meta: boolean | null
