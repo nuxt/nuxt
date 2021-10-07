@@ -73,14 +73,9 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: |
             yarn.lock
-            test/fixtures/bridge/yarn.lock
 
       - name: Install dependencies
         run: yarn --immutable
-
-      - name: Install dependencies (bridge fixture)
-        run: yarn --immutable
-        working-directory: test/fixtures/bridge
 
       - name: Build
         run: yarn build

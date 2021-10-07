@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/*",
     "examples/*",
+    "test/fixtures/*",
     "playground"
   ],
   "scripts": {

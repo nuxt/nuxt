@@ -9,5 +9,8 @@
     "core-js": "^3",
     "nuxt": "^2",
     "vue": "^2"
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   }
 }
