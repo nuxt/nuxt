@@ -1,9 +1,9 @@
 import mri from 'mri'
 import { red, cyan } from 'colorette'
+import consola from 'consola'
 import { commands, Command, NuxtCommand } from './commands'
 import { showHelp } from './utils/help'
 import { showBanner } from './utils/banner'
-import { error } from './utils/log'
 
 async function _main () {
   const _argv = process.argv.slice(2)
@@ -41,12 +41,15 @@ async function _main () {
 }
 
 function onFatalError (err: unknown) {
-  error(err)
+  consola.error(err)
   process.exit(1)
 }
 
-process.on('unhandledRejection', err => error('[unhandledRejection]', err))
-process.on('uncaughtException', err => error('[uncaughtException]', err))
+// Wrap all console logs with consola for better DX
+consola.wrapConsole()
+
+process.on('unhandledRejection', err => consola.error('[unhandledRejection]', err))
+process.on('uncaughtException', err => consola.error('[uncaughtException]', err))
 
 export function main () {
   _main().catch(onFatalError)

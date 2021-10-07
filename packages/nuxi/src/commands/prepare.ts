@@ -2,8 +2,8 @@ import { promises as fsp } from 'fs'
 import { relative, resolve } from 'pathe'
 import { cyan } from 'colorette'
 import { TSReference } from '@nuxt/kit'
+import consola from 'consola'
 import { importModule, getModulePaths, getNearestPackage } from '../utils/cjs'
-import { success } from '../utils/log'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -53,7 +53,7 @@ export default defineNuxtCommand({
 
     await fsp.writeFile(declarationPath, declaration)
 
-    success('Generated', cyan(relative(process.cwd(), declarationPath)))
+    consola.success('Generated', cyan(relative(process.cwd(), declarationPath)))
   }
 })
 

@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
+import consola from 'consola'
 import { importModule } from '../utils/cjs'
-import { error } from '../utils/log'
 
 import { defineNuxtCommand } from './index'
 
@@ -19,7 +19,7 @@ export default defineNuxtCommand({
     const nuxt = await loadNuxt({ rootDir })
 
     nuxt.hook('error', (err) => {
-      error('Nuxt Build Error:', err)
+      consola.error('Nuxt Build Error:', err)
       process.exit(1)
     })
 
