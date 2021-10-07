@@ -25,6 +25,7 @@
     "@rollup/plugin-node-resolve": "^13.0.5",
     "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-virtual": "^2.0.3",
+    "@rollup/plugin-wasm": "^5.1.2",
     "@rollup/pluginutils": "^4.1.1",
     "@types/jsdom": "^16.2.13",
     "@vercel/nft": "^0.15.1",

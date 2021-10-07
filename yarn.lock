@@ -2613,6 +2613,7 @@ __metadata:
     "@rollup/plugin-node-resolve": ^13.0.5
     "@rollup/plugin-replace": ^3.0.0
     "@rollup/plugin-virtual": ^2.0.3
+    "@rollup/plugin-wasm": ^5.1.2
     "@rollup/pluginutils": ^4.1.1
     "@types/debounce": ^1.2.1
     "@types/fs-extra": ^9.0.13
@@ -3256,6 +3257,15 @@ __metadata:
   peerDependencies:
     rollup: ^1.20.0||^2.0.0
   checksum: 5a9f9a69ff0260e82e6241ff40ae3e2c6bb6c9d262e1767370a7f16ac9e325c8867207258ee8421bc86b79da8941539d75621fbaa45ea900d5d09bee0c93ee1e
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-wasm@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "@rollup/plugin-wasm@npm:5.1.2"
+  peerDependencies:
+    rollup: ^1.20.0 || ^2.0.0
+  checksum: ba8d02fd351900b7e1fa722b7f71cf420dd5b67dcade3bf91f7ac60d75fca1fc4ed61ff5cecfe033dc9bfd7f857ab374d6858de74fcf5fae3acebfbc193ffa01
   languageName: node
   linkType: hard
 
@@ -9241,6 +9251,14 @@ __metadata:
 "example-pages@workspace:examples/pages":
   version: 0.0.0-use.local
   resolution: "example-pages@workspace:examples/pages"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
+"example-wasm@workspace:examples/wasm":
+  version: 0.0.0-use.local
+  resolution: "example-wasm@workspace:examples/wasm"
   dependencies:
     nuxt3: latest
   languageName: unknown

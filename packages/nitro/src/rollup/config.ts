@@ -10,6 +10,7 @@ import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import virtual from '@rollup/plugin-virtual'
+import wasmPlugin from '@rollup/plugin-wasm'
 import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
 import * as unenv from 'unenv'
@@ -140,6 +141,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // Raw asset loader
   rollupConfig.plugins.push(raw())
+
+  // WASM import support
+  rollupConfig.plugins.push(wasmPlugin())
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
