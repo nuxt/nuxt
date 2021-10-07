@@ -2,6 +2,7 @@ import { resolve } from 'pathe'
 import consola from 'consola'
 import { importModule } from '../utils/cjs'
 
+import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -17,6 +18,8 @@ export default defineNuxtCommand({
     const { loadNuxt, buildNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
 
     const nuxt = await loadNuxt({ rootDir })
+
+    await writeTypes(nuxt)
 
     nuxt.hook('error', (err) => {
       consola.error('Nuxt Build Error:', err)

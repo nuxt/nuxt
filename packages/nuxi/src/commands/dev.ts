@@ -6,6 +6,7 @@ import consola from 'consola'
 import { createServer, createLoadingHandler } from '../utils/server'
 import { showBanner } from '../utils/banner'
 import { importModule } from '../utils/cjs'
+import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -26,6 +27,8 @@ export default defineNuxtCommand({
 
     const { loadNuxt, buildNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
 
+    const prepare = debounce(nuxt => writeTypes(nuxt), 1000)
+
     let currentNuxt: Nuxt
     const load = async (isRestart: boolean, reason?: string) => {
       try {
@@ -38,6 +41,7 @@ export default defineNuxtCommand({
           await currentNuxt.close()
         }
         const newNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        prepare(newNuxt)
         currentNuxt = newNuxt
         await currentNuxt.ready()
         await buildNuxt(currentNuxt)
