@@ -54,7 +54,10 @@ export async function bundle (nuxt: Nuxt) {
         vue: {},
         css: {},
         optimizeDeps: {
-          exclude: []
+          exclude: [],
+          entries: [
+            resolve(nuxt.options.appDir, 'entry.ts')
+          ]
         },
         esbuild: {
           jsxFactory: 'h',
