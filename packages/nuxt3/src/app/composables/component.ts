@@ -4,7 +4,7 @@ import type { DefineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import type { LegacyContext } from '../legacy'
 import { useNuxtApp } from '../nuxt'
-import { asyncData } from './asyncData'
+import { useAsyncData } from './asyncData'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
@@ -14,7 +14,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   const vm = getCurrentInstance()
   const { fetchKey } = vm.proxy.$options
   const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
-  const { data } = await asyncData(`options:asyncdata:${key}`, () => fn(nuxt._legacyContext))
+  const { data } = await useAsyncData(`options:asyncdata:${key}`, () => fn(nuxt._legacyContext))
   Object.assign(await res, toRefs(data))
 }
 

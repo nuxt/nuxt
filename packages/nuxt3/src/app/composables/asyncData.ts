@@ -1,119 +1,115 @@
-import { onBeforeMount, onUnmounted, ref, unref } from 'vue'
-import type { UnwrapRef, Ref } from 'vue'
-
-import { ensureReactive, useGlobalData } from './data'
+import { onBeforeMount, onUnmounted, ref } from 'vue'
+import type { Ref } from 'vue'
 import { NuxtApp, useNuxtApp } from '#app'
 
-export type AsyncDataFn<T> = (ctx?: NuxtApp) => Promise<T>
-
-export interface AsyncDataOptions {
+export interface AsyncDataOptions<T> {
   server?: boolean
   defer?: boolean
+  default?: () => T
 }
 
-export interface AsyncDataState<T> {
-  data: UnwrapRef<T>
+export interface _AsyncData<T> {
+  data: Ref<T>
   pending: Ref<boolean>
-  fetch: (force?: boolean) => Promise<UnwrapRef<T>>
+  refresh: (force?: boolean) => Promise<void>
   error?: any
 }
 
-export type AsyncDataResult<T> = AsyncDataState<T> & Promise<AsyncDataState<T>>
+export type AsyncData<T> = _AsyncData<T> & Promise<_AsyncData<T>>
 
-export function useAsyncData (defaults?: AsyncDataOptions) {
-  const nuxt = useNuxtApp()
-  const onBeforeMountCbs: Array<() => void> = []
+const getDefault = () => null
 
-  if (process.client) {
-    onBeforeMount(() => {
-      onBeforeMountCbs.forEach((cb) => { cb() })
-      onBeforeMountCbs.splice(0, onBeforeMountCbs.length)
-    })
-
-    onUnmounted(() => onBeforeMountCbs.splice(0, onBeforeMountCbs.length))
+export function useAsyncData<T extends Record<string, any>> (key: string, handler: (ctx?: NuxtApp) => Promise<T>, options: AsyncDataOptions<T> = {}): AsyncData<T> {
+  // Validate arguments
+  if (typeof key !== 'string') {
+    throw new TypeError('asyncData key must be a string')
+  }
+  if (typeof handler !== 'function') {
+    throw new TypeError('asyncData handler must be a function')
   }
 
-  nuxt._asyncDataPromises = nuxt._asyncDataPromises || {}
+  // Apply defaults
+  options = { server: true, defer: false, default: getDefault, ...options }
 
-  return function asyncData<T extends Record<string, any>> (
-    key: string,
-    handler: AsyncDataFn<T>,
-    options: AsyncDataOptions = {}
-  ): AsyncDataResult<T> {
-    if (typeof handler !== 'function') {
-      throw new TypeError('asyncData handler must be a function')
-    }
-    options = {
-      server: true,
-      defer: false,
-      ...defaults,
-      ...options
-    }
+  // Setup nuxt instance payload
+  const nuxt = useNuxtApp()
 
-    const globalData = useGlobalData(nuxt)
-
-    const state = {
-      data: ensureReactive(globalData, key) as UnwrapRef<T>,
-      pending: ref(true)
-    } as AsyncDataState<T>
-
-    const fetch = (force?: boolean): Promise<UnwrapRef<T>> => {
-      if (nuxt._asyncDataPromises[key] && !force) {
-        return nuxt._asyncDataPromises[key]
-      }
-      state.pending.value = true
-      nuxt._asyncDataPromises[key] = Promise.resolve(handler(nuxt)).then((result) => {
-        for (const _key in result) {
-          // @ts-expect-error
-          state.data[_key] = unref(result[_key])
-        }
-        return state.data
-      }).finally(() => {
-        state.pending.value = false
-        nuxt._asyncDataPromises[key] = null
+  // Setup hook callbacks once per instance
+  const instance = getCurrentInstance()
+  if (!instance._nuxtOnBeforeMountCbs) {
+    const cbs = instance._nuxtOnBeforeMountCbs = []
+    if (instance && process.client) {
+      onBeforeMount(() => {
+        cbs.forEach((cb) => { cb() })
+        cbs.splice(0, cbs.length)
       })
+      onUnmounted(() => cbs.splice(0, cbs.length))
+    }
+  }
+
+  const asyncData = {
+    data: ref(nuxt.payload.data[key] ?? options.default()),
+    pending: ref(true),
+    error: ref(null)
+  } as AsyncData<T>
+
+  asyncData.refresh = (force?: boolean) => {
+    // Avoid fetching same key more than once at a time
+    if (nuxt._asyncDataPromises[key] && !force) {
       return nuxt._asyncDataPromises[key]
     }
-
-    const fetchOnServer = options.server !== false
-    const clientOnly = options.server === false
-
-    // Server side
-    if (process.server && fetchOnServer) {
-      fetch()
-    }
-
-    // Client side
-    if (process.client) {
-      // 1. Hydration (server: true): no fetch
-      if (nuxt.isHydrating && fetchOnServer) {
-        state.pending.value = false
-      }
-      // 2. Initial load (server: false): fetch on mounted
-      if (nuxt.isHydrating && clientOnly) {
-        // Fetch on mounted (initial load or deferred fetch)
-        onBeforeMountCbs.push(fetch)
-      } else if (!nuxt.isHydrating) { // Navigation
-        if (options.defer) {
-          // 3. Navigation (defer: true): fetch on mounted
-          onBeforeMountCbs.push(fetch)
-        } else {
-          // 4. Navigation (defer: false): await fetch
-          fetch()
-        }
-      }
-    }
-
-    const res = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => state) as AsyncDataResult<T>
-    res.data = state.data
-    res.pending = state.pending
-    res.fetch = fetch
-    return res
+    asyncData.pending.value = true
+    // TODO: Cancel previus promise
+    // TODO: Handle immediate errors
+    nuxt._asyncDataPromises[key] = Promise.resolve(handler(nuxt))
+      .then((result) => {
+        asyncData.data.value = result
+        asyncData.error.value = null
+      })
+      .catch((error: any) => {
+        asyncData.error.value = error
+        asyncData.data.value = options.default()
+      })
+      .finally(() => {
+        asyncData.pending.value = false
+        nuxt.payload.data[key] = asyncData.data.value
+        delete nuxt._asyncDataPromises[key]
+      })
+    return nuxt._asyncDataPromises[key]
   }
-}
 
-export function asyncData<T extends Record<string, any>> (
-  key: string, handler: AsyncDataFn<T>, options?: AsyncDataOptions
-): AsyncDataResult<T> {
-  return useAsyncData()(key, handler, options)
+  const fetchOnServer = options.server !== false
+  const clientOnly = options.server === false
+
+  // Server side
+  if (process.server && fetchOnServer) {
+    asyncData.refresh()
+  }
+
+  // Client side
+  if (process.client) {
+    // 1. Hydration (server: true): no fetch
+    if (nuxt.isHydrating && fetchOnServer) {
+      asyncData.pending.value = false
+    }
+    // 2. Initial load (server: false): fetch on mounted
+    if (nuxt.isHydrating && clientOnly) {
+      // Fetch on mounted (initial load or deferred fetch)
+      instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
+    } else if (!nuxt.isHydrating) { // Navigation
+      if (options.defer) {
+        // 3. Navigation (defer: true): fetch on mounted
+        instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
+      } else {
+        // 4. Navigation (defer: false): await fetch
+        asyncData.refresh()
+      }
+    }
+  }
+
+  // Allow directly awaiting on asyncData
+  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<T>
+  Object.assign(asyncDataPromise, asyncData)
+
+  return asyncDataPromise as AsyncData<T>
 }

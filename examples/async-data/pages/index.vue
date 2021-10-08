@@ -1,9 +1,12 @@
 <template>
   <div>
-    Page visits: {{ data.count }}
+    {{ data }}
+    <button :disabled="pending" @click="refresh">
+      Refrash Data
+    </button>
   </div>
 </template>
 
 <script setup>
-const { data } = await asyncData('time', () => $fetch('/api/count'))
+const { data, refresh, pending } = await useAsyncData('/api/hello', () => $fetch('/api/hello'))
 </script>

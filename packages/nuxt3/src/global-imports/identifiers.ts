@@ -1,7 +1,6 @@
 const identifiers = {
   '#app': [
     'useAsyncData',
-    'asyncData',
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',

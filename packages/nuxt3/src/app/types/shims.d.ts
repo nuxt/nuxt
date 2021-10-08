@@ -33,4 +33,7 @@ declare module '@vue/runtime-core' {
   interface App<HostElement> {
     $nuxt: NuxtApp
   }
+  interface ComponentInternalInstance {
+    _nuxtOnBeforeMountCbs: Function[]
+  }
 }

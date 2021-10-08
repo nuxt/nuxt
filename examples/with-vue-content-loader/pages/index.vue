@@ -35,7 +35,7 @@ import { ContentLoader } from 'vue-content-loader'
 export default defineNuxtComponent({
   components: { ContentLoader },
   setup () {
-    const { data, pending } = asyncData(
+    const { data, pending } = useAsyncData(
       'time',
       () =>
         new Promise(resolve =>

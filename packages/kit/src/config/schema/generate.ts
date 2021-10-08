@@ -60,7 +60,7 @@ export default {
    * @example
    * ```js
    * export default {
-   *   async asyncData ({ params, error, payload }) {
+   *   async useAsyncData ({ params, error, payload }) {
    *     if (payload) return { user: payload }
    *     else return { user: await backend.fetchUser(params.id) }
    *   }

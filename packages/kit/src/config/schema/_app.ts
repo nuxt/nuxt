@@ -317,7 +317,7 @@ export default {
     /** Set to false to disable the Nuxt `validate()` hook */
     validate: true,
     /** Set to false to disable the Nuxt `asyncData()` hook */
-    asyncData: true,
+    useAsyncData: true,
     /** Set to false to disable the Nuxt `fetch()` hook */
     fetch: true,
     /** Set to false to disable `$nuxt.isOnline` */
