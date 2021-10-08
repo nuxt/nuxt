@@ -1,3 +1,5 @@
+import { defineNuxtPlugin } from '#app'
+
 const vueMetaRenderer = (nuxt) => {
   const meta = nuxt.ssrContext.meta.inject({
     isSSR: nuxt.ssrContext.nuxt.serverRendered,
