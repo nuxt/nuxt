@@ -30,7 +30,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:7.15.8, @babel/core@npm:^7.11.6, @babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.15.5":
+"@babel/core@npm:7.15.8, @babel/core@npm:^7.11.6, @babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.15.5, @babel/core@npm:^7.15.8":
   version: 7.15.8
   resolution: "@babel/core@npm:7.15.8"
   dependencies:
@@ -1122,7 +1122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-typescript@npm:^7.13.0, @babel/plugin-transform-typescript@npm:^7.15.4":
+"@babel/plugin-transform-typescript@npm:^7.13.0":
   version: 7.15.4
   resolution: "@babel/plugin-transform-typescript@npm:7.15.4"
   dependencies:
@@ -1132,6 +1132,19 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: a6fb1f2f831024aff5110fa1be44e5fff96ce11a51178869f09d98675528c6878ff3a95caa42868cb55eae97d23c77e68913aa1737eb38befd2cb49301e2601d
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-typescript@npm:^7.15.8":
+  version: 7.15.8
+  resolution: "@babel/plugin-transform-typescript@npm:7.15.8"
+  dependencies:
+    "@babel/helper-create-class-features-plugin": ^7.15.4
+    "@babel/helper-plugin-utils": ^7.14.5
+    "@babel/plugin-syntax-typescript": ^7.14.5
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: 3f5bbb0d38e9cd55212ee867c32e6e85cfd5443dfffe40de0229eeccd2bf75ebe9d8221efb0bdc9891bc3175fcca28c24cac0053e5272c88c71fc034d5e0eb88
   languageName: node
   linkType: hard
 
@@ -2367,13 +2380,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/bridge@workspace:packages/bridge"
   dependencies:
-    "@babel/plugin-transform-typescript": ^7.15.4
+    "@babel/plugin-transform-typescript": ^7.15.8
     "@nuxt/kit": 3.0.0
     "@nuxt/nitro": 3.0.0
     "@nuxt/postcss8": ^1.1.3
     "@types/fs-extra": ^9.0.13
     "@types/node-fetch": ^3.0.2
-    "@vue/composition-api": ^1.2.3
+    "@vue/composition-api": ^1.2.4
     "@vueuse/head": ^0.6.0
     acorn: ^8.5.0
     defu: ^5.0.0
@@ -2381,7 +2394,7 @@ __metadata:
     estree-walker: ^2.0.2
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
-    mlly: ^0.2.4
+    mlly: ^0.2.5
     node-fetch: ^3.0.0
     nuxi: 3.0.0
     nuxt-vite: ^0.3.4
@@ -2389,7 +2402,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.2.16
-    unplugin-vue2-script-setup: ^0.6.4
+    unplugin-vue2-script-setup: ^0.6.7
     vue-router: 3
   languageName: unknown
   linkType: soft
@@ -2502,10 +2515,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/design@npm:0.0.6":
-  version: 0.0.6
-  resolution: "@nuxt/design@npm:0.0.6"
-  checksum: 2b12c1ae6207d852be571fd818fc9735dda4d70d9a5385dbdf57a7f46381b6e704781a4eb46c653c26b9f1fcbbea709154c70d1098be52b8999dd1dc3f825433
+"@nuxt/design@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@nuxt/design@npm:0.1.1"
+  checksum: ccdcfaaae848cf36bf7fb555ff1c5715de8ee6004a26412ea156a0c2812e01ad0503b68ebb4ad23c07ec9c536199325d416410e231d060753ac212184f902b55
   languageName: node
   linkType: hard
 
@@ -2603,7 +2616,7 @@ __metadata:
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.3
     "@netlify/functions": ^0.7.2
-    "@nuxt/design": 0.0.6
+    "@nuxt/design": 0.1.1
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
     "@rollup/plugin-alias": ^3.1.5
@@ -2631,7 +2644,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
-    esbuild: ^0.13.3
+    esbuild: ^0.13.4
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.4
@@ -2644,7 +2657,7 @@ __metadata:
     jiti: ^1.12.6
     listhen: ^0.2.4
     mime: ^2.5.2
-    mlly: ^0.2.4
+    mlly: ^0.2.5
     node-fetch: ^3.0.0
     ohmyfetch: ^0.3.1
     ora: ^6.0.1
@@ -2661,7 +2674,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unenv: ^0.3.10
-    unstorage: ^0.2.8
+    unstorage: ^0.2.9
     vue: 3.2.19
     vue-bundle-renderer: ^0.3.1
     vue-server-renderer: ^2.6.14
@@ -2785,7 +2798,7 @@ __metadata:
     pathe: ^0.2.0
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.3
+    vite: ^2.6.5
     vue: 3.2.19
   languageName: unknown
   linkType: soft
@@ -2831,7 +2844,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
-    "@babel/core": ^7.15.5
+    "@babel/core": ^7.15.8
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.1
     "@nuxt/kit": 3.0.0
     "@types/pify": ^5.0.1
@@ -2845,7 +2858,7 @@ __metadata:
     babel-loader: ^8.2.2
     consola: ^2.15.3
     css-loader: ^6.3.0
-    css-minimizer-webpack-plugin: ^3.1.0
+    css-minimizer-webpack-plugin: ^3.1.1
     cssnano: ^5.0.8
     esbuild-loader: ^2.15.1
     file-loader: ^6.2.0
@@ -2854,8 +2867,8 @@ __metadata:
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.3.0
-    mini-css-extract-plugin: ^2.3.0
-    mlly: ^0.2.4
+    mini-css-extract-plugin: ^2.4.2
+    mlly: ^0.2.5
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.9
@@ -2871,7 +2884,7 @@ __metadata:
     vue: 3.2.19
     vue-loader: ^16.8.1
     vue-style-loader: ^4.1.3
-    webpack: ^5.56.1
+    webpack: ^5.58.1
     webpack-bundle-analyzer: ^4.4.2
     webpack-dev-middleware: ^5.2.1
     webpack-hot-middleware: ^2.25.1
@@ -3508,10 +3521,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.20":
-  version: 14.17.20
-  resolution: "@types/node@npm:14.17.20"
-  checksum: c704d95c4e4377b0b4c72206068e99bbc635e27b42100a51f56e46ec0917a73f64069bcb50c07b30d34e22694735f607a1da61314acdf717a55a3ca020e12bb9
+"@types/node@npm:^14.17.21":
+  version: 14.17.21
+  resolution: "@types/node@npm:14.17.21"
+  checksum: f5fc54b1a857f6a3a266c25521cddda28c711979ec6e443187076b0c99df08b8578c5c0bef64af35f13fc1475f8fd8a71619dd708219b855a8f28629f7880bbb
   languageName: node
   linkType: hard
 
@@ -4043,14 +4056,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/composition-api@npm:^1.2.3":
-  version: 1.2.3
-  resolution: "@vue/composition-api@npm:1.2.3"
+"@vue/composition-api@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "@vue/composition-api@npm:1.2.4"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     vue: ">= 2.5 < 3"
-  checksum: d73eec1f2ac49936203d208a98d7bc1fd2d6144d1617a3c214a59229d0ded68e28edd52206713c0db0e45273b06c864eeaa32d6c0116929e2722a22621a5b008
+  checksum: a38651fe05b135cbddccf17090aeed4ef1b12e2f8da613778cf788fd18bf92292888ffad422d91b634af11008e843ca815ab1048b3806af0511ac0a7a88e2c8b
   languageName: node
   linkType: hard
 
@@ -6793,10 +6806,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^2.0.10, colorette@npm:^2.0.14":
+"colorette@npm:^2.0.10":
   version: 2.0.14
   resolution: "colorette@npm:2.0.14"
   checksum: a156f2a6b85f504bd2dec04591e64fe42751f459ccd828f3eb5c15ed6afdff7f0547f206a4147414520a976ce0130ac8c363093b3eb1924dd13b7014f67665d5
+  languageName: node
+  linkType: hard
+
+"colorette@npm:^2.0.16":
+  version: 2.0.16
+  resolution: "colorette@npm:2.0.16"
+  checksum: cd55596a3a2d1071c1a28eee7fd8a5387593ff1bd10a3e8d0a6221499311fe34a9f2b9272d77c391e0e003dcdc8934fb2f8d106e7ef1f7516f8060c901d41a27
   languageName: node
   linkType: hard
 
@@ -7488,9 +7508,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "css-minimizer-webpack-plugin@npm:3.1.0"
+"css-minimizer-webpack-plugin@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "css-minimizer-webpack-plugin@npm:3.1.1"
   dependencies:
     cssnano: ^5.0.6
     jest-worker: ^27.0.2
@@ -7508,7 +7528,7 @@ __metadata:
       optional: true
     esbuild:
       optional: true
-  checksum: d3c5aa3f838ab19a14809c9f09dd661ca1498f93203643d5014df3c58c3839dab9837fb18ab05743a9b6638f2257e801ec80105673ed715be64f6c4d42736e95
+  checksum: 9f0c7ec9367c13dc1fa22847949d33237bcf50f55941727608871af0ccae8ed5e281c2e99622d4dc4fedb696def40af03cb8be9be2d44bf15eb521dee938ef92
   languageName: node
   linkType: hard
 
@@ -8706,7 +8726,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.13.2, esbuild@npm:^0.13.3":
+"esbuild@npm:^0.13.2, esbuild@npm:^0.13.3, esbuild@npm:^0.13.4":
   version: 0.13.4
   resolution: "esbuild@npm:0.13.4"
   dependencies:
@@ -12681,14 +12701,14 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "mini-css-extract-plugin@npm:2.3.0"
+"mini-css-extract-plugin@npm:^2.4.2":
+  version: 2.4.2
+  resolution: "mini-css-extract-plugin@npm:2.4.2"
   dependencies:
     schema-utils: ^3.1.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 3c2f5ff29ba4d85999be36f4414b9b7200751411c6961b1ac7faa8ea5ae09b9e74bcb3b0425dbc94083d57d828449b393e56ccb709c2b5c766d968023726e25d
+  checksum: c413b4fd0ba0ff398b58ddecc0e805c254c2253e6536627469408b29ea1eb9f5b38c610a3be505c6ca9096a1bb5ed4faf8c6ff8c387b2b4891c8e38fdc8f719b
   languageName: node
   linkType: hard
 
@@ -13686,7 +13706,7 @@ fsevents@~2.3.2:
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
-    "@nuxt/design": 0.0.6
+    "@nuxt/design": 0.1.1
     "@nuxt/kit": 3.0.0
     "@types/clear": ^0
     "@types/debounce-promise": ^3
@@ -13694,7 +13714,7 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^2.3.0
-    colorette: ^2.0.14
+    colorette: ^2.0.16
     consola: ^2.15.3
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
@@ -13704,7 +13724,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     jiti: ^1.12.6
     listhen: ^0.2.4
-    mlly: ^0.2.4
+    mlly: ^0.2.5
     mri: ^1.2.0
     pathe: ^0.2.0
     scule: ^0.2.1
@@ -13728,10 +13748,10 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.22
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.20
+    "@types/node": ^14.17.21
     "@types/object-hash": ^2
     chai: ^4.3.4
-    esbuild: ^0.13.3
+    esbuild: ^0.13.4
     eslint: ^7.32.0
     eslint-plugin-jsdoc: ^36.1.0
     execa: ^5.1.1
@@ -13797,7 +13817,7 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    mlly: ^0.2.4
+    mlly: ^0.2.5
     nuxi: 3.0.0
     ohmyfetch: ^0.3.1
     pathe: ^0.2.0
@@ -19013,15 +19033,16 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unplugin-vue2-script-setup@npm:^0.6.4":
-  version: 0.6.4
-  resolution: "unplugin-vue2-script-setup@npm:0.6.4"
+"unplugin-vue2-script-setup@npm:^0.6.7":
+  version: 0.6.7
+  resolution: "unplugin-vue2-script-setup@npm:0.6.7"
   dependencies:
     "@babel/core": ^7.15.5
     "@babel/generator": ^7.15.4
     "@babel/parser": ^7.15.6
     "@babel/traverse": ^7.15.4
     "@babel/types": ^7.15.6
+    "@rollup/pluginutils": ^4.1.1
     "@vue/ref-transform": ^3.2.11
     "@vue/shared": ^3.2.11
     defu: ^5.0.0
@@ -19032,7 +19053,7 @@ fsevents@~2.3.2:
   dependenciesMeta:
     pug:
       optional: true
-  checksum: 5caaa1f674ea9856b2779369c5293d1d456f2ba31532439875086d5f40072b29b8228949c801641731d10e3096a7c19a3dda8627459e10a4eb4b95bfaeee5f3c
+  checksum: eb2884b2e18d0dd2833835d68f25133b3f27f18ffb6ef80d845c5a375b8cdd48fdbb8a0cfc2eb03c89dd09c0f399b81dbbed3bb2718340da5592db50219b95ee
   languageName: node
   linkType: hard
 
@@ -19073,9 +19094,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "unstorage@npm:0.2.8"
+"unstorage@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "unstorage@npm:0.2.9"
   dependencies:
     anymatch: ^3.1.1
     chokidar: ^3.5.2
@@ -19087,7 +19108,7 @@ fsevents@~2.3.2:
     ohmyfetch: ^0.3.1
     ufo: ^0.7.9
     ws: ^8.2.1
-  checksum: a1896c89e54d535e2026ed6ffea48d62f689bfb8040ab48f0d21a8766e1846981537328076d113a2decbe349deea3cc68e01ff2cf353df87470790defc9cf390
+  checksum: 16a242225186a013cdd4567d0328a47946052374a0e184fb4979ded1ff96616a0c0d0bd217fab6bbda77b58b32a33d28e6136a22c6dff786d28fc90256618af3
   languageName: node
   linkType: hard
 
@@ -19352,7 +19373,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.7, vite@npm:^2.6.3":
+"vite@npm:^2.5.7":
   version: 2.6.3
   resolution: "vite@npm:2.6.3"
   dependencies:
@@ -19378,6 +19399,35 @@ fsevents@~2.3.2:
   bin:
     vite: bin/vite.js
   checksum: a86e52d9887118f133be2d8e210e2189f1b245371c41ba2326026ffd4a382fc73cca52e0818c2bab9aabeaa4ef9dbd104314f68a565ee72d3999b649e84c4af6
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.6.5":
+  version: 2.6.5
+  resolution: "vite@npm:2.6.5"
+  dependencies:
+    esbuild: ^0.13.2
+    fsevents: ~2.3.2
+    postcss: ^8.3.8
+    resolve: ^1.20.0
+    rollup: ^2.57.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 3e0c47942b84d5b3d4156ae6e9428bab6e7d70e52795a2269fb709d2fb50c68f80b9938a695086c669761701d9222f66b2b21ba57f57ef69e384c9573d1b41bf
   languageName: node
   linkType: hard
 
@@ -19821,7 +19871,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1, webpack@npm:^5.56.1":
+"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1":
   version: 5.57.0
   resolution: "webpack@npm:5.57.0"
   dependencies:
@@ -19855,6 +19905,43 @@ fsevents@~2.3.2:
   bin:
     webpack: bin/webpack.js
   checksum: 06baeca4399326cbb08aa5503b52ff06dbc1311a170597873a11d5b34e362409666f618515ad0c4daf28d9bf0fe5ec43eeffb56273ed550b99d88eb975ab3e21
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.58.1":
+  version: 5.58.1
+  resolution: "webpack@npm:5.58.1"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.50
+    "@webassemblyjs/ast": 1.11.1
+    "@webassemblyjs/wasm-edit": 1.11.1
+    "@webassemblyjs/wasm-parser": 1.11.1
+    acorn: ^8.4.1
+    acorn-import-assertions: ^1.7.6
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.8.3
+    es-module-lexer: ^0.9.0
+    eslint-scope: 5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.1.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.3
+    watchpack: ^2.2.0
+    webpack-sources: ^3.2.0
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: e05576c5c7410c9ef25dc3595a870f93b34e3b44778e7df5ccbc1d40a51edb755223959f938b6e8b9b4e2285eb938da2464a08c9103597ff3131cb98c19a1d86
   languageName: node
   linkType: hard
 
