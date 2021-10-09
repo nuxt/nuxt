@@ -47,7 +47,7 @@ export default class Generator {
     }
   }
 
-  async generate ({ build = true, init = true } = {}) {
+  async generate ({ build = true, init = true, failOnError = false } = {}) {
     consola.debug('Initializing generator...')
     await this.initiate({ build, init })
 
@@ -55,7 +55,7 @@ export default class Generator {
     const routes = await this.initRoutes()
 
     consola.info('Generating pages' + (this.isFullStatic ? ' with full static mode' : ''))
-    const errors = await this.generateRoutes(routes)
+    const errors = await this.generateRoutes(routes, failOnError)
 
     await this.afterGenerate()
 
@@ -168,7 +168,7 @@ or disable the build step: \`generate({ build: false })\``)
     return requireModule(path.join(this.options.buildDir, 'routes.json'))
   }
 
-  async generateRoutes (routes) {
+  async generateRoutes (routes, failOnError = false) {
     const errors = []
 
     this.routes = []
@@ -184,6 +184,9 @@ or disable the build step: \`generate({ build: false })\``)
     // Start generate process
     while (this.routes.length) {
       let n = 0
+      if (typeof failOnError === 'number' && errors.length >= failOnError) {
+        return errors
+      }
       await Promise.all(
         this.routes
           .splice(0, this.options.generate.concurrency)
