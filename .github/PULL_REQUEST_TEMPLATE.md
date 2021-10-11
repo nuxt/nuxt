@@ -7,11 +7,11 @@ Please carefully read the contribution docs before creating a pull request
 
 ### 🔗 Linked issue
 
-<!-- Please ensure there is an open issue and mention it's number as #123 -->
+<!-- Please ensure there is an open issue and mention its number as #123 -->
 
 ### ❓ Type of change
 
-<!-- What types of changes does your code introduce? Put `x's in all the boxes -->
+<!-- What types of changes does your code introduce? Put an `x` in all the boxes that apply. -->
 
 - [ ] 📖 Documentation (updates to the documentation or readme)
 - [ ] 🐞 Bug fix (a non-breaking change that fixes an issue)
