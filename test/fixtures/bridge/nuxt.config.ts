@@ -17,5 +17,8 @@ export default defineNuxtConfig({
   plugins: ['~/plugins/setup.js'],
   nitro: {
     output: { dir: process.env.NITRO_OUTPUT_DIR }
+  },
+  bridge: {
+    meta: true
   }
 })

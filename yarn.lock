@@ -9230,6 +9230,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-use-state@workspace:examples/use-state":
+  version: 0.0.0-use.local
+  resolution: "example-use-state@workspace:examples/use-state"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-wasm@workspace:examples/wasm":
   version: 0.0.0-use.local
   resolution: "example-wasm@workspace:examples/wasm"

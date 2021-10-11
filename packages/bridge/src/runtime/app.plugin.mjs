@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { createHooks } from 'hookable/dist/index.mjs'
-import { setNuxtInstance } from '#app'
+import { setNuxtAppInstance } from '#app'
 
 export default (ctx, inject) => {
   const nuxt = {
@@ -42,7 +42,7 @@ export default (ctx, inject) => {
     nuxt.legacyApp = this
   })
 
-  setNuxtInstance(nuxt)
+  setNuxtAppInstance(nuxt)
 
   inject('_nuxtApp', nuxt)
 }

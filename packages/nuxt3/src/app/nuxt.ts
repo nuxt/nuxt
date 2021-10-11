@@ -44,6 +44,7 @@ export interface NuxtApp {
   payload: {
     serverRendered?: true
     data?: Record<string, any>
+    state?: Record<string, any>
     rendered?: Function
     [key: string]: any
   }
@@ -70,7 +71,11 @@ export function createNuxtApp (options: CreateOptions) {
   const nuxt: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
-    payload: reactive(process.server ? { serverRendered: true, data: {} } : (window.__NUXT__ || { data: {} })),
+    payload: reactive({
+      data: {},
+      state: {},
+      ...(process.client ? window.__NUXT__ : { serverRendered: true })
+    }),
     isHydrating: process.client,
     _asyncDataPromises: {},
     ...options
@@ -150,10 +155,10 @@ export function isLegacyPlugin (plugin: unknown): plugin is LegacyPlugin {
   return !plugin[NuxtPluginIndicator]
 }
 
-let currentNuxtInstance: NuxtApp | null
+let currentNuxtAppInstance: NuxtApp | null
 
-export const setNuxtInstance = (nuxt: NuxtApp | null) => {
-  currentNuxtInstance = nuxt
+export const setNuxtAppInstance = (nuxt: NuxtApp | null) => {
+  currentNuxtAppInstance = nuxt
 }
 
 /**
@@ -163,9 +168,9 @@ export const setNuxtInstance = (nuxt: NuxtApp | null) => {
  * @param setup The function to call
  */
 export async function callWithNuxt (nuxt: NuxtApp, setup: () => any) {
-  setNuxtInstance(nuxt)
+  setNuxtAppInstance(nuxt)
   const p = setup()
-  setNuxtInstance(null)
+  setNuxtAppInstance(null)
   await p
 }
 
@@ -176,10 +181,10 @@ export function useNuxtApp (): NuxtApp {
   const vm = getCurrentInstance()
 
   if (!vm) {
-    if (!currentNuxtInstance) {
+    if (!currentNuxtAppInstance) {
       throw new Error('nuxt instance unavailable')
     }
-    return currentNuxtInstance
+    return currentNuxtAppInstance
   }
 
   return vm.appContext.app.$nuxt

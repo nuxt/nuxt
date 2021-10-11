@@ -4,7 +4,8 @@ const identifiers = {
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',
-    'useRuntimeConfig'
+    'useRuntimeConfig',
+    'useState'
   ],
   '#meta': [
     'useMeta'

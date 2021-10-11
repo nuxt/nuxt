@@ -1,7 +1,8 @@
 <template>
   <div>
     <Nuxt />
-    {{ route.path }}
+    <hr>
+    Route: {{ route.path }}
   </div>
 </template>
 
@@ -9,7 +10,6 @@
 export default {
   setup () {
     const route = useRoute()
-    console.log(route.path)
     return { route }
   }
 }

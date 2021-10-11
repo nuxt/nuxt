@@ -33,26 +33,26 @@ export interface Context {
   $_nuxtApp: NuxtAppCompat
 }
 
-let currentNuxtInstance: NuxtAppCompat | null
+let currentNuxtAppInstance: NuxtAppCompat | null
 
-export const setNuxtInstance = (nuxt: NuxtAppCompat | null) => {
-  currentNuxtInstance = nuxt
+export const setNuxtAppInstance = (nuxt: NuxtAppCompat | null) => {
+  currentNuxtAppInstance = nuxt
 }
 
 export const defineNuxtPlugin = plugin => (ctx: Context) => {
-  setNuxtInstance(ctx.$_nuxtApp)
+  setNuxtAppInstance(ctx.$_nuxtApp)
   plugin(ctx.$_nuxtApp)
-  setNuxtInstance(null)
+  setNuxtAppInstance(null)
 }
 
 export const useNuxtApp = () => {
   const vm = getCurrentInstance()
 
   if (!vm) {
-    if (!currentNuxtInstance) {
-      throw new Error('nuxt instance unavailable')
+    if (!currentNuxtAppInstance) {
+      throw new Error('nuxt app instance unavailable')
     }
-    return currentNuxtInstance
+    return currentNuxtAppInstance
   }
 
   return vm?.proxy.$_nuxtApp
