@@ -2,14 +2,14 @@
 links:
   -
     title: 'Getting Started'
-    to: '/getting-started'
+    to: '/getting-started/introduction'
   -
     title: 'Concepts'
-    to: '/concepts'
+    to: '/concepts/introduction'
   -
     title: 'Docs'
-    to: '/docs'
+    to: '/docs/usage/data-fetching'
   -
     title: 'Community'
-    to: '/community'
+    to: '/community/getting-help'
 ---
