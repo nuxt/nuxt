@@ -3,5 +3,5 @@
 
 /// <reference types="nuxt3" />
 /// <reference path=".nuxt/components.d.ts" />
-/// <reference path=".nuxt/global-imports.d.ts" />
+/// <reference path=".nuxt/auto-imports.d.ts" />
 export {}

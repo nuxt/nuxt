@@ -24,7 +24,7 @@ export const TransformPlugin = createUnplugin((map: IdentifierMap) => {
   const matchRE = new RegExp(`\\b(${Object.keys(map).join('|')})\\b`, 'g')
 
   return {
-    name: 'nuxt-global-imports-transform',
+    name: 'nuxt-auto-imports-transform',
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(id)

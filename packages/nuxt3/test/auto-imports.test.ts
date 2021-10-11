@@ -1,7 +1,7 @@
 import { expect } from 'chai'
-import { TransformPlugin } from '../src/global-imports/transform'
+import { TransformPlugin } from '../src/auto-imports/transform'
 
-describe('module:global-imports:build', () => {
+describe('module:auto-imports:build', () => {
   const { transform: _transform } = TransformPlugin.raw({ ref: 'vue', computed: 'bar' }, {} as any)
   const transform = (code: string) => _transform.call({} as any, code, '')
 

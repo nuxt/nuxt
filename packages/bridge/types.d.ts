@@ -7,7 +7,7 @@ export interface BridgeConfig {
   app: boolean | {}
   capi: boolean | {}
   scriptSetup: boolean
-  globalImports: boolean
+  autoImports: boolean
   transpile: boolean
   constraints: boolean
   postcss8: boolean

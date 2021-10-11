@@ -5,5 +5,5 @@
 /// <reference types="@nuxt/kit" />
 /// <reference types="@nuxt/nitro" />
 /// <reference path=".nuxt/components.d.ts" />
-/// <reference path=".nuxt/global-imports.d.ts" />
+/// <reference path=".nuxt/auto-imports.d.ts" />
 export {}

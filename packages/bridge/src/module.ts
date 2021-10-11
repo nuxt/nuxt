@@ -5,7 +5,7 @@ import { setupNitroBridge } from './nitro'
 import { setupAppBridge } from './app'
 import { setupCAPIBridge } from './capi'
 import { setupBetterResolve } from './resolve'
-import { setupGlobalImports } from './global-imports'
+import { setupAutoImports } from './auto-imports'
 import { setupTypescript } from './typescript'
 import { setupMeta } from './meta'
 import { setupTranspile } from './transpile'
@@ -21,7 +21,7 @@ export default defineNuxtModule({
     capi: {},
     transpile: true,
     scriptSetup: true,
-    globalImports: true,
+    autoImports: true,
     constraints: true,
     meta: null,
     // TODO: Remove from 2.16
@@ -47,8 +47,8 @@ export default defineNuxtModule({
     if (opts.scriptSetup) {
       await setupScriptSetup()
     }
-    if (opts.globalImports) {
-      await setupGlobalImports()
+    if (opts.autoImports) {
+      await setupAutoImports()
     }
     if (opts.vite) {
       await installModule(nuxt, _require.resolve('nuxt-vite'))
