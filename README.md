@@ -44,17 +44,28 @@ Welcome to Nuxt3 repository ✨
 </tbody>
 </table>
 
-
-## 👀 Private beta
-
-We are currently in private beta in order to stabilize the framework before opening to the whole community.
-
-Please take a look at the [beta discussion](https://github.com/nuxt/framework/discussions/434) for further information.
-
 ## 💻 Development
 
 - Clone repository
 - Ensure you have the latest LTS version of Node.js installed
-- Install dependencies with `yarn install`
-- Run `yarn stub` to activate passive development
-- Open playground with `yarn play`
+- Install dependencies with `npx yarn install`
+- Run `npx yarn stub` to activate passive development
+- Open playground with `npx yarn play`
+
+Learn more about in our documentation on [how to contribute to Nuxt](https://v3.nuxtjs.org/community/contribution).
+
+## 📖 Documentation
+
+We are using [Docus](https://nuxtlabs.com/docus) for documentation (*It is planned to be open sourced it in the following weeks*).
+
+We recommend to install the [Docus extension](https://marketplace.visualstudio.com/items?itemName=NuxtLabs.docus) for VS Code.
+
+- Go into the docs directory: `cd docs`
+- Install docs dependencies with `npx yarn install`
+- Run `npx yarn dev` to start Docus in development mode
+
+The pages are generated from [docs/content/](./docs/content), you can start editing them to start helping us on documenting Nuxt 3 💚
+
+## License
+
+[MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE)

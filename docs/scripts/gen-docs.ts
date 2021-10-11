@@ -1,13 +1,12 @@
-import { rm, writeFile } from 'fs/promises'
-import mkdirp from 'mkdirp'
+import { readFile, writeFile } from 'fs/promises'
 import type { Schema } from 'untyped'
-import { join, resolve } from 'pathe'
-import { kebabCase, upperFirst } from 'scule'
+import { resolve } from 'pathe'
+import { upperFirst } from 'scule'
 
 export async function main () {
   const rootDir = resolve(__dirname, '..')
-  const configDir = resolve(rootDir, 'content/5.config')
-  await generateDocs({ outDir: configDir })
+  const configFile = resolve(rootDir, 'content/3.docs/2.directory-structure/15.nuxt.config.md')
+  await generateDocs({ configFile })
 }
 
 function generateMarkdown (schema: Schema, title: string, level: string, parentVersions: string[] = []) {
@@ -75,9 +74,9 @@ function generateMarkdown (schema: Schema, title: string, level: string, parentV
 const TAG_REGEX = /^@([\d\w]+)[\s\n]/i
 
 const TagAlertType = {
-  note: 'note',
+  note: 'info',
   warning: 'warning',
-  deprecated: 'deprecated'
+  deprecated: 'danger'
 }
 
 const InternalTypes = new Set([
@@ -104,42 +103,38 @@ function renderTag (tag: string) {
   return tag
 }
 
-async function generateDocs ({ outDir }) {
+async function generateDocs ({ configFile }) {
+  const GENERATE_KEY = '<!-- GENERATED_CONFIG_DOCS -->'
   // Prepare content directory
   const start = Date.now()
-  console.log('Generating docs to ' + outDir)
-  await rm(outDir, { recursive: true }).catch(() => {})
-  await mkdirp(outDir)
-
+  console.log(`Updating docs on ${configFile}`)
+  const fileContent = await readFile(configFile, 'utf8')
+  const generateAt = fileContent.indexOf(GENERATE_KEY)
   const rootSchema = require('@nuxt/kit/schema/config.schema.json') as Schema
-
   const keys = Object.keys(rootSchema.properties).sort()
-  let ctor = 1
+  let generatedDocs = ''
 
-  // Generate a separate file for each section
+  if (generateAt === -1) {
+    throw new Error(`Could not find ${GENERATE_KEY} in ${configFile}`)
+  }
+
+  // Generate each section
   for (const key of keys) {
     const schema = rootSchema.properties[key]
 
-    const lines = generateMarkdown(schema, key, '#')
+    const lines = generateMarkdown(schema, key, '##')
 
     // Skip empty sections
     if (lines.length < 3) {
       continue
     }
 
-    // Add frontmatter meta
-    const attributes = Object.entries({
-      title: key,
-      description: schema.title
-    }).map(([key, val]) => `${key}: "${val}"`)
-
-    lines.unshift('---', ...attributes, '---')
-
-    await writeFile(join(outDir, `${ctor++}.${kebabCase(key)}.md`), lines.join('\n'))
+    // Add lines to new file content
+    generatedDocs += lines.join('\n') + '\n'
   }
 
-  const frontmatter = ['---', 'navigation:', '  collapse: true', '---']
-  await writeFile(join(outDir, 'index.md'), frontmatter.join('\n'))
+  const body = fileContent.slice(0, generateAt + GENERATE_KEY.length) + '\n\n' + generatedDocs
+  await writeFile(configFile, body)
 
   console.log(`Generate done in ${(Date.now() - start) / 1000} seconds!`)
 }

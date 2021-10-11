@@ -3,3 +3,4 @@ node_modules
 schema
 **/*.tmpl.*
 sw.js
+docs
