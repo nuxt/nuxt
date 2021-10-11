@@ -55,7 +55,6 @@ export async function build (nitroContext: NitroContext) {
 
   nitroContext.rollupConfig = getRollupConfig(nitroContext)
   await nitroContext._internal.hooks.callHook('nitro:rollup:before', nitroContext)
-  await writeTypes(nitroContext)
   return nitroContext._nuxt.dev ? _watch(nitroContext) : _build(nitroContext)
 }
 
@@ -89,6 +88,7 @@ async function writeTypes (nitroContext: NitroContext) {
 
 async function _build (nitroContext: NitroContext) {
   nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir)
+  await writeTypes(nitroContext)
 
   consola.start('Building server...')
   const build = await rollup(nitroContext.rollupConfig).catch((error) => {
@@ -151,4 +151,5 @@ async function _watch (nitroContext: NitroContext) {
       }
     }
   )
+  await writeTypes(nitroContext)
 }

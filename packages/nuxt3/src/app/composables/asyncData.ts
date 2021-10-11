@@ -2,24 +2,44 @@ import { onBeforeMount, onUnmounted, ref } from 'vue'
 import type { Ref } from 'vue'
 import { NuxtApp, useNuxtApp } from '#app'
 
-export interface AsyncDataOptions<T> {
+export type _Transform<Input=any, Output=any> = (input: Input) => Output
+
+export type PickFrom<T, K extends Array<string>> = T extends Record<string, any> ? Pick<T, K[number]> : T
+export type KeysOf<T> = Array<keyof T extends string ? T : string>
+export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
+
+export interface AsyncDataOptions<
+  DataT,
+  Transform extends _Transform<DataT, any> = _Transform<DataT, DataT>,
+  PickKeys extends KeyOfRes<_Transform> = KeyOfRes<Transform>
+  > {
   server?: boolean
   defer?: boolean
-  default?: () => T
+  default?: () => DataT
+  transform?: Transform
+  pick?: PickKeys
 }
 
-export interface _AsyncData<T> {
-  data: Ref<T>
+export interface _AsyncData<DataT> {
+  data: Ref<DataT>
   pending: Ref<boolean>
   refresh: (force?: boolean) => Promise<void>
   error?: any
 }
 
-export type AsyncData<T> = _AsyncData<T> & Promise<_AsyncData<T>>
+export type AsyncData<Data> = _AsyncData<Data> & Promise<_AsyncData<Data>>
 
 const getDefault = () => null
 
-export function useAsyncData<T extends Record<string, any>> (key: string, handler: (ctx?: NuxtApp) => Promise<T>, options: AsyncDataOptions<T> = {}): AsyncData<T> {
+export function useAsyncData<
+  DataT,
+  Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
+  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<DataT>,
+  options: AsyncDataOptions<DataT, Transform, PickKeys> = {}
+) : AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('asyncData key must be a string')
@@ -51,7 +71,7 @@ export function useAsyncData<T extends Record<string, any>> (key: string, handle
     data: ref(nuxt.payload.data[key] ?? options.default()),
     pending: ref(true),
     error: ref(null)
-  } as AsyncData<T>
+  } as AsyncData<DataT>
 
   asyncData.refresh = (force?: boolean) => {
     // Avoid fetching same key more than once at a time
@@ -63,6 +83,12 @@ export function useAsyncData<T extends Record<string, any>> (key: string, handle
     // TODO: Handle immediate errors
     nuxt._asyncDataPromises[key] = Promise.resolve(handler(nuxt))
       .then((result) => {
+        if (options.transform) {
+          result = options.transform(result)
+        }
+        if (options.pick) {
+          result = pick(result, options.pick) as DataT
+        }
         asyncData.data.value = result
         asyncData.error.value = null
       })
@@ -108,8 +134,17 @@ export function useAsyncData<T extends Record<string, any>> (key: string, handle
   }
 
   // Allow directly awaiting on asyncData
-  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<T>
+  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<DataT>
   Object.assign(asyncDataPromise, asyncData)
 
-  return asyncDataPromise as AsyncData<T>
+  // @ts-ignore
+  return asyncDataPromise as AsyncData<DataT>
+}
+
+function pick (obj: Record<string, any>, keys: string[]) {
+  const newObj = {}
+  for (const key of keys) {
+    newObj[key] = obj[key]
+  }
+  return newObj
 }

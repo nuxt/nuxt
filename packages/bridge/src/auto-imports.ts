@@ -4,7 +4,8 @@ import autoImports from '../../nuxt3/src/auto-imports/module'
 // TODO: implement these: https://github.com/nuxt/framework/issues/549
 const disabled = [
   'useAsyncData',
-  'asyncData'
+  'asyncData',
+  'useFetch'
 ]
 
 const identifiers = {
