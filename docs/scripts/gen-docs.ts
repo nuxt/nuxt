@@ -5,8 +5,9 @@ import { upperFirst } from 'scule'
 
 export async function main () {
   const rootDir = resolve(__dirname, '..')
+  const configTemplate = resolve(__dirname, 'nuxt.config.md')
   const configFile = resolve(rootDir, 'content/3.docs/2.directory-structure/15.nuxt.config.md')
-  await generateDocs({ configFile })
+  await generateDocs({ configFile, configTemplate })
 }
 
 function generateMarkdown (schema: Schema, title: string, level: string, parentVersions: string[] = []) {
@@ -103,18 +104,17 @@ function renderTag (tag: string) {
   return tag
 }
 
-async function generateDocs ({ configFile }) {
+async function generateDocs ({ configFile, configTemplate }) {
   const GENERATE_KEY = '<!-- GENERATED_CONFIG_DOCS -->'
   // Prepare content directory
   const start = Date.now()
   console.log(`Updating docs on ${configFile}`)
-  const fileContent = await readFile(configFile, 'utf8')
-  const generateAt = fileContent.indexOf(GENERATE_KEY)
+  const template = await readFile(configTemplate, 'utf8')
   const rootSchema = require('@nuxt/kit/schema/config.schema.json') as Schema
   const keys = Object.keys(rootSchema.properties).sort()
   let generatedDocs = ''
 
-  if (generateAt === -1) {
+  if (!template.includes(GENERATE_KEY)) {
     throw new Error(`Could not find ${GENERATE_KEY} in ${configFile}`)
   }
 
@@ -133,7 +133,7 @@ async function generateDocs ({ configFile }) {
     generatedDocs += lines.join('\n') + '\n'
   }
 
-  const body = fileContent.slice(0, generateAt + GENERATE_KEY.length) + '\n\n' + generatedDocs
+  const body = template.replace(GENERATE_KEY, generatedDocs)
   await writeFile(configFile, body)
 
   console.log(`Generate done in ${(Date.now() - start) / 1000} seconds!`)
