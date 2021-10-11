@@ -3,7 +3,7 @@ layout:
   aside: true
   asideClass: ''
 navigation:
-  collapse: true
+  collapse: false
   exclusive: false
-  redirect: /docs/deployment/platforms
+  redirect: /docs/deployment/azure
 ---
