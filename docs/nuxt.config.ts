@@ -27,12 +27,12 @@ export default withDocus({
       {
         hid: 'og:image',
         property: 'og:image',
-        content: 'https://nuxtjs.org/preview.png'
+        content: 'https://res.cloudinary.com/nuxt/image/upload/v1633987983/nuxt3-preview_rhh50t.png'
       },
       {
         hid: 'og:image:secure_url',
         property: 'og:image:secure_url',
-        content: 'https://nuxtjs.org/preview.png'
+        content: 'https://res.cloudinary.com/nuxt/image/upload/v1633987983/nuxt3-preview_rhh50t.png'
       },
       {
         hid: 'og:image:alt',
@@ -42,7 +42,12 @@ export default withDocus({
       {
         hid: 'twitter:image',
         name: 'twitter:image',
-        content: 'https://nuxtjs.org/preview.png'
+        content: 'https://res.cloudinary.com/nuxt/image/upload/v1633987983/nuxt3-preview_rhh50t.png'
+      },
+      {
+        hid: 'og:video',
+        name: 'og:video',
+        content: 'https://res.cloudinary.com/nuxt/video/upload/v1633987946/nuxt3-beta-preview_rwemvt.mp4'
       }
     ],
     bodyAttrs: {

@@ -1,10 +1,6 @@
 <template>
   <canvas class="webgl" />
 </template>
-.webgl {
-  outline: none;
-}
-</style>
 
 <script>
 import * as THREE from 'three'
@@ -119,3 +115,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.webgl {
+  outline: none;
+}
+</style></style>
