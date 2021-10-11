@@ -1,6 +1,6 @@
 import { builtinModules } from 'module'
-import { createHash } from 'crypto'
 import * as vite from 'vite'
+import { hashId, uniq } from './utils'
 
 interface TransformChunk {
   id: string,
@@ -68,10 +68,10 @@ async function transformRequestRecursive (viteServer: vite.ViteDevServer, id, pa
   return Object.values(chunks)
 }
 
-export async function bundleRequest (viteServer: vite.ViteDevServer, entryURL) {
+export async function bundleRequest (viteServer: vite.ViteDevServer, entryURL: string) {
   const chunks = await transformRequestRecursive(viteServer, entryURL)
 
-  const listIds = ids => ids.map(id => `// - ${id} (${hashId(id)})`).join('\n')
+  const listIds = (ids: string[]) => ids.map(id => `// - ${id} (${hashId(id)})`).join('\n')
   const chunksCode = chunks.map(chunk => `
 // --------------------
 // Request: ${chunk.id}
@@ -166,19 +166,4 @@ async function __instantiateModule__(url, urlStack) {
   ].join('\n\n')
 
   return { code }
-}
-
-function hashId (id: string) {
-  return '$id_' + hash(id)
-}
-
-function hash (input: string, length = 8) {
-  return createHash('sha256')
-    .update(input)
-    .digest('hex')
-    .substr(0, length)
-}
-
-export function uniq<T> (arr: T[]): T[] {
-  return Array.from(new Set(arr))
 }
