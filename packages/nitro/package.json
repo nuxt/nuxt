@@ -28,7 +28,7 @@
     "@rollup/plugin-wasm": "^5.1.2",
     "@rollup/pluginutils": "^4.1.1",
     "@types/jsdom": "^16.2.13",
-    "@vercel/nft": "^0.15.1",
+    "@vercel/nft": "^0.16.0",
     "archiver": "^5.3.0",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",

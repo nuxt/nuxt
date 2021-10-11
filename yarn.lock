@@ -2630,7 +2630,7 @@ __metadata:
     "@types/jsdom": ^16.2.13
     "@types/node-fetch": ^3.0.2
     "@types/serve-static": ^1.13.10
-    "@vercel/nft": ^0.15.1
+    "@vercel/nft": ^0.16.0
     archiver: ^5.3.0
     chalk: ^4.1.2
     chokidar: ^3.5.2
@@ -3826,9 +3826,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.15.1":
-  version: 0.15.1
-  resolution: "@vercel/nft@npm:0.15.1"
+"@vercel/nft@npm:^0.16.0":
+  version: 0.16.0
+  resolution: "@vercel/nft@npm:0.16.0"
   dependencies:
     "@mapbox/node-pre-gyp": ^1.0.5
     acorn: ^8.3.0
@@ -3847,7 +3847,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: f25df8d684fc7ef295fafbad9e84af042d430e74133fcb86b9ed2b40792c66a8b27cd7eb8b5469314099897df7263566f190c28efa2953a055899a860ed0fa64
+  checksum: 3c5a798ff191f10d09ec5cc8ac2dbb99e566a77123bd893f60364d9bac88ad78f360849e1afa253328d568c8ffe22590ed507f683f4d77d4da1f981aa32c0e1e
   languageName: node
   linkType: hard
 
