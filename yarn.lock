@@ -13756,7 +13756,6 @@ fsevents@~2.3.2:
     vue: ^3.2.20
     vue-meta: next
     vue-router: ^4.0.11
-    vuex5: ^0.5.0-testing.3
   peerDependencies:
     "@vue/reactivity": 3.2.20
     "@vue/shared": 3.2.20
@@ -19412,13 +19411,6 @@ fsevents@~2.3.2:
   version: 2.6.14
   resolution: "vue@npm:2.6.14"
   checksum: 23524a1bdca094d62cb3491a46317eed75184b5d61d28fa846ea5d2b241c1cc7084fc67ee259d47a50a6d0bbc33ecaceb7bb52bff81312fe7da07263f3419942
-  languageName: node
-  linkType: hard
-
-"vuex5@npm:^0.5.0-testing.3":
-  version: 0.5.0-testing.3
-  resolution: "vuex5@npm:0.5.0-testing.3"
-  checksum: 609a62d02d035b3151038bf0e1cdf46a9f04706a2e665fe84bd9e0b72d8bd85bf3a0bacc51a237e93893b3c26de6d8898e55aaa31a46c075091bff66056dcf52
   languageName: node
   linkType: hard
 

@@ -38,7 +38,6 @@ function serverStandalone (ctx: WebpackConfigContext) {
   const inline = [
     'src/',
     '#app',
-    'vuex5',
     '!',
     '-!',
     '~',
