@@ -1,14 +1,18 @@
 <template>
-  <canvas class="webgl" />
+  <canvas class="webgl" :style="{ opacity: ready ? 1 : 0 }" />
 </template>
 
 <script>
-import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-
 export default {
-  mounted () {
+  data () {
+    return {
+      ready: false
+    }
+  },
+  async mounted () {
+    const THREE = await import('three').then(m => m.default || m)
+    const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js' /* webpackChunkName: "gem" */).then(m => m.default || m)
+    const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js' /* webpackChunkName: "gem" */).then(m => m.default || m)
     // Canvas
     const canvas = document.querySelector('canvas.webgl')
 
@@ -23,34 +27,36 @@ export default {
     gltfLoader.load(
       '/3D/gem.gltf',
       (gltf) => {
-        console.log(gltf)
         // Gem
         gem = gltf.scene.children[6]
-        console.log(gltf.scene.children[6])
 
         // Material setup
         const textureLoader = new THREE.TextureLoader()
         const roughnessTexture = textureLoader.load('/3D/roughness.jpeg')
         gem.material.roughnessMap = roughnessTexture
         gem.material.displacementScale = 0.15
-        gem.material.emissiveIntensity = 1
+        gem.material.emissiveIntensity = 0.4
         gem.material.refractionRatio = 1
-        gem.rotation.z = 0.5
+        gem.rotation.z = 0
         scene.add(gem)
 
         light = gltf.scene.children[0]
         scene.add(light)
+        this.ready = true
       }
     )
 
     // Lights
     const ambientLight = new THREE.AmbientLight(0xFFFFFF, 2)
-
     scene.add(ambientLight)
 
     const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 3)
     directionalLight.position.set(1, 1, 1)
     scene.add(directionalLight)
+
+    const directionalLight2 = new THREE.DirectionalLight(0xFFFFFF, 3)
+    directionalLight2.position.set(-1, -1, -1)
+    scene.add(directionalLight2)
 
     // Settings
     const sizes = {
@@ -98,7 +104,7 @@ export default {
       const deltaTime = elapsedTime - previousTime
       previousTime = elapsedTime
       if (gem) {
-        gem.rotation.y = 0.5 * elapsedTime
+        gem.rotation.y = 1.1 * elapsedTime
       }
 
       // Update controls
@@ -119,5 +125,9 @@ export default {
 <style scoped>
 .webgl {
   outline: none;
+  width: 200px;
+  height: 200px;
+  opacity: 0;
+  transition: opacity 1s ease;
 }
-</style></style>
+</style>

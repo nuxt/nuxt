@@ -54,6 +54,9 @@ export default withDocus({
       class: ['min-w-xs']
     }
   },
+  loading: {
+    color: '#00DC82'
+  },
   css: [resolve(__dirname, './assets/nuxt.css')],
   windicss: {
     root: resolve(__dirname),
