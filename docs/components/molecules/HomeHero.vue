@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-hidden relative dark:bg-sky-black dark:text-white pt-14 md:pt-18">
+  <div class="overflow-hidden relative dark:bg-sky-black dark:text-white pt-12">
     <div class="flex flex-wrap justify-center py-0 section d-container-content">
       <section class="flex flex-col justify-start w-full px-4 pt-36 pb-48 md:pt-44 lg:pb-56 lg:pt-24 text-center z-20">
         <Gem class="block m-x-auto" />
