@@ -34,7 +34,7 @@
     "pathe": "^0.2.0",
     "ufo": "^0.7.9",
     "unplugin": "^0.2.16",
-    "unplugin-vue2-script-setup": "^0.6.7"
+    "unplugin-vue2-script-setup": "0.6.10"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
