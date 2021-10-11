@@ -1,15 +1,3 @@
-declare global {
-  import type { $Fetch } from 'ohmyfetch'
-
-  // eslint-disable-next-line no-var
-  var $fetch: $Fetch
-  namespace NodeJS {
-    interface Global {
-      $fetch: $Fetch
-    }
-  }
-}
-
 declare module '#storage' {
   import type { Storage } from 'unstorage'
   export const storage: Storage
@@ -21,5 +9,3 @@ declare module '#assets' {
   export function statAsset(id: string): Promise<AssetMeta>
   export function getKeys() : Promise<string[]>
 }
-
-export default {}

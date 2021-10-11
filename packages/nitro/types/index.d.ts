@@ -7,4 +7,5 @@ declare module '@nuxt/kit' {
   }
 }
 
+export * from './fetch'
 export * from '../dist'

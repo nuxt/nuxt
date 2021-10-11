@@ -123,6 +123,11 @@ export function setupNitroBridge () {
     nitroDevContext.middleware.push(...middleware)
   })
 
+  // Add typed route responses
+  nuxt.hook('prepare:types', (opts) => {
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'nitro.d.ts') })
+  })
+
   // nuxt build/dev
   // @ts-ignore
   nuxt.options.build._minifyServer = false

@@ -26,6 +26,11 @@ export function initNitro (nuxt: Nuxt) {
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
   nitroDevContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
 
+  // Add typed route responses
+  nuxt.hook('prepare:types', (opts) => {
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'nitro.d.ts') })
+  })
+
   // Add nitro client plugin (to inject $fetch helper)
   nuxt.hook('app:resolve', (app) => {
     app.plugins.push({ src: resolve(nitroContext._internal.runtimeDir, 'app/nitro.client.mjs') })
