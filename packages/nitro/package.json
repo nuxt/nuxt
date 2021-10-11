@@ -68,7 +68,7 @@
     "ufo": "^0.7.9",
     "unenv": "^0.3.10",
     "unstorage": "^0.2.9",
-    "vue": "3.2.19",
+    "vue": "3.2.20",
     "vue-bundle-renderer": "^0.3.1",
     "vue-server-renderer": "^2.6.14"
   },

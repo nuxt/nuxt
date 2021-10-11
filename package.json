@@ -41,7 +41,7 @@
     "chai": "^4.3.4",
     "esbuild": "^0.13.4",
     "eslint": "^7.32.0",
-    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-jsdoc": "^36.1.1",
     "execa": "^5.1.1",
     "globby": "^11.0.4",
     "jiti": "^1.12.6",

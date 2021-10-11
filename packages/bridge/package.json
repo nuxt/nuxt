@@ -30,11 +30,11 @@
     "mlly": "^0.2.5",
     "node-fetch": "^3.0.0",
     "nuxi": "3.0.0",
-    "nuxt-vite": "^0.3.4",
+    "nuxt-vite": "^0.3.5",
     "pathe": "^0.2.0",
     "ufo": "^0.7.9",
     "unplugin": "^0.2.16",
-    "unplugin-vue2-script-setup": "0.6.10"
+    "unplugin-vue2-script-setup": "0.6.11"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
