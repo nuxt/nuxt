@@ -1,5 +1,5 @@
 <template>
-  <AppPage class="min-h-screen-sm relative z-0 h-full -mb-48">
+  <AppPage class="min-h-screen-sm relative z-0 h-full">
     <div class="relative flex flex-col items-center justify-center px-2 sm:px-4 mt-20 lg:mt-32 md:px-0 z-10">
       <h1 class="font-serif text-center text-display-6 md:text-display-5 2xl:text-display-4 mb-6">
         {{ error.message }}
