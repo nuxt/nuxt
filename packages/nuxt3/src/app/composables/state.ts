@@ -1,3 +1,4 @@
+import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app'
 
