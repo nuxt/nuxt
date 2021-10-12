@@ -1,4 +1,4 @@
-import { onBeforeMount, onUnmounted, ref } from 'vue'
+import { onBeforeMount, onUnmounted, ref, getCurrentInstance } from 'vue'
 import type { Ref } from 'vue'
 import { NuxtApp, useNuxtApp } from '#app'
 
