@@ -1,4 +1,4 @@
-import { resolve } from 'pathe'
+import { resolve, normalize } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import fse from 'fs-extra'
@@ -117,6 +117,7 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   // Watch
   viteServer.watcher.on('all', (_event, file) => {
+    file = normalize(file) // Fix windows paths
     if (file.indexOf(ctx.nuxt.options.buildDir) === 0) { return }
     doBuild()
   })
