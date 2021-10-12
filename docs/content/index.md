@@ -2,7 +2,7 @@
 navigation: false
 template: Page
 title: The Hybrid Vue Framework
-description: 'Build you next application with Vue 3 and experience hybrid rendering, with an improved directory structure and new features Nuxt 3 is an open source framework making web development simple and powerful.'
+description: 'Build your next application with Vue 3 and experience hybrid rendering, with an improved directory structure and new features Nuxt 3 is an open source framework making web development simple and powerful.'
 ---
 
 ::HomeHero
@@ -17,7 +17,7 @@ primary:
 The Hybrid [Vue]{.text-primary} Framework
 
 #description
-Build you next application with Vue 3 and experience hybrid rendering, powerful data fetching and new features.
+Build your next application with Vue 3 and experience hybrid rendering, powerful data fetching and new features.
 Nuxt 3 is an open source framework making web development simple and powerful.
 
 #secondary-button
