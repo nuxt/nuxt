@@ -1,5 +1,6 @@
 import type {} from '@nuxt/nitro'
 import type { NuxtConfig as _NuxtConfig } from '@nuxt/kit'
+import type { MetaInfo } from 'vue-meta'
 
 export interface BridgeConfig {
   nitro: boolean
@@ -19,11 +20,13 @@ export interface BridgeConfig {
 // TODO: Also inherit from @nuxt/types.NuxtConfig for legacy type compat
 export interface NuxtConfig extends _NuxtConfig {
   bridge?: Partial<BridgeConfig> | false
+  head?: _NuxtConfig['head'] | MetaInfo
 }
 
 declare module '@nuxt/kit' {
   interface ConfigSchema {
     bridge: BridgeConfig
+    head: _NuxtConfig['head'] | MetaInfo
   }
 }
 
