@@ -11,7 +11,7 @@ Please carefully read the contribution docs before creating a bug report
  👉 https://v3.nuxtjs.org/community/reporting-bugs
 
 Please use the code sandbox template below to create a minimal reproduction
- 👉 https://codesandbox.io/s/github/nuxt/starter/tree/bridge-sandbox
+ 👉 https://codesandbox.io/s/github/nuxt/starter/tree/bridge-codesandbox
 -->
 
 ###  Environment
