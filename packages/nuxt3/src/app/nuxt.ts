@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, reactive, defineAsyncComponent } from 'vue'
 import type { App, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
 import { defineGetter } from './utils'
@@ -98,6 +98,11 @@ export function createNuxtApp (options: CreateOptions) {
   // Expose nuxt to the renderContext
   if (nuxt.ssrContext) {
     nuxt.ssrContext.nuxt = nuxt
+  }
+
+  // (temporary) Expose NuxtWelcome component in dev
+  if (process.dev) {
+    nuxt.app.component('NuxtWelcome', defineAsyncComponent(() => import('./components/nuxt-welcome.vue')))
   }
 
   if (process.server) {

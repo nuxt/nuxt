@@ -25,7 +25,7 @@ export default defineNuxtModule({
 
     // Add default layout for pages
     nuxt.hook('app:resolve', (app) => {
-      if (app.main.includes('app.tutorial')) {
+      if (app.main.includes('nuxt-welcome')) {
         app.main = resolve(runtimeDir, 'app.vue')
       }
     })

@@ -63,7 +63,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     app.main = tryResolvePath('~/App', resolveOptions) || tryResolvePath('~/app', resolveOptions)
   }
   if (!app.main) {
-    app.main = resolve(nuxt.options.appDir, 'app.tutorial.vue')
+    app.main = resolve(nuxt.options.appDir, 'components/nuxt-welcome.vue')
   }
 
   // Resolve plugins

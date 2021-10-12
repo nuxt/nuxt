@@ -2511,10 +2511,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/design@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@nuxt/design@npm:0.1.1"
-  checksum: ccdcfaaae848cf36bf7fb555ff1c5715de8ee6004a26412ea156a0c2812e01ad0503b68ebb4ad23c07ec9c536199325d416410e231d060753ac212184f902b55
+"@nuxt/design@npm:0.1.3, @nuxt/design@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "@nuxt/design@npm:0.1.3"
+  checksum: 57f8cb6119b96eb51f12f4b643fc46bcf9879359a4d8ae4576d2f12b39876344c3cbcf13360f5844b53eef9d08367c91872520aa90256a32e2c0f028233a5269
   languageName: node
   linkType: hard
 
@@ -2612,7 +2612,7 @@ __metadata:
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.3
     "@netlify/functions": ^0.7.2
-    "@nuxt/design": 0.1.1
+    "@nuxt/design": 0.1.3
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
     "@rollup/plugin-alias": ^3.1.5
@@ -13643,7 +13643,7 @@ fsevents@~2.3.2:
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
-    "@nuxt/design": 0.1.1
+    "@nuxt/design": 0.1.3
     "@nuxt/kit": 3.0.0
     "@types/clear": ^0
     "@types/debounce-promise": ^3
@@ -13701,6 +13701,7 @@ fsevents@~2.3.2:
     pathe: ^0.2.0
     typescript: ^4.4.3
     unbuild: ^0.5.6
+    vue-router: next
   languageName: unknown
   linkType: soft
 
@@ -13737,6 +13738,7 @@ fsevents@~2.3.2:
   version: 0.0.0-use.local
   resolution: "nuxt3@workspace:packages/nuxt3"
   dependencies:
+    "@nuxt/design": ^0.1.3
     "@nuxt/kit": 3.0.0
     "@nuxt/nitro": 3.0.0
     "@nuxt/vite-builder": 3.0.0
@@ -19349,7 +19351,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.11":
+"vue-router@npm:^4.0.11, vue-router@npm:next":
   version: 4.0.11
   resolution: "vue-router@npm:4.0.11"
   dependencies:
