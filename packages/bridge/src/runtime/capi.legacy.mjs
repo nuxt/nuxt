@@ -1,6 +1,7 @@
 import defu from 'defu'
-import { computed, customRef, getCurrentInstance as getVM, isReactive, isRef, onBeforeMount, onServerPrefetch, reactive, ref, set, shallowRef, toRaw, toRefs, watch } from '@vue/composition-api'
+import { computed, getCurrentInstance as getVM, isReactive, isRef, onBeforeMount, onServerPrefetch, reactive, ref, set, shallowRef, toRaw, toRefs, watch } from '@vue/composition-api'
 import { useNuxtApp } from './app'
+import { useState } from './composables'
 
 // Vue composition API export
 export {
@@ -91,7 +92,6 @@ export const reqRef = unsupported('`reqRef` is a deprecated method that is no lo
 export const reqSsrRef = unsupported('`reqSsrRef` is no longer provided (`ssrRef` can be used instead).')
 
 // ssrRef helpers
-const isProxyable = val => !!val && typeof val === 'object'
 const sanitise = val => (val && JSON.parse(JSON.stringify(val))) || val
 const getValue = val => val instanceof Function ? val() : val
 
@@ -99,75 +99,21 @@ export const ssrRef = (value, key) => {
   const vm = getVM()
   if (!vm) { throw new Error('ssrRef no longer supports global/ambient context and must be called within a setup() function') }
 
-  const ssrRefs = useSSRRefs()
+  warnOnce('ssrRef', '`ssrRef` is deprecated and can be replaced with `useState`.')
 
-  let resolvedValue = isHMR() ? getValue(value) : ssrRefs[key] ?? getValue(value)
-
-  const _ref = ref(resolvedValue)
-  if (process.client) { return _ref }
-
-  const setData = (key, val) => {
-    ssrRefs[key] = sanitise(val)
-  }
-
-  if (value instanceof Function) { setData(key, resolvedValue) }
-
-  const getProxy = (track, trigger, observable) =>
-    new Proxy(observable, {
-      get (target, prop) {
-        track()
-        if (isProxyable(target[prop])) { return getProxy(track, trigger, target[prop]) }
-        return Reflect.get(target, prop)
-      },
-      set (obj, prop, newVal) {
-        const result = Reflect.set(obj, prop, newVal)
-        setData(key, resolvedValue)
-        trigger()
-        return result
-      }
-    })
-
-  const proxy = customRef((track, trigger) => ({
-    get: () => {
-      track()
-      if (isProxyable(resolvedValue)) { return getProxy(track, trigger, resolvedValue) }
-      return resolvedValue
-    },
-    set: (v) => {
-      setData(key, v)
-      resolvedValue = v
-      trigger()
-    }
-  }))
-
-  return proxy
+  return useState(key, value instanceof Function ? value : () => value)
 }
 
 export const shallowSsrRef = (value, key) => {
-  const ssrRefs = useSSRRefs()
+  warnOnce('shallowSsrRef', '`shallowSsrRef` is deprecated and can be replaced with `useState`.')
 
-  let resolvedValue = isHMR() ? getValue(value) : ssrRefs[key] ?? getValue(value)
+  const ref = ssrRef(value, key)
 
-  const _ref = shallowRef(resolvedValue)
-  if (process.client) { return _ref }
-
-  const setData = (key, val) => {
-    ssrRefs[key] = sanitise(val)
+  if (process.client) {
+    return shallowRef(ref.value)
   }
 
-  if (value instanceof Function) {
-    setData(key, resolvedValue)
-  }
-
-  return computed({
-    get () {
-      return resolvedValue
-    },
-    set (newValue) {
-      setData(key, newValue)
-      resolvedValue = newValue
-    }
-  })
+  return ref
 }
 
 export const ssrPromise = (value, key) => {
