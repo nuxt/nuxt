@@ -4,13 +4,15 @@ import { IdentifierMap } from './types'
 
 const excludeRE = [
   // imported from other module
-  /\bimport\s*([\w_$]*?),?\s*\{([\s\S]*?)\}\s*from\b/g,
+  /\bimport\s*([\w_$]*?),?\s*(?:\{([\s\S]*?)\})?\s*from\b/g,
   // defined as function
-  /\bfunction\s*([\s\S]+?)\s*\(/g,
+  /\bfunction\s*([\w_$]+?)\s*\(/g,
   // defined as local variable
-  /\b(?:const|let|var)\s*(\{([\s\S]*?)\}|[\w\d_$]+?\b)/g
+  /\b(?:const|let|var)\s+?(\[[\s\S]*?\]|\{[\s\S]*?\}|[\s\S]+?)\s*?[=;\n]/g
 ]
 
+const importAsRE = /^.*\sas\s+/
+const seperatorRE = /[,[\]{}\n]/g
 const multilineCommentsRE = /\/\*(.|[\r\n])*?\*\//gm
 const singlelineCommentsRE = /^\s*\/\/.*$/gm
 
@@ -54,8 +56,13 @@ export const TransformPlugin = createUnplugin((map: IdentifierMap) => {
       // remove those already defined
       for (const regex of excludeRE) {
         Array.from(withoutComment.matchAll(regex))
-          .flatMap(i => [...(i[1]?.split(',') || []), ...(i[2]?.split(',') || [])])
-          .forEach(i => matched.delete(i.trim()))
+          .flatMap(i => [
+            ...(i[1]?.split(seperatorRE) || []),
+            ...(i[2]?.split(seperatorRE) || [])
+          ])
+          .map(i => i.replace(importAsRE, '').trim())
+          .filter(Boolean)
+          .forEach(i => matched.delete(i))
       }
 
       if (!matched.size) {

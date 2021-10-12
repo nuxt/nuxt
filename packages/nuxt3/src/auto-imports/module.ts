@@ -12,7 +12,10 @@ export default defineNuxtModule<AutoImportsOptions>({
     for (const key of disabled) {
       delete identifiers[key]
     }
-    if (nuxt.options.dev) {
+
+    // temporary disable #746
+    // eslint-disable-next-line no-constant-condition
+    if (nuxt.options.dev && false) {
       // Add all imports to globalThis in development mode
       addPluginTemplate({
         filename: 'auto-imports.mjs',
