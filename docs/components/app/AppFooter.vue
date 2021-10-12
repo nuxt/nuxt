@@ -17,7 +17,7 @@
       </div>
       <div class="mt-3 md:mt-0 md:order-1">
         <p class="text-center text-base">
-          <a href="https://nuxtjs.org" class=" font-medium hover:underline">Nuxt 2 documentation</a>
+          <a href="https://nuxtjs.org" class="inline-flex items-center gap-1 font-medium hover:underline">Nuxt 2 documentation <IconArrowRight /></a>
         </p>
       </div>
     </div>

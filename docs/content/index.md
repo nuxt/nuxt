@@ -165,20 +165,24 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
 
     We've worked to make the upgrade as easy as possible between Nuxt 2 and Nuxt 3.
 
+    ::list
     - Legacy plugins and modules will keep working
     - Nuxt 2 config is compatible
     - Partial pages options API available
+    ::
 
     ### Bringing Nuxt 3 experience to your existing Nuxt 2 project
 
     As we've been working on new features for Nuxt 3, we've back-ported some of them to Nuxt 2.
 
+    ::list{.mb-8}
     - Using [Nitro server](/concepts/server-engine) with Nuxt 2
     - Using Composition API (same as Nuxt 3) with Nuxt 2
     - Using new CLI and Devtools with Nuxt 2
     - Progressively upgrade to Nuxt 3
     - Compatibility with Nuxt 2 module ecosystem
     - Upgrade piece by piece (Nitro, Composition API, Nuxt Kit)
+    ::
 
     :button-link[Get started with Nuxt Bridge]{ href="/getting-started/bridge" size="medium" aria-label="Get started" }
   ::

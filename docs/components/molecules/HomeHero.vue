@@ -1,9 +1,14 @@
 <template>
   <div class="overflow-hidden relative dark:bg-sky-black dark:text-white pt-12">
     <div class="flex flex-wrap justify-center py-0 section d-container-content">
-      <section class="flex flex-col justify-start w-full px-4 pb-24 sm:pt-12 sm:pb-36 lg:pt-24 lg:pb-56 text-center z-20">
+      <section class="flex flex-col justify-start w-full px-4 pb-24 sm:pt-12 sm:pb-36 lg:pt-24 lg:pb-50 text-center z-20">
+        <div class="highlight-box mx-auto mt-6 rounded-md">
+          <a href="https://nuxtjs.org/announcements/nuxt3-beta" target="_blank" rel="noopener" class="text-sm inline-flex items-center space-x-1 px-4 md:px-5 py-1 md:py-2 font-medium">
+            <span>Read the announcement</span><IconArrowRight class="mt-1px" />
+          </a>
+        </div>
         <Gem class="block m-x-auto" />
-        <h1 class="font-normal font-serif text-display-5 xs:text-display-4 md:text-display-3 2xl:text-display-2 mb-6 pt-8">
+        <h1 class="font-normal font-serif text-display-5 xs:text-display-4 md:text-display-3 2xl:text-display-2 mb-6 pt-2">
           <Markdown use="title" unwrap="p" />
         </h1>
         <h2
@@ -56,8 +61,8 @@ export default {
     primary: {
       type: Object,
       default: () => ({
-        text: '38K+ GitHub stars',
-        url: '/https://github.com',
+        text: 'Star on GitHub',
+        url: 'https://github.com',
         icon: 'IconGitHub'
       })
     },
@@ -71,3 +76,15 @@ export default {
   }
 }
 </script>
+
+<style>
+.highlight-box {
+  @apply transition-shadow duration-300;
+
+  box-shadow: #00DC82AA 0px 0px 8px;
+
+  &:hover {
+    box-shadow: #00DC82 0px 0px 16px;
+  }
+}
+</style>
