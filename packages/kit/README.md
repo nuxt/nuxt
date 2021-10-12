@@ -1,5 +1,5 @@
-## Nuxt 3
+## Nuxt Kit
 
-> The core of Nuxt 3
+> Toolkit for authoring Nuxt Modules
 
 Learn more about this package: https://v3.nuxtjs.org

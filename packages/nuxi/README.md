@@ -1,5 +1,5 @@
-## Nuxt 3
+## Nuxi
 
-> The core of Nuxt 3
+> Nuxt Command Line Interface
 
 Learn more about this package: https://v3.nuxtjs.org
