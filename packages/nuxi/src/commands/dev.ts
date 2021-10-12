@@ -35,7 +35,7 @@ export default defineNuxtCommand({
         const message = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
         server.setApp(createLoadingHandler(message))
         if (isRestart) {
-          console.log(message)
+          consola.info(message)
         }
         if (currentNuxt) {
           await currentNuxt.close()
@@ -68,10 +68,13 @@ export default defineNuxtCommand({
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
       if (['addDir', 'unlinkDir'].includes(_event) && file.match(/pages$/)) {
-        dLoad(true, `pages/ ${_event === 'addDir' ? 'created' : 'removed'}`)
+        dLoad(true, `Directory \`pages/\` ${_event === 'addDir' ? 'created' : 'removed'}`)
+      }
+      if (['addDir', 'unlinkDir'].includes(_event) && file.match(/components$/)) {
+        dLoad(true, `Directory \`components/\` ${_event === 'addDir' ? 'created' : 'removed'}`)
       }
       if (['add', 'unlink'].includes(_event) && file.match(/app\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-        dLoad(true, `${relative(rootDir, file)}/ ${_event === 'add' ? 'created' : 'removed'}`)
+        dLoad(true, `\`${relative(rootDir, file)}\` ${_event === 'add' ? 'created' : 'removed'}`)
       }
     })
 
