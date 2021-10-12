@@ -1,7 +1,6 @@
 <template>
   <Link class="button-link" :class="[size, bold ? 'font-semibold' : 'font-medium']" :to="href" :blank="blank">
     <Markdown unwrap="p ul li" />
-
     <template #href>
       <IconExternalLink v-if="blank" class="w-4 h-4 ml-2" />
     </template>

@@ -2,6 +2,6 @@
 title: 'Usage'
 layout.aside: true
 layout.asideClass: ''
-navigation.collapse: true
+navigation.collapse: false
 navigation.redirect: /docs/basics/introduction
 ---
