@@ -15,7 +15,10 @@ const greetings = [
   'こんにちは',
   '你好'
 ]
-const hello = greetings[Math.random() * greetings.length | 0]
+const hello = useState('hello')
+if (!hello.value) {
+  hello.value = greetings[Math.random() * greetings.length | 0]
+}
 </script>
 
 <style scoped>
