@@ -4,12 +4,14 @@ import vuePlugin from '@vitejs/plugin-vue'
 import fse from 'fs-extra'
 import pDebounce from 'p-debounce'
 import consola from 'consola'
+import { resolveModule } from '@nuxt/kit'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { bundleRequest } from './dev-bundler'
 
 export async function buildServer (ctx: ViteBuildContext) {
+  const _resolve = id => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     define: {
       'process.server': true,
@@ -24,25 +26,25 @@ export async function buildServer (ctx: ViteBuildContext) {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
         // Alias vue
-        'vue/server-renderer': 'vue/server-renderer',
-        'vue/compiler-sfc': 'vue/compiler-sfc',
-        '@vue/reactivity': `@vue/reactivity/dist/reactivity.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`,
-        '@vue/shared': `@vue/shared/dist/shared.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`,
-        'vue-router': `vue-router/dist/vue-router.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`,
-        vue: `vue/dist/vue.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`
+        'vue/server-renderer': _resolve('vue/server-renderer'),
+        'vue/compiler-sfc': _resolve('vue/compiler-sfc'),
+        '@vue/reactivity': _resolve(`@vue/reactivity/dist/reactivity.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
+        '@vue/shared': _resolve(`@vue/shared/dist/shared.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
+        'vue-router': _resolve(`vue-router/dist/vue-router.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
+        vue: _resolve(`vue/dist/vue.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`)
       }
     },
     ssr: {
-      external: [
-        'axios'
-      ],
+      external: [],
       noExternal: [
         ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string'),
         '.vue',
         'plugin-vue:',
         '#app',
-        'nuxt3',
-        '@nuxt/nitro'
+        'nuxt3/dist',
+        'nuxt3/src',
+        '@nuxt/nitro/dist',
+        '@nuxt/nitro/src'
       ]
     },
     build: {

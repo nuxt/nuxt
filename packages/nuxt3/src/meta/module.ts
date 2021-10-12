@@ -14,7 +14,7 @@ export default defineNuxtModule({
     const runtimeDir = nuxt.options.alias['#meta'] || resolve(distDir, 'meta/runtime')
 
     // Transpile @nuxt/meta and @vueuse/head
-    nuxt.options.build.transpile.push('nuxt3', '@vueuse/head')
+    nuxt.options.build.transpile.push('@vueuse/head')
 
     // Add #meta alias
     nuxt.options.alias['#meta'] = runtimeDir
