@@ -38,7 +38,11 @@ export async function buildServer (ctx: ViteBuildContext) {
       ],
       noExternal: [
         ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string'),
-        '#app'
+        '.vue',
+        'plugin-vue:',
+        '#app',
+        'nuxt3',
+        '@nuxt/nitro'
       ]
     },
     build: {
@@ -94,7 +98,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Build and watch
   const _doBuild = async () => {
     const start = Date.now()
-    const { code } = await bundleRequest(viteServer, resolve(ctx.nuxt.options.appDir, 'entry'))
+    const { code } = await bundleRequest({ viteServer }, resolve(ctx.nuxt.options.appDir, 'entry'))
     await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     const time = (Date.now() - start)
     consola.success(`Vite server built in ${time}ms`)

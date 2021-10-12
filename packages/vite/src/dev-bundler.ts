@@ -1,22 +1,45 @@
 import { builtinModules } from 'module'
+import { join } from 'pathe'
 import * as vite from 'vite'
 import { hashId, uniq } from './utils'
 
-interface TransformChunk {
+export interface TransformChunk {
   id: string,
   code: string,
   deps: string[],
   parents: string[]
 }
 
-interface SSRTransformResult {
+export interface SSRTransformResult {
   code: string,
   map: object,
   deps: string[]
   dynamicDeps: string[]
 }
 
-async function transformRequest (viteServer: vite.ViteDevServer, id) {
+export interface TransformOptions {
+  viteServer: vite.ViteDevServer
+}
+
+function isExternal (opts: TransformOptions, id: string) {
+  if (builtinModules.includes(id)) {
+    return true
+  }
+
+  const ssrConfig = (opts.viteServer.config as any).ssr
+
+  if (ssrConfig.noExternal.find(ext => id.includes(ext))) {
+    return false
+  }
+
+  if (ssrConfig.external.find(ext => id.includes(ext))) {
+    return true
+  }
+
+  return id.includes('node_modules')
+}
+
+async function transformRequest (opts: TransformOptions, id: string) {
   // Virtual modules start with `\0`
   if (id && id.startsWith('/@id/__x00__')) {
     id = '\0' + id.slice('/@id/__x00__'.length)
@@ -24,18 +47,24 @@ async function transformRequest (viteServer: vite.ViteDevServer, id) {
   if (id && id.startsWith('/@id/')) {
     id = id.slice('/@id/'.length)
   }
+  if (id && id.startsWith('/@fs/')) {
+    id = id.slice('/@fs'.length)
+  }
+  if (id.startsWith('/node_modules')) {
+    id = join(opts.viteServer.config.root, id)
+  }
 
   // Externals
-  if (builtinModules.includes(id) || id.includes('node_modules')) {
+  if (isExternal(opts, id)) {
     return {
-      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${id.replace(/^\/@fs/, '')}').then(r => { ssrExportAll(r) })`,
+      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${id}').then(r => { ssrExportAll(r) })`,
       deps: [],
       dynamicDeps: []
     }
   }
 
   // Transform
-  const res: SSRTransformResult = await viteServer.transformRequest(id, { ssr: true }).catch((err) => {
+  const res: SSRTransformResult = await opts.viteServer.transformRequest(id, { ssr: true }).catch((err) => {
     // eslint-disable-next-line no-console
     console.warn(`[SSR] Error transforming ${id}: ${err}`)
     // console.error(err)
@@ -48,12 +77,12 @@ ${res.code || '/* empty */'};
   return { code, deps: res.deps || [], dynamicDeps: res.dynamicDeps || [] }
 }
 
-async function transformRequestRecursive (viteServer: vite.ViteDevServer, id, parent = '<entry>', chunks: Record<string, TransformChunk> = {}) {
+async function transformRequestRecursive (opts: TransformOptions, id, parent = '<entry>', chunks: Record<string, TransformChunk> = {}) {
   if (chunks[id]) {
     chunks[id].parents.push(parent)
     return
   }
-  const res = await transformRequest(viteServer, id)
+  const res = await transformRequest(opts, id)
   const deps = uniq([...res.deps, ...res.dynamicDeps])
 
   chunks[id] = {
@@ -63,13 +92,13 @@ async function transformRequestRecursive (viteServer: vite.ViteDevServer, id, pa
     parents: [parent]
   } as TransformChunk
   for (const dep of deps) {
-    await transformRequestRecursive(viteServer, dep, id, chunks)
+    await transformRequestRecursive(opts, dep, id, chunks)
   }
   return Object.values(chunks)
 }
 
-export async function bundleRequest (viteServer: vite.ViteDevServer, entryURL: string) {
-  const chunks = await transformRequestRecursive(viteServer, entryURL)
+export async function bundleRequest (opts: TransformOptions, entryURL: string) {
+  const chunks = await transformRequestRecursive(opts, entryURL)
 
   const listIds = (ids: string[]) => ids.map(id => `// - ${id} (${hashId(id)})`).join('\n')
   const chunksCode = chunks.map(chunk => `
