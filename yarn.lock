@@ -9199,14 +9199,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"example-async-data@workspace:examples/async-data":
-  version: 0.0.0-use.local
-  resolution: "example-async-data@workspace:examples/async-data"
-  dependencies:
-    nuxt3: latest
-  languageName: unknown
-  linkType: soft
-
 "example-hello-world@workspace:examples/hello-world":
   version: 0.0.0-use.local
   resolution: "example-hello-world@workspace:examples/hello-world"
@@ -9215,17 +9207,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"example-meta@workspace:examples/meta":
+"example-use-async-data@workspace:examples/use-async-data":
   version: 0.0.0-use.local
-  resolution: "example-meta@workspace:examples/meta"
-  dependencies:
-    nuxt3: latest
-  languageName: unknown
-  linkType: soft
-
-"example-pages@workspace:examples/pages":
-  version: 0.0.0-use.local
-  resolution: "example-pages@workspace:examples/pages"
+  resolution: "example-use-async-data@workspace:examples/use-async-data"
   dependencies:
     nuxt3: latest
   languageName: unknown
@@ -9239,17 +9223,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"example-use-state@workspace:examples/use-state":
+"example-use-meta@workspace:examples/use-meta":
   version: 0.0.0-use.local
-  resolution: "example-use-state@workspace:examples/use-state"
+  resolution: "example-use-meta@workspace:examples/use-meta"
   dependencies:
     nuxt3: latest
   languageName: unknown
   linkType: soft
 
-"example-wasm@workspace:examples/wasm":
+"example-use-state@workspace:examples/use-state":
   version: 0.0.0-use.local
-  resolution: "example-wasm@workspace:examples/wasm"
+  resolution: "example-use-state@workspace:examples/use-state"
   dependencies:
     nuxt3: latest
   languageName: unknown
@@ -9271,21 +9255,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"example-with-vite@workspace:examples/with-vite":
+"example-with-pages@workspace:examples/with-pages":
   version: 0.0.0-use.local
-  resolution: "example-with-vite@workspace:examples/with-vite"
+  resolution: "example-with-pages@workspace:examples/with-pages"
   dependencies:
     nuxt3: latest
   languageName: unknown
   linkType: soft
 
-"example-with-vue-content-loader@workspace:examples/with-vue-content-loader":
+"example-with-wasm@workspace:examples/with-wasm":
   version: 0.0.0-use.local
-  resolution: "example-with-vue-content-loader@workspace:examples/with-vue-content-loader"
+  resolution: "example-with-wasm@workspace:examples/with-wasm"
   dependencies:
     nuxt3: latest
-    vue: ^3
-    vue-content-loader: ^2.0.0
   languageName: unknown
   linkType: soft
 
@@ -19251,15 +19233,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vue-content-loader@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "vue-content-loader@npm:2.0.0"
-  peerDependencies:
-    vue: ^3
-  checksum: 92efefe9e2aa4760a1e60ecfa2358bbc9a613f89a0e90a52cecef5a315ac247cb439d0cff58cab6891ef9fec900a9e232b96ed8d7e7dc051b00eb5f0ee0bd407
-  languageName: node
-  linkType: hard
-
 "vue-eslint-parser@npm:^7.10.0":
   version: 7.11.0
   resolution: "vue-eslint-parser@npm:7.11.0"
@@ -19405,7 +19378,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vue@npm:3.2.20, vue@npm:^3, vue@npm:^3.2.20":
+"vue@npm:3.2.20, vue@npm:^3.2.20":
   version: 3.2.20
   resolution: "vue@npm:3.2.20"
   dependencies:

@@ -15,7 +15,7 @@ export async function build (nuxt: Nuxt) {
     nuxt.hook('builder:watch', async (event, path) => {
       if (event !== 'change' && /app|plugins/i.test(path)) {
         if (path.match(/app/i)) {
-          app.main = null
+          app.mainComponent = null
         }
         await generateApp(nuxt, app)
       }

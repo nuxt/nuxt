@@ -1,5 +1,5 @@
 {
-  "name": "example-meta",
+  "name": "example-with-pages",
   "private": true,
   "devDependencies": {
     "nuxt3": "latest"
@@ -7,6 +7,6 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "start": "node .output/server"
+    "start": "node .output/server/index.mjs"
   }
 }

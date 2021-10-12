@@ -59,12 +59,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve main (app.vue)
-  if (!app.main) {
-    app.main = tryResolvePath('~/App', resolveOptions) || tryResolvePath('~/app', resolveOptions)
+  if (!app.mainComponent) {
+    app.mainComponent = tryResolvePath('~/App', resolveOptions) || tryResolvePath('~/app', resolveOptions)
   }
-  if (!app.main) {
-    app.main = resolve(nuxt.options.appDir, 'components/nuxt-welcome.vue')
+  if (!app.mainComponent) {
+    app.mainComponent = resolve(nuxt.options.appDir, 'components/nuxt-welcome.vue')
   }
+
+  // Default root component
+  app.rootComponent = resolve(nuxt.options.appDir, 'components/nuxt-root.vue')
 
   // Resolve plugins
   app.plugins = [

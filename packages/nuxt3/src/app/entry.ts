@@ -4,7 +4,9 @@ import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'
 // @ts-ignore
-import App from '#build/app'
+import RootComponent from '#build/root-component.mjs'
+// @ts-ignore
+import AppComponent from '#build/app-component.mjs'
 
 let entry: Function
 
@@ -12,7 +14,8 @@ const plugins = normalizePlugins(_plugins)
 
 if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext'] = {}) {
-    const app = createApp(App)
+    const app = createApp(RootComponent)
+    app.component('App', AppComponent)
 
     const nuxt = createNuxtApp({ app, ssrContext })
 
@@ -35,7 +38,8 @@ if (process.client) {
 
   entry = async function initApp () {
     const isSSR = Boolean(window.__NUXT__?.serverRendered)
-    const app = isSSR ? createSSRApp(App) : createApp(App)
+    const app = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
+    app.component('App', AppComponent)
 
     const nuxt = createNuxtApp({ app })
 

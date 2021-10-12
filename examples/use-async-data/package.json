@@ -1,5 +1,5 @@
 {
-  "name": "example-with-vite",
+  "name": "example-use-async-data",
   "private": true,
   "devDependencies": {
     "nuxt3": "latest"

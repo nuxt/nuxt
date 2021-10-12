@@ -49,7 +49,8 @@ export interface NuxtPlugin {
 }
 
 export interface NuxtApp {
-  main?: string
+  mainComponent?: string
+  rootComponent?: string
   dir: string
   extensions: string[]
   plugins: NuxtPlugin[]

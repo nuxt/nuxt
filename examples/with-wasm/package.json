@@ -1,5 +1,5 @@
 {
-  "name": "example-wasm",
+  "name": "example-with-wasm",
   "private": true,
   "devDependencies": {
     "nuxt3": "latest"

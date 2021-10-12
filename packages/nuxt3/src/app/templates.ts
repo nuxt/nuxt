@@ -8,10 +8,18 @@ type TemplateContext = {
   app: NuxtApp;
 }
 
-export const appTemplate = {
-  filename: 'app.mjs',
+// TODO: Use an alias
+export const appComponentTemplate = {
+  filename: 'app-component.mjs',
   getContents (ctx: TemplateContext) {
-    return `export { default } from '${ctx.app.main}'`
+    return `export { default } from '${ctx.app.mainComponent}'`
+  }
+}
+// TODO: Use an alias
+export const rootComponentTemplate = {
+  filename: 'root-component.mjs',
+  getContents (ctx: TemplateContext) {
+    return `export { default } from '${ctx.app.rootComponent}'`
   }
 }
 
