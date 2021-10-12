@@ -8,8 +8,7 @@
 
       <div class="flex items-center flex-1 justify-center lg:justify-start">
         <Link :to="localePath('/')" aria-label="homeLink">
-          <!-- "mr-4 lg:mr-0" to optically center logo text -->
-          <Logo :settings="settings" class="h-8 mr-4 md:h-9 lg:mr-0" />
+          <Logo :settings="settings" class="h-8 md:h-9" />
         </Link>
       </div>
 
@@ -20,7 +19,7 @@
       </nav>
 
       <div class="flex items-center justify-end gap-1 lg:flex-1">
-        <GitHubButton class="hidden lg:block" />
+        <GitHubButton />
         <TwitterButton class="hidden lg:block" />
         <ColorSwitcher class="hidden lg:block" padding="p-3" />
         <AlgoliaSearchBox v-if="settings && settings.algolia" :options="settings.algolia" :settings="settings" />
