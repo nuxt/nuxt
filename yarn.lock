@@ -2390,7 +2390,7 @@ __metadata:
     estree-walker: ^2.0.2
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     node-fetch: ^3.0.0
     nuxi: 3.0.0
     nuxt-vite: ^0.3.5
@@ -2580,7 +2580,7 @@ __metadata:
     hookable: ^5.0.0
     jiti: ^1.12.6
     lodash.template: ^4.5.0
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     pathe: ^0.2.0
     rc9: ^1.2.0
     scule: ^0.2.1
@@ -2653,7 +2653,7 @@ __metadata:
     jiti: ^1.12.6
     listhen: ^0.2.4
     mime: ^2.5.2
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     node-fetch: ^3.0.0
     ohmyfetch: ^0.3.1
     ora: ^6.0.1
@@ -2865,7 +2865,7 @@ __metadata:
     lodash-es: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.4.2
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.9
@@ -2882,7 +2882,7 @@ __metadata:
     vue-loader: ^16.8.1
     vue-style-loader: ^4.1.3
     webpack: ^5.58.1
-    webpack-bundle-analyzer: ^4.4.2
+    webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.2.1
     webpack-hot-middleware: ^2.25.1
     webpack-virtual-modules: ^0.4.3
@@ -12890,12 +12890,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.2.4, mlly@npm:^0.2.5":
+"mlly@npm:^0.2.4":
   version: 0.2.5
   resolution: "mlly@npm:0.2.5"
   dependencies:
     import-meta-resolve: ^1.1.1
   checksum: bd111db12fc09c13ca6897b1dfb78501268f7d166cead7e806bafab905ca05134bd0b4eb7a5a5b1b05e9ecbbe2d9e8819dc95ffb62ba7e76e618a4d032236d3f
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "mlly@npm:0.2.6"
+  dependencies:
+    import-meta-resolve: ^1.1.1
+  checksum: 200b3bb43f4b1f166d90f200465626143cc8d73efb12bad5752ae31e0c7432d39b064250c4d5aa0f3a63cc8d92f26c0d8f7b8dae54746067ed88990aeffe0bc8
   languageName: node
   linkType: hard
 
@@ -13643,7 +13652,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     jiti: ^1.12.6
     listhen: ^0.2.4
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     mri: ^1.2.0
     pathe: ^0.2.0
     scule: ^0.2.1
@@ -13738,7 +13747,7 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    mlly: ^0.2.5
+    mlly: ^0.2.6
     nuxi: 3.0.0
     ohmyfetch: ^0.3.1
     pathe: ^0.2.0
@@ -19486,7 +19495,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"webpack-bundle-analyzer@npm:^4.4.1, webpack-bundle-analyzer@npm:^4.4.2":
+"webpack-bundle-analyzer@npm:^4.4.1":
   version: 4.4.2
   resolution: "webpack-bundle-analyzer@npm:4.4.2"
   dependencies:
@@ -19502,6 +19511,25 @@ fsevents@~2.3.2:
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
   checksum: 6d7957a87ee16f6b87e65f85e8b9a40998aefcddf3e15215fd4bc1ddf8c332ab4706f2f4deb0b3a0483eb27d0dae381db1b82b2ec34136e2ad0e651714b260fb
+  languageName: node
+  linkType: hard
+
+"webpack-bundle-analyzer@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "webpack-bundle-analyzer@npm:4.5.0"
+  dependencies:
+    acorn: ^8.0.4
+    acorn-walk: ^8.0.0
+    chalk: ^4.1.0
+    commander: ^7.2.0
+    gzip-size: ^6.0.0
+    lodash: ^4.17.20
+    opener: ^1.5.2
+    sirv: ^1.0.7
+    ws: ^7.3.1
+  bin:
+    webpack-bundle-analyzer: lib/bin/analyzer.js
+  checksum: 158e96810ec213d5665ca1c0b257097db44e1f11c4befefab8352b9e5b10890fcb3e3fc1f7bb400dd58762a8edce5621c92afeca86eb4687d2eb64e93186bfcb
   languageName: node
   linkType: hard
 

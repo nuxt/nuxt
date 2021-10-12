@@ -27,7 +27,7 @@
     "estree-walker": "^2.0.2",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
-    "mlly": "^0.2.5",
+    "mlly": "^0.2.6",
     "node-fetch": "^3.0.0",
     "nuxi": "3.0.0",
     "nuxt-vite": "^0.3.5",
