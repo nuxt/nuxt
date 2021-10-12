@@ -3,7 +3,11 @@
   <div v-html="html" />
 </template>
 
-<script setup>
+<script>
 import { welcome as welcomeTemplate } from '@nuxt/design'
-const html = welcomeTemplate({})
+export default ({
+  computed: {
+    html: () => welcomeTemplate({})
+  }
+})
 </script>
