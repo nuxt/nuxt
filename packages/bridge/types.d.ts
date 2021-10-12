@@ -26,7 +26,6 @@ export interface NuxtConfig extends _NuxtConfig {
 declare module '@nuxt/kit' {
   interface ConfigSchema {
     bridge: BridgeConfig
-    head: _NuxtConfig['head'] | MetaInfo
   }
 }
 
