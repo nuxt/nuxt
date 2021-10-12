@@ -128,11 +128,11 @@ export const legacyPlugin = (nuxt: NuxtApp) => {
     get (nuxt, p: keyof LegacyContext | keyof LegacyContext['ssrContext']) {
       // Unsupported keys
       if (unsupported.has(p)) {
-        return mock(`Accessing ${p} is not supported in Nuxt3.`)
+        return mock(`Accessing ${p} is not supported in Nuxt 3.`)
       }
 
       if (todo.has(p)) {
-        return mock(`Accessing ${p} is not yet supported in Nuxt3.`)
+        return mock(`Accessing ${p} is not yet supported in Nuxt 3.`)
       }
 
       // vue-router implementation
@@ -151,7 +151,7 @@ export const legacyPlugin = (nuxt: NuxtApp) => {
 
       if (p === '$config') {
         // TODO: needs implementation
-        return mock('Accessing runtime config is not yet supported in Nuxt3.')
+        return mock('Accessing runtime config is not yet supported in Nuxt 3.')
       }
 
       if (p === 'ssrContext') {

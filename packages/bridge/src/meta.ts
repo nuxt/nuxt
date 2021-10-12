@@ -23,7 +23,7 @@ export const setupMeta = async (opts: SetupMetaOptions) => {
   }
 
   if (nuxt.options.head && typeof nuxt.options.head === 'function') {
-    throw new TypeError(`${msgPrefix} The head() function in \`nuxt.config\` has been deprecated and in nuxt3 will need to be moved to \`app.vue\`. ${checkDocsMsg}`)
+    throw new TypeError(`${msgPrefix} The head() function in \`nuxt.config\` has been deprecated and in Nuxt 3 will need to be moved to \`app.vue\`. ${checkDocsMsg}`)
   }
 
   const runtimeDir = resolve(distDir, 'runtime/meta')

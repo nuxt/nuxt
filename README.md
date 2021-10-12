@@ -10,7 +10,7 @@
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
 
-Welcome to Nuxt3 repository ✨
+Welcome to Nuxt 3 repository ✨
 
 <table>
 <tbody>
