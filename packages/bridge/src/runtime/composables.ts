@@ -1,4 +1,4 @@
-import { reactive, toRef, isReactive } from '@vue/composition-api'
+import { reactive, toRef, isReactive, Ref } from '@vue/composition-api'
 import type VueRouter from 'vue-router'
 import type { Route } from 'vue-router'
 import { useNuxtApp } from './app'
@@ -41,7 +41,7 @@ export const useRoute = () => {
 }
 
 // payload.state is used for vuex by nuxt 2
-export const useState = (key: string) => {
+export const useState = <T>(key: string, init?: (() => T)): Ref<T> => {
   const nuxtApp = useNuxtApp()
   if (!nuxtApp.payload.useState) {
     nuxtApp.payload.useState = {}
@@ -49,5 +49,9 @@ export const useState = (key: string) => {
   if (!isReactive(nuxtApp.payload.useState)) {
     nuxtApp.payload.useState = reactive(nuxtApp.payload.useState)
   }
-  return toRef(nuxtApp.payload.useState, key)
+  const state = toRef(nuxtApp.payload.useState, key)
+  if (state.value === undefined && init) {
+    state.value = init()
+  }
+  return state
 }
