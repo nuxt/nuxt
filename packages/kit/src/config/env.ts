@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'fs'
 import { resolve } from 'pathe'
-import { parse as parseDotEnv } from 'dotenv'
+import dotenv from 'dotenv'
 import { LoadNuxtConfigOptions } from './load'
 
 export interface LoadDotEnvOptions {
@@ -62,7 +62,7 @@ export async function loadDotenv (opts: LoadDotEnvOptions) {
   const dotenvFile = resolve(opts.rootDir, opts.dotenvFile)
 
   if (existsSync(dotenvFile)) {
-    const parsed = parseDotEnv(await fsp.readFile(dotenvFile, 'utf-8'))
+    const parsed = dotenv.parse(await fsp.readFile(dotenvFile, 'utf-8'))
     Object.assign(env, parsed)
   }
 
