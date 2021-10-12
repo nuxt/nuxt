@@ -53,6 +53,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
   ::
   ::section-content-item
   ---
+  soon: true
   title: Hybrid
   description: 'Incremental Static Generation and other advanced modes are now possible.'
   image: IconHybrid
@@ -85,6 +86,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
   ::
   ::section-content-item
   ---
+  soon: true
   title: Nuxt Devtools
   description: 'Work faster with info and quick fixes right in the browser.'
   image: IconDevtools

@@ -13,8 +13,9 @@
     >
       <img loading="lazy" :src="image" :alt="`A ${title} image`">
     </InjectComponent>
-    <h3 class="mb-1 text-center text-body-lg lg:text-body-xl font-bold">
+    <h3 class="relative inline-flex mb-1 text-center text-body-lg items-center lg:text-body-xl font-bold">
       {{ title }}
+      <span v-if="soon" class="absolute -right-48px inline-flex items-center mt-1px px-1.5 py-0.5 rounded text-xs font-medium font-mono bg-cloud-surface dark:bg-sky-dark dark:text-white">soon</span>
     </h3>
     <p class="text-center text-sm lg:text-base mb-4">
       {{ description }}
@@ -34,6 +35,10 @@ export default defineComponent({
     imageClass: {
       type: String,
       default: ''
+    },
+    soon: {
+      type: Boolean,
+      default: false
     },
     hoverClass: {
       type: String,
