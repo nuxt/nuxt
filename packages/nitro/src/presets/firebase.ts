@@ -4,7 +4,7 @@ import fse from 'fs-extra'
 import consola from 'consola'
 import globby from 'globby'
 
-import { writeFile } from '../utils'
+import { readPackageJson, writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 export const firebase: NitroPreset = {
@@ -69,9 +69,8 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
         dependencies,
         devDependencies: {
           'firebase-functions-test': 'latest',
-          'firebase-admin': _require('firebase-admin/package.json').version,
-          'firebase-functions': _require('firebase-functions/package.json')
-            .version
+          'firebase-admin': readPackageJson('firebase-admin', _require).version,
+          'firebase-functions': readPackageJson('firebase-functions', _require).version
         },
         engines: { node: nodeVersion }
       },
