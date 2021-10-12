@@ -14,3 +14,9 @@ export function hash (input: string, length = 8) {
 export function uniq<T> (arr: T[]): T[] {
   return Array.from(new Set(arr))
 }
+
+const IS_CSS_RE = /\.css(\?[^.]+)?$/
+
+export function isCSS (file: string) {
+  return IS_CSS_RE.test(file)
+}

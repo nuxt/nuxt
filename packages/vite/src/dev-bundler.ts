@@ -194,5 +194,8 @@ async function __instantiateModule__(url, urlStack) {
     `export default await __ssrLoadModule__('${entryURL}')`
   ].join('\n\n')
 
-  return { code }
+  return {
+    code,
+    ids: chunks.map(i => i.id)
+  }
 }
