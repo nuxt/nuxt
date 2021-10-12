@@ -2578,7 +2578,7 @@ __metadata:
     globby: ^11.0.4
     hash-sum: ^2.0.0
     hookable: ^5.0.0
-    jiti: ^1.12.6
+    jiti: ^1.12.7
     lodash.template: ^4.5.0
     mlly: ^0.2.6
     pathe: ^0.2.0
@@ -2650,7 +2650,7 @@ __metadata:
     hookable: ^5.0.0
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
-    jiti: ^1.12.6
+    jiti: ^1.12.7
     listhen: ^0.2.4
     mime: ^2.5.2
     mlly: ^0.2.6
@@ -11577,12 +11577,12 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"jiti@npm:^1.12.6":
-  version: 1.12.6
-  resolution: "jiti@npm:1.12.6"
+"jiti@npm:^1.12.7":
+  version: 1.12.7
+  resolution: "jiti@npm:1.12.7"
   bin:
     jiti: bin/jiti.js
-  checksum: 6d5c0be3566ea0695b8c66c1a4453cf062739181ab3cd7a6fa440e54c6b9bcf63f08b7cbfc86b7ccf25ff445e75174b76177b4f31792cfe3bbbc8ddf3a38a4f6
+  checksum: e5a16f0245db6e12912b2aa16b739d699630005e376345311a745253ce74cf4f7ac0b19dfe88edd42e93b7322355921fa7460aaa5c32348ed69e3428557e2a52
   languageName: node
   linkType: hard
 
@@ -13650,7 +13650,7 @@ fsevents@~2.3.2:
     destr: ^1.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    jiti: ^1.12.6
+    jiti: ^1.12.7
     listhen: ^0.2.4
     mlly: ^0.2.6
     mri: ^1.2.0
@@ -13684,7 +13684,7 @@ fsevents@~2.3.2:
     eslint-plugin-jsdoc: ^36.1.1
     execa: ^5.1.1
     globby: ^11.0.4
-    jiti: ^1.12.6
+    jiti: ^1.12.7
     lerna: ^4.0.0
     miniflare: ^1.4.1
     mocha: ^9.1.2

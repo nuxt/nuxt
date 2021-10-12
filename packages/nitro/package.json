@@ -48,7 +48,7 @@
     "hookable": "^5.0.0",
     "http-proxy": "^1.18.1",
     "is-primitive": "^3.0.1",
-    "jiti": "^1.12.6",
+    "jiti": "^1.12.7",
     "listhen": "^0.2.4",
     "mime": "^2.5.2",
     "mlly": "^0.2.6",
