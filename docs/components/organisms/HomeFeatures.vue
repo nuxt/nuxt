@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <section class="py-40 text-white light:text-secondary-black">
+    <section class="py-24 md:py-40 text-white light:text-secondary-black">
       <NuxtContainer class="flex flex-col items-center">
         <div class="flex flex-col w-full items-center col-span-12">
           <div class="mb-2">

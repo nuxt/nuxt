@@ -1,7 +1,7 @@
 <template>
   <div class="overflow-hidden relative dark:bg-sky-black dark:text-white pt-12">
     <div class="flex flex-wrap justify-center py-0 section d-container-content">
-      <section class="flex flex-col justify-start w-full px-4 pt-36 pb-48 md:pt-44 lg:pb-56 lg:pt-24 text-center z-20">
+      <section class="flex flex-col justify-start w-full px-4 pb-24 sm:pt-12 sm:pb-36 lg:pt-24 lg:pb-56 text-center z-20">
         <Gem class="block m-x-auto" />
         <h1 class="font-normal font-serif text-display-5 xs:text-display-4 md:text-display-3 2xl:text-display-2 mb-6 pt-8">
           <Markdown use="title" unwrap="p" />
