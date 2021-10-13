@@ -19,6 +19,7 @@
   "dependencies": {
     "@nuxt/kit": "3.0.0",
     "@vitejs/plugin-vue": "^1.9.3",
+    "@vitejs/plugin-vue-jsx": "^1.2.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "debounce": "^1.2.1",

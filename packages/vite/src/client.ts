@@ -2,6 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import consola from 'consola'
 import vitePlugin from '@vitejs/plugin-vue'
+import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { replace } from './plugins/replace'
@@ -35,7 +36,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       replace({ 'process.env': 'import.meta.env' }),
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
-      vitePlugin(ctx.config.vue)
+      vitePlugin(ctx.config.vue),
+      viteJsxPlugin()
     ],
     server: {
       middlewareMode: true

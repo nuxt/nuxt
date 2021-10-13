@@ -1,6 +1,7 @@
 import { resolve, normalize } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
+import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import fse from 'fs-extra'
 import pDebounce from 'p-debounce'
 import consola from 'consola'
@@ -42,6 +43,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string'),
         '.vue',
         'plugin-vue:',
+        '/__vue-jsx',
         '#app',
         'nuxt3/dist',
         'nuxt3/src',
@@ -67,7 +69,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      vuePlugin()
+      vuePlugin(),
+      viteJsxPlugin()
     ]
   } as ViteOptions)
 
