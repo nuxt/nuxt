@@ -3189,23 +3189,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^20.0.0":
-  version: 20.0.0
-  resolution: "@rollup/plugin-commonjs@npm:20.0.0"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    commondir: ^1.0.1
-    estree-walker: ^2.0.1
-    glob: ^7.1.6
-    is-reference: ^1.2.1
-    magic-string: ^0.25.7
-    resolve: ^1.17.0
-  peerDependencies:
-    rollup: ^2.38.3
-  checksum: fefc4b5ab1509ff64e26dfee3eca2f23cea204bf20f3dc76c616d3aa3faf4b1035166287518a64ba07faaaea1621a0af5b94b8f8199371ca67db905562e7e619
-  languageName: node
-  linkType: hard
-
 "@rollup/plugin-commonjs@npm:^21.0.0":
   version: 21.0.0
   resolution: "@rollup/plugin-commonjs@npm:21.0.0"
@@ -8709,7 +8692,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.13.2, esbuild@npm:^0.13.3, esbuild@npm:^0.13.4, esbuild@npm:^0.13.5":
+"esbuild@npm:^0.13.2, esbuild@npm:^0.13.4, esbuild@npm:^0.13.5":
   version: 0.13.5
   resolution: "esbuild@npm:0.13.5"
   dependencies:
@@ -12901,9 +12884,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mkdist@npm:^0.3.3":
-  version: 0.3.3
-  resolution: "mkdist@npm:0.3.3"
+"mkdist@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "mkdist@npm:0.3.4"
   dependencies:
     defu: ^5.0.0
     esbuild: ^0.12.9
@@ -12920,11 +12903,11 @@ fsevents@~2.3.2:
       optional: true
   bin:
     mkdist: dist/cli.js
-  checksum: 71cd154967b3d279f7584e85720ebab5d1763ac9258e561dc334ada90657ba61c2e83781d327313cd952da1071fd5fde36d056ea58335811820b701b6f7b92d2
+  checksum: c186665451327ffb1334fb6c6f4e512239cde4ab013511aadb3d9e3e2219b9fadaf1d7e29b35ee470a9e0cc9e413c4008ee269cb516c0da356a3c3cde5885d58
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.2.4, mlly@npm:^0.2.6":
+"mlly@npm:^0.2.6":
   version: 0.2.6
   resolution: "mlly@npm:0.2.6"
   dependencies:
@@ -18571,7 +18554,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@^4.3.4, typescript@^4.4.3, typescript@^4.4.4":
+"typescript@^4.3.4, typescript@^4.4.4":
   version: 4.4.4
   resolution: "typescript@npm:4.4.4"
   bin:
@@ -18581,7 +18564,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.3.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.3.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>":
   version: 4.4.4
   resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=32657b"
   bin:
@@ -18665,37 +18648,37 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.5.6":
-  version: 0.5.6
-  resolution: "unbuild@npm:0.5.6"
+"unbuild@npm:^0.5.7":
+  version: 0.5.7
+  resolution: "unbuild@npm:0.5.7"
   dependencies:
     "@rollup/plugin-alias": ^3.1.4
-    "@rollup/plugin-commonjs": ^20.0.0
+    "@rollup/plugin-commonjs": ^21.0.0
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.0.5
     "@rollup/plugin-replace": ^3.0.0
     chalk: ^4.1.1
     consola: ^2.15.3
     defu: ^5.0.0
-    esbuild: ^0.13.3
-    jiti: ^1.12.5
+    esbuild: ^0.13.5
+    jiti: ^1.12.7
     magic-string: ^0.25.7
     mkdirp: ^1.0.4
-    mkdist: ^0.3.3
-    mlly: ^0.2.4
+    mkdist: ^0.3.4
+    mlly: ^0.2.6
     mri: ^1.2.0
     pathe: ^0.2.0
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
-    rollup: ^2.57.0
+    rollup: ^2.58.0
     rollup-plugin-dts: ^4.0.0
     rollup-plugin-esbuild: ^4.5.0
     scule: ^0.2.1
-    typescript: ^4.4.3
+    typescript: ^4.4.4
     untyped: ^0.2.9
   bin:
     unbuild: bin/unbuild.mjs
-  checksum: 7ba763f070ecd65ebff08f3fdff9ab22e39aa9ae1c64448d654e085a405ad4d9592fd1a109d314344580dece9acfaea569983a6f3b7ac1787119f113a2520d81
+  checksum: 6f0882c5fed76cbb9f59aff4621252ab89f774a6e4da0f9ca59dc589d92ff189ec2dbba907b26550bf81244a03b12237e48a49c668883ad21b460ebaa0fc8467
   languageName: node
   linkType: hard
 

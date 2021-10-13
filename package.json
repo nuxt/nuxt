@@ -27,7 +27,7 @@
   },
   "resolutions": {
     "nuxt3": "workspace:./packages/nuxt3",
-    "unbuild": "^0.5.6",
+    "unbuild": "^0.5.7",
     "jiti": "^1.12.7"
   },
   "devDependencies": {
