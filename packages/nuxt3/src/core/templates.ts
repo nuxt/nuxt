@@ -1,7 +1,7 @@
 
 import type { Nuxt, NuxtApp } from '@nuxt/kit'
 
-import { importName, importSources } from '../core/template.utils'
+import { importName, importSources } from './template.utils'
 
 type TemplateContext = {
   nuxt: Nuxt;

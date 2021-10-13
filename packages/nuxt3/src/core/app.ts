@@ -3,7 +3,7 @@ import { resolve } from 'pathe'
 import defu from 'defu'
 import { tryResolvePath, resolveFiles, Nuxt, NuxtApp, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils } from '@nuxt/kit'
 
-import * as defaultTemplates from '../app/templates'
+import * as defaultTemplates from './templates'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
