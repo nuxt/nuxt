@@ -20,7 +20,8 @@ export default defineNuxtCommand({
     const server = createServer()
     const listener = await server.listen({
       clipboard: args.clipboard,
-      open: args.open || args.o
+      open: args.open || args.o,
+      port: args.port || args.p
     })
 
     const rootDir = resolve(args._[0] || '.')
