@@ -36,7 +36,7 @@ export default defineNuxtCommand({
       await degit.clone(dstDir)
     } catch (e) {
       if (e.toString().includes('could not find commit hash')) {
-        consola.warn(`Make sure you have installed \`git\` correctly`)
+        consola.warn('Make sure you have installed `git` correctly')
         process.exit(1)
       }
       throw e
