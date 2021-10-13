@@ -45,7 +45,7 @@ export const TransformPlugin = createUnplugin((map: IdentifierMap) => {
       }
 
       // js files
-      if (pathname.match(/\.((c|m)?j|t)sx?/g)) {
+      if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
         return true
       }
     },
