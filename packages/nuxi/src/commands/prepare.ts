@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { importModule } from '../utils/cjs'
+import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
@@ -13,7 +13,7 @@ export default defineNuxtCommand({
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt } = await importModule('@nuxt/kit', rootDir) as typeof import('@nuxt/kit')
+    const { loadNuxt } = await loadKit(rootDir)
     const nuxt = await loadNuxt({ rootDir })
 
     await writeTypes(nuxt)
