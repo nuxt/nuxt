@@ -5,7 +5,7 @@ import { resolve, dirname } from 'pathe'
 import jiti from 'jiti'
 import destr from 'destr'
 import { splitByCase } from 'scule'
-import * as clipboardy from 'clipboardy'
+import clipboardy from 'clipboardy'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
