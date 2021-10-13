@@ -1,0 +1,21 @@
+tasks:
+  - init: |
+      npx yarn install
+      npx yarn stub
+    command: npx yarn play
+
+ports:
+  - port: 3000
+    onOpen: open-preview
+    visibility: public
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: false
+    addBadge: true
+    addLabel: true
