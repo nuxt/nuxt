@@ -47,7 +47,7 @@ export default withDocus({
       {
         hid: 'og:video',
         name: 'og:video',
-        content: 'https://res.cloudinary.com/nuxt/video/upload/v1633987946/nuxt3-beta-preview_rwemvt.mp4'
+        content: 'https://res.cloudinary.com/nuxt/video/upload/v1634114611/nuxt3-beta_sznsf8.mp4'
       }
     ],
     bodyAttrs: {
