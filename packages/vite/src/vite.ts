@@ -8,6 +8,7 @@ import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
 import { warmupViteServer } from './utils/warmup'
+import { resolveCSSOptions } from './css'
 
 export interface ViteOptions extends InlineConfig {
   vue?: Options
@@ -52,7 +53,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         base: nuxt.options.build.publicPath,
         vue: {},
-        css: {},
+        css: resolveCSSOptions(nuxt),
         optimizeDeps: {
           exclude: [],
           entries: [
