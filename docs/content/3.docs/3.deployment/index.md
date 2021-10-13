@@ -5,5 +5,5 @@ layout:
 navigation:
   collapse: false
   exclusive: false
-  redirect: /docs/deployment/azure
+  redirect: /docs/deployment/presets
 ---

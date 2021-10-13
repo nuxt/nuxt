@@ -14,6 +14,6 @@ export default {
 }
 ```
 
-Learn more about all the different [config properties](/docs/config)
+Learn more about all the different config properties
 
 <!-- GENERATED_CONFIG_DOCS -->
