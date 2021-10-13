@@ -29,6 +29,10 @@ function isExternal (opts: TransformOptions, id: string) {
 
   const ssrConfig = (opts.viteServer.config as any).ssr
 
+  if (!/\.[cm]?js/.test(id)) {
+    return false
+  }
+
   if (ssrConfig.noExternal.find(ext => id.includes(ext))) {
     return false
   }
