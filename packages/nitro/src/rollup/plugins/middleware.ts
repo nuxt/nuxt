@@ -1,6 +1,6 @@
 import hasha from 'hasha'
 import { relative } from 'pathe'
-import { table, getBorderCharacters } from 'table'
+import table from 'table'
 import isPrimitive from 'is-primitive'
 import stdenv from 'std-env'
 import type { ServerMiddleware } from '../../server/middleware'
@@ -58,12 +58,12 @@ function dumpMiddleware (middleware: ServerMiddleware[]) {
       dumpObject(props)
     ]
   })
-  return table([
+  return table.table([
     ['Route', 'Handle', 'Options'],
     ...data
   ], {
     singleLine: true,
-    border: getBorderCharacters('norc')
+    border: table.getBorderCharacters('norc')
   })
 }
 
