@@ -1,6 +1,6 @@
 ---
 icon: IconFile
-title: nuxt.config.js
+title: nuxt.config.ts
 head.title: Nuxt configuration file
 ---
 

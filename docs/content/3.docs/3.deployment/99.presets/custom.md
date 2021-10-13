@@ -19,7 +19,7 @@ You can create your own custom build preset. See [the provided presets](https://
 
 You can define everything that a custom preset would configure directly in the Nitro options:
 
-```ts [nuxt.config.js]
+```ts [nuxt.config.js|ts]
 export default {
   nitro: {
     // preset options
@@ -43,7 +43,7 @@ export default myPreset
 
 Then in your `nuxt.config` you can specify that Nitro should use your custom preset:
 
-```ts [nuxt.config.js]
+```ts [nuxt.config.js|ts]
 import { resolve } from 'path'
 
 export default {
