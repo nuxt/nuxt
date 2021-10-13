@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { HookCallback } from 'hookable'
 import type { Compiler, Configuration, Stats } from 'webpack'
+import type { TSConfig } from 'pkg-types'
 import type { NuxtConfig, NuxtOptions } from '..'
 import type { ModuleContainer } from '../module/container'
 import type { NuxtTemplate, Nuxt, NuxtApp } from '../types/nuxt'
@@ -61,7 +62,7 @@ export interface NuxtHooks extends Record<string, HookCallback> {
   'run:before': (options: { argv: string[], cmd: { name: string, usage: string, description: string, options: Record<string, any> }, rootDir: string }) => HookResult
 
   // nuxi
-  'prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: TSConfig }) => HookResult
 
   // @nuxt/core
   'ready': (nuxt: Nuxt) => HookResult
