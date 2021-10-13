@@ -1,5 +1,5 @@
 <h1>
-  <img src="./.github/logo.svg" >
+  <img src="./.github/logo.svg" height="60" >
  </h1>
 
  <p>
