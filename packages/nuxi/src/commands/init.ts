@@ -32,10 +32,18 @@ export default defineNuxtCommand({
     const formatArgs = msg => msg.replace('options.', '--')
     degit.on('warn', event => consola.warn(formatArgs(event.message)))
     degit.on('info', event => consola.info(formatArgs(event.message)))
-    await degit.clone(dstDir)
+    try {
+      await degit.clone(dstDir)
+    } catch (e) {
+      if (e.toString().includes('could not find commit hash')) {
+        consola.warn(`Make sure you have installed \`git\` correctly`)
+        process.exit(1)
+      }
+      throw e
+    }
 
     // Show neet steps
-    console.log(`\n 🎉  Another Nuxt project just made. ${superb.random()}! Next steps:` + [
+    console.log(`\n 🎉  Another ${superb.random()} Nuxt project just made! Next steps:` + [
       '',
       `📁  \`cd ${rpath(dstDir)}\``,
       '💿  Install dependencies with `npm install` or `yarn install`',
