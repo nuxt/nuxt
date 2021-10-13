@@ -34,7 +34,6 @@
     "chokidar": "^3.5.2",
     "connect": "^3.7.0",
     "consola": "^2.15.3",
-    "debounce": "^1.2.1",
     "defu": "^5.0.0",
     "destr": "^1.1.0",
     "dot-prop": "^6.0.1",
@@ -73,7 +72,6 @@
     "vue-server-renderer": "^2.6.14"
   },
   "devDependencies": {
-    "@types/debounce": "^1.2.1",
     "@types/fs-extra": "^9.0.13",
     "@types/http-proxy": "^1.17.7",
     "@types/node-fetch": "^3.0.2",

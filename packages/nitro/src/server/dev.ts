@@ -4,7 +4,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { promises as fsp } from 'fs'
 import { loading as loadingTemplate } from '@nuxt/design'
 import chokidar, { FSWatcher } from 'chokidar'
-import debounce from 'debounce'
+import debounce from 'p-debounce'
 import { promisifyHandle, createApp, Middleware, useBase } from 'h3'
 import httpProxy from 'http-proxy'
 import { listen, Listener, ListenOptions } from 'listhen'
@@ -104,7 +104,7 @@ export function createDevServer (nitroContext: NitroContext) {
   let watcher: FSWatcher
   function watch () {
     if (watcher) { return }
-    const dReload = debounce(() => reload().catch(console.warn), 200, true)
+    const dReload = debounce(() => reload().catch(console.warn), 200, { before: true })
     watcher = chokidar.watch([
       resolve(nitroContext.output.serverDir, pattern),
       resolve(nitroContext._nuxt.buildDir, 'dist/server', pattern)
