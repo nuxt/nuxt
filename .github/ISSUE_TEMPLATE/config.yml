@@ -1,5 +1,9 @@
 blank_issues_enabled: false
 contact_links:
+  - name: ‼️‼️‼️ NUXT 3 NEW REPOSITORY CHANGE
+    url: https://github.com/nuxt/framework
+    about: |
+      Please use GitHub Discussions for other issues and asking questions.
   - name: ❗️ All other issues | 其他问题
     url: https://github.com/nuxt/nuxt.js/discussions
     about: |
