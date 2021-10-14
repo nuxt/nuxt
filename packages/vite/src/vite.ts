@@ -26,7 +26,7 @@ export async function bundle (nuxt: Nuxt) {
     config: vite.mergeConfig(
       nuxt.options.vite as any || {},
       {
-        root: nuxt.options.rootDir,
+        root: nuxt.options.srcDir,
         mode: nuxt.options.dev ? 'development' : 'production',
         logLevel: 'warn',
         define: {
