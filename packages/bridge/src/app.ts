@@ -9,6 +9,9 @@ export function setupAppBridge (_options: any) {
   nuxt.options.alias['#app'] = resolve(distDir, 'runtime/index.mjs')
   nuxt.options.alias['#build'] = nuxt.options.buildDir
 
+  // Alias vuex to its esm version, as vuex.mjs currently exports cjs: https://github.com/vuejs/vuex/pull/2073
+  nuxt.options.alias.vuex = 'vuex/dist/vuex.esm.js'
+
   // Alias vue to a vue3-compat version of vue2
   nuxt.options.alias['#vue'] = nuxt.options.alias.vue || resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
   for (const alias of [
