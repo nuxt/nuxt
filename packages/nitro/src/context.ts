@@ -35,6 +35,9 @@ export interface NitroContext {
   esbuild?: {
     options?: EsbuildOptions
   }
+  experiments?: {
+    wasm?: boolean
+  }
   moduleSideEffects: string[]
   renderer: string
   serveStatic: boolean
@@ -94,6 +97,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
     node: undefined,
     preset: undefined,
     rollupConfig: undefined,
+    experiments: {},
     moduleSideEffects: ['unenv/runtime/polyfill/'],
     renderer: undefined,
     serveStatic: undefined,

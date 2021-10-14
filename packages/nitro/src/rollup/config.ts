@@ -143,7 +143,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   rollupConfig.plugins.push(raw())
 
   // WASM import support
-  rollupConfig.plugins.push(wasmPlugin())
+  if (nitroContext.experiments.wasm) {
+    rollupConfig.plugins.push(wasmPlugin())
+  }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
