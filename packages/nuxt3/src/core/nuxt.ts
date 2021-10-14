@@ -84,3 +84,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 export function defineNuxtConfig (config: NuxtConfig): NuxtConfig {
   return config
 }
+
+// For a convenience import together with `defineNuxtConfig`
+export type { NuxtConfig }
