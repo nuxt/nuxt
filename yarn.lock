@@ -11983,6 +11983,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"listhen@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "listhen@npm:0.2.5"
+  dependencies:
+    clipboardy: ^2.3.0
+    colorette: ^1.2.2
+    defu: ^5.0.0
+    get-port-please: ^2.1.0
+    http-shutdown: ^1.2.2
+    open: ^8.0.5
+    selfsigned: ^1.10.8
+  checksum: 9081188c64a6a56592970eecf73897a6f6ec6944dd5af07771ed56d236ca4ebc8a524498839a965be9293620fe1706e09701068e3b97ebb6b9f7531e62b7781e
+  languageName: node
+  linkType: hard
+
 "load-json-file@npm:^4.0.0":
   version: 4.0.0
   resolution: "load-json-file@npm:4.0.0"
@@ -13657,7 +13672,7 @@ fsevents@~2.3.2:
     flat: ^5.0.2
     fsevents: ~2.3.2
     jiti: ^1.12.7
-    listhen: ^0.2.4
+    listhen: ^0.2.5
     mlly: ^0.2.6
     mri: ^1.2.0
     p-debounce: ^4.0.0
