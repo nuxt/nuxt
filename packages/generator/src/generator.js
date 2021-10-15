@@ -170,6 +170,9 @@ or disable the build step: \`generate({ build: false })\``)
 
   async generateRoutes (routes, failOnError = false) {
     const errors = []
+    // Improve string representation for errors
+    // TODO: Use consola for more consistency
+    errors.toString = () => this._formatErrors(errors)
 
     this.routes = []
     this.generatedRoutes = new Set()
@@ -196,11 +199,6 @@ or disable the build step: \`generate({ build: false })\``)
           })
       )
     }
-
-    // Improve string representation for errors
-    // TODO: Use consola for more consistency
-    errors.toString = () => this._formatErrors(errors)
-
     return errors
   }
 
