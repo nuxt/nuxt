@@ -2,7 +2,7 @@ import consola from 'consola'
 import fse from 'fs-extra'
 import globby from 'globby'
 import { join, resolve } from 'pathe'
-import { writeFile } from '../utils'
+import { hl, prettyPath, writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 export const azure: NitroPreset = {
@@ -17,60 +17,60 @@ export const azure: NitroPreset = {
   }
 }
 
-async function writeRoutes ({ output: { serverDir, publicDir } }: NitroContext) {
+async function writeRoutes ({ output }: NitroContext) {
   const host = {
     version: '2.0'
   }
 
-  const routes = [
-    {
-      route: '/*',
-      serve: '/api/server'
+  const config = {
+    routes: [],
+    navigationFallback: {
+      rewrite: '/api/server'
     }
-  ]
+  }
 
-  const indexPath = resolve(publicDir, 'index.html')
+  const indexPath = resolve(output.publicDir, 'index.html')
   const indexFileExists = fse.existsSync(indexPath)
   if (!indexFileExists) {
-    routes.unshift(
-      {
-        route: '/',
-        serve: '/api/server'
-      },
+    config.routes.unshift(
       {
         route: '/index.html',
-        serve: '/api/server'
+        redirect: '/'
+      },
+      {
+        route: '/',
+        rewrite: '/api/server'
       }
     )
   }
 
   const folderFiles = await globby([
-    join(publicDir, 'index.html'),
-    join(publicDir, '**/index.html')
+    join(output.publicDir, 'index.html'),
+    join(output.publicDir, '**/index.html')
   ])
-  const prefix = publicDir.length
+  const prefix = output.publicDir.length
   const suffix = '/index.html'.length
   folderFiles.forEach(file =>
-    routes.unshift({
+    config.routes.unshift({
       route: file.slice(prefix, -suffix) || '/',
-      serve: file.slice(prefix)
+      rewrite: file.slice(prefix)
     })
   )
 
-  const otherFiles = await globby([join(publicDir, '**/*.html'), join(publicDir, '*.html')])
+  const otherFiles = await globby([join(output.publicDir, '**/*.html'), join(output.publicDir, '*.html')])
   otherFiles.forEach((file) => {
     if (file.endsWith('index.html')) {
       return
     }
-    const route = file.slice(prefix, -5)
-    const existingRouteIndex = routes.findIndex(_route => _route.route === route)
+    const route = file.slice(prefix, '.html'.length)
+    const existingRouteIndex = config.routes.findIndex(_route => _route.route === route)
     if (existingRouteIndex > -1) {
-      routes.splice(existingRouteIndex, 1)
+      config.routes.splice(existingRouteIndex, 1)
     }
-    routes.unshift(
+    config.routes.unshift(
       {
         route,
-        serve: file.slice(prefix)
+        rewrite: file.slice(prefix)
       }
     )
   })
@@ -94,12 +94,14 @@ async function writeRoutes ({ output: { serverDir, publicDir } }: NitroContext) 
     ]
   }
 
-  await writeFile(resolve(serverDir, 'function.json'), JSON.stringify(functionDefinition))
-  await writeFile(resolve(serverDir, '../host.json'), JSON.stringify(host))
-  await writeFile(resolve(publicDir, 'routes.json'), JSON.stringify({ routes }))
+  await writeFile(resolve(output.serverDir, 'function.json'), JSON.stringify(functionDefinition))
+  await writeFile(resolve(output.serverDir, '../host.json'), JSON.stringify(host))
+  await writeFile(resolve(output.publicDir, 'staticwebapp.config.json'), JSON.stringify(config))
   if (!indexFileExists) {
     await writeFile(indexPath, '')
   }
 
-  consola.success('Ready to deploy.')
+  const apiDir = resolve(output.serverDir, '..')
+
+  consola.success('Ready to run', hl('npx @azure/static-web-apps-cli start ' + prettyPath(output.publicDir) + ' --api-location ' + prettyPath(apiDir)), 'for local testing')
 }
