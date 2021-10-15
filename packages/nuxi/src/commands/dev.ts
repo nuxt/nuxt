@@ -37,7 +37,7 @@ export default defineNuxtCommand({
 
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
-    const prepare = debounce(nuxt => writeTypes(nuxt), 1000)
+    const prepare = debounce((nuxt: Nuxt) => writeTypes(nuxt), 1000)
 
     let currentNuxt: Nuxt
     const load = async (isRestart: boolean, reason?: string) => {
