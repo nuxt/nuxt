@@ -105,6 +105,44 @@ describe('generator: generate routes', () => {
     expect(generator._formatErrors).toBeCalledWith(errors)
   })
 
+  test('should return early with errors', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.generate = {
+      ...nuxt.options.generate,
+      concurrency: 2,
+      interval: 100
+    }
+    const routes = [
+      { route: '/index', payload: { param: 'test-index' } },
+      { route: '/about', payload: { param: 'test-about' } },
+      { route: '/foo', payload: { param: 'test-foo' } },
+      { route: '/bar', payload: { param: 'test-bar' } },
+      { route: '/baz', payload: { param: 'test-baz' } }
+    ]
+    const generator = new Generator(nuxt)
+
+    generator.generateRoute = jest.fn(({ route, payload = {}, errors = [] }) => {
+      errors.push({ type: 'unhandled', route, error: new Error('mock error') })
+      return false
+    })
+
+    const errors = await generator.generateRoutes(routes, 2)
+
+    expect(waitFor).toBeCalledTimes(2)
+    expect(waitFor).nthCalledWith(1, 0)
+    expect(waitFor).nthCalledWith(2, 100)
+    expect(generator.generateRoute).toBeCalledTimes(2)
+    expect(generator.generateRoute).nthCalledWith(1, { route: '/index', payload: { param: 'test-index' }, errors })
+    expect(generator.generateRoute).nthCalledWith(2, { route: '/about', payload: { param: 'test-about' }, errors })
+    expect(errors.length).toBe(2)
+
+    generator._formatErrors = jest.fn()
+    errors.toString()
+
+    expect(generator._formatErrors).toBeCalledTimes(1)
+    expect(generator._formatErrors).toBeCalledWith(errors)
+  })
+
   test('should format errors', () => {
     const nuxt = createNuxt()
     const generator = new Generator(nuxt)
