@@ -6,6 +6,7 @@ declare global {
     interface Process {
       browser: boolean
       client: boolean
+      dev: boolean
       mode: 'spa' | 'universal'
       server: boolean
       static: boolean
