@@ -7,6 +7,7 @@ import { NitroPreset, NitroContext } from '../context'
 
 export const azure: NitroPreset = {
   entry: '{{ _internal.runtimeDir }}/entries/azure',
+  externals: true,
   output: {
     serverDir: '{{ output.dir }}/server/functions'
   },

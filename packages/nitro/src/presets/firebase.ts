@@ -9,6 +9,7 @@ import { NitroPreset, NitroContext } from '../context'
 
 export const firebase: NitroPreset = {
   entry: '{{ _internal.runtimeDir }}/entries/firebase',
+  externals: true,
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)

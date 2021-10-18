@@ -9,6 +9,7 @@ import { NitroPreset, NitroContext } from '../context'
 export const azure_functions: NitroPreset = {
   serveStatic: true,
   entry: '{{ _internal.runtimeDir }}/entries/azure_functions',
+  externals: true,
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)
