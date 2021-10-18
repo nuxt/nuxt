@@ -6,7 +6,7 @@ import { defineNuxtPlugin } from '#app'
 export default defineNuxtPlugin((nuxt) => {
   const manager = createMetaManager(process.server)
 
-  nuxt.app.use(manager)
+  nuxt.vueApp.use(manager)
 
   nuxt._useMeta = (meta: MetaObject) => manager.addMeta(meta)
 

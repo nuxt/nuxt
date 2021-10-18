@@ -2,7 +2,6 @@
 import { getCurrentInstance, reactive, defineAsyncComponent } from 'vue'
 import type { App, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
-import { defineGetter } from './utils'
 import { legacyPlugin, LegacyContext } from './legacy'
 
 type NuxtMeta = {
@@ -26,7 +25,7 @@ export interface RuntimeNuxtHooks {
 }
 
 export interface NuxtApp {
-  app: App<Element>
+  vueApp: App<Element>
   globalName: string
 
   hooks: Hookable<RuntimeNuxtHooks>
@@ -62,13 +61,13 @@ export interface LegacyPlugin {
 }
 
 export interface CreateOptions {
-  app: NuxtApp['app']
+  vueApp: NuxtApp['vueApp']
   ssrContext?: NuxtApp['ssrContext']
   globalName?: NuxtApp['globalName']
 }
 
 export function createNuxtApp (options: CreateOptions) {
-  const nuxt: NuxtApp = {
+  const nuxtApp: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
     payload: reactive({
@@ -81,55 +80,56 @@ export function createNuxtApp (options: CreateOptions) {
     ...options
   } as any as NuxtApp
 
-  nuxt.hooks = createHooks<RuntimeNuxtHooks>()
-  nuxt.hook = nuxt.hooks.hook
-  nuxt.callHook = nuxt.hooks.callHook
+  nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
+  nuxtApp.hook = nuxtApp.hooks.hook
+  nuxtApp.callHook = nuxtApp.hooks.callHook
 
-  nuxt.provide = (name: string, value: any) => {
+  nuxtApp.provide = (name: string, value: any) => {
     const $name = '$' + name
-    defineGetter(nuxt, $name, value)
-    defineGetter(nuxt.app.config.globalProperties, $name, value)
+    defineGetter(nuxtApp, $name, value)
+    defineGetter(nuxtApp.vueApp.config.globalProperties, $name, value)
   }
 
   // Inject $nuxt
-  defineGetter(nuxt.app, '$nuxt', nuxt)
-  defineGetter(nuxt.app.config.globalProperties, '$nuxt', nuxt)
+  defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
+  defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   // Expose nuxt to the renderContext
-  if (nuxt.ssrContext) {
-    nuxt.ssrContext.nuxt = nuxt
+  if (nuxtApp.ssrContext) {
+    nuxtApp.ssrContext.nuxt = nuxtApp
   }
 
   // (temporary) Expose NuxtWelcome component in dev
   if (process.dev) {
-    nuxt.app.component('NuxtWelcome', defineAsyncComponent(() => import('./components/nuxt-welcome.vue')))
+    // @ts-ignore
+    nuxtApp.vueApp.component('NuxtWelcome', defineAsyncComponent(() => import('./components/nuxt-welcome.vue')))
   }
 
   if (process.server) {
     // Expose to server renderer to create window.__NUXT__
-    nuxt.ssrContext = nuxt.ssrContext || {}
-    nuxt.ssrContext.payload = nuxt.payload
+    nuxtApp.ssrContext = nuxtApp.ssrContext || {}
+    nuxtApp.ssrContext.payload = nuxtApp.payload
   }
 
   // Expose runtime config
   if (process.server) {
-    nuxt.provide('config', options.ssrContext.runtimeConfig.private)
-    nuxt.payload.config = options.ssrContext.runtimeConfig.public
+    nuxtApp.provide('config', options.ssrContext.runtimeConfig.private)
+    nuxtApp.payload.config = options.ssrContext.runtimeConfig.public
   } else {
-    nuxt.provide('config', reactive(nuxt.payload.config))
+    nuxtApp.provide('config', reactive(nuxtApp.payload.config))
   }
 
-  return nuxt
+  return nuxtApp
 }
 
-export function applyPlugin (nuxt: NuxtApp, plugin: Plugin) {
+export function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
-  return callWithNuxt(nuxt, () => plugin(nuxt))
+  return callWithNuxt(nuxtApp, () => plugin(nuxtApp))
 }
 
-export async function applyPlugins (nuxt: NuxtApp, plugins: Plugin[]) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   for (const plugin of plugins) {
-    await applyPlugin(nuxt, plugin)
+    await applyPlugin(nuxtApp, plugin)
   }
 }
 
@@ -139,7 +139,7 @@ export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
   const plugins = _plugins.map((plugin) => {
     if (isLegacyPlugin(plugin)) {
       needsLegacyContext = true
-      return (nuxt: NuxtApp) => plugin(nuxt._legacyContext!, nuxt.provide)
+      return (nuxtApp: NuxtApp) => plugin(nuxtApp._legacyContext!, nuxtApp.provide)
     }
     return plugin
   })
@@ -197,4 +197,8 @@ export function useNuxtApp (): NuxtApp {
 
 export function useRuntimeConfig (): Record<string, any> {
   return useNuxtApp().$config
+}
+
+function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>, key: K, val: V) {
+  Object.defineProperty(obj, key, { get: () => val })
 }

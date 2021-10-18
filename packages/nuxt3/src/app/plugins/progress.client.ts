@@ -1,8 +1,7 @@
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin(({ app }) => {
-  const { $nuxt } = app
-  $nuxt.hook('app:mounted', () => {
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('app:mounted', () => {
     const el = document.createElement('div')
     el.id = 'nuxt-progress'
     document.body.appendChild(el)
@@ -16,7 +15,7 @@ export default defineNuxtPlugin(({ app }) => {
     const progress = 10000 / Math.floor(duration)
     let timeout
     let interval
-    $nuxt.hook('page:start', () => {
+    nuxtApp.hook('page:start', () => {
       if (timeout) { return }
       timeout = setTimeout(() => {
         let width = 10
@@ -29,7 +28,7 @@ export default defineNuxtPlugin(({ app }) => {
         }, 100)
       }, 200)
     })
-    $nuxt.hook('page:finish', () => {
+    nuxtApp.hook('page:finish', () => {
       timeout && clearTimeout(timeout)
       timeout = null
       interval && clearInterval(interval)

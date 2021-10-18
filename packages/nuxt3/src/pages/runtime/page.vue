@@ -17,6 +17,7 @@
 import { getCurrentInstance, ref } from 'vue'
 
 import NuxtLayout from './layout'
+import { useNuxtApp } from '#app'
 
 export default {
   name: 'NuxtPage',
@@ -31,17 +32,17 @@ export default {
     // Disable HMR reactivity in production
     const updatedComponentLayout = process.dev ? ref(null) : null
 
-    const { $nuxt } = getCurrentInstance().proxy
+    const nuxtApp = useNuxtApp()
 
     function onSuspensePending (Component) {
       if (process.dev) {
         updatedComponentLayout.value = Component.type.layout || null
       }
-      return $nuxt.callHook('page:start', Component)
+      return nuxtApp.callHook('page:start', Component)
     }
 
     function onSuspenseResolved (Component) {
-      return $nuxt.callHook('page:finish', Component)
+      return nuxtApp.callHook('page:finish', Component)
     }
 
     return {

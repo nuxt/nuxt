@@ -5,10 +5,10 @@ import { defineNuxtPlugin } from '#app'
 // @ts-ignore
 import metaConfig from '#build/meta.config.mjs'
 
-export default defineNuxtPlugin((nuxt) => {
+export default defineNuxtPlugin((nuxtApp) => {
   useMeta(metaConfig.globalMeta)
 
-  nuxt.app.mixin({
+  nuxtApp.vueApp.mixin({
     [metaConfig.mixinKey] () {
       const instance = getCurrentInstance()
       const options = instance?.type || /* nuxt2 */ instance?.proxy?.$options
@@ -20,6 +20,6 @@ export default defineNuxtPlugin((nuxt) => {
 
   for (const name in Components) {
     // eslint-disable-next-line import/namespace
-    nuxt.app.component(name, Components[name])
+    nuxtApp.vueApp.component(name, Components[name])
   }
 })

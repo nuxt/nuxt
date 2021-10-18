@@ -153,10 +153,10 @@ export const useContext = () => {
   const nuxt = useNuxtApp()
 
   return {
-    ...nuxt.legacyNuxt.context,
+    ...nuxt.nuxt2App.context,
     route: computed(() => route),
     query: computed(() => route.value.query),
-    from: computed(() => nuxt.legacyNuxt.context.from),
+    from: computed(() => nuxt.nuxt2App.context.from),
     params: computed(() => route.value.params)
   }
 }
@@ -329,7 +329,7 @@ function getKey (vm) {
   const getCounter = createGetCounter(
     process.server
       ? vm.$ssrContext.fetchCounters
-      : nuxt.legacyApp._fetchCounters,
+      : nuxt.vue2App._fetchCounters,
     defaultKey
   )
 

@@ -36,10 +36,10 @@ ${options.components.map((c) => {
 }).join(',\n')}
 }
 
-export default function (nuxt) {
+export default function (nuxtApp) {
   for (const name in components) {
-    nuxt.app.component(name, components[name])
-    nuxt.app.component('Lazy' + name, components[name])
+    nuxtApp.vueApp.component(name, components[name])
+    nuxtApp.vueApp.component('Lazy' + name, components[name])
   }
 }
 `

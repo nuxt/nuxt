@@ -1,7 +1,7 @@
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin(({ app }) => {
-  app.mixin({
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.mixin({
     beforeCreate () {
       const { _registeredComponents } = this.$nuxt.ssrContext
       const { __moduleIdentifier } = this.$options

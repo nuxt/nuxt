@@ -14,16 +14,16 @@ const plugins = normalizePlugins(_plugins)
 
 if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext'] = {}) {
-    const app = createApp(RootComponent)
-    app.component('App', AppComponent)
+    const vueApp = createApp(RootComponent)
+    vueApp.component('App', AppComponent)
 
-    const nuxt = createNuxtApp({ app, ssrContext })
+    const nuxt = createNuxtApp({ vueApp, ssrContext })
 
     await applyPlugins(nuxt, plugins)
 
-    await nuxt.hooks.callHook('app:created', app)
+    await nuxt.hooks.callHook('app:created', vueApp)
 
-    return app
+    return vueApp
   }
 }
 
@@ -38,23 +38,23 @@ if (process.client) {
 
   entry = async function initApp () {
     const isSSR = Boolean(window.__NUXT__?.serverRendered)
-    const app = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
-    app.component('App', AppComponent)
+    const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
+    vueApp.component('App', AppComponent)
 
-    const nuxt = createNuxtApp({ app })
+    const nuxt = createNuxtApp({ vueApp })
 
     await applyPlugins(nuxt, plugins)
 
-    await nuxt.hooks.callHook('app:created', app)
-    await nuxt.hooks.callHook('app:beforeMount', app)
+    await nuxt.hooks.callHook('app:created', vueApp)
+    await nuxt.hooks.callHook('app:beforeMount', vueApp)
 
     nuxt.hooks.hookOnce('page:finish', () => {
       nuxt.isHydrating = false
     })
 
-    app.mount('#__nuxt')
+    vueApp.mount('#__nuxt')
 
-    await nuxt.hooks.callHook('app:mounted', app)
+    await nuxt.hooks.callHook('app:mounted', vueApp)
     await nextTick()
   }
 

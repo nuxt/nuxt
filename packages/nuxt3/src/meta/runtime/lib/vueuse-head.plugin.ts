@@ -6,7 +6,7 @@ import { defineNuxtPlugin } from '#app'
 export default defineNuxtPlugin((nuxt) => {
   const head = createHead()
 
-  nuxt.app.use(head)
+  nuxt.vueApp.use(head)
 
   nuxt._useMeta = (meta: MetaObject) => {
     const headObj = ref(meta as any)
