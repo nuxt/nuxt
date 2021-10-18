@@ -3,6 +3,7 @@ import * as vite from 'vite'
 import consola from 'consola'
 import vitePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
+import type { Connect } from 'vite'
 
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { replace } from './plugins/replace'
@@ -49,7 +50,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   const viteServer = await vite.createServer(clientConfig)
   await ctx.nuxt.callHook('vite:serverCreated', viteServer)
 
-  const viteMiddleware = (req, res, next) => {
+  const viteMiddleware: Connect.NextHandleFunction = (req, res, next) => {
     // Workaround: vite devmiddleware modifies req.url
     const originalURL = req.url
     viteServer.middlewares.handle(req, res, (err) => {
