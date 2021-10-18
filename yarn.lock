@@ -6803,6 +6803,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colorette@npm:1.2.1":
+  version: 1.2.1
+  resolution: "colorette@npm:1.2.1"
+  checksum: 06e2fcdb9e2a2c527ac84509a56eadf481cde1768933eb612808f3bb3a9d9872c06b4a9f95e4d0f7befeef8b38307f79b88242d9ea52470d1125520b8116de08
+  languageName: node
+  linkType: hard
+
 "colorette@npm:^1.2.2":
   version: 1.4.0
   resolution: "colorette@npm:1.4.0"
@@ -8016,15 +8023,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"degit@npm:^2.8.4":
-  version: 2.8.4
-  resolution: "degit@npm:2.8.4"
-  bin:
-    degit: degit
-  checksum: bb58c48ff1ae3828825d7e614db703afd69905abc2d666009bb4affecb8d87be993511556395889dffc99a5eba7a058117402050c509a6e2c3dd56a579120236
-  languageName: node
-  linkType: hard
-
 "delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
@@ -8426,7 +8424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enquirer@npm:^2.3.5":
+"enquirer@npm:2.3.6, enquirer@npm:^2.3.5":
   version: 2.3.6
   resolution: "enquirer@npm:2.3.6"
   dependencies:
@@ -9912,6 +9910,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"fuzzysearch@npm:1.0.3":
+  version: 1.0.3
+  resolution: "fuzzysearch@npm:1.0.3"
+  checksum: 6a6c04ec2e87ab77e9b5a310d979bd3555f836ef17d9a231d01292c9447af81dcfb3241f0e315efd750535b12c937691754e9a4fb08a8c45979f7f0007e3742d
+  languageName: node
+  linkType: hard
+
 "gauge@npm:~2.7.3":
   version: 2.7.4
   resolution: "gauge@npm:2.7.4"
@@ -10181,6 +10186,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"globalyzer@npm:0.1.0":
+  version: 0.1.0
+  resolution: "globalyzer@npm:0.1.0"
+  checksum: 419a0f95ba542534fac0842964d31b3dc2936a479b2b1a8a62bad7e8b61054faa9b0a06ad9f2e12593396b9b2621cac93358d9b3071d33723fb1778608d358a1
+  languageName: node
+  linkType: hard
+
 "globby@npm:^11.0.2, globby@npm:^11.0.3, globby@npm:^11.0.4":
   version: 11.0.4
   resolution: "globby@npm:11.0.4"
@@ -10195,7 +10207,14 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"graceful-fs@npm:^4.1.11, graceful-fs@npm:^4.1.15, graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.2, graceful-fs@npm:^4.2.3, graceful-fs@npm:^4.2.4, graceful-fs@npm:^4.2.6":
+"globrex@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "globrex@npm:0.1.2"
+  checksum: adca162494a176ce9ecf4dd232f7b802956bb1966b37f60c15e49d2e7d961b66c60826366dc2649093cad5a0d69970cfa8875bd1695b5a1a2f33dcd2aa88da3c
+  languageName: node
+  linkType: hard
+
+"graceful-fs@npm:^4.1.11, graceful-fs@npm:^4.1.15, graceful-fs@npm:^4.1.2, graceful-fs@npm:^4.1.3, graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.2, graceful-fs@npm:^4.2.3, graceful-fs@npm:^4.2.4, graceful-fs@npm:^4.2.6":
   version: 4.2.8
   resolution: "graceful-fs@npm:4.2.8"
   checksum: 5d224c8969ad0581d551dfabdb06882706b31af2561bd5e2034b4097e67cc27d05232849b8643866585fd0a41c7af152950f8776f4dd5579e9853733f31461c6
@@ -10484,6 +10503,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"home-or-tmp@npm:3.0.0":
+  version: 3.0.0
+  resolution: "home-or-tmp@npm:3.0.0"
+  checksum: 1800f305bf8a230b2dcec564955efd60dc7b173f11f64060a78bad2910f82d6349e47b7b7a95ad203440e3654ce0cd72b9f22efff1bf43b34b131135ee0494e5
+  languageName: node
+  linkType: hard
+
 "hookable@npm:^5.0.0":
   version: 5.0.0
   resolution: "hookable@npm:5.0.0"
@@ -10693,7 +10719,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^5.0.0":
+"https-proxy-agent@npm:5.0.0, https-proxy-agent@npm:^5.0.0":
   version: 5.0.0
   resolution: "https-proxy-agent@npm:5.0.0"
   dependencies:
@@ -12969,6 +12995,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"mri@npm:1.1.6":
+  version: 1.1.6
+  resolution: "mri@npm:1.1.6"
+  checksum: c568269a40e2e95d48f28b88ab8b24bdc7c586edbfbb3e5ce7a4e3cee0665aef673b86bc2b63c98289d29b573a39d0e054924e415286a8dafdabfc68785746c7
+  languageName: node
+  linkType: hard
+
 "mri@npm:^1.1.6, mri@npm:^1.2.0":
   version: 1.2.0
   resolution: "mri@npm:1.2.0"
@@ -13649,7 +13682,6 @@ fsevents@~2.3.2:
     colorette: ^2.0.16
     consola: ^2.15.3
     deep-object-diff: ^1.1.0
-    degit: ^2.8.4
     destr: ^1.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
@@ -13662,6 +13694,7 @@ fsevents@~2.3.2:
     pkg-types: ^0.2.1
     scule: ^0.2.1
     superb: ^4.0.0
+    tiged: ^2.12.0
     unbuild: latest
   dependenciesMeta:
     fsevents:
@@ -16776,18 +16809,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^2.5.4, rimraf@npm:^2.6.1, rimraf@npm:^2.6.2, rimraf@npm:^2.6.3":
-  version: 2.7.1
-  resolution: "rimraf@npm:2.7.1"
-  dependencies:
-    glob: ^7.1.3
-  bin:
-    rimraf: ./bin.js
-  checksum: cdc7f6eacb17927f2a075117a823e1c5951792c6498ebcce81ca8203454a811d4cf8900314154d3259bb8f0b42ab17f67396a8694a54cae3283326e57ad250cd
-  languageName: node
-  linkType: hard
-
-"rimraf@npm:^3.0.2":
+"rimraf@npm:3.0.2, rimraf@npm:^3.0.2":
   version: 3.0.2
   resolution: "rimraf@npm:3.0.2"
   dependencies:
@@ -16795,6 +16817,17 @@ fsevents@~2.3.2:
   bin:
     rimraf: bin.js
   checksum: 87f4164e396f0171b0a3386cc1877a817f572148ee13a7e113b238e48e8a9f2f31d009a92ec38a591ff1567d9662c6b67fd8818a2dbbaed74bc26a87a2a4a9a0
+  languageName: node
+  linkType: hard
+
+"rimraf@npm:^2.5.2, rimraf@npm:^2.5.4, rimraf@npm:^2.6.1, rimraf@npm:^2.6.2, rimraf@npm:^2.6.3":
+  version: 2.7.1
+  resolution: "rimraf@npm:2.7.1"
+  dependencies:
+    glob: ^7.1.3
+  bin:
+    rimraf: ./bin.js
+  checksum: cdc7f6eacb17927f2a075117a823e1c5951792c6498ebcce81ca8203454a811d4cf8900314154d3259bb8f0b42ab17f67396a8694a54cae3283326e57ad250cd
   languageName: node
   linkType: hard
 
@@ -16952,6 +16985,17 @@ fsevents@~2.3.2:
   version: 2.1.2
   resolution: "safer-buffer@npm:2.1.2"
   checksum: cab8f25ae6f1434abee8d80023d7e72b598cf1327164ddab31003c51215526801e40b66c5e65d658a0af1e9d6478cadcb4c745f4bd6751f97d8644786c0978b0
+  languageName: node
+  linkType: hard
+
+"sander@npm:0.6.0":
+  version: 0.6.0
+  resolution: "sander@npm:0.6.0"
+  dependencies:
+    graceful-fs: ^4.1.3
+    mkdirp: ^0.5.1
+    rimraf: ^2.5.2
+  checksum: 6e4dcb50e42371858f43410aa2e8c3290baadafc864731f7dc0bcc2afed60d977bd0e3f16555b25ff4225a25fe4bfe0ef864288da3f0b02524610dc35fe2ef24
   languageName: node
   linkType: hard
 
@@ -18041,6 +18085,20 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"tar@npm:6.1.0":
+  version: 6.1.0
+  resolution: "tar@npm:6.1.0"
+  dependencies:
+    chownr: ^2.0.0
+    fs-minipass: ^2.0.0
+    minipass: ^3.0.0
+    minizlib: ^2.1.1
+    mkdirp: ^1.0.3
+    yallist: ^4.0.0
+  checksum: 0638a405b625263e0c47e97f0ea5e871b1a549da4593e31bf1792bcc83d97c28065ed172669f186744526637ea627a424d519ddd99f3fd52b17ac75f58f43519
+  languageName: node
+  linkType: hard
+
 "tar@npm:^4, tar@npm:^4.4.12":
   version: 4.4.19
   resolution: "tar@npm:4.4.19"
@@ -18232,6 +18290,26 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"tiged@npm:^2.12.0":
+  version: 2.12.0
+  resolution: "tiged@npm:2.12.0"
+  dependencies:
+    colorette: 1.2.1
+    enquirer: 2.3.6
+    fuzzysearch: 1.0.3
+    home-or-tmp: 3.0.0
+    https-proxy-agent: 5.0.0
+    mri: 1.1.6
+    rimraf: 3.0.2
+    sander: 0.6.0
+    tar: 6.1.0
+    tiny-glob: 0.2.8
+  bin:
+    degit: bin.js
+  checksum: cd76e1bc8a6abe91046c1e46c116fec95d0ed19c1b6670bb92dd9424cdfc048bcbf41a88e44d4f37e902dca89ba44fed513abe40598417da78c7e16bd78a2177
+  languageName: node
+  linkType: hard
+
 "time-fix-plugin@npm:^2.0.7":
   version: 2.0.7
   resolution: "time-fix-plugin@npm:2.0.7"
@@ -18254,6 +18332,16 @@ fsevents@~2.3.2:
   version: 0.3.0
   resolution: "timsort@npm:0.3.0"
   checksum: 1a66cb897dacabd7dd7c91b7e2301498ca9e224de2edb9e42d19f5b17c4b6dc62a8d4cbc64f28be82aaf1541cb5a78ab49aa818f42a2989ebe049a64af731e2a
+  languageName: node
+  linkType: hard
+
+"tiny-glob@npm:0.2.8":
+  version: 0.2.8
+  resolution: "tiny-glob@npm:0.2.8"
+  dependencies:
+    globalyzer: 0.1.0
+    globrex: ^0.1.2
+  checksum: 2d800da5731df66b6f84eaa2024ebf7cd0c6e13b8334d5ea4ab902f38eeffa03455f465109cf79a2d4fc324c4a569c3cb83809e3380dac82a7689f5d46ac7dfe
   languageName: node
   linkType: hard
 

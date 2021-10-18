@@ -33,7 +33,6 @@
     "colorette": "^2.0.16",
     "consola": "^2.15.3",
     "deep-object-diff": "^1.1.0",
-    "degit": "^2.8.4",
     "destr": "^1.1.0",
     "flat": "^5.0.2",
     "jiti": "^1.12.7",
@@ -45,6 +44,7 @@
     "pkg-types": "^0.2.1",
     "scule": "^0.2.1",
     "superb": "^4.0.0",
+    "tiged": "^2.12.0",
     "unbuild": "latest"
   }
 }
