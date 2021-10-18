@@ -13086,6 +13086,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"murmurhash-es@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "murmurhash-es@npm:0.1.1"
+  checksum: 3f5aa267161b21ad5b52f4b240ecd40014f21256114fad4b196202a8079ab08af8cdf5e7136caa591846232edc4222ba790ce300b8a6de6085e68e229da26766
+  languageName: node
+  linkType: hard
+
 "mustache@npm:^2.3.0":
   version: 2.3.2
   resolution: "mustache@npm:2.3.2"
@@ -13815,6 +13822,7 @@ fsevents@~2.3.2:
     hookable: ^5.0.0
     ignore: ^5.1.8
     mlly: ^0.2.10
+    murmurhash-es: ^0.1.1
     nuxi: 3.0.0
     ohmyfetch: ^0.3.1
     pathe: ^0.2.0

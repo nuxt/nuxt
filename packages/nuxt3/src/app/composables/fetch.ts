@@ -1,5 +1,6 @@
 import type { FetchOptions } from 'ohmyfetch'
 import type { $Fetch } from '@nuxt/nitro'
+import { murmurHashV3 } from 'murmurhash-es'
 import type { AsyncDataOptions, _Transform, KeyOfRes } from './asyncData'
 import { useAsyncData } from './asyncData'
 
@@ -35,10 +36,9 @@ export function useFetch<
     opts.key = generateKey(keys)
   }
 
-  return useAsyncData('$f' + opts.key, () => $fetch(url, opts) as Promise<ResT>, opts)
+  return useAsyncData(opts.key, () => $fetch(url, opts) as Promise<ResT>, opts)
 }
 
-// TODO: More predictable universal hash
 function generateKey (keys) {
-  return JSON.stringify(keys).replace(/[{":}=/,]|https?:\/\//g, '_').replace(/_+/g, '_')
+  return '$f' + murmurHashV3(JSON.stringify(keys))
 }
