@@ -11636,12 +11636,12 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"jiti@npm:^1.12.8":
-  version: 1.12.8
-  resolution: "jiti@npm:1.12.8"
+"jiti@npm:^1.12.9":
+  version: 1.12.9
+  resolution: "jiti@npm:1.12.9"
   bin:
     jiti: bin/jiti.js
-  checksum: 86c130f6f0609c316d831498a34433d17692172d9237e903b3d0844465a8b782b9424f4d4c445050e048d9934fcc6013416a0f24c614f74dbb89506222730171
+  checksum: 6446c73d0ea6733eeef6994a6018e3ce265c677683931730058a1f08980a762eb4b003f4b8cb24d8a569548b440d54e55113237f4a69ebaea3f46fdce6bd5ebe
   languageName: node
   linkType: hard
 

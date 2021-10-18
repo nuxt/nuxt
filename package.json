@@ -28,7 +28,7 @@
   "resolutions": {
     "nuxt3": "workspace:./packages/nuxt3",
     "unbuild": "^0.5.7",
-    "jiti": "^1.12.8"
+    "jiti": "^1.12.9"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.1",
