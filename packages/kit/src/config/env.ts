@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'fs'
+import { promises as fsp, existsSync } from 'fs'
 import { resolve } from 'pathe'
 import dotenv from 'dotenv'
 import { LoadNuxtConfigOptions } from './load'

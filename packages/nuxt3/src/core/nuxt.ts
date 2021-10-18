@@ -64,7 +64,7 @@ async function initNuxt (nuxt: Nuxt) {
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  const options = loadNuxtConfig(opts)
+  const options = await loadNuxtConfig(opts)
 
   // Temp
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
