@@ -42,10 +42,7 @@ const getSPARenderer = cachedResult(async () => {
 
 function renderToString (ssrContext) {
   const getRenderer = (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer : getSSRRenderer
-  return getRenderer().then(renderToString => renderToString(ssrContext)).catch((err) => {
-    console.warn('Server Side Rendering Error:', err)
-    return getSPARenderer().then(renderToString => renderToString(ssrContext))
-  })
+  return getRenderer().then(renderToString => renderToString(ssrContext))
 }
 
 export async function renderMiddleware (req, res: ServerResponse) {
