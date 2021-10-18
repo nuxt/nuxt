@@ -3,6 +3,7 @@ import env from 'std-env'
 import createRequire from 'create-require'
 import { pascalCase } from 'scule'
 import jiti from 'jiti'
+import defu from 'defu'
 
 export default {
   /**
@@ -697,8 +698,6 @@ export default {
    * @version 3
    */
   publicRuntimeConfig: {
-    app: {
-      $resolve: (val, get) => ({ ...get('app'), ...(val || {}) })
-    }
+    $resolve: (val, get) => defu(val, { app: get('app') })
   }
 }
