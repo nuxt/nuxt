@@ -51,7 +51,7 @@ declare module '@nuxt/kit' {
   interface NuxtOptions {
     components: boolean | Options | Options['dirs']
   }
-  interface NuxtOptionsHooks {
+  interface NuxtHooks {
     'components:dirs'?: componentsDirHook
     'components:extend'?: componentsExtendHook
     components?: {

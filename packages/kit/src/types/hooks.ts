@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from 'http'
-import type { HookCallback } from 'hookable'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { NuxtConfig, NuxtOptions } from '..'
@@ -30,10 +29,11 @@ type RenderResult = {
 // https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html
 export type TSReference = { types: string } | { path: string }
 
-export interface NuxtHooks extends Record<string, HookCallback> {
+export interface NuxtHooks {
   // nuxt3
   'app:resolve': (app: NuxtApp) => HookResult
   'app:templates': (app: NuxtApp) => HookResult
+  'app:templatesGenerated': (app: NuxtApp) => HookResult
   'builder:generateApp': () => HookResult
 
   // @nuxt/builder
@@ -54,6 +54,7 @@ export interface NuxtHooks extends Record<string, HookCallback> {
 
   // @nuxt/nitro
   'nitro:document': (template: { src: string, contents: string }) => HookResult
+  'nitro:context': (context: any) => HookResult
 
   // @nuxt/cli
   'cli:buildError': (error: unknown) => HookResult
@@ -131,6 +132,11 @@ export interface NuxtHooks extends Record<string, HookCallback> {
   'export:extendRoutes': ({ routes }: { routes: any[] }) => HookResult
   'export:routeFailed': ({ route, errors }: { route: any, errors: any[] }) => HookResult
   'export:done': (generator: Generator, { errors }: { errors: any[] }) => HookResult
+
+  // vite
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: any }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: any, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:serverCreated': (viteServer: any) => HookResult
 }
 
 export type NuxtHookName = keyof NuxtHooks
