@@ -37,12 +37,19 @@ export default defineNuxtCommand({
       })
       .join(', ')
 
+    // Check nuxt version
+    const nuxtVersion = getDepVersion('nuxt') || getDepVersion('nuxt-edge') || getDepVersion('nuxt3') ||  '0.0.0'
+    const isNuxt3 = nuxtVersion.startsWith('3')
+    const useVite = isNuxt3
+      ? nuxtConfig.vite !== false
+      : (nuxtConfig?.buildModules?.find(m => m === 'nuxt-vite'))
+
     const infoObj = {
       OperatingSystem: os.type(),
       NodeVersion: process.version,
-      NuxtVersion: getDepVersion('nuxt') || getDepVersion('nuxt-edge') || (getDepVersion('nuxt3') ? '3-' + getDepVersion('nuxt3') : null),
+      NuxtVersion: nuxtVersion,
       PackageManager: getPackageManager(rootDir),
-      Bundler: (nuxtConfig.vite || nuxtConfig?.buildModules?.find(m => m === 'nuxt-vite')) ? 'Vite' : 'Webpack',
+      Bundler: useVite ? 'Vite' : 'Webpack',
       UserConfig: Object.keys(nuxtConfig).map(key => '`' + key + '`').join(', '),
       RuntimeModules: listModules(nuxtConfig.modules),
       BuildModules: listModules(nuxtConfig.buildModules)
@@ -65,12 +72,12 @@ export default defineNuxtCommand({
     const splitter = '------------------------------'
     console.log(`Nuxt project info: ${copied ? '(copied to clipboard)' : ''}\n\n${splitter}\n${infoStr}${splitter}\n`)
 
-    const isNuxt3 = infoObj.NuxtVersion.startsWith('3') || infoObj.BuildModules.includes('bridge')
-    const repo = isNuxt3 ? 'nuxt/framework' : 'nuxt/nuxt.js'
+    const isNuxt3OrBridge = infoObj.NuxtVersion.startsWith('3') || infoObj.BuildModules.includes('bridge')
+    const repo = isNuxt3OrBridge ? 'nuxt/framework' : 'nuxt/nuxt.js'
     console.log([
       `👉 Report an issue: https://github.com/${repo}/issues/new`,
       `👉 Suggest an improvement: https://github.com/${repo}/discussions/new`,
-      `👉 Read documentation: ${isNuxt3 ? 'https://v3.nuxtjs.org' : 'https://nuxtjs.org'}`
+      `👉 Read documentation: ${isNuxt3OrBridge ? 'https://v3.nuxtjs.org' : 'https://nuxtjs.org'}`
     ].join('\n\n') + '\n')
   }
 })
