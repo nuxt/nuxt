@@ -134,8 +134,16 @@ export function readPackageJson (
     return _require(`${packageName}/package.json`)
   } catch (error) {
     if (error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED') {
-      const [pkgModulePath] = /^(.*\/node_modules\/).*$/.exec(_require.resolve(packageName))
-      return fse.readJSONSync(resolve(pkgModulePath, packageName, 'package.json'))
+      const pkgModulePaths = /^(.*\/node_modules\/).*$/.exec(_require.resolve(packageName))
+      for (const pkgModulePath of pkgModulePaths) {
+        const path = resolve(pkgModulePath, packageName, 'package.json')
+        if (fse.existsSync(path)) {
+          return fse.readJSONSync(path)
+        }
+        continue
+      }
+
+      throw error
     }
     throw error
   }
