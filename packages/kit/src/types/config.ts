@@ -14,6 +14,6 @@ export interface ConfigSchema extends _ConfigSchema {
 
 export interface NuxtOptions extends ConfigSchema { }
 
-type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> | T[P] }
+type DeepPartial<T> = T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> | T[P] } : T
 
 export interface NuxtConfig extends DeepPartial<ConfigSchema> { }

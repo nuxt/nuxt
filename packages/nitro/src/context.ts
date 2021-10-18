@@ -15,7 +15,7 @@ import type { Options as EsbuildOptions } from './rollup/plugins/esbuild'
 import { runtimeDir } from './dirs'
 
 export interface NitroHooks {
-  'nitro:document': (htmlTemplate: { src: string, contents: string, dst: string, compiled: string }) => void
+  'nitro:document': (htmlTemplate: { src: string, contents: string, dst: string }) => void
   'nitro:rollup:before': (context: NitroContext) => void | Promise<void>
   'nitro:compiled': (context: NitroContext) => void
   'close': () => void
@@ -79,7 +79,7 @@ export interface NitroContext {
   }
 }
 
-type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> }
+type DeepPartial<T> = T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> | T[P] } : T
 
 export interface NitroInput extends DeepPartial<NitroContext> {}
 

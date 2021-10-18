@@ -59,7 +59,7 @@ if ('serviceWorker' in navigator) {
     },
     hooks: {
       'nitro:document' (tmpl) {
-        tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
+        tmpl.contents = tmpl.contents.replace('</body>', script + '</body>')
       },
       async 'nitro:compiled' ({ output }: NitroContext) {
         await fsp.writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.mjs');`, 'utf8')
