@@ -1,9 +1,9 @@
 import { statSync } from 'fs'
 import { resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import type { Component, ComponentsDir } from '@nuxt/kit'
 import { componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
-import type { Component, ComponentsDir } from './types'
 import { loaderPlugin } from './loader'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'

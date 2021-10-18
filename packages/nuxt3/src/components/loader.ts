@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
-import { Component } from './types'
+import { Component } from '@nuxt/kit'
 
 interface LoaderOptions {
   getComponents(): Component[]

@@ -39,24 +39,7 @@ export interface ComponentsDir extends ScanDir {
   transpile?: 'auto' | boolean
 }
 
-export interface Options {
+export interface ComponentsOptions {
   dirs: (string | ComponentsDir)[]
   loader: Boolean
-}
-
-type componentsDirHook = (dirs: Options['dirs']) => void | Promise<void>
-type componentsExtendHook = (components: (Component | ComponentsDir | ScanDir)[]) => void | Promise<void>
-
-declare module '@nuxt/kit' {
-  interface NuxtOptions {
-    components: boolean | Options | Options['dirs']
-  }
-  interface NuxtHooks {
-    'components:dirs'?: componentsDirHook
-    'components:extend'?: componentsExtendHook
-    components?: {
-      dirs?: componentsDirHook
-      extend?: componentsExtendHook
-    }
-  }
 }

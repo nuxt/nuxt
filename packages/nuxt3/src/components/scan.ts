@@ -1,7 +1,7 @@
 import { basename, extname, join, dirname, relative } from 'pathe'
 import globby from 'globby'
 import { pascalCase, splitByCase } from 'scule'
-import type { ScanDir, Component } from './types'
+import type { ScanDir, Component } from '@nuxt/kit'
 
 export function sortDirsByPathLength ({ path: pathA }: ScanDir, { path: pathB }: ScanDir): number {
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length

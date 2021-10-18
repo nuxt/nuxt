@@ -3,7 +3,8 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { NuxtConfig, NuxtOptions } from '..'
 import type { ModuleContainer } from '../module/container'
-import type { NuxtTemplate, Nuxt, NuxtApp } from '../types/nuxt'
+import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
+import type { Component, ComponentsDir, ScanDir, ComponentsOptions } from './components'
 
 type HookResult = Promise<void> | void
 
@@ -35,6 +36,10 @@ export interface NuxtHooks {
   'app:templates': (app: NuxtApp) => HookResult
   'app:templatesGenerated': (app: NuxtApp) => HookResult
   'builder:generateApp': () => HookResult
+
+  // components
+  'components:dirs': (dirs: ComponentsOptions['dirs']) => HookResult
+  'components:extend': (components: (Component | ComponentsDir | ScanDir)[]) => HookResult
 
   // @nuxt/builder
   'build:before':
