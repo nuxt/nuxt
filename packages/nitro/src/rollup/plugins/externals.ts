@@ -52,8 +52,12 @@ export function externals (opts: NodeExternalsOptions): Plugin {
 
       // Track externals
       if (opts.trace !== false) {
-        const resolved = await this.resolve(originalId, importer, { ...options, skipSelf: true }).then(r => r.id)
-        trackedExternals.add(resolved)
+        const resolved = await this.resolve(originalId, importer, { ...options, skipSelf: true })
+        if (!resolved) {
+          console.warn(`Could not resolve \`${originalId}\`. Have you installed it?`)
+        } else {
+          trackedExternals.add(resolved.id)
+        }
       }
 
       return {
