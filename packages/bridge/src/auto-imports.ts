@@ -1,82 +1,28 @@
 import { installModule, useNuxt } from '@nuxt/kit'
 import autoImports from '../../nuxt3/src/auto-imports/module'
 
-// TODO: implement these: https://github.com/nuxt/framework/issues/549
-const disabled = [
-  'useAsyncData',
-  'asyncData',
-  'useFetch'
-]
+const UnsupportedImports = new Set(['useAsyncData', 'useFetch'])
 
-const identifiers = {
-  '#app': [
-    'defineNuxtComponent',
-    'useNuxtApp',
-    'defineNuxtPlugin',
-    'useRoute',
-    'useRouter',
-    'useRuntimeConfig',
-    'useState'
-  ],
-  '#meta': [
-    'useMeta'
-  ],
-  '@vue/composition-api': [
-    // lifecycle
-    'onActivated',
-    'onBeforeMount',
-    'onBeforeUnmount',
-    'onBeforeUpdate',
-    'onDeactivated',
-    'onErrorCaptured',
-    'onMounted',
-    'onServerPrefetch',
-    'onUnmounted',
-    'onUpdated',
-
-    // reactivity,
-    'computed',
-    'customRef',
-    'isReadonly',
-    'isRef',
-    'markRaw',
-    'reactive',
-    'readonly',
-    'ref',
-    'shallowReactive',
-    'shallowReadonly',
-    'shallowRef',
-    'toRaw',
-    'toRef',
-    'toRefs',
-    'triggerRef',
-    'unref',
-    'watch',
-    'watchEffect',
-
-    // component
-    'defineComponent',
-    'defineAsyncComponent',
-    'getCurrentInstance',
-    'h',
-    'inject',
-    'nextTick',
-    'provide',
-    'useCssModule'
-  ]
-}
-
-const defaultIdentifiers = {}
-for (const pkg in identifiers) {
-  for (const id of identifiers[pkg]) {
-    defaultIdentifiers[id] = pkg
-  }
+const ImportRewrites = {
+  vue: '@vue/composition-api',
+  'vue-router': '#app'
 }
 
 export async function setupAutoImports () {
   const nuxt = useNuxt()
-  nuxt.options.autoImports = nuxt.options.autoImports || {}
-  nuxt.options.autoImports.disabled = nuxt.options.autoImports.disabled || disabled
-  nuxt.options.autoImports.identifiers = Object.assign({}, defaultIdentifiers, nuxt.options.autoImports.identifiers)
+
+  nuxt.hook('autoImports:extend', (autoImports) => {
+    for (const autoImport of autoImports) {
+      // Rewrite imports
+      if (autoImport.from in ImportRewrites) {
+        autoImport.from = ImportRewrites[autoImport.from]
+      }
+      // Disable unsupported imports
+      if (UnsupportedImports.has(autoImport.name)) {
+        autoImport.disabled = true
+      }
+    }
+  })
+
   await installModule(nuxt, autoImports)
 }

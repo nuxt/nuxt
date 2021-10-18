@@ -1,13 +1,19 @@
+import type { AutoImport } from '@nuxt/kit'
 import { expect } from 'chai'
 import { TransformPlugin } from '../src/auto-imports/transform'
 
-describe('module:auto-imports:build', () => {
-  const { transform: _transform } = TransformPlugin.raw({ ref: 'vue', computed: 'bar' }, {} as any)
-  const transform = (code: string) => _transform.call({} as any, code, '')
+describe('auto-imports:transform', () => {
+  const autoImports: AutoImport[] = [
+    { name: 'ref', as: 'ref', from: 'vue' },
+    { name: 'computed', as: 'computed', from: 'bar' }
+  ]
+
+  const transformPlugin = TransformPlugin.raw(autoImports, { framework: 'rollup' })
+  const transform = (code: string) => transformPlugin.transform.call({ error: null, warn: null }, code, '')
 
   it('should correct inject', async () => {
     expect(await transform('const a = ref(0)')).to.equal('import { ref } from \'vue\';const a = ref(0)')
-    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.includes('import { computed } from \'bar\';')
+    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.include('import { computed } from \'bar\';')
   })
 
   it('should ignore existing imported', async () => {
