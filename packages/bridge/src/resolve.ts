@@ -45,7 +45,7 @@ class EnhancedResolverPlugin {
 
       // Fall back to webpack4 resolver if resolving babel helpers
       // https://github.com/nuxt/nuxt.js/blob/714249740690569eedf74aa7bca7ed31c01953d4/packages/babel-preset-app/src/index.js#L169
-      if (id.includes('/@babel/')) { return }
+      if (id.includes('@babel/')) { return }
 
       const importer = request.context?.issuer
       try {
