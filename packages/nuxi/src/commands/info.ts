@@ -38,7 +38,7 @@ export default defineNuxtCommand({
       .join(', ')
 
     // Check nuxt version
-    const nuxtVersion = getDepVersion('nuxt') || getDepVersion('nuxt-edge') || getDepVersion('nuxt3') ||  '0.0.0'
+    const nuxtVersion = getDepVersion('nuxt') || getDepVersion('nuxt-edge') || getDepVersion('nuxt3') || '0.0.0'
     const isNuxt3 = nuxtVersion.startsWith('3')
     const useVite = isNuxt3
       ? nuxtConfig.vite !== false
