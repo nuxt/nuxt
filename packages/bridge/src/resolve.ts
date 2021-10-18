@@ -43,6 +43,10 @@ class EnhancedResolverPlugin {
       // Fall back to default webpack4 resolver if not a node_modules import
       if (!id || !defaultResolver.isModule(id)) { return }
 
+      // Fall back to webpack4 resolver if resolving babel helpers
+      // https://github.com/nuxt/nuxt.js/blob/714249740690569eedf74aa7bca7ed31c01953d4/packages/babel-preset-app/src/index.js#L169
+      if (id.includes('/@babel/')) { return }
+
       const importer = request.context?.issuer
       try {
         const result = await enhancedResolver.resolve(id, importer)
