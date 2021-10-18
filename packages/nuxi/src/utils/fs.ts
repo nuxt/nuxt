@@ -1,4 +1,6 @@
 import { promises as fsp } from 'fs'
+import { promisify } from 'util'
+import rimraf from 'rimraf'
 
 // Check if a file exists
 export async function exists (path: string) {
@@ -8,4 +10,9 @@ export async function exists (path: string) {
   } catch {
     return false
   }
+}
+
+export async function clearDir (path: string) {
+  await promisify(rimraf)(path)
+  await fsp.mkdir(path, { recursive: true })
 }

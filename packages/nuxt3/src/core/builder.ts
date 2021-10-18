@@ -1,12 +1,8 @@
 import chokidar from 'chokidar'
 import { Nuxt } from '@nuxt/kit'
-import fse from 'fs-extra'
 import { createApp, generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
-  //  Clear buildDir once
-  await fse.emptyDir(nuxt.options.buildDir)
-
   const app = createApp(nuxt)
   await generateApp(nuxt, app)
 

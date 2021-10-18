@@ -3,6 +3,7 @@ import consola from 'consola'
 
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
+import { clearDir } from '../utils/fs'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -18,6 +19,8 @@ export default defineNuxtCommand({
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
     const nuxt = await loadNuxt({ rootDir })
+
+    await clearDir(nuxt.options.buildDir)
 
     await writeTypes(nuxt)
 

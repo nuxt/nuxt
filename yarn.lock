@@ -3386,6 +3386,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/glob@npm:*":
+  version: 7.1.4
+  resolution: "@types/glob@npm:7.1.4"
+  dependencies:
+    "@types/minimatch": "*"
+    "@types/node": "*"
+  checksum: 6911a956448f5eddea1e4371f814bf92072e8ceedba83de6ce2a6745938a6f0327376e1c0072fa0d7b3b73d84e255aafda53c1dff148225cfe542a8cc5d54b02
+  languageName: node
+  linkType: hard
+
 "@types/hash-sum@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/hash-sum@npm:1.0.0"
@@ -3457,7 +3467,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/minimatch@npm:^3.0.3":
+"@types/minimatch@npm:*, @types/minimatch@npm:^3.0.3":
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
   checksum: c41d136f67231c3131cf1d4ca0b06687f4a322918a3a5adddc87ce90ed9dbd175a3610adee36b106ae68c0b92c637c35e02b58c8a56c424f71d30993ea220b92
@@ -3563,6 +3573,16 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: dc6a6df507656004e242dcb02c784479deca516d5f4b58a1707e708022b269ae147e1da0521f3e8ad0d63638869d87e0adc023f0bd5454aa6f72ac66c7525cf5
+  languageName: node
+  linkType: hard
+
+"@types/rimraf@npm:^3":
+  version: 3.0.2
+  resolution: "@types/rimraf@npm:3.0.2"
+  dependencies:
+    "@types/glob": "*"
+    "@types/node": "*"
+  checksum: b47fa302f46434cba704d20465861ad250df79467d3d289f9d6490d3aeeb41e8cb32dd80bd1a8fd833d1e185ac719fbf9be12e05ad9ce9be094d8ee8f1405347
   languageName: node
   linkType: hard
 
@@ -13685,6 +13705,7 @@ fsevents@~2.3.2:
     "@nuxt/kit": 3.0.0
     "@types/clear": ^0
     "@types/mri": ^1.1.1
+    "@types/rimraf": ^3
     chokidar: ^3.5.2
     clear: ^0.1.0
     clipboardy: ^3.0.0
@@ -13701,6 +13722,7 @@ fsevents@~2.3.2:
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     pkg-types: ^0.2.1
+    rimraf: ^3.0.2
     scule: ^0.2.1
     superb: ^4.0.0
     tiged: ^2.12.0
@@ -13781,7 +13803,6 @@ fsevents@~2.3.2:
     "@nuxt/nitro": 3.0.0
     "@nuxt/vite-builder": 3.0.0
     "@nuxt/webpack-builder": 3.0.0
-    "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": 3.2.20
     "@vue/shared": 3.2.20
@@ -13789,7 +13810,6 @@ fsevents@~2.3.2:
     chokidar: ^3.5.2
     consola: ^2.15.3
     defu: ^5.0.0
-    fs-extra: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
     hookable: ^5.0.0
