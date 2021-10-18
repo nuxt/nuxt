@@ -15,7 +15,8 @@ const identifiers = {
     'defineNuxtPlugin',
     'useRoute',
     'useRouter',
-    'useRuntimeConfig'
+    'useRuntimeConfig',
+    'useState'
   ],
   '#meta': [
     'useMeta'
