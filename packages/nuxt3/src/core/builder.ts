@@ -23,6 +23,7 @@ export async function build (nuxt: Nuxt) {
     nuxt.hook('builder:generateApp', () => generateApp(nuxt, app))
   }
 
+  await nuxt.callHook('build:before', { nuxt })
   await bundle(nuxt)
   await nuxt.callHook('build:done', { nuxt })
 
