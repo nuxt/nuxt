@@ -64,7 +64,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
     async buildEnd () {
       if (opts.trace !== false) {
         const tracedFiles = await nodeFileTrace(Array.from(trackedExternals), opts.traceOptions)
-          .then(r => r.fileList.map(f => resolve(opts.traceOptions.base, f)))
+          .then(r => Array.from(r.fileList).map(f => resolve(opts.traceOptions.base, f)))
           .then(r => r.filter(file => file.includes('node_modules')))
 
         // // Find all unique package names

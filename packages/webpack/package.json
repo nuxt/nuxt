@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.15.8",
-    "@nuxt/friendly-errors-webpack-plugin": "^2.5.1",
+    "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0",
     "@vue/babel-preset-jsx": "^1.2.4",
     "autoprefixer": "^10.3.7",
@@ -34,7 +34,7 @@
     "lodash-es": "^4.17.21",
     "memfs": "^3.3.0",
     "mini-css-extract-plugin": "^2.4.2",
-    "mlly": "^0.2.6",
+    "mlly": "^0.2.8",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.3.9",
