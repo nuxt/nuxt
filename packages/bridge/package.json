@@ -41,5 +41,8 @@
     "@types/node-fetch": "^3.0.2",
     "unbuild": "latest",
     "vue-router": "3"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.11.0"
   }
 }

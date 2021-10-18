@@ -64,5 +64,8 @@
     "@types/webpack-hot-middleware": "^2.25.5",
     "@types/webpack-virtual-modules": "^0",
     "unbuild": "latest"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.11.0"
   }
 }

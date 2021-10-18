@@ -77,5 +77,8 @@
     "@types/node-fetch": "^3.0.2",
     "@types/serve-static": "^1.13.10",
     "unbuild": "latest"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.11.0"
   }
 }

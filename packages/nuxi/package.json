@@ -28,6 +28,7 @@
     "@types/clear": "^0",
     "@types/mri": "^1.1.1",
     "@types/rimraf": "^3",
+    "@types/semver": "^7",
     "chokidar": "^3.5.2",
     "clear": "^0.1.0",
     "clipboardy": "^3.0.0",
@@ -48,5 +49,11 @@
     "superb": "^4.0.0",
     "tiged": "^2.12.0",
     "unbuild": "latest"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.11.0"
+  },
+  "dependencies": {
+    "semver": "^7.3.5"
   }
 }

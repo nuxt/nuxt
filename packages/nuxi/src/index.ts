@@ -1,6 +1,7 @@
 import mri from 'mri'
 import { red, cyan } from 'colorette'
 import consola from 'consola'
+import { checkEngines } from './utils/engines'
 import { commands, Command, NuxtCommand } from './commands'
 import { showHelp } from './utils/help'
 import { showBanner } from './utils/banner'
@@ -21,6 +22,9 @@ async function _main () {
     console.log('\n' + red('Invalid command ' + command))
     command = 'usage'
   }
+
+  // Check Node.js version in background
+  setTimeout(() => { checkEngines() }, 1000)
 
   if (command === 'usage') {
     console.log(`\nUsage: ${cyan(`npx nuxi ${Object.keys(commands).join('|')} [args]`)}\n`)
