@@ -23,7 +23,7 @@ export declare type TypedInternalResponse<Route, Default> =
         : MiddlewareOf<Route>
       : Default
 
-export declare interface $Fetch<DefaultT = unknown, DefaultR = FetchRequest> {
+export declare interface $Fetch<DefaultT = unknown, DefaultR extends FetchRequest = FetchRequest> {
   <T = DefaultT, R extends FetchRequest = DefaultR> (request: R, opts?: FetchOptions): Promise<TypedInternalResponse<R, T>>
   raw<T = DefaultT, R extends FetchRequest = DefaultR> (request: R, opts?: FetchOptions): Promise<FetchResponse<TypedInternalResponse<R, T>>>
 }
@@ -38,4 +38,4 @@ declare global {
   }
 }
 
-export default {}
+export { }
