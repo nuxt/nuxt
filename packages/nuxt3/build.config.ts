@@ -17,8 +17,7 @@ export default defineBuildConfig({
   dependencies: [
     'nuxi',
     'vue-router',
-    'ohmyfetch',
-    'vue-router'
+    'ohmyfetch'
   ],
   externals: [
     '@vue/reactivity',
