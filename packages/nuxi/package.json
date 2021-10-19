@@ -51,7 +51,7 @@
     "unbuild": "latest"
   },
   "engines": {
-    "node": "^14.17.0 || ^16.11.0"
+    "node": "^14.16.0 || ^16.11.0"
   },
   "dependencies": {
     "semver": "^7.3.5"
