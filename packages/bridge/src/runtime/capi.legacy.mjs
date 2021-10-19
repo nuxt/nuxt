@@ -78,7 +78,7 @@ warnOnce('import', `\`@nuxtjs/composition-api\` is deprecated. ${checkDocsMsg}`)
 
 // Stub functions that provided type support
 export const defineNuxtMiddleware = mw => mw
-export const defineNuxtPlugin = unsupported('You are using `defineNuxtPlugin`, which can be replaced with `defineNuxtPlugin` from `@nuxt/bridge`.')
+export const defineNuxtPlugin = unsupported('You are using `defineNuxtPlugin`, which can be replaced with `defineNuxtPlugin` (import from `#app`).')
 
 // Internal exports
 export const setMetaPlugin = unsupported('`setMetaPlugin` is an internal function that is no longer used.')
@@ -128,13 +128,13 @@ export const ssrPromise = (value, key) => {
 
 // Composition API functions
 export const onGlobalSetup = (fn) => {
-  warnOnce('onGlobalSetup', '`onGlobalSetup` is deprecated and can be replaced with `defineNuxtPlugin` and `nuxt.provide`.')
+  warnOnce('onGlobalSetup', '`onGlobalSetup` is deprecated and can be replaced with `defineNuxtPlugin(nuxtApp => nuxtApp.provide)` (import from `#app`).')
   const app = useNuxtApp()
   app._setupFns.push(fn)
 }
 
 export const useAsync = (cb, key) => {
-  warnOnce('useAsync', 'You are using `useAsync`, which can be replaced with `useAsyncData` from `@nuxt/bridge`.')
+  warnOnce('useAsync', 'You are using `useAsync`, which is deprecated.')
 
   const _ref = isRef(key) ? key : ssrRef(null, key)
 
@@ -147,7 +147,7 @@ export const useAsync = (cb, key) => {
 }
 
 export const useContext = () => {
-  warnOnce('useContext', 'You are using `useContext`, which can be replaced with `useNuxtApp` from `@nuxt/bridge`.')
+  warnOnce('useContext', 'You are using `useContext`, which can be replaced with `useNuxtApp` (import from `#app`).')
 
   const route = useRoute()
   const nuxt = useNuxtApp()
@@ -246,12 +246,12 @@ export const wrapProperty = (property, makeComputed = true) => () => {
 }
 
 export const useRouter = () => {
-  warnOnce('useRouter', 'You are using `useRouter`, which can be replaced with `useRouter` from `@nuxt/bridge`.')
+  warnOnce('useRouter', 'You are using `useRouter`, which can be replaced with `useRouter` (import from `#app`).')
   return getCurrentInstance().$router
 }
 
 export const useRoute = () => {
-  warnOnce('useRoute', 'You are using `useRoute`, which can be replaced with `useRoute` from `@nuxt/bridge`.')
+  warnOnce('useRoute', 'You are using `useRoute`, which can be replaced with `useRoute` (import from `#app`).')
   const vm = getCurrentInstance()
   return computed(() => vm.$route)
 }
