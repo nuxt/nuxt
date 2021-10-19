@@ -2809,7 +2809,7 @@ __metadata:
     postcss-url: ^10.1.3
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.9
+    vite: ^2.6.10
     vue: 3.2.20
   languageName: unknown
   linkType: soft
@@ -19281,7 +19281,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.7, vite@npm:^2.6.9":
+"vite@npm:^2.5.7":
   version: 2.6.9
   resolution: "vite@npm:2.6.9"
   dependencies:
@@ -19307,6 +19307,35 @@ fsevents@~2.3.2:
   bin:
     vite: bin/vite.js
   checksum: 52e42c75948fd86377452d087113523fdec5be2b653223d4e3c6135a0d07aed743ec587dc5b91fc674508d5d5cf80edb73b932fac7625c7ea8d16b07ea067c4e
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.6.10":
+  version: 2.6.10
+  resolution: "vite@npm:2.6.10"
+  dependencies:
+    esbuild: ^0.13.2
+    fsevents: ~2.3.2
+    postcss: ^8.3.8
+    resolve: ^1.20.0
+    rollup: ^2.57.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 802b59c275ac099d6cfcf17636d1034cb6d3e7a363a33a4bf990cbe859059cec35249e958a26a59d5cfde3dbbbf207b8ac8817eb127063c96957d2e573389370
   languageName: node
   linkType: hard
 
