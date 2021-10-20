@@ -44,6 +44,9 @@ export function createDevServer (nitroContext: NitroContext) {
       worker.on('message', (event) => {
         if (event && event.port) {
           workerAddress = 'http://localhost:' + event.port
+          if (activeWorker) {
+            activeWorker.terminate()
+          }
           activeWorker = worker
           pendingWorker = null
           resolve(workerAddress)
