@@ -16,8 +16,9 @@ addEventListener('fetch', (event: any) => {
 })
 
 async function handleEvent (url, event) {
+  let body
   if (requestHasBody(event.request)) {
-    event.request.body = await useRequestBody(event.request)
+    body = await useRequestBody(event.request)
   }
 
   const r = await localCall({
@@ -28,7 +29,7 @@ async function handleEvent (url, event) {
     headers: event.request.headers,
     method: event.request.method,
     redirect: event.request.redirect,
-    body: event.request.body
+    body
   })
 
   return new Response(r.body, {

@@ -17,9 +17,9 @@ async function handleEvent (event) {
   }
 
   const url = new URL(event.request.url)
-
+  let body
   if (requestHasBody(event.request)) {
-    event.request.body = await useRequestBody(event.request)
+    body = await useRequestBody(event.request)
   }
 
   const r = await localCall({
@@ -30,7 +30,7 @@ async function handleEvent (event) {
     headers: event.request.headers,
     method: event.request.method,
     redirect: event.request.redirect,
-    body: event.request.body
+    body
   })
 
   return new Response(r.body, {
