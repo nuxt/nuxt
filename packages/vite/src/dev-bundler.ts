@@ -1,7 +1,6 @@
-import { builtinModules } from 'module'
 import { pathToFileURL } from 'url'
-import { join } from 'pathe'
 import * as vite from 'vite'
+import { ExternalsOptions, isExternal as _isExternal, ExternalsDefaults } from 'externality'
 import { hashId, uniq } from './utils'
 
 export interface TransformChunk {
@@ -23,25 +22,28 @@ export interface TransformOptions {
 }
 
 function isExternal (opts: TransformOptions, id: string) {
-  if (builtinModules.includes(id)) {
-    return true
-  }
-
+  // Externals
   const ssrConfig = (opts.viteServer.config as any).ssr
 
-  if (!/\.[cm]?js/.test(id)) {
-    return false
+  const externalOpts: ExternalsOptions = {
+    inline: [
+      /virtual:/,
+      /\.ts$/,
+      // Things like '~', '@', etc.
+      ...Object.keys(opts.viteServer.config.resolve.alias),
+      ...ExternalsDefaults.inline,
+      ...ssrConfig.noExternal
+    ],
+    external: [
+      ...ssrConfig.external,
+      /node_modules/
+    ],
+    resolve: {
+      type: 'module',
+      extensions: ['.ts', '.js', '.json', '.vue', '.mjs', '.jsx', '.tsx', '.wasm']
+    }
   }
-
-  if (ssrConfig.noExternal.find(ext => id.includes(ext))) {
-    return false
-  }
-
-  if (ssrConfig.external.find(ext => id.includes(ext))) {
-    return true
-  }
-
-  return id.includes('node_modules')
+  return _isExternal(id, opts.viteServer.config.root, externalOpts)
 }
 
 async function transformRequest (opts: TransformOptions, id: string) {
@@ -53,14 +55,14 @@ async function transformRequest (opts: TransformOptions, id: string) {
     id = id.slice('/@id/'.length)
   }
   if (id && id.startsWith('/@fs/')) {
+    // Absolute path
     id = id.slice('/@fs'.length)
-  }
-  if (id.startsWith('/node_modules')) {
-    id = join(opts.viteServer.config.root, id)
+  } else if (!id.includes('entry') && id.startsWith('/')) {
+    // Relative to the root directory
+    id = '.' + id
   }
 
-  // Externals
-  if (isExternal(opts, id)) {
+  if (await isExternal(opts, id)) {
     return {
       code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${(pathToFileURL(id))}').then(r => { ssrExportAll(r) })`,
       deps: [],

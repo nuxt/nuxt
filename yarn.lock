@@ -2684,6 +2684,11 @@ __metadata:
     vue: 3.2.20
     vue-bundle-renderer: ^0.3.2
     vue-server-renderer: ^2.6.14
+  peerDependencies:
+    vue: 3.2.20
+  peerDependenciesMeta:
+    vue:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2800,6 +2805,7 @@ __metadata:
     chokidar: ^3.5.2
     consola: ^2.15.3
     defu: ^5.0.0
+    externality: 0.1.0
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     p-debounce: ^4.0.0
@@ -2810,6 +2816,8 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     vite: ^2.6.10
+    vue: 3.2.20
+  peerDependencies:
     vue: 3.2.20
   languageName: unknown
   linkType: soft
@@ -2901,6 +2909,8 @@ __metadata:
     webpack-hot-middleware: ^2.25.1
     webpack-virtual-modules: ^0.4.3
     webpackbar: ^5.0.0-3
+  peerDependencies:
+    vue: 3.2.20
   languageName: unknown
   linkType: soft
 
@@ -4731,6 +4741,13 @@ __metadata:
     require-from-string: ^2.0.2
     uri-js: ^4.2.2
   checksum: 690ffb9408415fdab43686b3f92037ba0c8362f5d0709a123ba3fb546e6ad81414455f80a2b5cc432ce924afe9864671198f022bc331a19c072d4ede152ec3ca
+  languageName: node
+  linkType: hard
+
+"allowlist@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "allowlist@npm:0.1.1"
+  checksum: 9e4894e8e52cfae74bdfb726895f1bb81f13e1ddf4419773224ca5f84efe9ef089c91abe2c1bd9933ca0c4f1e1d249e629dc60c8e805328de649121a649a5572
   languageName: node
   linkType: hard
 
@@ -9405,6 +9422,18 @@ __metadata:
     iconv-lite: ^0.4.24
     tmp: ^0.0.33
   checksum: 1c2a616a73f1b3435ce04030261bed0e22d4737e14b090bb48e58865da92529c9f2b05b893de650738d55e692d071819b45e1669259b2b354bc3154d27a698c7
+  languageName: node
+  linkType: hard
+
+"externality@npm:0.1.0":
+  version: 0.1.0
+  resolution: "externality@npm:0.1.0"
+  dependencies:
+    allowlist: ^0.1.1
+    enhanced-resolve: ^5.8.3
+    ufo: ^0.7.9
+    upath: ^2.0.1
+  checksum: 3b20136e57ff2c1661c24544ce61adcbce2427e58a43dcd859e5d17ebe379bf125e6ee189bd6ea6ca9aa0476a0ef6550419eb1cde7aa29bff605a24872314097
   languageName: node
   linkType: hard
 

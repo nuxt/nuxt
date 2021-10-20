@@ -13,7 +13,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "latest"
+    "unbuild": "latest",
+    "vue": "3.2.20"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0",
@@ -23,6 +24,7 @@
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
+    "externality": "0.1.0",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
     "p-debounce": "^4.0.0",
@@ -31,7 +33,9 @@
     "postcss-import-resolver": "^2.0.0",
     "postcss-url": "^10.1.3",
     "ufo": "^0.7.9",
-    "vite": "^2.6.10",
+    "vite": "^2.6.10"
+  },
+  "peerDependencies": {
     "vue": "3.2.20"
   },
   "engines": {

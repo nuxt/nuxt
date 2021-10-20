@@ -40,15 +40,15 @@ export async function buildServer (ctx: ViteBuildContext) {
     ssr: {
       external: [],
       noExternal: [
-        ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string'),
-        '.vue',
+        ...ctx.nuxt.options.build.transpile,
+        /\\.vue$/,
         'plugin-vue:',
         '/__vue-jsx',
         '#app',
-        'nuxt3/dist',
-        'nuxt3/src',
-        '@nuxt/nitro/dist',
-        '@nuxt/nitro/src'
+        /nuxt3\/dist/,
+        /nuxt3\/src/,
+        /@nuxt\/nitro\/dist/,
+        /@nuxt\/nitro\/src/
       ]
     },
     build: {

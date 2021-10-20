@@ -22,6 +22,7 @@ export interface NitroHooks {
 }
 
 export interface NitroContext {
+  alias: Record<string, string>
   timing: boolean
   inlineDynamicImports: boolean
   minify: boolean
@@ -87,6 +88,7 @@ export type NitroPreset = NitroInput | ((input: NitroInput) => NitroInput)
 
 export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): NitroContext {
   const defaults: NitroContext = {
+    alias: {},
     timing: undefined,
     inlineDynamicImports: undefined,
     minify: undefined,

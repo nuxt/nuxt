@@ -55,7 +55,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       '@babel/parser': 'unenv/runtime/mock/proxy',
       '@vue/compiler-core': 'unenv/runtime/mock/proxy',
       '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
+      '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+      ...nitroContext.alias
     }
   }
 
