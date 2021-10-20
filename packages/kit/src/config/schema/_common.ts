@@ -274,7 +274,6 @@ export default {
    * Allows customizing the global ID used in the main HTML template as well as the main
    * Vue instance name and other options.
    * @version 2
-   * @version 3
    */
   globalName: {
     $resolve: val => (typeof val === 'string' && /^[a-zA-Z]+$/.test(val)) ? val.toLocaleLowerCase() : 'nuxt'
