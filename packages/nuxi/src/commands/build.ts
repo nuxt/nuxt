@@ -24,7 +24,7 @@ export default defineNuxtCommand({
 
     await writeTypes(nuxt)
 
-    nuxt.hook('error', (err) => {
+    nuxt.hook('build:error', (err) => {
       consola.error('Nuxt Build Error:', err)
       process.exit(1)
     })

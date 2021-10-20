@@ -68,12 +68,12 @@ export interface NuxtHooks {
   'nitro:context': (context: any) => HookResult
 
   // @nuxt/cli
-  'cli:buildError': (error: unknown) => HookResult
   'generate:cache:ignore': (ignore: string[]) => HookResult
   'config': (options: NuxtConfig) => HookResult
   'run:before': (options: { argv: string[], cmd: { name: string, usage: string, description: string, options: Record<string, any> }, rootDir: string }) => HookResult
 
   // nuxi
+  'build:error': (error: Error) => HookResult
   'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: TSConfig }) => HookResult
 
   // @nuxt/core
