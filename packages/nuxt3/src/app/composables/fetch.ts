@@ -1,11 +1,11 @@
-import type { FetchOptions } from 'ohmyfetch'
+import type { FetchOptions, FetchRequest } from 'ohmyfetch'
 import type { $Fetch } from '@nuxt/nitro'
 import { murmurHashV3 } from 'murmurhash-es'
 import type { AsyncDataOptions, _Transform, KeyOfRes } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 export type Awaited<T> = T extends Promise<infer U> ? U : T
-export type FetchResult<ReqT extends string> = Awaited<ReturnType<$Fetch<unknown, ReqT>>>
+export type FetchResult<ReqT extends FetchRequest> = Awaited<ReturnType<$Fetch<unknown, ReqT>>>
 
 export type UseFetchOptions<
   DataT,
