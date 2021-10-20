@@ -44,8 +44,8 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         if (_id.startsWith('.') || opts.inline.find(i => _id.startsWith(i) || id.startsWith(i))) {
           return null
         }
-        // Bundle ts and wasm (currently - see https://github.com/nuxt/framework/discussions/692)
-        if (_id.endsWith('.ts') || _id.endsWith('.wasm')) {
+        // Bundle typescript, json and wasm (see https://github.com/nuxt/framework/discussions/692)
+        if (/\.(ts|wasm|json)$/.test(_id)) {
           return null
         }
       }
