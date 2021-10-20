@@ -4,10 +4,11 @@ import { NitroContext } from '..'
 export function handleVfs (ctx: NitroContext): Handle {
   return (req) => {
     if (req.url === '/') {
-      return '<!doctype html><html><body><ul>' + Object.keys(ctx.vfs).map((key) => {
-        const url = encodeURIComponent(key)
-        return `<li><a href="/_vfs/${url}">${key.replace(ctx._nuxt.rootDir, '')}</a></li>`
-      }).join('\n') + '</ul></body></html>'
+      const items = Object.keys(ctx.vfs)
+        .filter(i => !i.startsWith('#'))
+        .map(key => `<li><a href="/_vfs/${encodeURIComponent(key)}">${key.replace(ctx._nuxt.rootDir, '')}</a></li>`)
+        .join('\n')
+      return `<!doctype html><html><body><ul>${items}</ul></body></html>`
     }
     const param = decodeURIComponent(req.url.slice(1))
     if (param in ctx.vfs) {
