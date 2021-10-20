@@ -18,7 +18,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/design": "^0.1.3",
+    "@nuxt/design": "^0.1.4",
     "@nuxt/kit": "3.0.0",
     "@nuxt/nitro": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
