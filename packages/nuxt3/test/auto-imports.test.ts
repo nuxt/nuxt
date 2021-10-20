@@ -1,5 +1,6 @@
 import type { AutoImport } from '@nuxt/kit'
 import { expect } from 'chai'
+import { AutoImportContext, updateAutoImportContext } from '../src/auto-imports/context'
 import { TransformPlugin } from '../src/auto-imports/transform'
 
 describe('auto-imports:transform', () => {
@@ -8,7 +9,10 @@ describe('auto-imports:transform', () => {
     { name: 'computed', as: 'computed', from: 'bar' }
   ]
 
-  const transformPlugin = TransformPlugin.raw(autoImports, { framework: 'rollup' })
+  const ctx = { autoImports, map: new Map() } as AutoImportContext
+  updateAutoImportContext(ctx)
+
+  const transformPlugin = TransformPlugin.raw(ctx, { framework: 'rollup' })
   const transform = (code: string) => transformPlugin.transform.call({ error: null, warn: null }, code, '')
 
   it('should correct inject', async () => {

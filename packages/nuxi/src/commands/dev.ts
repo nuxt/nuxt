@@ -74,20 +74,26 @@ export default defineNuxtCommand({
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load, 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
-    watcher.on('all', (_event, file) => {
+    watcher.on('all', (event, file) => {
       if (!currentNuxt) { return }
       if (file.startsWith(currentNuxt.options.buildDir)) { return }
       if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
-      if (['addDir', 'unlinkDir'].includes(_event) && file.match(/pages$/)) {
-        dLoad(true, `Directory \`pages/\` ${_event === 'addDir' ? 'created' : 'removed'}`)
-      }
-      if (['addDir', 'unlinkDir'].includes(_event) && file.match(/components$/)) {
-        dLoad(true, `Directory \`components/\` ${_event === 'addDir' ? 'created' : 'removed'}`)
-      }
-      if (['add', 'unlink'].includes(_event) && file.match(/app\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-        dLoad(true, `\`${relative(rootDir, file)}\` ${_event === 'add' ? 'created' : 'removed'}`)
+
+      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
+      const isFileChange = ['add', 'unlink'].includes(event)
+      const reloadDirs = ['pages', 'components', 'composables']
+
+      if (isDirChange) {
+        const dir = reloadDirs.find(dir => file.endsWith(dir))
+        if (dir) {
+          dLoad(true, `Directory \`${dir}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        }
+      } else if (isFileChange) {
+        if (file.match(/app\.(js|ts|mjs|jsx|tsx|vue)$/)) {
+          dLoad(true, `\`${relative(rootDir, file)}\` ${event === 'add' ? 'created' : 'removed'}`)
+        }
       }
     })
 

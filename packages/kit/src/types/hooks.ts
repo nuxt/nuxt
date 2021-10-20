@@ -41,6 +41,7 @@ export interface NuxtHooks {
   // Auto imports
   'autoImports:sources': (autoImportSources: AutoImportSource[]) => HookResult
   'autoImports:extend': (autoImports: AutoImport[]) => HookResult
+  'autoImports:dirs': (dirs: string[]) => HookResult
 
   // Components
   'components:dirs': (dirs: ComponentsOptions['dirs']) => HookResult
