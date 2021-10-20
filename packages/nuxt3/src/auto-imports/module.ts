@@ -77,6 +77,11 @@ export default defineNuxtModule<AutoImportsOptions>({
     }
     await updateAutoImports()
 
+    // Add generated types to `nuxt.d.ts`
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: resolve(nuxt.options.buildDir, 'auto-imports.d.ts') })
+    })
+
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, path) => {
       const _resolved = resolve(nuxt.options.srcDir, path)
