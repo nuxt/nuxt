@@ -64,7 +64,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
 
   if (await isExternal(opts, id)) {
     return {
-      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${(pathToFileURL(id))}').then(r => { ssrExportAll(r) })`,
+      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${(pathToFileURL(id))}').then(r => { exports.default = r.default; ssrExportAll(r) })`,
       deps: [],
       dynamicDeps: []
     }
