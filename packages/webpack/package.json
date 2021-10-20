@@ -37,7 +37,7 @@
     "mlly": "^0.3.0",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
-    "postcss": "^8.3.9",
+    "postcss": "^8.3.10",
     "postcss-import": "^14.0.2",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^6.2.0",
