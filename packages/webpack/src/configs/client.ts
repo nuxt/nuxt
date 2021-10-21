@@ -80,7 +80,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
 
   // Webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
-  if (!ctx.isDev && options.build.analyze) {
+  if (!ctx.isDev && ctx.name === 'client' && options.build.analyze) {
     const statsDir = resolve(options.buildDir, 'stats')
 
     // @ts-ignore

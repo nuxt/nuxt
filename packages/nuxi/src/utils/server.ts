@@ -2,10 +2,10 @@ import type { RequestListener } from 'http'
 import type { ListenOptions } from 'listhen'
 import { loading } from '@nuxt/design'
 
-export function createServer () {
-  const listener = createDynamicFunction(createLoadingHandler('Loading...'))
+export function createServer (defaultApp?) {
+  const listener = createDynamicFunction(defaultApp || createLoadingHandler('Loading...'))
 
-  async function listen (opts: Partial<ListenOptions>) {
+  async function listen (opts?: Partial<ListenOptions>) {
     const { listen } = await import('listhen')
     return listen(listener.call, opts)
   }

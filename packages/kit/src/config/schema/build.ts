@@ -15,9 +15,7 @@ export default {
   /**
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
    *
-   * This option is normally enabled by the CLI argument `--analyze`.
-   *
-   * Set to `true` to enable bundle analysis, or pass [an object with options](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin).
+   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
    *
    * @example
    * ```js
@@ -25,7 +23,6 @@ export default {
    *   analyzerMode: 'static'
    * }
    * ```
-   * @version 2
    */
   analyze: false,
 
