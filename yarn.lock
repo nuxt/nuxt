@@ -2888,11 +2888,11 @@ __metadata:
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.3.0
-    mini-css-extract-plugin: ^2.4.2
+    mini-css-extract-plugin: ^2.4.3
     mlly: ^0.3.0
     pathe: ^0.2.0
     pify: ^5.0.0
-    postcss: ^8.3.10
+    postcss: ^8.3.11
     postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^6.2.0
@@ -12707,14 +12707,14 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^2.4.2":
-  version: 2.4.2
-  resolution: "mini-css-extract-plugin@npm:2.4.2"
+"mini-css-extract-plugin@npm:^2.4.3":
+  version: 2.4.3
+  resolution: "mini-css-extract-plugin@npm:2.4.3"
   dependencies:
     schema-utils: ^3.1.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: c413b4fd0ba0ff398b58ddecc0e805c254c2253e6536627469408b29ea1eb9f5b38c610a3be505c6ca9096a1bb5ed4faf8c6ff8c387b2b4891c8e38fdc8f719b
+  checksum: bee9d5f5c84ebc557bb201be4453003f98b47807153762bbf566b6f5e8071e67b6147f22d36111ecad62fd6d71979e5c6f43989000731c562a409b65ef529e45
   languageName: node
   linkType: hard
 
@@ -13784,7 +13784,7 @@ fsevents@~2.3.2:
     object-hash: ^2.2.0
     pathe: ^0.2.0
     typescript: ^4.4.4
-    unbuild: ^0.5.8
+    unbuild: ^0.5.9
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -15895,7 +15895,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.10, postcss@npm:^8.3.5, postcss@npm:^8.3.8":
+"postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.3.8":
   version: 8.3.10
   resolution: "postcss@npm:8.3.10"
   dependencies:
@@ -15903,6 +15903,17 @@ fsevents@~2.3.2:
     picocolors: ^1.0.0
     source-map-js: ^0.6.2
   checksum: 9f6f5ddb403fb52cacf502bd42ee7a1b9df9b362db5e68e7129e643511bcdda429bbccf5d27e6d115dd4f0a61c811e6b28a91d2db3cf57ff8825e5a7166cbbd0
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.3.11":
+  version: 8.3.11
+  resolution: "postcss@npm:8.3.11"
+  dependencies:
+    nanoid: ^3.1.30
+    picocolors: ^1.0.0
+    source-map-js: ^0.6.2
+  checksum: 1a230553d74c66aa9585c90781ed8ea75f19cefea405d2117b67fbeb24b5b5e0e17be2e0c5a07db31dd085643a13394127ab2222e940771b70498331bf20f35e
   languageName: node
   linkType: hard
 
@@ -18770,9 +18781,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.5.8":
-  version: 0.5.8
-  resolution: "unbuild@npm:0.5.8"
+"unbuild@npm:^0.5.9":
+  version: 0.5.9
+  resolution: "unbuild@npm:0.5.9"
   dependencies:
     "@rollup/plugin-alias": ^3.1.8
     "@rollup/plugin-commonjs": ^21.0.1
@@ -18800,7 +18811,7 @@ fsevents@~2.3.2:
     untyped: ^0.2.9
   bin:
     unbuild: bin/unbuild.mjs
-  checksum: 2de7232eacf686d30e1d01e719c0e9f9caf3a4600825314483a71340364ed65cff661e4522760d9bff1ffd2378d057c8c2fb5d594c6e54e7bea56f8912196f5b
+  checksum: 0a82d4d5c3c84bad1c3827039a88db046628aa3becfa833472a27224f1be4d31b85457b328207baf8439a054396e2d460b8910debe2eacae4391801ea56060a2
   languageName: node
   linkType: hard
 
