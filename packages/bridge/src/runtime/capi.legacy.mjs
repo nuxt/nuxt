@@ -77,7 +77,7 @@ const warnOnce = (id, message) => {
 warnOnce('import', `\`@nuxtjs/composition-api\` is deprecated. ${checkDocsMsg}`)
 
 // Stub functions that provided type support
-export const defineNuxtMiddleware = mw => mw
+export const defineNuxtMiddleware = unsupported('You are using `defineNuxtMiddleware`, which is not supported. You can remove wrapper function to keep using Nuxt 2 middleware.')
 export const defineNuxtPlugin = unsupported('You are using `defineNuxtPlugin`, which can be replaced with `defineNuxtPlugin` (import from `#app`).')
 
 // Internal exports
