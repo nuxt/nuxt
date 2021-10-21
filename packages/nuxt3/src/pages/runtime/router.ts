@@ -5,7 +5,7 @@ import {
   createMemoryHistory,
   RouterLink
 } from 'vue-router'
-// @ts-ignore
+import NuxtChild from './child.vue'
 import NuxtPage from './page.vue'
 import NuxtLayout from './layout'
 import { defineNuxtPlugin } from '#app'
@@ -13,6 +13,7 @@ import { defineNuxtPlugin } from '#app'
 import routes from '#build/routes'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.component('NuxtChild', NuxtChild)
   nuxtApp.vueApp.component('NuxtPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtLayout', NuxtLayout)
   nuxtApp.vueApp.component('NuxtLink', RouterLink)

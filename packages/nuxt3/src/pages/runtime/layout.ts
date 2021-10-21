@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-
+// @ts-ignore
 import layouts from '#build/layouts'
 
 export default defineComponent({

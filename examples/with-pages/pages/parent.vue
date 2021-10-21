@@ -1,6 +1,6 @@
 <template>
   <div>
     Parent
-    <RouterView />
+    <NuxtChild />
   </div>
 </template>
