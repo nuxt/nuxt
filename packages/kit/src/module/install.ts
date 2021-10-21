@@ -1,4 +1,4 @@
-import { resolveModule, requireModule } from '../utils/cjs'
+import { resolveModule, requireModule, importModule } from '../utils/cjs'
 import { resolveAlias } from '../utils/resolve'
 import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
 import type { Nuxt } from '../types/nuxt'
@@ -32,7 +32,9 @@ export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptio
   let handler: LegacyNuxtModule
   if (typeof src === 'string') {
     const _src = resolveModule(resolveAlias(src, nuxt.options.alias), { paths: nuxt.options.modulesDir })
-    handler = requireModule(_src)
+    // TODO: also check with type: 'module' in closest `package.json`
+    const isESM = _src.endsWith('.mjs') || meta.isESM
+    handler = isESM ? await importModule(_src) : requireModule(_src)
     if (!meta.name) {
       meta.name = src
     }
