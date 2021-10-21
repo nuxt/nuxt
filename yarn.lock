@@ -13785,7 +13785,7 @@ fsevents@~2.3.2:
     object-hash: ^2.2.0
     pathe: ^0.2.0
     typescript: ^4.4.4
-    unbuild: ^0.5.9
+    unbuild: ^0.5.10
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -18801,9 +18801,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.5.9":
-  version: 0.5.9
-  resolution: "unbuild@npm:0.5.9"
+"unbuild@npm:^0.5.10":
+  version: 0.5.10
+  resolution: "unbuild@npm:0.5.10"
   dependencies:
     "@rollup/plugin-alias": ^3.1.8
     "@rollup/plugin-commonjs": ^21.0.1
@@ -18831,7 +18831,7 @@ fsevents@~2.3.2:
     untyped: ^0.2.9
   bin:
     unbuild: bin/unbuild.mjs
-  checksum: 0a82d4d5c3c84bad1c3827039a88db046628aa3becfa833472a27224f1be4d31b85457b328207baf8439a054396e2d460b8910debe2eacae4391801ea56060a2
+  checksum: 7ac578d68c085d5135ef40c177bb8661da25e0745c7c45fa0f5ea1d7310b47f1ed828be961c3c43ba6d26e1fbaf2f60311bc68d639973dc4024c8e90cee35c9b
   languageName: node
   linkType: hard
 
