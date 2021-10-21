@@ -59,7 +59,8 @@ export default defineNuxtCommand({
     app.use(() => `<!DOCTYPE html>
 <html lang="en">
 <head>
-<title><meta charset="utf-8">Nuxt Bundle Stats (experimental)</title>
+<meta charset="utf-8">
+<title>Nuxt Bundle Stats (experimental)</title>
 </head>
   <h1>Nuxt Bundle Stats (experimental)</h1>
   <ul>
