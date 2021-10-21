@@ -1,7 +1,7 @@
 import { Worker } from 'worker_threads'
 
 import { IncomingMessage, ServerResponse } from 'http'
-import { promises as fsp } from 'fs'
+import { existsSync, promises as fsp } from 'fs'
 import { loading as loadingTemplate } from '@nuxt/design'
 import chokidar, { FSWatcher } from 'chokidar'
 import debounce from 'p-debounce'
@@ -15,44 +15,59 @@ import connect from 'connect'
 import type { NitroContext } from '../context'
 import { handleVfs } from './vfs'
 
+export interface NitroWorker {
+  worker: Worker,
+  address: string
+}
+
+function initWorker (filename): Promise<NitroWorker> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(filename)
+    worker.once('exit', (code) => {
+      if (code) {
+        reject(new Error('[worker] exited with code: ' + code))
+      }
+    })
+    worker.on('error', (err) => {
+      err.message = '[worker] ' + err.message
+      reject(err)
+    })
+    worker.on('message', (event) => {
+      if (event && event.address) {
+        resolve({
+          worker,
+          address: event.address
+        } as NitroWorker)
+      }
+    })
+  })
+}
+
+async function killWorker (worker: NitroWorker) {
+  await worker.worker.terminate()
+  worker.worker = null
+  if (worker.address && existsSync(worker.address)) {
+    await fsp.rm(worker.address).catch(() => {})
+  }
+}
+
 export function createDevServer (nitroContext: NitroContext) {
   // Worker
   const workerEntry = resolve(nitroContext.output.dir, nitroContext.output.serverDir, 'index.mjs')
-  let pendingWorker: Worker | null
-  let activeWorker: Worker
-  let workerAddress: string | null
+
+  let currentWorker: NitroWorker
+
   async function reload () {
-    if (pendingWorker) {
-      await pendingWorker.terminate()
-      workerAddress = null
-      pendingWorker = null
+    // Create a new worker
+    const newWorker = await initWorker(workerEntry)
+
+    // Kill old worker in background
+    if (currentWorker) {
+      killWorker(currentWorker).catch(err => console.error(err))
     }
-    if (!(await fsp.stat(workerEntry)).isFile) {
-      throw new Error('Entry not found: ' + workerEntry)
-    }
-    return new Promise((resolve, reject) => {
-      const worker = pendingWorker = new Worker(workerEntry)
-      worker.once('exit', (code) => {
-        if (code) {
-          reject(new Error('[worker] exited with code: ' + code))
-        }
-      })
-      worker.on('error', (err) => {
-        err.message = '[worker] ' + err.message
-        reject(err)
-      })
-      worker.on('message', (event) => {
-        if (event && event.port) {
-          workerAddress = 'http://localhost:' + event.port
-          if (activeWorker) {
-            activeWorker.terminate()
-          }
-          activeWorker = worker
-          pendingWorker = null
-          resolve(workerAddress)
-        }
-      })
-    })
+
+    // Replace new worker as current
+    currentWorker = newWorker
   }
 
   // App
@@ -76,11 +91,13 @@ export function createDevServer (nitroContext: NitroContext) {
 
   // SSR Proxy
   const proxy = httpProxy.createProxy()
-  const proxyHandle = promisifyHandle((req: IncomingMessage, res: ServerResponse) => proxy.web(req, res, { target: workerAddress }, (_err: unknown) => {
-    // console.error('[proxy]', err)
-  }))
+  const proxyHandle = promisifyHandle((req: IncomingMessage, res: ServerResponse) => {
+    proxy.web(req, res, { target: currentWorker.address }, (error: unknown) => {
+      console.error('[proxy]', error)
+    })
+  })
   app.use((req, res) => {
-    if (workerAddress) {
+    if (currentWorker?.address) {
       // Workaround to pass legacy req.spa to proxy
       // @ts-ignore
       if (req.spa) {
@@ -119,11 +136,8 @@ export function createDevServer (nitroContext: NitroContext) {
     if (watcher) {
       await watcher.close()
     }
-    if (activeWorker) {
-      await activeWorker.terminate()
-    }
-    if (pendingWorker) {
-      await pendingWorker.terminate()
+    if (currentWorker) {
+      await killWorker(currentWorker)
     }
     await Promise.all(listeners.map(l => l.close()))
     listeners = []
