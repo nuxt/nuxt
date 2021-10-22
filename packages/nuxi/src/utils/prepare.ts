@@ -27,7 +27,10 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const aliases = {
     ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir
+    '#build': nuxt.options.buildDir,
+    // The `@nuxt/nitro` types will be overwritten by packages/nitro/types/shims.d.ts
+    '#storage': '@nuxt/nitro',
+    '#assets': '@nuxt/nitro'
   }
 
   for (const alias in aliases) {
