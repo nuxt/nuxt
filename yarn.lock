@@ -2402,7 +2402,7 @@ __metadata:
     fs-extra: ^10.0.0
     globby: ^11.0.4
     magic-string: ^0.25.7
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     node-fetch: ^3.0.0
     nuxi: 3.0.0
     nuxt-vite: ^0.3.5
@@ -2593,7 +2593,7 @@ __metadata:
     hookable: ^5.0.0
     jiti: ^1.12.9
     lodash.template: ^4.5.0
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     pathe: ^0.2.0
     pkg-types: ^0.2.1
     rc9: ^1.2.0
@@ -2665,7 +2665,7 @@ __metadata:
     jiti: ^1.12.9
     listhen: ^0.2.5
     mime: ^2.5.2
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     node-fetch: ^3.0.0
     ohmyfetch: ^0.4.2
     ora: ^6.0.1
@@ -2891,7 +2891,7 @@ __metadata:
     lodash-es: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.4.3
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.11
@@ -3525,10 +3525,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.27":
-  version: 14.17.27
-  resolution: "@types/node@npm:14.17.27"
-  checksum: 4f7eeaa329f4b2b9ff4bb0bb4582ad92e328a4e66f62d5b96ac4e3b51210ed092bb56726c30643beb860f6df633a29e08ed94adad2d573c85b4794d0bf0bbc06
+"@types/node@npm:^14.17.28":
+  version: 14.17.28
+  resolution: "@types/node@npm:14.17.28"
+  checksum: 84af4d39adb08756205ab77773dac6d796fe04c129fe554510e94f9a60c3599047a43fe499778d51a56258a14aa8afd0e8545dc658bfcaf67362e2e2028fb2fd
   languageName: node
   linkType: hard
 
@@ -12985,6 +12985,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
+"mlly@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "mlly@npm:0.3.1"
+  checksum: c79f289b6a41d745777aa6c3091f1302f28657b3d0c8287d23de20be32b05e7c78d149755cd973c04580481ac9a7c4330968f18af00cc9cd35ecbb455d83cfc6
+  languageName: node
+  linkType: hard
+
 "mocha@npm:^9.1.3":
   version: 9.1.3
   resolution: "mocha@npm:9.1.3"
@@ -13742,7 +13749,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     jiti: ^1.12.9
     listhen: ^0.2.5
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     mri: ^1.2.0
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -13771,7 +13778,7 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.22
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.27
+    "@types/node": ^14.17.28
     "@types/object-hash": ^2
     chai: ^4.3.4
     esbuild: ^0.13.8
@@ -13840,7 +13847,7 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    mlly: ^0.3.0
+    mlly: ^0.3.1
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
     ohmyfetch: ^0.4.2
