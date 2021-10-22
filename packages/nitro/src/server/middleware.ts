@@ -24,7 +24,12 @@ export interface ServerMiddleware {
 
 function filesToMiddleware (files: string[], baseDir: string, basePath: string, overrides?: Partial<ServerMiddleware>): ServerMiddleware[] {
   return files.map((file) => {
-    const route = joinURL(basePath, file.substr(0, file.length - extname(file).length))
+    const route = joinURL(
+      basePath,
+      file
+        .substr(0, file.length - extname(file).length)
+        .replace(/\/index$/, '')
+    )
     const handle = resolve(baseDir, file)
     return {
       route,

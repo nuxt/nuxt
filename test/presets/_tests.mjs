@@ -66,7 +66,9 @@ export function testNitroBehavior(_ctx, getHandler) {
   })
 
   it('API Works', async () => {
-    const { data } = await handler({ url: '/api/hello' })
-    expect(destr(data)).to.have.string('Hello API')
+    const { data: helloData } = await handler({ url: '/api/hello' })
+    const { data: heyData } = await handler({ url: '/api/hey' })
+    expect(destr(helloData)).to.have.string('Hello API')
+    expect(destr(heyData)).to.have.string('Hey API')
   })
 }
