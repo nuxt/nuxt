@@ -3520,10 +3520,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.17.28":
-  version: 14.17.28
-  resolution: "@types/node@npm:14.17.28"
-  checksum: 84af4d39adb08756205ab77773dac6d796fe04c129fe554510e94f9a60c3599047a43fe499778d51a56258a14aa8afd0e8545dc658bfcaf67362e2e2028fb2fd
+"@types/node@npm:^14.17.29":
+  version: 14.17.29
+  resolution: "@types/node@npm:14.17.29"
+  checksum: 5441e505a6287c7d36f083be95b39ef93238bb4bdb6e2c934304cc9b0f5ac33e7d552c8047824cbd274fcb6f5554703a102c039c8a5306d2acf4ebc3c3f7298b
   languageName: node
   linkType: hard
 
@@ -13766,7 +13766,7 @@ fsevents@~2.3.2:
     "@types/chai": ^4.2.22
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.17.28
+    "@types/node": ^14.17.29
     "@types/object-hash": ^2
     chai: ^4.3.4
     esbuild: ^0.13.8
