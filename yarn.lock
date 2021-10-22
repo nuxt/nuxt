@@ -2682,7 +2682,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unenv: ^0.4.0
-    unstorage: ^0.2.9
+    unstorage: ^0.3.0
     vue: 3.2.20
     vue-bundle-renderer: ^0.3.2
     vue-server-renderer: ^2.6.14
@@ -10295,13 +10295,6 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.2.10":
-  version: 0.2.12
-  resolution: "h3@npm:0.2.12"
-  checksum: ef5fc40403d6a35f184a70e508b537d2b5d358bd520ebdb2a02ba710cea396de66eae8b7b200e58a615bd3e99f9af92dd4510aa7825c0c2d4e547e17451744ff
-  languageName: node
-  linkType: hard
-
 "h3@npm:^0.3.3":
   version: 0.3.3
   resolution: "h3@npm:0.3.3"
@@ -13988,17 +13981,6 @@ fsevents@~2.3.2:
     define-properties: ^1.1.3
     es-abstract: ^1.19.1
   checksum: 0f17e99741ebfbd0fa55ce942f6184743d3070c61bd39221afc929c8422c4907618c8da694c6915bc04a83ab3224260c779ba37fc07bb668bdc5f33b66a902a4
-  languageName: node
-  linkType: hard
-
-"ohmyfetch@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "ohmyfetch@npm:0.3.1"
-  dependencies:
-    destr: ^1.1.0
-    node-fetch: ^2.6.1
-    ufo: ^0.7.9
-  checksum: 02c4b8f8b25235e65ecfdef6bcbf08e9d7b1d713756c81d9b2bd7a7154c886ba4569646e17df65e1407535bd3e5c46a9bdad587ad029a39b8c5cea6ea2960bd1
   languageName: node
   linkType: hard
 
@@ -19067,21 +19049,21 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.2.9":
-  version: 0.2.9
-  resolution: "unstorage@npm:0.2.9"
+"unstorage@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "unstorage@npm:0.3.0"
   dependencies:
     anymatch: ^3.1.1
     chokidar: ^3.5.2
     destr: ^1.1.0
-    h3: ^0.2.10
+    h3: ^0.3.3
     ioredis: ^4.27.9
     listhen: ^0.2.4
     mri: ^1.1.6
-    ohmyfetch: ^0.3.1
+    ohmyfetch: ^0.4.2
     ufo: ^0.7.9
     ws: ^8.2.1
-  checksum: 16a242225186a013cdd4567d0328a47946052374a0e184fb4979ded1ff96616a0c0d0bd217fab6bbda77b58b32a33d28e6136a22c6dff786d28fc90256618af3
+  checksum: 3a31d68bd494e1008b60367f9c9549ed45d24e6cf26fcd9af9fd74300d475c4f53b9fb1a99ddb100d56abe545af0b1e6c4ecf789cb2d2025182b9f65f10c0ce9
   languageName: node
   linkType: hard
 
