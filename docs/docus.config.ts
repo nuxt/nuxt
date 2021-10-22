@@ -5,6 +5,13 @@ export default {
   credits: false,
   template: 'docs',
   twitter: 'nuxt_js',
+  algolia: {
+    appId: "BH4D9OD16A",
+    container: "#docsearch",
+    apiKey: "ff80fbf046ce827f64f06e16f82f1401",
+    indexName: "nuxtjs",
+    facetFilters: ['tags:v3']
+  },
   github: {
     repo: 'nuxt/framework',
     dir: 'docs',
