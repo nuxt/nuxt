@@ -43,8 +43,11 @@ function initWorker (filename): Promise<NitroWorker> {
   })
 }
 
-async function killWorker (worker: NitroWorker) {
-  await worker.worker.terminate()
+async function killWorker (worker?: NitroWorker) {
+  if (!worker) {
+    return
+  }
+  await worker.worker?.terminate()
   worker.worker = null
   if (worker.address && existsSync(worker.address)) {
     await fsp.rm(worker.address).catch(() => {})
@@ -62,9 +65,7 @@ export function createDevServer (nitroContext: NitroContext) {
     const newWorker = await initWorker(workerEntry)
 
     // Kill old worker in background
-    if (currentWorker) {
-      killWorker(currentWorker).catch(err => console.error(err))
-    }
+    killWorker(currentWorker).catch(err => console.error(err))
 
     // Replace new worker as current
     currentWorker = newWorker
@@ -136,9 +137,7 @@ export function createDevServer (nitroContext: NitroContext) {
     if (watcher) {
       await watcher.close()
     }
-    if (currentWorker) {
-      await killWorker(currentWorker)
-    }
+    await killWorker(currentWorker)
     await Promise.all(listeners.map(l => l.close()))
     listeners = []
   }
