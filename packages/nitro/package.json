@@ -78,14 +78,6 @@
     "unbuild": "latest",
     "vue": "3.2.20"
   },
-  "peerDependencies": {
-    "vue": "3.2.20"
-  },
-  "peerDependenciesMeta": {
-    "vue": {
-      "optional": true
-    }
-  },
   "engines": {
     "node": "^14.16.0 || ^16.11.0"
   }

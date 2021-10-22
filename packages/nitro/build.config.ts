@@ -17,7 +17,6 @@ export default defineBuildConfig({
     'ohmyfetch',
     'ora',
     'vue-bundle-renderer',
-    'vue-server-renderer',
-    'vue'
+    'vue-server-renderer'
   ]
 })

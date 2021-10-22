@@ -23,8 +23,8 @@
     "@nuxt/nitro": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
     "@nuxt/webpack-builder": "3.0.0",
-    "@vue/reactivity": "3.2.20",
-    "@vue/shared": "3.2.20",
+    "@vue/reactivity": "^3.2.20",
+    "@vue/shared": "^3.2.20",
     "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
@@ -48,11 +48,6 @@
     "@types/hash-sum": "^1.0.0",
     "unbuild": "latest",
     "vue-meta": "next"
-  },
-  "peerDependencies": {
-    "@vue/reactivity": "3.2.20",
-    "@vue/shared": "3.2.20",
-    "vue": "3.2.20"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0"

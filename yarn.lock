@@ -2686,11 +2686,6 @@ __metadata:
     vue: 3.2.20
     vue-bundle-renderer: ^0.3.2
     vue-server-renderer: ^2.6.14
-  peerDependencies:
-    vue: 3.2.20
-  peerDependenciesMeta:
-    vue:
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -4133,7 +4128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/reactivity@npm:3.2.20":
+"@vue/reactivity@npm:3.2.20, @vue/reactivity@npm:^3.2.20":
   version: 3.2.20
   resolution: "@vue/reactivity@npm:3.2.20"
   dependencies:
@@ -4188,7 +4183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/shared@npm:3.2.20, @vue/shared@npm:^3.2.11":
+"@vue/shared@npm:3.2.20, @vue/shared@npm:^3.2.11, @vue/shared@npm:^3.2.20":
   version: 3.2.20
   resolution: "@vue/shared@npm:3.2.20"
   checksum: da6e59a40622b5be5300c51d83e0a9d8ae1f67315dbec86cfc809b89f8620c09a3c6222cae5d80df0fb986f92afc1b6345db4e7a9b1a079f5783d27a839fea7d
@@ -13830,8 +13825,8 @@ fsevents@~2.3.2:
     "@nuxt/vite-builder": 3.0.0
     "@nuxt/webpack-builder": 3.0.0
     "@types/hash-sum": ^1.0.0
-    "@vue/reactivity": 3.2.20
-    "@vue/shared": 3.2.20
+    "@vue/reactivity": ^3.2.20
+    "@vue/shared": ^3.2.20
     "@vueuse/head": ^0.6.0
     chokidar: ^3.5.2
     consola: ^2.15.3
@@ -13852,10 +13847,6 @@ fsevents@~2.3.2:
     vue: ^3.2.20
     vue-meta: next
     vue-router: ^4.0.12
-  peerDependencies:
-    "@vue/reactivity": 3.2.20
-    "@vue/shared": 3.2.20
-    vue: 3.2.20
   bin:
     nuxt: ./bin/nuxt.mjs
   languageName: unknown
