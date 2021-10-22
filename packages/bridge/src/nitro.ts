@@ -21,6 +21,9 @@ export function setupNitroBridge () {
   // @ts-ignore
   nuxt.options.build.indicator = false
 
+  // Disable fetch polyfill (nitro provides it)
+  nuxt.options.fetch.server = false
+
   // Create contexts
   const nitroOptions = (nuxt.options as any).nitro || {}
   const nitroContext = getNitroContext(nuxt.options, nitroOptions)

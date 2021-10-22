@@ -46,13 +46,15 @@ export function setupAppBridge (_options: any) {
   // Fix wp4 esm
   nuxt.hook('webpack:config', (configs) => {
     for (const config of configs.filter(c => c.module)) {
-      for (const rule of config.module.rules) {
-        // @ts-ignore
-        if (rule.test instanceof RegExp && rule.test.test('index.mjs')) {
-          // @ts-ignore
-          rule.type = 'javascript/auto'
-        }
-      }
+      // @ts-ignore
+      const jsRule: any = config.module.rules.find(rule => rule.test instanceof RegExp && rule.test.test('index.mjs'))
+      jsRule.type = 'javascript/auto'
+
+      config.module.rules.unshift({
+        test: /\.mjs$/,
+        type: 'javascript/auto',
+        include: [/node_modules/]
+      })
     }
   })
 }

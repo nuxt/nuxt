@@ -2667,7 +2667,7 @@ __metadata:
     mime: ^2.5.2
     mlly: ^0.3.0
     node-fetch: ^3.0.0
-    ohmyfetch: ^0.3.1
+    ohmyfetch: ^0.4.2
     ora: ^6.0.1
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -2681,7 +2681,7 @@ __metadata:
     table: ^6.7.2
     ufo: ^0.7.9
     unbuild: latest
-    unenv: ^0.3.10
+    unenv: ^0.4.0
     unstorage: ^0.2.9
     vue: 3.2.20
     vue-bundle-renderer: ^0.3.2
@@ -13268,7 +13268,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.2":
+"node-fetch@npm:^2.6.1":
   version: 2.6.5
   resolution: "node-fetch@npm:2.6.5"
   dependencies:
@@ -13843,7 +13843,7 @@ fsevents@~2.3.2:
     mlly: ^0.3.0
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
-    ohmyfetch: ^0.3.1
+    ohmyfetch: ^0.4.2
     pathe: ^0.2.0
     scule: ^0.2.1
     ufo: ^0.7.9
@@ -13992,6 +13992,17 @@ fsevents@~2.3.2:
     node-fetch: ^2.6.1
     ufo: ^0.7.9
   checksum: 02c4b8f8b25235e65ecfdef6bcbf08e9d7b1d713756c81d9b2bd7a7154c886ba4569646e17df65e1407535bd3e5c46a9bdad587ad029a39b8c5cea6ea2960bd1
+  languageName: node
+  linkType: hard
+
+"ohmyfetch@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "ohmyfetch@npm:0.4.2"
+  dependencies:
+    destr: ^1.1.0
+    node-fetch: ^3.0.0
+    ufo: ^0.7.9
+  checksum: 91cce3271b9e47e0c29d3cf25813b1c5076b15ad62ac81e8ce8d7153d906b4d36c60cffc3e03d9dd4745604ea8e4ca886d112db355bb2a4a8282658665530b80
   languageName: node
   linkType: hard
 
@@ -18843,20 +18854,20 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.3.10":
-  version: 0.3.10
-  resolution: "unenv@npm:0.3.10"
+"unenv@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "unenv@npm:0.4.0"
   dependencies:
     buffer: ^6.0.2
     defu: ^5.0.0
     events: ^3.2.0
     inherits: ^2.0.4
     mime: ^2.4.6
-    node-fetch: ^2.6.2
+    node-fetch: ^3.0.0
     process: ^0.11.10
     upath: ^2.0.1
     util: ^0.12.4
-  checksum: 502a699d88bbe45e26920d74dd756b63e78e748f73963a0c62b58584f974b856367d1c3c3d697f52b889b9cc1e750d3157caa5bb0d86c51cf32d482d5c383ec8
+  checksum: d255476a4476b34f5e2be81a453f45dd62636b2b50077eca529a13d29e3fa931da5be12b20ffbe882f06ae944e311c03163ce09bbdbf2078f2116ed95b06094a
   languageName: node
   linkType: hard
 
