@@ -53,10 +53,10 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
     return obj
   }, {} as Record<string, string>)
 
-  let nodeVersion = '12'
+  let nodeVersion = '14'
   try {
     const currentNodeVersion = fse.readJSONSync(join(rootDir, 'package.json')).engines.node
-    if (['12', '10'].includes(currentNodeVersion)) {
+    if (['16', '14'].includes(currentNodeVersion)) {
       nodeVersion = currentNodeVersion
     }
   } catch {}
@@ -66,7 +66,8 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
     JSON.stringify(
       {
         private: true,
-        main: './index.js',
+        type: 'module',
+        main: './index.mjs',
         dependencies,
         devDependencies: {
           'firebase-functions-test': 'latest',
