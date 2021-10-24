@@ -14,11 +14,20 @@ const knownTemplates = {
 }
 
 const resolveTemplate = (template) => {
+  if (!template) {
+    return knownTemplates.nuxt3
+  }
+
+  if (typeof template === 'boolean') {
+    consola.error('Please specify a template')
+    process.exit(1)
+  }
+
   if (template in knownTemplates) {
     return knownTemplates[template]
   }
 
-  if (typeof template === 'string' && template.includes('/')) {
+  if (template.includes('/')) {
     return template
   }
 
