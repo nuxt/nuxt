@@ -47,23 +47,36 @@ import scrollBehavior from './router.scrollBehavior.js'
       components.push({ _name: route._name, component: route.component, name: route.name, chunkName: route.chunkName })
     }
     // @see: https://router.vuejs.org/api/#router-construction-options
+
+    let restRouteOptions = ''
+    restRouteOptions += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
+    restRouteOptions += (route.component) ? nextIndent + 'component: ' + route._name : ''
+    restRouteOptions += (route.redirect) ? nextIndent + 'redirect: ' + (typeof route.redirect === 'function' ? serialize(route.redirect) : JSON.stringify(route.redirect)) : ''
+    restRouteOptions += (route.meta) ? nextIndent + 'meta: ' + serialize(route.meta) : ''
+    restRouteOptions += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
+    restRouteOptions += (typeof route.caseSensitive !== 'undefined') ? nextIndent + 'caseSensitive: ' + JSON.stringify(route.caseSensitive) : ''
+    restRouteOptions += (route.alias) ? nextIndent + 'alias: ' + JSON.stringify(route.alias) : ''
+    restRouteOptions += (route.pathToRegexpOptions) ? nextIndent + 'pathToRegexpOptions: ' + JSON.stringify(route.pathToRegexpOptions) : ''
+    if (route.beforeEnter) {
+      if(isTest) { restRouteOptions += ',\n/* eslint-disable indent, semi */' }
+      restRouteOptions += (isTest ? firstIndent : nextIndent) + 'beforeEnter: ' + serialize(route.beforeEnter)
+      if(isTest) { restRouteOptions += firstIndent + '/* eslint-enable indent, semi */' }
+    }
+    restRouteOptions += (route.children) ? nextIndent + 'children: [' + recursiveRoutes(routes[i].children, tab, components, indentCount + 1) + ']' : ''
+
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
-    res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
-    res += (route.component) ? nextIndent + 'component: ' + route._name : ''
-    res += (route.redirect) ? nextIndent + 'redirect: ' + (typeof route.redirect === 'function' ? serialize(route.redirect) : JSON.stringify(route.redirect)) : ''
-    res += (route.meta) ? nextIndent + 'meta: ' + serialize(route.meta) : ''
-    res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
-    res += (typeof route.caseSensitive !== 'undefined') ? nextIndent + 'caseSensitive: ' + JSON.stringify(route.caseSensitive) : ''
-    res += (route.alias) ? nextIndent + 'alias: ' + JSON.stringify(route.alias) : ''
-    res += (route.pathToRegexpOptions) ? nextIndent + 'pathToRegexpOptions: ' + JSON.stringify(route.pathToRegexpOptions) : ''
     res += (route.name) ? nextIndent + 'name: ' + JSON.stringify(route.name) : ''
-    if (route.beforeEnter) {
-      if(isTest) { res += ',\n/* eslint-disable indent, semi */' }
-      res += (isTest ? firstIndent : nextIndent) + 'beforeEnter: ' + serialize(route.beforeEnter)
-      if(isTest) { res += firstIndent + '/* eslint-enable indent, semi */' }
+    res += restRouteOptions
+    res += '},'
+    res += '{'
+    if (nuxtOptions.generate.subFolders) {
+      res += firstIndent + 'path: ' + JSON.stringify(route.path === '/' ? '/index.html' : `${route.path}/index.html`)
+    } else {
+      res += firstIndent + 'path: ' + JSON.stringify(route.path === '/' ? '/index.html' : `${route.path}.html`)
     }
-    res += (route.children) ? nextIndent + 'children: [' + recursiveRoutes(routes[i].children, tab, components, indentCount + 1) + ']' : ''
+    res += (route.name) ? nextIndent + 'name: ' + JSON.stringify(`${route.name}Html`) : ''
+    res += restRouteOptions
     res += '\n' + baseIndent + '}' + (i + 1 === routes.length ? '' : ', ')
   })
   return res
