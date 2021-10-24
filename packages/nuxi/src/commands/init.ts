@@ -13,6 +13,19 @@ const knownTemplates = {
   bridge: 'nuxt/starter#bridge'
 }
 
+const resolveTemplate = (template) => {
+  if (template in knownTemplates) {
+    return knownTemplates[template]
+  }
+
+  if (typeof template === 'string' && template.includes('/')) {
+    return template
+  }
+
+  consola.error(`Invalid template name: \`${template}\``)
+  process.exit(1)
+}
+
 export default defineNuxtCommand({
   meta: {
     name: 'init',
@@ -21,8 +34,7 @@ export default defineNuxtCommand({
   },
   async invoke (args) {
     // Clone template
-    const t = args.template || args.t
-    const src = knownTemplates[t] || t || 'nuxt/starter#v3'
+    const src = resolveTemplate(args.template || args.t)
     const dstDir = resolve(process.cwd(), args._[0] || 'nuxt-app')
     const tiged = createTiged(src, { cache: false /* TODO: buggy */, verbose: (args.verbose || args.v) })
     if (existsSync(dstDir) && readdirSync(dstDir).length) {
