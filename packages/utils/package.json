@@ -18,7 +18,7 @@
     "semver": "^7.3.5",
     "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
-    "ua-parser-js": "^0.7.28",
+    "ua-parser-js": "^0.7.30",
     "ufo": "^0.7.4"
   },
   "publishConfig": {
