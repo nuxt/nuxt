@@ -12741,10 +12741,10 @@ typescript@~4.4:
   resolved "https://registry.npmjs.org/typescript/-/typescript-4.4.4.tgz#2cd01a1a1f160704d3101fd5a58ff0f9fcb8030c"
   integrity sha512-DqGhF5IKoBl8WNf8C1gu8q0xZSInh9j1kJJMqT3a94w1JzVaBU4EXOSMrz9yDqMT0xt3selp83fuFMQ0uzv6qA==
 
-ua-parser-js@^0.7.28:
-  version "0.7.30"
-  resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.30.tgz#4cf5170e8b55ac553fe8b38df3a82f0669671f0b"
-  integrity sha512-uXEtSresNUlXQ1QL4/3dQORcGv7+J2ookOG2ybA/ga9+HYEXueT2o+8dUJQkpedsyTyCJ6jCCirRcKtdtx1kbg==
+ua-parser-js@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-1.0.1.tgz#268408f4d60375e67aa919fa7d117bdc66d5cd77"
+  integrity sha512-ZMu7XRN3M3R+g/YaFQKiVW0J42bzciF0+xAxP5uuO6VibE30MQvRRBctHuh22uS3yAe5jkru/i8QVOwRDJazIw==
 
 ufo@^0.7.9:
   version "0.7.9"
