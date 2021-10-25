@@ -27,7 +27,10 @@ const getSSRRenderer = cachedResult(async () => {
 const getSPARenderer = cachedResult(async () => {
   const clientManifest = await getClientManifest()
   return (ssrContext) => {
-    ssrContext.nuxt = {}
+    ssrContext.nuxt = {
+      serverRendered: false,
+      config: publicConfig
+    }
     return {
       html: '<div id="__nuxt"></div>',
       renderResourceHints: () => '',

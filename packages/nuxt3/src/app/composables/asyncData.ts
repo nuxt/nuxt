@@ -104,8 +104,8 @@ export function useAsyncData<
     return nuxt._asyncDataPromises[key]
   }
 
-  const fetchOnServer = options.server !== false
-  const clientOnly = options.server === false
+  const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
+  const clientOnly = options.server === false || !nuxt.payload.serverRendered
 
   // Server side
   if (process.server && fetchOnServer) {
