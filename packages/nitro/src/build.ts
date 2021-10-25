@@ -1,6 +1,6 @@
 import { relative, resolve, join } from 'pathe'
 import consola from 'consola'
-import * as rollup from 'rollup/dist/rollup.js'
+import * as rollup from 'rollup'
 import fse from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
