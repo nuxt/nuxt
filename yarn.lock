@@ -2663,7 +2663,7 @@ __metadata:
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     pretty-bytes: ^5.6.0
-    rollup: ^2.58.0
+    rollup: ^2.58.1
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.2
     serve-placeholder: ^1.2.4
@@ -17199,6 +17199,20 @@ fsevents@~2.3.2:
   bin:
     rollup: dist/bin/rollup
   checksum: a5e5642f2b1e239e3698eeee93b19d905e55e3012c63978cebc71e76c0a4eb2de5cff06a2a80d68bf87fe6869c57647cccc335daba280a5449a9214abdeca247
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.58.1":
+  version: 2.58.1
+  resolution: "rollup@npm:2.58.1"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 66007faedad4745c15b07980feff6f0688e45543e3717da00f84c6f6a524473531a39861715e212f356114ad3b49e6328621376d1a8e5e66c5638e1b5378b27f
   languageName: node
   linkType: hard
 

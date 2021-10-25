@@ -1,6 +1,6 @@
 import { relative, resolve, join } from 'pathe'
 import consola from 'consola'
-import { rollup, watch as rollupWatch } from 'rollup'
+import * as rollup from 'rollup/dist/rollup.js'
 import fse from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
@@ -92,7 +92,7 @@ async function _build (nitroContext: NitroContext) {
   await writeTypes(nitroContext)
 
   consola.start('Building server...')
-  const build = await rollup(nitroContext.rollupConfig).catch((error) => {
+  const build = await rollup.rollup(nitroContext.rollupConfig).catch((error) => {
     consola.error('Rollup error: ' + error.message)
     throw error
   })
@@ -110,7 +110,7 @@ async function _build (nitroContext: NitroContext) {
 }
 
 function startRollupWatcher (nitroContext: NitroContext) {
-  const watcher = rollupWatch(nitroContext.rollupConfig)
+  const watcher = rollup.watch(nitroContext.rollupConfig)
   let start: number
 
   watcher.on('event', (event) => {
