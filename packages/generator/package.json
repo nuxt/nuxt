@@ -15,7 +15,7 @@
     "devalue": "^2.0.1",
     "fs-extra": "^10.0.0",
     "html-minifier": "^4.0.0",
-    "node-html-parser": "^4.1.4",
+    "node-html-parser": "^5.0.0",
     "ufo": "^0.7.9"
   },
   "publishConfig": {
