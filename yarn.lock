@@ -2401,7 +2401,7 @@ __metadata:
     scule: ^0.2.1
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.16
+    unplugin: ^0.2.18
     unplugin-vue2-script-setup: 0.6.12
     vue-router: 3
   languageName: unknown
@@ -2663,7 +2663,7 @@ __metadata:
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     pretty-bytes: ^5.6.0
-    rollup: ^2.58.1
+    rollup: ^2.58.3
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.2
     serve-placeholder: ^1.2.4
@@ -2805,7 +2805,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.10
+    vite: ^2.6.11
     vue: 3.2.20
   peerDependencies:
     vue: 3.2.20
@@ -14053,7 +14053,7 @@ fsevents@~2.3.2:
     scule: ^0.2.1
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.16
+    unplugin: ^0.2.18
     vue: ^3.2.20
     vue-meta: next
     vue-router: ^4.0.12
@@ -17202,9 +17202,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.58.1":
-  version: 2.58.1
-  resolution: "rollup@npm:2.58.1"
+"rollup@npm:^2.58.3":
+  version: 2.58.3
+  resolution: "rollup@npm:2.58.3"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -17212,7 +17212,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 66007faedad4745c15b07980feff6f0688e45543e3717da00f84c6f6a524473531a39861715e212f356114ad3b49e6328621376d1a8e5e66c5638e1b5378b27f
+  checksum: 20305ac3aea2a62be1728cfd3477419431bad2931532cc136da1904841fa03c318b231027b3a3da077baa0a874c20d72985bf74ed42dad103e88de610eb447a9
   languageName: node
   linkType: hard
 
@@ -19227,7 +19227,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.2.11, unplugin@npm:^0.2.16":
+"unplugin@npm:^0.2.11":
   version: 0.2.16
   resolution: "unplugin@npm:0.2.16"
   dependencies:
@@ -19244,6 +19244,26 @@ fsevents@~2.3.2:
     webpack:
       optional: true
   checksum: fc1495ab518bdf0dd748cb6f2386f935d3f2b8084b293da70e20c9ec7d48e54cffdb69c8317811076cf44cf2dcd4924949484a721850f9c8ba336b6f3ce8b7fd
+  languageName: node
+  linkType: hard
+
+"unplugin@npm:^0.2.18":
+  version: 0.2.18
+  resolution: "unplugin@npm:0.2.18"
+  dependencies:
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 7083bea79073023ea899de5288c92440263a45bef1c77a4a7b7a51569f7da05eced6e9db934551219934ef0c9bd9c6156d998e47c0d12f682c2dd8fff31e3c53
   languageName: node
   linkType: hard
 
@@ -19543,7 +19563,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.5.7, vite@npm:^2.6.10":
+"vite@npm:^2.5.7":
   version: 2.6.10
   resolution: "vite@npm:2.6.10"
   dependencies:
@@ -19569,6 +19589,35 @@ fsevents@~2.3.2:
   bin:
     vite: bin/vite.js
   checksum: 802b59c275ac099d6cfcf17636d1034cb6d3e7a363a33a4bf990cbe859059cec35249e958a26a59d5cfde3dbbbf207b8ac8817eb127063c96957d2e573389370
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.6.11":
+  version: 2.6.11
+  resolution: "vite@npm:2.6.11"
+  dependencies:
+    esbuild: ^0.13.2
+    fsevents: ~2.3.2
+    postcss: ^8.3.8
+    resolve: ^1.20.0
+    rollup: ^2.57.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 44bc347685cadb6ae3265736c74480f0de76ab5cc381f3816c35fe59eb0231d54c593a5dcd2681c99f5ba9f66a0ff5403224c47917c10e052ab481c1cec801bf
   languageName: node
   linkType: hard
 
