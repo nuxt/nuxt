@@ -63,7 +63,7 @@
     "get-port": "^5.1.1",
     "glob": "^7.1.7",
     "got": "^11.8.2",
-    "improved-yarn-audit": "^2.3.3",
+    "improved-yarn-audit": "^3.0.0",
     "jest": "^26.6.3",
     "jiti": "^1.11.0",
     "jsdom": "^16.7.0",
