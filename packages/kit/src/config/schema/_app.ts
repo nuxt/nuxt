@@ -7,16 +7,21 @@ export default {
   /** Vue.js config */
   vue: {
     /**
-     * Properties that will be set directly on `Vue.config` for vue@2 and `app.config` for vue@3.
+     * Properties that will be set directly on `Vue.config` for vue@2.
      *
      * @see [vue@2 Documentation](https://vuejs.org/v2/api/#Global-Config)
-     * @see [vue@3 Documentation](https://v3.vuejs.org/api/application-config.html)
     * @version 2
      */
     config: {
       silent: { $resolve: (val, get) => val ?? !get('dev') },
-      performance: { $resolve: (val, get) => val ?? get('dev') }
-    }
+      performance: { $resolve: (val, get) => val ?? get('dev') },
+    },
+    /**
+     * Options for the Vue compiler that will be passed at build time
+     * @see [documentation](https://v3.vuejs.org/api/application-config.html)
+     * @version 3
+     */
+    compilerOptions: {}
   },
 
   /**

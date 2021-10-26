@@ -68,7 +68,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      vuePlugin(),
+      vuePlugin(ctx.config.vue),
       viteJsxPlugin()
     ]
   } as ViteOptions)

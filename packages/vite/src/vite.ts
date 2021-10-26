@@ -52,7 +52,11 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         base: nuxt.options.build.publicPath,
-        vue: {},
+        // TODO: move to kit schema when it exists
+        vue: {
+          isProduction: !nuxt.options.dev,
+          template: { compilerOptions: nuxt.options.vue.compilerOptions }
+        },
         css: resolveCSSOptions(nuxt),
         optimizeDeps: {
           exclude: [],
