@@ -2910,7 +2910,7 @@ __metadata:
     autoprefixer: ^10.3.7
     babel-loader: ^8.2.3
     consola: ^2.15.3
-    css-loader: ^6.4.0
+    css-loader: ^6.5.0
     css-minimizer-webpack-plugin: ^3.1.1
     cssnano: ^5.0.8
     esbuild-loader: ^2.16.0
@@ -7853,9 +7853,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^6.4.0":
-  version: 6.4.0
-  resolution: "css-loader@npm:6.4.0"
+"css-loader@npm:^6.5.0":
+  version: 6.5.0
+  resolution: "css-loader@npm:6.5.0"
   dependencies:
     icss-utils: ^5.1.0
     postcss: ^8.2.15
@@ -7867,7 +7867,7 @@ __metadata:
     semver: ^7.3.5
   peerDependencies:
     webpack: ^5.0.0
-  checksum: e842905fce973517dab8ae1e1f6412691c9b4164fbaf94f10ef2ec073c9aa97b5cf9a753a45965fd44aab6528e068be85fd2f8437c6126a823399458dff04282
+  checksum: 4f3e7b93df79293dca910de41c741486155ea8248e048ea51a74fc5570d3acb962b5be0b6740f3ad8006b40eb4ef375124de4f9507aebf7a42f5ca7b8a7807d1
   languageName: node
   linkType: hard
 
