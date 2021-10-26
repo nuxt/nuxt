@@ -2,6 +2,7 @@ import { promises as fsp } from 'fs'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import consola from 'consola'
+import { dirname } from 'pathe'
 import { useNuxt, nuxtCtx } from '../nuxt'
 import type { Nuxt, NuxtTemplate } from '../types/nuxt'
 import type { NuxtModule, LegacyNuxtModule, ModuleOptions } from '../types/module'
@@ -89,6 +90,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
         }
         for await (const template of virtualTemplates) {
           const contents = await compileTemplate({ ...template, src: '' }, context)
+          await fsp.mkdir(dirname(template.dst), { recursive: true })
           await fsp.writeFile(template.dst, contents)
         }
       })
