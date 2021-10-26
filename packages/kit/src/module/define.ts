@@ -83,7 +83,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
             templates: [
               ...templates.templatesFiles,
               ...virtualTemplates
-            ]
+            ],
+            templateVars: templates.templateVars
           }
         }
         for await (const template of virtualTemplates) {

@@ -21,8 +21,9 @@
     "lint": "eslint --ext .vue,.ts,.js .",
     "test": "yarn lint && yarn test:presets",
     "test:presets": "mocha test/presets/*.mjs",
-    "test:bridge": "TEST_BRIDGE=1 yarn test:presets",
-    "test:unit": "mocha -r jiti/register packages/**/test/*.test.*",
+    "test:bridge:webpack": "TEST_BRIDGE=1 yarn test:presets",
+    "test:bridge:vite": "TEST_BRIDGE_VITE=1 TEST_BRIDGE=1 yarn test:presets",
+    "test:unit": "mocha -r jiti/register packages/*/test/*.test.*",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {

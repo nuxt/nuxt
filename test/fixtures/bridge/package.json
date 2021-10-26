@@ -6,6 +6,7 @@
     "build": "nuxt build"
   },
   "devDependencies": {
+    "@nuxt/bridge": "*",
     "core-js": "^3",
     "nuxt": "^2",
     "vue": "^2"

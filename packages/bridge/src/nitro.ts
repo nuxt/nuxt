@@ -73,7 +73,7 @@ export function setupNitroBridge () {
       serverConfig.plugins = serverConfig.plugins || []
       serverConfig.plugins.push(new AsyncLoadingPlugin({
         modulesDir: nuxt.options.modulesDir
-      }))
+      }) as any)
     }
   })
 

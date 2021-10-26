@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { createHooks } from 'hookable/dist/index.mjs'
+import { createHooks } from 'hookable'
 import { setNuxtAppInstance } from '#app'
 
 export default (ctx, inject) => {
@@ -11,10 +11,10 @@ export default (ctx, inject) => {
       },
       directive: Vue.directive.bind(Vue),
       mixin: Vue.mixin.bind(Vue),
-      mount: () => {},
+      mount: () => { },
       provide: inject,
-      unmount: () => {},
-      use (vuePlugin) {
+      unmount: () => { },
+      use(vuePlugin) {
         vuePlugin.install(this)
       },
       version: Vue.version

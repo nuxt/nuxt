@@ -124,7 +124,7 @@ const ${hashId(chunk.id)} = ${chunk.code}
   const ssrModuleLoader = `
 const __pendingModules__ = new Map()
 const __pendingImports__ = new Map()
-const __ssrContext__ = { global: {} }
+const __ssrContext__ = { global: globalThis }
 
 function __ssrLoadModule__(url, urlStack = []) {
   const pendingModule = __pendingModules__.get(url)

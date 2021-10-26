@@ -80,8 +80,11 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Test (presets bridge)
-        run: yarn test:bridge
+      - name: Test with webpack
+        run: yarn test:bridge:webpack
+
+      - name: Test with vite
+        run: yarn test:bridge:vite
 
   build-release:
     needs:
