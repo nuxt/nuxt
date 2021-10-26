@@ -12,6 +12,8 @@ const PAYLOAD_JS = '/payload.js'
 const getClientManifest = cachedImport(() => import('#build/dist/server/client.manifest.mjs'))
 const getSSRApp = cachedImport(() => import('#build/dist/server/server.mjs'))
 
+const publicPath = (publicConfig.app && publicConfig.app.assetsPath) || process.env.PUBLIC_PATH || '/_nuxt'
+
 const getSSRRenderer = cachedResult(async () => {
   // Load client manifest
   const clientManifest = await getClientManifest()
@@ -21,7 +23,7 @@ const getSSRRenderer = cachedResult(async () => {
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
   // Create renderer
   const { renderToString } = await import('#nitro-renderer')
-  return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath: clientManifest.publicPath || '/_nuxt' }).renderToString
+  return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath }).renderToString
 })
 
 const getSPARenderer = cachedResult(async () => {
@@ -37,7 +39,7 @@ const getSPARenderer = cachedResult(async () => {
       renderStyles: () => '',
       renderScripts: () => clientManifest.initial.map((s) => {
         const isMJS = !s.endsWith('.js')
-        return `<script ${isMJS ? 'type="module"' : ''} src="${clientManifest.publicPath}${s}"></script>`
+        return `<script ${isMJS ? 'type="module"' : ''} src="${publicPath}${s}"></script>`
       }).join('')
     }
   }
