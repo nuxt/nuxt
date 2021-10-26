@@ -2231,12 +2231,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/functions@npm:^0.7.2":
-  version: 0.7.2
-  resolution: "@netlify/functions@npm:0.7.2"
+"@netlify/functions@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@netlify/functions@npm:0.8.0"
   dependencies:
     is-promise: ^4.0.0
-  checksum: 962d2142a573995fd05593a7c80a8f71d4410de80cb3a52a9fa51184b8c7a309b3925c55d8f8e4e7c1730dc9776aa82c78264040458375fc34d0deb60a651a5a
+  checksum: 37cdc4cc7406affbdb3bc1f4746da954238e3955136baa0121c590c2d814d5f1102b87ce41868922aee4a32d3387e7e1157260e7d9c7c04031ced90c83dbf684
   languageName: node
   linkType: hard
 
@@ -2416,7 +2416,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.2.18
     unplugin-vue2-script-setup: 0.6.12
-    vite: ^2.6.11
+    vite: ^2.6.12
     vite-plugin-vue2: ^1.9.0
     vue: ^2
     vue-router: ^3
@@ -2633,7 +2633,7 @@ __metadata:
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.3
-    "@netlify/functions": ^0.7.2
+    "@netlify/functions": ^0.8.0
     "@nuxt/design": 0.1.4
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
@@ -2849,7 +2849,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.11
+    vite: ^2.6.12
     vue: 3.2.20
   peerDependencies:
     vue: 3.2.20
@@ -19910,9 +19910,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.6.11":
-  version: 2.6.11
-  resolution: "vite@npm:2.6.11"
+"vite@npm:^2.6.12":
+  version: 2.6.12
+  resolution: "vite@npm:2.6.12"
   dependencies:
     esbuild: ^0.13.2
     fsevents: ~2.3.2
@@ -19935,7 +19935,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 44bc347685cadb6ae3265736c74480f0de76ab5cc381f3816c35fe59eb0231d54c593a5dcd2681c99f5ba9f66a0ff5403224c47917c10e052ab481c1cec801bf
+  checksum: b1ee1bd1cfa4e1c52c63607effc596f23e153ab970d75e982f4c91109c2719ee79d404e77928291b90602f1199c4463f97a841c3cbef1466bce12fd31747cb0c
   languageName: node
   linkType: hard
 
