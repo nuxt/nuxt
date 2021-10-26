@@ -11,7 +11,8 @@ export const commands = {
   usage: () => import('./usage').then(_rDefault),
   info: () => import('./info').then(_rDefault),
   init: () => import('./init').then(_rDefault),
-  create: () => import('./init').then(_rDefault)
+  create: () => import('./init').then(_rDefault),
+  upgrade: () => import('./upgrade').then(_rDefault)
 }
 
 export type Command = keyof typeof commands
