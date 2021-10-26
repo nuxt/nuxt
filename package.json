@@ -75,7 +75,7 @@
     "puppeteer-core": "^10.4.0",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
-    "rollup": "2.58.1",
+    "rollup": "2.58.3",
     "rollup-plugin-esbuild": "^4.6.0",
     "rollup-plugin-license": "^2.6.0",
     "sass": "^1.43.3",
