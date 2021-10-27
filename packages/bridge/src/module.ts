@@ -51,7 +51,7 @@ export default defineNuxtModule({
       await setupAutoImports()
     }
     if (opts.vite) {
-      const viteModule = await import('./vite/module')
+      const viteModule = await import('./vite/module').then(r => r.default || r)
       await installModule(nuxt, viteModule)
     }
     if (opts.postcss8) {

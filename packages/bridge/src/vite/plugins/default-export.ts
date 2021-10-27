@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite'
-import { readFile } from 'fs-extra'
+import fse from 'fs-extra'
 
 // const PREFIX = 'defaultexport:'
 const PREFIX = 'defaultexport:'
@@ -25,7 +25,7 @@ export function defaultExportPlugin () {
 
     async load (id) {
       if (hasPrefix(id)) {
-        let code = await readFile(removePrefix(id), 'utf8')
+        let code = await fse.readFile(removePrefix(id), 'utf8')
         if (!hasDefaultExport(code)) {
           code = addDefaultExport(code)
         }

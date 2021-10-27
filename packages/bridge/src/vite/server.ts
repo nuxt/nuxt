@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import { createVuePlugin } from 'vite-plugin-vue2'
 import consola from 'consola'
-import { writeFile } from 'fs-extra'
+import fse from 'fs-extra'
 import pDebounce from 'p-debounce'
 import { bundleRequest } from '../../../vite/src/dev-bundler'
 import { ViteBuildContext, ViteOptions } from './types'
@@ -95,14 +95,14 @@ export async function buildServer (ctx: ViteBuildContext) {
   await viteServer.pluginContainer.buildStart({})
 
   // Generate manifest files
-  await writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/ssr-manifest.json'), JSON.stringify({}, null, 2), 'utf-8')
+  await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/ssr-manifest.json'), JSON.stringify({}, null, 2), 'utf-8')
   await generateDevSSRManifest(ctx)
 
   // Build and watch
   const _doBuild = async () => {
     const start = Date.now()
     const { code } = await bundleRequest({ viteServer }, '/.nuxt/server.js')
-    await writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
+    await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     const time = (Date.now() - start)
     consola.info(`Server built in ${time}ms`)
     await onBuild()
