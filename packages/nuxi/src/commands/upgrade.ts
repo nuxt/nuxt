@@ -25,10 +25,12 @@ export default defineNuxtCommand({
 
     const yarnLock = 'yarn.lock'
     const npmLock = 'package-lock.json'
+    const pnpmLock = 'pnpm-lock.yaml'
 
     const isYarn = existsSync(resolve(rootDir, yarnLock))
     const isNpm = existsSync(resolve(rootDir, npmLock))
-    const packageManager = isYarn ? 'yarn' : isNpm ? 'npm' : null
+    const isPnpm = existsSync(resolve(rootDir, pnpmLock))
+    const packageManager = isPnpm ? 'pnpm' : isYarn ? 'yarn' : isNpm ? 'npm' : null
     if (!packageManager) {
       console.error('Cannot detect Package Manager in', rootDir)
       process.exit(1)
@@ -42,7 +44,7 @@ export default defineNuxtCommand({
     if (args.force || args.f) {
       consola.info('Removing lock-file and node_modules...')
       await Promise.all([
-        fsp.rm(isYarn ? yarnLock : npmLock),
+        fsp.rm(isPnpm ? pnpmLock : isYarn ? yarnLock : npmLock),
         fsp.rmdir('node_modules', { recursive: true })
       ])
       execSync(`${packageManager} install`, { stdio: 'inherit' })
