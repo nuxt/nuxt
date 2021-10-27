@@ -125,7 +125,7 @@ export default class WebpackBaseConfig {
       try {
         corejsVersion = Number.parseInt(requireModule('core-js/package.json', rootDir).version.split('.')[0])
       } catch (_err) {
-        corejsVersion = 2
+        corejsVersion = 3
       }
     } else {
       corejsVersion = Number.parseInt(corejsVersion)
@@ -133,7 +133,7 @@ export default class WebpackBaseConfig {
 
     if (![2, 3].includes(corejsVersion)) {
       consola.warn(`Invalid corejs version ${corejsVersion}! Please set "build.corejs" to either "auto", 2 or 3.`)
-      corejsVersion = 2
+      corejsVersion = 3
     }
 
     const defaultPreset = [this.resolveModule('@nuxt/babel-preset-app'), {
