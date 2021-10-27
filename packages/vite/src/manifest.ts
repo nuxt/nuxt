@@ -2,7 +2,7 @@ import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import type { ViteBuildContext } from './vite'
 
-export async function writeManifest (ctx: ViteBuildContext, extracEntries: string[] = []) {
+export async function writeManifest (ctx: ViteBuildContext, extraEntries: string[] = []) {
   // Write client manifest for use in vue-bundle-renderer
   const clientDist = resolve(ctx.nuxt.options.buildDir, 'dist/client')
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
@@ -10,7 +10,7 @@ export async function writeManifest (ctx: ViteBuildContext, extracEntries: strin
   const entries = [
     '@vite/client',
     'entry.mjs',
-    ...extracEntries
+    ...extraEntries
   ]
 
   // Legacy dev manifest

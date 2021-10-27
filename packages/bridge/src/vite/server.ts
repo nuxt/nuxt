@@ -9,6 +9,7 @@ import { ViteBuildContext, ViteOptions } from './types'
 import { wpfs } from './utils/wpfs'
 import { jsxPlugin } from './plugins/jsx'
 import { generateDevSSRManifest } from './manifest'
+import { isCSS } from './utils'
 
 export async function buildServer (ctx: ViteBuildContext) {
   // Workaround to disable HMR
@@ -101,7 +102,9 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Build and watch
   const _doBuild = async () => {
     const start = Date.now()
-    const { code } = await bundleRequest({ viteServer }, '/.nuxt/server.js')
+    const { code, ids } = await bundleRequest({ viteServer }, '/.nuxt/server.js')
+    // Have CSS in the manifest to prevent FOUC on dev SSR
+    await generateDevSSRManifest(ctx, ids.filter(isCSS).map(i => '../' + i.slice(1)))
     await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     const time = (Date.now() - start)
     consola.info(`Server built in ${time}ms`)

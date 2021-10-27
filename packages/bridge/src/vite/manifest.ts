@@ -129,16 +129,11 @@ export async function stubManifest (ctx: ViteBuildContext) {
   await writeServerManifest(serverManifest, ctx.nuxt.options.buildDir)
 }
 
-export async function generateDevSSRManifest (ctx: ViteBuildContext) {
-  const rDist = (...args: string[]): string => resolve(ctx.nuxt.options.buildDir, 'dist', ...args)
-
-  const ssrManifest = await fse.readJSON(rDist('server/ssr-manifest.json'))
-  const css = Object.keys(ssrManifest).filter(isCSS)
-
+export async function generateDevSSRManifest (ctx: ViteBuildContext, extraEntries: string[] = []) {
   const entires = [
     '@vite/client',
     'entry.mjs',
-    ...css.map(i => `../${i}`)
+    ...extraEntries
   ]
 
   const clientManifest = {
