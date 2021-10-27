@@ -3,8 +3,8 @@ import { join, relative, resolve } from 'pathe'
 import fse from 'fs-extra'
 import consola from 'consola'
 import globby from 'globby'
-
-import { readPackageJson, writeFile } from '../utils'
+import { readPackageJSON } from 'pkg-types'
+import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 export const firebase: NitroPreset = {
@@ -17,7 +17,7 @@ export const firebase: NitroPreset = {
   }
 }
 
-async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir } }: NitroContext) {
+async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir, modulesDir } }: NitroContext) {
   if (!fse.existsSync(join(rootDir, 'firebase.json'))) {
     const firebase = {
       functions: {
@@ -61,6 +61,11 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
     }
   } catch {}
 
+  const getPackageVersion = async (id) => {
+    const pkg = await readPackageJSON(id, { url: modulesDir })
+    return pkg.version
+  }
+
   await writeFile(
     resolve(serverDir, 'package.json'),
     JSON.stringify(
@@ -71,8 +76,8 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
         dependencies,
         devDependencies: {
           'firebase-functions-test': 'latest',
-          'firebase-admin': readPackageJson('firebase-admin', _require).version,
-          'firebase-functions': readPackageJson('firebase-functions', _require).version
+          'firebase-admin': await getPackageVersion('firebase-admin'),
+          'firebase-functions': await getPackageVersion('firebase-functions')
         },
         engines: { node: nodeVersion }
       },
