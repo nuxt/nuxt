@@ -2603,7 +2603,7 @@ __metadata:
     lodash.template: ^4.5.0
     mlly: ^0.3.1
     pathe: ^0.2.0
-    pkg-types: ^0.2.1
+    pkg-types: ^0.2.3
     rc9: ^1.2.0
     scule: ^0.2.1
     semver: ^7.3.5
@@ -2611,7 +2611,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
-    untyped: ^0.2.9
+    untyped: ^0.2.10
   languageName: unknown
   linkType: soft
 
@@ -2831,7 +2831,7 @@ __metadata:
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
     "@nuxt/kit": 3.0.0
-    "@vitejs/plugin-vue": ^1.9.3
+    "@vitejs/plugin-vue": ^1.9.4
     "@vitejs/plugin-vue-jsx": ^1.2.0
     autoprefixer: ^10.3.7
     chokidar: ^3.5.2
@@ -4227,12 +4227,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^1.9.3":
-  version: 1.9.3
-  resolution: "@vitejs/plugin-vue@npm:1.9.3"
+"@vitejs/plugin-vue@npm:^1.9.4":
+  version: 1.9.4
+  resolution: "@vitejs/plugin-vue@npm:1.9.4"
   peerDependencies:
     vite: ^2.5.10
-  checksum: b987535135b6ae82ba1bab3001ef1dfb39934402c733b56262740f4a0ee21dcb8b960218e641776d0f05d0271c89bc1cad44b7286ad8564c3179618673781dec
+  checksum: 43cb38a0520c6e60aa807ec6135fd4370965631c98275148fd938804505ef3e2a9c4a84e5bd0bc36285f2971afa12ed82d804ebd4b8d55f3bae9a6d58a744e26
   languageName: node
   linkType: hard
 
@@ -14294,7 +14294,7 @@ fsevents@~2.3.2:
     mri: ^1.2.0
     p-debounce: ^4.0.0
     pathe: ^0.2.0
-    pkg-types: ^0.2.1
+    pkg-types: ^0.2.3
     rimraf: ^3.0.2
     scule: ^0.2.1
     semver: ^7.3.5
@@ -15178,12 +15178,13 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"pkg-types@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "pkg-types@npm:0.2.1"
+"pkg-types@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "pkg-types@npm:0.2.3"
   dependencies:
     jsonc-parser: ^3.0.0
-  checksum: e5b0497cc477852548d6485b8440eb03906c75aff2cd99a46ff5b109aa189b48012f232ae53ec3b803d3f9d401f12b29a6121460c335bf07e03674e9cea7a082
+    pathe: ^0.2.0
+  checksum: 3d40669f29c58d1efa019e5f75633fd769d9479c0683045ae137664e1aab199126e48c21fac2129b75cef26fe4c353234c80e804e09ab2224dd9f8c99c8cf410
   languageName: node
   linkType: hard
 
@@ -19646,6 +19647,13 @@ fsevents@~2.3.2:
     ufo: ^0.7.9
     ws: ^8.2.1
   checksum: 3a31d68bd494e1008b60367f9c9549ed45d24e6cf26fcd9af9fd74300d475c4f53b9fb1a99ddb100d56abe545af0b1e6c4ecf789cb2d2025182b9f65f10c0ce9
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^0.2.10":
+  version: 0.2.10
+  resolution: "untyped@npm:0.2.10"
+  checksum: 87ecb2706630a5bb7a727fb6a03eda8baf501727d5ecb46ec0828a076ee4e492b2943d60bda4f0943bbd4a1ed3cad033d1d474599215f48079b72f3b732edfaf
   languageName: node
   linkType: hard
 

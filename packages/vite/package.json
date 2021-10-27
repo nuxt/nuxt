@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0",
-    "@vitejs/plugin-vue": "^1.9.3",
+    "@vitejs/plugin-vue": "^1.9.4",
     "@vitejs/plugin-vue-jsx": "^1.2.0",
     "autoprefixer": "^10.3.7",
     "chokidar": "^3.5.2",

@@ -7328,6 +7328,11 @@ mlly@^0.3.0:
   resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.0.tgz#5705b2a95551d79ad33feedc046daf7c6d079748"
   integrity sha512-6XphOVPsnIzuqNYlcZPMJhaMDDdrEgbLUlA7BPis8O0kkLPbOVA8GcXGeICGcnDotCtTkxAEWBT+FlhywrXTmg==
 
+mlly@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.1.tgz#2429360aadd06b65fc5a26e519ee8a40b2561b9a"
+  integrity sha512-dtEsZue7NJy5Hhk6dsMoBjmJoZIZwyWvdN+X61cEtqjDFVRUskhWDBmn5EofDUWOkPrwur6GgpCRkXOAB4ISVw==
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/move-concurrently/-/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
@@ -8159,6 +8164,14 @@ pkg-types@^0.2.1:
   integrity sha512-RlrGelHSS2yPeLT9NMuMIfpKS7+gRAhuXi+PexBeToKjbRkmu+E+HdgDY2ZKU1RDirk5w9WuViEhOufELtAnug==
   dependencies:
     jsonc-parser "^3.0.0"
+
+pkg-types@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/pkg-types/-/pkg-types-0.2.3.tgz#4355ee06518b278ae6473d1c1eaf35010d6cf798"
+  integrity sha512-c05moyQEGO1z16NjidOZn2wQjuAi8CZKzPXmZBWLnnL3dRqDmeMWx3IxVSuYF7zKHkjQFJ9QH3Pas772a4iXQA==
+  dependencies:
+    jsonc-parser "^3.0.0"
+    pathe "^0.2.0"
 
 plausible-tracker@^0.3.1:
   version "0.3.1"
@@ -11134,6 +11147,11 @@ unstorage@^0.2.3:
     ohmyfetch "^0.3.1"
     ufo "^0.7.9"
     ws "^8.2.1"
+
+untyped@^0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.10.tgz#daee5d2b94ff5040be251077e9ddb91732017ac1"
+  integrity sha512-Ym1bZHJK3rE7n6WYVlIQPOkpCtkWcZbiy0obnmQ0Pn7a82lJVXWgyLhKE1XSyCvmg3HvEQW8kgHAE+r17G4l2Q==
 
 untyped@^0.2.5, untyped@^0.2.8, untyped@^0.2.9:
   version "0.2.9"
