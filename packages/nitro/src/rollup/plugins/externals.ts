@@ -75,7 +75,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         const pkgs = new Set<string>()
         for (const file of tracedFiles) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const [_, baseDir, pkgName, _importPath] = /(.+\/node_modules\/)([^@/]+|@[^/]+\/[^/]+)\/(.*)/.exec(file)
+          const [_, baseDir, pkgName, _importPath] = /^(.+\/node_modules\/)([^@/]+|@[^/]+\/[^/]+)(\/?.*?)?$/.exec(file)
           pkgs.add(resolve(baseDir, pkgName, 'package.json'))
         }
 
