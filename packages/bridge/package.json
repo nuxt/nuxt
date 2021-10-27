@@ -32,7 +32,7 @@
     "globby": "^11.0.4",
     "hash-sum": "^2.0.0",
     "magic-string": "^0.25.7",
-    "mlly": "^0.3.1",
+    "mlly": "^0.3.5",
     "node-fetch": "^3.0.0",
     "nuxi": "3.0.0",
     "p-debounce": "^4.0.0",
@@ -47,7 +47,7 @@
     "ufo": "^0.7.9",
     "unplugin": "^0.2.18",
     "unplugin-vue2-script-setup": "0.6.12",
-    "vite": "^2.6.12",
+    "vite": "^2.6.13",
     "vite-plugin-vue2": "^1.9.0",
     "vue-template-compiler": "^2.6.14"
   },

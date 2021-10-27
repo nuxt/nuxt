@@ -2399,7 +2399,7 @@ __metadata:
     globby: ^11.0.4
     hash-sum: ^2.0.0
     magic-string: ^0.25.7
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     node-fetch: ^3.0.0
     nuxi: 3.0.0
     nuxt: ^2
@@ -2416,7 +2416,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.2.18
     unplugin-vue2-script-setup: 0.6.12
-    vite: ^2.6.12
+    vite: ^2.6.13
     vite-plugin-vue2: ^1.9.0
     vue: ^2
     vue-router: ^3
@@ -2601,7 +2601,7 @@ __metadata:
     hookable: ^5.0.0
     jiti: ^1.12.9
     lodash.template: ^4.5.0
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     pathe: ^0.2.0
     pkg-types: ^0.2.3
     rc9: ^1.2.0
@@ -2673,7 +2673,7 @@ __metadata:
     jiti: ^1.12.9
     listhen: ^0.2.5
     mime: ^2.5.2
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     node-fetch: ^3.0.0
     ohmyfetch: ^0.4.2
     ora: ^6.0.1
@@ -2849,7 +2849,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.12
+    vite: ^2.6.13
     vue: 3.2.20
   peerDependencies:
     vue: 3.2.20
@@ -2921,7 +2921,7 @@ __metadata:
     lodash-es: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.4.3
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.11
@@ -13325,10 +13325,17 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.3.0, mlly@npm:^0.3.1":
+"mlly@npm:^0.3.0":
   version: 0.3.1
   resolution: "mlly@npm:0.3.1"
   checksum: c79f289b6a41d745777aa6c3091f1302f28657b3d0c8287d23de20be32b05e7c78d149755cd973c04580481ac9a7c4330968f18af00cc9cd35ecbb455d83cfc6
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "mlly@npm:0.3.5"
+  checksum: 1a7bd69cd1a985a135ee280fd28070eb9e1c2c223549ab289735c71d5867fc84e5617fb271bc070488581a799d6d7ff8ab5dc0c93724aaaa897720ba20611b1d
   languageName: node
   linkType: hard
 
@@ -14089,7 +14096,7 @@ fsevents@~2.3.2:
     fsevents: ~2.3.2
     jiti: ^1.12.9
     listhen: ^0.2.5
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     mri: ^1.2.0
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -14166,7 +14173,7 @@ fsevents@~2.3.2:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    mlly: ^0.3.1
+    mlly: ^0.3.5
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
     ohmyfetch: ^0.4.2
@@ -19672,9 +19679,9 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.6.12":
-  version: 2.6.12
-  resolution: "vite@npm:2.6.12"
+"vite@npm:^2.6.13":
+  version: 2.6.13
+  resolution: "vite@npm:2.6.13"
   dependencies:
     esbuild: ^0.13.2
     fsevents: ~2.3.2
@@ -19697,7 +19704,7 @@ fsevents@~2.3.2:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: b1ee1bd1cfa4e1c52c63607effc596f23e153ab970d75e982f4c91109c2719ee79d404e77928291b90602f1199c4463f97a841c3cbef1466bce12fd31747cb0c
+  checksum: 59e09d8650328eac44990de9aaa9f49011113e3c1d8c3b54d9b8550496c8d290ec14149048bbbd49b39f78a80f23c4019130bd55924bfd139f63423be8d4754a
   languageName: node
   linkType: hard
 
