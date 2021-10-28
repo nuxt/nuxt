@@ -4,7 +4,6 @@ import { createVuePlugin } from 'vite-plugin-vue2'
 import PluginLegacy from '@vitejs/plugin-legacy'
 import consola from 'consola'
 import { jsxPlugin } from './plugins/jsx'
-import { replace } from './plugins/replace'
 import { ViteBuildContext, ViteOptions } from './types'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -17,7 +16,11 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     define: {
-      global: 'globalThis'
+      global: 'globalThis',
+      'process.client': 'true',
+      'process.server': 'false',
+      'process.static': 'false',
+      'module.hot': 'false'
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite/client'),
     resolve: {
@@ -33,13 +36,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       ssrManifest: true
     },
     plugins: [
-      replace({
-        'process.env': 'import.meta.env',
-        'process.client': 'true',
-        'process.server': 'false',
-        'process.static': 'false',
-        'module.hot': 'false'
-      }),
       jsxPlugin(),
       createVuePlugin(ctx.config.vue),
       PluginLegacy()

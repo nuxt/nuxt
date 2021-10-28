@@ -8,7 +8,6 @@ import type { Connect } from 'vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { transform } from 'esbuild'
 import { cacheDirPlugin } from './plugins/cache-dir'
-import { replace } from './plugins/replace'
 import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { writeManifest } from './manifest'
@@ -37,7 +36,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client')
     },
     plugins: [
-      replace({ 'process.env': 'import.meta.env' }),
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
       viteJsxPlugin()
