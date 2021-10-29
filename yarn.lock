@@ -14362,7 +14362,6 @@ fsevents@~2.3.2:
     fsevents:
       optional: true
   bin:
-    nu: ./bin/nuxi.mjs
     nuxi: ./bin/nuxi.mjs
   languageName: unknown
   linkType: soft

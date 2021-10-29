@@ -9,7 +9,6 @@
     "./cli": "./bin/nuxi.mjs"
   },
   "bin": {
-    "nu": "./bin/nuxi.mjs",
     "nuxi": "./bin/nuxi.mjs"
   },
   "scripts": {

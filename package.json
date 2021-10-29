@@ -13,7 +13,6 @@
     "stub": "lerna run prepack -- --stub",
     "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "nuxi": "./node_modules/.bin/nuxi",
-    "nu": "./node_modules/.bin/nuxi",
     "nuxt": "./node_modules/.bin/nuxi",
     "play": "yarn run nuxt dev playground",
     "example": "yarn workspace example-$0 dev",
