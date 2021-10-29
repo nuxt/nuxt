@@ -2394,7 +2394,7 @@ __metadata:
     defu: ^5.0.0
     enhanced-resolve: ^5.8.3
     estree-walker: ^2.0.2
-    externality: ^0.1.3
+    externality: ^0.1.4
     fs-extra: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
@@ -2839,7 +2839,7 @@ __metadata:
     consola: ^2.15.3
     defu: ^5.0.0
     esbuild: ^0.13.10
-    externality: ^0.1.3
+    externality: ^0.1.4
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     p-debounce: ^4.0.0
@@ -10002,15 +10002,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"externality@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "externality@npm:0.1.3"
+"externality@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "externality@npm:0.1.4"
   dependencies:
     allowlist: ^0.1.1
     enhanced-resolve: ^5.8.3
+    mlly: ^0.3.10
+    pathe: ^0.2.0
     ufo: ^0.7.9
-    upath: ^2.0.1
-  checksum: 6e08d95d00f187568773630b9de0a7844f029e3e25fb45a291eea5881d9e34c2e6fef6032a84130f652c3a5e4790b0db1cbbdacfa6bef47a41a5aa76e2d56fa4
+  checksum: e3afe6641a808c5e86ad03e42142aefdbb7160b3c860876e8f14fd37a91d3e044e5349456c6ddb020b15eb670fada33fa5ca8a0eed22818b7d4c29a6cdfdf273
   languageName: node
   linkType: hard
 
@@ -13558,6 +13559,13 @@ fsevents@~2.3.2:
   version: 0.3.1
   resolution: "mlly@npm:0.3.1"
   checksum: c79f289b6a41d745777aa6c3091f1302f28657b3d0c8287d23de20be32b05e7c78d149755cd973c04580481ac9a7c4330968f18af00cc9cd35ecbb455d83cfc6
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.3.10":
+  version: 0.3.10
+  resolution: "mlly@npm:0.3.10"
+  checksum: 065d6d90fccc4fb4022c89726d3e038dda2a4019ca14b7d0dc3515f8d4f17f9881485eba5c698f371431bd887529bfaf2ad74d982d823319cc5b75fec8e80409
   languageName: node
   linkType: hard
 

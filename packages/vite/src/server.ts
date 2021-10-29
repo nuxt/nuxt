@@ -41,6 +41,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       external: [],
       noExternal: [
         ...ctx.nuxt.options.build.transpile,
+        // TODO: Use externality for production (rollup) build
         /\.(es|esm|esm-browser|esm-bundler).js$/,
         '/__vue-jsx',
         '#app',
