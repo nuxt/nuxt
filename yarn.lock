@@ -2387,7 +2387,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@types/node-fetch": ^3.0.2
     "@vitejs/plugin-legacy": ^1.6.2
-    "@vue/composition-api": ^1.2.4
+    "@vue/composition-api": ^1.3.0
     "@vueuse/head": ^0.6.0
     acorn: ^8.5.0
     consola: ^2.15.3
@@ -2399,7 +2399,7 @@ __metadata:
     globby: ^11.0.4
     hash-sum: ^2.0.0
     magic-string: ^0.25.7
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     node-fetch: ^3.0.0
     nuxi: 3.0.0
     nuxt: ^2
@@ -2414,7 +2414,7 @@ __metadata:
     semver: ^7.3.5
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.18
+    unplugin: ^0.2.19
     unplugin-vue2-script-setup: 0.6.12
     vite: ^2.6.13
     vite-plugin-vue2: ^1.9.0
@@ -2601,7 +2601,7 @@ __metadata:
     hookable: ^5.0.0
     jiti: ^1.12.9
     lodash.template: ^4.5.0
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     pathe: ^0.2.0
     pkg-types: ^0.3.1
     rc9: ^1.2.0
@@ -2673,7 +2673,7 @@ __metadata:
     jiti: ^1.12.9
     listhen: ^0.2.5
     mime: ^2.5.2
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     node-fetch: ^3.0.0
     ohmyfetch: ^0.4.2
     ora: ^6.0.1
@@ -2922,7 +2922,7 @@ __metadata:
     lodash-es: ^4.17.21
     memfs: ^3.3.0
     mini-css-extract-plugin: ^2.4.3
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.3.11
@@ -4445,7 +4445,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/composition-api@npm:^1.2.4":
+"@vue/composition-api@npm:^1.3.0":
   version: 1.3.0
   resolution: "@vue/composition-api@npm:1.3.0"
   dependencies:
@@ -13483,7 +13483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.3.0, mlly@npm:^0.3.10, mlly@npm:^0.3.6, mlly@npm:^0.3.9":
+"mlly@npm:^0.3.0, mlly@npm:^0.3.10, mlly@npm:^0.3.6":
   version: 0.3.10
   resolution: "mlly@npm:0.3.10"
   checksum: 065d6d90fccc4fb4022c89726d3e038dda2a4019ca14b7d0dc3515f8d4f17f9881485eba5c698f371431bd887529bfaf2ad74d982d823319cc5b75fec8e80409
@@ -14260,7 +14260,7 @@ __metadata:
     fsevents: ~2.3.2
     jiti: ^1.12.9
     listhen: ^0.2.5
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     mri: ^1.2.0
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -14337,7 +14337,7 @@ __metadata:
     hash-sum: ^2.0.0
     hookable: ^5.0.0
     ignore: ^5.1.8
-    mlly: ^0.3.9
+    mlly: ^0.3.10
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
     ohmyfetch: ^0.4.2
@@ -14345,7 +14345,7 @@ __metadata:
     scule: ^0.2.1
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.18
+    unplugin: ^0.2.19
     vue: ^3.2.20
     vue-meta: next
     vue-router: ^4.0.12
@@ -19553,7 +19553,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.2.11, unplugin@npm:^0.2.18":
+"unplugin@npm:^0.2.11, unplugin@npm:^0.2.19":
   version: 0.2.19
   resolution: "unplugin@npm:0.2.19"
   dependencies:
