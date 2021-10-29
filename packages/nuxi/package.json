@@ -8,9 +8,7 @@
     ".": "./dist/index.mjs",
     "./cli": "./bin/nuxi.mjs"
   },
-  "bin": {
-    "nuxi": "./bin/nuxi.mjs"
-  },
+  "bin": "./bin/nuxi.mjs",
   "files": [
     "bin",
     "dist"
