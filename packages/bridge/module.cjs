@@ -8,7 +8,7 @@ module.exports.defineNuxtConfig = (config = {}) => {
     if (!config.buildModules) {
       config.buildModules = []
     }
-    if (!config.buildModules.find(m => m === '@nuxt/bridge')) {
+    if (!config.buildModules.find(m => m === '@nuxt/bridge' || m === '@nuxt/bridge-edge')) {
       config.buildModules.push('@nuxt/bridge')
     }
   }
