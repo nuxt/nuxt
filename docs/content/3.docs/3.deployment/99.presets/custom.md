@@ -3,6 +3,7 @@
 Get full control of Nuxt Nitro output to deploy on any kind of hosting platform.
 
 ::list{type=info}
+
 - Allows full customization
 - This is an advanced usage pattern
 ::

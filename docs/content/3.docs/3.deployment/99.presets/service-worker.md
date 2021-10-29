@@ -3,6 +3,7 @@
 Explore the Service worker preset with Nitro to push the boundaries of Nuxt rendering to the edge.
 
 ::list
+
 - Can be used for edge-side rendering
 - No dependency on Node.js
 - No Node.js environment and features
@@ -18,9 +19,9 @@ Deployment as service worker has some limitations since SSR code is not running 
 
 ## Usage
 
-You can use the [Nuxt config](/docs/directory-structure/nuxt.config) to explicity set the preset to use:
+You can use the [Nuxt config](/docs/directory-structure/nuxt.config) to explicitly set the preset to use:
 
-```ts [nuxt.config.js|ts]
+```js [nuxt.config.js|ts]
 export default {
   nitro: {
     preset: 'worker'
@@ -34,7 +35,7 @@ Or directly use the `NITRO_PRESET` environment variable when running `nuxt build
 NITRO_PRESET=worker npx nuxt build
 ```
 
-## Entrypoint
+## Entry point
 
 The worker preset produces a service worker that can provide full HTML rendering within a worker context (for example [Cloudflare Workers](/docs/deployment/cloudflare)). It registers appropriate handlers for `fetch`, `install` and `activate`.
 

@@ -1,0 +1,4 @@
+**/node_modules
+
+docs/content/index.md
+docs/content/**/15.nuxt.config.md

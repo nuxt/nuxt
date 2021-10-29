@@ -1,0 +1,12 @@
+# Default state for all rules
+default: true
+# Disable max line length
+MD013: false
+# Allow duplicated heading for different sections
+MD024:
+  allow_different_nesting: true
+  siblings_only: true
+# Allow multiple top-level headings
+MD025: false
+# Allow inline HTML
+MD033: false

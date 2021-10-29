@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Lint (docs)
+        run: yarn lint:docs
+
   test:
     runs-on: ${{ matrix.os }}
 
