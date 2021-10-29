@@ -28,7 +28,7 @@ export const componentsTemplate = {
     return `import { defineAsyncComponent } from 'vue'
 
 const components = {
-${options.components.map((c) => {
+${options.components.filter(c => c.global !== false).map((c) => {
   const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
   const magicComments = createImportMagicComments(c)
 

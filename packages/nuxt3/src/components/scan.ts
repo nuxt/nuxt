@@ -18,11 +18,11 @@ export async function scanComponents (dirs: ScanDir[], srcDir: string): Promise<
   const filePaths = new Set<string>()
   const scannedPaths: string[] = []
 
-  for (const { path, pattern, ignore = [], prefix, extendComponent, pathPrefix, level, prefetch = false, preload = false } of dirs.sort(sortDirsByPathLength)) {
+  for (const dir of dirs.sort(sortDirsByPathLength)) {
     const resolvedNames = new Map<string, string>()
 
-    for (const _file of await globby(pattern!, { cwd: path, ignore })) {
-      const filePath = join(path, _file)
+    for (const _file of await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })) {
+      const filePath = join(dir.path, _file)
 
       if (scannedPaths.find(d => filePath.startsWith(d))) {
         continue
@@ -33,12 +33,12 @@ export async function scanComponents (dirs: ScanDir[], srcDir: string): Promise<
 
       // Resolve componentName
       const prefixParts = ([] as string[]).concat(
-        prefix ? splitByCase(prefix) : [],
-        (pathPrefix !== false) ? splitByCase(relative(path, dirname(filePath))) : []
+        dir.prefix ? splitByCase(dir.prefix) : [],
+        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : []
       )
       let fileName = basename(filePath, extname(filePath))
       if (fileName.toLowerCase() === 'index') {
-        fileName = pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
+        fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
       const fileNameParts = splitByCase(fileName)
 
@@ -74,14 +74,14 @@ export async function scanComponents (dirs: ScanDir[], srcDir: string): Promise<
         chunkName,
         shortPath,
         export: 'default',
-        global: Boolean(global),
-        level: Number(level),
-        prefetch: Boolean(prefetch),
-        preload: Boolean(preload)
+        global: dir.global,
+        level: Number(dir.level),
+        prefetch: Boolean(dir.prefetch),
+        preload: Boolean(dir.preload)
       }
 
-      if (typeof extendComponent === 'function') {
-        component = (await extendComponent(component)) || component
+      if (typeof dir.extendComponent === 'function') {
+        component = (await dir.extendComponent(component)) || component
       }
 
       // Check if component is already defined, used to overwite if level is inferiour
@@ -93,7 +93,7 @@ export async function scanComponents (dirs: ScanDir[], srcDir: string): Promise<
       }
     }
 
-    scannedPaths.push(path)
+    scannedPaths.push(dir.path)
   }
 
   return components

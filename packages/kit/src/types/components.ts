@@ -8,13 +8,12 @@ export interface Component {
   level: number
   prefetch: boolean
   preload: boolean
+  global?: boolean
 
   /** @deprecated */
   import?: string
   /** @deprecated */
   asyncImport?: string
-  /** @deprecated */
-  global?: boolean
   /** @deprecated */
   async?: boolean
 }
@@ -62,8 +61,11 @@ export interface ScanDir {
 
   extendComponent?: (component: Component) => Promise<Component | void> | (Component | void)
 
-  /** @deprecated */
-  global?: boolean | 'dev'
+  /**
+   * If enabled, registers components to be globally available
+   *
+   */
+  global?: boolean
 }
 
 export interface ComponentsDir extends ScanDir {
