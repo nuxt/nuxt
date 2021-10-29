@@ -11,15 +11,12 @@
   "bin": {
     "nuxi": "./bin/nuxi.mjs"
   },
-  "scripts": {
-    "prepack": "unbuild"
-  },
   "files": [
     "bin",
     "dist"
   ],
-  "optionalDependencies": {
-    "fsevents": "~2.3.2"
+  "scripts": {
+    "prepack": "unbuild"
   },
   "devDependencies": {
     "@nuxt/design": "0.1.4",
@@ -35,6 +32,7 @@
     "consola": "^2.15.3",
     "deep-object-diff": "^1.1.0",
     "destr": "^1.1.0",
+    "execa": "^5.1.1",
     "flat": "^5.0.2",
     "jiti": "^1.12.9",
     "listhen": "^0.2.5",
@@ -45,14 +43,15 @@
     "pkg-types": "^0.3.1",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
+    "semver": "^7.3.5",
     "superb": "^4.0.0",
     "tiged": "^2.12.0",
     "unbuild": "latest"
   },
+  "optionalDependencies": {
+    "fsevents": "~2.3.2"
+  },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
-  },
-  "dependencies": {
-    "semver": "^7.3.5"
   }
 }

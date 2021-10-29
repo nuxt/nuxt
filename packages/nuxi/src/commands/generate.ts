@@ -1,3 +1,4 @@
+import execa from 'execa'
 import { resolve } from 'pathe'
 import { isNuxt3 } from '@nuxt/kit'
 
@@ -20,7 +21,8 @@ export default defineNuxtCommand({
     if (isNuxt3(nuxt)) {
       throw new Error('`nuxt generate` is not supported in Nuxt 3. Please follow this RFC: https://git.io/JKfvx')
     } else {
-      throw new Error('Please use `nuxt generate` for Nuxt 2 instead of `nuxi generate`')
+      // Forwards argv to `nuxt generate`
+      await execa('npx nuxt', process.argv.slice(2), { stdio: 'inherit' })
     }
   }
 })
