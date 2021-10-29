@@ -356,7 +356,8 @@ export function checkNuxtCompatibilityIssues (constraints: NuxtCompatibilityCons
   const issues: NuxtCompatibilityIssues = []
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!semver.satisfies(nuxtVersion, constraints.nuxt)) {
+    const nuxtSemanticVersion = nuxtVersion.split('-').shift()
+    if (!semver.satisfies(nuxtSemanticVersion, constraints.nuxt)) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``
