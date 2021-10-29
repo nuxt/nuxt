@@ -1,8 +1,9 @@
 import { execSync } from 'child_process'
-import { promises as fsp, existsSync } from 'fs'
+import { promises as fsp } from 'fs'
 import consola from 'consola'
 import { resolve } from 'pathe'
 import { resolveModule } from '../utils/cjs'
+import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
 import { defineNuxtCommand } from './index'
 
 async function getNuxtVersion (paths: string | string[]) {
@@ -23,14 +24,7 @@ export default defineNuxtCommand({
   async invoke (args) {
     const rootDir = resolve(args._[0] || '.')
 
-    const yarnLock = 'yarn.lock'
-    const npmLock = 'package-lock.json'
-    const pnpmLock = 'pnpm-lock.yaml'
-
-    const isYarn = existsSync(resolve(rootDir, yarnLock))
-    const isNpm = existsSync(resolve(rootDir, npmLock))
-    const isPnpm = existsSync(resolve(rootDir, pnpmLock))
-    const packageManager = isPnpm ? 'pnpm' : isYarn ? 'yarn' : isNpm ? 'npm' : null
+    const packageManager = getPackageManager(rootDir)
     if (!packageManager) {
       console.error('Cannot detect Package Manager in', rootDir)
       process.exit(1)
@@ -44,13 +38,13 @@ export default defineNuxtCommand({
     if (args.force || args.f) {
       consola.info('Removing lock-file and node_modules...')
       await Promise.all([
-        fsp.rm(isPnpm ? pnpmLock : isYarn ? yarnLock : npmLock),
+        fsp.rm(packageManagerLocks[packageManager]),
         fsp.rmdir('node_modules', { recursive: true })
       ])
       execSync(`${packageManager} install`, { stdio: 'inherit' })
     } else {
       consola.info('Upgrading nuxt...')
-      execSync(`${packageManager} ${isYarn ? 'add' : 'install'} nuxt3@latest`, { stdio: 'inherit' })
+      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} nuxt3@latest`, { stdio: 'inherit' })
     }
 
     const upgradedVersion = await getNuxtVersion(rootDir)
