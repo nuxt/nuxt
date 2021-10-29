@@ -5,8 +5,8 @@
     "nuxt3": "latest"
   },
   "scripts": {
-    "dev": "nuxt dev",
-    "build": "nuxt build",
+    "dev": "nuxi dev",
+    "build": "nuxi build",
     "start": "node .output/server/index.mjs"
   }
 }

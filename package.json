@@ -14,7 +14,7 @@
     "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "nuxi": "./node_modules/.bin/nuxi",
     "nuxt": "./node_modules/.bin/nuxi",
-    "play": "yarn run nuxt dev playground",
+    "play": "yarn run nuxi dev playground",
     "example": "yarn workspace example-$0 dev",
     "example:build": "yarn workspace example-$0 build",
     "lint": "eslint --ext .vue,.ts,.js .",

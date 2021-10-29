@@ -2,6 +2,6 @@
   "private": true,
   "name": "fixture-bridge",
   "scripts": {
-    "build": "nuxt build"
+    "build": "nuxi build"
   }
 }
