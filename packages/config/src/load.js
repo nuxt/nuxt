@@ -40,12 +40,12 @@ export async function loadNuxtConfig ({
     /** default file */ `.env`,
     /** local file */ `.env.local`,
     /** mode file */ `.env.${mode}`,
-    /** mode local file */ `.env.${mode}.local`,
+    /** mode local file */ `.env.${mode}.local`
   ]
 
   // Load env
   envConfig = {
-    dotenv: '.env',
+    dotenv: envFiles,
     env: process.env,
     expand: true,
     ...envConfig
