@@ -33,6 +33,16 @@ export async function loadNuxtConfig ({
     configFile = undefined
   }
 
+  const dev = configOverrides.dev ?? options.dev ?? configContext.dev
+  const mode = process.env.NODE_ENV || dev ? 'development' : 'production'
+
+  const envFiles = [
+    /** default file */ `.env`,
+    /** local file */ `.env.local`,
+    /** mode file */ `.env.${mode}`,
+    /** mode local file */ `.env.${mode}.local`,
+  ]
+
   // Load env
   envConfig = {
     dotenv: '.env',
@@ -89,7 +99,6 @@ export async function loadNuxtConfig ({
 
   // Load Combine configs
   // Priority: configOverrides > nuxtConfig > .nuxt/dist/nuxtrc > .nuxtrc > .nuxtrc (global)
-  const dev = configOverrides.dev ?? options.dev ?? configContext.dev
   const buildDir = configOverrides.buildDir ?? options.buildDir ?? configContext.buildDir ?? '.nuxt'
   options = defu(
     configOverrides,
@@ -124,10 +133,21 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
 
   // Read dotenv
   if (envConfig.dotenv) {
-    envConfig.dotenv = path.resolve(rootDir, envConfig.dotenv)
-    if (fs.existsSync(envConfig.dotenv)) {
-      const parsed = dotenv.parse(fs.readFileSync(envConfig.dotenv, 'utf-8'))
-      Object.assign(env, parsed)
+    // Support old non-array configs
+    if (!Array.isArray(envConfig.dotenv)) {
+      envConfig.dotenv = [envConfig.dotenv]
+    }
+
+    for (const file of envConfig.dotenv) {
+      const filePath = path.resolve(rootDir, file)
+
+      if (fs.existsSync(filePath)) {
+        const parsed = dotenv.parse(fs.readFileSync(filePath, 'utf-8'), {
+          debug: !!process.env.DEBUG || undefined
+        })
+
+        Object.assign(env, parsed)
+      }
     }
   }
 
