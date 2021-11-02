@@ -137,6 +137,9 @@ export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
   let needsLegacyContext = false
 
   const plugins = _plugins.map((plugin) => {
+    if (typeof plugin !== 'function') {
+      return () => {}
+    }
     if (isLegacyPlugin(plugin)) {
       needsLegacyContext = true
       return (nuxtApp: NuxtApp) => plugin(nuxtApp._legacyContext!, nuxtApp.provide)
