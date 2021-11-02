@@ -14,7 +14,7 @@ export default (ctx, inject) => {
       mount: () => { },
       provide: inject,
       unmount: () => { },
-      use(vuePlugin) {
+      use (vuePlugin) {
         vuePlugin.install(this)
       },
       version: Vue.version
@@ -42,7 +42,16 @@ export default (ctx, inject) => {
     nuxtApp.vue2App = this
   })
 
-  setNuxtAppInstance(nuxtApp)
+  const proxiedApp = new Proxy(nuxtApp, {
+    get (target, prop) {
+      if (prop[0] === '$') {
+        return target.nuxt2Context[prop] || target.vue2App?.[prop]
+      }
+      return Reflect.get(target, prop)
+    }
+  })
 
-  inject('_nuxtApp', nuxtApp)
+  setNuxtAppInstance(proxiedApp)
+
+  inject('_nuxtApp', proxiedApp)
 }
