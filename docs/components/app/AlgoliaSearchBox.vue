@@ -16,7 +16,7 @@
 </template>
 
 <script>
-function isSpecialClick(event) {
+function isSpecialClick (event) {
   return event.button === 1 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
 }
 
@@ -32,26 +32,26 @@ export default {
     }
   },
   watch: {
-    '$i18n.locale'(newValue) {
+    '$i18n.locale' (newValue) {
       this.update(this.options, newValue)
     },
-    options(newValue) {
+    options (newValue) {
       this.update(newValue, this.$i18n.locale)
     }
   },
-  mounted() {
+  mounted () {
     this.initialize(this.options, this.$i18n.locale)
   },
   methods: {
-    stripTrailingSlash(url) {
+    stripTrailingSlash (url) {
       return url.replace(/\/$|\/(?=\?)|\/(?=#)/g, '')
     },
-    getRelativePath(absoluteUrl) {
+    getRelativePath (absoluteUrl) {
       const { pathname, hash } = new URL(absoluteUrl)
       const url = pathname.replace(this.settings.url, '/') + hash
       return this.stripTrailingSlash(url)
     },
-    async initialize(userOptions, code) {
+    async initialize (userOptions, code) {
       const lang = this.$i18n.locales.find(locale => locale.code === code)
 
       const docsearch = await Promise.all([
@@ -63,11 +63,13 @@ export default {
         ...userOptions,
         container: '#docsearch',
         searchParameters: {
-          ...((!lang) ? {} : {
-            facetFilters: [`${userOptions.langAttribute || 'language'}:${lang.iso}`].concat(
-              userOptions.facetFilters || []
-            )
-          }),
+          ...((!lang)
+            ? {}
+            : {
+                facetFilters: [`${userOptions.langAttribute || 'language'}:${lang.iso}`].concat(
+                  userOptions.facetFilters || []
+                )
+              })
         },
         navigator: {
           navigate: ({ itemUrl }) => {
@@ -97,7 +99,7 @@ export default {
             __v: 1,
             props: {
               href: hit.url,
-              children: children,
+              children,
               onClick: (event) => {
                 if (isSpecialClick(event)) {
                   return
@@ -119,13 +121,13 @@ export default {
                 }
 
                 this.$router.push(hit.url)
-              },
+              }
             }
           }
         }
       })
     },
-    update(options, lang) {
+    update (options, lang) {
       return this.initialize(options, lang)
     }
   }

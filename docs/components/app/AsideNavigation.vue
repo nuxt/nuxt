@@ -29,7 +29,8 @@
           :key="link.to"
           :title="link.title"
           :docs="link.children"
-          :collapse.sync="link.collapse"
+          :collapse="link.collapse"
+          @update:collapse="link.collapse = $event"
         />
         <AsideNavigationItem v-else :key="link.to" :docs="[link]" />
       </template>

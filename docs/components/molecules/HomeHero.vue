@@ -77,7 +77,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="postcss">
 .highlight-box {
   @apply transition-shadow duration-300;
 

@@ -9,4 +9,4 @@
   >
     <path d="M80.0761 12L159.152 148.965H1L80.0761 12Z" fill="currentColor" />
   </svg>
-</template?
+</template>

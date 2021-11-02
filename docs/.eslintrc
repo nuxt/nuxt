@@ -1,0 +1,7 @@
+{
+  "settings": {
+    "import/ignore": [
+      "vue"
+    ]
+  }
+}
