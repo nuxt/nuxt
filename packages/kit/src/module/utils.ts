@@ -5,7 +5,7 @@ import hash from 'hash-sum'
 import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
 import type { Plugin as VitePlugin, UserConfig as ViteConfig } from 'vite'
 import { camelCase } from 'scule'
-import semver from 'semver'
+import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import { NuxtCompatibilityConstraints, NuxtCompatibilityIssues } from '../types/module'
 import { Nuxt } from '../types/nuxt'
 import { useNuxt } from '../nuxt'
@@ -357,7 +357,7 @@ export function checkNuxtCompatibilityIssues (constraints: NuxtCompatibilityCons
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
     const nuxtSemanticVersion = nuxtVersion.split('-').shift()
-    if (!semver.satisfies(nuxtSemanticVersion, constraints.nuxt)) {
+    if (!satisfies(nuxtSemanticVersion, constraints.nuxt)) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``
