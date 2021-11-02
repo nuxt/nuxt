@@ -182,7 +182,7 @@ export const Style = defineComponent({
       if (process.dev && typeof textContent !== 'string') {
         console.error('<Style> can only take a string in its default slot.')
       }
-      style.content = textContent
+      style.children = textContent
     }
     return {
       style: [style]
