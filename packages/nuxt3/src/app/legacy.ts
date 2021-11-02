@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { App } from 'vue'
 import type { Component } from '@vue/runtime-core'
 import mockContext from 'unenv/runtime/mock/proxy'
-import type { NuxtApp } from './nuxt'
+import { NuxtApp, useRuntimeConfig } from './nuxt'
 
 type Route = any
 type Store = any
@@ -92,19 +92,12 @@ function mock (warning: string) {
 }
 
 const unsupported = new Set<keyof LegacyContext | keyof LegacyContext['ssrContext']>([
-  'isClient',
-  'isServer',
-  'isStatic',
   'store',
-  'target',
   'spa',
-  'env',
-  'modern',
   'fetchCounters'
 ])
 
 const todo = new Set<keyof LegacyContext | keyof LegacyContext['ssrContext']>([
-  'isDev',
   'isHMR',
   // Routing handlers - needs implementation or deprecation
   'base',
@@ -122,6 +115,15 @@ const todo = new Set<keyof LegacyContext | keyof LegacyContext['ssrContext']>([
 ])
 
 const routerKeys: Array<keyof LegacyContext | keyof LegacyContext['ssrContext']> = ['route', 'params', 'query']
+
+const staticFlags = {
+  isClient: process.client,
+  isServer: process.server,
+  isDev: process.dev,
+  isStatic: undefined,
+  target: 'server',
+  modern: false
+}
 
 export const legacyPlugin = (nuxtApp: NuxtApp) => {
   nuxtApp._legacyContext = new Proxy(nuxtApp, {
@@ -149,9 +151,12 @@ export const legacyPlugin = (nuxtApp: NuxtApp) => {
         }
       }
 
-      if (p === '$config') {
-        // TODO: needs implementation
-        return mock('Accessing runtime config is not yet supported in Nuxt 3.')
+      if (p === '$config' || p === 'env') {
+        return useRuntimeConfig()
+      }
+
+      if (p in staticFlags) {
+        return staticFlags[p]
       }
 
       if (p === 'ssrContext') {
