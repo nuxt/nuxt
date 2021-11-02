@@ -1,3 +1,6 @@
+// Augmentations
+import './types/global'
+
 // Config
 export * from './config/load'
 export * from './config/env'
