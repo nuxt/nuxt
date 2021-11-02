@@ -33,6 +33,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   if (nuxtConfigFile && existsSync(nuxtConfigFile)) {
     nuxtConfig = requireModule(nuxtConfigFile, { clearCache: true })
+
+    if (typeof nuxtConfig === 'function') {
+      nuxtConfig = await nuxtConfig(opts)
+    }
+
     nuxtConfig = { ...nuxtConfig }
     nuxtConfig._nuxtConfigFile = nuxtConfigFile
     nuxtConfig._nuxtConfigFiles = Array.from(scanRequireTree(nuxtConfigFile))
