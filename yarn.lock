@@ -2421,6 +2421,8 @@ __metadata:
     vue: ^2
     vue-router: ^3
     vue-template-compiler: ^2.6.14
+  bin:
+    nuxi: ./bin/nuxt.mjs
   languageName: unknown
   linkType: soft
 

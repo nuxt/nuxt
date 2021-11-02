@@ -11,6 +11,9 @@
     "types.d.ts",
     "dist"
   ],
+  "bin": {
+    "nuxi": "./bin/nuxt.mjs"
+  },
   "scripts": {
     "prepack": "unbuild"
   },
