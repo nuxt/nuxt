@@ -36,8 +36,6 @@ async function bundle (nuxt: Nuxt, builder: any) {
             '#build': nuxt.options.buildDir,
             '.nuxt': nuxt.options.buildDir,
             '/.nuxt/entry.mjs': resolve(nuxt.options.buildDir, 'client.js'),
-            '~': nuxt.options.srcDir,
-            '@': nuxt.options.srcDir,
             'web-streams-polyfill/ponyfill/es2018': resolve(distDir, 'runtime/vite/mock/web-streams-polyfill.mjs'),
             'whatwg-url': resolve(distDir, 'runtime/vite/mock/whatwg-url.mjs'),
             // Cannot destructure property 'AbortController' of ..

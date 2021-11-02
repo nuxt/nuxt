@@ -41,11 +41,7 @@ export async function bundle (nuxt: Nuxt) {
             // will be filled in client/server configs
             '#build/plugins': '',
             '#build': nuxt.options.buildDir,
-            '/build': nuxt.options.buildDir,
-            '/app': nuxt.options.appDir,
             '/entry.mjs': resolve(nuxt.options.appDir, 'entry'),
-            '~': nuxt.options.srcDir,
-            '@': nuxt.options.srcDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
             // Cannot destructure property 'AbortController' of ..
             'abort-controller': 'unenv/runtime/mock/empty'
@@ -98,7 +94,7 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
     const start = Date.now()
-    warmupViteServer(server, ['/app/entry.mjs']).then(() => {
+    warmupViteServer(server, ['/entry.mjs']).then(() => {
       consola.info(`Vite warmed up in ${Date.now() - start}ms`)
     }).catch(consola.error)
   })
