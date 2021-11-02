@@ -55,6 +55,10 @@ async function transformRequest (opts: TransformOptions, id: string) {
   if (id && id.startsWith('/@fs/')) {
     // Absolute path
     id = id.slice('/@fs'.length)
+    // On Windows, this may be `/C:/my/path` at this point, in which case we want to remove the `/`
+    if (id.match(/^\/\w:/)) {
+      id = id.slice(1)
+    }
   } else if (!id.includes('entry') && id.startsWith('/')) {
     // Relative to the root directory
     id = '.' + id
