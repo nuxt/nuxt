@@ -47,7 +47,7 @@ export async function build (nitroContext: NitroContext) {
   // Compile html template
   const htmlSrc = resolve(nitroContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '' }
-  htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.mjs').replace('app.', 'document.')
+  htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.mjs').replace('app.template.mjs', 'document.template.mjs')
   htmlTemplate.contents = nitroContext.vfs[htmlTemplate.src] || await fse.readFile(htmlTemplate.src, 'utf-8')
   await nitroContext._internal.hooks.callHook('nitro:document', htmlTemplate)
   const compiled = 'export default ' + serializeTemplate(htmlTemplate.contents)
