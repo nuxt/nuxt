@@ -26,7 +26,7 @@ export default defineNuxtModule({
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path, nuxt.options.alias)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = dirOptions.extensions || ['vue'] // TODO: nuxt extensions and strip leading dot
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
 
         dirOptions.level = Number(dirOptions.level || 0)
 

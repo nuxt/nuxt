@@ -457,7 +457,7 @@ export default {
    * @version 3
    */
   extensions: {
-    $resolve: val => ['.js', '.mjs', '.ts', '.tsx', '.vue'].concat(val).filter(Boolean)
+    $resolve: val => ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue'].concat(val).filter(Boolean)
   },
 
   /**
