@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "unbuild": "latest",
-    "vue": "3.2.20"
+    "vue": "3.2.21"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0",
@@ -24,7 +24,7 @@
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
-    "esbuild": "^0.13.10",
+    "esbuild": "^0.13.12",
     "externality": "^0.1.4",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
@@ -38,7 +38,7 @@
     "vite": "^2.6.13"
   },
   "peerDependencies": {
-    "vue": "3.2.20"
+    "vue": "3.2.21"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
