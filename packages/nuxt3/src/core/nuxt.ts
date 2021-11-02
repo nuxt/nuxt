@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import { createHooks } from 'hookable'
-import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, NuxtConfig, nuxtCtx, installModule, ModuleContainer, NuxtHooks } from '@nuxt/kit'
+import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, NuxtConfig, nuxtCtx, installModule, ModuleContainer, NuxtHooks, addComponent } from '@nuxt/kit'
 import pagesModule from '../pages/module'
 import metaModule from '../meta/module'
 import componentsModule from '../components/module'
@@ -52,6 +52,12 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options._modules
   ]
 
+  // Add <NuxtWelcome>
+  addComponent({
+    name: 'NuxtWelcome',
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-welcome.vue')
+  })
+
   for (const m of modulesToInstall) {
     await installModule(nuxt, m)
   }
@@ -66,7 +72,7 @@ async function initNuxt (nuxt: Nuxt) {
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
-  // Temp
+  // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
   options.buildModules.push(pagesModule, metaModule, componentsModule, autoImportsModule)
