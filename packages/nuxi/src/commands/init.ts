@@ -38,7 +38,7 @@ const resolveTemplate = (template) => {
 export default defineNuxtCommand({
   meta: {
     name: 'init',
-    usage: 'npx nuxi init [--verbose|-v] [--template,-t] <dir>',
+    usage: 'npx nuxi init|create [--verbose|-v] [--template,-t] [dir]',
     description: 'Initialize a fresh project'
   },
   async invoke (args) {
