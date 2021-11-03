@@ -2,7 +2,7 @@ import hasha from 'hasha'
 import { relative } from 'pathe'
 import table from 'table'
 import isPrimitive from 'is-primitive'
-import stdenv from 'std-env'
+import { isDebug } from 'std-env'
 import type { ServerMiddleware } from '../../server/middleware'
 import virtual from './virtual'
 
@@ -18,7 +18,7 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
       load: () => {
         const middleware = getMiddleware()
 
-        if (stdenv.debug) {
+        if (isDebug) {
           const dumped = dumpMiddleware(middleware)
           if (dumped !== lastDump) {
             lastDump = dumped

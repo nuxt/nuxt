@@ -4,10 +4,10 @@ import globby from 'globby'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
 import chalk from 'chalk'
-import stdenv from 'std-env'
+import { isTest } from 'std-env'
 
 export async function printFSTree (dir: string) {
-  if (stdenv.test) {
+  if (isTest) {
     return
   }
 

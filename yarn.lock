@@ -2893,7 +2893,7 @@ __metadata:
     rc9: ^1.2.0
     scule: ^0.2.1
     semver: ^7.3.5
-    std-env: ^2.3.1
+    std-env: 3.0.0-0
     ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
@@ -2972,7 +2972,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
-    std-env: ^2.3.1
+    std-env: 3.0.0-0
     table: ^6.7.2
     ufo: ^0.7.9
     unbuild: latest
@@ -18931,7 +18931,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"std-env@npm:^2.2.1, std-env@npm:^2.3.0, std-env@npm:^2.3.1":
+"std-env@npm:3.0.0-0":
+  version: 3.0.0-0
+  resolution: "std-env@npm:3.0.0-0"
+  checksum: 0a0b5daaafeadc570ebaa7b36603f3a04f43a6eb893feeeaaae3caa3d0a2fa6f3a5c0f9376bd8245c73d289b2c3b2176de0daa4f75de0f2c6c125e32a95880d8
+  languageName: node
+  linkType: hard
+
+"std-env@npm:^2.2.1, std-env@npm:^2.3.0":
   version: 2.3.1
   resolution: "std-env@npm:2.3.1"
   dependencies:

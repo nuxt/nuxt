@@ -1,4 +1,4 @@
-import env from 'std-env'
+import { isCI, isTest } from 'std-env'
 import { hasProtocol } from 'ufo'
 
 export default {
@@ -10,7 +10,7 @@ export default {
    * @see [std-env](https://github.com/unjs/std-env)
   * @version 2
    */
-  quiet: Boolean(env.ci || env.test),
+  quiet: Boolean(isCI || isTest),
 
   /**
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
