@@ -2958,7 +2958,7 @@ __metadata:
     is-primitive: ^3.0.1
     jiti: ^1.12.9
     listhen: ^0.2.5
-    mime: ^2.6.0
+    mime: ^3.0.0
     mlly: ^0.3.12
     node-fetch: ^3.0.0
     ohmyfetch: ^0.4.2
@@ -13753,12 +13753,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "mime@npm:2.6.0"
+"mime@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "mime@npm:3.0.0"
   bin:
     mime: cli.js
-  checksum: 1497ba7b9f6960694268a557eae24b743fd2923da46ec392b042469f4b901721ba0adcf8b0d3c2677839d0e243b209d76e5edcbd09cfdeffa2dfb6bb4df4b862
+  checksum: f43f9b7bfa64534e6b05bd6062961681aeb406a5b53673b53b683f27fcc4e739989941836a355eef831f4478923651ecc739f4a5f6e20a76487b432bfd4db928
   languageName: node
   linkType: hard
 

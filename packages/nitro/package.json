@@ -49,7 +49,7 @@
     "is-primitive": "^3.0.1",
     "jiti": "^1.12.9",
     "listhen": "^0.2.5",
-    "mime": "^2.6.0",
+    "mime": "^3.0.0",
     "mlly": "^0.3.12",
     "node-fetch": "^3.0.0",
     "ohmyfetch": "^0.4.2",
