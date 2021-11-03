@@ -4,6 +4,7 @@ import consola from 'consola'
 import type { Nuxt } from '@nuxt/kit'
 import type { InlineConfig, SSROptions } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
+import { sanitizeFilePath } from 'mlly'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -68,7 +69,8 @@ export async function bundle (nuxt: Nuxt) {
         build: {
           emptyOutDir: false,
           rollupOptions: {
-            input: resolve(nuxt.options.appDir, 'entry')
+            input: resolve(nuxt.options.appDir, 'entry'),
+            output: { sanitizeFileName: sanitizeFilePath }
           }
         },
         plugins: [

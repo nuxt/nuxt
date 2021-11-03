@@ -2959,7 +2959,7 @@ __metadata:
     jiti: ^1.12.9
     listhen: ^0.2.5
     mime: ^2.5.2
-    mlly: ^0.3.11
+    mlly: ^0.3.12
     node-fetch: ^3.0.0
     ohmyfetch: ^0.4.2
     ora: ^6.0.1
@@ -3128,6 +3128,7 @@ __metadata:
     externality: ^0.1.4
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
+    mlly: ^0.3.12
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     postcss-import: ^14.0.2
@@ -13993,6 +13994,13 @@ __metadata:
   version: 0.3.11
   resolution: "mlly@npm:0.3.11"
   checksum: caf1b2a606b82479e5a25d508da40be2a34d004d6ca36bae55a307284bbc23426731148b1502ee3fcbc3e33acee85e3c0def2a9a0732f4855798151377415c22
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.3.12":
+  version: 0.3.12
+  resolution: "mlly@npm:0.3.12"
+  checksum: f9f93622023f4a9adfd27c465ff40146725cbb17176eb3610f4cec73f31edca41dc571030d185406d30044aaa0565a75782ac74a69be3cc58c10fc50505bb74d
   languageName: node
   linkType: hard
 

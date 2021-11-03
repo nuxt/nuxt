@@ -16,6 +16,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import * as unenv from 'unenv'
 
 import type { Preset } from 'unenv'
+import { sanitizeFilePath } from 'mlly'
 import { NitroContext } from '../context'
 import { resolvePath } from '../utils'
 import { pkgDir } from '../dirs'
@@ -99,9 +100,6 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
         } else if (lastModule.includes('assets')) {
           prefix = 'assets'
         }
-        if (chunkInfo.name.includes('#')) {
-          return join('chunks', prefix, chunkInfo.name.replace(/#/g, '-') + '.mjs')
-        }
         return join('chunks', prefix, '[name].mjs')
       },
       inlineDynamicImports: nitroContext.inlineDynamicImports,
@@ -110,6 +108,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       intro: '',
       outro: '',
       preferConst: true,
+      sanitizeFileName: sanitizeFilePath,
       sourcemap: nitroContext.sourceMap,
       sourcemapExcludeSources: true,
       sourcemapPathTransform (relativePath, sourcemapPath) {
