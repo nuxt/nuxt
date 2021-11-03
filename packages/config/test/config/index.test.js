@@ -2,7 +2,7 @@ import { getDefaultNuxtConfig } from '../../src/config'
 
 jest.mock('std-env', () => ({
   isBrowser: false,
-  test: 'test',
+  isTest: true,
   isDevelopment: false,
   isProduction: true,
   isDebug: false,
