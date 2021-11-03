@@ -25,7 +25,7 @@
     "consola": "^2.15.3",
     "defu": "^5.0.0",
     "esbuild": "^0.13.12",
-    "externality": "^0.1.4",
+    "externality": "^0.1.5",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
     "mlly": "^0.3.12",
