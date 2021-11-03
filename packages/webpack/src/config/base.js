@@ -8,7 +8,7 @@ import * as PnpWebpackPlugin from 'pnp-webpack-plugin'
 import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
-import env from 'std-env'
+import { isMinimal } from 'std-env'
 import semver from 'semver'
 import { isRelative } from 'ufo'
 
@@ -446,8 +446,8 @@ export default class WebpackBaseConfig {
         'profile',
         'stats'
       ],
-      basic: !buildOptions.quiet && env.minimalCLI,
-      fancy: !buildOptions.quiet && !env.minimalCLI,
+      basic: !buildOptions.quiet && isMinimal,
+      fancy: !buildOptions.quiet && isMinimal,
       profile: !buildOptions.quiet && buildOptions.profile,
       stats: !buildOptions.quiet && !this.dev && buildOptions.stats,
       reporter: {
