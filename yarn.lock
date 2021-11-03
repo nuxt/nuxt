@@ -2893,7 +2893,7 @@ __metadata:
     rc9: ^1.2.0
     scule: ^0.2.1
     semver: ^7.3.5
-    std-env: 3.0.0-0
+    std-env: ^3.0.0
     ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
@@ -2972,7 +2972,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
-    std-env: 3.0.0-0
+    std-env: ^3.0.0
     table: ^6.7.2
     ufo: ^0.7.9
     unbuild: latest
@@ -18931,19 +18931,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"std-env@npm:3.0.0-0":
-  version: 3.0.0-0
-  resolution: "std-env@npm:3.0.0-0"
-  checksum: 0a0b5daaafeadc570ebaa7b36603f3a04f43a6eb893feeeaaae3caa3d0a2fa6f3a5c0f9376bd8245c73d289b2c3b2176de0daa4f75de0f2c6c125e32a95880d8
-  languageName: node
-  linkType: hard
-
 "std-env@npm:^2.2.1, std-env@npm:^2.3.0":
   version: 2.3.1
   resolution: "std-env@npm:2.3.1"
   dependencies:
     ci-info: ^3.1.1
   checksum: 049be0d6fb7ff544b3061a53ccaddd3ab2f6930f50b432f54dc82b22cb813c6e408ed69807c7c6bc592fccfc92d5c431dcc1aacd7c9ca99d304948f3149a08da
+  languageName: node
+  linkType: hard
+
+"std-env@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "std-env@npm:3.0.0"
+  checksum: 5a9b91e853e869780c3af90c3d8e4325497da839084daa2edcc5b6ad3585bfd866ecb54d16143a5abbbd0e02ddf05fdd6bcc6e5068638c820652178eb435315c
   languageName: node
   linkType: hard
 
