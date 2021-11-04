@@ -63,7 +63,8 @@ export async function bundle (nuxt: Nuxt) {
         },
         esbuild: {
           jsxFactory: 'h',
-          jsxFragment: 'Fragment'
+          jsxFragment: 'Fragment',
+          tsconfigRaw: '{}'
         },
         clearScreen: false,
         build: {

@@ -61,7 +61,8 @@ async function bundle (nuxt: Nuxt, builder: any) {
         },
         esbuild: {
           jsxFactory: 'h',
-          jsxFragment: 'Fragment'
+          jsxFragment: 'Fragment',
+          tsconfigRaw: '{}'
         },
         publicDir: resolve(nuxt.options.srcDir, nuxt.options.dir.static),
         clearScreen: false,
