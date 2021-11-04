@@ -1,7 +1,7 @@
 import defu from 'defu'
 import { computed, getCurrentInstance as getVM, isReactive, isRef, onBeforeMount, onServerPrefetch, reactive, ref, set, shallowRef, toRaw, toRefs, watch } from '@vue/composition-api'
 import { useNuxtApp } from './app'
-import { useState } from './composables'
+import { useRouter as _useRouter, useState } from './composables'
 
 // Vue composition API export
 export {
@@ -62,7 +62,7 @@ export { ref }
 
 // Common deprecation utils
 // TODO: Add migration guide docs to @nuxtjs/composition-api
-const checkDocsMsg = 'Please see https://v3.nuxtjs.org for more information.'
+const checkDocsMsg = 'Please see https://go.nuxtjs.dev/bridge-capi for more information.'
 const msgPrefix = '[bridge] [legacy capi]'
 const unsupported = message => () => { throw new Error(`${msgPrefix} ${message} ${checkDocsMsg}`) }
 const _warned = {}
@@ -73,8 +73,9 @@ const warnOnce = (id, message) => {
   }
 }
 
+// TODO: Add warning back once we had replacement for useAsync and useMeta
 // Warn in case of having any imports from `@nuxtjs/composition-api`
-warnOnce('import', `\`@nuxtjs/composition-api\` is deprecated. ${checkDocsMsg}`)
+// warnOnce('import', `\`@nuxtjs/composition-api\` is deprecated. ${checkDocsMsg}`)
 
 // Stub functions that provided type support
 export const defineNuxtMiddleware = unsupported('You are using `defineNuxtMiddleware`, which is not supported. You can remove wrapper function to keep using Nuxt 2 middleware.')
@@ -86,10 +87,10 @@ export const setSSRContext = unsupported('`setSSRContext` is an internal functio
 export const globalPlugin = unsupported('`globalPlugin` is an internal function that is no longer used.')
 
 // Deprecated functions
-export const withContext = unsupported('`withContext` is a deprecated method that is no longer provided.')
+export const withContext = unsupported('`withContext` is a deprecated method that is no longer provided and can be replaced with `useNuxtApp` (import from `#app`).')
 export const useStatic = unsupported('`useStatic` is a deprecated method that is no longer provided.')
-export const reqRef = unsupported('`reqRef` is a deprecated method that is no longer provided.')
-export const reqSsrRef = unsupported('`reqSsrRef` is no longer provided (`ssrRef` can be used instead).')
+export const reqRef = unsupported('`reqRef` is a deprecated method that is no longer provided and can be replaced with `ref` (import from `@vue/composition-api`).')
+export const reqSsrRef = unsupported('`reqSsrRef` is no longer provided and can be replaced with `useState` (import from `#app`).')
 
 // ssrRef helpers
 const sanitise = val => (val && JSON.parse(JSON.stringify(val))) || val
@@ -99,13 +100,13 @@ export const ssrRef = (value, key) => {
   const vm = getVM()
   if (!vm) { throw new Error('ssrRef no longer supports global/ambient context and must be called within a setup() function') }
 
-  warnOnce('ssrRef', '`ssrRef` is deprecated and can be replaced with `useState`.')
+  warnOnce('ssrRef', '`ssrRef` is deprecated and can be replaced with `useState` (import from `#app`).')
 
   return useState(key, value instanceof Function ? value : () => value)
 }
 
 export const shallowSsrRef = (value, key) => {
-  warnOnce('shallowSsrRef', '`shallowSsrRef` is deprecated and can be replaced with `useState`.')
+  warnOnce('shallowSsrRef', '`shallowSsrRef` is deprecated and can be replaced with `useState` (import from `#app`).')
 
   const ref = ssrRef(value, key)
 
@@ -186,7 +187,7 @@ function createEmptyMeta () {
   }
 }
 
-export const getHeadOptions = (options) => {
+const getHeadOptions = (options) => {
   const head = function () {
     const optionHead =
       options.head instanceof Function ? options.head.call(this) : options.head
@@ -247,7 +248,7 @@ export const wrapProperty = (property, makeComputed = true) => () => {
 
 export const useRouter = () => {
   warnOnce('useRouter', 'You are using `useRouter`, which can be replaced with `useRouter` (import from `#app`).')
-  return getCurrentInstance().$router
+  return _useRouter()
 }
 
 export const useRoute = () => {
@@ -256,7 +257,10 @@ export const useRoute = () => {
   return computed(() => vm.$route)
 }
 
-export const useStore = () => getCurrentInstance().$store
+export const useStore = () => {
+  warnOnce('useRoute', 'You are using `useStore`, which can be replaced with `useNuxtApp` (import from `#app`).')
+  return getCurrentInstance().$store
+}
 
 // useFetch and helper functions
 
