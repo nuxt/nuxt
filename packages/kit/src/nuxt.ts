@@ -1,5 +1,6 @@
 import { getContext } from 'unctx'
-import { importModule, tryImportModule, tryResolveModule, RequireModuleOptions } from './utils/cjs'
+import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { importModule, tryImportModule, RequireModuleOptions } from './utils/cjs'
 import type { Nuxt } from './types/nuxt'
 import type { NuxtConfig } from './types/config'
 import type { LoadNuxtConfigOptions } from './config/load'
@@ -21,7 +22,6 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   rootDir: string
   dev?: boolean
   config?: NuxtConfig
-  version?: 2 | 3
   configFile?: string
   ready?: boolean
 }
@@ -29,13 +29,17 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const resolveOpts: RequireModuleOptions = { paths: opts.rootDir }
 
-  // Detect version
-  if (!opts.version) {
-    opts.version = tryResolveModule('nuxt3', resolveOpts) ? 3 : 2
+  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt-edge', 'nuxt']
+    .map(pkg => resolvePackageJSON(pkg, { url: opts.rootDir }).catch(() => null)))
+    .then(r => r.filter(Boolean).sort((a, b) => b.length - a.length)[0])
+  if (!nearestNuxtPkg) {
+    throw new Error(`Cannot find any nuxt version from ${opts.rootDir}`)
   }
+  const pkg = await readPackageJSON(nearestNuxtPkg)
+  const majorVersion = parseInt((pkg.version || '').split('.')[0])
 
   // Nuxt 3
-  if (opts.version !== 2) {
+  if (majorVersion === 3) {
     const { loadNuxt } = await importModule('nuxt3', resolveOpts)
     const nuxt = await loadNuxt(opts)
     return nuxt
@@ -50,6 +54,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     ready: opts.ready,
     envConfig: opts.envConfig
   })
+
   return nuxt as Nuxt
 }
 
