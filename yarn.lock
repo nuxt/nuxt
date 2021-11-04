@@ -2973,7 +2973,7 @@ __metadata:
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
     std-env: ^3.0.0
-    table: ^6.7.2
+    table: ^6.7.3
     ufo: ^0.7.9
     unbuild: latest
     unenv: ^0.4.0
@@ -3208,7 +3208,7 @@ __metadata:
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.3.0
-    mini-css-extract-plugin: ^2.4.3
+    mini-css-extract-plugin: ^2.4.4
     mlly: ^0.3.12
     pathe: ^0.2.0
     pify: ^5.0.0
@@ -3223,7 +3223,7 @@ __metadata:
     unbuild: latest
     url-loader: ^4.1.1
     vue: 3.2.21
-    vue-loader: ^16.8.2
+    vue-loader: ^16.8.3
     vue-style-loader: ^4.1.3
     webpack: ^5.61.0
     webpack-bundle-analyzer: ^4.5.0
@@ -13163,13 +13163,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.clonedeep@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.clonedeep@npm:4.5.0"
-  checksum: 92c46f094b064e876a23c97f57f81fbffd5d760bf2d8a1c61d85db6d1e488c66b0384c943abee4f6af7debf5ad4e4282e74ff83177c9e63d8ff081a4837c3489
-  languageName: node
-  linkType: hard
-
 "lodash.debounce@npm:^4.0.8":
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
@@ -13783,14 +13776,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^2.4.3":
-  version: 2.4.3
-  resolution: "mini-css-extract-plugin@npm:2.4.3"
+"mini-css-extract-plugin@npm:^2.4.4":
+  version: 2.4.4
+  resolution: "mini-css-extract-plugin@npm:2.4.4"
   dependencies:
     schema-utils: ^3.1.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: bee9d5f5c84ebc557bb201be4453003f98b47807153762bbf566b6f5e8071e67b6147f22d36111ecad62fd6d71979e5c6f43989000731c562a409b65ef529e45
+  checksum: afc3c2d364096b3ec79c910f0b0e0f62b6861b84e0bcdf8c05b267e529b8f4e450984b0fc7afcd1e87616cbefcd688eeef1c41ce3c892a9c313f4dc9132189fb
   languageName: node
   linkType: hard
 
@@ -19328,17 +19321,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.7.2":
-  version: 6.7.2
-  resolution: "table@npm:6.7.2"
+"table@npm:^6.7.3":
+  version: 6.7.3
+  resolution: "table@npm:6.7.3"
   dependencies:
     ajv: ^8.0.1
-    lodash.clonedeep: ^4.5.0
     lodash.truncate: ^4.4.2
     slice-ansi: ^4.0.0
     string-width: ^4.2.3
     strip-ansi: ^6.0.1
-  checksum: d61f91d64b9be56ac66edd2a8c0f10fcc59995313f37198cb87de73a6b441a05ad36f4a567bd8736da35bc4a2f8f4049b0e4ff1d4356c0a7c2b91af48b8bf8b2
+  checksum: 61d732f51108222d158eca2a91bfaae41c14e0cba6eb04c702ec5a1b136219d4925940d5c4d9aff5720bc4e2385dcbe2ed52dcf37bbbd8b2be48c01c1cf2ed1d
   languageName: node
   linkType: hard
 
@@ -20637,16 +20629,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-loader@npm:^16.8.2":
-  version: 16.8.2
-  resolution: "vue-loader@npm:16.8.2"
+"vue-loader@npm:^16.8.3":
+  version: 16.8.3
+  resolution: "vue-loader@npm:16.8.3"
   dependencies:
     chalk: ^4.1.0
     hash-sum: ^2.0.0
     loader-utils: ^2.0.0
   peerDependencies:
     webpack: ^4.1.0 || ^5.0.0-0
-  checksum: c39370b07e93fba82b63059947fcbbddbd40c7460c6aefc24fc9d845c6743e062bb02efa49d3aa576a12146f1a4ffad18725c2942c089d05422785749de796a5
+  checksum: 7c0566847b09bd1d0b8b1bd146274eb53c775668388b10a6fcd0968b41353c85018c24bc91f7ed31c20a5d5fcdc50f08149c4656663500075576b06e546ca976
   languageName: node
   linkType: hard
 
