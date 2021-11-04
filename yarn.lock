@@ -2961,7 +2961,7 @@ __metadata:
     mime: ^3.0.0
     mlly: ^0.3.12
     node-fetch: ^3.0.0
-    ohmyfetch: ^0.4.2
+    ohmyfetch: ^0.4.4
     ora: ^6.0.1
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -14909,7 +14909,7 @@ __metadata:
     mlly: ^0.3.12
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
-    ohmyfetch: ^0.4.2
+    ohmyfetch: ^0.4.4
     pathe: ^0.2.0
     scule: ^0.2.1
     ufo: ^0.7.9
@@ -15055,6 +15055,18 @@ __metadata:
     node-fetch: ^3.0.0
     ufo: ^0.7.9
   checksum: 91cce3271b9e47e0c29d3cf25813b1c5076b15ad62ac81e8ce8d7153d906b4d36c60cffc3e03d9dd4745604ea8e4ca886d112db355bb2a4a8282658665530b80
+  languageName: node
+  linkType: hard
+
+"ohmyfetch@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "ohmyfetch@npm:0.4.4"
+  dependencies:
+    destr: ^1.1.0
+    node-fetch: ^3.0.0
+    ufo: ^0.7.9
+    undici: ^4.9.5
+  checksum: c30ee7fe97078a143185f65084d04939f138f865290559e1d9127ac49a58cc53dd83649653986ce68faa9b3dbd9e5b49d59f614734a084117ff72ddc56a128f2
   languageName: node
   linkType: hard
 
@@ -20037,6 +20049,13 @@ __metadata:
   version: 1.0.2
   resolution: "unctx@npm:1.0.2"
   checksum: bb850eef93e58ed00aa0db04401e77fa446b4c18a323dc314599d40aea58a6b45c5bb5b78c7316b250a9849e71d2ad97506f4116a9901240b2f0ca702691e7ff
+  languageName: node
+  linkType: hard
+
+"undici@npm:^4.9.5":
+  version: 4.9.5
+  resolution: "undici@npm:4.9.5"
+  checksum: bfd3abf315bea4cba09b0059f3687a108a3c298b1e2f2be33da2bdabdf140514c5de89693fd47e7259e1b9ce9b8618151823c1a6b18278c1611da85ea102993c
   languageName: node
   linkType: hard
 
