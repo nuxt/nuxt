@@ -13,25 +13,22 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'npx nuxi dev [rootDir] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--ssl-cert] [--ssl-key]',
+    usage: 'npx nuxi dev [rootDir] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'development'
-    const https = !!(args['ssl-cert'] && args['ssl-key'])
     const server = createServer()
     const listener = await server.listen({
       clipboard: args.clipboard,
       open: args.open || args.o,
       port: args.port || args.p,
       hostname: args.host || args.h,
-      ...(https && {
-        https,
-        certificate: {
-          cert: args['ssl-cert'],
-          key: args['ssl-key']
-        }
-      })
+      https: Boolean(args.https),
+      certificate: (args['ssl-cert'] && args['ssl-key']) && {
+        cert: args['ssl-cert'],
+        key: args['ssl-key']
+      }
     })
 
     const rootDir = resolve(args._[0] || '.')
