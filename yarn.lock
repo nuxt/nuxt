@@ -2671,7 +2671,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@types/node-fetch": ^3.0.2
     "@vitejs/plugin-legacy": ^1.6.2
-    "@vue/composition-api": ^1.3.2
+    "@vue/composition-api": ^1.3.3
     "@vueuse/head": ^0.6.0
     acorn: ^8.5.0
     consola: ^2.15.3
@@ -3198,7 +3198,7 @@ __metadata:
     autoprefixer: ^10.4.0
     babel-loader: ^8.2.3
     consola: ^2.15.3
-    css-loader: ^6.5.0
+    css-loader: ^6.5.1
     css-minimizer-webpack-plugin: ^3.1.1
     cssnano: ^5.0.9
     esbuild-loader: ^2.16.0
@@ -4744,14 +4744,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/composition-api@npm:^1.3.2":
-  version: 1.3.2
-  resolution: "@vue/composition-api@npm:1.3.2"
+"@vue/composition-api@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "@vue/composition-api@npm:1.3.3"
   dependencies:
     tslib: ^2.3.1
   peerDependencies:
     vue: ">= 2.5 < 3"
-  checksum: ded80b27a4c2423dd4ba6ebcc997a98afd4f21632457c3cf02ecec4e0d6c84f93947ac04054914c9dde99c0580d1659a5114a94eaa8893797a5ef553fe58a38f
+  checksum: 77949b20bfc11b7c49a15bc1a5445d1796517e2e696552c796a2cecb725d4b6fe690f02fda9022fd37bc659f24b2e3a49f45c659bf9d2558ff833cafb8fd19d9
   languageName: node
   linkType: hard
 
@@ -8191,9 +8191,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "css-loader@npm:6.5.0"
+"css-loader@npm:^6.5.1":
+  version: 6.5.1
+  resolution: "css-loader@npm:6.5.1"
   dependencies:
     icss-utils: ^5.1.0
     postcss: ^8.2.15
@@ -8205,7 +8205,7 @@ __metadata:
     semver: ^7.3.5
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 4f3e7b93df79293dca910de41c741486155ea8248e048ea51a74fc5570d3acb962b5be0b6740f3ad8006b40eb4ef375124de4f9507aebf7a42f5ca7b8a7807d1
+  checksum: 5a3bedecb468038f09673d25c32d8db5b0baa6c38820253c54ce4c56c27a2250d5d5b4bace77dd5e20ba0a569604eb759362bab4e3128e7db2229e40857d4aca
   languageName: node
   linkType: hard
 

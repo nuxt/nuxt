@@ -23,7 +23,7 @@
     "autoprefixer": "^10.4.0",
     "babel-loader": "^8.2.3",
     "consola": "^2.15.3",
-    "css-loader": "^6.5.0",
+    "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.1.1",
     "cssnano": "^5.0.9",
     "esbuild-loader": "^2.16.0",

@@ -23,7 +23,7 @@
     "@nuxt/nitro": "3.0.0",
     "@nuxt/postcss8": "^1.1.3",
     "@vitejs/plugin-legacy": "^1.6.2",
-    "@vue/composition-api": "^1.3.2",
+    "@vue/composition-api": "^1.3.3",
     "@vueuse/head": "^0.6.0",
     "acorn": "^8.5.0",
     "consola": "^2.15.3",
