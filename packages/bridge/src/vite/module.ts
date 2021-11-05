@@ -10,11 +10,6 @@ export default defineNuxtModule<ViteOptions>({
   version,
   configKey: 'vite',
   setup (viteOptions, nuxt) {
-    // Only enable for development or production if `build: true` is set
-    if (!nuxt.options.dev && !viteOptions.build) {
-      return
-    }
-
     nuxt.options.cli.badgeMessages.push(`⚡  Vite Mode Enabled (v${version})`)
     // eslint-disable-next-line no-console
     if (viteOptions.experimentWarning !== false && !nuxt.options.test) {

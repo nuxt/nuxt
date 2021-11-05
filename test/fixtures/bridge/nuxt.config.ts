@@ -21,6 +21,5 @@ export default defineNuxtConfig({
   bridge: {
     meta: true,
     vite: !!process.env.TEST_BRIDGE_VITE
-  },
-  vite: process.env.TEST_BRIDGE_VITE ? { build: {} } : undefined
+  }
 })
