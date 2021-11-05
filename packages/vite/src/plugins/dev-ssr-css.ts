@@ -18,7 +18,7 @@ export function devStyleSSRPlugin (rootDir: string): Plugin {
 
       // When dev `<style>` is injected, remove the `<link>` styles from manifest
       // TODO: Use `app.assetsPath` or unique hash
-      return code + `\ndocument.querySelector(\`link[href="/_nuxt${moduleId}"]\`).forEach(i=>i.remove())`
+      return code + `\ndocument.querySelectorAll(\`link[href="/_nuxt${moduleId}"]\`).forEach(i=>i.remove())`
     }
   }
 }
