@@ -1,7 +1,9 @@
 import type { AutoImport } from '@nuxt/kit'
 import { expect } from 'chai'
+import * as VueFunctions from 'vue'
 import { AutoImportContext, updateAutoImportContext } from '../src/auto-imports/context'
 import { TransformPlugin } from '../src/auto-imports/transform'
+import { Nuxt3AutoImports } from '../src/auto-imports/imports'
 
 describe('auto-imports:transform', () => {
   const autoImports: AutoImport[] = [
@@ -33,4 +35,103 @@ describe('auto-imports:transform', () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).to.equal('import { computed } from \'bar\';// import { computed } from "foo"\n;const a = computed(0)')
   })
+})
+
+const excludedVueHelpers = [
+  'EffectScope',
+  'ReactiveEffect',
+  'stop',
+  'camelize',
+  'capitalize',
+  'normalizeClass',
+  'normalizeProps',
+  'normalizeStyle',
+  'toDisplayString',
+  'toHandlerKey',
+  'BaseTransition',
+  'Comment',
+  'Fragment',
+  'KeepAlive',
+  'Static',
+  'Suspense',
+  'Teleport',
+  'Text',
+  'callWithAsyncErrorHandling',
+  'callWithErrorHandling',
+  'cloneVNode',
+  'compatUtils',
+  'createBlock',
+  'createCommentVNode',
+  'createElementBlock',
+  'createElementVNode',
+  'createHydrationRenderer',
+  'createPropsRestProxy',
+  'createRenderer',
+  'createSlots',
+  'createStaticVNode',
+  'createTextVNode',
+  'createVNode',
+  'getTransitionRawChildren',
+  'guardReactiveProps',
+  'handleError',
+  'initCustomFormatter',
+  'isMemoSame',
+  'isRuntimeOnly',
+  'isVNode',
+  'mergeDefaults',
+  'mergeProps',
+  'openBlock',
+  'popScopeId',
+  'pushScopeId',
+  'queuePostFlushCb',
+  'registerRuntimeCompiler',
+  'renderList',
+  'renderSlot',
+  'resolveComponent',
+  'resolveDirective',
+  'resolveDynamicComponent',
+  'resolveFilter',
+  'resolveTransitionHooks',
+  'setBlockTracking',
+  'setDevtoolsHook',
+  'setTransitionHooks',
+  'ssrContextKey',
+  'ssrUtils',
+  'toHandlers',
+  'transformVNodeArgs',
+  'useSSRContext',
+  'version',
+  'warn',
+  'watchPostEffect',
+  'watchSyncEffect',
+  'withAsyncContext',
+  'Transition',
+  'TransitionGroup',
+  'VueElement',
+  'createApp',
+  'createSSRApp',
+  'defineCustomElement',
+  'defineSSRCustomElement',
+  'hydrate',
+  'initDirectivesForSSR',
+  'render',
+  'useCssVars',
+  'vModelCheckbox',
+  'vModelDynamic',
+  'vModelRadio',
+  'vModelSelect',
+  'vModelText',
+  'vShow',
+  'compile'
+]
+
+describe('auto-imports:vue', () => {
+  for (const name of Object.keys(VueFunctions)) {
+    if (excludedVueHelpers.includes(name)) {
+      continue
+    }
+    it(`should register ${name} globally`, () => {
+      expect(Nuxt3AutoImports.find(a => a.from === 'vue').names).to.include(name)
+    })
+  }
 })

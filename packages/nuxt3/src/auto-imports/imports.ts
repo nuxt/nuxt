@@ -33,6 +33,19 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
   {
     from: 'vue',
     names: [
+      // <script setup>
+      'defineEmits',
+      'defineExpose',
+      'defineProps',
+      'withAsyncContext',
+      'withCtx',
+      'withDefaults',
+      'withDirectives',
+      'withKeys',
+      'withMemo',
+      'withModifiers',
+      'withScopeId',
+
       // Lifecycle
       'onActivated',
       'onBeforeMount',
@@ -41,6 +54,8 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'onDeactivated',
       'onErrorCaptured',
       'onMounted',
+      'onRenderTracked',
+      'onRenderTriggered',
       'onServerPrefetch',
       'onUnmounted',
       'onUpdated',
@@ -48,15 +63,19 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       // Reactivity
       'computed',
       'customRef',
+      'isProxy',
+      'isReactive',
       'isReadonly',
       'isRef',
       'markRaw',
+      'proxyRefs',
       'reactive',
       'readonly',
       'ref',
       'shallowReactive',
       'shallowReadonly',
       'shallowRef',
+      'stop',
       'toRaw',
       'toRef',
       'toRefs',
@@ -64,6 +83,12 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'unref',
       'watch',
       'watchEffect',
+
+      // effect
+      'effect',
+      'effectScope',
+      'getCurrentScope',
+      'onScopeDispose',
 
       // Component
       'defineComponent',
@@ -73,7 +98,11 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'inject',
       'nextTick',
       'provide',
-      'useCssModule'
-    ]
+      'useAttrs',
+      'useCssModule',
+      'useCssVars',
+      'useSlots',
+      'useTransitionState'
+    ] as Array<keyof typeof import('vue')>
   }
 ]
