@@ -13535,10 +13535,10 @@ webpack@^4.46.0:
     watchpack "^1.7.4"
     webpack-sources "^1.4.1"
 
-webpackbar@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-5.0.0.tgz#d5c414f80b1197c779f6781c85b7a12d7838a04f"
-  integrity sha512-9qSmsqMEWG+2A0y+9xaaNXtZRgTs792OMfxyj6WXENt8e+hN1knMdNqzruKxPmERLXwAdhERXItLdGSRHsepxw==
+webpackbar@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-5.0.1.tgz#8cbac038cc96aa02a945e0fb71aaad791f051c01"
+  integrity sha512-8dpwGXlOBV8YRP49ZuicFmbDqdlgG9f8L0GwcQGh+uxkFYduIUkS1kZoLlZVzS2v08oxGfNJku/cwg2KIdeGsg==
   dependencies:
     chalk "^4.1.0"
     consola "^2.15.3"
