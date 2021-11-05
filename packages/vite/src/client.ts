@@ -11,6 +11,7 @@ import { cacheDirPlugin } from './plugins/cache-dir'
 import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { writeManifest } from './manifest'
+import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
@@ -38,7 +39,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
-      viteJsxPlugin()
+      viteJsxPlugin(),
+      devStyleSSRPlugin(ctx.nuxt.options.rootDir)
     ],
     server: {
       middlewareMode: true

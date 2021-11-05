@@ -3,6 +3,7 @@ import * as vite from 'vite'
 import { createVuePlugin } from 'vite-plugin-vue2'
 import PluginLegacy from '@vitejs/plugin-legacy'
 import consola from 'consola'
+import { devStyleSSRPlugin } from '../../../vite/src/plugins/dev-ssr-css'
 import { jsxPlugin } from './plugins/jsx'
 import { ViteBuildContext, ViteOptions } from './types'
 
@@ -38,7 +39,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       jsxPlugin(),
       createVuePlugin(ctx.config.vue),
-      PluginLegacy()
+      PluginLegacy(),
+      devStyleSSRPlugin(ctx.nuxt.options.rootDir)
     ],
     server: {
       middlewareMode: true
