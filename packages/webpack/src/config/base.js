@@ -447,7 +447,7 @@ export default class WebpackBaseConfig {
         'stats'
       ],
       basic: !buildOptions.quiet && isMinimal,
-      fancy: !buildOptions.quiet && isMinimal,
+      fancy: !buildOptions.quiet && !isMinimal,
       profile: !buildOptions.quiet && buildOptions.profile,
       stats: !buildOptions.quiet && !this.dev && buildOptions.stats,
       reporter: {
