@@ -37,7 +37,7 @@
     "postcss-preset-env": "^6.7.0",
     "postcss-url": "^8.0.0",
     "semver": "^7.3.5",
-    "std-env": "^3.0.0",
+    "std-env": "^3.0.1",
     "style-resources-loader": "^1.4.1",
     "terser-webpack-plugin": "^4.2.3",
     "thread-loader": "^3.0.4",
@@ -53,7 +53,7 @@
     "webpack-dev-middleware": "^5.2.1",
     "webpack-hot-middleware": "^2.25.1",
     "webpack-node-externals": "^3.0.0",
-    "webpackbar": "^5.0.1"
+    "webpackbar": "^5.0.2"
   },
   "publishConfig": {
     "access": "public"

@@ -12298,10 +12298,10 @@ std-env@^2.3.0:
   dependencies:
     ci-info "^3.1.1"
 
-std-env@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/std-env/-/std-env-3.0.0.tgz#8dbd16bd2aadc18992072e2f5839e897f4ee2733"
-  integrity sha512-GoFEqAGzhaexp/T01rIiLOK9LHa6HmVwEUyeU4cwdSnOhfxpw9IMeAFi44SHWbCErEs29qEh7vAOUbtUmoycjA==
+std-env@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-3.0.1.tgz#bc4cbc0e438610197e34c2d79c3df30b491f5182"
+  integrity sha512-mC1Ps9l77/97qeOZc+HrOL7TIaOboHqMZ24dGVQrlxFcpPpfCHpH+qfUT7Dz+6mlG8+JPA1KfBQo19iC/+Ngcw==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
@@ -13535,15 +13535,15 @@ webpack@^4.46.0:
     watchpack "^1.7.4"
     webpack-sources "^1.4.1"
 
-webpackbar@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-5.0.1.tgz#8cbac038cc96aa02a945e0fb71aaad791f051c01"
-  integrity sha512-8dpwGXlOBV8YRP49ZuicFmbDqdlgG9f8L0GwcQGh+uxkFYduIUkS1kZoLlZVzS2v08oxGfNJku/cwg2KIdeGsg==
+webpackbar@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-5.0.2.tgz#d3dd466211c73852741dfc842b7556dcbc2b0570"
+  integrity sha512-BmFJo7veBDgQzfWXl/wwYXr/VFus0614qZ8i9znqcl9fnEdiVkdbi0TedLQ6xAK92HZHDJ0QmyQ0fmuZPAgCYQ==
   dependencies:
     chalk "^4.1.0"
     consola "^2.15.3"
     pretty-time "^1.1.0"
-    std-env "^3.0.0"
+    std-env "^3.0.1"
 
 whatwg-encoding@^1.0.5:
   version "1.0.5"
