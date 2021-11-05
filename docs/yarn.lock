@@ -11159,10 +11159,10 @@ unstorage@^0.2.3:
     ufo "^0.7.9"
     ws "^8.2.1"
 
-untyped@^0.2.11:
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.11.tgz#a956977e82ad1186232995bc4ba4b68ae7d20b26"
-  integrity sha512-KVNcu9jB+mlnQJiunAzmqpnnn9R+yniT+AkOk9ZgCIsThwh0nlP6wO+O7mJjHM7Y2yplEu3v6NNtRvb82+uGxw==
+untyped@^0.2.12:
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.12.tgz#7bd9fee523e82e087af46248038680ee4ee56359"
+  integrity sha512-mdMpwUHnJUQDpEmuByMuLxYdrPVlA98a1/b8MgoFoasR5tJTfsNbhAPfceAgFqMd/E05427T7MXgJGqdtDF/bQ==
 
 untyped@^0.2.5, untyped@^0.2.8, untyped@^0.2.9:
   version "0.2.9"

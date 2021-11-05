@@ -2698,7 +2698,7 @@ __metadata:
     semver: ^7.3.5
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.19
+    unplugin: ^0.2.20
     unplugin-vue2-script-setup: 0.6.13
     vite: ^2.6.13
     vite-plugin-vue2: ^1.9.0
@@ -2897,7 +2897,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
-    untyped: ^0.2.11
+    untyped: ^0.2.12
   languageName: unknown
   linkType: soft
 
@@ -2961,7 +2961,7 @@ __metadata:
     mime: ^3.0.0
     mlly: ^0.3.12
     node-fetch: ^3.0.0
-    ohmyfetch: ^0.4.4
+    ohmyfetch: ^0.4.5
     ora: ^6.0.1
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -2976,8 +2976,8 @@ __metadata:
     table: ^6.7.3
     ufo: ^0.7.9
     unbuild: latest
-    unenv: ^0.4.0
-    unstorage: ^0.3.0
+    unenv: ^0.4.1
+    unstorage: ^0.3.1
     vue: 3.2.21
     vue-bundle-renderer: ^0.3.2
     vue-server-renderer: ^2.6.14
@@ -14909,12 +14909,12 @@ __metadata:
     mlly: ^0.3.12
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
-    ohmyfetch: ^0.4.4
+    ohmyfetch: ^0.4.5
     pathe: ^0.2.0
     scule: ^0.2.1
     ufo: ^0.7.9
     unbuild: latest
-    unplugin: ^0.2.19
+    unplugin: ^0.2.20
     vue: ^3.2.21
     vue-meta: next
     vue-router: ^4.0.12
@@ -15047,17 +15047,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohmyfetch@npm:^0.4.2":
-  version: 0.4.2
-  resolution: "ohmyfetch@npm:0.4.2"
-  dependencies:
-    destr: ^1.1.0
-    node-fetch: ^3.0.0
-    ufo: ^0.7.9
-  checksum: 91cce3271b9e47e0c29d3cf25813b1c5076b15ad62ac81e8ce8d7153d906b4d36c60cffc3e03d9dd4745604ea8e4ca886d112db355bb2a4a8282658665530b80
-  languageName: node
-  linkType: hard
-
 "ohmyfetch@npm:^0.4.4":
   version: 0.4.4
   resolution: "ohmyfetch@npm:0.4.4"
@@ -15067,6 +15056,18 @@ __metadata:
     ufo: ^0.7.9
     undici: ^4.9.5
   checksum: c30ee7fe97078a143185f65084d04939f138f865290559e1d9127ac49a58cc53dd83649653986ce68faa9b3dbd9e5b49d59f614734a084117ff72ddc56a128f2
+  languageName: node
+  linkType: hard
+
+"ohmyfetch@npm:^0.4.5":
+  version: 0.4.5
+  resolution: "ohmyfetch@npm:0.4.5"
+  dependencies:
+    destr: ^1.1.0
+    node-fetch: ^3.0.0
+    ufo: ^0.7.9
+    undici: ^4.9.5
+  checksum: 4b7265d2215284a762fb9df9cecf9222a46a577baecd8ea8bd93a97662aaaec251f55777526e243b3092a297e232d53791d702555843c4eb7d72e559d70afc16
   languageName: node
   linkType: hard
 
@@ -20059,9 +20060,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "unenv@npm:0.4.0"
+"unenv@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "unenv@npm:0.4.1"
   dependencies:
     buffer: ^6.0.2
     defu: ^5.0.0
@@ -20072,7 +20073,7 @@ __metadata:
     process: ^0.11.10
     upath: ^2.0.1
     util: ^0.12.4
-  checksum: d255476a4476b34f5e2be81a453f45dd62636b2b50077eca529a13d29e3fa931da5be12b20ffbe882f06ae944e311c03163ce09bbdbf2078f2116ed95b06094a
+  checksum: fc29b0ae38bfe99c5d0b190de7b737fa7c94271304240cb34cb844bf11a9ed9a48260d6dc2a19e0d7f38063041de6e2f969e110a2bc90864da5ca746f362cd5b
   languageName: node
   linkType: hard
 
@@ -20228,7 +20229,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.2.11, unplugin@npm:^0.2.19":
+"unplugin@npm:^0.2.11":
   version: 0.2.19
   resolution: "unplugin@npm:0.2.19"
   dependencies:
@@ -20245,6 +20246,26 @@ __metadata:
     webpack:
       optional: true
   checksum: aada04c2f189f8e20b9628e1070b26698c8a3fdb15f65b8e6cfb87e1fe94d32e927d89744e5c0248764ca3845592cb6843a86c3a8f2516250ab4508e1cd6ed4a
+  languageName: node
+  linkType: hard
+
+"unplugin@npm:^0.2.20":
+  version: 0.2.20
+  resolution: "unplugin@npm:0.2.20"
+  dependencies:
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: b74f81b34384097695058a1cbaf9b3d2db6c8f5fbe0037a48b30c98ec19573a7ffed1b00c9138a31ca3b42632d38881d51f8749868e1762c2346113c9134282c
   languageName: node
   linkType: hard
 
@@ -20265,9 +20286,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "unstorage@npm:0.3.0"
+"unstorage@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "unstorage@npm:0.3.1"
   dependencies:
     anymatch: ^3.1.1
     chokidar: ^3.5.2
@@ -20276,17 +20297,17 @@ __metadata:
     ioredis: ^4.27.9
     listhen: ^0.2.4
     mri: ^1.1.6
-    ohmyfetch: ^0.4.2
+    ohmyfetch: ^0.4.4
     ufo: ^0.7.9
     ws: ^8.2.1
-  checksum: 3a31d68bd494e1008b60367f9c9549ed45d24e6cf26fcd9af9fd74300d475c4f53b9fb1a99ddb100d56abe545af0b1e6c4ecf789cb2d2025182b9f65f10c0ce9
+  checksum: ab88cde6155da84bdbbc1396f01b8ec3f6ecc70f30ad65a7296016b587176ffa6e29355cf8ac28409ceb6e67fdceb09e6343343b20b0913b8b8a425032db3061
   languageName: node
   linkType: hard
 
-"untyped@npm:^0.2.11":
-  version: 0.2.11
-  resolution: "untyped@npm:0.2.11"
-  checksum: bfb1d5b3e41dacc58bd3ba1404aa167cf2a493da858eb7ab48af59260e9e93619a1014fe3b6c2fd961f8250606dec89cddf1cf010bc54bab769a4b4ac24fe3b9
+"untyped@npm:^0.2.12":
+  version: 0.2.12
+  resolution: "untyped@npm:0.2.12"
+  checksum: 866e8d18e9b18a3282954e014e232f8884bc47994a5ba2dbfb6150d0484cae65819428e5f743aa942a026c719bffc40010881d37b7a6da085942f7e103414aa7
   languageName: node
   linkType: hard
 

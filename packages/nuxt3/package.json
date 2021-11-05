@@ -37,11 +37,11 @@
     "mlly": "^0.3.12",
     "murmurhash-es": "^0.1.1",
     "nuxi": "3.0.0",
-    "ohmyfetch": "^0.4.4",
+    "ohmyfetch": "^0.4.5",
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.9",
-    "unplugin": "^0.2.19",
+    "unplugin": "^0.2.20",
     "vue": "^3.2.21",
     "vue-router": "^4.0.12"
   },
