@@ -23,7 +23,7 @@ export function handleVfs (ctx: NitroContext): Handle {
   }
 }
 
-const monacoVersion = '0.20.0'
+const monacoVersion = '0.30.0'
 const monacoUrl = `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${monacoVersion}/min`
 const vsUrl = `${monacoUrl}/vs`
 
