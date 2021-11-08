@@ -8,7 +8,7 @@ export function uniq<T> (arr: T[]): T[] {
 const IS_JS_RE = /\.[cm]?js(\?[^.]+)?$/
 const IS_MODULE_RE = /\.mjs(\?[^.]+)?$/
 const HAS_EXT_RE = /[^./]+\.[^./]+$/
-const IS_CSS_RE = /\.css(\?[^.]+)?$/
+const IS_CSS_RE = /\.(?:css|scss|sass|postcss|less|stylus|styl)(\?[^.]+)?$/
 
 export function isJS (file: string) {
   return IS_JS_RE.test(file) || !HAS_EXT_RE.test(file)
