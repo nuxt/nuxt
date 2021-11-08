@@ -1,12 +1,11 @@
 import type { Plugin } from 'vite'
 import fse from 'fs-extra'
+import { findExports } from 'mlly'
 
-// const PREFIX = 'defaultexport:'
 const PREFIX = 'defaultexport:'
 const hasPrefix = (id: string = '') => id.startsWith(PREFIX)
 const removePrefix = (id: string = '') => hasPrefix(id) ? id.substr(PREFIX.length) : id
 
-const hasDefaultExport = (code: string = '') => code.includes('export default')
 const addDefaultExport = (code: string = '') => code + '\n\n' + 'export default () => {}'
 
 export function defaultExportPlugin () {
@@ -26,7 +25,8 @@ export function defaultExportPlugin () {
     async load (id) {
       if (hasPrefix(id)) {
         let code = await fse.readFile(removePrefix(id), 'utf8')
-        if (!hasDefaultExport(code)) {
+        const exports = findExports(code)
+        if (!exports.find(i => i.type === 'default' || i.name === 'default')) {
           code = addDefaultExport(code)
         }
         return { map: null, code }
