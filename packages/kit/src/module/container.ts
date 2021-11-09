@@ -2,7 +2,8 @@ import { parse, relative } from 'pathe'
 import consola from 'consola'
 import type { Nuxt, NuxtPluginTemplate, NuxtTemplate } from '../types/nuxt'
 import { chainFn } from '../utils/task'
-import { addTemplate, addPluginTemplate, addServerMiddleware } from './utils'
+import { resolveAlias } from '../utils/resolve'
+import { addTemplate, addPluginTemplate, addServerMiddleware, extendPages } from './utils'
 import { installModule } from './install'
 
 /** Legacy ModuleContainer for backwards compatibility with existing Nuxt 2 modules. */
@@ -103,7 +104,7 @@ export function createModuleContainer (nuxt: Nuxt) {
 
     /** Allows extending routes by chaining `options.build.extendRoutes` function. */
     extendRoutes (fn) {
-      nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+      extendPages(routes => fn(routes, resolveAlias))
     },
 
     /** `requireModule` is a shortcut for `addModule` */

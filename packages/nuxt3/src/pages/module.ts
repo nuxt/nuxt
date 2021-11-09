@@ -44,8 +44,9 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       async getContents () {
-        const routes = await resolvePagesRoutes(nuxt)
-        const serializedRoutes = addComponentToRoutes(routes)
+        const pages = await resolvePagesRoutes(nuxt)
+        await nuxt.callHook('pages:extend', pages)
+        const serializedRoutes = addComponentToRoutes(pages)
         return `export default ${JSON.stringify(serializedRoutes, null, 2).replace(/"{(.+)}"/g, '$1')}`
       }
     })
