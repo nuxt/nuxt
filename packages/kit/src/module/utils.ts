@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp } from 'fs'
-import { basename, extname, parse, resolve } from 'pathe'
+import { basename, extname, normalize, parse, resolve } from 'pathe'
 import lodashTemplate from 'lodash.template'
 import hash from 'hash-sum'
 import { pascalCase, camelCase, kebabCase } from 'scule'
@@ -89,6 +89,9 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   if (!plugin.src) {
     throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
   }
+
+  // Normalize full path to plugin
+  plugin.src = normalize(plugin.src)
 
   // Normalize mode
   if (plugin.ssr) {
