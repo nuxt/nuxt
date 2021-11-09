@@ -27,6 +27,9 @@ export async function setupAutoImports () {
         autoImport.disabled = true
       }
     }
+
+    // Add bridge-only auto-imports
+    autoImports.push({ name: 'useNuxt2Meta', as: 'useNuxt2Meta', from: '#app' })
   })
 
   await installModule(nuxt, autoImports)

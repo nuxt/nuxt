@@ -1,4 +1,6 @@
-import { reactive, toRef, isReactive, Ref } from '@vue/composition-api'
+import { getCurrentInstance, onBeforeUnmount, isRef, watch, reactive, toRef, isReactive, Ref } from '@vue/composition-api'
+import type { CombinedVueInstance } from 'vue/types/vue'
+import type { MetaInfo } from 'vue-meta'
 import type VueRouter from 'vue-router'
 import type { Route } from 'vue-router'
 import { useNuxtApp } from './app'
@@ -54,4 +56,56 @@ export const useState = <T>(key: string, init?: (() => T)): Ref<T> => {
     state.value = init()
   }
   return state
+}
+
+type Reffed<T extends Record<string, any>> = {
+  [P in keyof T]: T[P] extends Array<infer A> ? Ref<Array<Reffed<A>>> | Array<Reffed<A>> : T[P] extends Record<string, any> ? Reffed<T[P]> | Ref<Reffed<T[P]>> : T[P] | Ref<T[P]>
+}
+
+function unwrap (value: any): Record<string, any> {
+  if (!value || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') { return value }
+  if (Array.isArray(value)) { return value.map(i => unwrap(i)) }
+  if (isRef(value)) { return unwrap(value.value) }
+  if (typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, value]) => [key, unwrap(value)]))
+  }
+  return value
+}
+
+type AugmentedComponent = CombinedVueInstance<Vue, object, object, object, Record<never, any>> & {
+  _vueMeta?: boolean
+  $metaInfo?: MetaInfo
+}
+
+export const useNuxt2Meta = (metaOptions: Reffed<MetaInfo> | (() => Reffed<MetaInfo>)) => {
+  const vm = getCurrentInstance()!.proxy as AugmentedComponent
+  const meta = vm.$meta()
+  const $root = vm.$root
+
+  if (!vm._vueMeta) {
+    vm._vueMeta = true
+
+    let parent = vm.$parent as AugmentedComponent
+    while (parent && parent !== $root) {
+      if (parent._vueMeta === undefined) {
+        parent._vueMeta = false
+      }
+      parent = parent.$parent
+    }
+  }
+  // @ts-ignore
+  vm.$options.head = vm.$options.head || {}
+
+  const metaSource = metaOptions instanceof Function ? metaOptions : () => metaOptions
+  const unwatch = watch(metaSource, (metaInfo: MetaInfo) => {
+    vm.$metaInfo = {
+      ...vm.$metaInfo || {},
+      ...unwrap(metaInfo)
+    }
+    if (process.client) {
+      meta.refresh()
+    }
+  }, { immediate: true, deep: true })
+
+  onBeforeUnmount(unwatch)
 }
