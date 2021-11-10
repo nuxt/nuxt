@@ -122,7 +122,7 @@ export class PostcssConfig {
   }
 
   getConfigFile () {
-    const loaderConfig = (this.postcssOptions && this.postcssOptions.config) || {}
+    const loaderConfig = this.postcssOptions && this.postcssOptions.config
     const postcssConfigFile = loaderConfig || this.searchConfigFile()
 
     if (typeof postcssConfigFile === 'string') {
