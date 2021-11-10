@@ -17,6 +17,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,
+      allowSyntheticDefaultImports: true,
       types: ['node'],
       baseUrl: relative(nuxt.options.buildDir, nuxt.options.rootDir),
       paths: {}
