@@ -12,6 +12,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       target: 'ESNext',
       module: 'ESNext',
       moduleResolution: 'Node',
+      skipLibCheck: true,
       strict: true,
       allowJs: true,
       noEmit: true,
