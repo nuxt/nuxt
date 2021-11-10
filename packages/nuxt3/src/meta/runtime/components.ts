@@ -193,13 +193,19 @@ export const Style = defineComponent({
 // <head>
 export const Head = defineComponent({
   name: 'Head',
+  setup: (_props, ctx) => ctx.slots.default
+})
+
+// <html>
+export const Html = defineComponent({
+  name: 'Html',
   props: {
     ...globalProps,
     manifest: String,
     version: String,
     xmlns: String
   },
-  setup: setupForUseMeta(headAttrs => ({ headAttrs }), true)
+  setup: setupForUseMeta(htmlAttrs => ({ htmlAttrs }), true)
 })
 
 // <body>

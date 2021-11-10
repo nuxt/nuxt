@@ -2,11 +2,13 @@
   <div>
     Hello World
 
-    <Head :lang="'' + dynamic">
-      <Title>{{ dynamic }} title</Title>
-      <Meta name="description" :content="`My page's ${dynamic} description`" />
-      <Link rel="preload" href="/test.txt" as="script" />
-    </Head>
+    <Html :lang="String(dynamic)">
+      <Head>
+        <Title>{{ dynamic }} title</Title>
+        <Meta name="description" :content="`My page's ${dynamic} description`" />
+        <Link rel="preload" href="/test.txt" as="script" />
+      </Head>
+    </Html>
 
     <button class="blue" @click="dynamic = Math.random() * 100">
       Clickme
