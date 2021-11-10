@@ -2427,8 +2427,8 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.2.20
-    unplugin-vue2-script-setup: 0.6.13
-    vite: ^2.6.13
+    unplugin-vue2-script-setup: 0.6.14
+    vite: ^2.6.14
     vite-plugin-vue2: ^1.9.0
     vue: ^2
     vue-router: ^3
@@ -2865,7 +2865,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.6.13
+    vite: ^2.6.14
     vue: 3.2.21
   peerDependencies:
     vue: 3.2.21
@@ -2953,7 +2953,7 @@ __metadata:
     vue: 3.2.21
     vue-loader: ^16.8.3
     vue-style-loader: ^4.1.3
-    webpack: ^5.62.2
+    webpack: ^5.63.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.2.1
     webpack-hot-middleware: ^2.25.1
@@ -19843,9 +19843,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin-vue2-script-setup@npm:0.6.13":
-  version: 0.6.13
-  resolution: "unplugin-vue2-script-setup@npm:0.6.13"
+"unplugin-vue2-script-setup@npm:0.6.14":
+  version: 0.6.14
+  resolution: "unplugin-vue2-script-setup@npm:0.6.14"
   dependencies:
     "@antfu/utils": ^0.3.0
     "@babel/core": ^7.15.5
@@ -19865,7 +19865,7 @@ __metadata:
   peerDependenciesMeta:
     pug:
       optional: true
-  checksum: cb3510a9c57d4b91303479714e8393c8a80a75205ade875fa47111b5b4ffa2db957dbd01bba1c826ffa0fcec3a84c0508ed235bac33730a73315baa8796dbc5c
+  checksum: dc2deb36fb53f7d1c9fecdee6ebd399d7c2bf8ac5b8d9987ad5e74bec19c3a9e1a5bd3f29232608bb362b46ffc016742b87157664248757106a1b880517323dc
   languageName: node
   linkType: hard
 
@@ -20185,9 +20185,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.6.13":
-  version: 2.6.13
-  resolution: "vite@npm:2.6.13"
+"vite@npm:^2.6.14":
+  version: 2.6.14
+  resolution: "vite@npm:2.6.14"
   dependencies:
     esbuild: ^0.13.2
     fsevents: ~2.3.2
@@ -20210,7 +20210,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 59e09d8650328eac44990de9aaa9f49011113e3c1d8c3b54d9b8550496c8d290ec14149048bbbd49b39f78a80f23c4019130bd55924bfd139f63423be8d4754a
+  checksum: 4bf2b7407771440de81546932cf0b1bd74f9254e6056665a596b9310f37b2d34a65728a2a0525300ef48fa1f3e2ec5a3366326eecf31db7b86c19463e22186a8
   languageName: node
   linkType: hard
 
@@ -20668,9 +20668,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.62.2":
-  version: 5.62.2
-  resolution: "webpack@npm:5.62.2"
+"webpack@npm:^5.63.0":
+  version: 5.63.0
+  resolution: "webpack@npm:5.63.0"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -20701,7 +20701,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: ed2c134ba679b0f167aa286bf30ba0e49f61881f712534e5d471979482df6472dbdf64553c1952b4ee5e75ade8c24efcfa022a60b65c3703dc1bd28d206ae9d9
+  checksum: 8127be3d900d8e57f106f61dc66f8334162d5425d770f46b2110c89057c1607e9be1a20fa37ee53bd6915e3041dc074c5e2aa99665abb18112463b91606946f7
   languageName: node
   linkType: hard
 
