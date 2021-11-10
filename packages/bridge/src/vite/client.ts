@@ -17,7 +17,6 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     define: {
-      global: 'globalThis',
       'process.client': 'true',
       'process.server': 'false',
       'process.static': 'false',

@@ -17,8 +17,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     define: {
       'process.server': false,
       'process.client': true,
-      'module.hot': false,
-      global: 'globalThis'
+      'module.hot': false
     },
     resolve: {
       alias: {
