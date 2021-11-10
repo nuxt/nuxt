@@ -9,3 +9,11 @@ declare module '#assets' {
   export function statAsset (id: string): Promise<AssetMeta>
   export function getKeys() : Promise<string[]>
 }
+
+declare module '#config' {
+  import type { PublicRuntimeConfig, PrivateRuntimeConfig } from '@nuxt/kit'
+  export const privateConfig: PrivateRuntimeConfig
+  export const publicConfig: PublicRuntimeConfig
+  const runtimeConfig: PrivateRuntimeConfig & PublicRuntimeConfig
+  export default runtimeConfig
+}

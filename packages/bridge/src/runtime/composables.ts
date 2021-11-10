@@ -3,6 +3,7 @@ import type { CombinedVueInstance } from 'vue/types/vue'
 import type { MetaInfo } from 'vue-meta'
 import type VueRouter from 'vue-router'
 import type { Route } from 'vue-router'
+import type { RuntimeConfig } from '@nuxt/kit'
 import { useNuxtApp } from './app'
 
 export * from '@vue/composition-api'
@@ -18,7 +19,7 @@ export const useRuntimeConfig = () => {
   if (!nuxtApp.$config) {
     nuxtApp.$config = reactive(nuxtApp.nuxt2Context.app.$config)
   }
-  return nuxtApp.$config
+  return nuxtApp.$config as RuntimeConfig
 }
 
 // Auto-import equivalents for `vue-router`
