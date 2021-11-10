@@ -17,7 +17,7 @@
     "play": "yarn run nuxi dev playground",
     "example": "yarn workspace example-$0 dev",
     "example:build": "yarn workspace example-$0 build",
-    "lint": "eslint --ext .vue,.ts,.js .",
+    "lint": "eslint --ext .vue,.ts,.js,.mjs .",
     "lint:docs": "./node_modules/.bin/markdownlint ./",
     "test": "yarn lint && yarn test:presets",
     "test:presets": "mocha test/presets/*.mjs",

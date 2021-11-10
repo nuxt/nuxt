@@ -4,5 +4,4 @@ export { EffectScope, computed, createApp, createRef, customRef, defineAsyncComp
 
 export const isFunction = fn => fn instanceof Function
 
-
 export { Vue as default }
