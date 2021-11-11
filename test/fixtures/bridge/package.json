@@ -7,9 +7,7 @@
   },
   "devDependencies": {
     "@nuxt/bridge": "*",
-    "core-js": "^3",
-    "nuxt": "^2",
-    "std-env": "^3.0.1",
+    "nuxt-edge": "latest",
     "vue": "^2"
   },
   "installConfig": {

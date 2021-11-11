@@ -27,7 +27,7 @@ export function setupTest (preset) {
   before('nitro build', async function () {
     this.timeout(60000)
     const nuxtCLI = isBridge
-      ? resolve(ctx.rootDir, 'node_modules/nuxt/bin/nuxt.js')
+      ? resolve(ctx.rootDir, 'node_modules/nuxt-edge/bin/nuxt.js')
       : resolveWorkspace('packages/nuxi/bin/nuxi.mjs')
 
     await execa('node', [nuxtCLI, 'build', ctx.rootDir], {

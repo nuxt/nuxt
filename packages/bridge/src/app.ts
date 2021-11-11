@@ -13,6 +13,10 @@ export function setupAppBridge (_options: any) {
   nuxt.options.alias.vue2 = resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
   nuxt.options.build.transpile.push('vue')
 
+  // Disable legacy fetch polyfills
+  nuxt.options.fetch.server = false
+  nuxt.options.fetch.client = false
+
   // Alias vue to have identical vue3 exports
   nuxt.options.alias['vue2-bridge'] = resolve(distDir, 'runtime/vue2-bridge.mjs')
   for (const alias of [
