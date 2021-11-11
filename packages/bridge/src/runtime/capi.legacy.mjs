@@ -154,10 +154,10 @@ export const useContext = () => {
   const nuxt = useNuxtApp()
 
   return {
-    ...nuxt.nuxt2App.context,
+    ...nuxt.nuxt2Context,
     route: computed(() => route),
     query: computed(() => route.value.query),
-    from: computed(() => nuxt.nuxt2App.context.from),
+    from: computed(() => nuxt.nuxt2Context.from),
     params: computed(() => route.value.params)
   }
 }
