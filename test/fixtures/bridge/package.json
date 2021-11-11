@@ -9,6 +9,7 @@
     "@nuxt/bridge": "*",
     "core-js": "^3",
     "nuxt": "^2",
+    "std-env": "^3.0.1",
     "vue": "^2"
   },
   "installConfig": {
