@@ -26,7 +26,7 @@ export function defaultExportPlugin () {
       if (hasPrefix(id)) {
         let code = await fse.readFile(removePrefix(id), 'utf8')
         const exports = findExports(code)
-        if (!exports.find(i => i.type === 'default' || i.name === 'default')) {
+        if (!exports.find(i => i.names.includes('default'))) {
           code = addDefaultExport(code)
         }
         return { map: null, code }
