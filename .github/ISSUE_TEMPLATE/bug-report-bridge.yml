@@ -1,6 +1,6 @@
 name: "\U0001F41E Bug report (Nuxt Bridge)"
 description: Create a report to help us improve Nuxt Bridge
-labels: ["triage:bug", bridge]
+labels: ["pending triage", "bridge"]
 body:
   - type: markdown
     attributes:
