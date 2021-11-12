@@ -1,6 +1,6 @@
 name: "\U0001F41E Bug report (Nuxt Bridge)"
 description: Create a report to help us improve Nuxt Bridge
-labels: [triage:bug, bridge]
+labels: ["triage:bug", bridge]
 body:
   - type: markdown
     attributes:
@@ -46,4 +46,4 @@ body:
       description: |
         Optional if provided reproduction. Please try not to insert an image but copy paste the log text.
       render: shell
-  
+
