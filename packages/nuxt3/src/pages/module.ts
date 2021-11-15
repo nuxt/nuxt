@@ -29,8 +29,6 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('app:resolve', (app) => {
-      // Remove default root with Suspense
-      app.rootComponent = resolve(runtimeDir, 'root.vue')
       // Add default layout for pages
       if (app.mainComponent.includes('nuxt-welcome')) {
         app.mainComponent = resolve(runtimeDir, 'app.vue')
