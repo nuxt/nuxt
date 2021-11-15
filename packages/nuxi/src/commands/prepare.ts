@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { clearDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
@@ -15,6 +16,7 @@ export default defineNuxtCommand({
 
     const { loadNuxt } = await loadKit(rootDir)
     const nuxt = await loadNuxt({ rootDir })
+    await clearDir(nuxt.options.buildDir)
 
     await writeTypes(nuxt)
   }
