@@ -1,5 +1,5 @@
+import { promises as fsp } from 'fs'
 import { resolve, dirname } from 'pathe'
-import fse from 'fs-extra'
 import { nodeFileTrace, NodeFileTraceOptions } from '@vercel/nft'
 import type { Plugin } from 'rollup'
 
@@ -86,14 +86,11 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         }
 
         const writeFile = async (file) => {
-          // Skip symlinks that are included in fileList
-          if (await fse.stat(file).then(i => i.isDirectory())) {
-            return
-          }
+          if (!await isFile(file)) { return }
           const src = resolve(opts.traceOptions.base, file)
           const dst = resolve(opts.outDir, 'node_modules', file.split('node_modules/').pop())
-          await fse.mkdirp(dirname(dst))
-          await fse.copyFile(src, dst)
+          await fsp.mkdir(dirname(dst), { recursive: true })
+          await fsp.copyFile(src, dst)
         }
         if (process.platform === 'win32') {
           // Workaround for EBUSY on windows (#424)
@@ -105,5 +102,15 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         }
       }
     }
+  }
+}
+
+async function isFile (file: string) {
+  try {
+    const stat = await fsp.stat(file)
+    return stat.isFile()
+  } catch (err) {
+    if (err.code === 'ENOENT') { return false }
+    throw err
   }
 }
