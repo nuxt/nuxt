@@ -24,8 +24,8 @@
     "@nuxt/nitro": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
     "@nuxt/webpack-builder": "3.0.0",
-    "@vue/reactivity": "^3.2.21",
-    "@vue/shared": "^3.2.21",
+    "@vue/reactivity": "^3.2.22",
+    "@vue/shared": "^3.2.22",
     "@vueuse/head": "^0.6.0",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
@@ -41,8 +41,8 @@
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.9",
-    "unplugin": "^0.2.20",
-    "vue": "^3.2.21",
+    "unplugin": "^0.2.21",
+    "vue": "^3.2.22",
     "vue-router": "^4.0.12"
   },
   "devDependencies": {

@@ -7328,10 +7328,10 @@ mlly@^0.3.0:
   resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.0.tgz#5705b2a95551d79ad33feedc046daf7c6d079748"
   integrity sha512-6XphOVPsnIzuqNYlcZPMJhaMDDdrEgbLUlA7BPis8O0kkLPbOVA8GcXGeICGcnDotCtTkxAEWBT+FlhywrXTmg==
 
-mlly@^0.3.12:
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.12.tgz#9928d517622558ea6ce3d5544df1a4f7c6687811"
-  integrity sha512-+5DdpxP48PpfV/FcP4j/8TREPycnROCg0hX1nmD6aoZ2lD4FpZI4sxWG6l6YpUktXi/vckj8NaAl3DVQSkIn3w==
+mlly@^0.3.13:
+  version "0.3.13"
+  resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.13.tgz#5433261f38ccebba6f72fabda863a4dfc84b16d8"
+  integrity sha512-EXpbSPqSQLR9NEdB25uoyIYLSUvAqDEI7wUeM1HwXHsPF5Gx7cP7kuby5Mz2LfCPxBrgMnbcyPhcTCJRTQ+uvA==
 
 mlly@^0.3.6:
   version "0.3.10"
@@ -11159,10 +11159,10 @@ unstorage@^0.2.3:
     ufo "^0.7.9"
     ws "^8.2.1"
 
-untyped@^0.2.12:
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.12.tgz#7bd9fee523e82e087af46248038680ee4ee56359"
-  integrity sha512-mdMpwUHnJUQDpEmuByMuLxYdrPVlA98a1/b8MgoFoasR5tJTfsNbhAPfceAgFqMd/E05427T7MXgJGqdtDF/bQ==
+untyped@^0.2.13:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.13.tgz#31be48c9cf1d81b65d05f762a0332b2b5e9a9cb3"
+  integrity sha512-dnvCmDKTb+zg504JyQ9h1sWINAyxnP6KgmvUH6s6BjLV+3fvjZTiUklL15VvEqpDjy4Leq/xzlZ+JxskeoM5mg==
 
 untyped@^0.2.5, untyped@^0.2.8, untyped@^0.2.9:
   version "0.2.9"
