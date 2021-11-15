@@ -6,12 +6,14 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
     from: '#app',
     names: [
       'useAsyncData',
+      'useLazyAsyncData',
       'defineNuxtComponent',
       'useNuxtApp',
       'defineNuxtPlugin',
       'useRuntimeConfig',
       'useState',
-      'useFetch'
+      'useFetch',
+      'useLazyFetch'
     ]
   },
   // #meta

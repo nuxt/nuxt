@@ -1,8 +1,8 @@
-import { onBeforeMount, onUnmounted, ref, getCurrentInstance } from 'vue'
+import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance } from 'vue'
 import type { Ref } from 'vue'
 import { NuxtApp, useNuxtApp } from '#app'
 
-export type _Transform<Input=any, Output=any> = (input: Input) => Output
+export type _Transform<Input = any, Output = any> = (input: Input) => Output
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any> ? T : T extends Record<string, any> ? Pick<T, K[number]> : T
 export type KeysOf<T> = Array<keyof T extends string ? keyof T : string>
@@ -14,7 +14,7 @@ export interface AsyncDataOptions<
   PickKeys extends KeyOfRes<_Transform> = KeyOfRes<Transform>
   > {
   server?: boolean
-  defer?: boolean
+  lazy?: boolean
   default?: () => DataT
   transform?: Transform
   pick?: PickKeys
@@ -39,7 +39,7 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options: AsyncDataOptions<DataT, Transform, PickKeys> = {}
-) : AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('asyncData key must be a string')
@@ -49,7 +49,12 @@ export function useAsyncData<
   }
 
   // Apply defaults
-  options = { server: true, defer: false, default: getDefault, ...options }
+  options = { server: true, default: getDefault, ...options }
+  // TODO: remove support for `defer` in Nuxt 3 RC
+  if ((options as any).defer) {
+    console.warn('[useAsyncData] `defer` has been renamed to `lazy`. Support for `defer` will be removed in RC.')
+  }
+  options.lazy = options.lazy ?? (options as any).defer ?? false
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
@@ -109,7 +114,8 @@ export function useAsyncData<
 
   // Server side
   if (process.server && fetchOnServer) {
-    asyncData.refresh()
+    const promise = asyncData.refresh()
+    onServerPrefetch(() => promise)
   }
 
   // Client side
@@ -120,14 +126,14 @@ export function useAsyncData<
     }
     // 2. Initial load (server: false): fetch on mounted
     if (nuxt.isHydrating && clientOnly) {
-      // Fetch on mounted (initial load or deferred fetch)
+      // Fetch on mounted (initial load or lazy fetch)
       instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
     } else if (!nuxt.isHydrating) { // Navigation
-      if (options.defer) {
-        // 3. Navigation (defer: true): fetch on mounted
+      if (options.lazy) {
+        // 3. Navigation (lazy: true): fetch on mounted
         instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
       } else {
-        // 4. Navigation (defer: false): await fetch
+        // 4. Navigation (lazy: false): await fetch
         asyncData.refresh()
       }
     }
@@ -139,6 +145,18 @@ export function useAsyncData<
 
   // @ts-ignore
   return asyncDataPromise as AsyncData<DataT>
+}
+
+export function useLazyAsyncData<
+  DataT,
+  Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
+  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<DataT>,
+  options: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'> = {}
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
+  return useAsyncData(key, handler, { ...options, lazy: true })
 }
 
 function pick (obj: Record<string, any>, keys: string[]) {

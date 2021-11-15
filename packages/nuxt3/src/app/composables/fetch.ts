@@ -13,11 +13,11 @@ export type UseFetchOptions<
 > = AsyncDataOptions<DataT, Transform, PickKeys> & FetchOptions & { key?: string }
 
 export function useFetch<
-    ReqT extends string = string,
-    ResT = FetchResult<ReqT>,
-    Transform extends (res: ResT) => any = (res: ResT) => ResT,
-    PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-  > (
+  ReqT extends string = string,
+  ResT = FetchResult<ReqT>,
+  Transform extends (res: ResT) => any = (res: ResT) => ResT,
+  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
+> (
   url: ReqT,
   opts: UseFetchOptions<ResT, Transform, PickKeys> = {}
 ) {
@@ -36,6 +36,18 @@ export function useFetch<
   }
 
   return useAsyncData(opts.key, () => $fetch(url, opts) as Promise<ResT>, opts)
+}
+
+export function useLazyFetch<
+  ReqT extends string = string,
+  ResT = FetchResult<ReqT>,
+  Transform extends (res: ResT) => any = (res: ResT) => ResT,
+  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
+> (
+  url: ReqT,
+  opts: Omit<UseFetchOptions<ResT, Transform, PickKeys>, 'lazy'> = {}
+) {
+  return useFetch(url, { ...opts, lazy: true })
 }
 
 function generateKey (keys) {
