@@ -1,6 +1,4 @@
-import { useState } from '#app'
-
-export default defineNuxtPlugin((nuxt) => {
-  const locale = useState('locale')
-  locale.value = nuxt.ssrContext.req.headers['accept-language']?.split(',')[0]
+export default defineNuxtPlugin((nuxtApp) => {
+  const locale = useLocale()
+  locale.value = nuxtApp.ssrContext?.req.headers['accept-language']?.split(',')[0]
 })

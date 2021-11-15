@@ -8,6 +8,8 @@
 </template>
 
 <script setup>
-const locale = useState('locale')
+// Defined in composables/stats.ts
+// same as useState('locale')
+const locale = useLocale()
 const updateLocale = () => { locale.value = 'tlh-klingon' }
 </script>
