@@ -27,6 +27,8 @@ export function setupAppBridge (_options: any) {
     '@vue/reactivity',
     '@vue/runtime-core',
     '@vue/runtime-dom',
+    // vue-demi
+    'vue-demi',
     ...[
       // vue 2 dist files
       'vue/dist/vue.common.dev',

@@ -4,6 +4,9 @@ import type { Vue } from 'vue/types/vue'
 import type { ComponentOptions } from 'vue'
 import { defineComponent, getCurrentInstance } from './composables'
 
+export const isVue2 = true
+export const isVue3 = false
+
 export const defineNuxtComponent = defineComponent
 
 export interface RuntimeNuxtHooks { }

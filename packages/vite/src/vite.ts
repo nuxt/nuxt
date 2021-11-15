@@ -56,7 +56,10 @@ export async function bundle (nuxt: Nuxt) {
         },
         css: resolveCSSOptions(nuxt),
         optimizeDeps: {
-          exclude: [],
+          exclude: [
+            ...nuxt.options.build.transpile.filter(i => typeof i === 'string'),
+            'vue-demi'
+          ],
           entries: [
             resolve(nuxt.options.appDir, 'entry.ts')
           ]

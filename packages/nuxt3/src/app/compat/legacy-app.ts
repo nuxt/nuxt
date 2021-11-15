@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { App } from 'vue'
 import type { Component } from '@vue/runtime-core'
 import mockContext from 'unenv/runtime/mock/proxy'
-import { NuxtApp, useRuntimeConfig } from './nuxt'
+import { NuxtApp, useRuntimeConfig } from '../nuxt'
 
 type Route = any
 type Store = any
