@@ -61,7 +61,7 @@ export function useAsyncData<
 
   // Setup hook callbacks once per instance
   const instance = getCurrentInstance()
-  if (!instance._nuxtOnBeforeMountCbs) {
+  if (instance && !instance._nuxtOnBeforeMountCbs) {
     const cbs = instance._nuxtOnBeforeMountCbs = []
     if (instance && process.client) {
       onBeforeMount(() => {
@@ -125,15 +125,15 @@ export function useAsyncData<
       asyncData.pending.value = false
     }
     // 2. Initial load (server: false): fetch on mounted
-    if (nuxt.isHydrating && clientOnly) {
+    if (instance && nuxt.isHydrating && clientOnly) {
       // Fetch on mounted (initial load or lazy fetch)
       instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
     } else if (!nuxt.isHydrating) { // Navigation
-      if (options.lazy) {
+      if (instance && options.lazy) {
         // 3. Navigation (lazy: true): fetch on mounted
         instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
       } else {
-        // 4. Navigation (lazy: false): await fetch
+        // 4. Navigation (lazy: false) - or plugin usage: await fetch
         asyncData.refresh()
       }
     }
