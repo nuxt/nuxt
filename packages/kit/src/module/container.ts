@@ -2,8 +2,7 @@ import { parse, relative } from 'pathe'
 import consola from 'consola'
 import type { Nuxt, NuxtPluginTemplate, NuxtTemplate } from '../types/nuxt'
 import { chainFn } from '../utils/task'
-import { resolveAlias } from '../utils/resolve'
-import { addTemplate, addPluginTemplate, addServerMiddleware, extendPages } from './utils'
+import { isNuxt2, addTemplate, addPluginTemplate, addServerMiddleware } from './utils'
 import { installModule } from './install'
 
 /** Legacy ModuleContainer for backwards compatibility with existing Nuxt 2 modules. */
@@ -104,7 +103,16 @@ export function createModuleContainer (nuxt: Nuxt) {
 
     /** Allows extending routes by chaining `options.build.extendRoutes` function. */
     extendRoutes (fn) {
-      extendPages(routes => fn(routes, resolveAlias))
+      if (isNuxt2(nuxt)) {
+        nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+      } else {
+        nuxt.hook('pages:extend', async (pages, ...args) => {
+          const maybeRoutes = await fn(pages, ...args)
+          if (maybeRoutes) {
+            console.warn('[kit] [compat] Using `extendRoutes` in Nuxt 3 needs to directly modify first argument instead of returning updated routes. Skipping extended routes.')
+          }
+        })
+      }
     },
 
     /** `requireModule` is a shortcut for `addModule` */

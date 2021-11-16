@@ -354,7 +354,11 @@ export function addComponent (opts: AddComponentOptions) {
 
 export function extendPages (cb: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()
-  nuxt.hook('pages:extend', cb)
+  if (isNuxt2(nuxt)) {
+    nuxt.hook('build:extendRoutes', cb)
+  } else {
+    nuxt.hook('pages:extend', cb)
+  }
 }
 
 const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"{(.+)}"/g, '$1')
