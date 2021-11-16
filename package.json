@@ -40,7 +40,7 @@
     "@types/node": "^14.17.33",
     "@types/object-hash": "^2",
     "chai": "^4.3.4",
-    "esbuild": "^0.13.13",
+    "esbuild": "^0.13.14",
     "eslint": "^8.2.0",
     "eslint-plugin-jsdoc": "^37.0.3",
     "execa": "^5.1.1",
