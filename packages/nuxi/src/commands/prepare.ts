@@ -15,7 +15,7 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
 
     const { loadNuxt } = await loadKit(rootDir)
-    const nuxt = await loadNuxt({ rootDir })
+    const nuxt = await loadNuxt({ rootDir, config: { _prepare: true } })
     await clearDir(nuxt.options.buildDir)
 
     await writeTypes(nuxt)

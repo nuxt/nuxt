@@ -11,7 +11,7 @@ export function setupNitroBridge () {
   const nuxt = useNuxt()
 
   // Ensure we're not just building with 'static' target
-  if (!nuxt.options.dev && nuxt.options.target === 'static' && !nuxt.options._export && !nuxt.options._legacyGenerate) {
+  if (!nuxt.options.dev && nuxt.options.target === 'static' && !nuxt.options._prepare && !nuxt.options._export && !nuxt.options._legacyGenerate) {
     throw new Error('[nitro] Please use `nuxt generate` for static target')
   }
 
