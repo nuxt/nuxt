@@ -10109,6 +10109,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-locale@workspace:examples/locale":
+  version: 0.0.0-use.local
+  resolution: "example-locale@workspace:examples/locale"
+  dependencies:
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-module-extend-pages@workspace:examples/module-extend-pages":
   version: 0.0.0-use.local
   resolution: "example-module-extend-pages@workspace:examples/module-extend-pages"
