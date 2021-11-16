@@ -1,19 +1,20 @@
 import { promises as fsp } from 'fs'
 import { join, relative, resolve } from 'pathe'
 import { Nuxt, TSReference } from '@nuxt/kit'
+import defu from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { getModulePaths, getNearestPackage } from './cjs'
 
 export const writeTypes = async (nuxt: Nuxt) => {
   const modulePaths = getModulePaths(nuxt.options.modulesDir)
 
-  const tsConfig: TSConfig = {
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       target: 'ESNext',
       module: 'ESNext',
       moduleResolution: 'Node',
       skipLibCheck: true,
-      strict: true,
+      strict: nuxt.options.typescript.strict,
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,
@@ -27,7 +28,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : []
     ]
-  }
+  })
 
   const aliases = {
     ...nuxt.options.alias,

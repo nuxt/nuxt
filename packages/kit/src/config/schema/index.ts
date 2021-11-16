@@ -9,6 +9,7 @@ import router from './router'
 import server from './server'
 import cli from './cli'
 import generate from './generate'
+import typescript from './typescript'
 
 /*
 TODO for top level normalizations: (nuxt2)
@@ -38,5 +39,6 @@ export default {
   router,
   server,
   cli,
-  generate
+  generate,
+  typescript
 }
