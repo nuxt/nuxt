@@ -35,7 +35,7 @@ export default defineNuxtModule({
       }
     })
 
-    // Add router plguin
+    // Add router plugin
     addPlugin(resolve(runtimeDir, 'router'))
 
     // Add routes template
