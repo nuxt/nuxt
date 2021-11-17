@@ -20,7 +20,7 @@ export default defineComponent({
     const { $menu } = useContext()
     const route = useRoute()
     const currentSlug = computed(() => {
-      return route.value.path !== '/' && route?.value?.params?.pathMatch
+      return route.value.path !== '/' && route.value.params?.pathMatch
         ? route.value.params.pathMatch.split('/')[0]
         : null
     })

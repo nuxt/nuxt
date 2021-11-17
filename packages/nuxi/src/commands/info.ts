@@ -44,7 +44,7 @@ export default defineNuxtCommand({
     const isNuxt3 = nuxtVersion.startsWith('3')
     const useVite = isNuxt3
       ? nuxtConfig.vite !== false
-      : (nuxtConfig?.buildModules?.find(m => m === 'nuxt-vite'))
+      : (nuxtConfig.buildModules?.find(m => m === 'nuxt-vite'))
 
     let packageManager = getPackageManager(rootDir)
     if (packageManager) {
