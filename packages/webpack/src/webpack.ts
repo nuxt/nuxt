@@ -201,7 +201,6 @@ class WebpackBundler {
 
     const { name } = compiler.options
     const buildOptions = this.nuxt.options.build
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware

@@ -8,7 +8,6 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
     {
       name: 'nuxt-analyze-minify',
       async generateBundle (_opts, outputBundle) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [_bundleId, bundle] of Object.entries(outputBundle)) {
           if (bundle.type !== 'chunk') { continue }
           const originalEntries = Object.entries(bundle.modules)

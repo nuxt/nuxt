@@ -35,6 +35,11 @@
           "message": "nitro should not directly import other packages."
         }
       ]
+    }],
+    "@typescript-eslint/no-unused-vars": ["error", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_",
+      "ignoreRestSiblings": true
     }]
   },
   "settings": {
@@ -44,13 +49,5 @@
         "note": "note"
       }
     }
-  },
-  "overrides": [
-    {
-      "files": ["*.vue"],
-      "rules": {
-        "@typescript-eslint/no-unused-vars": "off"
-      }
-    }
-  ]
+  }
 }

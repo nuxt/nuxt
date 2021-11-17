@@ -49,7 +49,6 @@ export interface NuxtAppCompat {
 }
 
 export interface Context {
-  // eslint-disable-next-line
   $_nuxtApp: NuxtAppCompat
 }
 

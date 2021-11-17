@@ -8,8 +8,7 @@ const PUBLIC_PATH = process.env.PUBLIC_PATH // Default: /_nuxt/
 const TWO_DAYS = 2 * 60 * 60 * 24
 const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + '/' + process.env.NUXT_STATIC_VERSION
 
-// eslint-disable-next-line
-export default async function serveStatic(req, res) {
+export default async function serveStatic (req, res) {
   if (!METHODS.includes(req.method)) {
     return
   }

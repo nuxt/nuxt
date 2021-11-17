@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { getCurrentInstance, ref } from 'vue'
+import { ref } from 'vue'
 
 import NuxtLayout from './layout'
 import { useNuxtApp } from '#app'

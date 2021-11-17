@@ -92,7 +92,7 @@ module.exports = (api, options = {}) => {
     (corejs.version === 2 && isCorejs3Hoisted)
   ) {
     // eslint-disable-next-line no-console
-    (console.fatal || console.error)(`babel corejs option is ${corejs.version}, please directlly install core-js@${corejs.version}.`)
+    (console.fatal || console.error)(`babel corejs option is ${corejs.version}, please directly install core-js@${corejs.version}.`)
   }
 
   const defaultTargets = {

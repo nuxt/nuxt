@@ -101,7 +101,7 @@ export default {
 
     const tick = () => {
       const elapsedTime = clock.getElapsedTime()
-      const deltaTime = elapsedTime - previousTime
+      const _deltaTime = elapsedTime - previousTime
       previousTime = elapsedTime
       if (gem) {
         gem.rotation.y = 1.1 * elapsedTime
