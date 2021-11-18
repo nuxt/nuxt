@@ -2431,7 +2431,7 @@ __metadata:
     "@types/node-fetch": ^3.0.2
     "@vitejs/plugin-legacy": ^1.6.2
     "@vue/composition-api": ^1.4.0
-    "@vueuse/head": ^0.7.0
+    "@vueuse/head": ^0.7.2
     acorn: ^8.6.0
     consola: ^2.15.3
     defu: ^5.0.0
@@ -4815,12 +4815,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/head@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@vueuse/head@npm:0.7.0"
+"@vueuse/head@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "@vueuse/head@npm:0.7.2"
   peerDependencies:
     vue: ">=3"
-  checksum: 8c739eebabdc900281beba32c87b3c4920f1626eb22463a9344aa6038f32633f8b57e662ca943bde8f162e241063c9c85ae5c8f7258dfa66c7d88f54c18c0325
+  checksum: 8a88b95d1cd5aefe42be258faed6ea5e0d65f96c9dacc7bb109d0334c76313a57a2a67a463eab6466d67deddcfc6b0969ac3bf80348a1c3a30a6208fd88f83aa
   languageName: node
   linkType: hard
 
@@ -15013,7 +15013,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.22
     "@vue/shared": ^3.2.22
-    "@vueuse/head": ^0.7.0
+    "@vueuse/head": ^0.7.2
     chokidar: ^3.5.2
     consola: ^2.15.3
     defu: ^5.0.0
