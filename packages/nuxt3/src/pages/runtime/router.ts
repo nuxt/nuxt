@@ -27,7 +27,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     routes
   })
   nuxtApp.vueApp.use(router)
-  nuxtApp.provide('router', router)
 
   const previousRoute = shallowRef(router.currentRoute.value)
   router.afterEach((_to, from) => {
@@ -53,4 +52,6 @@ export default defineNuxtPlugin((nuxtApp) => {
       nuxtApp.ssrContext.error = error
     }
   })
+
+  return { provide: { router } }
 })
