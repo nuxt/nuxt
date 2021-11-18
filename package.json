@@ -43,7 +43,7 @@
     "esbuild": "^0.13.14",
     "eslint": "^8.2.0",
     "eslint-plugin-jsdoc": "^37.0.3",
-    "execa": "^5.1.1",
+    "execa": "^6.0.0",
     "globby": "^11.0.4",
     "jiti": "^1.12.9",
     "lerna": "^4.0.0",

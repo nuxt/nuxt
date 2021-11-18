@@ -3,7 +3,7 @@ import { execSync } from 'child_process'
 import { resolve, dirname } from 'pathe'
 import defu from 'defu'
 import hash from 'object-hash'
-import execa from 'execa'
+import { execa } from 'execa'
 import { createCommonJS } from 'mlly'
 
 const cjs = createCommonJS(import.meta.url)

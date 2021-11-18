@@ -1,4 +1,4 @@
-import execa from 'execa'
+import { execa } from 'execa'
 import { resolve } from 'pathe'
 import { isNuxt3 } from '@nuxt/kit'
 

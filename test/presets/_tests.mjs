@@ -3,7 +3,7 @@ import { resolve } from 'pathe'
 import destr from 'destr'
 import { listen } from 'listhen'
 import { $fetch } from 'ohmyfetch'
-import execa from 'execa'
+import { execa } from 'execa'
 import { expect } from 'chai'
 import { fixtureDir, resolveWorkspace } from '../utils.mjs'
 
