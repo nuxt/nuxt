@@ -3,12 +3,12 @@ import { ref, watchEffect, onBeforeUnmount, getCurrentInstance } from 'vue'
 import type { MetaObject } from '..'
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin((nuxt) => {
+export default defineNuxtPlugin((nuxtApp) => {
   const head = createHead()
 
-  nuxt.vueApp.use(head)
+  nuxtApp.vueApp.use(head)
 
-  nuxt._useMeta = (meta: MetaObject) => {
+  nuxtApp._useMeta = (meta: MetaObject) => {
     const headObj = ref(meta as any)
     head.addHeadObjs(headObj)
 
@@ -28,6 +28,6 @@ export default defineNuxtPlugin((nuxt) => {
   }
 
   if (process.server) {
-    nuxt.ssrContext.renderMeta = () => renderHeadToString(head)
+    nuxtApp.ssrContext.renderMeta = () => renderHeadToString(head)
   }
 })

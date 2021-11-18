@@ -26,12 +26,12 @@ const vueMetaRenderer = (nuxt) => {
   }
 }
 
-export default defineNuxtPlugin((nuxt) => {
+export default defineNuxtPlugin((nuxtApp) => {
   const metaRenderers = [vueMetaRenderer]
 
-  nuxt.callHook('meta:register', metaRenderers)
+  nuxtApp.callHook('meta:register', metaRenderers)
 
-  nuxt.ssrContext.renderMeta = async () => {
+  nuxtApp.ssrContext.renderMeta = async () => {
     const metadata = {
       htmlAttrs: '',
       headAttrs: '',
@@ -41,7 +41,7 @@ export default defineNuxtPlugin((nuxt) => {
       bodyScripts: ''
     }
     for await (const renderer of metaRenderers) {
-      const result = await renderer(nuxt)
+      const result = await renderer(nuxtApp)
       for (const key in result) {
         metadata[key] += result[key]
       }

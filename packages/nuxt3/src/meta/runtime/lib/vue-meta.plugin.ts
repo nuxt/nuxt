@@ -3,12 +3,12 @@ import { createMetaManager } from 'vue-meta'
 import type { MetaObject } from '../types'
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin((nuxt) => {
+export default defineNuxtPlugin((nuxtApp) => {
   const manager = createMetaManager(process.server)
 
-  nuxt.vueApp.use(manager)
+  nuxtApp.vueApp.use(manager)
 
-  nuxt._useMeta = (meta: MetaObject) => manager.addMeta(meta)
+  nuxtApp._useMeta = (meta: MetaObject) => manager.addMeta(meta)
 
   if (process.client) {
     const teleportTarget = document.createElement('div')
@@ -19,19 +19,19 @@ export default defineNuxtPlugin((nuxt) => {
   }
 
   if (process.server) {
-    nuxt.ssrContext.renderMeta = async () => {
+    nuxtApp.ssrContext.renderMeta = async () => {
       const { renderMetaToString } = await import('vue-meta/ssr')
-      nuxt.ssrContext.teleports = nuxt.ssrContext.teleports || {}
+      nuxtApp.ssrContext.teleports = nuxtApp.ssrContext.teleports || {}
 
-      await renderMetaToString(nuxt.app, nuxt.ssrContext)
+      await renderMetaToString(nuxtApp.app, nuxtApp.ssrContext)
 
       return {
-        htmlAttrs: nuxt.ssrContext.teleports.htmlAttrs || '',
-        headAttrs: nuxt.ssrContext.teleports.headAttrs || '',
-        bodyAttrs: nuxt.ssrContext.teleports.bodyAttrs || '',
-        headTags: nuxt.ssrContext.teleports.head || '',
-        bodyPrepend: nuxt.ssrContext.teleports['body-prepend'] || '',
-        bodyScripts: nuxt.ssrContext.teleports.body || ''
+        htmlAttrs: nuxtApp.ssrContext.teleports.htmlAttrs || '',
+        headAttrs: nuxtApp.ssrContext.teleports.headAttrs || '',
+        bodyAttrs: nuxtApp.ssrContext.teleports.bodyAttrs || '',
+        headTags: nuxtApp.ssrContext.teleports.head || '',
+        bodyPrepend: nuxtApp.ssrContext.teleports['body-prepend'] || '',
+        bodyScripts: nuxtApp.ssrContext.teleports.body || ''
       }
     }
   }
