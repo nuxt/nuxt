@@ -25,7 +25,7 @@
     "@vitejs/plugin-legacy": "^1.6.2",
     "@vue/composition-api": "^1.4.0",
     "@vueuse/head": "^0.6.0",
-    "acorn": "^8.5.0",
+    "acorn": "^8.6.0",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
     "enhanced-resolve": "^5.8.3",
