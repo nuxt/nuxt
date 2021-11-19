@@ -52,7 +52,7 @@
     "mime": "^3.0.0",
     "mlly": "^0.3.13",
     "node-fetch": "^3.1.0",
-    "ohmyfetch": "^0.4.6",
+    "ohmyfetch": "^0.4.7",
     "ora": "^6.0.1",
     "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",
@@ -67,7 +67,7 @@
     "table": "^6.7.3",
     "ufo": "^0.7.9",
     "unenv": "^0.4.1",
-    "unstorage": "^0.3.2",
+    "unstorage": "^0.3.3",
     "vue-bundle-renderer": "^0.3.2",
     "vue-server-renderer": "^2.6.14"
   },
