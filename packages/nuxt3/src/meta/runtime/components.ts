@@ -153,6 +153,7 @@ export const Meta = defineComponent({
     charset: String,
     content: String,
     httpEquiv: String,
+    key: String,
     name: String
   },
   setup: setupForUseMeta(meta => ({
