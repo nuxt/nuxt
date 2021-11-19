@@ -34,11 +34,16 @@ function generateMarkdown (schema: Schema, title: string, level: string, parentV
   // Render meta info
   if (schema.type !== 'object' || !schema.properties) {
     // Type and default
-    lines.push(`- **Type**: \`${schema.type}\``)
-    lines.push(`- **Version**: ${versions.join(', ')}`)
-    if ('default' in schema) {
-      lines.push('- **Default**', ...formatValue(schema.default))
+    if (schema.type !== 'any') {
+      lines.push(`- **Type**: \`${schema.type}\``)
     }
+    const defaultValue = formatValue(schema.default)
+    if (defaultValue) {
+      lines.push('- **Default**', ...defaultValue)
+    }
+
+    lines.push(`- **Version**: ${versions.join(', ')}`)
+
     lines.push('')
   }
 
@@ -86,7 +91,9 @@ const InternalTypes = new Set([
 ])
 
 function formatValue (val) {
-  return ['```json', JSON.stringify(val, null, 2), '```']
+  const stringified = JSON.stringify(val, null, 2)
+  if (stringified === '{}' || stringified === '[]') { return null }
+  return ['```json', stringified, '```']
 }
 
 function renderTag (tag: string) {
@@ -110,7 +117,7 @@ async function generateDocs ({ configFile, configTemplate }) {
   const start = Date.now()
   console.log(`Updating docs on ${configFile}`)
   const template = await readFile(configTemplate, 'utf8')
-  const rootSchema = require('@nuxt/kit/schema/config.schema.json') as Schema
+  const rootSchema = require('../../packages/kit/schema/config.schema.json') as Schema
   const keys = Object.keys(rootSchema.properties).sort()
   let generatedDocs = ''
 

@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "yarn gendocs && nuxt dev",
     "build": "yarn gendocs && nuxt generate --force-build",
-    "build:ci": "yarn add @nuxt/kit@npm:@nuxt/kit-edge && yarn build",
+    "build:ci": "./scripts/make-schema.sh && yarn build",
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
