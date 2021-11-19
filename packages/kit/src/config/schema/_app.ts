@@ -10,7 +10,8 @@ export default {
      * Properties that will be set directly on `Vue.config` for vue@2.
      *
      * @see [vue@2 Documentation](https://vuejs.org/v2/api/#Global-Config)
-    * @version 2
+     * @type {import('vue/types/vue').VueConfiguration}
+     * @version 2
      */
     config: {
       silent: { $resolve: (val, get) => val ?? !get('dev') },
@@ -19,6 +20,7 @@ export default {
     /**
      * Options for the Vue compiler that will be passed at build time
      * @see [documentation](https://v3.vuejs.org/api/application-config.html)
+     * @type {import('@vue/compiler-core').CompilerOptions}
      * @version 3
      */
     compilerOptions: {}
@@ -87,6 +89,7 @@ export default {
    * Options to pass directly to `vue-meta`.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#plugin-options).
+   * @type {import('vue-meta').VueMetaOptions}
    * @version 2
    */
   vueMeta: null,
@@ -95,6 +98,7 @@ export default {
    * Set default configuration for `<head>` on every page.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#metainfo-properties) for specifics.
+   * @type {import('vue-meta').MetaInfo}
    * @version 2
    */
   head: {
@@ -133,16 +137,13 @@ export default {
    *  ]
    * }
    * ```
+   * @type {import('nuxt3/dist/meta/runtime/types').MetaObject}
    * @version 3
    */
   meta: {
-    /** Each item in the array maps to a newly-created `<meta>` element, where object properties map to attributes. */
     meta: [],
-    /** Each item in the array maps to a newly-created `<link>` element, where object properties map to attributes. */
     link: [],
-    /** Each item in the array maps to a newly-created `<style>` element, where object properties map to attributes. */
     style: [],
-    /** Each item in the array maps to a newly-created `<script>` element, where object properties map to attributes. */
     script: []
   },
 
@@ -177,6 +178,7 @@ export default {
    *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
    * ]
    * ```
+   * @type {typeof import('../src/types/nuxt').NuxtPlugin[]}
    * @version 2
    */
   plugins: [],
@@ -185,6 +187,7 @@ export default {
    * You may want to extend plugins or change their order. For this, you can pass
    * a function using `extendPlugins`. It accepts an array of plugin objects and
    * should return an array of plugin objects.
+   * @type {(plugins: Array<{ src: string, mode?: 'client' | 'server' }>) => Array<{ src: string, mode?: 'client' | 'server' }>}
    * @version 2
    */
   extendPlugins: null,
@@ -208,6 +211,7 @@ export default {
    *   '@/assets/css/main.scss'
    * ]
    * ```
+   * @type {string[]}
    * @version 2
    * @version 3
    */
@@ -217,6 +221,7 @@ export default {
    * An object where each key name maps to a path to a layout .vue file.
    *
    * Normally there is no need to configure this directly.
+   * @type {Record<string, string>}
    * @version 2
    */
   layouts: {},
@@ -225,6 +230,7 @@ export default {
    * Set a custom error page layout.
    *
    * Normally there is no need to configure this directly.
+   * @type {string}
    * @version 2
    */
   ErrorPage: null,

@@ -132,6 +132,7 @@ export default {
    * middleware, and so on - defaulting to `jiti` (which has support for TypeScript and ESM syntax).
    *
    * @see [jiti](https://github.com/unjs/jiti)
+   * @type {'jiti' | 'native' | ((p: string | { filename: string }) => NodeRequire)}
    * @version 2
    */
   createRequire: {
@@ -153,6 +154,7 @@ export default {
    * or as static HTML files suitable for a CDN or other static file server (`static`).
    *
    * This is unrelated to `ssr`.
+   * @type {'server' | 'static'}
    * @version 2
    */
   target: {
@@ -194,6 +196,7 @@ export default {
    * If you have set `modern: true` and are serving your app, modern will be set to `'server'`.
    *
    * @see [concept of modern mode](https://philipwalton.com/articles/deploying-es2015-code-in-production-today/)
+   * @type {'server' | 'client' | boolean}
    * @version 2
    */
   modern: undefined,
@@ -222,6 +225,7 @@ export default {
    *   function () {}
    * ]
    * ```
+   * @type {typeof import('../src/types/module').ModuleInstallOptions[]}
    * @version 2
    * @version 3
    */
@@ -258,6 +262,7 @@ export default {
    * decreases the size of `node_modules` in production deployments. Please refer to each
    * module's documentation to see if it is recommended to use `modules` or `buildModules`.
    *
+   * @type {typeof import('../src/types/module').ModuleInstallOptions[]}
    * @version 2
    * @version 3
    */
@@ -284,11 +289,17 @@ export default {
    * @version 2
    */
   globals: {
+    /** @type {(globalName: string) => string} */
     id: globalName => `__${globalName}`,
+    /** @type {(globalName: string) => string} */
     nuxt: globalName => `$${globalName}`,
+    /** @type {(globalName: string) => string} */
     context: globalName => `__${globalName.toUpperCase()}__`,
+    /** @type {(globalName: string) => string} */
     pluginPrefix: globalName => globalName,
+    /** @type {(globalName: string) => string} */
     readyCallback: globalName => `on${pascalCase(globalName)}Ready`,
+    /** @type {(globalName: string) => string} */
     loadedCallback: globalName => `_on${pascalCase(globalName)}Loaded`
   },
 
@@ -508,6 +519,7 @@ export default {
    * </style>
    * ```
    *
+   * @type {Record<string, string>}
    * @version 2
    * @version 3
    */
@@ -570,6 +582,7 @@ export default {
    * ```js
    * watch: ['~/custom/*.js']
    * ```
+   * @type {string[]}
    * @version 2
    */
   watch: {
@@ -611,6 +624,7 @@ export default {
    * Your preferred code editor to launch when debugging.
    *
    * @see [documentation](https://github.com/yyx990803/launch-editor#supported-editors)
+   * @type {string}
    * @version 2
    */
   editor: undefined,
@@ -644,6 +658,7 @@ export default {
    * ```
    * @version 2
    * @version 3
+   * @type {typeof import('../src/types/hooks').NuxtHooks}
    */
   hooks: null,
 
@@ -669,6 +684,7 @@ export default {
    *   }
    * }
    * ```
+   * @type {typeof import('../src/types/runtime-config').PrivateRuntimeConfig}
    * @version 2
    * @version 3
    */
@@ -693,10 +709,11 @@ export default {
    *   }
    * }
    * ```
+   * @type {typeof import('../src/types/runtime-config').PublicRuntimeConfig}
    * @version 2
    * @version 3
    */
   publicRuntimeConfig: {
     $resolve: (val, get) => defu(val, { app: get('app') })
-  }
+  },
 }

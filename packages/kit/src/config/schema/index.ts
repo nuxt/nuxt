@@ -1,4 +1,5 @@
 
+import _adhoc from './_adhoc'
 import _app from './_app'
 import _common from './_common'
 import _internal from './_internal'
@@ -30,6 +31,7 @@ TODO for top level normalizations: (nuxt2)
 */
 
 export default {
+  ..._adhoc,
   ..._app,
   ..._common,
   ..._internal,
@@ -40,5 +42,11 @@ export default {
   server,
   cli,
   generate,
-  typescript
+  typescript,
+  // TODO: split out into separate file
+  /**
+   * Configuration that will be passed directly to Vite.
+   * @type {boolean | typeof import('vite').InlineConfig}
+   */
+  vite: undefined,
 }

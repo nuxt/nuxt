@@ -1,6 +1,7 @@
 export default {
   /**
    * Add a message to the CLI banner by adding a string to this array.
+   * @type {string[]}
    * @version 2
    */
   badgeMessages: [],

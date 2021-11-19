@@ -23,6 +23,7 @@ export default {
    *   analyzerMode: 'static'
    * }
    * ```
+   * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
    */
   analyze: false,
 
@@ -446,7 +447,8 @@ export default {
     transpile: [({ isLegacy }) => isLegacy && 'ky']
    * ```
    * @version 2
-   * @version 3 webpack only
+   * @version 3
+   * @type {Array<string | RegExp | Function>}
    */
   transpile: {
     $resolve: val => [].concat(val).filter(Boolean)

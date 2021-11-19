@@ -19,6 +19,12 @@ export default defineBuildConfig({
     'webpack',
     'vite',
     'nuxt',
-    'nuxt3'
+    'nuxt3',
+    // type imports
+    '@vue/compiler-core',
+    'vue-meta',
+    'rollup-plugin-visualizer',
+    'webpack-bundle-analyzer',
+    'vue'
   ]
 })
