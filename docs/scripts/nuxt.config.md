@@ -6,12 +6,14 @@ head.title: Nuxt configuration file
 
 # Nuxt configuration file
 
-Nuxt can be configured easily with one single file, called `nuxt.config`, it supports both `.js` and `.ts` extension.
+Nuxt can be easily configured with a single `nuxt.config` file, which can have either a `.js`, `.ts` or `.mjs` extension.
 
 ```ts
-export default {
+import { defineNuxtConfig } from 'nuxt3'
+
+export default defineNuxtConfig({
   // My Nuxt config
-}
+})
 ```
 
 Learn more about all the different config properties
