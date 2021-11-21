@@ -105,15 +105,11 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/contribution-guide/)
 
 ## Cross-browser testing
 
-Thanks to [BrowserStack](http://browserstack.com)!
-
-<a href="https://browserstack.com"><img height="70" src="https://github.com/nuxt/nuxt.js/blob/dev/.github/icons/browserstack.svg" alt="BrowserStack"></a>
+<a href="https://browserstack.com"><img height="30" align="center" src=".github/icons/browserstack.svg" alt="BrowserStack"></a> Thanks to [BrowserStack](http://browserstack.com)!
 
 ## Automated testing
 
-Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
-
-<a href="https://saucelabs.com"><img height="70" src="https://github.com/nuxt/nuxt.js/blob/dev/.github/icons/saucelabs.svg" alt="SauceLabs"></a>
+<a href="https://saucelabs.com"><img height="30" align="center" src=".github/icons/saucelabs.svg" alt="SauceLabs"></a> Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
 
 ## Security
 
