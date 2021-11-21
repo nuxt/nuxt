@@ -48,7 +48,7 @@ Listening on http://localhost:3000
 
 ## Server timings
 
-You can enable the `nitro.timing` option in order to have the logs about the chunk loading and cold start performance.
+You can enable the `nitro.timing` option to have the logs about the chunk loading and cold start performance.
 
 ```js [nuxt.config.js|ts]
 export default {

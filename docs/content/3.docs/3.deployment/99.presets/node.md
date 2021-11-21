@@ -5,7 +5,7 @@ Discover the Node.js function preset with Nitro to attach Nuxt as a middleware t
 ::list
 
 - Compatible with many Node.js servers
-- Drop-in usage with express or native http server
+- Drop-in usage with express or native HTTP server
 - Loads only the chunks required to render the request for optimal cold start timing
 ::
 
