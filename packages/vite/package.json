@@ -24,7 +24,7 @@
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
-    "esbuild": "^0.13.14",
+    "esbuild": "^0.13.15",
     "externality": "^0.1.5",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",

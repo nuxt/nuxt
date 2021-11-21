@@ -2452,7 +2452,7 @@ __metadata:
     postcss: ^8
     postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
-    postcss-preset-env: ^7.0.0
+    postcss-preset-env: ^7.0.1
     postcss-url: ^10.1.3
     scule: ^0.2.1
     semver: ^7.3.5
@@ -2813,7 +2813,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
-    esbuild: ^0.13.14
+    esbuild: ^0.13.15
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.4
@@ -3036,7 +3036,7 @@ __metadata:
     chokidar: ^3.5.2
     consola: ^2.15.3
     defu: ^5.0.0
-    esbuild: ^0.13.14
+    esbuild: ^0.13.15
     externality: ^0.1.5
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
@@ -3174,7 +3174,7 @@ __metadata:
     vue: 3.2.22
     vue-loader: ^16.8.3
     vue-style-loader: ^4.1.3
-    webpack: ^5.64.1
+    webpack: ^5.64.2
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.2.2
     webpack-hot-middleware: ^2.25.1
@@ -7588,10 +7588,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:~8.2.0":
-  version: 8.2.0
-  resolution: "commander@npm:8.2.0"
-  checksum: e868805bc266777f7a9c8a740e15b9e02b8148d8251f577ea9b9ef373ac0bdeb77b9b60cfc033592c9e1affea89993be08c13c623f0c619f9bf152c0e4d12cb0
+"commander@npm:~8.3.0":
+  version: 8.3.0
+  resolution: "commander@npm:8.3.0"
+  checksum: 0f82321821fc27b83bd409510bb9deeebcfa799ff0bf5d102128b500b7af22872c0c92cb6a0ebc5a4cf19c6b550fba9cedfa7329d18c6442a625f851377bacf0
   languageName: node
   linkType: hard
 
@@ -9391,6 +9391,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-android-arm64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-android-arm64@npm:0.13.15"
+  conditions: os=android & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "esbuild-darwin-64@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-darwin-64@npm:0.13.13"
@@ -9401,6 +9408,13 @@ __metadata:
 "esbuild-darwin-64@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-darwin-64@npm:0.13.14"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"esbuild-darwin-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-darwin-64@npm:0.13.15"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
@@ -9419,6 +9433,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-darwin-arm64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-darwin-arm64@npm:0.13.15"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "esbuild-freebsd-64@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-freebsd-64@npm:0.13.13"
@@ -9429,6 +9450,13 @@ __metadata:
 "esbuild-freebsd-64@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-freebsd-64@npm:0.13.14"
+  conditions: os=freebsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"esbuild-freebsd-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-freebsd-64@npm:0.13.15"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
@@ -9447,6 +9475,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-freebsd-arm64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-freebsd-arm64@npm:0.13.15"
+  conditions: os=freebsd & cpu=arm64
+  languageName: node
+  linkType: hard
+
 "esbuild-linux-32@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-linux-32@npm:0.13.13"
@@ -9457,6 +9492,13 @@ __metadata:
 "esbuild-linux-32@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-linux-32@npm:0.13.14"
+  conditions: os=linux & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"esbuild-linux-32@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-32@npm:0.13.15"
   conditions: os=linux & cpu=ia32
   languageName: node
   linkType: hard
@@ -9475,6 +9517,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-linux-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-64@npm:0.13.15"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
 "esbuild-linux-arm64@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-linux-arm64@npm:0.13.13"
@@ -9485,6 +9534,13 @@ __metadata:
 "esbuild-linux-arm64@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-linux-arm64@npm:0.13.14"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"esbuild-linux-arm64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-arm64@npm:0.13.15"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
@@ -9503,6 +9559,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-linux-arm@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-arm@npm:0.13.15"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
 "esbuild-linux-mips64le@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-linux-mips64le@npm:0.13.13"
@@ -9517,6 +9580,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-linux-mips64le@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-mips64le@npm:0.13.15"
+  conditions: os=linux & cpu=mips64el
+  languageName: node
+  linkType: hard
+
 "esbuild-linux-ppc64le@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-linux-ppc64le@npm:0.13.13"
@@ -9527,6 +9597,13 @@ __metadata:
 "esbuild-linux-ppc64le@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-linux-ppc64le@npm:0.13.14"
+  conditions: os=linux & cpu=ppc64
+  languageName: node
+  linkType: hard
+
+"esbuild-linux-ppc64le@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-linux-ppc64le@npm:0.13.15"
   conditions: os=linux & cpu=ppc64
   languageName: node
   linkType: hard
@@ -9562,6 +9639,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-netbsd-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-netbsd-64@npm:0.13.15"
+  conditions: os=netbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
 "esbuild-openbsd-64@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-openbsd-64@npm:0.13.13"
@@ -9572,6 +9656,13 @@ __metadata:
 "esbuild-openbsd-64@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-openbsd-64@npm:0.13.14"
+  conditions: os=openbsd & cpu=x64
+  languageName: node
+  linkType: hard
+
+"esbuild-openbsd-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-openbsd-64@npm:0.13.15"
   conditions: os=openbsd & cpu=x64
   languageName: node
   linkType: hard
@@ -9590,6 +9681,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-sunos-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-sunos-64@npm:0.13.15"
+  conditions: os=sunos & cpu=x64
+  languageName: node
+  linkType: hard
+
 "esbuild-windows-32@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-windows-32@npm:0.13.13"
@@ -9600,6 +9698,13 @@ __metadata:
 "esbuild-windows-32@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-windows-32@npm:0.13.14"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"esbuild-windows-32@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-windows-32@npm:0.13.15"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
@@ -9618,6 +9723,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"esbuild-windows-64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-windows-64@npm:0.13.15"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "esbuild-windows-arm64@npm:0.13.13":
   version: 0.13.13
   resolution: "esbuild-windows-arm64@npm:0.13.13"
@@ -9628,6 +9740,13 @@ __metadata:
 "esbuild-windows-arm64@npm:0.13.14":
   version: 0.13.14
   resolution: "esbuild-windows-arm64@npm:0.13.14"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"esbuild-windows-arm64@npm:0.13.15":
+  version: 0.13.15
+  resolution: "esbuild-windows-arm64@npm:0.13.15"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -9691,6 +9810,68 @@ __metadata:
   bin:
     esbuild: bin/esbuild
   checksum: 8277ea74d04919cfa0c63bb181baa0142737f1e2a40ba80e6f45ebbe72df9d2b42f3f0f374789f1b5aa3d71ebc3e136c3d80946661edb09e4ed782d61cb389dc
+  languageName: node
+  linkType: hard
+
+"esbuild@npm:^0.13.15":
+  version: 0.13.15
+  resolution: "esbuild@npm:0.13.15"
+  dependencies:
+    esbuild-android-arm64: 0.13.15
+    esbuild-darwin-64: 0.13.15
+    esbuild-darwin-arm64: 0.13.15
+    esbuild-freebsd-64: 0.13.15
+    esbuild-freebsd-arm64: 0.13.15
+    esbuild-linux-32: 0.13.15
+    esbuild-linux-64: 0.13.15
+    esbuild-linux-arm: 0.13.15
+    esbuild-linux-arm64: 0.13.15
+    esbuild-linux-mips64le: 0.13.15
+    esbuild-linux-ppc64le: 0.13.15
+    esbuild-netbsd-64: 0.13.15
+    esbuild-openbsd-64: 0.13.15
+    esbuild-sunos-64: 0.13.15
+    esbuild-windows-32: 0.13.15
+    esbuild-windows-64: 0.13.15
+    esbuild-windows-arm64: 0.13.15
+  dependenciesMeta:
+    esbuild-android-arm64:
+      optional: true
+    esbuild-darwin-64:
+      optional: true
+    esbuild-darwin-arm64:
+      optional: true
+    esbuild-freebsd-64:
+      optional: true
+    esbuild-freebsd-arm64:
+      optional: true
+    esbuild-linux-32:
+      optional: true
+    esbuild-linux-64:
+      optional: true
+    esbuild-linux-arm:
+      optional: true
+    esbuild-linux-arm64:
+      optional: true
+    esbuild-linux-mips64le:
+      optional: true
+    esbuild-linux-ppc64le:
+      optional: true
+    esbuild-netbsd-64:
+      optional: true
+    esbuild-openbsd-64:
+      optional: true
+    esbuild-sunos-64:
+      optional: true
+    esbuild-windows-32:
+      optional: true
+    esbuild-windows-64:
+      optional: true
+    esbuild-windows-arm64:
+      optional: true
+  bin:
+    esbuild: bin/esbuild
+  checksum: d5fac8f28a6328592e45f9d49a7e98420cf2c2a3ff5a753bbf011ab79bcb5c062209ef862d3ae0875d8f2a50d40c112b0224e8b419a7cbffc6e2b02cee11ef7e
   languageName: node
   linkType: hard
 
@@ -9997,13 +10178,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-scope@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "eslint-scope@npm:6.0.0"
+"eslint-scope@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "eslint-scope@npm:7.1.0"
   dependencies:
     esrecurse: ^4.3.0
     estraverse: ^5.2.0
-  checksum: 3f1b3578f288c3820f68ad2aae102300e546be8a98a958f515405dc20cc2fe64fda583d364977628bb14fe3d4f96f37de5e9bc5d6eb26bc310da33ba2a677dc3
+  checksum: 2070470a0725438ed47075b2574a4c03cf59aa32648da8cff9e3548c84f6b0079cfdb9ee1dd7ab0bfe97011f64b2af5bfd4b69cf14a1292130dec661eec7914a
   languageName: node
   linkType: hard
 
@@ -10056,16 +10237,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-visitor-keys@npm:^3.0.0":
+"eslint-visitor-keys@npm:^3.0.0, eslint-visitor-keys@npm:^3.1.0":
   version: 3.1.0
   resolution: "eslint-visitor-keys@npm:3.1.0"
   checksum: fd2d613bb315bc549068ca97771d868437fb60c8f13ef8d6d54669773ff53f814b759fa9e57966f15e4c50a5f5e11c6ba47060b8f201f9776311f6c5d5c11b70
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "eslint@npm:8.2.0"
+"eslint@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "eslint@npm:8.3.0"
   dependencies:
     "@eslint/eslintrc": ^1.0.4
     "@humanwhocodes/config-array": ^0.6.0
@@ -10076,10 +10257,10 @@ __metadata:
     doctrine: ^3.0.0
     enquirer: ^2.3.5
     escape-string-regexp: ^4.0.0
-    eslint-scope: ^6.0.0
+    eslint-scope: ^7.1.0
     eslint-utils: ^3.0.0
-    eslint-visitor-keys: ^3.0.0
-    espree: ^9.0.0
+    eslint-visitor-keys: ^3.1.0
+    espree: ^9.1.0
     esquery: ^1.4.0
     esutils: ^2.0.2
     fast-deep-equal: ^3.1.3
@@ -10107,7 +10288,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: 19f2f4e23bdd1d0f1c99759adb88c0bf01908ce5bd480913ca7b5d3183f4c42d93142ada699b196e228295c074254ad90a3475126784673bd1afeb22e91ceea8
+  checksum: c0338471fc787384077b132fb1496f264a4d7ed032b9072b2f6b8b1c833edc89b0a4890080576781ce6101a2700341af413ecbf1b66f0780aa02601c40fb2008
   languageName: node
   linkType: hard
 
@@ -10130,6 +10311,17 @@ __metadata:
     acorn-jsx: ^5.3.1
     eslint-visitor-keys: ^3.0.0
   checksum: f313c642e35587ce62a419f57ceea47937a719b084c7b31f649d2ca15ed92bc2dde58e2ac4fc381a74364b0db0b97d9cdb2a5d1ca0ccd7483bde9b4b04fe23e8
+  languageName: node
+  linkType: hard
+
+"espree@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "espree@npm:9.1.0"
+  dependencies:
+    acorn: ^8.6.0
+    acorn-jsx: ^5.3.1
+    eslint-visitor-keys: ^3.1.0
+  checksum: ba9b0f759c49c19a098e0bb97f3b9b05441a60dec3f868bc412ae300e00ba20cb0bd2c6a1bdd6c4f0056e6382650bf45b4982d81e67ad0210c1c16b336f73c39
   languageName: node
   linkType: hard
 
@@ -11948,7 +12140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ignore@npm:^5.1.1, ignore@npm:^5.1.4, ignore@npm:^5.1.8, ignore@npm:^5.1.9, ignore@npm:~5.1.8":
+"ignore@npm:^5.1.1, ignore@npm:^5.1.4, ignore@npm:^5.1.8, ignore@npm:^5.1.9, ignore@npm:~5.1.9":
   version: 5.1.9
   resolution: "ignore@npm:5.1.9"
   checksum: 6f6b2235f4e63648116c5814f76b2d3d63fae9c21b8a466862e865732f59e787c9938a9042f9457091db6f0d811508ea3c8c6a60f35bafc4ceea08bbe8f96fd5
@@ -13615,15 +13807,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdownlint-cli@npm:^0.29.0":
-  version: 0.29.0
-  resolution: "markdownlint-cli@npm:0.29.0"
+"markdownlint-cli@npm:^0.30.0":
+  version: 0.30.0
+  resolution: "markdownlint-cli@npm:0.30.0"
   dependencies:
-    commander: ~8.2.0
+    commander: ~8.3.0
     deep-extend: ~0.6.0
     get-stdin: ~8.0.0
     glob: ~7.2.0
-    ignore: ~5.1.8
+    ignore: ~5.1.9
     js-yaml: ^4.1.0
     jsonc-parser: ~3.0.0
     lodash.differencewith: ~4.5.0
@@ -13635,7 +13827,7 @@ __metadata:
     run-con: ~1.2.10
   bin:
     markdownlint: markdownlint.js
-  checksum: 4bc748bbfdb7a6d6067453cb1626f7bb2467f5492d71d57e9e5c3e3858edd8e4c41ca4b557eac06e7c72841c484d62a76cda749143e1865721ce8c72d2da4052
+  checksum: 65bf11b50564560f1206ff8e4856131812d578396c2b8977e4ed10fb25c99369df5b8815a7ad0d3f49637e6b998b44ce67705cda8fd578bd8f0f4765ac69e9fe
   languageName: node
   linkType: hard
 
@@ -15022,14 +15214,14 @@ __metadata:
     "@types/node": ^14.17.34
     "@types/object-hash": ^2
     chai: ^4.3.4
-    esbuild: ^0.13.14
-    eslint: ^8.2.0
+    esbuild: ^0.13.15
+    eslint: ^8.3.0
     eslint-plugin-jsdoc: ^37.0.3
     execa: ^6.0.0
     globby: ^11.0.4
     jiti: ^1.12.9
     lerna: ^4.0.0
-    markdownlint-cli: ^0.29.0
+    markdownlint-cli: ^0.30.0
     miniflare: ^1.4.1
     mocha: ^9.1.3
     object-hash: ^2.2.0
@@ -15997,14 +16189,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-color-functional-notation@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "postcss-color-functional-notation@npm:4.0.0"
+"postcss-color-functional-notation@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "postcss-color-functional-notation@npm:4.0.1"
   dependencies:
-    postcss-values-parser: 6.0.0
+    postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: 3651bf7f2c123f621e7e9d3813b857dcfae3e6451837bfd9457d9b160add495a9dacd95450d2a05acf8cd4b5fa4dc13ffb12f51804efa14bf67c8379d2407a09
+  checksum: ea3806ab6f6cf9b831a6248ab08641368288c292ea3c0961b90bc2791affb882dbd5cd5076da16e50c18038204c95b50b00816a68ba789e779b07e0cf6a733d0
   languageName: node
   linkType: hard
 
@@ -16283,14 +16475,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-double-position-gradients@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "postcss-double-position-gradients@npm:3.0.0"
+"postcss-double-position-gradients@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "postcss-double-position-gradients@npm:3.0.1"
   dependencies:
-    postcss-values-parser: 6.0.0
+    postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: f133528ee314481a2877c6e5646eb6b010abd4b7ffb5d1830cfcb651887871a26bd5de15d102c08a36be1dca337ad95d29bb8ec441931efcdadc11e688c757cc
+  checksum: 8c47a269fdfe1171af5a8e677d5318373d6c09a80002d1a985f0acac198576089d8a98898732a64eed64e29d58162e6cded3c42e618a2603f2d8ba3bb57bf7c1
   languageName: node
   linkType: hard
 
@@ -16304,14 +16496,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-env-function@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "postcss-env-function@npm:4.0.1"
+"postcss-env-function@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "postcss-env-function@npm:4.0.2"
   dependencies:
     postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: ed9330f311284562716826764cc72e36482c37051f71af5b9ad74be14b0ce816bbda83f86bd6e6323c4e762c473175f28cec2c06d41435573ea816543dee2f15
+  checksum: f4974b4aa779e57617c3d781fb6cf3936c3a9913f530d03299a6d9082ba936993370f31ab4e1e1029f22bd5f9701c777e273766467a337ec4bd59a013ab77d8b
   languageName: node
   linkType: hard
 
@@ -16397,14 +16589,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-image-set-function@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "postcss-image-set-function@npm:4.0.0"
+"postcss-image-set-function@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "postcss-image-set-function@npm:4.0.2"
   dependencies:
-    postcss-values-parser: 6.0.0
+    postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: 286080a62309cade9cf2ac329de98053cfa6e99523f5b501e7a37b17f7bd50a20a3a1855a3c48982c4c1189fa0bb66467e10c40c92dd877e73040e282fe6d1ee
+  checksum: 9d3f574d91953b810434844a1a1cc7adaf596552c31d1eb63ffb54ff677cb014f1463326b10ec1d3bffa66968a34214b8eadf2e09e108baf2f97d37b056f6a51
   languageName: node
   linkType: hard
 
@@ -16455,12 +16647,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-initial@npm:^3.0.0, postcss-initial@npm:^3.0.4":
+"postcss-initial@npm:^3.0.0":
   version: 3.0.4
   resolution: "postcss-initial@npm:3.0.4"
   dependencies:
     postcss: ^7.0.2
   checksum: 710ab6cabc5970912c04314099f5334e7d901235014bb1462657e29f8dc97b6e51caa35f0beba7e5dbe440589ef9c1df13a89bc53d6e6aa664573b945f1630bb
+  languageName: node
+  linkType: hard
+
+"postcss-initial@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "postcss-initial@npm:4.0.1"
+  peerDependencies:
+    postcss: ^8.0.0
+  checksum: 6956953853865de79c39d11533a2860e9f38b770bb284d0010d98a00b9469e22de344e4e5fd8208614d797030487e8918dd2f2c37d9e24d4dd59d565d4fc3e12
   languageName: node
   linkType: hard
 
@@ -16475,15 +16676,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-lab-function@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "postcss-lab-function@npm:4.0.0"
+"postcss-lab-function@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "postcss-lab-function@npm:4.0.1"
   dependencies:
     "@csstools/convert-colors": 2.0.0
-    postcss-values-parser: 6.0.0
+    postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: 05d1246a2b762814874b15e5e43ec1f459e3c7354e7ffbe3ca90a8d2d169445455dc116c9f6df6f654ad336809dcd25633302a3230e83e3348b4de1bab5dd85c
+  checksum: 5fadbcb0498f77a5ddfe82b0ded7ff7c7ff868350a323a51ded898cbb1d24169985dd647e5bb371a5452bcc9c39f173f9c2adc6a2b4994f4d35d5b4b07904360
   languageName: node
   linkType: hard
 
@@ -16853,14 +17054,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-nesting@npm:^10.0.0":
-  version: 10.0.1
-  resolution: "postcss-nesting@npm:10.0.1"
+"postcss-nesting@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "postcss-nesting@npm:10.0.2"
   dependencies:
     postcss-selector-parser: 6.0.6
   peerDependencies:
     postcss: ^8.2
-  checksum: 0a0539ea09531043038039998d7fdd9f9792ed0342ec3a12226f2453eee791d2977df55e13c660b426bfc0b81d81a2cc9c5bb6d5c712871d17d676dfa0375456
+  checksum: 2897220f7babb1863a7f33cc2edfb9abca5c8eb25b0a2723d704ce64c128aaa4eb0c2c1e52d74ff8bf321f1c917fe99e01a9c28dd806bfef6d7e43abeabfe05d
   languageName: node
   linkType: hard
 
@@ -17157,14 +17358,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-place@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "postcss-place@npm:7.0.0"
+"postcss-place@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "postcss-place@npm:7.0.1"
   dependencies:
-    postcss-values-parser: 6.0.0
+    postcss-values-parser: 6.0.1
   peerDependencies:
     postcss: ^8.3
-  checksum: 7143c9995bb66a976f74a7a5e7f16d980fb3b05dacadc3b3649aa215eb5851c2db491a2d30984714eff24d6d3a86ff5242386529f23f4327beb3761801033f53
+  checksum: 2d0a50e7a32980b586d305d0f39d5e9d24d382a83e3cb711d36eb82c7d77063aea0381992f0cfb625fec65055b5e61129f4af02d2d3ec629ef7ee07c7bad7cbc
   languageName: node
   linkType: hard
 
@@ -17213,9 +17414,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-preset-env@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "postcss-preset-env@npm:7.0.0"
+"postcss-preset-env@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "postcss-preset-env@npm:7.0.1"
   dependencies:
     autoprefixer: ^10.4.0
     browserslist: ^4.17.5
@@ -17226,34 +17427,34 @@ __metadata:
     cssdb: ^5.0.0
     postcss: ^8.3
     postcss-attribute-case-insensitive: ^5.0.0
-    postcss-color-functional-notation: ^4.0.0
+    postcss-color-functional-notation: ^4.0.1
     postcss-color-hex-alpha: ^8.0.0
     postcss-color-rebeccapurple: ^7.0.0
     postcss-custom-media: ^8.0.0
     postcss-custom-properties: ^12.0.0
     postcss-custom-selectors: ^6.0.0
     postcss-dir-pseudo-class: ^6.0.0
-    postcss-double-position-gradients: ^3.0.0
-    postcss-env-function: ^4.0.1
+    postcss-double-position-gradients: ^3.0.1
+    postcss-env-function: ^4.0.2
     postcss-focus-visible: ^6.0.1
     postcss-focus-within: ^5.0.1
     postcss-font-variant: ^5.0.0
     postcss-gap-properties: ^3.0.0
-    postcss-image-set-function: ^4.0.0
-    postcss-initial: ^3.0.4
-    postcss-lab-function: ^4.0.0
+    postcss-image-set-function: ^4.0.2
+    postcss-initial: ^4.0.1
+    postcss-lab-function: ^4.0.1
     postcss-logical: ^5.0.0
     postcss-media-minmax: ^5.0.0
-    postcss-nesting: ^10.0.0
+    postcss-nesting: ^10.0.2
     postcss-overflow-shorthand: ^3.0.0
     postcss-page-break: ^3.0.4
-    postcss-place: ^7.0.0
+    postcss-place: ^7.0.1
     postcss-pseudo-class-any-link: ^7.0.0
     postcss-replace-overflow-wrap: ^4.0.0
     postcss-selector-not: ^5.0.0
   peerDependencies:
     postcss: ^8.3
-  checksum: 0a70606d3eecb515be00f17cca4651715318e305404161541cf314b00c6e263053cc4e6aad0791116676470aded8d4b0d51995c09da06b256f92e85af8f04b50
+  checksum: 822a17d5bc5b1e52e1dca68ed9b64062acce1b2067f5d8dcefc7b97972c1bc5a9e3f46d03868b3d7501699e3a2954f247c8c25430ca13ca52d4297c7f23abf80
   languageName: node
   linkType: hard
 
@@ -17504,19 +17705,6 @@ __metadata:
   version: 4.1.0
   resolution: "postcss-value-parser@npm:4.1.0"
   checksum: 68a9ea27c780fa3cc350be37b47cc46385c61dd9627990909230e0e9c3debf6d5beb49006bd743a2e506cdd6fa7d07637f2d9504a394f67cc3011d1ff0134886
-  languageName: node
-  linkType: hard
-
-"postcss-values-parser@npm:6.0.0":
-  version: 6.0.0
-  resolution: "postcss-values-parser@npm:6.0.0"
-  dependencies:
-    color-name: ^1.1.4
-    is-url-superb: ^4.0.0
-    quote-unquote: ^1.0.0
-  peerDependencies:
-    postcss: ^8.2.9
-  checksum: e7bcfd40b599b728cefd2d253bbe0d3b53ca675d992d89826bc4d0242da45a292683e489a2da420d276aa0bddf42a47606c174bdf38b233e468e275f4388a097
   languageName: node
   linkType: hard
 
@@ -21571,9 +21759,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.64.1":
-  version: 5.64.1
-  resolution: "webpack@npm:5.64.1"
+"webpack@npm:^5.64.2":
+  version: 5.64.2
+  resolution: "webpack@npm:5.64.2"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -21604,7 +21792,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: d2a1baddaed03f2ce70c13501b89935d4bb4af30b4accb0d2dfbd00ec6f491eaf46272346cedcf013b477e131c8cc202ee0b2d2c51ece1cfb713fd2d98b80a52
+  checksum: e02fcd3bfdc7e3322291b476af60f46dc4a31ec4349af4d1d47018b8e449820968d4ab8f1e8b313dd5cfcf1b47c7f976fe39fde73411d03c173a692c3dae428e
   languageName: node
   linkType: hard
 
