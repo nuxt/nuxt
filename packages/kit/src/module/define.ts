@@ -28,7 +28,11 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
 
     // Install hooks
     if (mod.hooks) {
-      nuxt.hooks.addHooks(mod.hooks)
+      if (isNuxt2(nuxt)) {
+        nuxt.addHooks(mod.hooks)
+      } else {
+        nuxt.hooks.addHooks(mod.hooks)
+      }
     }
 
     // Stop if no install provided
