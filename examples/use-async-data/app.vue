@@ -2,7 +2,7 @@
   <div>
     {{ data }}
     <button :disabled="pending" @click="refresh">
-      Refrash Data
+      Refresh Data
     </button>
   </div>
 </template>
