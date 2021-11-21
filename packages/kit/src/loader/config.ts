@@ -3,29 +3,31 @@ import { resolve } from 'pathe'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import * as rc from 'rc9'
-import { tryResolveModule, requireModule, scanRequireTree } from '../utils/cjs'
-import { NuxtOptions } from '../types/config'
-import nuxtConfigSchema from './schema'
-import { loadEnv } from './env'
+import type { NuxtOptions } from '@nuxt/schema'
+import { NuxtConfigSchema } from '@nuxt/schema'
+import { tryResolveModule, requireModule, scanRequireTree } from '../internal/cjs'
+import { setupDotenv, DotenvOptions } from '../internal/dotenv'
 
 export interface LoadNuxtConfigOptions {
   /** Your project root directory (either absolute or relative to the current working directory). */
   rootDir?: string
+
   /** The path to your `nuxt.config` file (either absolute or relative to your project `rootDir`). */
   configFile?: string
+
   /** Any overrides to your Nuxt configuration. */
   config?: Record<string, any>
-  envConfig?: {
-    dotenv?: string | false
-    env?: Record<string, string | undefined>
-    expand?: boolean
-  }
+
+  /** Configuration for loading dotenv */
+  dotenv?: DotenvOptions | false
 }
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   const rootDir = resolve(process.cwd(), opts.rootDir || '.')
 
-  await loadEnv(rootDir, opts.envConfig)
+  if (opts.dotenv !== false) {
+    await setupDotenv({ rootDir, ...opts.dotenv })
+  }
 
   const nuxtConfigFile = tryResolveModule(resolve(rootDir, opts.configFile || 'nuxt.config'))
 
@@ -58,5 +60,5 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   // Resolve and apply defaults
-  return applyDefaults(nuxtConfigSchema, nuxtConfig) as NuxtOptions
+  return applyDefaults(NuxtConfigSchema, nuxtConfig) as NuxtOptions
 }

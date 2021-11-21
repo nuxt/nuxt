@@ -1,7 +1,6 @@
-import { resolveModule, requireModule, importModule } from '../utils/cjs'
-import { resolveAlias } from '../utils/resolve'
-import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
-import type { Nuxt } from '../types/nuxt'
+import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc, Nuxt } from '@nuxt/schema'
+import { resolveModule, requireModule, importModule } from '../internal/cjs'
+import { resolveAlias } from '../resolve'
 import { defineNuxtModule } from './define'
 import { createModuleContainer } from './container'
 

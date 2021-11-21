@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
-import type { ModuleContainer } from '../module/container'
-import type { NuxtTemplate, Nuxt, NuxtApp } from '../types/nuxt'
-import type { AutoImport, AutoImportSource } from '../types/imports'
+import type { ModuleContainer } from './module'
+import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
+import type { AutoImport, AutoImportSource } from './imports'
 import type { NuxtConfig, NuxtOptions } from './config'
 import type { Component, ComponentsDir, ScanDir, ComponentsOptions } from './components'
 

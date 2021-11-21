@@ -1,4 +1,4 @@
-import type { AutoImport } from '@nuxt/kit'
+import type { AutoImport } from '@nuxt/schema'
 
 export interface AutoImportContext {
   autoImports: AutoImport[]

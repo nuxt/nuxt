@@ -3,7 +3,7 @@ import { parse as parsePath, join } from 'pathe'
 import globby from 'globby'
 import { findExports } from 'mlly'
 import { camelCase } from 'scule'
-import { AutoImport } from '@nuxt/kit'
+import { AutoImport } from '@nuxt/schema'
 import { filterInPlace } from './utils'
 
 export async function scanForComposables (dir: string, autoImports: AutoImport[]) {

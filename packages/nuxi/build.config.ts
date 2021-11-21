@@ -10,6 +10,14 @@ export default defineBuildConfig({
   ],
   externals: [
     '@nuxt/kit',
-    'fsevents'
+    '@nuxt/schema',
+    'fsevents',
+    // TODO: Fix rollup/unbuild issue
+    'node:buffer',
+    'node:path',
+    'node:child_process',
+    'node:process',
+    'node:path',
+    'node:os'
   ]
 })

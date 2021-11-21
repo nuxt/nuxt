@@ -1,7 +1,7 @@
 import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
 import debounce from 'p-debounce'
-import type { Nuxt } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
 import consola from 'consola'
 import { createServer, createLoadingHandler } from '../utils/server'
 import { showBanner } from '../utils/banner'

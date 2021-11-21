@@ -1,2 +1,2 @@
 export * from './composables'
-export * from './types'
+export * from '../../../../schema/src/types/meta'

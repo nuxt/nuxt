@@ -1472,10 +1472,6 @@
     untyped "^0.2.5"
     upath "^2.0.1"
 
-"@nuxt/kit@link:../packages/kit":
-  version "0.0.0"
-  uid ""
-
 "@nuxt/kit@npm:@nuxt/kit-edge":
   version "3.0.0-27247485.fb4359e"
   resolved "https://registry.yarnpkg.com/@nuxt/kit-edge/-/kit-edge-3.0.0-27247485.fb4359e.tgz#efbc5a2289857a698b5d04089ecf5fe9511f4bb2"
@@ -7328,16 +7324,6 @@ mlly@^0.3.0:
   resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.0.tgz#5705b2a95551d79ad33feedc046daf7c6d079748"
   integrity sha512-6XphOVPsnIzuqNYlcZPMJhaMDDdrEgbLUlA7BPis8O0kkLPbOVA8GcXGeICGcnDotCtTkxAEWBT+FlhywrXTmg==
 
-mlly@^0.3.13:
-  version "0.3.13"
-  resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.13.tgz#5433261f38ccebba6f72fabda863a4dfc84b16d8"
-  integrity sha512-EXpbSPqSQLR9NEdB25uoyIYLSUvAqDEI7wUeM1HwXHsPF5Gx7cP7kuby5Mz2LfCPxBrgMnbcyPhcTCJRTQ+uvA==
-
-mlly@^0.3.6:
-  version "0.3.10"
-  resolved "https://registry.yarnpkg.com/mlly/-/mlly-0.3.10.tgz#cf3353565c84e951311c46c8d2c8b320d90f9eb3"
-  integrity sha512-vD3A7naDtIOqHYZhnYUrECRO6UODWNqz6T0TS/pxwolzVoWKX/mXJF1XSM3qxruCDtkzJbzJPgesByihY/r3EA==
-
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/move-concurrently/-/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
@@ -8169,15 +8155,6 @@ pkg-types@^0.2.1:
   integrity sha512-RlrGelHSS2yPeLT9NMuMIfpKS7+gRAhuXi+PexBeToKjbRkmu+E+HdgDY2ZKU1RDirk5w9WuViEhOufELtAnug==
   dependencies:
     jsonc-parser "^3.0.0"
-
-pkg-types@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/pkg-types/-/pkg-types-0.3.1.tgz#d7a8b69efb8777a05afc5aabfc259a29a5d6d159"
-  integrity sha512-BjECNgz/tsyqg0/T4Z/U7WbFQXUT24nfkxPbALcrk/uHVeZf9MrGG4tfvYtu+jsrHCFMseLQ6woQddDEBATw3A==
-  dependencies:
-    jsonc-parser "^3.0.0"
-    mlly "^0.3.6"
-    pathe "^0.2.0"
 
 plausible-tracker@^0.3.4:
   version "0.3.4"
@@ -10252,11 +10229,6 @@ std-env@^2.2.1, std-env@^2.3.0, std-env@^2.3.1:
   integrity sha512-eOsoKTWnr6C8aWrqJJ2KAReXoa7Vn5Ywyw6uCXgA/xDhxPoaIsBa5aNJmISY04dLwXPBnDHW4diGM7Sn5K4R/g==
   dependencies:
     ci-info "^3.1.1"
-
-std-env@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/std-env/-/std-env-3.0.1.tgz#bc4cbc0e438610197e34c2d79c3df30b491f5182"
-  integrity sha512-mC1Ps9l77/97qeOZc+HrOL7TIaOboHqMZ24dGVQrlxFcpPpfCHpH+qfUT7Dz+6mlG8+JPA1KfBQo19iC/+Ngcw==
 
 stream-browserify@^2.0.1:
   version "2.0.2"

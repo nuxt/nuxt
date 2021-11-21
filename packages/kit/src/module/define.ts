@@ -3,10 +3,10 @@ import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import consola from 'consola'
 import { dirname } from 'pathe'
-import { useNuxt, nuxtCtx } from '../nuxt'
-import type { Nuxt, NuxtTemplate } from '../types/nuxt'
-import type { NuxtModule, LegacyNuxtModule, ModuleOptions } from '../types/module'
-import { checkNuxtCompatibilityIssues, compileTemplate, isNuxt2, templateUtils } from './utils'
+import type { Nuxt, NuxtTemplate, NuxtModule, LegacyNuxtModule, ModuleOptions } from '@nuxt/schema'
+import { useNuxt, nuxtCtx } from '../context'
+import { isNuxt2, checkNuxtCompatibilityIssues } from '../compatibility'
+import { templateUtils, compileTemplate } from '../internal/template'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing

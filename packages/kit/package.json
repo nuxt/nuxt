@@ -7,25 +7,18 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "schema"
+    "dist"
   ],
   "scripts": {
     "prepack": "unbuild"
   },
-  "devDependencies": {
-    "@types/lodash.template": "^4",
-    "@types/semver": "^7",
-    "unbuild": "latest"
-  },
   "dependencies": {
+    "@nuxt/schema": "^3.0.0",
     "consola": "^2.15.3",
-    "create-require": "^1.1.1",
     "defu": "^5.0.0",
     "dotenv": "^10.0.0",
     "globby": "^11.0.4",
     "hash-sum": "^2.0.0",
-    "hookable": "^5.0.0",
     "jiti": "^1.12.9",
     "lodash.template": "^4.5.0",
     "mlly": "^0.3.13",
@@ -34,10 +27,13 @@
     "rc9": "^1.2.0",
     "scule": "^0.2.1",
     "semver": "^7.3.5",
-    "std-env": "^3.0.1",
-    "ufo": "^0.7.9",
     "unctx": "^1.0.2",
     "untyped": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/lodash.template": "^4",
+    "@types/semver": "^7",
+    "unbuild": "latest"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"

@@ -1,6 +1,6 @@
 
 import { relative } from 'pathe'
-import type { Component } from '@nuxt/kit'
+import type { Component } from '@nuxt/schema'
 
 export type ComponentsTemplateOptions = {
   buildDir?: string

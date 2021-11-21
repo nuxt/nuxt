@@ -1,5 +1,5 @@
 import { templateUtils } from '@nuxt/kit'
-import type { Nuxt, NuxtApp } from '@nuxt/kit'
+import type { Nuxt, NuxtApp } from '@nuxt/schema'
 
 import { relative } from 'pathe'
 

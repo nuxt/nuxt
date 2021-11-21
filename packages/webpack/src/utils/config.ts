@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { cloneDeep } from 'lodash-es'
 import type { Configuration } from 'webpack'
-import type { Nuxt } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
 
 export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext>{ }
 

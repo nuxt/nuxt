@@ -2425,6 +2425,7 @@ __metadata:
     "@nuxt/kit": 3.0.0
     "@nuxt/nitro": 3.0.0
     "@nuxt/postcss8": ^1.1.3
+    "@nuxt/schema": 3.0.0
     "@nuxt/types": ^2.15.8
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
@@ -2743,15 +2744,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
+    "@nuxt/schema": ^3.0.0
     "@types/lodash.template": ^4
     "@types/semver": ^7
     consola: ^2.15.3
-    create-require: ^1.1.1
     defu: ^5.0.0
     dotenv: ^10.0.0
     globby: ^11.0.4
     hash-sum: ^2.0.0
-    hookable: ^5.0.0
     jiti: ^1.12.9
     lodash.template: ^4.5.0
     mlly: ^0.3.13
@@ -2760,8 +2760,6 @@ __metadata:
     rc9: ^1.2.0
     scule: ^0.2.1
     semver: ^7.3.5
-    std-env: ^3.0.1
-    ufo: ^0.7.9
     unbuild: latest
     unctx: ^1.0.2
     untyped: ^0.3.0
@@ -2790,6 +2788,7 @@ __metadata:
     "@nuxt/design": 0.1.5
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
+    "@nuxt/schema": 3.0.0
     "@rollup/plugin-alias": ^3.1.8
     "@rollup/plugin-commonjs": ^21.0.1
     "@rollup/plugin-inject": ^4.0.3
@@ -2879,6 +2878,23 @@ __metadata:
   checksum: e2846ad1383200ea3fe4d1146717f1c4ac06afb74997cc2ea0ba91210b6225f201fbd43af5d6bd5a03a86c7a53b95aae555f7d67a63a549d2d1036f0fe4b50fb
   languageName: node
   linkType: hard
+
+"@nuxt/schema@3.0.0, @nuxt/schema@^3.0.0, @nuxt/schema@workspace:packages/schema":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/schema@workspace:packages/schema"
+  dependencies:
+    "@types/lodash.template": ^4
+    "@types/semver": ^7
+    create-require: ^1.1.1
+    defu: ^5.0.0
+    jiti: ^1.12.9
+    pathe: ^0.2.0
+    scule: ^0.2.1
+    std-env: ^3.0.1
+    ufo: ^0.7.9
+    unbuild: latest
+  languageName: unknown
+  linkType: soft
 
 "@nuxt/server-edge@npm:2.16.0-27282256.ab1c6cb4":
   version: 2.16.0-27282256.ab1c6cb4
@@ -3030,6 +3046,7 @@ __metadata:
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
     "@nuxt/kit": 3.0.0
+    "@nuxt/schema": 3.0.0
     "@vitejs/plugin-vue": ^1.9.4
     "@vitejs/plugin-vue-jsx": ^1.2.0
     autoprefixer: ^10.4.0
@@ -3137,6 +3154,7 @@ __metadata:
     "@babel/core": ^7.16.0
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
     "@nuxt/kit": 3.0.0
+    "@nuxt/schema": 3.0.0
     "@types/pify": ^5.0.1
     "@types/terser-webpack-plugin": ^5.0.4
     "@types/webpack-bundle-analyzer": ^4.4.1
@@ -15142,6 +15160,7 @@ __metadata:
   dependencies:
     "@nuxt/design": 0.1.5
     "@nuxt/kit": 3.0.0
+    "@nuxt/schema": 3.0.0
     "@types/clear": ^0
     "@types/mri": ^1.1.1
     "@types/rimraf": ^3
@@ -15247,6 +15266,7 @@ __metadata:
     "@nuxt/design": ^0.1.5
     "@nuxt/kit": 3.0.0
     "@nuxt/nitro": 3.0.0
+    "@nuxt/schema": 3.0.0
     "@nuxt/vite-builder": 3.0.0
     "@nuxt/webpack-builder": 3.0.0
     "@types/hash-sum": ^1.0.0

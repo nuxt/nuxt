@@ -7,7 +7,9 @@ export default defineBuildConfig({
     'src/index'
   ],
   dependencies: [
-    '@nuxt/kit',
     'vue'
+  ],
+  externals: [
+    '@nuxt/schema'
   ]
 })

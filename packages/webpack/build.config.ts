@@ -21,5 +21,8 @@ export default defineBuildConfig({
     'vue-style-loader',
     '@babel/core',
     'vue'
+  ],
+  externals: [
+    '@nuxt/schema'
   ]
 })

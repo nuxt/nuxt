@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import { wpfs, getNitroContext, createDevServer, resolveMiddleware, build, prepare, generate } from '@nuxt/nitro'
-import type { Nuxt } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
 
 export function initNitro (nuxt: Nuxt) {
   // Create contexts

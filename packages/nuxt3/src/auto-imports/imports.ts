@@ -1,4 +1,4 @@
-import type { AutoImportSource } from '@nuxt/kit'
+import type { AutoImportSource } from '@nuxt/schema'
 
 export const Nuxt3AutoImports: AutoImportSource[] = [
   // #app

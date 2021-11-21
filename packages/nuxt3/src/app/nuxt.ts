@@ -2,7 +2,7 @@
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
-import type { RuntimeConfig } from '@nuxt/kit'
+import type { RuntimeConfig } from '@nuxt/schema'
 import { legacyPlugin, LegacyContext } from './compat/legacy-app'
 
 type NuxtMeta = {

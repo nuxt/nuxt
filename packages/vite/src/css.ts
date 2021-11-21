@@ -1,6 +1,7 @@
 import createResolver from 'postcss-import-resolver'
 import defu from 'defu'
-import { Nuxt, requireModule } from '@nuxt/kit'
+import { requireModule } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
 import { ViteOptions } from './vite'
 import { distDir } from './dirs'
 

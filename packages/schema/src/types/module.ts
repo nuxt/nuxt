@@ -1,6 +1,6 @@
-import type { ModuleContainer } from '../module/container'
-import { Nuxt } from './nuxt'
 import { NuxtHooks } from './hooks'
+import type { Nuxt, NuxtTemplate } from "./nuxt";
+
 
 export interface NuxtCompatibilityConstraints {
   /**
@@ -71,3 +71,41 @@ export type ModuleInstallOptions =
   ModuleSrc |
   [ModuleSrc, ModuleOptions?] |
   Partial<ModuleInstallOptionsObj>
+
+/**
+* Legacy ModuleContainer for backwards compatibility with Nuxt 2 module format.
+*/
+export interface ModuleContainer {
+  nuxt: Nuxt
+  options: Nuxt['options']
+
+  /** @deprecated */
+  ready(): Promise<any>
+
+  /** @deprecated */
+  addVendor(): void
+
+  /** Renders given template using lodash template during build into the project buildDir (`.nuxt`).*/
+  addTemplate(template: string | NuxtTemplate): NuxtTemplate
+
+  /** Register a custom layout. If its name is 'error' it will override the default error layout. */
+  addLayout(tmpl: NuxtTemplate, name: string): any
+
+  /** Set the layout that will render Nuxt errors. It should already have been added via addLayout or addTemplate. */
+  addErrorLayout(dst: string): void
+
+  /** Adds a new server middleware to the end of the server middleware array. */
+  addServerMiddleware(arg1: any): void
+
+  /** Allows extending webpack build config by chaining `options.build.extend` function. */
+  extendBuild(fn): void
+
+  /** Allows extending routes by chaining `options.build.extendRoutes` function. */
+  extendRoutes(fn): void
+
+  /** Registers a module */
+  requireModule(nuxt: Nuxt, opts: any): Promise<void>
+
+  /** Registers a module */
+  addModule(nuxt: Nuxt, opts: any): Promise<void>
+}

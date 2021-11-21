@@ -18,5 +18,8 @@ export default defineBuildConfig({
     'ora',
     'vue-bundle-renderer',
     'vue-server-renderer'
+  ],
+  externals: [
+    '@nuxt/schema'
   ]
 })

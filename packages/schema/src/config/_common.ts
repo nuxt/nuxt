@@ -684,7 +684,7 @@ export default {
    *   }
    * }
    * ```
-   * @type {typeof import('../src/types/runtime-config').PrivateRuntimeConfig}
+   * @type {typeof import('../src/types/config').PrivateRuntimeConfig}
    * @version 2
    * @version 3
    */
@@ -709,7 +709,7 @@ export default {
    *   }
    * }
    * ```
-   * @type {typeof import('../src/types/runtime-config').PublicRuntimeConfig}
+   * @type {typeof import('../src/types/config').PublicRuntimeConfig}
    * @version 2
    * @version 3
    */

@@ -22,6 +22,7 @@
     "@nuxt/kit": "3.0.0",
     "@nuxt/nitro": "3.0.0",
     "@nuxt/postcss8": "^1.1.3",
+    "@nuxt/schema": "3.0.0",
     "@vitejs/plugin-legacy": "^1.6.2",
     "@vue/composition-api": "^1.4.0",
     "@vueuse/head": "^0.7.2",

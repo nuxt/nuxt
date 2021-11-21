@@ -22,6 +22,7 @@
     "@nuxt/design": "^0.1.5",
     "@nuxt/kit": "3.0.0",
     "@nuxt/nitro": "3.0.0",
+    "@nuxt/schema": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
     "@nuxt/webpack-builder": "3.0.0",
     "@vue/reactivity": "^3.2.22",

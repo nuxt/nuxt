@@ -13,6 +13,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
+    "@nuxt/schema": "3.0.0",
     "unbuild": "latest",
     "vue": "3.2.22"
   },

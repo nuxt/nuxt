@@ -1,4 +1,4 @@
-import type { AutoImport } from '@nuxt/kit'
+import type { AutoImport } from '@nuxt/schema'
 import { expect } from 'chai'
 import * as VueFunctions from 'vue'
 import { AutoImportContext, updateAutoImportContext } from '../src/auto-imports/context'
