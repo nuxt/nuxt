@@ -29,6 +29,7 @@ function initWorker (filename): Promise<NitroWorker> {
       }
     })
     worker.on('error', (err) => {
+      console.error('[worker]', err)
       err.message = '[worker] ' + err.message
       reject(err)
     })
