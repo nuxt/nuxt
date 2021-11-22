@@ -25,7 +25,6 @@
     "@nuxt/schema": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
     "@nuxt/webpack-builder": "3.0.0",
-    "@types/cookie": "^0.4.1",
     "@vue/reactivity": "^3.2.22",
     "@vue/shared": "^3.2.22",
     "@vueuse/head": "^0.7.2",

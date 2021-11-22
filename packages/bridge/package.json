@@ -23,7 +23,6 @@
     "@nuxt/nitro": "3.0.0",
     "@nuxt/postcss8": "^1.1.3",
     "@nuxt/schema": "3.0.0",
-    "@types/cookie": "^0.4.1",
     "@vitejs/plugin-legacy": "^1.6.3",
     "@vue/composition-api": "^1.4.0",
     "@vueuse/head": "^0.7.2",
