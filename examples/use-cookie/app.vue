@@ -1,23 +1,30 @@
+<script setup>
+const user = useCookie('user')
+const logins = useCookie('logins')
+
+const login = () => {
+  logins.value = (logins.value || 0) + 1
+  user.value = { name: 'CookieLover.' + new Date().getMilliseconds() }
+}
+
+const logout = () => {
+  user.value = null
+}
+</script>
+
 <template>
-  <div>
-    <h1> Counter: {{ counter || '-' }}</h1>
-    <button @click="counter = null">
-      reset
+  <div v-if="user">
+    <h1>Welcome {{ user.name }}</h1>
+    <button @click="logout">
+      logout
     </button>
-    <button @click="counter--">
-      -
-    </button>
-    <button @click="counter++">
-      +
+    <hr>
+    You have logged in {{ logins }} times!
+  </div>
+  <div v-else>
+    Click here to login:
+    <button @click="login">
+      Login
     </button>
   </div>
 </template>
-
-<script setup>
-const counter = useCookie('counter')
-counter.value = counter.value || Math.round(Math.random() * 1000)
-</script>
-
-<style  scoped>
-button { margin: 10px 5px; }
-</style>
