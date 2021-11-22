@@ -16,7 +16,7 @@ const logout = () => {
   <div v-if="user">
     <h1>Welcome {{ user.name }}</h1>
     <button @click="logout">
-      logout
+      Logout
     </button>
     <hr>
     You have logged in {{ logins }} times!
