@@ -1,7 +1,7 @@
 import type { ServerResponse } from 'http'
 import { Ref, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie'
-import { parse, serialize } from 'cookie'
+import * as cookie from 'cookie'
 import { appendHeader } from 'h3'
 import type { NuxtApp } from '@nuxt/schema'
 import destr from 'destr'
@@ -50,9 +50,9 @@ function useSSRRes (nuxtApp?: NuxtApp = useNuxtApp()) { return nuxtApp.ssrContex
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> {
   if (process.server) {
-    return parse(useSSRReq().headers.cookie || '', opts)
+    return cookie.parse(useSSRReq().headers.cookie || '', opts)
   } else if (process.client) {
-    return parse(document.cookie, opts)
+    return cookie.parse(document.cookie, opts)
   }
 }
 
@@ -60,7 +60,7 @@ function serializeCookie (name: string, value: any, opts: CookieSerializeOptions
   if (value === null || value === undefined) {
     opts.maxAge = -1
   }
-  return serialize(name, value, opts)
+  return cookie.serialize(name, value, opts)
 }
 
 function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
