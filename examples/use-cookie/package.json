@@ -1,0 +1,12 @@
+{
+  "name": "example-use-cookie",
+  "private": true,
+  "devDependencies": {
+    "nuxt3": "latest"
+  },
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "start": "node .output/server/index.mjs"
+  }
+}

@@ -13,7 +13,8 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'useRuntimeConfig',
       'useState',
       'useFetch',
-      'useLazyFetch'
+      'useLazyFetch',
+      'useCookie'
     ]
   },
   // #meta

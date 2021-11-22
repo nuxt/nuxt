@@ -8,6 +8,7 @@ import { useNuxtApp } from './app'
 
 export { useLazyAsyncData } from './asyncData'
 export { useLazyFetch } from './fetch'
+export { useCookie } from './cookie'
 
 export * from '@vue/composition-api'
 
