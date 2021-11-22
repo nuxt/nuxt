@@ -1,5 +1,5 @@
 import mri from 'mri'
-import { red, cyan } from 'colorette'
+import { red } from 'colorette'
 import consola from 'consola'
 import { checkEngines } from './utils/engines'
 import { commands, Command, NuxtCommand } from './commands'
@@ -14,22 +14,19 @@ async function _main () {
     ]
   })
   // @ts-ignore
-  let command = args._.shift() || 'usage'
+  const command = args._.shift() || 'usage'
 
   showBanner(command === 'dev' && args.clear !== false)
 
   if (!(command in commands)) {
     console.log('\n' + red('Invalid command ' + command))
-    command = 'usage'
+
+    await commands.usage().then(r => r.invoke())
+    process.exit(1)
   }
 
   // Check Node.js version in background
   setTimeout(() => { checkEngines() }, 1000)
-
-  if (command === 'usage') {
-    console.log(`\nUsage: ${cyan(`npx nuxi ${Object.keys(commands).join('|')} [args]`)}\n`)
-    process.exit(1)
-  }
 
   try {
     // @ts-ignore default.default is hotfix for #621
