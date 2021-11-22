@@ -102,9 +102,9 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Build and watch
   const _doBuild = async () => {
     const start = Date.now()
-    const { code, ids } = await bundleRequest({ viteServer }, '/.nuxt/server.js')
+    const { code, chunks } = await bundleRequest({ viteServer }, '/.nuxt/server.js')
     // Have CSS in the manifest to prevent FOUC on dev SSR
-    await generateDevSSRManifest(ctx, ids.filter(isCSS).map(i => '../' + i.slice(1)))
+    await generateDevSSRManifest(ctx, chunks.filter(i => !i.isDynamic && isCSS(i.id)).map(i => '../' + i.id.slice(1)))
     await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     const time = (Date.now() - start)
     consola.info(`Server built in ${time}ms`)
