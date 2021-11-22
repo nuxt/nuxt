@@ -31,7 +31,7 @@
     "@vueuse/head": "^0.7.2",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
-    "cookie": "^0.4.1",
+    "cookie-es": "^0.5.0",
     "defu": "^5.0.0",
     "destr": "^1.1.0",
     "globby": "^11.0.4",

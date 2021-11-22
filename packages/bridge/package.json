@@ -29,7 +29,7 @@
     "@vueuse/head": "^0.7.2",
     "acorn": "^8.6.0",
     "consola": "^2.15.3",
-    "cookie": "^0.4.1",
+    "cookie-es": "^0.5.0",
     "defu": "^5.0.0",
     "destr": "^1.1.0",
     "enhanced-resolve": "^5.8.3",

@@ -2436,7 +2436,7 @@ __metadata:
     "@vueuse/head": ^0.7.2
     acorn: ^8.6.0
     consola: ^2.15.3
-    cookie: ^0.4.1
+    cookie-es: ^0.5.0
     defu: ^5.0.0
     destr: ^1.1.0
     enhanced-resolve: ^5.8.3
@@ -7909,6 +7909,13 @@ __metadata:
   dependencies:
     safe-buffer: ~5.1.1
   checksum: 985d974a2d33e1a2543ada51c93e1ba2f73eaed608dc39f229afc78f71dcc4c8b7d7c684aa647e3c6a3a204027444d69e53e169ce94e8d1fa8d7dee80c9c8fed
+  languageName: node
+  linkType: hard
+
+"cookie-es@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "cookie-es@npm:0.5.0"
+  checksum: afe924dd44e2c9aaa60ed77e78182e44324acd0a155ea947bb0174e5c48625ee277b004bfbca1bc6cfd24955f2b4039813c7c88bd9d7921ca475eae0286d2666
   languageName: node
   linkType: hard
 
@@ -15295,7 +15302,7 @@ __metadata:
     "@vueuse/head": ^0.7.2
     chokidar: ^3.5.2
     consola: ^2.15.3
-    cookie: ^0.4.1
+    cookie-es: ^0.5.0
     defu: ^5.0.0
     destr: ^1.1.0
     globby: ^11.0.4
