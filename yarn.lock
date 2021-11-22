@@ -30,7 +30,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.15.5, @babel/core@npm:^7.15.8, @babel/core@npm:^7.16.0":
+"@babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.15.8, @babel/core@npm:^7.16.0":
   version: 7.16.0
   resolution: "@babel/core@npm:7.16.0"
   dependencies:
@@ -1144,7 +1144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-typescript@npm:^7.15.4, @babel/plugin-transform-typescript@npm:^7.15.8, @babel/plugin-transform-typescript@npm:^7.16.1":
+"@babel/plugin-transform-typescript@npm:^7.15.8, @babel/plugin-transform-typescript@npm:^7.16.1":
   version: 7.16.1
   resolution: "@babel/plugin-transform-typescript@npm:7.16.1"
   dependencies:
@@ -1288,10 +1288,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/standalone@npm:^7.15.7":
-  version: 7.16.3
-  resolution: "@babel/standalone@npm:7.16.3"
-  checksum: 0b4ef1ccb5ce40f291bf8ee6419794ef33ed02bc2347ca0ca708ef43ec757fa0a2b3e5d87fe2e624cc8d174c5ad9928c5f283bafb1a04de67b1a943d14d5e527
+"@babel/standalone@npm:^7.16.4":
+  version: 7.16.4
+  resolution: "@babel/standalone@npm:7.16.4"
+  checksum: b9d97dea1af42567e78d1a153a0276de904057e6d5c8e8bdb12f1741a1e9aa3e95e709ff57abc19b1c23b6e57a4066366ad99db89992c1bf923394ad8783e8f0
   languageName: node
   linkType: hard
 
@@ -2430,7 +2430,7 @@ __metadata:
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
     "@types/node-fetch": ^3.0.2
-    "@vitejs/plugin-legacy": ^1.6.2
+    "@vitejs/plugin-legacy": ^1.6.3
     "@vue/composition-api": ^1.4.0
     "@vueuse/head": ^0.7.2
     acorn: ^8.6.0
@@ -2833,7 +2833,7 @@ __metadata:
     pathe: ^0.2.0
     pkg-types: ^0.3.1
     pretty-bytes: ^5.6.0
-    rollup: ^2.60.0
+    rollup: ^2.60.1
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.2
     serve-placeholder: ^1.2.4
@@ -2845,7 +2845,7 @@ __metadata:
     unenv: ^0.4.1
     unstorage: ^0.3.3
     vue: 3.2.22
-    vue-bundle-renderer: ^0.3.2
+    vue-bundle-renderer: ^0.3.3
     vue-server-renderer: ^2.6.14
   languageName: unknown
   linkType: soft
@@ -3047,8 +3047,8 @@ __metadata:
   dependencies:
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
-    "@vitejs/plugin-vue": ^1.9.4
-    "@vitejs/plugin-vue-jsx": ^1.2.0
+    "@vitejs/plugin-vue": ^1.10.0
+    "@vitejs/plugin-vue-jsx": ^1.3.0
     autoprefixer: ^10.4.0
     chokidar: ^3.5.2
     consola: ^2.15.3
@@ -4507,41 +4507,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-legacy@npm:^1.6.2":
-  version: 1.6.2
-  resolution: "@vitejs/plugin-legacy@npm:1.6.2"
+"@vitejs/plugin-legacy@npm:^1.6.3":
+  version: 1.6.3
+  resolution: "@vitejs/plugin-legacy@npm:1.6.3"
   dependencies:
-    "@babel/standalone": ^7.15.7
-    core-js: ^3.18.1
+    "@babel/standalone": ^7.16.4
+    core-js: ^3.19.1
     magic-string: ^0.25.7
     regenerator-runtime: ^0.13.9
-    systemjs: ^6.10.3
+    systemjs: ^6.11.0
   peerDependencies:
     vite: ^2.0.0
-  checksum: 4d28ef30aea6b6dcbe4b52af5790dfd2d92af4c36f424e0b521b052cf2b52638abed53d1c140847888a0a38d2db27796085184930cfa28e61c48eb036ab2d260
+  checksum: 6e3796e4afbd540e90e8e75c18d1b23502b1fd83c01d2f45c7f08450843d40f1aa5c15ddddfdaff5a4e65607aa6c95d5b09b4cdab5eeb28fe2637db564bc1a16
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue-jsx@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@vitejs/plugin-vue-jsx@npm:1.2.0"
+"@vitejs/plugin-vue-jsx@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.0"
   dependencies:
-    "@babel/core": ^7.15.5
+    "@babel/core": ^7.16.0
     "@babel/plugin-syntax-import-meta": ^7.10.4
-    "@babel/plugin-transform-typescript": ^7.15.4
+    "@babel/plugin-transform-typescript": ^7.16.1
     "@rollup/pluginutils": ^4.1.1
-    "@vue/babel-plugin-jsx": ^1.0.7
+    "@vue/babel-plugin-jsx": ^1.1.1
     hash-sum: ^2.0.0
-  checksum: c3637d6817bf0855089db6310934a48f690984a25fd33c06ad764431738c5d3745446e177562bbf2c110c0c07c526935e4ad27912de7d3c0a664b27658ee4eb2
+  checksum: 743510067d31d629472ca8210dfae16cf2124394690aafbcc9234e2682852834669f333bd1c5f97e0695f09e4d85af182b822462327136c7efe353934eb6b0b9
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^1.9.4":
-  version: 1.9.4
-  resolution: "@vitejs/plugin-vue@npm:1.9.4"
+"@vitejs/plugin-vue@npm:^1.10.0":
+  version: 1.10.0
+  resolution: "@vitejs/plugin-vue@npm:1.10.0"
   peerDependencies:
     vite: ^2.5.10
-  checksum: 43cb38a0520c6e60aa807ec6135fd4370965631c98275148fd938804505ef3e2a9c4a84e5bd0bc36285f2971afa12ed82d804ebd4b8d55f3bae9a6d58a744e26
+  checksum: 22d08c8b9bf74968c6b1cf68dc4b00c68c57bd85ea427dcc5f7a93f292a72404051b09213359372cc1ef139923a11ebec7ca86185905523b3b926076aab173ee
   languageName: node
   linkType: hard
 
@@ -4559,7 +4559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/babel-plugin-jsx@npm:^1.0.7":
+"@vue/babel-plugin-jsx@npm:^1.1.1":
   version: 1.1.1
   resolution: "@vue/babel-plugin-jsx@npm:1.1.1"
   dependencies:
@@ -7953,7 +7953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.18.1, core-js@npm:^3.19.0":
+"core-js@npm:^3.19.0, core-js@npm:^3.19.1":
   version: 3.19.1
   resolution: "core-js@npm:3.19.1"
   checksum: 2f669061788dc6fea823f0433d871deeaaaacc7d68ef2748859509522a34df5c83e648c3c6a1993fed0ab188081b3cf32b957b2a1f46156a2b20bd775961ade4
@@ -18843,6 +18843,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup@npm:^2.60.1":
+  version: 2.60.1
+  resolution: "rollup@npm:2.60.1"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 77d7980bd5e619075c7cc67ccbe63263c4e98bd4cc41d4d77d5d4b743cb954adc81d348e38049546645651e2d0e73feeafdcac4474bd8ea333bf5cb882f0bc0c
+  languageName: node
+  linkType: hard
+
 "run-async@npm:^2.4.0":
   version: 2.4.1
   resolution: "run-async@npm:2.4.1"
@@ -20049,7 +20063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"systemjs@npm:^6.10.3":
+"systemjs@npm:^6.11.0":
   version: 6.11.0
   resolution: "systemjs@npm:6.11.0"
   checksum: 11cdc79ec135ab641313dfec0e74bb118afd42d09651e21f5e637461e625ee4e99705f57fc71e10757679b9304fb6e66c9a6266f179925d7721202cdd1e7d720
@@ -21310,12 +21324,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "vue-bundle-renderer@npm:0.3.2"
+"vue-bundle-renderer@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "vue-bundle-renderer@npm:0.3.3"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: eb1dd8faa5b0b406770de48bdb58a374baf7727e37d40380fea25b970c398040f312204b548fc6a33c37d2d00eb04392f327f70f23537d2bb11b8185fca7f47d
+  checksum: fe4ceaf0d8c6b997d88b2c289d8c85d15466906a30e3e6f767205e7fa5a09bc636f2fb56f81086d67c33550f713aa63fb56a15bbf2e97149a7d2b88ba90d3e99
   languageName: node
   linkType: hard
 
