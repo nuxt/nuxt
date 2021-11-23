@@ -1,2 +1,2 @@
 export * from './composables'
-export * from '../../../../schema/src/types/meta'
+export type { MetaObject } from '@nuxt/schema'

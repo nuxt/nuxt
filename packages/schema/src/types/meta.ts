@@ -14,11 +14,11 @@ export interface MetaObject extends Record<string, any> {
   viewport?: string
 
   /** Each item in the array maps to a newly-created `<meta>` element, where object properties map to attributes. */
-  meta: Array<Record<string, any>>
+  meta?: Array<Record<string, any>>
   /** Each item in the array maps to a newly-created `<link>` element, where object properties map to attributes. */
-  link: Array<Record<string, any>>
+  link?: Array<Record<string, any>>
   /** Each item in the array maps to a newly-created `<style>` element, where object properties map to attributes. */
-  style: Array<Record<string, any>>
+  style?: Array<Record<string, any>>
   /** Each item in the array maps to a newly-created `<script>` element, where object properties map to attributes. */
-  script: Array<Record<string, any>>
+  script?: Array<Record<string, any>>
 }
