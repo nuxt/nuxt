@@ -137,7 +137,7 @@ export default {
    *  ]
    * }
    * ```
-   * @type {import('nuxt3/dist/meta/runtime/types').MetaObject}
+   * @type {typeof import('../src/types/meta').MetaObject}
    * @version 3
    */
   meta: {

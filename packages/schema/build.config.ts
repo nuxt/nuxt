@@ -17,7 +17,6 @@ export default defineBuildConfig({
   ],
   externals: [
     // Type imports
-    'nuxt3',
     'vue-meta',
     'vue',
     'hookable',
