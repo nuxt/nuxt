@@ -19,7 +19,7 @@ const CookieDefaults: CookieOptions<any> = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
 
-export function useCookie <T=string> (name: string, _opts: CookieOptions<T>): CookieRef<T> {
+export function useCookie <T=string> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts)
 
