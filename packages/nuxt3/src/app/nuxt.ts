@@ -76,6 +76,7 @@ export function createNuxtApp (options: CreateOptions) {
     payload: reactive({
       data: {},
       state: {},
+      _errors: {},
       ...(process.client ? window.__NUXT__ : { serverRendered: true })
     }),
     isHydrating: process.client,

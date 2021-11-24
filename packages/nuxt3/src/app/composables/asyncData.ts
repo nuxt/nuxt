@@ -75,7 +75,7 @@ export function useAsyncData<
   const asyncData = {
     data: ref(nuxt.payload.data[key] ?? options.default()),
     pending: ref(true),
-    error: ref(null)
+    error: ref(nuxt.payload._errors[key] ?? null)
   } as AsyncData<DataT>
 
   asyncData.refresh = (force?: boolean) => {
@@ -84,7 +84,7 @@ export function useAsyncData<
       return nuxt._asyncDataPromises[key]
     }
     asyncData.pending.value = true
-    // TODO: Cancel previus promise
+    // TODO: Cancel previous promise
     // TODO: Handle immediate errors
     nuxt._asyncDataPromises[key] = Promise.resolve(handler(nuxt))
       .then((result) => {
@@ -104,13 +104,13 @@ export function useAsyncData<
       .finally(() => {
         asyncData.pending.value = false
         nuxt.payload.data[key] = asyncData.data.value
+        nuxt.payload._errors[key] = !!asyncData.error.value
         delete nuxt._asyncDataPromises[key]
       })
     return nuxt._asyncDataPromises[key]
   }
 
   const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
-  const clientOnly = options.server === false || !nuxt.payload.serverRendered
 
   // Server side
   if (process.server && fetchOnServer) {
@@ -120,22 +120,16 @@ export function useAsyncData<
 
   // Client side
   if (process.client) {
-    // 1. Hydration (server: true): no fetch
-    if (nuxt.isHydrating && fetchOnServer) {
+    if (fetchOnServer && nuxt.isHydrating) {
+      // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
-    }
-    // 2. Initial load (server: false): fetch on mounted
-    if (instance && nuxt.isHydrating && clientOnly) {
-      // Fetch on mounted (initial load or lazy fetch)
+    } else if (instance && (nuxt.isHydrating || options.lazy)) {
+      // 2. Initial load (server: false): fetch on mounted
+      // 3. Navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
-    } else if (!nuxt.isHydrating) { // Navigation
-      if (instance && options.lazy) {
-        // 3. Navigation (lazy: true): fetch on mounted
-        instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
-      } else {
-        // 4. Navigation (lazy: false) - or plugin usage: await fetch
-        asyncData.refresh()
-      }
+    } else {
+      // 4. Navigation (lazy: false) - or plugin usage: await fetch
+      asyncData.refresh()
     }
   }
 
