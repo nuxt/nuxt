@@ -3177,7 +3177,7 @@ __metadata:
     glob: ^7.2.0
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
-    memfs: ^3.3.0
+    memfs: ^3.4.0
     mini-css-extract-plugin: ^2.4.5
     mlly: ^0.3.13
     pathe: ^0.2.0
@@ -13935,12 +13935,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"memfs@npm:^3.2.2, memfs@npm:^3.3.0":
+"memfs@npm:^3.2.2":
   version: 3.3.0
   resolution: "memfs@npm:3.3.0"
   dependencies:
     fs-monkey: 1.0.3
   checksum: 9e9eb71cfc077fd5e14ad2f497f5a8791689b64f307cf379ed6737c5781652a7af0509395c0dfba43c4e413dbc7cd7010e9ca002168ec329e6df178414b96268
+  languageName: node
+  linkType: hard
+
+"memfs@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "memfs@npm:3.4.0"
+  dependencies:
+    fs-monkey: 1.0.3
+  checksum: 56ed70e1bdbc67d0c3758fa76c7ef25cd48c93c192f20c492e6b9811d783fdc453528d7ea91d9a79d5e6e121efa865adffd13fda30db0fa2b894ab91dfd1d653
   languageName: node
   linkType: hard
 
