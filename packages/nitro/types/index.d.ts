@@ -1,9 +1,9 @@
 import './shims'
 import { NitroInput } from '../dist'
 
-declare module '@nuxt/kit' {
-  interface ConfigSchema {
-    nitro: NitroInput
+declare module '@nuxt/schema' {
+  interface NuxtConfig {
+    nitro?: NitroInput
   }
 }
 

@@ -19,13 +19,12 @@ export interface BridgeConfig {
 
 // TODO: Also inherit from @nuxt/types.NuxtConfig for legacy type compat
 export interface NuxtConfig extends _NuxtConfig {
-  bridge?: Partial<BridgeConfig> | false
   head?: _NuxtConfig['head'] | MetaInfo
 }
 
-declare module '@nuxt/kit' {
-  interface ConfigSchema {
-    bridge: BridgeConfig
+declare module '@nuxt/schema' {
+  interface NuxtConfig {
+    bridge?: Partial<BridgeConfig> | false
   }
 }
 
