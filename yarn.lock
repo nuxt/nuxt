@@ -2250,12 +2250,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/functions@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@netlify/functions@npm:0.9.0"
+"@netlify/functions@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@netlify/functions@npm:0.10.0"
   dependencies:
     is-promise: ^4.0.0
-  checksum: a78f519bafe2d00b2280dbd5a76d35517535d38347932d28ad3efd203331ff16e0ca6dc82c63db6774c5f96b7ad71eeb55863ff1ce67320e19fdb59ade6c28be
+  checksum: 9bfa6e4326e7af19ee22dfd38065d2734e08a00618603808ee6fa8e2f84ba342d42ffee8630af1611b40a27bb3e87c213183cfb24a4de871a3cab979d4b5211a
   languageName: node
   linkType: hard
 
@@ -2787,7 +2787,7 @@ __metadata:
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
-    "@netlify/functions": ^0.9.0
+    "@netlify/functions": ^0.10.0
     "@nuxt/design": 0.1.5
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
@@ -2830,7 +2830,7 @@ __metadata:
     mime: ^3.0.0
     mlly: ^0.3.13
     node-fetch: ^3.1.0
-    ohmyfetch: ^0.4.7
+    ohmyfetch: ^0.4.8
     ora: ^6.0.1
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -3169,7 +3169,7 @@ __metadata:
     babel-loader: ^8.2.3
     consola: ^2.15.3
     css-loader: ^6.5.1
-    css-minimizer-webpack-plugin: ^3.1.4
+    css-minimizer-webpack-plugin: ^3.2.0
     cssnano: ^5.0.11
     esbuild-loader: ^2.16.0
     file-loader: ^6.2.0
@@ -3182,7 +3182,7 @@ __metadata:
     mlly: ^0.3.13
     pathe: ^0.2.0
     pify: ^5.0.0
-    postcss: ^8.3.11
+    postcss: ^8.4.0
     postcss-import: ^14.0.2
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^6.2.0
@@ -3195,7 +3195,7 @@ __metadata:
     vue: 3.2.22
     vue-loader: ^16.8.3
     vue-style-loader: ^4.1.3
-    webpack: ^5.64.2
+    webpack: ^5.64.3
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.2.2
     webpack-hot-middleware: ^2.25.1
@@ -3800,6 +3800,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: c6e2aa299cf3979c00602f48ce9163700f0cbfec6ba2a8e1506d08f51da0279805a478ea094252fad7c369a563ee033b359c708ab34b1763397c58d7e2df07ad
+  languageName: node
+  linkType: hard
+
+"@types/cssnano@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@types/cssnano@npm:4.0.1"
+  dependencies:
+    postcss: 5 - 7
+  checksum: 183fa4c41d82c32ef4ddd7ead1eabfa911d0c4ecdcbe78d0289167bf83b129fee0c7160c7247f07163579a4b584b92eda664bbf021b14836370e00c0e437ae19
   languageName: node
   linkType: hard
 
@@ -8278,10 +8287,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:^3.1.4":
-  version: 3.1.4
-  resolution: "css-minimizer-webpack-plugin@npm:3.1.4"
+"css-minimizer-webpack-plugin@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "css-minimizer-webpack-plugin@npm:3.2.0"
   dependencies:
+    "@types/cssnano": ^4.0.1
     cssnano: ^5.0.6
     jest-worker: ^27.0.2
     postcss: ^8.3.5
@@ -8297,7 +8307,7 @@ __metadata:
       optional: true
     esbuild:
       optional: true
-  checksum: 7b9101d397a20e541eef8e3f2bc1b2853b13bc3fb2ec5d557affd1161b04a5a4f5d0b669a54ef6872c1ca2e08b999f3a92bd135c3a04f44906a9910bac460aed
+  checksum: 97f783d8adc82f0e95a53dd324af9b4d19ca8b50a07358990bd86a41d305717d86e36bacdec931b01276471f9a26aa0f998c9646d9bc091d56a7b0d01c750a07
   languageName: node
   linkType: hard
 
@@ -15304,7 +15314,7 @@ __metadata:
     mlly: ^0.3.13
     murmurhash-es: ^0.1.1
     nuxi: 3.0.0
-    ohmyfetch: ^0.4.7
+    ohmyfetch: ^0.4.8
     pathe: ^0.2.0
     scule: ^0.2.1
     ufo: ^0.7.9
@@ -15454,15 +15464,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohmyfetch@npm:^0.4.7":
-  version: 0.4.7
-  resolution: "ohmyfetch@npm:0.4.7"
+"ohmyfetch@npm:^0.4.8":
+  version: 0.4.8
+  resolution: "ohmyfetch@npm:0.4.8"
   dependencies:
     destr: ^1.1.0
     node-fetch: ^3.0.0
     ufo: ^0.7.9
     undici: ^4.9.5
-  checksum: 456ef4d22700f854c666448ccecef27c6194ee47211d90a12bd1fb1a1a12a4badfc0e67471d2c6ed65ee06352edc907027c88ad323e77dd6e616439dba92bab2
+  checksum: 2804d315aca270f2d1cd86e0ab29e414e64baefa5a4d4b58626b905ad10af60db89e486e81269a539dba3a6b3e19da9ec771886e487498070e9833bbb4985a11
   languageName: node
   linkType: hard
 
@@ -17773,7 +17783,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:7.x.x, postcss@npm:^7.0.0, postcss@npm:^7.0.1, postcss@npm:^7.0.14, postcss@npm:^7.0.17, postcss@npm:^7.0.2, postcss@npm:^7.0.27, postcss@npm:^7.0.32, postcss@npm:^7.0.36, postcss@npm:^7.0.5, postcss@npm:^7.0.6":
+"postcss@npm:5 - 7, postcss@npm:7.x.x, postcss@npm:^7.0.0, postcss@npm:^7.0.1, postcss@npm:^7.0.14, postcss@npm:^7.0.17, postcss@npm:^7.0.2, postcss@npm:^7.0.27, postcss@npm:^7.0.32, postcss@npm:^7.0.36, postcss@npm:^7.0.5, postcss@npm:^7.0.6":
   version: 7.0.39
   resolution: "postcss@npm:7.0.39"
   dependencies:
@@ -17783,7 +17793,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3, postcss@npm:^8.3.11, postcss@npm:^8.3.5, postcss@npm:^8.3.8":
+"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3, postcss@npm:^8.3.5, postcss@npm:^8.3.8":
   version: 8.3.11
   resolution: "postcss@npm:8.3.11"
   dependencies:
@@ -17791,6 +17801,17 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^0.6.2
   checksum: 1a230553d74c66aa9585c90781ed8ea75f19cefea405d2117b67fbeb24b5b5e0e17be2e0c5a07db31dd085643a13394127ab2222e940771b70498331bf20f35e
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.0":
+  version: 8.4.0
+  resolution: "postcss@npm:8.4.0"
+  dependencies:
+    nanoid: ^3.1.30
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.1
+  checksum: 5139eb1b8708a98cbc5240d1540b9333de5a6bde2737e946ec3d680968df42937ef43c54ed6eb50f1077b4de0394031bbecec290ebf8b4f5650cd4657e63b5d6
   languageName: node
   linkType: hard
 
@@ -19477,6 +19498,13 @@ __metadata:
   version: 0.6.2
   resolution: "source-map-js@npm:0.6.2"
   checksum: 9c8151a29e00fd8d3ba87709fdf9a9ce48313d653f4a29a39b4ae53d346ac79e005de624796ff42eff55cbaf26d2e87f4466001ca87831d400d818c5cf146a0e
+  languageName: node
+  linkType: hard
+
+"source-map-js@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "source-map-js@npm:1.0.1"
+  checksum: 22606113d62bbd468712b0cb0c46e9a8629de7eb081049c62a04d977a211abafd7d61455617f8b78daba0b6c0c7e7c88f8c6b5aaeacffac0a6676ecf5caac5ce
   languageName: node
   linkType: hard
 
@@ -21814,9 +21842,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.64.2":
-  version: 5.64.2
-  resolution: "webpack@npm:5.64.2"
+"webpack@npm:^5.64.3":
+  version: 5.64.3
+  resolution: "webpack@npm:5.64.3"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -21847,7 +21875,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: e02fcd3bfdc7e3322291b476af60f46dc4a31ec4349af4d1d47018b8e449820968d4ab8f1e8b313dd5cfcf1b47c7f976fe39fde73411d03c173a692c3dae428e
+  checksum: dc773c260b5db95d7c0e9aec079e9ed30a154420e3fc7fb46bd4f9b98714f322d8effe6534d5a3a17157f2c514a6edb26494585de4f1c92329980e04de235dd3
   languageName: node
   linkType: hard
 

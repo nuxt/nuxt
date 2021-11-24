@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.2.0",
-    "@netlify/functions": "^0.9.0",
+    "@netlify/functions": "^0.10.0",
     "@nuxt/design": "0.1.5",
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/kit": "3.0.0",
@@ -52,7 +52,7 @@
     "mime": "^3.0.0",
     "mlly": "^0.3.13",
     "node-fetch": "^3.1.0",
-    "ohmyfetch": "^0.4.7",
+    "ohmyfetch": "^0.4.8",
     "ora": "^6.0.1",
     "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",
