@@ -1,5 +1,5 @@
 import { createRequire } from 'module'
-import { relative, dirname, resolve } from 'pathe'
+import { relative, dirname, join, resolve } from 'pathe'
 import fse from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
@@ -147,4 +147,12 @@ export function readPackageJson (
     }
     throw error
   }
+}
+
+export function readDirRecursively (dir: string) {
+  return fse.readdirSync(dir).reduce((files, file) => {
+    const name = join(dir, file)
+    const isDirectory = fse.statSync(name).isDirectory()
+    return isDirectory ? [...files, ...readDirRecursively(name)] : [...files, name]
+  }, [])
 }

@@ -49,6 +49,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         base: nuxt.options.build.publicPath,
+        publicDir: resolve(nuxt.options.srcDir, nuxt.options.dir.public),
         // TODO: move to kit schema when it exists
         vue: {
           isProduction: !nuxt.options.dev,
