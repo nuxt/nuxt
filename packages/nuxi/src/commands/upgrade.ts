@@ -44,7 +44,7 @@ export default defineNuxtCommand({
       execSync(`${packageManager} install`, { stdio: 'inherit' })
     } else {
       consola.info('Upgrading nuxt...')
-      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} nuxt3@latest`, { stdio: 'inherit' })
+      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt3@latest`, { stdio: 'inherit' })
     }
 
     const upgradedVersion = await getNuxtVersion(rootDir)
