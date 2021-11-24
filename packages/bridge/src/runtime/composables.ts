@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeUnmount, isRef, watch, reactive, toRef, isReactive, Ref } from '@vue/composition-api'
+import { getCurrentInstance, onBeforeUnmount, isRef, watch, reactive, toRef, isReactive, Ref, set } from '@vue/composition-api'
 import type { CombinedVueInstance } from 'vue/types/vue'
 import type { MetaInfo } from 'vue-meta'
 import type VueRouter from 'vue-router'
@@ -57,6 +57,12 @@ export const useState = <T>(key: string, init?: (() => T)): Ref<T> => {
   if (!isReactive(nuxtApp.payload.useState)) {
     nuxtApp.payload.useState = reactive(nuxtApp.payload.useState)
   }
+
+  // see @vuejs/composition-api reactivity tracking on a reactive object with set
+  if (!(key in nuxtApp.payload.useState)) {
+    set(nuxtApp.payload.useState, key, undefined)
+  }
+
   const state = toRef(nuxtApp.payload.useState, key)
   if (state.value === undefined && init) {
     state.value = init()
