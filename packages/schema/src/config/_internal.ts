@@ -10,6 +10,8 @@ export default {
   /** @private */
   _generate: false,
   /** @private */
+  _prepare: false,
+  /** @private */
   _cli: false,
   /** @private */
   _requiredModules: {},
