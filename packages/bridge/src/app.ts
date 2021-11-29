@@ -1,5 +1,6 @@
-import { useNuxt, resolveModule } from '@nuxt/kit'
+import { useNuxt, resolveModule, addTemplate } from '@nuxt/kit'
 import { resolve } from 'pathe'
+import { componentsTypeTemplate } from '../../nuxt3/src/components/templates'
 import { distDir } from './dirs'
 
 export function setupAppBridge (_options: any) {
@@ -16,6 +17,21 @@ export function setupAppBridge (_options: any) {
   // Disable legacy fetch polyfills
   nuxt.options.fetch.server = false
   nuxt.options.fetch.client = false
+
+  // Setup types for components
+  const components = []
+  nuxt.hook('components:extend', (registeredComponents) => {
+    components.push(...registeredComponents)
+  })
+  addTemplate({
+    ...componentsTypeTemplate,
+    options: { components, buildDir: nuxt.options.buildDir }
+  })
+  nuxt.hook('prepare:types', ({ references }) => {
+    if (components.length) {
+      references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
+    }
+  })
 
   // Alias vue to have identical vue3 exports
   nuxt.options.alias['vue2-bridge'] = resolve(distDir, 'runtime/vue2-bridge.mjs')
