@@ -4,7 +4,7 @@ import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import { TransformPlugin } from './transform'
 import { Nuxt3AutoImports } from './imports'
 import { scanForComposables } from './composables'
-import { toImports } from './utils'
+import { toExports, toImports } from './utils'
 import { AutoImportContext, createAutoImportContext, updateAutoImportContext } from './context'
 
 export default defineNuxtModule<AutoImportsOptions>({
@@ -43,6 +43,13 @@ export default defineNuxtModule<AutoImportsOptions>({
     ]
     await nuxt.callHook('autoImports:dirs', composablesDirs)
     composablesDirs = composablesDirs.map(dir => normalize(dir))
+
+    // Support for importing from '#imports'
+    addTemplate({
+      filename: 'imports.mjs',
+      getContents: () => toExports(ctx.autoImports)
+    })
+    nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transpile and injection
     // @ts-ignore temporary disabled due to #746
@@ -107,6 +114,12 @@ function generateDts (ctx: AutoImportContext) {
     resolved[id] = path
     return path
   }
+
+  addTemplate({
+    filename: 'imports.d.ts',
+    write: true,
+    getContents: () => toExports(ctx.autoImports)
+  })
 
   addTemplate({
     filename: 'auto-imports.d.ts',
