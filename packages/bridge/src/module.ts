@@ -1,6 +1,6 @@
 import { createRequire } from 'module'
 import { defineNuxtModule, installModule, checkNuxtCompatibilityIssues } from '@nuxt/kit'
-import type { BridgeConfig } from '../types'
+import type { BridgeConfig, ScriptSetupOptions } from '../types'
 import { setupNitroBridge } from './nitro'
 import { setupAppBridge } from './app'
 import { setupCAPIBridge } from './capi'
@@ -45,7 +45,7 @@ export default defineNuxtModule({
       await setupCAPIBridge(opts.capi)
     }
     if (opts.scriptSetup) {
-      await setupScriptSetup()
+      await setupScriptSetup(opts.scriptSetup as ScriptSetupOptions)
     }
     if (opts.autoImports) {
       await setupAutoImports()
