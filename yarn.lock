@@ -2808,7 +2808,7 @@ __metadata:
     "@types/serve-static": ^1.13.10
     "@vercel/nft": ^0.17.0
     archiver: ^5.3.0
-    chalk: ^4.1.2
+    chalk: ^5.0.0
     chokidar: ^3.5.2
     connect: ^3.7.0
     consola: ^2.15.3
@@ -7186,6 +7186,13 @@ __metadata:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
   checksum: fe75c9d5c76a7a98d45495b91b2172fa3b7a09e0cc9370e5c8feb1c567b85c4288e2b3fded7cfdd7359ac28d6b3844feb8b82b8686842e93d23c827c417e83fc
+  languageName: node
+  linkType: hard
+
+"chalk@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "chalk@npm:5.0.0"
+  checksum: 6eba7c518b9aa5fe882ae6d14a1ffa58c418d72a3faa7f72af56641f1bbef51b645fca1d6e05d42357b7d3c846cd504c0b7b64d12309cdd07867e3b4411e0d01
   languageName: node
   linkType: hard
 
