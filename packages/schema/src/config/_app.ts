@@ -178,7 +178,7 @@ export default {
    *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
    * ]
    * ```
-   * @type {typeof import('../src/types/nuxt').NuxtPlugin[]}
+   * @type {(typeof import('../src/types/nuxt').NuxtPlugin | string)[]}
    * @version 2
    */
   plugins: [],
