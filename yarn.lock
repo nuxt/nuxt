@@ -2819,7 +2819,7 @@ __metadata:
     etag: ^1.8.1
     fs-extra: ^10.0.0
     globby: ^11.0.4
-    gzip-size: ^6.0.0
+    gzip-size: ^7.0.0
     h3: ^0.3.5
     hasha: ^5.2.2
     hookable: ^5.0.0
@@ -11650,6 +11650,15 @@ __metadata:
   dependencies:
     duplexer: ^0.1.2
   checksum: 2df97f359696ad154fc171dcb55bc883fe6e833bca7a65e457b9358f3cb6312405ed70a8da24a77c1baac0639906cd52358dc0ce2ec1a937eaa631b934c94194
+  languageName: node
+  linkType: hard
+
+"gzip-size@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "gzip-size@npm:7.0.0"
+  dependencies:
+    duplexer: ^0.1.2
+  checksum: 52d0bf586307082428b99f7b04d56d756d640e1f84d4a56debf9fb8c972d9db679143b067dd4024ebef42e9f6787e9dc8b9dcad344372b9dc87e55d942276f49
   languageName: node
   linkType: hard
 
