@@ -25,8 +25,8 @@
     "@nuxt/schema": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
     "@nuxt/webpack-builder": "3.0.0",
-    "@vue/reactivity": "^3.2.22",
-    "@vue/shared": "^3.2.22",
+    "@vue/reactivity": "^3.2.23",
+    "@vue/shared": "^3.2.23",
     "@vueuse/head": "^0.7.2",
     "chokidar": "^3.5.2",
     "consola": "^2.15.3",
@@ -34,7 +34,7 @@
     "defu": "^5.0.0",
     "destr": "^1.1.0",
     "globby": "^11.0.4",
-    "h3": "^0.3.3",
+    "h3": "^0.3.5",
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "ignore": "^5.1.9",
@@ -46,7 +46,7 @@
     "scule": "^0.2.1",
     "ufo": "^0.7.9",
     "unplugin": "^0.2.21",
-    "vue": "^3.2.22",
+    "vue": "^3.2.23",
     "vue-router": "^4.0.12"
   },
   "devDependencies": {

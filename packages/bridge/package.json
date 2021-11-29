@@ -36,7 +36,7 @@
     "externality": "^0.1.5",
     "fs-extra": "^10.0.0",
     "globby": "^11.0.4",
-    "h3": "^0.3.3",
+    "h3": "^0.3.5",
     "hash-sum": "^2.0.0",
     "magic-string": "^0.25.7",
     "mlly": "^0.3.13",
@@ -54,7 +54,7 @@
     "semver": "^7.3.5",
     "ufo": "^0.7.9",
     "unplugin": "^0.2.21",
-    "unplugin-vue2-script-setup": "0.6.16",
+    "unplugin-vue2-script-setup": "0.6.17",
     "vite": "^2.6.14",
     "vite-plugin-vue2": "^1.9.0",
     "vue-template-compiler": "^2.6.14"
