@@ -104,7 +104,9 @@ export function useAsyncData<
       .finally(() => {
         asyncData.pending.value = false
         nuxt.payload.data[key] = asyncData.data.value
-        nuxt.payload._errors[key] = !!asyncData.error.value
+        if (asyncData.error.value) {
+          nuxt.payload._errors[key] = true
+        }
         delete nuxt._asyncDataPromises[key]
       })
     return nuxt._asyncDataPromises[key]
