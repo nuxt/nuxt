@@ -1,11 +1,5 @@
 <template>
-  <div class="hello">
+  <div>
     This is HelloWorld component!
   </div>
 </template>
-
-<style scoped>
-.hello {
-  color: red;
-}
-</style>
