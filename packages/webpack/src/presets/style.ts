@@ -104,8 +104,7 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions) {
 
     return [
       {
-        loader: MiniCssExtractPlugin.loader,
-        options: { reloadAll: ctx.isDev, hot: ctx.isDev }
+        loader: MiniCssExtractPlugin.loader
       },
       cssLoader
     ]
