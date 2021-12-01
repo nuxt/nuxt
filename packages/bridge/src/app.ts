@@ -28,9 +28,7 @@ export function setupAppBridge (_options: any) {
     options: { components, buildDir: nuxt.options.buildDir }
   })
   nuxt.hook('prepare:types', ({ references }) => {
-    if (components.length) {
-      references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
-    }
+    references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
   })
 
   // Alias vue to have identical vue3 exports
