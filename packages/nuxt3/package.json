@@ -38,7 +38,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.0.0",
     "ignore": "^5.1.9",
-    "mlly": "^0.3.13",
+    "mlly": "^0.3.15",
     "murmurhash-es": "^0.1.1",
     "nuxi": "3.0.0",
     "ohmyfetch": "^0.4.8",
