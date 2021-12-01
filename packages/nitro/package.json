@@ -64,7 +64,7 @@
     "serve-placeholder": "^1.2.4",
     "serve-static": "^1.14.1",
     "std-env": "^3.0.1",
-    "table": "^6.7.3",
+    "table": "^6.7.5",
     "ufo": "^0.7.9",
     "unenv": "^0.4.1",
     "unstorage": "^0.3.3",

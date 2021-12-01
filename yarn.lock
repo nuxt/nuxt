@@ -2842,7 +2842,7 @@ __metadata:
     serve-placeholder: ^1.2.4
     serve-static: ^1.14.1
     std-env: ^3.0.1
-    table: ^6.7.3
+    table: ^6.7.5
     ufo: ^0.7.9
     unbuild: latest
     unenv: ^0.4.1
@@ -19744,16 +19744,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.7.3":
-  version: 6.7.4
-  resolution: "table@npm:6.7.4"
+"table@npm:^6.7.5":
+  version: 6.7.5
+  resolution: "table@npm:6.7.5"
   dependencies:
     ajv: ^8.0.1
     lodash.truncate: ^4.4.2
     slice-ansi: ^4.0.0
     string-width: ^4.2.3
     strip-ansi: ^6.0.1
-  checksum: 731f71a7261324e36248344d0d35fd18b3713657a336e74dc6617524ba51d9704636ba157b44e52585b5f637a1bb1954706daab197a00ec2a9bca7d4ecca5055
+  checksum: 76d01e33d6ef881f21bfe2e343101cb05ef4cedf506523d187af4f3a33f0f69cf25bca3e05c0c5c0eb348b405aaac29d9bb308ba9bf2c5ca7a82d032382a1649
   languageName: node
   linkType: hard
 
