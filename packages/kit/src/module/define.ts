@@ -69,13 +69,10 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtMod
       // Support virtual templates with getContents() by writing them to .nuxt directory
       let virtualTemplates: NuxtTemplate[]
       nuxt.hook('builder:prepared', (_builder, buildOptions) => {
-        virtualTemplates = []
-        buildOptions.templates.forEach((template, index, arr) => {
-          if (!template.getContents) { return }
-          // Remove template from template array to handle it ourselves
-          arr.splice(index, 1)
-          virtualTemplates.push(template)
-        })
+        virtualTemplates = buildOptions.templates.filter(t => t.getContents)
+        for (const template of virtualTemplates) {
+          buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
+        }
       })
       nuxt.hook('build:templates', async (templates) => {
         const context = {
