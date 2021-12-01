@@ -25,5 +25,5 @@ export interface ViteImportMeta {
   glob?(pattern: string): Record<string, () => Promise<Record<string, any>>>
 
   /** vite glob import utility - https://vitejs.dev/guide/features.html#glob-import */
-  globeager?(pattern: string): Record<string, Record<string, any>>
+  globEager?(pattern: string): Record<string, Record<string, any>>
 }
