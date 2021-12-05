@@ -23,6 +23,8 @@ distributions/*/LICENSE
 
 # Dist folders
 dist
+!packages/builder/dist
+!packages/vue-app/dist
 
 # Junit reports
 reports
