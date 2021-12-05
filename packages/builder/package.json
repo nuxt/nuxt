@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/utils": "2.15.6",
-    "@nuxt/vue-app": "https://gitpkg.now.sh/nikochin-testoline/nuxt.js/packages/vue-app?nikochin.fork/nuxt.js?commit=6848f4a178eb23956fd0608132d71086ee720c20",
+    "@nuxt/vue-app": "https://gitpkg.now.sh/nikochin-testoline/nuxt.js/packages/vue-app?nikochin.fork/nuxt.js?commit=09e6f736bcdcd62f6f4afe0c193f6f09c58ab3de",
     "@nuxt/webpack": "2.15.6",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
