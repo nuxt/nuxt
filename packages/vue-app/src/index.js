@@ -11,6 +11,7 @@ export const template = {
     'jsonp.js',
     'router.js',
     'router.scrollBehavior.js',
+    'router.extendRoutes.js',
     'routes.json',
     'server.js',
     'utils.js',

@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import { normalizeURL, decode } from 'ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
+import extendRoutes from './router.extendRoutes.js'
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
   let res = ''
@@ -101,7 +102,7 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-export function createRouter (ssrContext, config) {
+export async function createRouter (ssrContext, config) {
   const base = (config._app && config._app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
 
@@ -118,6 +119,8 @@ export function createRouter (ssrContext, config) {
     }
     return resolve(to, current, append)
   }
+
+  await extendRoutes({ router })
 
   return router
 }

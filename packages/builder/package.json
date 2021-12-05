@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/utils": "2.15.6",
-    "@nuxt/vue-app": "2.15.6",
+    "@nuxt/vue-app": "link:../vue-app",
     "@nuxt/webpack": "2.15.6",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
