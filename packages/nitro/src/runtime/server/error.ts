@@ -58,5 +58,6 @@ export function handleError (error, req: IncomingMessage, res: ServerResponse) {
   // HTML response
   const errorTemplate = is404 ? error404 : (isDev ? errorDev : error500)
   const html = errorTemplate(errorObject)
+  res.setHeader('Content-Type', 'text/html;charset=UTF-8')
   res.end(html)
 }
