@@ -13,7 +13,13 @@
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 </p>
 
-> Build your next Vue.js application with confidence using Nuxt: a framework making web development simple and powerful.
+> Build your next Vue(2) application with confidence using Nuxt: a framework making web development simple and powerful.
+
+## Nuxt 3
+
+The evolution of Nuxt powered by Vite and Vue 3 is currently in beta and available on:
+- GitHub: [nuxt/framework](https://github.com/nuxt/framework)
+- Documentation: [v3.nuxtjs.org](https://v3.nuxtjs.org)
 
 ## Links
 
