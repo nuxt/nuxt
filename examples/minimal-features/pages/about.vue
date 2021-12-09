@@ -2,7 +2,7 @@
   <div>
     <p>Hi from {{ name }}</p>
     <nuxt-link to="/">
-      Home page
+      Home page EDITED
     </nuxt-link>
   </div>
 </template>
