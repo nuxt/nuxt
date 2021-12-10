@@ -14,10 +14,16 @@ export const middlewareTemplate = {
   src: '',
   getContents (ctx: TemplateContext) {
     const { dir, router: { middleware }, srcDir } = ctx.nuxt.options
-    const _middleware = ((typeof middleware !== 'undefined' && middleware) || []).map(m => ({
-      filePath: resolve(srcDir, dir.middleware, m.src),
-      id: m.name || m.src.replace(/[\\/]/g, '/').replace(/\.(js|ts)$/, '')
-    }))
+    const _middleware = ((typeof middleware !== 'undefined' && middleware) || []).map((m) => {
+      // Normalize string middleware
+      if (typeof m === 'string') {
+        m = { src: m }
+      }
+      return {
+        filePath: resolve(srcDir, dir.middleware, m.src),
+        id: m.name || m.src.replace(/[\\/]/g, '/').replace(/\.(js|ts)$/, '')
+      }
+    })
     return `${_middleware.map(m => `import $${hash(m.id)} from '${m.filePath}'`).join('\n')}
 const middleware = {
 ${_middleware.map(m => `  ['${m.id}']: $${hash(m.id)}`).join(',\n')}
