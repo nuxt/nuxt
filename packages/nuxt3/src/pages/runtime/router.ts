@@ -12,6 +12,15 @@ import { defineNuxtPlugin } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 
+declare module 'vue' {
+  export interface GlobalComponents {
+    NuxtChild: typeof NuxtChild
+    NuxtPage: typeof NuxtPage
+    NuxtLayout: typeof NuxtLayout
+    NuxtLink: typeof RouterLink
+  }
+}
+
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('NuxtChild', NuxtChild)
   nuxtApp.vueApp.component('NuxtPage', NuxtPage)

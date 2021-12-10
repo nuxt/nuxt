@@ -5,6 +5,11 @@ import { defineNuxtPlugin } from '#app'
 // @ts-ignore
 import metaConfig from '#build/meta.config.mjs'
 
+type MetaComponents = typeof Components
+declare module 'vue' {
+  export interface GlobalComponents extends MetaComponents {}
+}
+
 export default defineNuxtPlugin((nuxtApp) => {
   useMeta(metaConfig.globalMeta)
 
