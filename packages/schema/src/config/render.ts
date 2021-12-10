@@ -99,6 +99,8 @@ export default {
    * for [compression middleware](https://www.npmjs.com/package/compression), or
    * use your own middleware by passing it in directly - for example,
    * `otherComp({ myOptions: 'example' })`.
+   *
+   * @type {boolean | object | Function}
    */
   compressor: {
     threshold: 0
