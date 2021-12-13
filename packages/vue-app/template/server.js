@@ -134,7 +134,7 @@ export default async (ssrContext) => {
 
       <% if (isFullStatic && store) { %>
       // Stop recording store mutations
-      ssrContext.unsetMutationObserver()
+      ssrContext.unsetMutationObserver && ssrContext.unsetMutationObserver()
       <% } %>
     }
   }
