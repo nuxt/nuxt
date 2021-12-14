@@ -1,5 +1,4 @@
-import { toRefs } from '@vue/reactivity'
-import { defineComponent, getCurrentInstance } from 'vue'
+import { defineComponent, getCurrentInstance, toRefs } from 'vue'
 import type { DefineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import type { LegacyContext } from '../compat/legacy-app'
