@@ -134,7 +134,10 @@ export default async (ssrContext) => {
 
       <% if (isFullStatic && store) { %>
       // Stop recording store mutations
-      ssrContext.unsetMutationObserver && ssrContext.unsetMutationObserver()
+      // unsetMutationObserver is only set after all router middleware are evaluated
+      if (ssrContext.unsetMutationObserver) {
+        ssrContext.unsetMutationObserver()
+      }
       <% } %>
     }
   }
