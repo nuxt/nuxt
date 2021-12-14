@@ -2,7 +2,6 @@ import { defineBuildConfig, BuildEntry } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,
-  emitCJS: false,
   entries: [
     // Core
     { input: 'src/index' },
