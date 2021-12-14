@@ -114,6 +114,12 @@ const todo = new Set<keyof LegacyContext | keyof LegacyContext['ssrContext']>([
   'beforeSerialize'
 ])
 
+const serverProperties = new Set<keyof LegacyContext['ssrContext'] | keyof LegacyContext>([
+  'req',
+  'res',
+  'ssrContext'
+])
+
 const routerKeys: Array<keyof LegacyContext | keyof LegacyContext['ssrContext']> = ['route', 'params', 'query']
 
 const staticFlags = {
@@ -157,6 +163,10 @@ export const legacyPlugin = (nuxtApp: NuxtApp) => {
 
       if (p in staticFlags) {
         return staticFlags[p]
+      }
+
+      if (process.client && serverProperties.has(p)) {
+        return undefined
       }
 
       if (p === 'ssrContext') {
