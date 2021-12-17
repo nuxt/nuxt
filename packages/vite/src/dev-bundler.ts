@@ -80,7 +80,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
   // Transform
   const res: SSRTransformResult = await opts.viteServer.transformRequest(id, { ssr: true }).catch((err) => {
     // eslint-disable-next-line no-console
-    console.warn(`[SSR] Error transforming ${id}: ${err}`)
+    console.warn(`[SSR] Error transforming ${id}:`, err)
     // console.error(err)
   }) as SSRTransformResult || { code: '', map: {}, deps: [], dynamicDeps: [] }
 
