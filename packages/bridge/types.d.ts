@@ -9,7 +9,9 @@ export interface BridgeConfig {
   nitro: boolean
   vite: boolean
   app: boolean | {}
-  capi: boolean | {}
+  capi: boolean | {
+    legacy?: boolean
+  }
   scriptSetup: boolean | ScriptSetupOptions
   autoImports: boolean
   transpile: boolean
