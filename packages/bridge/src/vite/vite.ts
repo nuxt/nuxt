@@ -21,7 +21,6 @@ async function bundle (nuxt: Nuxt, builder: any) {
     nuxt,
     builder,
     config: vite.mergeConfig(
-      nuxt.options.vite || {},
       {
         root: nuxt.options.rootDir,
         mode: nuxt.options.dev ? 'development' : 'production',
@@ -79,7 +78,8 @@ async function bundle (nuxt: Nuxt, builder: any) {
           jsxPlugin(),
           defaultExportPlugin()
         ]
-      } as ViteOptions
+      } as ViteOptions,
+      nuxt.options.vite || {}
     )
   }
 

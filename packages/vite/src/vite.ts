@@ -25,7 +25,6 @@ export async function bundle (nuxt: Nuxt) {
   const ctx: ViteBuildContext = {
     nuxt,
     config: vite.mergeConfig(
-      nuxt.options.vite as any || {},
       {
         root: nuxt.options.srcDir,
         mode: nuxt.options.dev ? 'development' : 'production',
@@ -93,7 +92,8 @@ export async function bundle (nuxt: Nuxt) {
             ]
           }
         }
-      } as ViteOptions
+      } as ViteOptions,
+      nuxt.options.vite as any || {}
     )
   }
 
