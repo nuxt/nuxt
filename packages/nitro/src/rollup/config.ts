@@ -109,7 +109,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       outro: '',
       preferConst: true,
       sanitizeFileName: sanitizeFilePath,
-      sourcemap: nitroContext.sourceMap,
+      sourcemap: !!nitroContext.sourceMap,
       sourcemapExcludeSources: true,
       sourcemapPathTransform (relativePath, sourcemapPath) {
         return resolve(dirname(sourcemapPath), relativePath)
@@ -149,7 +149,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
-    // @ts-ignore https://github.com/rollup/plugins/pull/810
+    sourceMap: !!nitroContext.sourceMap,
     preventAssignment: true,
     values: {
       'process.env.NODE_ENV': nitroContext._nuxt.dev ? '"development"' : '"production"',
@@ -172,7 +172,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   // ESBuild
   rollupConfig.plugins.push(esbuild({
     target: 'es2019',
-    sourceMap: true,
+    sourceMap: !!nitroContext.sourceMap,
     ...nitroContext.esbuild?.options
   }))
 
@@ -298,6 +298,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(commonjs({
+    sourceMap: !!nitroContext.sourceMap,
     esmExternals: id => !id.startsWith('unenv/'),
     requireReturnsDefault: 'auto'
   }))
@@ -306,7 +307,12 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   rollupConfig.plugins.push(json())
 
   // https://github.com/rollup/plugins/tree/master/packages/inject
-  rollupConfig.plugins.push(inject(env.inject))
+  rollupConfig.plugins.push(inject({
+    // TODO: https://github.com/rollup/plugins/pull/1066
+    // @ts-ignore
+    sourceMap: !!nitroContext.sourceMap,
+    ...env.inject
+  }))
 
   // https://github.com/TrySound/rollup-plugin-terser
   // https://github.com/terser/terser#minify-nitroContext
