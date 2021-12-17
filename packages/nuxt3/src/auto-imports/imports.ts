@@ -24,14 +24,6 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'useMeta'
     ]
   },
-  // vue-router
-  {
-    from: 'vue-router',
-    names: [
-      'useRoute',
-      'useRouter'
-    ]
-  },
   // vue-demi (mocked)
   {
     from: 'vue-demi',

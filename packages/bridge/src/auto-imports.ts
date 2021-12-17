@@ -6,8 +6,7 @@ const UnsupportedImports = new Set(['useAsyncData', 'useFetch'])
 const CapiHelpers = new Set(Object.keys(CompositionApi))
 
 const ImportRewrites = {
-  vue: '@vue/composition-api',
-  'vue-router': '#app'
+  vue: '@vue/composition-api'
 }
 
 export async function setupAutoImports () {
@@ -27,6 +26,10 @@ export async function setupAutoImports () {
         autoImport.disabled = true
       }
     }
+
+    // Add auto-imports that are added by ad-hoc modules in nuxt 3
+    autoImports.push({ name: 'useRouter', as: 'useRouter', from: '#app' })
+    autoImports.push({ name: 'useRoute', as: 'useRoute', from: '#app' })
 
     // Add bridge-only auto-imports
     autoImports.push({ name: 'useNuxt2Meta', as: 'useNuxt2Meta', from: '#app' })

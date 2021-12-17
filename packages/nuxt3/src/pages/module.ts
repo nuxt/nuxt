@@ -35,6 +35,12 @@ export default defineNuxtModule({
       }
     })
 
+    nuxt.hook('autoImports:extend', (autoImports) => {
+      const composablesFile = resolve(runtimeDir, 'composables')
+      autoImports.push({ name: 'useRouter', as: 'useRouter', from: composablesFile })
+      autoImports.push({ name: 'useRoute', as: 'useRoute', from: composablesFile })
+    })
+
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'router'))
 
