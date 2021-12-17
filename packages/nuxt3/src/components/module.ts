@@ -47,6 +47,7 @@ export default defineNuxtModule<ComponentsOptions>({
           ignore: [
             '**/*.stories.{js,ts,jsx,tsx}', // ignore storybook files
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
+            '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
             '**/*.d.ts', // .d.ts files
             // TODO: support nuxt ignore patterns
             ...(dirOptions.ignore || [])
