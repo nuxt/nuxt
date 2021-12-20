@@ -5,7 +5,7 @@ import {
   createMemoryHistory,
   RouterLink
 } from 'vue-router'
-import NuxtChild from './child.vue'
+import NuxtNestedPage from './nested-page.vue'
 import NuxtPage from './page.vue'
 import NuxtLayout from './layout'
 import { defineNuxtPlugin } from '#app'
@@ -14,7 +14,7 @@ import routes from '#build/routes'
 
 declare module 'vue' {
   export interface GlobalComponents {
-    NuxtChild: typeof NuxtChild
+    NuxtNestedPage: typeof NuxtNestedPage
     NuxtPage: typeof NuxtPage
     NuxtLayout: typeof NuxtLayout
     NuxtLink: typeof RouterLink
@@ -22,10 +22,12 @@ declare module 'vue' {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.component('NuxtChild', NuxtChild)
+  nuxtApp.vueApp.component('NuxtNestedPage', NuxtNestedPage)
   nuxtApp.vueApp.component('NuxtPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtLayout', NuxtLayout)
   nuxtApp.vueApp.component('NuxtLink', RouterLink)
+  // TODO: remove before release - present for backwards compatibility & intentionally undocumented
+  nuxtApp.vueApp.component('NuxtChild', NuxtNestedPage)
 
   const routerHistory = process.client
     ? createWebHistory()

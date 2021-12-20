@@ -6,6 +6,6 @@
 
 <script>
 export default {
-  name: 'NuxtChild'
+  name: 'NuxtNestedPage'
 }
 </script>
