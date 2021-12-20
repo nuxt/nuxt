@@ -14,6 +14,7 @@ import wasmPlugin from '@rollup/plugin-wasm'
 import inject from '@rollup/plugin-inject'
 import { visualizer } from 'rollup-plugin-visualizer'
 import * as unenv from 'unenv'
+import devalue from '@nuxt/devalue'
 
 import type { Preset } from 'unenv'
 import { sanitizeFilePath } from 'mlly'
@@ -164,7 +165,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       'process.env.NUXT_STATIC_VERSION': JSON.stringify(nitroContext._nuxt.staticAssets.version),
       'process.env.NUXT_FULL_STATIC': nitroContext._nuxt.fullStatic as unknown as string,
       'process.env.NITRO_PRESET': JSON.stringify(nitroContext.preset),
-      'process.env.RUNTIME_CONFIG': JSON.stringify(nitroContext._nuxt.runtimeConfig),
+      'process.env.RUNTIME_CONFIG': devalue(nitroContext._nuxt.runtimeConfig),
       'process.env.DEBUG': JSON.stringify(nitroContext._nuxt.dev)
     }
   }))

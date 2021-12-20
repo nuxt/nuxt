@@ -714,6 +714,6 @@ export default {
    * @version 3
    */
   publicRuntimeConfig: {
-    $resolve: (val, get) => defu(val, { app: get('app') })
+    $resolve: (val = {}, get) => ({ ...val, app: defu(val.app, get('app')) })
   },
 }
