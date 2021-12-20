@@ -1,4 +1,4 @@
-import { shallowRef } from 'vue'
+import { computed, reactive, shallowRef } from 'vue'
 import {
   createRouter,
   createWebHistory,
@@ -45,6 +45,14 @@ export default defineNuxtPlugin((nuxtApp) => {
   Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
     get: () => previousRoute.value
   })
+
+  // https://github.com/vuejs/vue-router-next/blob/master/src/router.ts#L1192-L1200
+  const route = {}
+  for (const key in router.currentRoute.value) {
+    route[key] = computed(() => router.currentRoute.value[key])
+  }
+
+  nuxtApp._route = reactive(route)
 
   nuxtApp.hook('app:created', async () => {
     if (process.server) {
