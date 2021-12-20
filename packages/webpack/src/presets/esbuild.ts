@@ -1,4 +1,4 @@
-import { ESBuildMinifyPlugin } from 'esbuild-loader'
+import esbuildLoader from 'esbuild-loader'
 import { WebpackConfigContext } from '../utils/config'
 
 export function esbuild (ctx: WebpackConfigContext) {
@@ -9,7 +9,8 @@ export function esbuild (ctx: WebpackConfigContext) {
   // https://nodejs.org/en/
   const target = ctx.isServer ? 'es2019' : 'chrome85'
 
-  config.optimization.minimizer.push(new ESBuildMinifyPlugin())
+  // https://github.com/nuxt/framework/issues/2372
+  config.optimization.minimizer.push(new (esbuildLoader as unknown as typeof import('esbuild-loader')).ESBuildMinifyPlugin())
 
   config.module.rules.push(
     {
