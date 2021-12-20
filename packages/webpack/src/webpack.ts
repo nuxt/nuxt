@@ -24,7 +24,7 @@ class WebpackBundler {
   compilers: Array<Compiler>
   compilersWatching: Array<Watching & { closeAsync?: () => void }>
   // TODO: change this when pify has better types https://github.com/sindresorhus/pify/pull/76
-  devMiddleware: Record<string, Function & { close?: () => Promise<void>, context?: WebpackDevMiddlewareContext }>
+  devMiddleware: Record<string, Function & { close?: () => Promise<void>, context?: WebpackDevMiddlewareContext<IncomingMessage, ServerResponse> }>
   hotMiddleware: Record<string, Function>
   virtualModules: VirtualModulesPlugin
   mfs?: Compiler['outputFileSystem']
@@ -214,7 +214,7 @@ class WebpackBundler {
           outputFileSystem: this.mfs,
           stats: 'none',
           ...buildOptions.devMiddleware
-        } as WebpackDevMiddlewareOptions
+        } as WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
       )
     )
 
