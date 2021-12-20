@@ -43,6 +43,14 @@ export function setupNitroBridge () {
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
   nitroDevContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
 
+  // Use custom document template if provided
+  if (nuxt.options.appTemplatePath) {
+    nuxt.hook('nitro:document', async (template) => {
+      template.src = nuxt.options.appTemplatePath
+      template.contents = await fsp.readFile(nuxt.options.appTemplatePath, 'utf-8')
+    })
+  }
+
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
 
