@@ -64,7 +64,7 @@ export async function build (nitroContext: NitroContext) {
   return nitroContext._nuxt.dev ? _watch(nitroContext) : _build(nitroContext)
 }
 
-async function writeTypes (nitroContext: NitroContext) {
+export async function writeTypes (nitroContext: NitroContext) {
   const routeTypes: Record<string, string[]> = {}
 
   const middleware = [

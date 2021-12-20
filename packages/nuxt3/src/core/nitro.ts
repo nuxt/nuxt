@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { wpfs, getNitroContext, createDevServer, resolveMiddleware, build, prepare, generate } from '@nuxt/nitro'
+import { wpfs, getNitroContext, createDevServer, resolveMiddleware, build, prepare, generate, writeTypes, scanMiddleware } from '@nuxt/nitro'
 import type { Nuxt } from '@nuxt/schema'
 
 export function initNitro (nuxt: Nuxt) {
@@ -61,6 +61,11 @@ export function initNitro (nuxt: Nuxt) {
       await generate(nitroContext)
       await build(nitroContext)
     }
+  })
+
+  nuxt.hook('builder:generateApp', async () => {
+    nitroDevContext.scannedMiddleware = await scanMiddleware(nitroDevContext._nuxt.serverDir)
+    await writeTypes(nitroDevContext)
   })
 
   // nuxt dev

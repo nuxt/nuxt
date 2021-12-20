@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 import { addPluginTemplate, useNuxt } from '@nuxt/kit'
 import { stringifyQuery } from 'ufo'
 import { resolve } from 'pathe'
-import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware } from '@nuxt/nitro'
+import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware, scanMiddleware, writeTypes } from '@nuxt/nitro'
 import { AsyncLoadingPlugin } from './async-loading'
 import { distDir } from './dirs'
 
@@ -128,6 +128,12 @@ export function setupNitroBridge () {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'nitro.d.ts') })
   })
 
+  // nuxt prepare
+  nuxt.hook('builder:generateApp', async () => {
+    nitroDevContext.scannedMiddleware = await scanMiddleware(nitroDevContext._nuxt.serverDir)
+    await writeTypes(nitroDevContext)
+  })
+
   // nuxt build/dev
   // @ts-ignore
   nuxt.options.build._minifyServer = false
@@ -142,7 +148,7 @@ export function setupNitroBridge () {
     }
   })
 
-  // nude dev
+  // nuxt dev
   if (nuxt.options.dev) {
     nitroDevContext._internal.hooks.hook('nitro:compiled', () => { nuxt.server.watch() })
     nuxt.hook('build:compile', ({ compiler }) => { compiler.outputFileSystem = wpfs })
