@@ -10,6 +10,8 @@ export interface NodeExternalsOptions {
   trace?: boolean
   traceOptions?: NodeFileTraceOptions
   moduleDirectories?: string[]
+  /** additional packages to include in `.output/server/node_modules` */
+  traceInclude?: string[]
 }
 
 export function externals (opts: NodeExternalsOptions): Plugin {
@@ -67,6 +69,12 @@ export function externals (opts: NodeExternalsOptions): Plugin {
     },
     async buildEnd () {
       if (opts.trace !== false) {
+        for (const pkgName of opts.traceInclude || []) {
+          const path = await this.resolve(pkgName)
+          if (path?.id) {
+            trackedExternals.add(path.id)
+          }
+        }
         const tracedFiles = await nodeFileTrace(Array.from(trackedExternals), opts.traceOptions)
           .then(r => Array.from(r.fileList).map(f => resolve(opts.traceOptions.base, f)))
           .then(r => r.filter(file => file.includes('node_modules')))

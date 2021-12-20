@@ -22,7 +22,7 @@ import { resolvePath } from '../utils'
 import { pkgDir } from '../dirs'
 
 import { dynamicRequire } from './plugins/dynamic-require'
-import { externals } from './plugins/externals'
+import { externals, NodeExternalsOptions } from './plugins/externals'
 import { timing } from './plugins/timing'
 // import { autoMock } from './plugins/automock'
 import { staticAssets, dirnames } from './plugins/static'
@@ -249,7 +249,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // Externals Plugin
   if (nitroContext.externals) {
-    rollupConfig.plugins.push(externals(defu(nitroContext.externals as any, {
+    rollupConfig.plugins.push(externals(defu(nitroContext.externals as NodeExternalsOptions, {
       outDir: nitroContext.output.serverDir,
       moduleDirectories,
       external: [
@@ -266,7 +266,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
         nitroContext._nuxt.srcDir,
         nitroContext._nuxt.rootDir,
         nitroContext._nuxt.serverDir,
-        ...nitroContext.middleware.map(m => m.handle),
+        ...nitroContext.middleware.map(m => m.handle).filter(i => typeof i === 'string') as string[],
         ...(nitroContext._nuxt.dev ? [] : ['vue', '@vue/', '@nuxt/'])
       ],
       traceOptions: {
