@@ -1,8 +1,7 @@
 import { createWriteStream } from 'fs'
 import archiver from 'archiver'
-import consola from 'consola'
 import { join, resolve } from 'pathe'
-import { prettyPath, writeFile } from '../utils'
+import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 // eslint-disable-next-line
@@ -10,6 +9,9 @@ export const azure_functions: NitroPreset = {
   serveStatic: true,
   entry: '{{ _internal.runtimeDir }}/entries/azure_functions',
   externals: true,
+  commands: {
+    deploy: 'az functionapp deployment source config-zip -g <resource-group> -n <app-name> --src {{ output.dir }}/deploy.zip'
+  },
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)
@@ -67,9 +69,5 @@ async function writeRoutes ({ output: { dir, serverDir } }: NitroContext) {
 
   await writeFile(resolve(serverDir, 'function.json'), JSON.stringify(functionDefinition))
   await writeFile(resolve(dir, 'host.json'), JSON.stringify(host))
-
   await zipDirectory(dir, join(dir, 'deploy.zip'))
-  const zipPath = prettyPath(resolve(dir, 'deploy.zip'))
-
-  consola.success(`Ready to run \`az functionapp deployment source config-zip -g <resource-group> -n <app-name> --src ${zipPath}\``)
 }

@@ -5,7 +5,7 @@ import { createHooks, Hookable, NestedHooks } from 'hookable'
 import type { Preset } from 'unenv'
 import type { NuxtHooks, NuxtOptions } from '@nuxt/schema'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
-import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
+import { tryImport, resolvePath, detectTarget, extendPreset, evalTemplate } from './utils'
 import * as PRESETS from './presets'
 import type { NodeExternalsOptions } from './rollup/plugins/externals'
 import type { StorageOptions } from './rollup/plugins/storage'
@@ -40,6 +40,10 @@ export interface NitroContext {
   experiments?: {
     wasm?: boolean
   }
+  commands: {
+    preview: string | ((config: NitroContext) => string)
+    deploy: string | ((config: NitroContext) => string)
+  },
   moduleSideEffects: string[]
   renderer: string
   serveStatic: boolean
@@ -104,6 +108,10 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
     moduleSideEffects: ['unenv/runtime/polyfill/'],
     renderer: undefined,
     serveStatic: undefined,
+    commands: {
+      preview: undefined,
+      deploy: undefined
+    },
     middleware: [],
     scannedMiddleware: [],
     ignore: [],
@@ -163,6 +171,13 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
   nitroContext.output.dir = resolvePath(nitroContext, nitroContext.output.dir)
   nitroContext.output.publicDir = resolvePath(nitroContext, nitroContext.output.publicDir)
   nitroContext.output.serverDir = resolvePath(nitroContext, nitroContext.output.serverDir)
+
+  if (nitroContext.commands.preview) {
+    nitroContext.commands.preview = evalTemplate(nitroContext, nitroContext.commands.preview)
+  }
+  if (nitroContext.commands.deploy) {
+    nitroContext.commands.deploy = evalTemplate(nitroContext, nitroContext.commands.deploy)
+  }
 
   nitroContext._internal.hooks.addHooks(nitroContext.hooks)
 

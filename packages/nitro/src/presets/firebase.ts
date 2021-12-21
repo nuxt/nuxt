@@ -1,7 +1,6 @@
 import { createRequire } from 'module'
 import { join, relative, resolve } from 'pathe'
 import fse from 'fs-extra'
-import consola from 'consola'
 import globby from 'globby'
 import { readPackageJSON } from 'pkg-types'
 import { writeFile } from '../utils'
@@ -10,6 +9,9 @@ import { NitroPreset, NitroContext } from '../context'
 export const firebase: NitroPreset = {
   entry: '{{ _internal.runtimeDir }}/entries/firebase',
   externals: true,
+  commands: {
+    deploy: 'npx firebase deploy'
+  },
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)
@@ -85,6 +87,4 @@ async function writeRoutes ({ output: { publicDir, serverDir }, _nuxt: { rootDir
       2
     )
   )
-
-  consola.success('Ready to run `firebase deploy`')
 }
