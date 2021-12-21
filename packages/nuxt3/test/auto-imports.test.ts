@@ -11,10 +11,17 @@ import { Nuxt3AutoImports } from '../src/auto-imports/imports'
 describe('auto-imports:transform', () => {
   const autoImports: AutoImport[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
-    { name: 'computed', as: 'computed', from: 'bar' }
+    { name: 'computed', as: 'computed', from: 'bar' },
+    { name: 'foo', as: 'foo', from: 'excluded' }
   ]
 
-  const ctx = { autoImports, map: new Map() } as AutoImportContext
+  const ctx = {
+    autoImports,
+    map: new Map(),
+    transform: {
+      exclude: [/excluded/]
+    }
+  } as AutoImportContext
   updateAutoImportContext(ctx)
 
   const transformPlugin = TransformPlugin.raw(ctx, { framework: 'rollup' })
@@ -37,6 +44,10 @@ describe('auto-imports:transform', () => {
   it('should ignore comments', async () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).to.equal('import { computed } from \'bar\';// import { computed } from "foo"\n;const a = computed(0)')
+  })
+
+  it('should exclude files from transform', async () => {
+    expect(await transform('const a = foo()')).to.not.include('import { foo } from "excluded"')
   })
 })
 
