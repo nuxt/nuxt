@@ -128,9 +128,8 @@ export const ssrPromise = (value, key) => {
 
 // Composition API functions
 export const onGlobalSetup = (fn) => {
-  warnOnce('onGlobalSetup', '`onGlobalSetup` is deprecated.')
-  const app = useNuxtApp()
-  app._setupFns.push(fn)
+  warnOnce('onGlobalSetup', '`onGlobalSetup` is deprecated and has a Nuxt 3-compatible replacement.')
+  useNuxtApp().hook('vue:setup', fn)
 }
 
 export const useAsync = (cb, key) => {

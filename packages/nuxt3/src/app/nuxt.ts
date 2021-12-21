@@ -23,6 +23,7 @@ export interface RuntimeNuxtHooks {
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'meta:register': (metaRenderers: Array<(nuxt: NuxtApp) => NuxtMeta | Promise<NuxtMeta>>) => HookResult
+  'vue:setup': () => void
 }
 
 interface _NuxtApp {

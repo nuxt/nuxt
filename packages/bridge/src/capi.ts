@@ -1,5 +1,5 @@
 import { createRequire } from 'module'
-import { useNuxt, addPlugin, addPluginTemplate, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { useNuxt, addPluginTemplate, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { resolve } from 'pathe'
 import { BridgeConfig } from '../types'
 import { distDir } from './dirs'
@@ -45,7 +45,6 @@ export function setupCAPIBridge (options: Exclude<BridgeConfig['capi'], boolean>
   // Handle legacy `@nuxtjs/composition-api`
   nuxt.options.alias['@nuxtjs/composition-api'] = resolve(distDir, 'runtime/capi.legacy.mjs')
   nuxt.options.build.transpile.push('@nuxtjs/composition-api', '@vue/composition-api')
-  addPlugin(resolve(distDir, 'runtime/capi.legacy.plugin.mjs'))
 
   // Enable automatic ssrRef key generation
   addVitePlugin(KeyPlugin.vite())
