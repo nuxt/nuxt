@@ -2828,7 +2828,7 @@ __metadata:
     gzip-size: ^7.0.0
     h3: ^0.3.8
     hasha: ^5.2.2
-    hookable: ^5.0.0
+    hookable: ^5.1.0
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
     jiti: ^1.12.9
@@ -3176,8 +3176,8 @@ __metadata:
     consola: ^2.15.3
     css-loader: ^6.5.1
     css-minimizer-webpack-plugin: ^3.3.0
-    cssnano: ^5.0.13
-    esbuild-loader: ^2.17.0
+    cssnano: ^5.0.14
+    esbuild-loader: ^2.18.0
     file-loader: ^6.2.0
     fs-extra: ^10.0.0
     glob: ^7.2.0
@@ -4061,10 +4061,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.18.1":
-  version: 14.18.1
-  resolution: "@types/node@npm:14.18.1"
-  checksum: 4ad88c071792081a04069d7380aff855b8982bf3e064c7c9614c8dba69cafa0f50899950326429baa9ee7b2c5b4306ed7dca1411e209281aaea31809a40adbe4
+"@types/node@npm:^14.18.2":
+  version: 14.18.2
+  resolution: "@types/node@npm:14.18.2"
+  checksum: 4684fd4aa8a4bcd25e754186a83bfc2464436188df5200174b167d1e28aa6cac77312d02790913bf2b4035dc1221cbfbd65974465126354c17d1ca396e69b859
   languageName: node
   linkType: hard
 
@@ -8572,7 +8572,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:^5.0.13, cssnano@npm:^5.0.6":
+"cssnano@npm:^5.0.14":
+  version: 5.0.14
+  resolution: "cssnano@npm:5.0.14"
+  dependencies:
+    cssnano-preset-default: ^5.1.9
+    lilconfig: ^2.0.3
+    yaml: ^1.10.2
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 8834e77ca42b569f02a939b40a88da393925ac09c793c13eec208594e27e0323feb665d51049f911e0141d5ed3ac11bb15b22cd92ee6312c69ffb3fc96116f47
+  languageName: node
+  linkType: hard
+
+"cssnano@npm:^5.0.6":
   version: 5.0.13
   resolution: "cssnano@npm:5.0.13"
   dependencies:
@@ -9543,11 +9556,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-loader@npm:^2.17.0":
-  version: 2.17.0
-  resolution: "esbuild-loader@npm:2.17.0"
+"esbuild-loader@npm:^2.18.0":
+  version: 2.18.0
+  resolution: "esbuild-loader@npm:2.18.0"
   dependencies:
-    esbuild: ^0.14.2
+    esbuild: ^0.14.6
     joycon: ^3.0.1
     json5: ^2.2.0
     loader-utils: ^2.0.0
@@ -9555,7 +9568,7 @@ __metadata:
     webpack-sources: ^2.2.0
   peerDependencies:
     webpack: ^4.40.0 || ^5.0.0
-  checksum: aa701bee5cc8a6b0fedddd0b52ab388e0288e5f17c12e8f85bca772294caf625c544f8d7d4baa43d5fbb37ac6a2cfe457d44363b4838efa7eb313d9e2a4c03da
+  checksum: 744b9f8c8fadece3feb3eb50d4dcacafd9e528be0f4c345188ba9f549a6384bd34e3fba66d22df25ec240bb7edbff4da2787d621299f134255f22c868196d091
   languageName: node
   linkType: hard
 
@@ -9705,7 +9718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.2, esbuild@npm:^0.14.3, esbuild@npm:^0.14.6":
+"esbuild@npm:^0.14.3, esbuild@npm:^0.14.6":
   version: 0.14.6
   resolution: "esbuild@npm:0.14.6"
   dependencies:
@@ -11689,6 +11702,13 @@ __metadata:
   version: 5.0.0
   resolution: "hookable@npm:5.0.0"
   checksum: 7423844e2e273c436ed3060d6f34fe1addfa6eb518698c703c8d2fdb7d60a4f982b88da2a99b868cc904e5ced6d8d9cdb3fbbbecdf30d36f54cee1499cc9f28d
+  languageName: node
+  linkType: hard
+
+"hookable@npm:^5.1.0":
+  version: 5.1.1
+  resolution: "hookable@npm:5.1.1"
+  checksum: 802bab132be395680c6eca928e8b2f84b9efbdf3f86278312bc05e28aff937a34037b350d0c413939bba144f332266f07006a2ba80b3f0b43991d9e57657e91e
   languageName: node
   linkType: hard
 
@@ -15063,7 +15083,7 @@ __metadata:
     "@types/chai": ^4.3.0
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.18.1
+    "@types/node": ^14.18.2
     "@types/object-hash": ^2
     chai: ^4.3.4
     esbuild: ^0.14.6
@@ -15114,7 +15134,7 @@ __metadata:
     globby: ^11.0.4
     h3: ^0.3.8
     hash-sum: ^2.0.0
-    hookable: ^5.0.0
+    hookable: ^5.1.0
     ignore: ^5.2.0
     mlly: ^0.3.16
     murmurhash-es: ^0.1.1

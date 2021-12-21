@@ -37,7 +37,7 @@
     "@types/chai": "^4.3.0",
     "@types/jsdom": "^16",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^14.18.1",
+    "@types/node": "^14.18.2",
     "@types/object-hash": "^2",
     "chai": "^4.3.4",
     "esbuild": "^0.14.6",
