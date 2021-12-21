@@ -2828,7 +2828,7 @@ __metadata:
     gzip-size: ^7.0.0
     h3: ^0.3.8
     hasha: ^5.2.2
-    hookable: ^5.1.0
+    hookable: ^5.1.1
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
     jiti: ^1.12.9
@@ -11705,7 +11705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hookable@npm:^5.1.0":
+"hookable@npm:^5.1.1":
   version: 5.1.1
   resolution: "hookable@npm:5.1.1"
   checksum: 802bab132be395680c6eca928e8b2f84b9efbdf3f86278312bc05e28aff937a34037b350d0c413939bba144f332266f07006a2ba80b3f0b43991d9e57657e91e
@@ -15134,7 +15134,7 @@ __metadata:
     globby: ^11.0.4
     h3: ^0.3.8
     hash-sum: ^2.0.0
-    hookable: ^5.1.0
+    hookable: ^5.1.1
     ignore: ^5.2.0
     mlly: ^0.3.16
     murmurhash-es: ^0.1.1
