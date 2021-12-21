@@ -35,5 +35,5 @@ export async function setupAutoImports () {
     autoImports.push({ name: 'useNuxt2Meta', as: 'useNuxt2Meta', from: '#app' })
   })
 
-  await installModule(nuxt, autoImports)
+  await installModule(autoImports)
 }

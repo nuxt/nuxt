@@ -1,5 +1,7 @@
 import { createRequire } from 'module'
-import { defineNuxtModule, installModule, checkNuxtCompatibilityIssues } from '@nuxt/kit'
+import { defineNuxtModule, installModule, checkNuxtCompatibility, nuxtCtx } from '@nuxt/kit'
+import type { NuxtModule } from '@nuxt/schema'
+import { NuxtCompatibility } from '@nuxt/schema/src/types/compatibility'
 import type { BridgeConfig, ScriptSetupOptions } from '../types'
 import { setupNitroBridge } from './nitro'
 import { setupAppBridge } from './app'
@@ -12,8 +14,10 @@ import { setupTranspile } from './transpile'
 import { setupScriptSetup } from './setup'
 
 export default defineNuxtModule({
-  name: 'nuxt-bridge',
-  configKey: 'bridge',
+  meta: {
+    name: 'nuxt-bridge',
+    configKey: 'bridge'
+  },
   defaults: {
     nitro: true,
     vite: false,
@@ -22,7 +26,7 @@ export default defineNuxtModule({
     transpile: true,
     scriptSetup: true,
     autoImports: true,
-    constraints: true,
+    compatibility: true,
     meta: null,
     // TODO: Remove from 2.16
     postcss8: true,
@@ -31,6 +35,11 @@ export default defineNuxtModule({
   } as BridgeConfig,
   async setup (opts, nuxt) {
     const _require = createRequire(import.meta.url)
+
+    // Allow using kit compasables in all modules
+    if (!nuxtCtx.use()) {
+      nuxtCtx.set(nuxt)
+    }
 
     if (opts.nitro) {
       await setupNitroBridge()
@@ -51,11 +60,11 @@ export default defineNuxtModule({
       await setupAutoImports()
     }
     if (opts.vite) {
-      const viteModule = await import('./vite/module').then(r => r.default || r)
-      await installModule(nuxt, viteModule)
+      const viteModule = await import('./vite/module').then(r => r.default || r) as NuxtModule
+      await installModule(viteModule)
     }
     if (opts.postcss8) {
-      await installModule(nuxt, _require.resolve('@nuxt/postcss8'))
+      await installModule(_require.resolve('@nuxt/postcss8'))
     }
     if (opts.typescript) {
       await setupTypescript()
@@ -66,12 +75,12 @@ export default defineNuxtModule({
     if (opts.transpile) {
       setupTranspile()
     }
-    if (opts.constraints) {
-      nuxt.hook('modules:done', (moduleContainer: any) => {
+    if (opts.compatibility) {
+      nuxt.hook('modules:done', async (moduleContainer: any) => {
         for (const [name, m] of Object.entries(moduleContainer.requiredModules || {})) {
-          const requires = (m as any)?.handler?.meta?.requires
-          if (requires) {
-            const issues = checkNuxtCompatibilityIssues(requires, nuxt)
+          const compat = ((m as any)?.handler?.meta?.compatibility || {}) as NuxtCompatibility
+          if (compat) {
+            const issues = await checkNuxtCompatibility(compat, nuxt)
             if (issues.length) {
               console.warn(`[bridge] Detected module incompatibility issues for \`${name}\`:\n` + issues.toString())
             }

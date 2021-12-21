@@ -6,6 +6,7 @@ import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
 import type { AutoImport, AutoImportSource } from './imports'
 import type { NuxtConfig, NuxtOptions } from './config'
 import type { Component, ComponentsDir, ScanDir, ComponentsOptions } from './components'
+import { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
 
 type HookResult = Promise<void> | void
 
@@ -39,6 +40,9 @@ export type NuxtPage = {
 }
 
 export interface NuxtHooks {
+  // Kit
+  'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
+
   // nuxt3
   'app:resolve': (app: NuxtApp) => HookResult
   'app:templates': (app: NuxtApp) => HookResult

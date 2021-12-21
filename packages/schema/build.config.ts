@@ -26,6 +26,6 @@ export default defineBuildConfig({
     'vite',
     // Implicit
     '@vue/compiler-core',
-    '@vue/shared ',
+    '@vue/shared'
   ]
 })

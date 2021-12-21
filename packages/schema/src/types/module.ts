@@ -1,25 +1,6 @@
 import { NuxtHooks } from './hooks'
-import type { Nuxt, NuxtTemplate } from "./nuxt";
-
-
-export interface NuxtCompatibilityConstraints {
-  /**
-   * Required nuxt version. for example, `^2.14.0` or `>=3.0.0-27219851.6e49637`.
-   */
-  nuxt?: string
-}
-
-export interface NuxtCompatibilityIssue {
-  name: string
-  message: string
-}
-
-export interface NuxtCompatibilityIssues extends Array<NuxtCompatibilityIssue> {
-  /**
-   * Return formatted error message
-   */
-  toString(): string
-}
+import type { Nuxt, NuxtTemplate } from "./nuxt"
+import type { NuxtCompatibility } from './compatibility'
 
 export interface ModuleMeta {
   /** Module name */
@@ -35,9 +16,9 @@ export interface ModuleMeta {
   configKey?: string
 
   /**
-   * Semver constraints for the versions of Nuxt or features this module are supported.
+   * Constraints for the versions of Nuxt or features this module requires
    */
-  requires?: NuxtCompatibilityConstraints
+  compatibility?: NuxtCompatibility
 
   [key: string]: any
 }
@@ -45,32 +26,21 @@ export interface ModuleMeta {
 /** The options received  */
 export type ModuleOptions = Record<string, any>
 
-/** A pre-kit Nuxt module */
-export interface LegacyNuxtModule {
-  (this: ModuleContainer, inlineOptions?: ModuleOptions): void | Promise<void>
+/** Input module passed to defineNuxtModule */
+export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
   meta?: ModuleMeta
-}
-
-/** A Nuxt module definition */
-export interface NuxtModule<T extends ModuleOptions = any> extends ModuleMeta {
-  defaults?: T
-  setup?: (this: null, resolvedOptions: T, nuxt: Nuxt) => void | Promise<void>
+  defaults?: T | ((nuxt: Nuxt) => T)
+  schema?: T
   hooks?: Partial<NuxtHooks>
+  setup?: (this: void, resolvedOptions: T, nuxt: Nuxt) => void | Promise<void>
 }
 
-export type ModuleSrc = string | NuxtModule | LegacyNuxtModule
-
-export interface ModuleInstallOptionsObj {
-  src: ModuleSrc,
-  meta: ModuleMeta
-  options: ModuleOptions
-  handler: LegacyNuxtModule
+/** Nuxt modules are always a simple function */
+export interface NuxtModule<T extends ModuleOptions = ModuleOptions> {
+  (this: void, inlineOptions: T, nuxt: Nuxt): void | Promise<void>
+  getOptions?: (inlineOptions?: T, nuxt?: Nuxt) => Promise<T>
+  getMeta?: () => Promise<ModuleMeta>
 }
-
-export type ModuleInstallOptions =
-  ModuleSrc |
-  [ModuleSrc, ModuleOptions?] |
-  Partial<ModuleInstallOptionsObj>
 
 /**
 * Legacy ModuleContainer for backwards compatibility with Nuxt 2 module format.
@@ -104,8 +74,8 @@ export interface ModuleContainer {
   extendRoutes(fn): void
 
   /** Registers a module */
-  requireModule(nuxt: Nuxt, opts: any): Promise<void>
+  requireModule(installOptions: any, opts: any): Promise<void>
 
   /** Registers a module */
-  addModule(nuxt: Nuxt, opts: any): Promise<void>
+  addModule(installOptions: any, opts: any): Promise<void>
 }

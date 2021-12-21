@@ -6,19 +6,44 @@ import { addTemplate } from '../template'
 import { addServerMiddleware } from '../server'
 import { isNuxt2 } from '../compatibility'
 import { addPluginTemplate } from '../plugin'
-
+import { useNuxt } from '../context'
 import { installModule } from './install'
 
-export function createModuleContainer (nuxt: Nuxt): ModuleContainer {
-  return <ModuleContainer>{
+const MODULE_CONTAINER_KEY = '__module_container__'
+
+export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
+  if (nuxt[MODULE_CONTAINER_KEY]) {
+    return nuxt[MODULE_CONTAINER_KEY]
+  }
+
+  async function requireModule (moduleOpts) {
+    let src, inlineOptions
+    if (typeof moduleOpts === 'string') {
+      src = moduleOpts
+    } else if (Array.isArray(moduleOpts)) {
+      [src, inlineOptions] = moduleOpts
+    } else if (typeof moduleOpts === 'object') {
+      if (moduleOpts.src || moduleOpts.handler) {
+        src = moduleOpts.src || moduleOpts.handler
+        inlineOptions = moduleOpts.options
+      } else {
+        src = moduleOpts
+      }
+    } else {
+      src = moduleOpts
+    }
+    await installModule(src, inlineOptions, nuxt)
+  }
+
+  nuxt[MODULE_CONTAINER_KEY] = <ModuleContainer>{
     nuxt,
     options: nuxt.options,
 
     ready () { return Promise.resolve() },
     addVendor () {},
 
-    requireModule: installModule,
-    addModule: installModule,
+    requireModule,
+    addModule: requireModule,
 
     addServerMiddleware,
 
@@ -73,4 +98,6 @@ export function createModuleContainer (nuxt: Nuxt): ModuleContainer {
       }
     }
   }
+
+  return nuxt[MODULE_CONTAINER_KEY]
 }

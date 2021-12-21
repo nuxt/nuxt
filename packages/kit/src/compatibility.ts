@@ -1,12 +1,14 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
-import type { Nuxt, NuxtCompatibilityConstraints, NuxtCompatibilityIssues } from '@nuxt/schema'
+import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
 /**
  * Check version constraints and return incompatibility issues as an array
  */
-export function checkNuxtCompatibilityIssues (constraints: NuxtCompatibilityConstraints, nuxt: Nuxt = useNuxt()): NuxtCompatibilityIssues {
+export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<NuxtCompatibilityIssues> {
   const issues: NuxtCompatibilityIssues = []
+
+  // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
     const nuxtSemanticVersion = nuxtVersion.split('-').shift()
@@ -17,15 +19,39 @@ export function checkNuxtCompatibilityIssues (constraints: NuxtCompatibilityCons
       })
     }
   }
-  issues.toString = () => issues.map(issue => ` - [${issue.name}] ${issue.message}`).join('\n')
+
+  // Bridge compatibility check
+  if (isNuxt2(nuxt)) {
+    const bridgeRequirement = constraints?.bridge
+    const hasBridge = !!(nuxt.options as any).bridge
+    if (bridgeRequirement === true && !hasBridge) {
+      issues.push({
+        name: 'bridge',
+        message: 'Nuxt bridge is required'
+      })
+    } else if (bridgeRequirement === false && hasBridge) {
+      issues.push({
+        name: 'bridge',
+        message: 'Nuxt bridge is not supported'
+      })
+    }
+  }
+
+  // Allow extending compatibility checks
+  await nuxt.callHook('kit:compatibility', constraints, issues)
+
+  // Issues formatter
+  issues.toString = () =>
+    issues.map(issue => ` - [${issue.name}] ${issue.message}`).join('\n')
+
   return issues
 }
 
 /**
  * Check version constraints and throw a detailed error if has any, otherwise returns true
  */
-export function ensureNuxtCompatibility (constraints: NuxtCompatibilityConstraints, nuxt: Nuxt = useNuxt()): true {
-  const issues = checkNuxtCompatibilityIssues(constraints, nuxt)
+export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
+  const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
     throw new Error('Nuxt compatibility issues found:\n' + issues.toString())
   }
@@ -35,8 +61,9 @@ export function ensureNuxtCompatibility (constraints: NuxtCompatibilityConstrain
 /**
  * Check version constraints and return true if passed, otherwise returns false
  */
-export function hasNuxtCompatibility (constraints: NuxtCompatibilityConstraints, nuxt: Nuxt = useNuxt()) {
-  return !checkNuxtCompatibilityIssues(constraints, nuxt).length
+export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<boolean> {
+  const issues = await checkNuxtCompatibility(constraints, nuxt)
+  return !issues.length
 }
 
 /**

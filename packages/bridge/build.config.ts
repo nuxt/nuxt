@@ -8,6 +8,7 @@ export default defineBuildConfig({
   ],
   externals: [
     'webpack',
-    'vite'
+    'vite',
+    'vue-meta'
   ]
 })

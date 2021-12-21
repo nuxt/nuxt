@@ -15,7 +15,7 @@ export interface BridgeConfig {
   scriptSetup: boolean | ScriptSetupOptions
   autoImports: boolean
   transpile: boolean
-  constraints: boolean
+  compatibility: boolean
   postcss8: boolean
   resolve: boolean
   typescript: boolean

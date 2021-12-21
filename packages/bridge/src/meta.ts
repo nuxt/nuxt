@@ -29,5 +29,5 @@ export const setupMeta = async (opts: SetupMetaOptions) => {
   const runtimeDir = resolve(distDir, 'runtime/meta')
   nuxt.options.alias['#meta'] = runtimeDir
 
-  await installModule(nuxt, metaModule)
+  await installModule(metaModule)
 }
