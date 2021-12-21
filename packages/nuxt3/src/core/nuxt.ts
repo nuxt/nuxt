@@ -67,7 +67,8 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   for (const m of modulesToInstall) {
-    await installModule(m, nuxt)
+    const inlineOptions = Array.isArray(m) ? m[1] : {}
+    await installModule(m, inlineOptions, nuxt)
   }
 
   await nuxt.callHook('modules:done', { nuxt } as ModuleContainer)
