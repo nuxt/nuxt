@@ -27,16 +27,16 @@
     "@nuxt/ui-assets": "*",
     "@types/html-minifier": "^4.0.1",
     "@types/lodash.template": "^4.5.0",
-    "critters": "^0.0.14",
+    "critters": "^0.0.15",
     "globby": "^11.0.4",
     "html-minifier": "^4.0.0",
     "jiti": "^1.12.9",
     "lodash.template": "^4.5.0",
     "scule": "^0.2.1",
     "upath": "^2.0.1",
-    "vite": "^2.6.14",
-    "vite-plugin-windicss": "^1.5.1",
-    "windicss": "^3.2.1"
+    "vite": "^2.7.6",
+    "vite-plugin-windicss": "^1.6.1",
+    "windicss": "^3.4.0"
   },
   "publishConfig": {
     "access": "public"
