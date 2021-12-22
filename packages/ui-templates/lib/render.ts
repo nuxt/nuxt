@@ -2,7 +2,6 @@ import { promises as fsp } from 'fs'
 import { resolve, join, dirname, basename } from 'upath'
 import type { Plugin } from 'vite'
 import Critters from 'critters'
-import glob from 'globby'
 import template from 'lodash.template'
 import htmlMinifier from 'html-minifier'
 import { camelCase } from 'scule'
@@ -19,7 +18,8 @@ export const RenderPlugin = () => {
     async writeBundle () {
       const distDir = r('dist')
       const critters = new Critters({ path: distDir })
-      const htmlFiles = await glob(r('dist/templates/**/*.html'))
+      const globby = await import('globby').then(r => r.globby)
+      const htmlFiles = await globby(r('dist/templates/**/*.html'))
 
       const templateExports = []
 

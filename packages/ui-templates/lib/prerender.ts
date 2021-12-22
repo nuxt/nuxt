@@ -1,11 +1,11 @@
 import { resolve, join } from 'path'
 import { promises as fsp } from 'fs'
-import glob from 'globby'
+import { globby } from 'globby'
 
 const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
 
 async function main () {
-  const templates = await glob(r('dist/templates/*.mjs'))
+  const templates = await globby(r('dist/templates/*.mjs'))
   for (const file of templates) {
     const { template } = await import(file)
     const updated = template({
