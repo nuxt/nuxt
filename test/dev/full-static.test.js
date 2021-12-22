@@ -71,6 +71,30 @@ describe('full-static', () => {
     })
   })
 
+  describe('payload-path hook', () => {
+    beforeAll(
+      async () =>
+        await generateAndStartServer({
+          hooks: {
+            'vue-renderer:ssr:payload-path': (payload) => {
+              payload.url += '?foo=bar'
+            }
+          }
+        })
+    )
+
+    test('/payload', async () => {
+      const { body: html } = await rp(url('/payload'))
+
+      expect(html).toContain('?foo=bar')
+    })
+
+    // Close server and ask nuxt to stop listening to file changes
+    afterAll(async () => {
+      await server.close()
+    })
+  })
+
   describe('without scripts', () => {
     beforeAll(async () => await generateAndStartServer({ render: { injectScripts: false } }))
 

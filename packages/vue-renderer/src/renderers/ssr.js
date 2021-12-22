@@ -194,11 +194,17 @@ export default class SSRRenderer extends BaseRenderer {
       if (stateScriptKb > 10) {
         const statePath = urlJoin(url, 'state.js')
         const stateUrl = urlJoin(staticAssetsBase, statePath)
-        staticAssets.push({ path: statePath, src: stateScript })
+        const state = { url: stateUrl, path: statePath }
+        await this.serverContext.nuxt.callHook('vue-renderer:ssr:state-path', state, {
+          staticAssetsBase,
+          staticAssets: this.options.generate.staticAssets,
+          url
+        })
+        staticAssets.push({ path: state.path, src: stateScript })
         if (this.options.render.asyncScripts) {
-          APP += `<script defer async src="${stateUrl}"></script>`
+          APP += `<script defer async src="${state.url}"></script>`
         } else {
-          APP += `<script defer src="${stateUrl}"></script>`
+          APP += `<script defer src="${state.url}"></script>`
         }
         preloadScripts.push(stateUrl)
       } else {
@@ -210,10 +216,16 @@ export default class SSRRenderer extends BaseRenderer {
         // Page level payload.js (async loaded for CSR)
         const payloadPath = urlJoin(url, 'payload.js')
         const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
+        const payload = { url: payloadUrl, path: payloadPath }
+        await this.serverContext.nuxt.callHook('vue-renderer:ssr:payload-path', payload, {
+          staticAssetsBase,
+          staticAssets: this.options.generate.staticAssets,
+          url
+        })
         const routePath = withoutTrailingSlash(decode(parsePath(url).pathname))
         const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
-        staticAssets.push({ path: payloadPath, src: payloadScript })
-        preloadScripts.push(payloadUrl)
+        staticAssets.push({ path: payload.path, src: payloadScript })
+        preloadScripts.push(payload.url)
         // Add manifest preload
         if (this.options.generate.manifest) {
           const manifestUrl = urlJoin(staticAssetsBase, 'manifest.js')
