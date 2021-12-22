@@ -1,47 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
-    <meta charset="utf-8" />
-    <meta
-      content="width=device-width,initial-scale=1.0,minimum-scale=1.0"
-      name="viewport"
-    />
-    <script type="module" src="/styles.ts"></script>
-  </head>
-  <body
-    class="
+
+<head>
+  <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+  <meta charset="utf-8" />
+  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
+  <script type="module" src="/styles.ts"></script>
+</head>
+
+<body class="
       font-sans
       antialiased
       bg-cloud-surface
       dark:bg-sky-darker
       text-sky-darkest
       dark:text-sky-surface
-    "
-  >
+    ">
   <!-- <sprite> -->
-    <div class="min-h-screen md:flex">
-      <div class="flex items-center justify-center w-full md:w-1/2">
-        <div class="max-w-sm m-8">
-          <div class="text-5xl font-bold dark:text-white md:text-15xl">
-            {{ messages.statusCode }}
-          </div>
-          <div class="w-16 h-1 my-3 bg-primary md:my-6"></div>
-          <p
-            class="
+  <div class="min-h-screen md:flex">
+    <div class="flex items-center justify-center w-full md:w-1/2">
+      <div class="max-w-sm m-8">
+        <div class="text-5xl font-bold dark:text-white md:text-15xl">
+          {{ messages.statusCode }}
+        </div>
+        <div class="w-16 h-1 my-3 bg-primary md:my-6"></div>
+        <p class="
               mb-8
               text-2xl
               font-light
               leading-normal
               dark:text-cloud-lighter
               md:text-3xl
-            "
-          >
-            {{ messages.description }}
-          </p>
-          <a
-            href="/"
-            class="
+            ">
+          {{ messages.description }}
+        </p>
+        <a href="/" class="
               px-4
               py-3
               font-bold
@@ -51,22 +44,20 @@
               bg-primary
               hover:bg-primary-400
               dark:bg-primary
-            "
-          >
-            {{ messages.backHome }}
-          </a>
-        </div>
+            ">
+          {{ messages.backHome }}
+        </a>
       </div>
-      <div
-        class="
+    </div>
+    <div class="
           relative
           w-full
           pb-full
           md:flex md:pb-0 md:min-h-screen md:w-1/2
-        "
-      >
-        <img src="/assets/images/404.svg" class="object-cover">
-      </div>
+        ">
+      <img src="images/404.svg" class="object-cover">
     </div>
-  </body>
+  </div>
+</body>
+
 </html>
