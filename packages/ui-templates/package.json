@@ -1,0 +1,42 @@
+{
+  "name": "@nuxt/ui-templates",
+  "version": "0.1.5",
+  "repository": "nuxt/ui",
+  "license": "CC-BY-ND-4.0",
+  "exports": {
+    "./templates/*": "./dist/templates/*.mjs",
+    ".": "./dist/index.mjs",
+    "./*": "./dist/*"
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/templates",
+    "dist/index.*"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint --ext .ts,.js .",
+    "test": "yarn lint && yarn build",
+    "prepack": "yarn build",
+    "release": "yarn test && standard-version && npm publish && git push --follow-tags",
+    "optimize-assets": "npx svgo public/assets/**/*.svg",
+    "prerender": "yarn build && jiti ./lib/prerender"
+  },
+  "devDependencies": {
+    "@nuxt/ui-assets": "^0.1.0",
+    "@types/html-minifier": "^4.0.1",
+    "@types/lodash.template": "^4.5.0",
+    "critters": "^0.0.14",
+    "globby": "^11.0.4",
+    "html-minifier": "^4.0.0",
+    "lodash.template": "^4.5.0",
+    "scule": "^0.2.1",
+    "standard-version": "^9.3.2",
+    "upath": "^2.0.1",
+    "vite": "^2.6.14",
+    "vite-plugin-windicss": "^1.5.1",
+    "windicss": "^3.2.1"
+  }
+}

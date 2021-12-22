@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/petite-vue" defer init></script>
+    <script type="module" src="/styles.ts"></script>
+  </head>
+  <body v-scope='{{ data }}'>
+    <ul>
+      <li v-for="name in templateNames">
+        <a :href="`/templates/${name}`">{{ name }}</a>
+      </li>
+    </ul>
+  </body>
+</html>
