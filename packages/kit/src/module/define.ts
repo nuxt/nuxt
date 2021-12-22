@@ -13,6 +13,13 @@ import { templateUtils, compileTemplate } from '../internal/template'
  * any hooks that are provided, and calling an optional setup function for full control.
  */
 export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: ModuleDefinition<OptionsT>): NuxtModule<OptionsT> {
+  // Legacy format. TODO: Remove in RC
+  if (typeof definition === 'function') {
+    // @ts-ignore
+    definition = definition(useNuxt())
+    consola.warn('Module definition as function is deprecated and will be removed in the future versions', definition)
+  }
+
   // Normalize definition and meta
   if (!definition.meta) { definition.meta = {} }
   if (!definition.meta.configKey) {
