@@ -26,6 +26,7 @@ export const useLocales = () => {
     'en-US',
     'en-GB',
     'ko-KR',
+    'zh-CN',
     'ar-EG',
     'fa-IR',
     'ja-JP-u-ca-japanese'
@@ -38,6 +39,6 @@ export const useLocales = () => {
 
 // Using Intl.DateTimeFormat for language-sensitive date and time formatting
 // Learn more: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
-export const useLocaleDate = (date: Ref<Date>, locale = useLocale()) => {
-  return computed(() => new Intl.DateTimeFormat(locale.value).format(date.value))
+export const useLocaleDate = (date: Ref<Date> | Date, locale = useLocale()) => {
+  return computed(() => new Intl.DateTimeFormat(locale.value, { dateStyle: 'full' }).format(unref(date)))
 }

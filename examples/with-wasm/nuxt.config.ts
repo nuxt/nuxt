@@ -5,5 +5,8 @@ export default defineNuxtConfig({
     experiments: {
       wasm: true
     }
-  }
+  },
+  modules: [
+    '@nuxt/ui'
+  ]
 })

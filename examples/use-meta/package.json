@@ -1,12 +1,13 @@
 {
   "name": "example-use-meta",
   "private": true,
-  "devDependencies": {
-    "nuxt3": "latest"
-  },
   "scripts": {
-    "dev": "nuxi dev",
     "build": "nuxi build",
+    "dev": "nuxi dev",
     "start": "node .output/server"
+  },
+  "devDependencies": {
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
+    "nuxt3": "latest"
   }
 }

@@ -1,17 +1,30 @@
-<script setup>
+<script setup lang="ts">
+// see ../compoables/locale.ts for the implementation
 const locales = useLocales()
 const locale = useLocale()
 const date = useLocaleDate(new Date('2016-10-26') /* NUXT_BIRTHDAY */)
 </script>
 
 <template>
-  <div>
-    <h2>Nuxt birthday: {{ date }}</h2>
-    <label for="locale-chooser">Locale: </label>
-    <select id="locale-chooser" v-model="locale">
+  <NuxtExampleLayout :show-tips="true" example="locale">
+    <h1 class="text-xl opacity-50">
+      Nuxt birthday
+    </h1>
+    <p class="text-4xl">
+      {{ date }}
+    </p>
+    <div class="mt-4" />
+    <label for="locale-chooser">Preview a different locale</label>
+    <select id="locale-chooser" v-model="locale" class="m-auto w-50 border n-border-base rounded p-1">
       <option v-for="l of locales" :key="l" :value="l">
         {{ l }}
       </option>
     </select>
-  </div>
+
+    <template #tips>
+      <div>
+        You can right click to "View Page Source" and see that Nuxt renders the correct date in SSR based on visitor's locale.
+      </div>
+    </template>
+  </NuxtExampleLayout>
 </template>

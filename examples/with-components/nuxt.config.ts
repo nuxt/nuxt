@@ -1,7 +1,9 @@
 import { defineNuxtConfig } from 'nuxt3'
 
 export default defineNuxtConfig({
-  vite: false,
+  modules: [
+    '@nuxt/ui'
+  ],
   components: {
     dirs: [
       '~/components',

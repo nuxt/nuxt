@@ -1,7 +1,8 @@
 import { defineNuxtConfig } from 'nuxt3'
 
 export default defineNuxtConfig({
-  buildModules: [
-    '~/modules/pages'
+  modules: [
+    '~/modules/pages',
+    '@nuxt/ui'
   ]
 })

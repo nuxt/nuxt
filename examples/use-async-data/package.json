@@ -1,12 +1,13 @@
 {
   "name": "example-use-async-data",
   "private": true,
-  "devDependencies": {
-    "nuxt3": "latest"
-  },
   "scripts": {
-    "dev": "nuxi dev",
     "build": "nuxi build",
-    "start": "node .output/server/index.mjs"
+    "dev": "nuxi dev",
+    "start": "nuxi preview"
+  },
+  "devDependencies": {
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
+    "nuxt3": "latest"
   }
 }
