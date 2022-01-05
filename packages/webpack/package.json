@@ -16,11 +16,11 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.16.5",
+    "@babel/core": "^7.16.7",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0",
     "@vue/babel-preset-jsx": "^1.2.4",
-    "autoprefixer": "^10.4.0",
+    "autoprefixer": "^10.4.1",
     "babel-loader": "^8.2.3",
     "consola": "^2.15.3",
     "css-loader": "^6.5.1",
@@ -32,7 +32,7 @@
     "glob": "^7.2.0",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
-    "memfs": "^3.4.0",
+    "memfs": "^3.4.1",
     "mini-css-extract-plugin": "^2.4.5",
     "mlly": "^0.3.16",
     "pathe": "^0.2.0",
