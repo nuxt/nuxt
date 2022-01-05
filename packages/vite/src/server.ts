@@ -68,6 +68,10 @@ export async function buildServer (ctx: ViteBuildContext) {
         }
       }
     },
+    server: {
+      // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
+      preTransformRequests: false
+    },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
       vuePlugin(ctx.config.vue),

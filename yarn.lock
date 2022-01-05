@@ -2504,7 +2504,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.2.21
     unplugin-vue2-script-setup: 0.8.3
-    vite: ^2.7.6
+    vite: ^2.7.10
     vite-plugin-vue2: ^1.9.0
     vue: ^2
     vue-router: ^3
@@ -3168,7 +3168,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.5.2
     ufo: ^0.7.9
     unbuild: latest
-    vite: ^2.7.6
+    vite: ^2.7.10
     vue: 3.2.26
   peerDependencies:
     vue: 3.2.26
@@ -21505,9 +21505,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.7.6":
-  version: 2.7.6
-  resolution: "vite@npm:2.7.6"
+"vite@npm:^2.7.10":
+  version: 2.7.10
+  resolution: "vite@npm:2.7.10"
   dependencies:
     esbuild: ^0.13.12
     fsevents: ~2.3.2
@@ -21530,7 +21530,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 7aa110a3a5de9f9a29cf8cf461cf5dd2c7000d2a7abacdbe40969a215339492bee93d5eedb51060d13f0b6504511dd0d9e65b1dee4b0cf9ca5c277b046733312
+  checksum: 1757108547ca34bd01a8ee3973cb04b484492c9e5690fc75f54bbcbde5965ab6e0a5b8355c336adf0a9117aa0fdae3053af3aafa9e5eb783282fffa948cfbe11
   languageName: node
   linkType: hard
 
