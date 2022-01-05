@@ -5,7 +5,9 @@ import { distDir } from '../dirs'
 import type { MetaObject } from './runtime'
 
 export default defineNuxtModule({
-  name: 'meta',
+  meta: {
+    name: 'meta'
+  },
   defaults: {
     charset: 'utf-8',
     viewport: 'width=device-width, initial-scale=1'

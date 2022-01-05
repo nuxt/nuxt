@@ -5,7 +5,9 @@ import { distDir } from '../dirs'
 import { resolveLayouts, resolvePagesRoutes, addComponentToRoutes } from './utils'
 
 export default defineNuxtModule({
-  name: 'router',
+  meta: {
+    name: 'router'
+  },
   setup (_options, nuxt) {
     const pagesDir = resolve(nuxt.options.srcDir, nuxt.options.dir.pages)
     const runtimeDir = resolve(distDir, 'pages/runtime')

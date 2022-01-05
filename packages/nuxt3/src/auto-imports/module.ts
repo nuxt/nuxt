@@ -8,8 +8,10 @@ import { toExports, toImports } from './utils'
 import { AutoImportContext, createAutoImportContext, updateAutoImportContext } from './context'
 
 export default defineNuxtModule<AutoImportsOptions>({
-  name: 'auto-imports',
-  configKey: 'autoImports',
+  meta: {
+    name: 'auto-imports',
+    configKey: 'autoImports'
+  },
   defaults: {
     sources: Nuxt3AutoImports,
     global: false,

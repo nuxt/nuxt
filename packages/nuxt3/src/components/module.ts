@@ -10,8 +10,10 @@ const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val ==
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
 
 export default defineNuxtModule<ComponentsOptions>({
-  name: 'components',
-  configKey: 'components',
+  meta: {
+    name: 'components',
+    configKey: 'components'
+  },
   defaults: {
     dirs: ['~/components']
   },
