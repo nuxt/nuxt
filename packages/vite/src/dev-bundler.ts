@@ -3,7 +3,6 @@ import { existsSync } from 'fs'
 import { resolve } from 'pathe'
 import * as vite from 'vite'
 import { ExternalsOptions, isExternal as _isExternal, ExternalsDefaults } from 'externality'
-import { parseURL } from 'ufo'
 import { hashId, uniq } from './utils'
 
 export interface TransformChunk {
@@ -70,11 +69,12 @@ async function transformRequest (opts: TransformOptions, id: string) {
     }
   }
 
-  const { pathname } = parseURL(id)
-
-  if (await isExternal(opts, pathname)) {
+  // Vite will add ?v=123 to bypass browser cache
+  // Remove for externals
+  const withoutVersionQuery = id.replace(/\?v=\w+$/, '')
+  if (await isExternal(opts, withoutVersionQuery)) {
     return {
-      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${(pathToFileURL(pathname))}').then(r => { exports.default = r.default; ssrExportAll(r) }).catch(e => { console.error(e); throw new Error('[vite dev] Error loading external "${id}".') })`,
+      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => import('${(pathToFileURL(withoutVersionQuery))}').then(r => { exports.default = r.default; ssrExportAll(r) }).catch(e => { console.error(e); throw new Error('[vite dev] Error loading external "${id}".') })`,
       deps: [],
       dynamicDeps: []
     }
