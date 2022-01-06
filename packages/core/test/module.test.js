@@ -431,6 +431,28 @@ describe('core: module', () => {
     await expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
   })
 
+  test('should prevent adding same handler to modules and buildModules', async () => {
+    const handler = jest.fn(() => true)
+    handler.meta = {
+      name: 'moduleTest'
+    }
+
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {
+        ...defaultOptions,
+        buildModules: [handler],
+        _start: true
+      }
+    })
+
+    const result = await module.addModule({ handler }, true)
+
+    expect(result).toBeUndefined()
+    expect(handler).toBeCalledTimes(0)
+    expect(module.requiredModules.moduleTest).toBeUndefined()
+  })
+
   test('should prevent multiple adding when requireOnce is enabled', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
@@ -452,6 +474,7 @@ describe('core: module', () => {
     expect(handler).toBeCalledTimes(1)
     expect(module.requiredModules.moduleTest).toBeDefined()
   })
+
 
   test('should prevent adding not installed buildModules', async () => {
     const module = new ModuleContainer({

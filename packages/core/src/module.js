@@ -149,7 +149,7 @@ export default class ModuleContainer {
     }
 
     // Prevent adding buildModules-listed entries in production
-    if (this.options.buildModules.includes(handler) && this.options._start) {
+    if (handler && this.options.buildModules.includes(handler) && this.options._start) {
       return
     }
 
