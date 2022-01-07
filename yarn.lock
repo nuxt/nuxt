@@ -3180,7 +3180,7 @@ __metadata:
     "@types/jsdom": ^16.2.14
     "@types/node-fetch": ^3.0.2
     "@types/serve-static": ^1.13.10
-    "@vercel/nft": ^0.17.1
+    "@vercel/nft": ^0.17.2
     archiver: ^5.3.0
     chalk: ^5.0.0
     chokidar: ^3.5.2
@@ -3587,7 +3587,7 @@ __metadata:
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.4.1
-    mini-css-extract-plugin: ^2.4.5
+    mini-css-extract-plugin: ^2.4.6
     mlly: ^0.3.16
     pathe: ^0.2.0
     pify: ^5.0.0
@@ -5040,10 +5040,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.21.2":
-  version: 0.21.2
-  resolution: "@unocss/reset@npm:0.21.2"
-  checksum: cf227f85f612e24011eefca0397b698c79bbff9a8e3ad3e8b6545f867bdadbe12b2f9f93b15dacfcb4f9bfba53622abf96353650bd808c6f4d0fcc3a130f57a5
+"@unocss/reset@npm:^0.22.0":
+  version: 0.22.0
+  resolution: "@unocss/reset@npm:0.22.0"
+  checksum: 2d33e625ee37306fc461591af1e1bfe31b0e9c99acbdd59b2d0f1f16b86c0c257ee280f54dcf6d39223ceaf610c2d0840a143b5e506cc59e5fffa8e21504485f
   languageName: node
   linkType: hard
 
@@ -5082,16 +5082,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.17.1":
-  version: 0.17.1
-  resolution: "@vercel/nft@npm:0.17.1"
+"@vercel/nft@npm:^0.17.2":
+  version: 0.17.2
+  resolution: "@vercel/nft@npm:0.17.2"
   dependencies:
     "@mapbox/node-pre-gyp": ^1.0.5
     acorn: ^8.6.0
     bindings: ^1.4.0
     estree-walker: 2.0.2
     glob: ^7.1.3
-    graceful-fs: ^4.1.15
+    graceful-fs: ^4.2.9
     micromatch: ^4.0.2
     mkdirp: ^0.5.1
     node-gyp-build: ^4.2.2
@@ -5100,7 +5100,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: 77e4cea890d760845bd7060bb02ed02ebe05ca64e3809521dd04d6a535181e3ef6e2a81a293c5bac978095ed7a6885ed0453381d3a7f59a6bb90b63ae4c52383
+  checksum: 251a47a5efaf1312b424467c23eeae170ca8ada6c7a65f315f19cd73372877f3bf2ad3cc5388d6761bc73d855b12c77982effb488c42237f294e8a187c5cb94b
   languageName: node
   linkType: hard
 
@@ -12347,6 +12347,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graceful-fs@npm:^4.2.9":
+  version: 4.2.9
+  resolution: "graceful-fs@npm:4.2.9"
+  checksum: 68ea4e07ff2c041ada184f9278b830375f8e0b75154e3f080af6b70f66172fabb4108d19b3863a96b53fc068a310b9b6493d86d1291acc5f3861eb4b79d26ad6
+  languageName: node
+  linkType: hard
+
 "growl@npm:1.10.5":
   version: 1.10.5
   resolution: "growl@npm:1.10.5"
@@ -14925,14 +14932,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^2.4.5":
-  version: 2.4.5
-  resolution: "mini-css-extract-plugin@npm:2.4.5"
+"mini-css-extract-plugin@npm:^2.4.6":
+  version: 2.4.6
+  resolution: "mini-css-extract-plugin@npm:2.4.6"
   dependencies:
     schema-utils: ^4.0.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 09ad56ac33fd960c6a645a2a18b0fee22c34c8e48e91fc48acc5ac3b9c101a5e9ea50d168b94c9fcdf571265271f6e4dd4fea835b2242907d4311b170aff322f
+  checksum: 7eb3dcbf1e46d5a9cdb6ed1c2b687f6ad5a739e420208511b01f59d45d69328fa7ba57aa44c9b3f7beff8e27cd9fe5188ecd636b4c33f9199ea3bdb9f4a5218e
   languageName: node
   linkType: hard
 
@@ -16070,7 +16077,7 @@ __metadata:
     "@types/mocha": ^9.0.0
     "@types/node": ^14.18.5
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.21.2
+    "@unocss/reset": ^0.22.0
     chai: ^4.3.4
     esbuild: ^0.14.10
     eslint: ^8.6.0
