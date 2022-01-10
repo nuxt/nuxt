@@ -59,7 +59,7 @@ const createNext = ssrContext => (opts) => {
   }
   let fullPath = withQuery(opts.path, opts.query)
   const $config = ssrContext.nuxt.config || {}
-  const routerBase = ($config._app && $config._app.basePath) || '<%= router.base %>'
+  const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
   if (!fullPath.startsWith('http') && (routerBase !== '/' && !fullPath.startsWith(routerBase))) {
     fullPath = joinURL(routerBase, fullPath)
   }
@@ -102,7 +102,7 @@ export default async (ssrContext) => {
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
   if (ssrContext.nuxt.config._app) {
-    __webpack_public_path__ = joinURL(ssrContext.nuxt.config._app.cdnURL, ssrContext.nuxt.config._app.assetsPath)
+    __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL, ssrContext.nuxt.config.app.buildAssetsPath)
   }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, ssrContext.runtimeConfig.private)

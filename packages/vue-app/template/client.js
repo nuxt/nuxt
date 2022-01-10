@@ -50,7 +50,7 @@ const NUXT = window.<%= globals.context %> || {}
 
 const $config = NUXT.config || {}
 if ($config._app) {
-  __webpack_public_path__ = urlJoin($config._app.cdnURL, $config._app.assetsPath)
+  __webpack_public_path__ = urlJoin($config.app.cdnURL, $config.app.buildAssetsPath)
 }
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>

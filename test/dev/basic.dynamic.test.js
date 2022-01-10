@@ -55,9 +55,9 @@ describe('basic ssr', () => {
 
     expect(window.document.body.innerHTML).toContain('<h1>Index page</h1>')
 
-    expect(window.__NUXT__.config._app.basePath).toBe('/path/')
-    expect(window.__NUXT__.config._app.cdnURL).toBe('https://cdn.nuxtjs.org/')
-    expect(window.__NUXT__.config._app.assetsPath).toBe('/')
+    expect(window.__NUXT__.config.app.basePath).toBe('/path/')
+    expect(window.__NUXT__.config.app.cdnURL).toBe('https://cdn.nuxtjs.org/')
+    expect(window.__NUXT__.config.app.buildAssetsPath).toBe('/')
 
     expect(fetchCount).toBeGreaterThan(0)
   })

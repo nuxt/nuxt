@@ -456,12 +456,13 @@ export function getNuxtConfig (_options) {
 
   options.app = defu(options.app, {
     basePath: options.router.base,
-    assetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
+    buildAssetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
     cdnURL: useCDN ? options.build.publicPath : null
   })
   // Expose app config to $config._app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig._app = options.app
+  Object.assign(options.app, options.publicRuntimeConfig.app)
+  options.publicRuntimeConfig.app = options.app
 
   // Generate staticAssets
   const { staticAssets } = options.generate
@@ -469,7 +470,7 @@ export function getNuxtConfig (_options) {
     staticAssets.version = String(Math.round(Date.now() / 1000))
   }
   if (!staticAssets.base) {
-    staticAssets.base = joinURL(options.app.assetsPath, staticAssets.dir)
+    staticAssets.base = joinURL(options.app.buildAssetsPath, staticAssets.dir)
   }
   if (!staticAssets.versionBase) {
     staticAssets.versionBase = joinURL(staticAssets.base, staticAssets.version)
