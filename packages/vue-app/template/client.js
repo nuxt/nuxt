@@ -49,7 +49,7 @@ let router
 const NUXT = window.<%= globals.context %> || {}
 
 const $config = NUXT.config || {}
-if ($config._app) {
+if ($config.app) {
   __webpack_public_path__ = urlJoin($config.app.cdnURL, $config.app.buildAssetsPath)
 }
 

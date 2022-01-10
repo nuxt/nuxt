@@ -459,7 +459,7 @@ export function getNuxtConfig (_options) {
     buildAssetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
     cdnURL: useCDN ? options.build.publicPath : null
   })
-  // Expose app config to $config._app
+  // Expose app config to $config.app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
   Object.assign(options.app, options.publicRuntimeConfig.app)
   options.publicRuntimeConfig.app = options.app

@@ -101,7 +101,7 @@ export default async (ssrContext) => {
   <% } %>
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
-  if (ssrContext.nuxt.config._app) {
+  if (ssrContext.nuxt.config.app) {
     __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL, ssrContext.nuxt.config.app.buildAssetsPath)
   }
   // Create the app definition and the instance (created for each request)
