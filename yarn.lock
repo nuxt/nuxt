@@ -4501,17 +4501,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.18.5":
-  version: 14.18.5
-  resolution: "@types/node@npm:14.18.5"
-  checksum: 5ad7090e4cd1d7cd9efa4915cc8b4f69503a1d2070b1998a55fce776ae03fef6c0703d6940197af2cd31b3516b41b552d9fced92d2a0837c28b8ed8b5ca0872c
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^15.6.1":
   version: 15.14.9
   resolution: "@types/node@npm:15.14.9"
   checksum: 49f7f0522a3af4b8389aee660e88426490cd54b86356672a1fedb49919a8797c00d090ec2dcc4a5df34edc2099d57fc2203d796c4e7fbd382f2022ccd789eee7
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^16.11.19":
+  version: 16.11.19
+  resolution: "@types/node@npm:16.11.19"
+  checksum: a9ba0cd1e61c8ad50f3fc9c2b37b795bf0286dacb39dcc985da90328abf0c5151dffe9932d20bc9a6a52c3ce7bfc1e5a7c2dc1416480fb84f1c2d70e25caeba0
   languageName: node
   linkType: hard
 
@@ -16208,7 +16208,7 @@ __metadata:
     "@types/chai": ^4.3.0
     "@types/jsdom": ^16
     "@types/mocha": ^9.0.0
-    "@types/node": ^14.18.5
+    "@types/node": ^16.11.19
     "@types/object-hash": ^2
     "@unocss/reset": ^0.22.0
     chai: ^4.3.4
