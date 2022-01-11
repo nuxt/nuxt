@@ -32,7 +32,7 @@
     "defu": "^5.0.0",
     "destr": "^1.1.0",
     "enhanced-resolve": "^5.8.3",
-    "estree-walker": "^2.0.2",
+    "estree-walker": "^3.0.1",
     "externality": "^0.1.5",
     "fs-extra": "^10.0.0",
     "globby": "^11.0.4",

@@ -2789,7 +2789,7 @@ __metadata:
     defu: ^5.0.0
     destr: ^1.1.0
     enhanced-resolve: ^5.8.3
-    estree-walker: ^2.0.2
+    estree-walker: ^3.0.1
     externality: ^0.1.5
     fs-extra: ^10.0.0
     globby: ^11.0.4
@@ -11137,6 +11137,13 @@ __metadata:
   version: 1.0.1
   resolution: "estree-walker@npm:1.0.1"
   checksum: 7e70da539691f6db03a08e7ce94f394ce2eef4180e136d251af299d41f92fb2d28ebcd9a6e393e3728d7970aeb5358705ddf7209d52fbcb2dd4693f95dcf925f
+  languageName: node
+  linkType: hard
+
+"estree-walker@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "estree-walker@npm:3.0.1"
+  checksum: 674096950819041f1ee471e63f7aa987f2ed3a3a441cc41a5176e9ed01ea5cfd6487822c3b9c2cddd0e2c8f9d7ef52d32d06147a19b5a9ca9f8ab0c094bd43b9
   languageName: node
   linkType: hard
 
