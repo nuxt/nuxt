@@ -42,7 +42,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.19",
     "@types/object-hash": "^2",
-    "@unocss/reset": "^0.22.0",
+    "@unocss/reset": "^0.22.2",
     "chai": "^4.3.4",
     "esbuild": "^0.14.11",
     "eslint": "^8.6.0",
