@@ -2501,7 +2501,7 @@ __metadata:
     acorn: ^8.7.0
     consola: ^2.15.3
     cookie-es: ^0.5.0
-    defu: ^5.0.0
+    defu: ^5.0.1
     destr: ^1.1.0
     enhanced-resolve: ^5.8.3
     estree-walker: ^3.0.1
@@ -2816,7 +2816,7 @@ __metadata:
     "@types/lodash.template": ^4
     "@types/semver": ^7
     consola: ^2.15.3
-    defu: ^5.0.0
+    defu: ^5.0.1
     dotenv: ^11.0.0
     globby: ^11.1.0
     hash-sum: ^2.0.0
@@ -2901,7 +2901,7 @@ __metadata:
     chokidar: ^3.5.2
     connect: ^3.7.0
     consola: ^2.15.3
-    defu: ^5.0.0
+    defu: ^5.0.1
     destr: ^1.1.0
     dot-prop: ^6.0.1
     esbuild: ^0.14.11
@@ -2915,7 +2915,7 @@ __metadata:
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
     jiti: ^1.12.9
-    listhen: ^0.2.5
+    listhen: ^0.2.6
     mime: ^3.0.0
     mlly: ^0.3.17
     node-fetch: ^3.1.0
@@ -2978,7 +2978,7 @@ __metadata:
     "@types/lodash.template": ^4
     "@types/semver": ^7
     create-require: ^1.1.1
-    defu: ^5.0.0
+    defu: ^5.0.1
     jiti: ^1.12.9
     pathe: ^0.2.0
     scule: ^0.2.1
@@ -3179,7 +3179,7 @@ __metadata:
     autoprefixer: ^10.4.2
     chokidar: ^3.5.2
     consola: ^2.15.3
-    defu: ^5.0.0
+    defu: ^5.0.1
     esbuild: ^0.14.11
     externality: ^0.1.5
     fs-extra: ^10.0.0
@@ -9144,6 +9144,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"defu@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "defu@npm:5.0.1"
+  checksum: f65556c2e8aa7789080f04c1d52fd7188d8258d9bc7f673e5bedc6be33eb6150f41844ac96aec99c798e47eb9beb97dae03c24edd73d3ddc643e4c7c72124606
+  languageName: node
+  linkType: hard
+
 "delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
@@ -13523,7 +13530,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"listhen@npm:^0.2.4, listhen@npm:^0.2.5":
+"listhen@npm:^0.2.4, listhen@npm:^0.2.6":
   version: 0.2.6
   resolution: "listhen@npm:0.2.6"
   dependencies:
@@ -15355,7 +15362,7 @@ __metadata:
     flat: ^5.0.2
     fsevents: ~2.3.2
     jiti: ^1.12.9
-    listhen: ^0.2.5
+    listhen: ^0.2.6
     mlly: ^0.3.17
     mri: ^1.2.0
     p-debounce: ^4.0.0
@@ -15458,7 +15465,7 @@ __metadata:
     chokidar: ^3.5.2
     consola: ^2.15.3
     cookie-es: ^0.5.0
-    defu: ^5.0.0
+    defu: ^5.0.1
     destr: ^1.1.0
     globby: ^11.1.0
     h3: ^0.3.8

@@ -15,7 +15,7 @@
   "dependencies": {
     "@nuxt/schema": "^3.0.0",
     "consola": "^2.15.3",
-    "defu": "^5.0.0",
+    "defu": "^5.0.1",
     "dotenv": "^11.0.0",
     "globby": "^11.1.0",
     "hash-sum": "^2.0.0",

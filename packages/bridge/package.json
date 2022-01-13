@@ -29,7 +29,7 @@
     "acorn": "^8.7.0",
     "consola": "^2.15.3",
     "cookie-es": "^0.5.0",
-    "defu": "^5.0.0",
+    "defu": "^5.0.1",
     "destr": "^1.1.0",
     "enhanced-resolve": "^5.8.3",
     "estree-walker": "^3.0.1",
