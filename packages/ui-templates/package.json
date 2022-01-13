@@ -27,7 +27,7 @@
     "@nuxt/ui-assets": "*",
     "@types/html-minifier": "^4.0.2",
     "@types/lodash.template": "^4.5.0",
-    "critters": "^0.0.15",
+    "critters": "^0.0.16",
     "globby": "^12.0.2",
     "html-minifier": "^4.0.0",
     "jiti": "^1.12.9",
@@ -35,7 +35,7 @@
     "scule": "^0.2.1",
     "upath": "^2.0.1",
     "vite": "^2.7.10",
-    "vite-plugin-windicss": "^1.6.1",
+    "vite-plugin-windicss": "^1.6.2",
     "windicss": "^3.4.2"
   },
   "publishConfig": {
