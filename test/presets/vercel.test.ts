@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
-import { setupTest, startServer, testNitroBehavior, importModule } from './_tests.mjs'
+import { describe } from 'vitest'
+import { setupTest, startServer, testNitroBehavior, importModule } from './_tests'
 
 describe('nitro:preset:vercel', () => {
   const ctx = setupTest('vercel')

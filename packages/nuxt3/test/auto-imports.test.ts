@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import type { AutoImport } from '@nuxt/schema'
-import { expect } from 'chai'
+import { expect, describe, it } from 'vitest'
 import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'
 import * as VueFunctions from 'vue'
@@ -73,6 +73,8 @@ describe('auto-imports:nuxt3', () => {
 })
 
 const excludedVueHelpers = [
+  '__esModule',
+  'devtools',
   'EffectScope',
   'ReactiveEffect',
   'stop',
@@ -166,7 +168,7 @@ describe('auto-imports:vue', () => {
       continue
     }
     it(`should register ${name} globally`, () => {
-      expect(Nuxt3AutoImports.find(a => a.from === 'vue').names).to.include(name)
+      expect(Nuxt3AutoImports.find(a => a.from === 'vue').names).toContain(name)
     })
   }
 })

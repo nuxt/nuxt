@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
-import { startServer, setupTest, testNitroBehavior, importModule } from './_tests.mjs'
+import { describe } from 'vitest'
+import { startServer, setupTest, testNitroBehavior, importModule } from './_tests.js'
 
 describe('nitro:preset:node', () => {
   const ctx = setupTest('node')

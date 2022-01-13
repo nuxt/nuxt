@@ -1,5 +1,5 @@
 import * as CompositionApi from '@vue/composition-api'
-import { expect } from 'chai'
+import { expect, describe, it } from 'vitest'
 
 import { Nuxt3AutoImports } from '../../nuxt3/src/auto-imports/imports'
 

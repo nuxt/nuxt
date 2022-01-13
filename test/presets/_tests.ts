@@ -1,13 +1,20 @@
 import { pathToFileURL } from 'url'
 import { resolve } from 'pathe'
 import destr from 'destr'
-import { listen } from 'listhen'
+import { listen, Listener } from 'listhen'
 import { $fetch } from 'ohmyfetch'
 import { execa } from 'execa'
-import { expect } from 'chai'
-import { fixtureDir, resolveWorkspace } from '../utils.mjs'
+import { expect, it, beforeAll, afterAll } from 'vitest'
+import { fixtureDir, resolveWorkspace } from '../utils'
 
 const isBridge = Boolean(process.env.TEST_BRIDGE)
+
+interface Context {
+  rootDir: string
+  outDir: string
+  fetch: (url:string) => Promise<any>
+  server?: Listener
+}
 
 export function importModule (path) {
   return import(pathToFileURL(path).href)
@@ -18,14 +25,13 @@ export function setupTest (preset) {
   const rootDir = fixtureDir(fixture)
   const buildDir = resolve(rootDir, '.nuxt-' + preset)
 
-  const ctx = {
+  const ctx: Context = {
     rootDir,
     outDir: resolve(buildDir, 'output'),
-    fetch: url => $fetch(url, { baseURL: ctx.server.url })
+    fetch: url => $fetch(url, { baseURL: ctx.server!.url })
   }
 
-  before('nitro build', async function () {
-    this.timeout(60000)
+  beforeAll(async () => {
     const nuxtCLI = isBridge
       ? resolve(ctx.rootDir, 'node_modules/nuxt-edge/bin/nuxt.js')
       : resolveWorkspace('packages/nuxi/bin/nuxi.mjs')
@@ -38,9 +44,9 @@ export function setupTest (preset) {
         NODE_ENV: 'production'
       }
     })
-  })
+  }, (isBridge ? 120 : 60) * 1000)
 
-  after('Cleanup', async () => {
+  afterAll(async () => {
     if (ctx.server) {
       await ctx.server.close()
     }

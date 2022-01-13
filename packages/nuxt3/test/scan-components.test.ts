@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { ComponentsDir } from '@nuxt/schema'
-import { expect } from 'chai'
+import { expect, it } from 'vitest'
 import { scanComponents } from '../src/components/scan'
 
 const fixtureDir = resolve(__dirname, 'fixture')

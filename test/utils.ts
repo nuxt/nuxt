@@ -3,25 +3,25 @@ import { execSync } from 'child_process'
 import { resolve, dirname } from 'pathe'
 import defu from 'defu'
 import hash from 'object-hash'
-import { execa } from 'execa'
+import { execa, Options as ExecaOptions } from 'execa'
 import { createCommonJS } from 'mlly'
 
 const cjs = createCommonJS(import.meta.url)
 
-export function resolveWorkspace (name) {
+export function resolveWorkspace (name: string) {
   return resolve(cjs.__dirname, '../', name)
 }
 
-export function fixtureDir (name) {
+export function fixtureDir (name: string) {
   return resolve(cjs.__dirname, 'fixtures', name)
 }
 
-export async function execNuxtCLI (args, opts) {
+export async function execNuxtCLI (args: string[], opts: ExecaOptions) {
   const nuxtCLI = resolveWorkspace('packages/nuxi/bin/nuxi.mjs')
   await execa('node', [nuxtCLI, ...args], opts)
 }
 
-export async function loadFixture (opts, unhashedConfig) {
+export async function loadFixture (opts: any, unhashedConfig?: any) {
   const buildId = hash(opts)
   const buildDir = resolve(opts.rootDir, '.nuxt', buildId)
   const { loadNuxt } = await import('@nuxt/kit')
@@ -54,7 +54,7 @@ export async function buildFixture (opts) {
   }
 }
 
-function mkdirpSync (dir) {
+function mkdirpSync (dir: string) {
   if (!existsSync(dir)) {
     mkdirpSync(dirname(dir))
     mkdirSync(dir)

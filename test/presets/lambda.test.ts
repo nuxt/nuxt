@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
-import { setupTest, testNitroBehavior, importModule } from './_tests.mjs'
+import { describe } from 'vitest'
+import { setupTest, testNitroBehavior, importModule } from './_tests'
 
 describe('nitro:preset:lambda', () => {
   const ctx = setupTest('lambda')
