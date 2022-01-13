@@ -3237,7 +3237,7 @@ __metadata:
     "@types/jsdom": ^16.2.14
     "@types/node-fetch": ^3.0.2
     "@types/serve-static": ^1.13.10
-    "@vercel/nft": ^0.17.2
+    "@vercel/nft": ^0.17.3
     archiver: ^5.3.0
     chalk: ^5.0.0
     chokidar: ^3.5.2
@@ -5134,9 +5134,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.17.2":
-  version: 0.17.2
-  resolution: "@vercel/nft@npm:0.17.2"
+"@vercel/nft@npm:^0.17.3":
+  version: 0.17.3
+  resolution: "@vercel/nft@npm:0.17.3"
   dependencies:
     "@mapbox/node-pre-gyp": ^1.0.5
     acorn: ^8.6.0
@@ -5145,14 +5145,13 @@ __metadata:
     glob: ^7.1.3
     graceful-fs: ^4.2.9
     micromatch: ^4.0.2
-    mkdirp: ^0.5.1
     node-gyp-build: ^4.2.2
     node-pre-gyp: ^0.13.0
     resolve-from: ^5.0.0
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: 251a47a5efaf1312b424467c23eeae170ca8ada6c7a65f315f19cd73372877f3bf2ad3cc5388d6761bc73d855b12c77982effb488c42237f294e8a187c5cb94b
+  checksum: f1a0b4d1a4758f8ebe8ec02a59967ce0671546b38f8b6fd1d90541d51374cc8ead86342008e9fdad4b424e9b6f95fac57ea4af519cbe0260be99c540873f16a0
   languageName: node
   linkType: hard
 
@@ -16126,7 +16125,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.4
     unbuild: ^0.6.7
-    vitest: ^0.1.0
+    vitest: ^0.1.12
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -22383,9 +22382,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "vitest@npm:0.1.0"
+"vitest@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "vitest@npm:0.1.12"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -22410,7 +22409,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 60b70a5f7b291c655e8be0d8a61bc947d26b28fec1d8fbf6310e7ccd69cc9a0955c3a43663717f9b93a14e02e7aacf86eacaedfbe61cf121af7e64ed43c56f39
+  checksum: 49ede6ed05d793a66063dbce8c148a26871ed6bb6d691e8188d3eb456228415c616e8e96068c48e30d6403e5fd4d6dfea1da50b4d6ec7ac53b1aa595f96e83be
   languageName: node
   linkType: hard
 
