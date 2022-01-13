@@ -35,7 +35,7 @@
     "estree-walker": "^3.0.1",
     "externality": "^0.1.5",
     "fs-extra": "^10.0.0",
-    "globby": "^11.1.0",
+    "globby": "^12.0.2",
     "h3": "^0.3.8",
     "hash-sum": "^2.0.0",
     "magic-string": "^0.25.7",

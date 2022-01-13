@@ -3,14 +3,14 @@ import createEtag from 'etag'
 import mime from 'mime'
 import { relative, resolve } from 'pathe'
 import virtual from '@rollup/plugin-virtual'
-import globby from 'globby'
+import { globbySync } from 'globby'
 import type { Plugin } from 'rollup'
 import type { NitroContext } from '../../context'
 
 export function staticAssets (context: NitroContext) {
   const assets: Record<string, { type: string, etag: string, mtime: string, path: string }> = {}
 
-  const files = globby.sync('**/*.*', { cwd: context.output.publicDir, absolute: false })
+  const files = globbySync('**/*.*', { cwd: context.output.publicDir, absolute: false })
 
   for (const id of files) {
     let type = mime.getType(id) || 'text/plain'

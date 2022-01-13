@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'url'
 import { resolve } from 'pathe'
-import globby from 'globby'
+import { globby } from 'globby'
 import type { Plugin } from 'rollup'
 import { serializeImportName } from '../../utils'
 

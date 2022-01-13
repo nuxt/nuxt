@@ -45,7 +45,7 @@
     "eslint": "^8.6.0",
     "eslint-plugin-jsdoc": "^37.6.1",
     "execa": "^6.0.0",
-    "globby": "^11.1.0",
+    "globby": "^12.0.2",
     "jiti": "^1.12.9",
     "lerna": "^4.0.0",
     "markdownlint-cli": "^0.30.0",

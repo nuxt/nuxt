@@ -1,7 +1,7 @@
 import { createRequire } from 'module'
 import { join, relative, resolve } from 'pathe'
 import fse from 'fs-extra'
-import globby from 'globby'
+import { globby } from 'globby'
 import { readPackageJSON } from 'pkg-types'
 import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'

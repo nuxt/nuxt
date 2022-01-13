@@ -1,6 +1,6 @@
 import { promises as fsp, existsSync } from 'fs'
 import { parse as parsePath, join } from 'pathe'
-import globby from 'globby'
+import { globby } from 'globby'
 import { findExports } from 'mlly'
 import { camelCase } from 'scule'
 import { AutoImport } from '@nuxt/schema'

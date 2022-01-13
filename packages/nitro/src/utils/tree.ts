@@ -1,6 +1,6 @@
 import { promises as fsp } from 'fs'
 import { resolve, dirname, relative } from 'pathe'
-import globby from 'globby'
+import { globby } from 'globby'
 import prettyBytes from 'pretty-bytes'
 import { gzipSize } from 'gzip-size'
 import chalk from 'chalk'

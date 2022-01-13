@@ -1,6 +1,6 @@
 import { resolve, join, extname } from 'pathe'
 import { joinURL } from 'ufo'
-import globby from 'globby'
+import { globby } from 'globby'
 import { watch } from 'chokidar'
 import { tryResolvePath } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'

@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs'
 import { execSync } from 'child_process'
 import { resolve } from 'pathe'
-import globby from 'globby'
+import { globby } from 'globby'
 
 async function loadPackage (dir: string) {
   const pkgPath = resolve(dir, 'package.json')
