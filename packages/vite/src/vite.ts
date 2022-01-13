@@ -107,7 +107,5 @@ export async function bundle (nuxt: Nuxt) {
   })
 
   await buildClient(ctx)
-  if (ctx.nuxt.options.ssr) {
-    await buildServer(ctx)
-  }
+  await buildServer(ctx)
 }
