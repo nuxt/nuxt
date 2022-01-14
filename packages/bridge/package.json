@@ -55,7 +55,7 @@
     "ufo": "^0.7.9",
     "unplugin": "^0.3.0",
     "unplugin-vue2-script-setup": "0.9.0",
-    "vite": "2.7.10",
+    "vite": "^2.7.12",
     "vite-plugin-vue2": "^1.9.2",
     "vue-template-compiler": "^2.6.14"
   },

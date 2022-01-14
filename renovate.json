@@ -4,7 +4,6 @@
   ],
   "ignoreDeps": [
     "docus",
-    "vite",
     "@docus/app",
     "@docus/github",
     "@docus/social-image",
