@@ -37,7 +37,7 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(id)
-      const { type } = parseQuery(search)
+      const { type, macro } = parseQuery(search)
 
       // Exclude node_modules by default
       if (ctx.transform.exclude.some(pattern => id.match(pattern))) {
@@ -47,7 +47,7 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
       // vue files
       if (
         pathname.endsWith('.vue') &&
-        (type === 'template' || type === 'script' || !search)
+        (type === 'template' || type === 'script' || macro || !search)
       ) {
         return true
       }

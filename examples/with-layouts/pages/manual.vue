@@ -18,8 +18,10 @@
 </template>
 
 <script>
+definePageMeta({
+  layout: false
+})
 export default {
-  layout: false,
   data: () => ({
     layout: 'custom'
   })

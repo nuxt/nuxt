@@ -33,9 +33,10 @@ type RenderResult = {
 export type TSReference = { types: string } | { path: string }
 
 export type NuxtPage = {
-  name?: string,
-  path: string,
-  file: string,
+  name?: string
+  path: string
+  file: string
+  meta?: Record<string, any>
   children?: NuxtPage[]
 }
 

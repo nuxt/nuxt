@@ -1,8 +1,8 @@
 import { basename, extname, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
-import type { Nuxt, NuxtRoute } from '@nuxt/schema'
+import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { resolveFiles } from '@nuxt/kit'
-import { kebabCase } from 'scule'
+import { kebabCase, pascalCase } from 'scule'
 
 enum SegmentParserState {
   initial,
@@ -32,15 +32,15 @@ export async function resolvePagesRoutes (nuxt: Nuxt) {
   return generateRoutesFromFiles(files, pagesDir)
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtRoute[] {
-  const routes: NuxtRoute[] = []
+export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtPage[] {
+  const routes: NuxtPage[] = []
 
   for (const file of files) {
     const segments = relative(pagesDir, file)
       .replace(new RegExp(`${extname(file)}$`), '')
       .split('/')
 
-    const route: NuxtRoute = {
+    const route: NuxtPage = {
       name: '',
       path: '',
       file,
@@ -183,7 +183,7 @@ function parseSegment (segment: string) {
   return tokens
 }
 
-function prepareRoutes (routes: NuxtRoute[], parent?: NuxtRoute) {
+function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage) {
   for (const route of routes) {
     // Remove -index
     if (route.name) {
@@ -225,10 +225,18 @@ export async function resolveLayouts (nuxt: Nuxt) {
   })
 }
 
-export function addComponentToRoutes (routes: NuxtRoute[]) {
-  return routes.map(route => ({
-    ...route,
-    children: route.children ? addComponentToRoutes(route.children) : [],
-    component: `{() => import('${route.file}')}`
-  }))
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set()): { imports: Set<string>, routes: NuxtPage[]} {
+  return {
+    imports: metaImports,
+    routes: routes.map((route) => {
+      const metaImportName = `${pascalCase(route.file.replace(/[^\w]/g, ''))}Meta`
+      metaImports.add(`import { meta as ${metaImportName} } from '${route.file}?macro=true'`)
+      return {
+        ...route,
+        children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
+        meta: route.meta || `{${metaImportName}}` as any,
+        component: `{() => import('${route.file}')}`
+      }
+    })
+  }
 }

@@ -11,8 +11,8 @@
   </div>
 </template>
 
-<script>
-export default defineNuxtComponent({
+<script setup>
+definePageMeta({
   layout: 'custom'
 })
 </script>
