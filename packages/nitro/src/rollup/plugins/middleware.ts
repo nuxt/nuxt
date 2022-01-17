@@ -9,7 +9,7 @@ import virtual from './virtual'
 const unique = (arr: any[]) => Array.from(new Set(arr))
 
 export function middleware (getMiddleware: () => ServerMiddleware[]) {
-  const getImportId = p => '_' + hasha(p).substr(0, 6)
+  const getImportId = p => '_' + hasha(p).slice(0, 6)
 
   let lastDump = ''
 

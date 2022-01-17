@@ -75,7 +75,7 @@ export async function renderMiddleware (req, res: ServerResponse) {
   let isPayloadReq = false
   if (url.startsWith(STATIC_ASSETS_BASE) && url.endsWith(PAYLOAD_JS)) {
     isPayloadReq = true
-    url = url.substr(STATIC_ASSETS_BASE.length, url.length - STATIC_ASSETS_BASE.length - PAYLOAD_JS.length) || '/'
+    url = url.slice(STATIC_ASSETS_BASE.length, url.length - PAYLOAD_JS.length) || '/'
   }
 
   // Initialize ssr context

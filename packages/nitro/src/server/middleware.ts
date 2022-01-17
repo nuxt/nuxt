@@ -28,7 +28,7 @@ function filesToMiddleware (files: string[], baseDir: string, basePath: string, 
     const route = joinURL(
       basePath,
       file
-        .substr(0, file.length - extname(file).length)
+        .slice(0, file.length - extname(file).length)
         .replace(/\/index$/, '')
     )
     const handle = resolve(baseDir, file)

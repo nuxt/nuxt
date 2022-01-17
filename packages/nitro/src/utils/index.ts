@@ -22,7 +22,7 @@ export function compileTemplate (contents: string) {
   return (params: Record<string, any>) => contents.replace(/{{ ?([\w.]+) ?}}/g, (_, match) => {
     const val = dotProp.get(params, match)
     if (!val) {
-      consola.warn(`cannot resolve template param '${match}' in ${contents.substr(0, 20)}`)
+      consola.warn(`cannot resolve template param '${match}' in ${contents.slice(0, 20)}`)
     }
     return val as string || `${match}`
   })
