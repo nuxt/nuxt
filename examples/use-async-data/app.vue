@@ -3,7 +3,7 @@ const { data, refresh, pending } = await useAsyncData('/api/hello', () => $fetch
 </script>
 
 <template>
-  <NuxtExampleLayout example="use-async-data" show-tips="true">
+  <NuxtExampleLayout example="use-async-data" show-tips>
     <div>{{ data }}</div>
     <div>
       <NButton :disabled="pending" @click="refresh">
