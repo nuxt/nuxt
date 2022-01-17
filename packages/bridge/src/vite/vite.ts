@@ -26,6 +26,10 @@ async function bundle (nuxt: Nuxt, builder: any) {
         mode: nuxt.options.dev ? 'development' : 'production',
         logLevel: 'warn',
         define: {
+          'process.static': nuxt.options.target === 'static',
+          'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+          'process.mode': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+          'process.target': JSON.stringify(nuxt.options.target),
           'process.dev': nuxt.options.dev
         },
         resolve: {
