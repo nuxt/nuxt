@@ -92,6 +92,15 @@ export async function buildServer (ctx: ViteBuildContext) {
   const viteServer = await vite.createServer(serverConfig)
   ctx.nuxt.hook('close', () => viteServer.close())
 
+  // Invalidate virtual modules when templates are re-generated
+  ctx.nuxt.hook('app:templatesGenerated', () => {
+    for (const [id, mod] of viteServer.moduleGraph.idToModuleMap) {
+      if (id.startsWith('\x00virtual:')) {
+        viteServer.moduleGraph.invalidateModule(mod)
+      }
+    }
+  })
+
   // Initialize plugins
   await viteServer.pluginContainer.buildStart({})
 
