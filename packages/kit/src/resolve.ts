@@ -85,9 +85,9 @@ function existsSyncSensitive (path: string, files?: string[]) {
  */
 export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
   for (const key in alias) {
-    if (key === '@') { continue } // Don't resolve @foo/bar
+    if (key === '@' && !path.startsWith('@/')) { continue } // Don't resolve @foo/bar
     if (path.startsWith(key)) {
-      path = alias[key] + path.substr(key.length)
+      path = alias[key] + path.slice(key.length)
     }
   }
   return path
