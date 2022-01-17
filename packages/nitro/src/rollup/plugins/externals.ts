@@ -39,8 +39,9 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       // Normalize from node_modules
       const _id = id.split('node_modules/').pop()
 
+      const externalPath = opts.external.find(i => _id.startsWith(i) || id.startsWith(i))
       // Skip checks if is an explicit external
-      if (!opts.external.find(i => _id.startsWith(i) || id.startsWith(i))) {
+      if (!externalPath) {
         // Resolve relative paths and exceptions
         // Ensure to take absolute and relative id
         if (_id.startsWith('.') || opts.inline.find(i => _id.startsWith(i) || id.startsWith(i))) {
@@ -50,6 +51,9 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         if (/\.(ts|wasm|json)$/.test(_id)) {
           return null
         }
+      // Check for subpaths
+      } else if (opts.inline.find(i => i.startsWith(externalPath) && (_id.startsWith(i) || id.startsWith(i)))) {
+        return null
       }
 
       // Track externals
