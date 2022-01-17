@@ -13,16 +13,16 @@ const excludeRE = [
 ]
 
 const importAsRE = /^.*\sas\s+/
-const seperatorRE = /[,[\]{}\n]/g
+const separatorRE = /[,[\]{}\n]/g
 const multilineCommentsRE = /\/\*\s(.|[\r\n])*?\*\//gm
-const singlelineCommentsRE = /\/\/\s.*/g
+const singlelineCommentsRE = /\/\/\s.*$/gm
 const templateLiteralRE = /\$\{(.*)\}/g
 const quotesRE = [
   /(["'])((?:\\\1|(?!\1)|.|\r)*?)\1/gm,
   /([`])((?:\\\1|(?!\1)|.|\n|\r)*?)\1/gm
 ]
 
-function stripeCommentsAndStrings (code: string) {
+function stripCommentsAndStrings (code: string) {
   return code
     .replace(multilineCommentsRE, '')
     .replace(singlelineCommentsRE, '')
@@ -59,17 +59,17 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
     },
     transform (code) {
       // strip comments so we don't match on them
-      const striped = stripeCommentsAndStrings(code)
+      const stripped = stripCommentsAndStrings(code)
 
       // find all possible injection
-      const matched = new Set(Array.from(striped.matchAll(ctx.matchRE)).map(i => i[1]))
+      const matched = new Set(Array.from(stripped.matchAll(ctx.matchRE)).map(i => i[1]))
 
       // remove those already defined
       for (const regex of excludeRE) {
-        Array.from(striped.matchAll(regex))
+        Array.from(stripped.matchAll(regex))
           .flatMap(i => [
-            ...(i[1]?.split(seperatorRE) || []),
-            ...(i[2]?.split(seperatorRE) || [])
+            ...(i[1]?.split(separatorRE) || []),
+            ...(i[2]?.split(separatorRE) || [])
           ])
           .map(i => i.replace(importAsRE, '').trim())
           .forEach(i => matched.delete(i))
@@ -80,7 +80,7 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
       }
 
       // For webpack4/bridge support
-      const isCJSContext = code.includes('require(')
+      const isCJSContext = stripped.includes('require(')
 
       const matchedImports = Array.from(matched).map(name => ctx.map.get(name)).filter(Boolean)
       const imports = toImports(matchedImports, isCJSContext)
