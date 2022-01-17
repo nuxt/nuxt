@@ -1,4 +1,4 @@
-import { getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance } from 'vue'
 import * as Components from './components'
 import { useMeta } from './composables'
 import { defineNuxtPlugin } from '#app'
@@ -19,7 +19,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       const options = instance?.type || /* nuxt2 */ instance?.proxy?.$options
       if (!options || !('head' in options)) { return }
 
-      useMeta(options.head)
+      const source = typeof options.head === 'function'
+        ? computed(() => options.head(nuxtApp))
+        : options.head
+
+      useMeta(source)
     }
   })
 
