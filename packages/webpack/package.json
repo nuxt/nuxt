@@ -33,8 +33,8 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "memfs": "^3.4.1",
-    "mini-css-extract-plugin": "^2.4.6",
-    "mlly": "^0.3.17",
+    "mini-css-extract-plugin": "^2.5.0",
+    "mlly": "^0.3.18",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.4.5",
@@ -64,10 +64,10 @@
     "@types/webpack-hot-middleware": "^2.25.5",
     "@types/webpack-virtual-modules": "^0",
     "unbuild": "latest",
-    "vue": "3.2.26"
+    "vue": "3.2.27"
   },
   "peerDependencies": {
-    "vue": "3.2.26"
+    "vue": "3.2.27"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
