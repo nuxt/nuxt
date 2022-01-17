@@ -7,32 +7,21 @@ import { defineNuxtCommand } from './index'
 
 const rpath = p => relative(process.cwd(), p)
 
-const knownTemplates = {
-  nuxt3: 'nuxt/starter#v3',
-  v3: 'nuxt/starter#v3',
-  bridge: 'nuxt/starter#bridge'
-}
-
 const resolveTemplate = (template) => {
-  if (!template) {
-    return knownTemplates.nuxt3
-  }
-
   if (typeof template === 'boolean') {
-    consola.error('Please specify a template')
+    consola.error('Please specify a template!')
     process.exit(1)
   }
 
-  if (template in knownTemplates) {
-    return knownTemplates[template]
+  if (!template) {
+    template = 'v3'
   }
 
   if (template.includes('/')) {
     return template
   }
 
-  consola.error(`Invalid template name: \`${template}\``)
-  process.exit(1)
+  return `nuxt/starter#${template}`
 }
 
 export default defineNuxtCommand({
