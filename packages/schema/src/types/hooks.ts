@@ -1,4 +1,5 @@
-import type { IncomingMessage, ServerResponse } from 'http'
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
+import type { Server as HttpsServer } from 'https'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { ModuleContainer } from './module'
@@ -101,7 +102,7 @@ export interface NuxtHooks {
   'render:setupMiddleware': (app: any) => HookResult
   'render:errorMiddleware': (app: any) => HookResult
   'render:done': (server: Server) => HookResult
-  'listen': (listenerServer: any, listener: any) => HookResult
+  'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
   'server:nuxt:renderLoading': (req: IncomingMessage, res: ServerResponse) => HookResult
   'render:route': (url: string, result: RenderResult, context: any) => HookResult
   'render:routeDone': (url: string, result: RenderResult, context: any) => HookResult
