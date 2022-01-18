@@ -2508,7 +2508,7 @@ __metadata:
     externality: ^0.1.6
     fs-extra: ^10.0.0
     globby: ^12.2.0
-    h3: ^0.3.8
+    h3: ^0.3.9
     hash-sum: ^2.0.0
     magic-string: ^0.25.7
     mlly: ^0.3.19
@@ -2909,7 +2909,7 @@ __metadata:
     fs-extra: ^10.0.0
     globby: ^12.2.0
     gzip-size: ^7.0.0
-    h3: ^0.3.8
+    h3: ^0.3.9
     hasha: ^5.2.2
     hookable: ^5.1.1
     http-proxy: ^1.18.1
@@ -11788,10 +11788,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.3.3, h3@npm:^0.3.8":
+"h3@npm:^0.3.3":
   version: 0.3.8
   resolution: "h3@npm:0.3.8"
   checksum: d0202688166328230f7329e6dc1ee07a33f7eeced2487a0d512d02ce86a53a1cc92d13b99abdaf1a53bd66be7eb50bd6f9251e5b0ed698a1bbb4f9ade0435f46
+  languageName: node
+  linkType: hard
+
+"h3@npm:^0.3.9":
+  version: 0.3.9
+  resolution: "h3@npm:0.3.9"
+  checksum: da1bf2ffbcc424fb28e474287d64f7d3b506b3341c40f74667fb346bf789ac6bb945798c9d200c6012a07eb0dd91f47ac4bebfc31c1d64aff1c7b2b3a6448db8
   languageName: node
   linkType: hard
 
@@ -15459,7 +15466,7 @@ __metadata:
     defu: ^5.0.1
     destr: ^1.1.0
     globby: ^12.2.0
-    h3: ^0.3.8
+    h3: ^0.3.9
     hash-sum: ^2.0.0
     hookable: ^5.1.1
     ignore: ^5.2.0
