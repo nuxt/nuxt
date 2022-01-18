@@ -28,7 +28,7 @@
     "@vue/reactivity": "^3.2.27",
     "@vue/shared": "^3.2.27",
     "@vueuse/head": "^0.7.5",
-    "chokidar": "^3.5.2",
+    "chokidar": "^3.5.3",
     "consola": "^2.15.3",
     "cookie-es": "^0.5.0",
     "defu": "^5.0.1",

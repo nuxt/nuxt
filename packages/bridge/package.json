@@ -33,7 +33,7 @@
     "destr": "^1.1.0",
     "enhanced-resolve": "^5.8.3",
     "estree-walker": "^3.0.1",
-    "externality": "^0.1.5",
+    "externality": "^0.1.6",
     "fs-extra": "^10.0.0",
     "globby": "^12.2.0",
     "h3": "^0.3.8",
@@ -54,7 +54,7 @@
     "semver": "^7.3.5",
     "ufo": "^0.7.9",
     "unplugin": "^0.3.0",
-    "unplugin-vue2-script-setup": "0.9.0",
+    "unplugin-vue2-script-setup": "0.9.1",
     "vite": "^2.7.12",
     "vite-plugin-vue2": "^1.9.2",
     "vue-template-compiler": "^2.6.14"

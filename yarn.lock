@@ -2505,7 +2505,7 @@ __metadata:
     destr: ^1.1.0
     enhanced-resolve: ^5.8.3
     estree-walker: ^3.0.1
-    externality: ^0.1.5
+    externality: ^0.1.6
     fs-extra: ^10.0.0
     globby: ^12.2.0
     h3: ^0.3.8
@@ -2528,7 +2528,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.3.0
-    unplugin-vue2-script-setup: 0.9.0
+    unplugin-vue2-script-setup: 0.9.1
     vite: ^2.7.12
     vite-plugin-vue2: ^1.9.2
     vue: ^2
@@ -2817,7 +2817,7 @@ __metadata:
     "@types/semver": ^7
     consola: ^2.15.3
     defu: ^5.0.1
-    dotenv: ^14.1.0
+    dotenv: ^14.2.0
     globby: ^12.2.0
     hash-sum: ^2.0.0
     jiti: ^1.12.9
@@ -2898,7 +2898,7 @@ __metadata:
     "@vercel/nft": ^0.17.3
     archiver: ^5.3.0
     chalk: ^5.0.0
-    chokidar: ^3.5.2
+    chokidar: ^3.5.3
     connect: ^3.7.0
     consola: ^2.15.3
     defu: ^5.0.1
@@ -3177,11 +3177,11 @@ __metadata:
     "@vitejs/plugin-vue": ^2.0.1
     "@vitejs/plugin-vue-jsx": ^1.3.3
     autoprefixer: ^10.4.2
-    chokidar: ^3.5.2
+    chokidar: ^3.5.3
     consola: ^2.15.3
     defu: ^5.0.1
     esbuild: ^0.14.11
-    externality: ^0.1.5
+    externality: ^0.1.6
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
     mlly: ^0.3.19
@@ -3293,7 +3293,7 @@ __metadata:
     babel-loader: ^8.2.3
     consola: ^2.15.3
     css-loader: ^6.5.1
-    css-minimizer-webpack-plugin: ^3.3.1
+    css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.0.15
     esbuild-loader: ^2.18.0
     file-loader: ^6.2.0
@@ -3302,7 +3302,7 @@ __metadata:
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.4.1
-    mini-css-extract-plugin: ^2.5.1
+    mini-css-extract-plugin: ^2.5.2
     mlly: ^0.3.19
     pathe: ^0.2.0
     pify: ^5.0.0
@@ -7600,6 +7600,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chokidar@npm:^3.5.3":
+  version: 3.5.3
+  resolution: "chokidar@npm:3.5.3"
+  dependencies:
+    anymatch: ~3.1.2
+    braces: ~3.0.2
+    fsevents: ~2.3.2
+    glob-parent: ~5.1.2
+    is-binary-path: ~2.1.0
+    is-glob: ~4.0.1
+    normalize-path: ~3.0.0
+    readdirp: ~3.6.0
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  checksum: b49fcde40176ba007ff361b198a2d35df60d9bb2a5aab228279eb810feae9294a6b4649ab15981304447afe1e6ffbf4788ad5db77235dc770ab777c6e771980c
+  languageName: node
+  linkType: hard
+
 "chownr@npm:^1.1.1, chownr@npm:^1.1.4":
   version: 1.1.4
   resolution: "chownr@npm:1.1.4"
@@ -8624,9 +8643,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "css-minimizer-webpack-plugin@npm:3.3.1"
+"css-minimizer-webpack-plugin@npm:^3.4.1":
+  version: 3.4.1
+  resolution: "css-minimizer-webpack-plugin@npm:3.4.1"
   dependencies:
     cssnano: ^5.0.6
     jest-worker: ^27.0.2
@@ -8637,13 +8656,15 @@ __metadata:
   peerDependencies:
     webpack: ^5.0.0
   peerDependenciesMeta:
+    "@parcel/css":
+      optional: true
     clean-css:
       optional: true
     csso:
       optional: true
     esbuild:
       optional: true
-  checksum: 5e054ef608702dba55dec629503618acfbebb9566f92058a1ebf372f0feb47b9faa3de7142372be629fa327a7223c614b325a08d955d080a64a06983c8782321
+  checksum: 065c6c1eadb7c99267db5d04d6f3909e9968b73c4cb79ab9e4502a5fbf1a3d564cfe6f8e0bff8e4ab00d4ed233e9c3c76a4ebe0ee89150b3d9ecb064ddf1e5e9
   languageName: node
   linkType: hard
 
@@ -9446,10 +9467,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^14.1.0":
-  version: 14.1.0
-  resolution: "dotenv@npm:14.1.0"
-  checksum: 9e7afe54688c6ddd270797766b1f51421cc1d38cce5a470750537d598cc1719e1b6effcb35022fccd949f2da701b5f186d4c0da44a72fb3a8bd1e2513159a9d2
+"dotenv@npm:^14.2.0":
+  version: 14.2.0
+  resolution: "dotenv@npm:14.2.0"
+  checksum: 85a0e44918ef49e64c278f757dab50a156b9a6ca67f708876fd81d265e575e35b67387fc681d910df99368d6c1edca66cd546edeb0f7db3b499cb876c999233e
   languageName: node
   linkType: hard
 
@@ -10827,16 +10848,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"externality@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "externality@npm:0.1.5"
+"externality@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "externality@npm:0.1.6"
   dependencies:
     allowlist: ^0.1.1
     enhanced-resolve: ^5.8.3
     mlly: ^0.3.10
     pathe: ^0.2.0
     ufo: ^0.7.9
-  checksum: 49de46a065b6a24f4f224469eb227fa7e78dde267d21b83477f1cf00b06c571badaad9d26ddad1e7b4c8219d30c0a33b3b13de9787fa8e8fc85c5b9d470803fe
+  checksum: 592565ef7eb00f6ac4b0ff646c4b18192a14810f4d5b07f18072bfca5164a293a734659a6582a3d77a68360654a269abeb23907d3ad470cb249965cfbb8bf1ab
   languageName: node
   linkType: hard
 
@@ -14283,14 +14304,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "mini-css-extract-plugin@npm:2.5.1"
+"mini-css-extract-plugin@npm:^2.5.2":
+  version: 2.5.2
+  resolution: "mini-css-extract-plugin@npm:2.5.2"
   dependencies:
     schema-utils: ^4.0.0
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 4a351c2405e184fd95d4c4b0b89c841638056e4cdf4e2a407aac8d782fe634fd730c74261e3ba601f3900a67cd9e114d6742dec258563b6e2edae147b690b5ae
+  checksum: 9d9ad48780cf1e14b1d778a18b2e8e98031ad948a174dd7bf283d4832fd206a54f3119def455caa7389749808cd13160481ce872d6314c54adc0db1c5280649e
   languageName: node
   linkType: hard
 
@@ -15324,7 +15345,7 @@ __metadata:
     "@types/mri": ^1.1.1
     "@types/rimraf": ^3
     "@types/semver": ^7
-    chokidar: ^3.5.2
+    chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
     colorette: ^2.0.16
@@ -15405,7 +15426,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.4
     unbuild: ^0.6.7
-    vitest: ^0.1.19
+    vitest: ^0.1.20
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -15432,7 +15453,7 @@ __metadata:
     "@vue/reactivity": ^3.2.27
     "@vue/shared": ^3.2.27
     "@vueuse/head": ^0.7.5
-    chokidar: ^3.5.2
+    chokidar: ^3.5.3
     consola: ^2.15.3
     cookie-es: ^0.5.0
     defu: ^5.0.1
@@ -21056,9 +21077,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin-vue2-script-setup@npm:0.9.0":
-  version: 0.9.0
-  resolution: "unplugin-vue2-script-setup@npm:0.9.0"
+"unplugin-vue2-script-setup@npm:0.9.1":
+  version: 0.9.1
+  resolution: "unplugin-vue2-script-setup@npm:0.9.1"
   dependencies:
     "@antfu/utils": ^0.4.0
     "@babel/core": ^7.16.7
@@ -21077,11 +21098,13 @@ __metadata:
     tslib: ^2.3.1
     unplugin: ^0.3.0
   peerDependencies:
+    "@vue/composition-api": ^1.4.3
+    "@vue/runtime-dom": ^3.2.26
     pug: ^3.0.2
   peerDependenciesMeta:
     pug:
       optional: true
-  checksum: c36ff719d228bba72036b560990ef51b398d453e641e8652a729926b9d3c81a036777cd3a953cfdabc1600cd5a9c7814b5af1b0b3e9b62101bb4752c2cf80818
+  checksum: 3ecee02633f71c9f1b86968343886c706bc01063eadf454b8f7a539f9317f4d8ed6b7e2fd551c48c2333fa354a1bc089e9bbad4677add6ecb7e605fc9026e7c3
   languageName: node
   linkType: hard
 
@@ -21433,9 +21456,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.1.19":
-  version: 0.1.19
-  resolution: "vitest@npm:0.1.19"
+"vitest@npm:^0.1.20":
+  version: 0.1.20
+  resolution: "vitest@npm:0.1.20"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21460,7 +21483,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 6eb668b9ada79b96ae89c02af07212640f9d80a204b3fe5034461f352f9e3b0760d3afd5eaa0cc4afde8867736d5c60f52f2785530a2151c14bdaf35602945a6
+  checksum: 9fafc2219b32eee6212eaf460a970578e566cba2672f47ff0498031b7f10b0b0a6b3c906b2cbb6ee35b39cb98252bb8338a03988d5a7321acb289cd84a22b319
   languageName: node
   linkType: hard
 
