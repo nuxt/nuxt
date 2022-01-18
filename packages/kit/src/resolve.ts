@@ -104,7 +104,7 @@ export function tryResolvePath (path: string, opts: ResolveOptions = {}) {
   }
 }
 
-export async function resolveFiles (path: string, pattern: string) {
+export async function resolveFiles (path: string, pattern: string | string[]) {
   const files = await globby(pattern, {
     cwd: path,
     followSymbolicLinks: true
