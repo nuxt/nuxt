@@ -15,6 +15,13 @@ export function setupNitroBridge () {
     throw new Error('[nitro] Please use `nuxt generate` for static target')
   }
 
+  // Handle legacy property name `assetsPath`
+  nuxt.options.app.buildAssetsDir = nuxt.options.app.buildAssetsDir || nuxt.options.app.assetsPath
+  nuxt.options.app.assetsPath = nuxt.options.app.buildAssetsDir
+  // Nitro expects app config on `config.app` rather than `config._app`
+  nuxt.options.publicRuntimeConfig.app = nuxt.options.publicRuntimeConfig.app || {}
+  Object.assign(nuxt.options.publicRuntimeConfig.app, nuxt.options.publicRuntimeConfig._app)
+
   // Disable loading-screen
   // @ts-ignore
   nuxt.options.build.loadingScreen = false

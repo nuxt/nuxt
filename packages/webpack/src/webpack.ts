@@ -13,6 +13,8 @@ import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddl
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
 
 import type { Nuxt } from '@nuxt/schema'
+import { joinURL } from 'ufo'
+import { DynamicBasePlugin } from '../../vite/src/plugins/dynamic-base'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
 import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
@@ -113,6 +115,11 @@ class WebpackBundler {
     this.compilers = webpackConfigs.map((config) => {
       // Support virtual modules (input)
       config.plugins.push(this.virtualModules)
+      config.plugins.push(DynamicBasePlugin.webpack({
+        env: this.nuxt.options.dev ? 'dev' : config.name as 'client',
+        devAppConfig: this.nuxt.options.app,
+        globalPublicPath: '__webpack_public_path__'
+      }))
 
       // Create compiler
       const compiler = webpack(config)
@@ -210,7 +217,7 @@ class WebpackBundler {
         // @ts-ignore
         compiler,
         {
-          publicPath: buildOptions.publicPath,
+          publicPath: joinURL(this.nuxt.options.app.baseURL, this.nuxt.options.app.buildAssetsDir),
           outputFileSystem: this.mfs,
           stats: 'none',
           ...buildOptions.devMiddleware
@@ -229,7 +236,7 @@ class WebpackBundler {
         {
           log: false,
           heartbeat: 10000,
-          path: `/__webpack_hmr/${name}`,
+          path: joinURL(this.nuxt.options.app.baseURL, '__webpack_hmr', name),
           ...hotMiddlewareOptions
         } as WebpackHotMiddlewareOptions
       )

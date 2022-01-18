@@ -11,6 +11,12 @@ for (const type of ['private', 'public']) {
   }
 }
 
+// Load dynamic app configuration
+const appConfig = _runtimeConfig.public.app
+appConfig.baseURL = process.env.NUXT_APP_BASE_URL || appConfig.baseURL
+appConfig.cdnURL = process.env.NUXT_APP_CDN_URL || appConfig.cdnURL
+appConfig.buildAssetsDir = process.env.NUXT_APP_BUILD_ASSETS_DIR || appConfig.buildAssetsDir
+
 // Named exports
 export const privateConfig = deepFreeze(defu(_runtimeConfig.private, _runtimeConfig.public))
 export const publicConfig = deepFreeze(_runtimeConfig.public)

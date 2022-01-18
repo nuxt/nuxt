@@ -16,10 +16,9 @@ export default {
    * This can be useful if you need to serve Nuxt as a different context root, from
    * within a bigger web site.
    * @version 2
-   * @version 3
    */
   base: {
-    $resolve: (val = '/') => withTrailingSlash(normalizeURL(val))
+    $resolve: (val, get) => val ? withTrailingSlash(normalizeURL(val)) : get('app.baseURL')
   },
 
   /** @private */

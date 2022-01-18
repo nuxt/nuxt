@@ -2,9 +2,10 @@ import { createError } from 'h3'
 import { withoutTrailingSlash, withLeadingSlash, parseURL } from 'ufo'
 // @ts-ignore
 import { getAsset, readAsset } from '#static'
+import { buildAssetsDir } from '#paths'
 
 const METHODS = ['HEAD', 'GET']
-const PUBLIC_PATH = process.env.PUBLIC_PATH // Default: /_nuxt/
+
 const TWO_DAYS = 2 * 60 * 60 * 24
 const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + '/' + process.env.NUXT_STATIC_VERSION
 
@@ -26,8 +27,10 @@ export default async function serveStatic (req, res) {
     }
   }
 
+  const isBuildAsset = id.startsWith(buildAssetsDir())
+
   if (!asset) {
-    if (id.startsWith(PUBLIC_PATH) && !id.startsWith(STATIC_ASSETS_BASE)) {
+    if (isBuildAsset && !id.startsWith(STATIC_ASSETS_BASE)) {
       throw createError({
         statusMessage: 'Cannot find static asset ' + id,
         statusCode: 404
@@ -62,7 +65,7 @@ export default async function serveStatic (req, res) {
     res.setHeader('Last-Modified', asset.mtime)
   }
 
-  if (id.startsWith(PUBLIC_PATH)) {
+  if (isBuildAsset) {
     res.setHeader('Cache-Control', `max-age=${TWO_DAYS}, immutable`)
   }
 

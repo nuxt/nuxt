@@ -5,7 +5,7 @@ import consola from 'consola'
 import webpack from 'webpack'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import { escapeRegExp } from 'lodash-es'
-import { hasProtocol, joinURL } from 'ufo'
+import { joinURL } from 'ufo'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
 
@@ -194,9 +194,7 @@ function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] 
     path: resolve(options.buildDir, 'dist', ctx.isServer ? 'server' : 'client'),
     filename: fileName(ctx, 'app'),
     chunkFilename: fileName(ctx, 'chunk'),
-    publicPath: hasProtocol(options.build.publicPath, true)
-      ? options.build.publicPath
-      : joinURL(options.router.base, options.build.publicPath)
+    publicPath: joinURL(options.app.baseURL, options.app.buildAssetsDir)
   }
 }
 

@@ -19,6 +19,7 @@ export interface NitroHooks {
   'nitro:document': (htmlTemplate: { src: string, contents: string, dst: string }) => void
   'nitro:rollup:before': (context: NitroContext) => void | Promise<void>
   'nitro:compiled': (context: NitroContext) => void
+  'nitro:generate': (context: NitroContext) => void | Promise<void>
   'close': () => void
 }
 
@@ -71,8 +72,8 @@ export interface NitroContext {
     generateDir: string
     publicDir: string
     serverDir: string
-    routerBase: string
-    publicPath: string
+    baseURL: string
+    buildAssetsDir: string
     isStatic: boolean
     fullStatic: boolean
     staticAssets: any
@@ -139,8 +140,8 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       generateDir: nuxtOptions.generate.dir,
       publicDir: resolve(nuxtOptions.srcDir, nuxtOptions.dir.public || nuxtOptions.dir.static),
       serverDir: resolve(nuxtOptions.srcDir, (nuxtOptions.dir as any).server || 'server'),
-      routerBase: nuxtOptions.router.base,
-      publicPath: nuxtOptions.app.assetsPath,
+      baseURL: nuxtOptions.app.baseURL,
+      buildAssetsDir: nuxtOptions.app.buildAssetsDir,
       isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,
       fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
       staticAssets: nuxtOptions.generate.staticAssets,

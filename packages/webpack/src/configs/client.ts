@@ -4,6 +4,7 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 import type { ClientOptions } from 'webpack-hot-middleware'
+import { joinURL } from 'ufo'
 import { applyPresets, WebpackConfigContext } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 
@@ -53,7 +54,7 @@ function clientHMR (ctx: WebpackConfigContext) {
   const hotMiddlewareClientOptions = {
     reload: true,
     timeout: 30000,
-    path: `${options.router.base}/__webpack_hmr/${ctx.name}`.replace(/\/\//g, '/'),
+    path: joinURL(options.app.baseURL, '__webpack_hmr', ctx.name),
     ...clientOptions,
     ansiColors: JSON.stringify(clientOptions.ansiColors || {}),
     overlayStyles: JSON.stringify(clientOptions.overlayStyles || {}),

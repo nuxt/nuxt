@@ -12,6 +12,7 @@ import servePlaceholder from 'serve-placeholder'
 import serveStatic from 'serve-static'
 import { resolve } from 'pathe'
 import connect from 'connect'
+import { joinURL } from 'ufo'
 import type { NitroContext } from '../context'
 import { handleVfs } from './vfs'
 
@@ -76,8 +77,9 @@ export function createDevServer (nitroContext: NitroContext) {
   const app = createApp()
 
   // _nuxt and static
-  app.use(nitroContext._nuxt.publicPath, serveStatic(resolve(nitroContext._nuxt.buildDir, 'dist/client')))
-  app.use(nitroContext._nuxt.routerBase, serveStatic(resolve(nitroContext._nuxt.publicDir)))
+  const buildAssetsURL = joinURL(nitroContext._nuxt.baseURL, nitroContext._nuxt.buildAssetsDir)
+  app.use(buildAssetsURL, serveStatic(resolve(nitroContext._nuxt.buildDir, 'dist/client')))
+  app.use(nitroContext._nuxt.baseURL, serveStatic(resolve(nitroContext._nuxt.publicDir)))
 
   // debugging endpoint to view vfs
   app.use('/_vfs', useBase('/_vfs', handleVfs(nitroContext)))
@@ -89,7 +91,7 @@ export function createDevServer (nitroContext: NitroContext) {
   app.use(devMiddleware.middleware)
 
   // serve placeholder 404 assets instead of hitting SSR
-  app.use(nitroContext._nuxt.publicPath, servePlaceholder())
+  app.use(buildAssetsURL, servePlaceholder())
 
   // SSR Proxy
   const proxy = httpProxy.createProxy()

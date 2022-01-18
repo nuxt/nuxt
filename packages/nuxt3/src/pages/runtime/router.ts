@@ -8,7 +8,7 @@ import {
 import NuxtNestedPage from './nested-page.vue'
 import NuxtPage from './page.vue'
 import NuxtLayout from './layout'
-import { defineNuxtPlugin } from '#app'
+import { defineNuxtPlugin, useRuntimeConfig } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 
@@ -29,9 +29,10 @@ export default defineNuxtPlugin((nuxtApp) => {
   // TODO: remove before release - present for backwards compatibility & intentionally undocumented
   nuxtApp.vueApp.component('NuxtChild', NuxtNestedPage)
 
+  const { baseURL } = useRuntimeConfig().app
   const routerHistory = process.client
-    ? createWebHistory()
-    : createMemoryHistory()
+    ? createWebHistory(baseURL)
+    : createMemoryHistory(baseURL)
 
   const router = createRouter({
     history: routerHistory,

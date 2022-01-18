@@ -1,6 +1,7 @@
 import { resolve } from 'pathe'
 import * as vite from 'vite'
 import consola from 'consola'
+import { withoutLeadingSlash } from 'ufo'
 import { distDir } from '../dirs'
 import { warmupViteServer } from '../../../vite/src/utils/warmup'
 import { buildClient } from './client'
@@ -73,6 +74,7 @@ async function bundle (nuxt: Nuxt, builder: any) {
         publicDir: resolve(nuxt.options.srcDir, nuxt.options.dir.static),
         clearScreen: false,
         build: {
+          assetsDir: withoutLeadingSlash(nuxt.options.app.buildAssetsDir),
           emptyOutDir: false
         },
         plugins: [

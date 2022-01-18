@@ -5,6 +5,7 @@ import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import { sanitizeFilePath } from 'mlly'
+import { joinURL, withoutLeadingSlash } from 'ufo'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -47,7 +48,9 @@ export async function bundle (nuxt: Nuxt) {
             'abort-controller': 'unenv/runtime/mock/empty'
           }
         },
-        base: nuxt.options.build.publicPath,
+        base: nuxt.options.dev
+          ? joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
+          : '/__NUXT_BASE__/',
         publicDir: resolve(nuxt.options.srcDir, nuxt.options.dir.public),
         // TODO: move to kit schema when it exists
         vue: {
@@ -71,6 +74,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         clearScreen: false,
         build: {
+          assetsDir: withoutLeadingSlash(nuxt.options.app.buildAssetsDir),
           emptyOutDir: false,
           rollupOptions: {
             input: resolve(nuxt.options.appDir, 'entry'),

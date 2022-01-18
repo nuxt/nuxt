@@ -3,6 +3,7 @@ import * as vite from 'vite'
 import { createVuePlugin } from 'vite-plugin-vue2'
 import PluginLegacy from '@vitejs/plugin-legacy'
 import consola from 'consola'
+import { joinURL } from 'ufo'
 import { devStyleSSRPlugin } from '../../../vite/src/plugins/dev-ssr-css'
 import { jsxPlugin } from './plugins/jsx'
 import { ViteBuildContext, ViteOptions } from './types'
@@ -28,7 +29,6 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     build: {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
-      assetsDir: '.',
       rollupOptions: {
         input: resolve(ctx.nuxt.options.buildDir, 'client.js')
       },
@@ -39,7 +39,10 @@ export async function buildClient (ctx: ViteBuildContext) {
       jsxPlugin(),
       createVuePlugin(ctx.config.vue),
       PluginLegacy(),
-      devStyleSSRPlugin(ctx.nuxt.options.rootDir)
+      devStyleSSRPlugin({
+        rootDir: ctx.nuxt.options.rootDir,
+        buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
+      })
     ],
     server: {
       middlewareMode: true

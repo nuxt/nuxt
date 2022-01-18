@@ -4,7 +4,7 @@ import * as rollup from 'rollup'
 import fse from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
-import { hl, prettyPath, serializeTemplate, writeFile, isDirectory, readDirRecursively, replaceAll } from './utils'
+import { hl, prettyPath, serializeTemplate, writeFile, isDirectory, replaceAll } from './utils'
 import { NitroContext } from './context'
 import { scanMiddleware } from './server/middleware'
 
@@ -30,20 +30,17 @@ async function cleanupDir (dir: string) {
 export async function generate (nitroContext: NitroContext) {
   consola.start('Generating public...')
 
+  await nitroContext._internal.hooks.callHook('nitro:generate', nitroContext)
+
   const publicDir = nitroContext._nuxt.publicDir
-  let publicFiles: string[] = []
   if (await isDirectory(publicDir)) {
-    publicFiles = readDirRecursively(publicDir).map(r => r.replace(publicDir, ''))
     await fse.copy(publicDir, nitroContext.output.publicDir)
   }
 
   const clientDist = resolve(nitroContext._nuxt.buildDir, 'dist/client')
   if (await isDirectory(clientDist)) {
-    await fse.copy(clientDist, join(nitroContext.output.publicDir, nitroContext._nuxt.publicPath), {
-      // TODO: Workaround vite's issue that duplicates public files
-      // https://github.com/nuxt/framework/issues/1192
-      filter: src => !publicFiles.includes(src.replace(clientDist, ''))
-    })
+    const buildAssetsDir = join(nitroContext.output.publicDir, nitroContext._nuxt.buildAssetsDir)
+    await fse.copy(clientDist, buildAssetsDir)
   }
 
   consola.success('Generated public ' + prettyPath(nitroContext.output.publicDir))

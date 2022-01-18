@@ -23,10 +23,10 @@ export interface ServerMiddleware {
   promisify?: boolean // Default is true
 }
 
-function filesToMiddleware (files: string[], baseDir: string, basePath: string, overrides?: Partial<ServerMiddleware>): ServerMiddleware[] {
+function filesToMiddleware (files: string[], baseDir: string, baseURL: string, overrides?: Partial<ServerMiddleware>): ServerMiddleware[] {
   return files.map((file) => {
     const route = joinURL(
-      basePath,
+      baseURL,
       file
         .slice(0, file.length - extname(file).length)
         .replace(/\/index$/, '')

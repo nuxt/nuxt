@@ -1,5 +1,6 @@
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
+import { joinURL } from 'ufo'
 import type { ViteBuildContext } from './vite'
 
 export async function writeManifest (ctx: ViteBuildContext, extraEntries: string[] = []) {
@@ -15,7 +16,7 @@ export async function writeManifest (ctx: ViteBuildContext, extraEntries: string
 
   // Legacy dev manifest
   const devClientManifest = {
-    publicPath: ctx.nuxt.options.build.publicPath,
+    publicPath: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
     all: entries,
     initial: entries,
     async: [],

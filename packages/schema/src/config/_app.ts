@@ -1,7 +1,6 @@
 import { resolve, join } from 'pathe'
 import { existsSync, readdirSync } from 'fs'
 import defu from 'defu'
-import { isRelative, joinURL, hasProtocol } from 'ufo'
 
 export default {
   /** Vue.js config */
@@ -29,16 +28,40 @@ export default {
   /**
    * Nuxt App configuration.
    * @version 2
+   * @version 3
    */
   app: {
-    $resolve: (val, get) => {
-      const useCDN = hasProtocol(get('build.publicPath'), true) && !get('dev')
-      const isRelativePublicPath = isRelative(get('build.publicPath'))
-      return defu(val, {
-        basePath: get('router.base'),
-        assetsPath: isRelativePublicPath ? get('build.publicPath') : useCDN ? '/' : joinURL(get('router.base'), get('build.publicPath')),
-        cdnURL: useCDN ? get('build.publicPath') : null
-      })
+    /**
+     * The base path of your Nuxt application.
+     *
+     * This can be set at runtime by setting the BASE_PATH environment variable.
+     * @example
+     * ```bash
+     * BASE_PATH=/prefix/ node .output/server/index.mjs
+     * ```
+     */
+    baseURL: '/',
+    /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
+    buildAssetsDir: '/_nuxt/',
+    /**
+     * The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set).
+     * @deprecated - use `buildAssetsDir` instead
+     * @version 2
+     */
+    assetsPath: {
+      $resolve: (val, get) => val ?? get('buildAssetsDir')
+    },
+    /**
+     * An absolute URL to serve the public folder from (production-only).
+     *
+     * This can be set to a different value at runtime by setting the CDN_URL environment variable.
+     * @example
+     * ```bash
+     * CDN_URL=https://mycdn.org/ node .output/server/index.mjs
+     * ```
+    */
+    cdnURL: {
+      $resolve: (val, get) => get('dev') ? null : val || null
     }
   },
 
@@ -302,7 +325,7 @@ export default {
    * @see [vue@3 documentation](https://v3.vuejs.org/guide/transitions-enterleave.html)
    * @version 2
    */
-   pageTransition: {
+  pageTransition: {
     $resolve: (val, get) => {
       val = typeof val === 'string' ? { name: val } : val
       return defu(val, {

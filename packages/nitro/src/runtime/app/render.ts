@@ -2,6 +2,7 @@ import type { ServerResponse } from 'http'
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 import { privateConfig, publicConfig } from './config'
+import { buildAssetsURL } from './paths'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.mjs'
 
@@ -12,8 +13,6 @@ const PAYLOAD_JS = '/payload.js'
 const getClientManifest = cachedImport(() => import('#build/dist/server/client.manifest.mjs'))
 const getSSRApp = !process.env.NUXT_NO_SSR && cachedImport(() => import('#build/dist/server/server.mjs'))
 
-const publicPath = (publicConfig.app && publicConfig.app.assetsPath) || process.env.PUBLIC_PATH || '/_nuxt'
-
 const getSSRRenderer = cachedResult(async () => {
   // Load client manifest
   const clientManifest = await getClientManifest()
@@ -23,7 +22,7 @@ const getSSRRenderer = cachedResult(async () => {
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
   // Create renderer
   const { renderToString } = await import('#nitro-renderer')
-  return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath }).renderToString
+  return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath: buildAssetsURL() }).renderToString
 })
 
 const getSPARenderer = cachedResult(async () => {
@@ -50,13 +49,13 @@ const getSPARenderer = cachedResult(async () => {
         entryFiles
           .flatMap(({ css }) => css)
           .filter(css => css != null)
-          .map(file => `<link rel="stylesheet" href="${publicPath}${file}">`)
+          .map(file => `<link rel="stylesheet" href="${buildAssetsURL(file)}">`)
           .join(''),
       renderScripts: () =>
         entryFiles
           .map(({ file }) => {
             const isMJS = !file.endsWith('.js')
-            return `<script ${isMJS ? 'type="module"' : ''} src="${publicPath}${file}"></script>`
+            return `<script ${isMJS ? 'type="module"' : ''} src="${buildAssetsURL(file)}"></script>`
           })
           .join('')
     }

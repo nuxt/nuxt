@@ -21,3 +21,11 @@ declare module '#config' {
   const runtimeConfig: PrivateRuntimeConfig & PublicRuntimeConfig
   export default runtimeConfig
 }
+
+declare module '#paths' {
+  export const baseURL: () => string
+  export const buildAssetsDir: () => string
+
+  export const buildAssetsURL: (...path: string[]) => string
+  export const publicAssetsURL: (...path: string[]) => string
+}

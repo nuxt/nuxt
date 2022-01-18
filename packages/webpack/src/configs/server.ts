@@ -45,9 +45,13 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile
   ]
+  const external = ['#config']
 
   if (!Array.isArray(ctx.config.externals)) { return }
   ctx.config.externals.push(({ request }, cb) => {
+    if (external.includes(request)) {
+      return cb(null, true)
+    }
     if (
       request[0] === '.' ||
       isAbsolute(request) ||
