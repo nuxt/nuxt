@@ -47,8 +47,8 @@ export function scanMiddleware (serverDir: string, onChange?: (results: ServerMi
   const apiDir = resolve(serverDir, 'api')
 
   const scan = async () => {
-    const globalFiles = await globby(pattern, { cwd: globalDir })
-    const apiFiles = await globby(pattern, { cwd: apiDir })
+    const globalFiles = await globby(pattern, { cwd: globalDir, dot: true })
+    const apiFiles = await globby(pattern, { cwd: apiDir, dot: true })
     return [
       ...filesToMiddleware(globalFiles, globalDir, '/', { route: '/' }),
       ...filesToMiddleware(apiFiles, apiDir, '/api', { lazy: true })
