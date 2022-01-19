@@ -18,6 +18,7 @@ export function setupNitroBridge () {
   // Handle legacy property name `assetsPath`
   nuxt.options.app.buildAssetsDir = nuxt.options.app.buildAssetsDir || nuxt.options.app.assetsPath
   nuxt.options.app.assetsPath = nuxt.options.app.buildAssetsDir
+  nuxt.options.app.baseURL = (nuxt.options.app as any).basePath
   // Nitro expects app config on `config.app` rather than `config._app`
   nuxt.options.publicRuntimeConfig.app = nuxt.options.publicRuntimeConfig.app || {}
   Object.assign(nuxt.options.publicRuntimeConfig.app, nuxt.options.publicRuntimeConfig._app)
