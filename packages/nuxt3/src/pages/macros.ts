@@ -12,8 +12,8 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
     name: 'nuxt-pages-macros-transform',
     enforce: 'post',
     transformInclude (id) {
-      // We only process SFC files for macros
-      return parseURL(id).pathname.endsWith('.vue')
+      const { search, pathname } = parseURL(id)
+      return pathname.endsWith('.vue') || parseQuery(search).macro
     },
     transform (code, id) {
       const { search } = parseURL(id)
