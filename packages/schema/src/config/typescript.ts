@@ -10,5 +10,12 @@ export default {
    * You can extend generated `.nuxt/tsconfig.json` using this option
    * @typedef {Awaited<ReturnType<typeof import('pkg-types')['readPackageJSON']>>}
    */
-  tsConfig: {}
+  tsConfig: {},
+
+  /**
+   * Generate a `*.vue` shim.
+   *
+   * We recommend instead either enabling [**Take Over Mode**](https://github.com/johnsoncodehk/volar/discussions/471) or adding **TypeScript Vue Plugin (Volar)** 👉 [[Download](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin)].
+   */
+  shim: true
 }

@@ -8,6 +8,19 @@ type TemplateContext = {
   app: NuxtApp;
 }
 
+export const vueShim = {
+  filename: 'vue-shim.d.ts',
+  write: true,
+  getContents: () =>
+    [
+      'declare module \'*.vue\' {',
+      '  import { DefineComponent } from \'@vue/runtime-core\'',
+      '  const component: DefineComponent<{}, {}, any>',
+      '  export default component',
+      '}'
+    ].join('\n')
+}
+
 // TODO: Use an alias
 export const appComponentTemplate = {
   filename: 'app-component.mjs',
