@@ -28,7 +28,7 @@
   },
   "resolutions": {
     "nuxt3": "workspace:./packages/nuxt3",
-    "@nuxt/ui": "npm:@nuxt/ui-edge@^0.0.0-27346724.df72ccf",
+    "@nuxt/ui": "npm:@nuxt/ui-edge@^0.0.0-27376194.a859489",
     "unbuild": "^0.6.7",
     "jiti": "^1.12.9"
   },
@@ -38,7 +38,7 @@
     "@nuxtjs/eslint-config": "^7.0.0",
     "@nuxtjs/eslint-config-typescript": "^7.0.2",
     "@types/jsdom": "^16",
-    "@types/node": "^16.11.20",
+    "@types/node": "^16.11.21",
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.22.4",
     "esbuild": "^0.14.11",
@@ -54,7 +54,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.5.4",
     "unbuild": "^0.6.7",
-    "vitest": "^0.1.20",
+    "vitest": "^0.1.23",
     "vue-router": "next"
   },
   "packageManager": "yarn@3.1.1",
