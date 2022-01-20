@@ -20,7 +20,7 @@ Object {
     "~~": "/var/nuxt/test",
   },
   "app": Object {
-    "basePath": "/",
+    "baseURL": "/",
     "buildAssetsPath": "/_nuxt/",
     "cdnURL": null,
   },
@@ -325,7 +325,7 @@ Object {
   "privateRuntimeConfig": Object {},
   "publicRuntimeConfig": Object {
     "app": Object {
-      "basePath": "/",
+      "baseURL": "/",
       "buildAssetsPath": "/_nuxt/",
       "cdnURL": null,
     },

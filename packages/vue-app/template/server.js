@@ -59,7 +59,7 @@ const createNext = ssrContext => (opts) => {
   }
   let fullPath = withQuery(opts.path, opts.query)
   const $config = ssrContext.nuxt.config || {}
-  const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
+  const routerBase = ($config.app && $config.app.baseURL) || '<%= router.base %>'
   if (!fullPath.startsWith('http') && (routerBase !== '/' && !fullPath.startsWith(routerBase))) {
     fullPath = joinURL(routerBase, fullPath)
   }

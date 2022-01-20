@@ -455,7 +455,7 @@ export function getNuxtConfig (_options) {
   const isRelativePublicPath = isRelative(options.build.publicPath)
 
   options.app = defu(options.app, {
-    basePath: options.router.base,
+    baseURL: options.router.base,
     buildAssetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
     cdnURL: useCDN ? options.build.publicPath : null
   })
