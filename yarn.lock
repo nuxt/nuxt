@@ -2903,7 +2903,7 @@ __metadata:
     consola: ^2.15.3
     defu: ^5.0.1
     destr: ^1.1.0
-    dot-prop: ^6.0.1
+    dot-prop: ^7.0.0
     esbuild: ^0.14.11
     etag: ^1.8.1
     fs-extra: ^10.0.0
@@ -9456,6 +9456,15 @@ __metadata:
   dependencies:
     is-obj: ^2.0.0
   checksum: 0f47600a4b93e1dc37261da4e6909652c008832a5d3684b5bf9a9a0d3f4c67ea949a86dceed9b72f5733ed8e8e6383cc5958df3bbd0799ee317fd181f2ece700
+  languageName: node
+  linkType: hard
+
+"dot-prop@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "dot-prop@npm:7.0.0"
+  dependencies:
+    type-fest: ^2.10.0
+  checksum: 7ef4ad04a839a9685fd5cca80691f4074d217df31c15601b2d61958b511fa92457ee94b07216dd99e31b054e67cec56a57174ecc1e7df3bad5286d4996f1c13c
   languageName: node
   linkType: hard
 
@@ -20760,6 +20769,13 @@ __metadata:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: d61c4b2eba24009033ae4500d7d818a94fd6d1b481a8111612ee141400d5f1db46f199c014766b9fa9b31a6a7374d96fc748c6d688a78a3ce5a33123839becb7
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "type-fest@npm:2.10.0"
+  checksum: a14df0691efc38fe2d0c88ed28182a979c662b71b9e9776638cbaf0ba081f5afcd95ce23c3085f67367a5555b1984b6db828df57cf3b2ae2d61c01b10fa5bc40
   languageName: node
   linkType: hard
 
