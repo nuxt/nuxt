@@ -6,7 +6,7 @@ import defu from 'defu'
 import { mergeHooks } from 'hookable'
 import consola from 'consola'
 import chalk from 'chalk'
-import dotProp from 'dot-prop'
+import { getProperty } from 'dot-prop'
 import type { NitroPreset, NitroInput } from '../context'
 
 export function hl (str: string) {
@@ -20,7 +20,7 @@ export function prettyPath (p: string, highlight = true) {
 
 export function compileTemplate (contents: string) {
   return (params: Record<string, any>) => contents.replace(/{{ ?([\w.]+) ?}}/g, (_, match) => {
-    const val = dotProp.get(params, match)
+    const val = getProperty(params, match)
     if (!val) {
       consola.warn(`cannot resolve template param '${match}' in ${contents.slice(0, 20)}`)
     }
