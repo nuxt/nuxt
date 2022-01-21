@@ -3316,6 +3316,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.9
     unbuild: latest
+    unplugin: ^0.3.0
     url-loader: ^4.1.1
     vue: 3.2.27
     vue-loader: ^17.0.0

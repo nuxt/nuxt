@@ -7,6 +7,8 @@ export default defineBuildConfig({
   ],
   dependencies: [
     '@nuxt/kit',
+    'unplugin',
+    'webpack-virtual-modules',
     '@vue/babel-preset-jsx',
     'postcss',
     'postcss-import-resolver',
