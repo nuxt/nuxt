@@ -53,15 +53,6 @@ describe('auto-imports:transform', () => {
 
 const excludedNuxtHelpers = ['useHydration']
 
-const typeExports = [
-  'AsyncDataOptions',
-  'AsyncData',
-  'FetchResult',
-  'UseFetchOptions',
-  'CookieOptions',
-  'CookieRef'
-]
-
 describe('auto-imports:nuxt3', () => {
   try {
     const { __dirname } = createCommonJS(import.meta.url)
@@ -69,7 +60,7 @@ describe('auto-imports:nuxt3', () => {
 
     const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
     for (const name of names) {
-      if (excludedNuxtHelpers.includes(name) || typeExports.includes(name)) {
+      if (excludedNuxtHelpers.includes(name)) {
         continue
       }
       it(`should register ${name} globally`, () => {
