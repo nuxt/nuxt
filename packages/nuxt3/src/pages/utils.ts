@@ -1,4 +1,4 @@
-import { basename, extname, relative, resolve } from 'pathe'
+import { basename, extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { resolveFiles } from '@nuxt/kit'
@@ -229,13 +229,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: routes.map((route) => {
-      const metaImportName = `${pascalCase(route.file.replace(/[^\w]/g, ''))}Meta`
-      metaImports.add(`import { meta as ${metaImportName} } from '${route.file}?macro=true'`)
+      const file = normalize(route.file)
+      const metaImportName = `${pascalCase(file.replace(/[^\w]/g, ''))}Meta`
+      metaImports.add(`import { meta as ${metaImportName} } from '${file}?macro=true'`)
       return {
         ...route,
         children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
         meta: route.meta || `{${metaImportName}}` as any,
-        component: `{() => import('${route.file}')}`
+        component: `{() => import('${file}')}`
       }
     })
   }
