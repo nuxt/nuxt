@@ -14,4 +14,5 @@
 | `with-composables` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/with-composables) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/with-composables?file=app.vue&terminal=dev) |
 | `with-layouts` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/with-layouts) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/with-layouts?file=app.vue&terminal=dev) |
 | `with-pages` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/with-pages) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/with-pages?file=app.vue&terminal=dev) |
+| `with-plugins` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/with-plugins) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/with-plugins?file=app.vue&terminal=dev) |
 | `with-wasm` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/with-wasm) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/with-wasm?file=app.vue&terminal=dev) |
