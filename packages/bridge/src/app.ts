@@ -10,6 +10,13 @@ export function setupAppBridge (_options: any) {
   nuxt.options.alias['#app'] = resolve(distDir, 'runtime/index.mjs')
   nuxt.options.alias['#build'] = nuxt.options.buildDir
 
+  // Mock `bundleBuilder.build` to support `nuxi prepare`
+  if (nuxt.options._prepare) {
+    nuxt.hook('builder:prepared', (builder) => {
+      builder.bundleBuilder.build = () => Promise.resolve(builder.bundleBuilder)
+    })
+  }
+
   // Resolve vue2 builds
   nuxt.options.alias.vue2 = resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
   nuxt.options.build.transpile.push('vue')

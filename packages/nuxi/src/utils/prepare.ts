@@ -67,7 +67,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const declarations: string[] = []
 
-  await nuxt.callHook('builder:generateApp')
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
 
   const declaration = [
