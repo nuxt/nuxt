@@ -74,7 +74,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         clearScreen: false,
         build: {
-          assetsDir: withoutLeadingSlash(nuxt.options.app.buildAssetsDir),
+          assetsDir: nuxt.options.dev ? withoutLeadingSlash(nuxt.options.app.buildAssetsDir) : '.',
           emptyOutDir: false,
           rollupOptions: {
             input: resolve(nuxt.options.appDir, 'entry'),
