@@ -86,6 +86,7 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'unref',
       'watch',
       'watchEffect',
+      'isShallow',
 
       // effect
       'effect',

@@ -15,17 +15,17 @@
   "devDependencies": {
     "@nuxt/schema": "3.0.0",
     "unbuild": "latest",
-    "vue": "3.2.27"
+    "vue": "3.2.29"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0",
-    "@vitejs/plugin-vue": "^2.0.1",
+    "@vitejs/plugin-vue": "^2.1.0",
     "@vitejs/plugin-vue-jsx": "^1.3.3",
     "autoprefixer": "^10.4.2",
     "chokidar": "^3.5.3",
     "consola": "^2.15.3",
     "defu": "^5.0.1",
-    "esbuild": "^0.14.11",
+    "esbuild": "^0.14.13",
     "externality": "^0.1.6",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
@@ -40,7 +40,7 @@
     "vite": "^2.7.13"
   },
   "peerDependencies": {
-    "vue": "3.2.27"
+    "vue": "3.2.29"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
