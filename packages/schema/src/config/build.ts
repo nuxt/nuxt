@@ -436,7 +436,7 @@ export default {
    * Each item in transpile can be a package name, a function, a string or regex object matching the
    * dependency's file name.
    *
-   * Tou can also use a function to conditionally transpile, the function will receive a object ({ isDev, isServer, isClient, isModern, isLegacy }).
+   * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
    *
    * @example
    * ```js
