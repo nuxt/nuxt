@@ -3,7 +3,7 @@
     <NuxtLayout v-if="Component" :name="layout || route.meta.layout">
       <NuxtTransition :options="route.meta.transition ?? { name: 'page', mode: 'out-in' }">
         <Suspense @pending="() => onSuspensePending(Component)" @resolve="() => onSuspenseResolved(Component)">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" />
         </Suspense>
       </NuxtTransition>
     </NuxtLayout>

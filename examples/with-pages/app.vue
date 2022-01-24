@@ -20,6 +20,12 @@ const route = useRoute()
         <NuxtLink to="/parent/b" class="n-link-base">
           Parent (b)
         </NuxtLink>
+        <button class="n-link-base" @click="$router.push(`/parent/reload-${(Math.random() * 100).toFixed()}`)">
+          Keyed child
+        </button>
+        <button class="n-link-base" @click="$router.push(`/parent/static-${(Math.random() * 100).toFixed()}`)">
+          Non-keyed child
+        </button>
       </nav>
     </template>
 
