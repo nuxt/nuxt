@@ -1,12 +1,14 @@
 <template>
   <RouterView v-slot="{ Component, route }">
-    <NuxtLayout v-if="Component" :name="layout || route.meta.layout">
-      <NuxtTransition :options="route.meta.transition ?? { name: 'page', mode: 'out-in' }">
-        <Suspense @pending="() => onSuspensePending(Component)" @resolve="() => onSuspenseResolved(Component)">
-          <component :is="Component" />
-        </Suspense>
-      </NuxtTransition>
-    </NuxtLayout>
+    <NuxtTransition :options="route.meta.layoutTransition ?? { name: 'layout', mode: 'out-in' }">
+      <NuxtLayout v-if="Component" :name="layout || route.meta.layout">
+        <NuxtTransition :options="route.meta.pageTransition ?? { name: 'page', mode: 'out-in' }">
+          <Suspense @pending="() => onSuspensePending(Component)" @resolve="() => onSuspenseResolved(Component)">
+            <component :is="Component" />
+          </Suspense>
+        </NuxtTransition>
+      </NuxtLayout>
+    </NuxtTransition>
     <!-- TODO: Handle 404 placeholder -->
   </RouterView>
 </template>

@@ -12,7 +12,8 @@ export const useRoute = () => {
 
 export interface PageMeta {
   [key: string]: any
-  transition?: false | TransitionProps
+  pageTransition?: false | TransitionProps
+  layoutTransition?: false | TransitionProps
   layout?: false | string | Ref<false | string> | ComputedRef<false | string>
   key?: string | ((route: RouteLocationNormalizedLoaded) => string)
   // TODO: https://github.com/vuejs/vue-next/issues/3652
