@@ -29,7 +29,7 @@
     "externality": "^0.1.6",
     "fs-extra": "^10.0.0",
     "magic-string": "^0.25.7",
-    "mlly": "^0.3.19",
+    "mlly": "^0.4.0",
     "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",
     "postcss-import": "^14.0.2",

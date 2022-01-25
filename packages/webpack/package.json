@@ -34,7 +34,7 @@
     "lodash-es": "^4.17.21",
     "memfs": "^3.4.1",
     "mini-css-extract-plugin": "^2.5.3",
-    "mlly": "^0.3.19",
+    "mlly": "^0.4.0",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.4.5",
