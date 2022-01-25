@@ -1,4 +1,4 @@
-import { ComputedRef, /* KeepAliveProps, */ Ref, TransitionProps } from 'vue'
+import { ComputedRef, KeepAliveProps, Ref, TransitionProps } from 'vue'
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw } from 'vue-router'
 import { useNuxtApp } from '#app'
 
@@ -16,8 +16,7 @@ export interface PageMeta {
   layoutTransition?: false | TransitionProps
   layout?: false | string | Ref<false | string> | ComputedRef<false | string>
   key?: string | ((route: RouteLocationNormalizedLoaded) => string)
-  // TODO: https://github.com/vuejs/vue-next/issues/3652
-  // keepalive?: false | KeepAliveProps
+  keepalive?: false | KeepAliveProps
 }
 
 declare module 'vue-router' {

@@ -7,7 +7,7 @@ import {
   NavigationGuard
 } from 'vue-router'
 import NuxtNestedPage from './nested-page.vue'
-import NuxtPage from './page.vue'
+import NuxtPage from './page'
 import NuxtLayout from './layout'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app'
 // @ts-ignore
