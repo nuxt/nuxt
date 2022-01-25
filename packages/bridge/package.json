@@ -56,7 +56,7 @@
     "unplugin": "^0.3.2",
     "unplugin-vue2-script-setup": "0.9.1",
     "vite": "^2.7.13",
-    "vite-plugin-vue2": "^1.9.2",
+    "vite-plugin-vue2": "^1.9.3",
     "vue-template-compiler": "^2.6.14"
   },
   "devDependencies": {
