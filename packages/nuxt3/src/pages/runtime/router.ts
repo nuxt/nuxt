@@ -3,14 +3,17 @@ import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  RouterLink
+  RouterLink,
+  NavigationGuard
 } from 'vue-router'
 import NuxtNestedPage from './nested-page.vue'
 import NuxtPage from './page.vue'
 import NuxtLayout from './layout'
-import { defineNuxtPlugin, useRuntimeConfig } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
+// @ts-ignore
+import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
 declare module 'vue' {
   export interface GlobalComponents {
@@ -57,9 +60,53 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp._route = reactive(route)
 
+  nuxtApp._middleware = nuxtApp._middleware || {
+    global: [],
+    named: {}
+  }
+
+  router.beforeEach(async (to, from) => {
+    nuxtApp._processingMiddleware = true
+
+    type MiddlewareDef = string | NavigationGuard
+    const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
+    for (const component of to.matched) {
+      const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
+      if (!componentMiddleware) { continue }
+      if (Array.isArray(componentMiddleware)) {
+        for (const entry of componentMiddleware) {
+          middlewareEntries.add(entry)
+        }
+      } else {
+        middlewareEntries.add(componentMiddleware)
+      }
+    }
+
+    for (const entry of middlewareEntries) {
+      const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then(r => r.default || r) : entry
+
+      if (process.dev && !middleware) {
+        console.warn(`Unknown middleware: ${entry}. Valid options are ${Object.keys(namedMiddleware).join(', ')}.`)
+      }
+
+      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
+      if (result || result === false) { return result }
+    }
+  })
+
+  router.afterEach(() => {
+    delete nuxtApp._processingMiddleware
+  })
+
   nuxtApp.hook('app:created', async () => {
     if (process.server) {
       router.push(nuxtApp.ssrContext.url)
+
+      router.afterEach((to) => {
+        if (to.fullPath !== nuxtApp.ssrContext.url) {
+          nuxtApp.ssrContext.res.setHeader('Location', to.fullPath)
+        }
+      })
     }
 
     await router.isReady()

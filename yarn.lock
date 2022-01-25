@@ -11048,6 +11048,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-with-middleware@workspace:examples/with-middleware":
+  version: 0.0.0-use.local
+  resolution: "example-with-middleware@workspace:examples/with-middleware"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-with-pages@workspace:examples/with-pages":
   version: 0.0.0-use.local
   resolution: "example-with-pages@workspace:examples/with-pages"

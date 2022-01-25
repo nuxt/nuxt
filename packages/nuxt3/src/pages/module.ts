@@ -2,7 +2,7 @@ import { existsSync } from 'fs'
 import { defineNuxtModule, addTemplate, addPlugin, templateUtils, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { resolve } from 'pathe'
 import { distDir } from '../dirs'
-import { resolveLayouts, resolvePagesRoutes, normalizeRoutes } from './utils'
+import { resolveLayouts, resolvePagesRoutes, normalizeRoutes, resolveMiddleware, getImportName } from './utils'
 import { TransformMacroPlugin, TransformMacroPluginOptions } from './macros'
 
 export default defineNuxtModule({
@@ -40,9 +40,18 @@ export default defineNuxtModule({
 
     nuxt.hook('autoImports:extend', (autoImports) => {
       const composablesFile = resolve(runtimeDir, 'composables')
-      autoImports.push({ name: 'useRouter', as: 'useRouter', from: composablesFile })
-      autoImports.push({ name: 'useRoute', as: 'useRoute', from: composablesFile })
-      autoImports.push({ name: 'definePageMeta', as: 'definePageMeta', from: composablesFile })
+      const composables = [
+        'useRouter',
+        'useRoute',
+        'defineNuxtRouteMiddleware',
+        'definePageMeta',
+        'navigateTo',
+        'abortNavigation',
+        'addRouteMiddleware'
+      ]
+      for (const composable of composables) {
+        autoImports.push({ name: composable, as: composable, from: composablesFile })
+      }
     })
 
     // Extract macros from pages
@@ -67,6 +76,44 @@ export default defineNuxtModule({
         const { routes: serializedRoutes, imports } = normalizeRoutes(pages)
         return [...imports, `export default ${templateUtils.serialize(serializedRoutes)}`].join('\n')
       }
+    })
+
+    // Add middleware template
+    addTemplate({
+      filename: 'middleware.mjs',
+      async getContents () {
+        const middleware = await resolveMiddleware()
+        await nuxt.callHook('pages:middleware:extend', middleware)
+        const middlewareObject = Object.fromEntries(middleware.map(mw => [mw.name, `{() => import('${mw.path}')}`]))
+        const globalMiddleware = middleware.filter(mw => mw.global)
+        return [
+          ...globalMiddleware.map(mw => `import ${getImportName(mw.name)} from '${mw.path}'`),
+          `export const globalMiddleware = [${globalMiddleware.map(mw => getImportName(mw.name)).join(', ')}]`,
+          `export const namedMiddleware = ${templateUtils.serialize(middlewareObject)}`
+        ].join('\n')
+      }
+    })
+
+    addTemplate({
+      filename: 'middleware.d.ts',
+      write: true,
+      getContents: async () => {
+        const composablesFile = resolve(runtimeDir, 'composables')
+        const middleware = await resolveMiddleware()
+        return [
+          'import type { NavigationGuard } from \'vue-router\'',
+          `export type MiddlewareKey = ${middleware.map(mw => `"${mw.name}"`).join(' | ') || 'string'}`,
+          `declare module '${composablesFile}' {`,
+          '  interface PageMeta {',
+          '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
+          '  }',
+          '}'
+        ].join('\n')
+      }
+    })
+
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: resolve(nuxt.options.buildDir, 'middleware.d.ts') })
     })
 
     // Add layouts template
