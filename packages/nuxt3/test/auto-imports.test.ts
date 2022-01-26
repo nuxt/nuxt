@@ -46,8 +46,8 @@ describe('auto-imports:transform', () => {
     expect(result).to.equal('import { computed } from \'bar\';// import { computed } from "foo"\n;const a = computed(0)')
   })
 
-  it('should exclude files from transform', async () => {
-    expect(await transform('const a = foo()')).to.not.include('import { foo } from "excluded"')
+  it('should exclude files from transform', () => {
+    expect(transformPlugin.transformInclude.call({ error: null, warn: null }, 'excluded')).to.equal(false)
   })
 })
 
