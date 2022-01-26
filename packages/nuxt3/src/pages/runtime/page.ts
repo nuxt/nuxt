@@ -25,26 +25,34 @@ export default defineComponent({
       const hasLayout = props.layout ?? route.meta.layout ?? 'default' in layouts
 
       return h(RouterView, {}, {
-        default: ({ Component }: RouterViewSlotProps) => Component && wrapIf(Transition, hasLayout && (route.meta.layoutTransition ?? defaultLayoutTransition), {
-          default: () => wrapIf(NuxtLayout, hasLayout && { layout: props.layout ?? route.meta.layout }, {
-            default: () => wrapIf(Transition, route.meta.pageTransition ?? defaultPageTransition, {
-              default: () => wrapIf(KeepAlive, process.client && route.meta.keepalive, h(Suspense, {
+        default: ({ Component }: RouterViewSlotProps) => Component &&
+        wrapIf(Transition, hasLayout && (route.meta.layoutTransition ?? defaultLayoutTransition),
+          wrapIf(NuxtLayout, hasLayout && { name: props.layout ?? route.meta.layout },
+            wrapIf(Transition, route.meta.pageTransition ?? defaultPageTransition,
+              wrapInKeepAlive(route.meta.keepalive, h(Suspense, {
                 onPending: () => nuxtApp.callHook('page:start', Component),
                 onResolve: () => nuxtApp.callHook('page:finish', Component)
-              }, { default: () => h(Component) }))
-            })
-          })
-        })
+              }, { default: () => h(Component) })
+              )
+            )
+          )).default()
       })
     }
   }
 })
 
-const wrapIf = (component: Component, props: any, slotsOrChildren: any) => {
-  if (props) {
-    return h(component, props === true ? {} : props, slotsOrChildren)
+const Fragment = {
+  setup (props, { slots }) {
+    return () => slots.default()
   }
-  return slotsOrChildren.default?.() || slotsOrChildren
+}
+
+const wrapIf = (component: Component, props: any, slots: any) => {
+  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
+}
+
+const wrapInKeepAlive = (props: any, children: any) => {
+  return { default: () => process.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }
 
 const defaultLayoutTransition = { name: 'layout', mode: 'out-in' }

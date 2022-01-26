@@ -112,8 +112,27 @@ export default defineNuxtModule({
       }
     })
 
+    addTemplate({
+      filename: 'layouts.d.ts',
+      write: true,
+      getContents: async () => {
+        const composablesFile = resolve(runtimeDir, 'composables')
+        const layouts = await resolveLayouts(nuxt)
+        return [
+          'import { ComputedRef, Ref } from \'vue\'',
+          `export type LayoutKey = ${layouts.map(layout => `"${layout.name}"`).join(' | ') || 'string'}`,
+          `declare module '${composablesFile}' {`,
+          '  interface PageMeta {',
+          '    layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>',
+          '  }',
+          '}'
+        ].join('\n')
+      }
+    })
+
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolve(nuxt.options.buildDir, 'middleware.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'layouts.d.ts') })
     })
 
     // Add layouts template

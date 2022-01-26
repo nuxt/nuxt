@@ -66,6 +66,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   router.beforeEach(async (to, from) => {
+    to.meta = reactive(to.meta)
     nuxtApp._processingMiddleware = true
 
     type MiddlewareDef = string | NavigationGuard
