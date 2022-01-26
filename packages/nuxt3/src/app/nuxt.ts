@@ -20,6 +20,7 @@ export interface RuntimeNuxtHooks {
   'app:beforeMount': (app: App<Element>) => HookResult
   'app:mounted': (app: App<Element>) => HookResult
   'app:rendered': () => HookResult
+  'app:suspense:resolve': (Component?: VNode) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'meta:register': (metaRenderers: Array<(nuxt: NuxtApp) => NuxtMeta | Promise<NuxtMeta>>) => HookResult
