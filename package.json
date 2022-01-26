@@ -30,7 +30,7 @@
     "nuxt3": "workspace:./packages/nuxt3",
     "@nuxt/ui": "npm:@nuxt/ui-edge@^0.0.0-27376194.a859489",
     "unbuild": "^0.6.8",
-    "jiti": "^1.12.9"
+    "jiti": "^1.12.14"
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.0.14",
@@ -41,12 +41,12 @@
     "@types/node": "^16.11.21",
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.22.6",
-    "esbuild": "^0.14.13",
+    "esbuild": "^0.14.14",
     "eslint": "^8.7.0",
-    "eslint-plugin-jsdoc": "^37.6.3",
+    "eslint-plugin-jsdoc": "^37.7.0",
     "execa": "^6.0.0",
     "globby": "^13.1.0",
-    "jiti": "^1.12.9",
+    "jiti": "^1.12.13",
     "lerna": "^4.0.0",
     "markdownlint-cli": "^0.30.0",
     "miniflare": "^1.4.1",

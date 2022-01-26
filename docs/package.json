@@ -14,7 +14,7 @@
     "@docus/theme": "1.2.2",
     "@nuxt/typescript-build": "^2.1.0",
     "fs-extra": "^10.0.0",
-    "jiti": "^1.12.9",
+    "jiti": "^1.12.13",
     "pathe": "^0.2.0",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
