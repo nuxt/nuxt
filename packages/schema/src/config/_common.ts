@@ -433,6 +433,7 @@ export default {
     layouts: 'layouts',
     /**
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
+     * @version 3
      * @version 2
      */
     middleware: 'middleware',

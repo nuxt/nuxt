@@ -47,6 +47,11 @@ export type NuxtMiddleware = {
   global?: boolean
 }
 
+export type NuxtLayout = {
+  name: string
+  file: string
+}
+
 export interface NuxtHooks {
   // Kit
   'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
@@ -58,6 +63,7 @@ export interface NuxtHooks {
   'builder:generateApp': () => HookResult
   'pages:extend': (pages: NuxtPage[]) => HookResult
   'pages:middleware:extend': (middleware: NuxtMiddleware[]) => HookResult
+  'pages:layouts:extend': (layouts: NuxtLayout[]) => HookResult
 
   // Auto imports
   'autoImports:sources': (autoImportSources: AutoImportSource[]) => HookResult

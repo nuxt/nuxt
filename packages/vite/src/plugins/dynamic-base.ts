@@ -1,4 +1,5 @@
 import { createUnplugin } from 'unplugin'
+import escapeRE from 'escape-string-regexp'
 import type { Plugin } from 'vite'
 
 interface DynamicBasePluginOptions {
@@ -6,8 +7,6 @@ interface DynamicBasePluginOptions {
   devAppConfig?: Record<string, any>
   globalPublicPath?: string
 }
-
-const escapeRE = (str: string) => str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
 export const RelativeAssetPlugin = function (): Plugin {
   return {

@@ -3182,6 +3182,7 @@ __metadata:
     consola: ^2.15.3
     defu: ^5.0.1
     esbuild: ^0.14.14
+    escape-string-regexp: ^5.0.0
     externality: ^0.1.6
     fs-extra: ^10.0.0
     magic-string: ^0.25.7
@@ -3298,6 +3299,7 @@ __metadata:
     css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.0.16
     esbuild-loader: ^2.18.0
+    escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
     fs-extra: ^10.0.0
     glob: ^7.2.0
@@ -9556,6 +9558,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"escape-string-regexp@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "escape-string-regexp@npm:5.0.0"
+  checksum: 20daabe197f3cb198ec28546deebcf24b3dbb1a5a269184381b3116d12f0532e06007f4bc8da25669d6a7f8efb68db0758df4cd981f57bc5b57f521a3e12c59e
+  languageName: node
+  linkType: hard
+
 "eslint-config-standard@npm:^16.0.3":
   version: 16.0.3
   resolution: "eslint-config-standard@npm:16.0.3"
@@ -14841,6 +14850,7 @@ __metadata:
     cookie-es: ^0.5.0
     defu: ^5.0.1
     destr: ^1.1.0
+    escape-string-regexp: ^5.0.0
     globby: ^13.1.0
     h3: ^0.3.9
     hash-sum: ^2.0.0

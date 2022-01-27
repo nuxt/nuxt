@@ -3,6 +3,7 @@ import { createUnplugin } from 'unplugin'
 import consola from 'consola'
 import { isAbsolute, relative, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
+import escapeRE from 'escape-string-regexp'
 
 const _require = createRequire(import.meta.url)
 
@@ -10,8 +11,6 @@ interface ImportProtectionOptions {
   rootDir: string
   patterns: [importPattern: string | RegExp, warning?: string][]
 }
-
-const escapeRE = (str: string) => str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
 export const vueAppPatterns = (nuxt: Nuxt) => [
   [/^(nuxt3|nuxt)/, '`nuxt3`/`nuxt` cannot be imported directly. Instead, import runtime Nuxt composables from `#app` or `#imports`.'],
