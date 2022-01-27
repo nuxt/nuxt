@@ -2496,7 +2496,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@types/node-fetch": ^3.0.2
     "@vitejs/plugin-legacy": ^1.6.4
-    "@vue/composition-api": ^1.4.4
+    "@vue/composition-api": ^1.4.5
     "@vueuse/head": ^0.7.5
     acorn: ^8.7.0
     consola: ^2.15.3
@@ -5058,14 +5058,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/composition-api@npm:^1.4.4":
-  version: 1.4.4
-  resolution: "@vue/composition-api@npm:1.4.4"
-  dependencies:
-    tslib: ^2.3.1
+"@vue/composition-api@npm:^1.4.5":
+  version: 1.4.5
+  resolution: "@vue/composition-api@npm:1.4.5"
   peerDependencies:
     vue: ">= 2.5 < 3"
-  checksum: eaada93a68aba0adb1469a1df3d50814ab564361a02f010de250e88c48b17fe77ed000ba5c5f0ed7ac79cb3384603e263a425d51df85562bda15ef79743a3415
+  checksum: 6534d7a37ca31e142c1e0c0a16cd36d36c8c7dd5400f7df615533ae4ca4d64e95e59046b14e1d341a9525423cf43a90bd82f65622526b191c1b121716dfb449f
   languageName: node
   linkType: hard
 
@@ -6897,18 +6895,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai@npm:^4.3.4":
-  version: 4.3.5
-  resolution: "chai@npm:4.3.5"
+"chai@npm:^4.3.6":
+  version: 4.3.6
+  resolution: "chai@npm:4.3.6"
   dependencies:
     assertion-error: ^1.1.0
     check-error: ^1.0.2
     deep-eql: ^3.0.1
     get-func-name: ^2.0.0
-    loupe: ^2.3.0
+    loupe: ^2.3.1
     pathval: ^1.1.1
     type-detect: ^4.0.5
-  checksum: 9514b03fa3fd4331d31cb6067d83b9ccb338e293d3686b2f431fd442e457e9fd8a999d4c9435a025c0e4af8795f047eb54294516d5f33cfe2d1bd6bfbcd911db
+  checksum: acff93fd537f96d4a4d62dd83810285dffcfccb5089e1bf2a1205b28ec82d93dff551368722893cf85004282df10ee68802737c33c90c5493957ed449ed7ce71
   languageName: node
   linkType: hard
 
@@ -9465,7 +9463,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.12, esbuild@npm:^0.14.14, esbuild@npm:^0.14.6":
+"esbuild@npm:^0.14.14, esbuild@npm:^0.14.6":
   version: 0.14.14
   resolution: "esbuild@npm:0.14.14"
   dependencies:
@@ -13213,13 +13211,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loupe@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "loupe@npm:2.3.0"
+"loupe@npm:^2.3.1":
+  version: 2.3.1
+  resolution: "loupe@npm:2.3.1"
   dependencies:
     get-func-name: ^2.0.0
-    type-detect: ^4.0.8
-  checksum: 376a08e174e87973ab74751dd07f05c9814a66a47fd458314478a03a1e38746e18104005591676a19c6368d8e057bbf68757f235c7210a39e78b9eefae5563e3
+  checksum: 11b4c4c9eb271b60d4d85e2ef344135d9043575e105045d1e08f10c0eca4b753df4dcfd9e1c0cbf7e19b25556dee6da16633005c47b9a925e293867c66b79f45
   languageName: node
   linkType: hard
 
@@ -13966,7 +13963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.3.10, mlly@npm:^0.3.19, mlly@npm:^0.3.6":
+"mlly@npm:^0.3.10, mlly@npm:^0.3.6":
   version: 0.3.19
   resolution: "mlly@npm:0.3.19"
   checksum: 85d646936d5d94b6783e12257adb64ceac9ece32ccaa33d911d44f0c265a91d4f34092beb39641cd108c14a4228f56fc591af60412f65964c72561fbd244ad36
@@ -14817,8 +14814,8 @@ __metadata:
     object-hash: ^2.2.0
     pathe: ^0.2.0
     typescript: ^4.5.5
-    unbuild: ^0.6.8
-    vitest: ^0.2.3
+    unbuild: ^0.6.9
+    vitest: ^0.2.4
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -18254,7 +18251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.65.0, rollup@npm:^2.66.1":
+"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.66.1":
   version: 2.66.1
   resolution: "rollup@npm:2.66.1"
   dependencies:
@@ -20004,7 +20001,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-detect@npm:^4.0.0, type-detect@npm:^4.0.5, type-detect@npm:^4.0.8":
+"type-detect@npm:^4.0.0, type-detect@npm:^4.0.5":
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 62b5628bff67c0eb0b66afa371bd73e230399a8d2ad30d852716efcc4656a7516904570cd8631a49a3ce57c10225adf5d0cbdcb47f6b0255fe6557c453925a15
@@ -20184,9 +20181,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.6.8":
-  version: 0.6.8
-  resolution: "unbuild@npm:0.6.8"
+"unbuild@npm:^0.6.9":
+  version: 0.6.9
+  resolution: "unbuild@npm:0.6.9"
   dependencies:
     "@rollup/plugin-alias": ^3.1.9
     "@rollup/plugin-commonjs": ^21.0.1
@@ -20197,19 +20194,19 @@ __metadata:
     chalk: ^5.0.0
     consola: ^2.15.3
     defu: ^5.0.1
-    esbuild: ^0.14.12
+    esbuild: ^0.14.14
     hookable: ^5.1.1
-    jiti: ^1.12.9
+    jiti: ^1.12.14
     magic-string: ^0.25.7
     mkdirp: ^1.0.4
     mkdist: ^0.3.9
-    mlly: ^0.3.19
+    mlly: ^0.4.1
     mri: ^1.2.0
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
-    rollup: ^2.65.0
+    rollup: ^2.66.1
     rollup-plugin-dts: ^4.1.0
     rollup-plugin-esbuild: ^4.8.2
     scule: ^0.2.1
@@ -20217,7 +20214,7 @@ __metadata:
     untyped: ^0.3.0
   bin:
     unbuild: dist/cli.mjs
-  checksum: 5054130f6fe294d3cd26f6a529aad811d926274ff52aa50cbe0497bf7d5ae0e3aa75304b33b2f719bc24821a5c61da6ef9dd28af276413cb4a9fce65d0fded72
+  checksum: f3db7b040007247ffd7e1ba66e895bb6fd85a5f1e0f8253b862b6ef0f289d0d394e9cc8fee5edbdef901fcfaecafa2cea259b314919f2c2ca7855e22cdc0cdd6
   languageName: node
   linkType: hard
 
@@ -20777,13 +20774,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "vitest@npm:0.2.3"
+"vitest@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "vitest@npm:0.2.4"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
-    chai: ^4.3.4
+    chai: ^4.3.6
     local-pkg: ^0.4.1
     tinypool: ^0.1.1
     tinyspy: ^0.2.8
@@ -20804,7 +20801,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: e772f603c22770c600c2c5748e2892b1551d5157d36a794b56dd8edda449f8e70280076efaf540759c213abcb62d8e6e793dcbb8f1fe1159f6894cce6010f332
+  checksum: 82c64a58fdab63005b80626bce27937d00f34ff168efb4cf9ca9a71a0c296ea499d861461178387c03c020b88c91b6e77441baf89636d5e18ae1e0b61e5d7148
   languageName: node
   linkType: hard
 

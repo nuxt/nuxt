@@ -24,7 +24,7 @@
     "@nuxt/postcss8": "^1.1.3",
     "@nuxt/schema": "3.0.0",
     "@vitejs/plugin-legacy": "^1.6.4",
-    "@vue/composition-api": "^1.4.4",
+    "@vue/composition-api": "^1.4.5",
     "@vueuse/head": "^0.7.5",
     "acorn": "^8.7.0",
     "consola": "^2.15.3",
