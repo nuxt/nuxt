@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import { promises as fsp } from 'fs'
+import { promises as fsp, existsSync } from 'fs'
 import consola from 'consola'
 import { resolve } from 'pathe'
 import { resolveModule } from '../utils/cjs'
@@ -44,9 +44,9 @@ export default defineNuxtCommand({
       execSync(`${packageManager} install`, { stdio: 'inherit' })
     } else {
       consola.info('Upgrading nuxt...')
-      await fsp.rmdir('node_modules/.cache', { recursive: true })
-      await fsp.rmdir(resolve(rootDir, '.nuxt'), { recursive: true })
-      await fsp.rmdir('node_modules/.vite', { recursive: true })
+      await Promise.all(['node_modules/.cache', resolve(rootDir, '.nuxt'), 'node_modules/.vite'].map((path) => {
+        return existsSync(path) ? fsp.rm(path, { recursive: true }) : undefined
+      }))
       execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt3@latest`, { stdio: 'inherit' })
     }
 
