@@ -14815,7 +14815,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.5
     unbuild: ^0.6.9
-    vitest: ^0.2.4
+    vitest: ^0.2.5
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -19789,10 +19789,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyspy@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "tinyspy@npm:0.2.8"
-  checksum: bbdca68172c3c580e9d4d570f37fb7470db5922531e9db0e5025556524a1a339b3adb0f7ac9d69d26029a24959db2b74487f778921c813d96f24185f2f1fefb6
+"tinyspy@npm:^0.2.10":
+  version: 0.2.10
+  resolution: "tinyspy@npm:0.2.10"
+  checksum: 7c4d89f603f5e12b335f5a97811b11712a6cc44565c2d1c1d76ccf6a0cb9c2b0ca8b7eb84f6cdabd0a49149fb9dababaefadab43bec6d8252dfc797a205f48bd
   languageName: node
   linkType: hard
 
@@ -20774,16 +20774,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "vitest@npm:0.2.4"
+"vitest@npm:^0.2.5":
+  version: 0.2.5
+  resolution: "vitest@npm:0.2.5"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
     chai: ^4.3.6
     local-pkg: ^0.4.1
     tinypool: ^0.1.1
-    tinyspy: ^0.2.8
+    tinyspy: ^0.2.10
     vite: ">=2.7.13"
   peerDependencies:
     "@vitest/ui": "*"
@@ -20801,7 +20801,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 82c64a58fdab63005b80626bce27937d00f34ff168efb4cf9ca9a71a0c296ea499d861461178387c03c020b88c91b6e77441baf89636d5e18ae1e0b61e5d7148
+  checksum: a19bd114afdf10aba8a936e9e61afd74f1c57591cadc798def2e04acf47a3a891e2a57c23ec01348641de572b4876f73a3bb08bbaa0b3f242f4e6b87bca61667
   languageName: node
   linkType: hard
 
