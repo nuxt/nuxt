@@ -50,7 +50,7 @@ export default defineNuxtCommand({
       return (_req, res) => { res.end(contents) }
     })
 
-    console.warn('Do not deploy analyze results! Use `nuxi build` before deployng.')
+    console.warn('Do not deploy analyze results! Use `nuxi build` before deploying.')
 
     console.info('Starting stats server...')
 
