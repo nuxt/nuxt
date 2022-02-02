@@ -28,7 +28,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
-    dotenv: opts.dotenv,
+    dotenv: typeof opts.dotenv === 'undefined' ? {} as DotenvOptions : opts.dotenv,
     globalRc: true,
     overrides: opts.config
   })
