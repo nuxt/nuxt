@@ -8,6 +8,7 @@ export * from './loader/config'
 export * from './loader/nuxt'
 
 // Utils
+export * from './auto-import'
 export * from './build'
 export * from './compatibility'
 export * from './components'
