@@ -49,7 +49,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * })
  * ```
  */
-export interface AddPluginOptions { append?: Boolean }
+export interface AddPluginOptions { append?: boolean }
 export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}) {
   const nuxt = useNuxt()
 

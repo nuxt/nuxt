@@ -18,7 +18,7 @@ export interface AutoImport {
   /**
    * Disable auto import
    */
-  disabled?: Boolean
+  disabled?: boolean
 }
 
 export interface AutoImportSource {
@@ -34,7 +34,7 @@ export interface AutoImportSource {
   /**
    * Disable auto import source
    */
-  disabled?: Boolean
+  disabled?: boolean
 }
 
 export interface AutoImportsOptions {

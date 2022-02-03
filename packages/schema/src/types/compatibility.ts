@@ -13,7 +13,7 @@ export interface NuxtCompatibility {
    * - `true`:  When using Nuxt 2, using bridge module is required
    * - `false`: When using Nuxt 2, using bridge module is not supported
   */
-  bridge?: Boolean
+  bridge?: boolean
 }
 
 export interface NuxtCompatibilityIssue {

@@ -12,10 +12,10 @@ export function addAutoImport (_autoImports: AutoImport | AutoImport[]) {
   })
 }
 
-export function addAutoImportDir (_autoImportDirs: String | String[]) {
+export function addAutoImportDir (_autoImportDirs: string | string[]) {
   assertNuxtCompatibility({ bridge: true })
 
-  useNuxt().hook('autoImports:dirs', (autoImportDirs: String[]) => {
+  useNuxt().hook('autoImports:dirs', (autoImportDirs: string[]) => {
     for (const dir of (Array.isArray(_autoImportDirs) ? _autoImportDirs : [_autoImportDirs])) {
       autoImportDirs.push(dir)
     }

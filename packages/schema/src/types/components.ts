@@ -90,5 +90,5 @@ export interface ComponentsDir extends ScanDir {
 
 export interface ComponentsOptions {
   dirs: (string | ComponentsDir)[]
-  loader?: Boolean
+  loader?: boolean
 }
