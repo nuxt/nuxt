@@ -73,6 +73,13 @@ describe('auto-imports:nuxt3', () => {
 })
 
 const excludedVueHelpers = [
+  // Already globally registered
+  'defineEmits',
+  'defineExpose',
+  'defineProps',
+  'withDefaults',
+  'stop',
+  //
   '__esModule',
   'devtools',
   'EffectScope',

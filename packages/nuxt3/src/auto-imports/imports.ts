@@ -38,11 +38,7 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
     from: 'vue',
     names: [
       // <script setup>
-      'defineEmits',
-      'defineExpose',
-      'defineProps',
       'withCtx',
-      'withDefaults',
       'withDirectives',
       'withKeys',
       'withMemo',
@@ -78,7 +74,6 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'shallowReactive',
       'shallowReadonly',
       'shallowRef',
-      'stop',
       'toRaw',
       'toRef',
       'toRefs',
