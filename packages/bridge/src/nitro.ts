@@ -46,6 +46,7 @@ export function setupNitroBridge () {
   nuxt.addHooks(nitroContext.nuxtHooks)
   nuxt.hook('close', () => nitroContext._internal.hooks.callHook('close'))
   nitroContext._internal.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
+  nitroContext._internal.hooks.hook('nitro:generate', ctx => nuxt.callHook('nitro:generate', ctx))
 
   nuxt.addHooks(nitroDevContext.nuxtHooks)
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
