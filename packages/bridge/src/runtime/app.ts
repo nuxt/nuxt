@@ -66,7 +66,7 @@ export function defineNuxtPlugin (plugin: (nuxtApp: NuxtAppCompat) => void): (ct
   }
 }
 
-export const useNuxtApp = () => {
+export const useNuxtApp = (): NuxtAppCompat => {
   const vm = getCurrentInstance()
 
   if (!vm) {
