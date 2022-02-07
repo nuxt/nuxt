@@ -37,8 +37,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
-
-  nuxtConfig.layers = layers
+  nuxtConfig._extends = layers
 
   // Resolve and apply defaults
   return applyDefaults(NuxtConfigSchema, nuxtConfig) as NuxtOptions
