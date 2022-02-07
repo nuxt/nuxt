@@ -1,24 +1,28 @@
 import { defineComponent, h, Suspense, Transition } from 'vue'
-import { RouterView } from 'vue-router'
-import { wrapIf, wrapInKeepAlive } from './utils'
-import { useNuxtApp } from '#app'
+import { RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
-type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
-type RouterViewSlotProps = Parameters<InstanceOf<typeof RouterView>['$slots']['default']>[0]
+import { generateRouteKey, RouterViewSlotProps, wrapIf, wrapInKeepAlive } from './utils'
+import { useNuxtApp } from '#app'
 
 export default defineComponent({
   name: 'NuxtPage',
-  setup () {
+  props: {
+    pageKey: {
+      type: [Function, String] as unknown as () => string | ((route: RouteLocationNormalizedLoaded) => string),
+      default: null
+    }
+  },
+  setup (props) {
     const nuxtApp = useNuxtApp()
 
     return () => {
       return h(RouterView, {}, {
-        default: ({ Component, route }: RouterViewSlotProps) => Component &&
-            wrapIf(Transition, route.meta.pageTransition ?? defaultPageTransition,
-              wrapInKeepAlive(route.meta.keepalive, h(Suspense, {
-                onPending: () => nuxtApp.callHook('page:start', Component),
-                onResolve: () => nuxtApp.callHook('page:finish', Component)
-              }, { default: () => h(Component) }))).default()
+        default: (routeProps: RouterViewSlotProps) => routeProps.Component &&
+            wrapIf(Transition, routeProps.route.meta.pageTransition ?? defaultPageTransition,
+              wrapInKeepAlive(routeProps.route.meta.keepalive, h(Suspense, {
+                onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
+                onResolve: () => nuxtApp.callHook('page:finish', routeProps.Component)
+              }, { default: () => h(routeProps.Component, { key: generateRouteKey(props.pageKey, routeProps) }) }))).default()
       })
     }
   }

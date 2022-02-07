@@ -1,5 +1,6 @@
 import { expect, describe, it } from 'vitest'
 import { generateRoutesFromFiles } from '../src/pages/utils'
+import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
@@ -188,6 +189,108 @@ describe('pages:generateRoutesFromFiles', () => {
       } else {
         expect(await generateRoutesFromFiles(test.files, pagesDir)).to.deep.equal(test.output)
       }
+    })
+  }
+})
+
+describe('pages:generateRouteKey', () => {
+  const defaultComponent = { type: {} }
+  const getRouteProps = (matchedRoute = {}) => ({
+    Component: defaultComponent,
+    route: {
+      meta: { key: 'route-meta-key' },
+      params: {
+        id: 'foo',
+        optional: 'bar',
+        array: ['a', 'b']
+      },
+      matched: [
+        {
+          components: { default: {} },
+          meta: { key: 'other-meta-key' }
+        },
+        {
+          components: { default: defaultComponent.type },
+          meta: { key: 'matched-meta-key' },
+          ...matchedRoute
+        }
+      ]
+    }
+  }) as any
+
+  const tests = [
+    { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
+    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false },
+    {
+      description: 'should key dynamic routes without keys',
+      route: getRouteProps({
+        path: '/test/:id',
+        meta: {}
+      }),
+      output: '/test/foo'
+    },
+    {
+      description: 'should key dynamic routes without keys',
+      route: getRouteProps({
+        path: '/test/:id(\\d+)',
+        meta: {}
+      }),
+      output: '/test/foo'
+    },
+    {
+      description: 'should key dynamic routes with optional params',
+      route: getRouteProps({
+        path: '/test/:optional?',
+        meta: {}
+      }),
+      output: '/test/bar'
+    },
+    {
+      description: 'should key dynamic routes with optional params',
+      route: getRouteProps({
+        path: '/test/:optional(\\d+)?',
+        meta: {}
+      }),
+      output: '/test/bar'
+    },
+    {
+      description: 'should key dynamic routes with optional params',
+      route: getRouteProps({
+        path: '/test/:undefined(\\d+)?',
+        meta: {}
+      }),
+      output: '/test/'
+    },
+    {
+      description: 'should key dynamic routes with array params',
+      route: getRouteProps({
+        path: '/:array+',
+        meta: {}
+      }),
+      output: '/a,b'
+    },
+    {
+      description: 'should key dynamic routes with array params',
+      route: getRouteProps({
+        path: '/test/:array*',
+        meta: {}
+      }),
+      output: '/test/a,b'
+    },
+    {
+      description: 'should key dynamic routes with array params',
+      route: getRouteProps({
+        path: '/test/:other*',
+        meta: {}
+      }),
+      output: '/test/'
+    }
+  ]
+
+  for (const test of tests) {
+    it(test.description, () => {
+      expect(generateRouteKey(test.override, test.route)).to.deep.equal(test.output)
     })
   }
 })

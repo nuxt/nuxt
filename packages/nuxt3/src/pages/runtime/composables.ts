@@ -14,7 +14,7 @@ export interface PageMeta {
   [key: string]: any
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
-  key?: string | ((route: RouteLocationNormalizedLoaded) => string)
+  key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
 }
 

@@ -6,7 +6,6 @@ import {
   RouterLink,
   NavigationGuard
 } from 'vue-router'
-import NuxtNestedPage from './nested-page.vue'
 import NuxtPage from './page'
 import NuxtLayout from './layout'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app'
@@ -17,20 +16,23 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
 declare module 'vue' {
   export interface GlobalComponents {
-    NuxtNestedPage: typeof NuxtNestedPage
     NuxtPage: typeof NuxtPage
     NuxtLayout: typeof NuxtLayout
     NuxtLink: typeof RouterLink
+    /** @deprecated */
+    NuxtNestedPage: typeof NuxtPage
+    /** @deprecated */
+    NuxtChild: typeof NuxtPage
   }
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.component('NuxtNestedPage', NuxtNestedPage)
   nuxtApp.vueApp.component('NuxtPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtLayout', NuxtLayout)
   nuxtApp.vueApp.component('NuxtLink', RouterLink)
   // TODO: remove before release - present for backwards compatibility & intentionally undocumented
-  nuxtApp.vueApp.component('NuxtChild', NuxtNestedPage)
+  nuxtApp.vueApp.component('NuxtNestedPage', NuxtPage)
+  nuxtApp.vueApp.component('NuxtChild', NuxtPage)
 
   const { baseURL } = useRuntimeConfig().app
   const routerHistory = process.client
