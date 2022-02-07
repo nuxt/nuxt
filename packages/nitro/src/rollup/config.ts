@@ -156,7 +156,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     values: {
       'process.env.NODE_ENV': nitroContext._nuxt.dev ? '"development"' : '"production"',
       'typeof window': '"undefined"',
-      'global.': 'globalThis.',
+      ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
       'process.server': 'true',
       'process.client': 'false',
       'process.env.NUXT_NO_SSR': JSON.stringify(!nitroContext._nuxt.ssr),
