@@ -2,6 +2,7 @@ import { pathToFileURL } from 'url'
 import { resolve } from 'pathe'
 import { globby } from 'globby'
 import type { Plugin } from 'rollup'
+import { genDynamicImport, genObjectFromRawEntries, genImport } from 'knitwork'
 import { serializeImportName } from '../../utils'
 
 const PLUGIN_NAME = 'dynamic-require'
@@ -36,7 +37,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
     name: PLUGIN_NAME,
     transform (code: string, _id: string) {
       return {
-        code: code.replace(DYNAMIC_REQUIRE_RE, `import('${HELPER_DYNAMIC}').then(r => r.default || r).then(dynamicRequire => dynamicRequire($1)).then`),
+        code: code.replace(DYNAMIC_REQUIRE_RE, `${genDynamicImport(HELPER_DYNAMIC, { wrapper: false, interopDefault: true })}.then(dynamicRequire => dynamicRequire($1)).then`),
         map: null
       }
     },
@@ -89,10 +90,8 @@ async function getWebpackChunkMeta (src: string) {
 }
 
 function TMPL_INLINE ({ chunks }: TemplateContext) {
-  return `${chunks.map(i => `import * as ${i.name} from '${i.src}'`).join('\n')}
-const dynamicChunks = {
-  ${chunks.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
-};
+  return `${chunks.map(i => genImport(i.src, { name: '*', as: i.name })).join('\n')}
+const dynamicChunks = ${genObjectFromRawEntries(chunks.map(i => [i.id, i.name]))};
 
 export default function dynamicRequire(id) {
   return Promise.resolve(dynamicChunks[id]);
@@ -101,9 +100,7 @@ export default function dynamicRequire(id) {
 
 function TMPL_LAZY ({ chunks }: TemplateContext) {
   return `
-const dynamicChunks = {
-${chunks.map(i => ` ['${i.id}']: () => import('${i.src}')`).join(',\n')}
-};
+const dynamicChunks = ${genObjectFromRawEntries(chunks.map(i => [i.id, genDynamicImport(i.src)]))};
 
 export default function dynamicRequire(id) {
   return dynamicChunks[id]();

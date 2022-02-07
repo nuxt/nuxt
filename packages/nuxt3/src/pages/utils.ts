@@ -3,6 +3,7 @@ import { encodePath } from 'ufo'
 import type { Nuxt, NuxtMiddleware, NuxtPage } from '@nuxt/schema'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
 import { kebabCase, pascalCase } from 'scule'
+import { genImport, genDynamicImport, genArrayFromRaw } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 
 enum SegmentParserState {
@@ -225,20 +226,20 @@ export async function resolveLayouts (nuxt: Nuxt) {
   return layouts
 }
 
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set()): { imports: Set<string>, routes: NuxtPage[]} {
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set()): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
-    routes: routes.map((route) => {
+    routes: genArrayFromRaw(routes.map((route) => {
       const file = normalize(route.file)
       const metaImportName = getImportName(file) + 'Meta'
-      metaImports.add(`import { meta as ${metaImportName} } from '${file}?macro=true'`)
+      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'meta', as: metaImportName }]))
       return {
-        ...route,
+        ...Object.fromEntries(Object.entries(route).map(([key, value]) => [key, JSON.stringify(value)])),
         children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
-        meta: route.meta || `{${metaImportName}}` as any,
-        component: `{() => import('${file}')}`
+        meta: route.meta ? JSON.stringify(route.meta) : metaImportName,
+        component: genDynamicImport(file)
       }
-    })
+    }))
   }
 }
 

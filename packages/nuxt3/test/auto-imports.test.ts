@@ -28,8 +28,8 @@ describe('auto-imports:transform', () => {
   const transform = (code: string) => transformPlugin.transform.call({ error: null, warn: null }, code, '')
 
   it('should correct inject', async () => {
-    expect(await transform('const a = ref(0)')).to.equal('import { ref } from \'vue\';const a = ref(0)')
-    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.include('import { computed } from \'bar\';')
+    expect(await transform('const a = ref(0)')).to.equal('import { ref } from "vue";const a = ref(0)')
+    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.include('import { computed } from "bar";')
   })
 
   it('should ignore existing imported', async () => {
@@ -43,7 +43,7 @@ describe('auto-imports:transform', () => {
 
   it('should ignore comments', async () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
-    expect(result).to.equal('import { computed } from \'bar\';// import { computed } from "foo"\n;const a = computed(0)')
+    expect(result).to.equal('import { computed } from "bar";// import { computed } from "foo"\n;const a = computed(0)')
   })
 
   it('should exclude files from transform', () => {

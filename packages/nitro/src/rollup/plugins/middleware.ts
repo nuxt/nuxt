@@ -3,6 +3,7 @@ import { relative } from 'pathe'
 import table from 'table'
 import isPrimitive from 'is-primitive'
 import { isDebug } from 'std-env'
+import { genArrayFromRaw, genDynamicImport, genImport } from 'knitwork'
 import type { ServerMiddleware } from '../../server/middleware'
 import virtual from './virtual'
 
@@ -35,15 +36,18 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
         const lazyImports = unique(middleware.filter(m => m.lazy !== false && !imports.includes(m.handle)).map(m => m.handle))
 
         return `
-  ${imports.map(handle => `import ${getImportId(handle)} from '${handle}';`).join('\n')}
+${imports.map(handle => `${genImport(handle, getImportId(handle))};`).join('\n')}
 
-  ${lazyImports.map(handle => `const ${getImportId(handle)} = () => import('${handle}');`).join('\n')}
+${lazyImports.map(handle => `const ${getImportId(handle)} = ${genDynamicImport(handle)};`).join('\n')}
 
-  const middleware = [
-    ${middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify !== undefined ? m.promisify : true} }`).join(',\n')}
-  ];
+const middleware = ${genArrayFromRaw(middleware.map(m => ({
+  route: JSON.stringify(m.route),
+  handle: getImportId(m.handle),
+  lazy: m.lazy || true,
+  promisify: m.promisify !== undefined ? m.promisify : true
+})))};
 
-  export default middleware
+export default middleware
   `
       }
     }

@@ -1,5 +1,6 @@
 import { pascalCase, kebabCase } from 'scule'
 import type { ComponentsDir, Component } from '@nuxt/schema'
+import { genDynamicImport } from 'knitwork'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 
@@ -43,8 +44,8 @@ export async function addComponent (opts: AddComponentOptions) {
     shortPath: opts.filePath,
     async: false,
     level: 0,
-    asyncImport: `() => import('${opts.filePath}').then(r => r['${opts.export || 'default'}'])`,
-    import: `require('${opts.filePath}')['${opts.export || 'default'}']`,
+    asyncImport: `${genDynamicImport(opts.filePath)}.then(r => r['${opts.export || 'default'}'])`,
+    import: `require(${JSON.stringify(opts.filePath)})['${opts.export || 'default'}']`,
 
     ...opts
   }

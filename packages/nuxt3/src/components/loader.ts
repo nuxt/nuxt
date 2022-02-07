@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Component } from '@nuxt/schema'
+import { genImport } from 'knitwork'
 
 interface LoaderOptions {
   getComponents(): Component[]
@@ -36,7 +37,7 @@ function transform (content: string, components: Component[]) {
     if (component) {
       const identifier = map.get(component) || `__nuxt_component_${num++}`
       map.set(component, identifier)
-      imports += `import ${identifier} from "${component.filePath}";`
+      imports += genImport(component.filePath, identifier)
       return ` ${identifier}`
     }
     // no matched

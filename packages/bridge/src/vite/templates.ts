@@ -2,6 +2,7 @@ import hash from 'hash-sum'
 import { resolve } from 'pathe'
 
 import type { Nuxt, NuxtApp } from '@nuxt/schema'
+import { genImport, genObjectFromRawEntries } from 'knitwork'
 
 type TemplateContext = {
   nuxt: Nuxt;
@@ -24,10 +25,8 @@ export const middlewareTemplate = {
         id: m.name || m.src.replace(/[\\/]/g, '/').replace(/\.(js|ts)$/, '')
       }
     })
-    return `${_middleware.map(m => `import $${hash(m.id)} from '${m.filePath}'`).join('\n')}
-const middleware = {
-${_middleware.map(m => `  ['${m.id}']: $${hash(m.id)}`).join(',\n')}
-}
+    return `${_middleware.map(m => genImport(m.filePath, `$${hash(m.id)}`)).join('\n')}
+const middleware = ${genObjectFromRawEntries(_middleware.map(m => [m.id, `$${hash(m.id)}`]))}
 export default middleware`
   }
 }
@@ -49,14 +48,12 @@ export const storeTemplate = {
 
     return `import Vue from 'vue'
 import Vuex from 'vuex'
-${_storeModules.map(s => `import * as $${hash(s.id)} from '${s.filePath}'`).join('\n')}
+${_storeModules.map(s => genImport(s.filePath, { name: '*', as: `$${hash(s.id)}` })).join('\n')}
 Vue.use(Vuex)
 
 const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
 
-const storeModules = {
-${_storeModules.map(m => `  ['${m.id}']: $${hash(m.id)}`).join(',\n')}
-}
+const storeModules = ${genObjectFromRawEntries(_storeModules.map(m => [m.id, `$${hash(m.id)}`]))}
 
 export function createStore() {
   let store = normalizeRoot(storeModules.root || {})
