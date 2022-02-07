@@ -161,7 +161,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
     :icon-nuxt-bridge{.h-32}
     :headline[Nuxt Bridge]
 
-    We moved to [Vue 3](https://v3.vuejs.org/) and re-wrote Nuxt after 4 years of development to make it a strong foundation for the future.
+    We moved to [Vue 3](https://vuejs.org/) and re-wrote Nuxt after 4 years of development to make it a strong foundation for the future.
 
     ### Smooth upgrade to Nuxt 3
 

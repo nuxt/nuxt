@@ -8,7 +8,7 @@ export default {
     /**
      * Properties that will be set directly on `Vue.config` for vue@2.
      *
-     * @see [vue@2 Documentation](https://vuejs.org/v2/api/#Global-Config)
+     * @see [vue@2 Documentation](https://v2.vuejs.org/v2/api/#Global-Config)
      * @type {import('vue/types/vue').VueConfiguration}
      * @version 2
      */
@@ -18,7 +18,7 @@ export default {
     },
     /**
      * Options for the Vue compiler that will be passed at build time
-     * @see [documentation](https://v3.vuejs.org/api/application-config.html)
+     * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {import('@vue/compiler-core').CompilerOptions}
      * @version 3
      */
@@ -321,8 +321,8 @@ export default {
    * You can either pass a string (the transition name) or an object with properties to bind
    * to the `<Transition>` component that will wrap your pages.
    *
-   * @see [vue@2 documentation](https://vuejs.org/v2/guide/transitions.html)
-   * @see [vue@3 documentation](https://v3.vuejs.org/guide/transitions-enterleave.html)
+   * @see [vue@2 documentation](https://v2.vuejs.org/v2/guide/transitions.html)
+   * @see [vue@3 documentation](https://vuejs.org/guide/built-ins/transition-group.html#enter-leave-transitions)
    * @version 2
    */
   pageTransition: {
@@ -345,8 +345,8 @@ export default {
    * You can either pass a string (the transition name) or an object with properties to bind
    * to the `<Transition>` component that will wrap your layouts.
    *
-   * @see [vue@2 documentation](https://vuejs.org/v2/guide/transitions.html)
-   * @see [vue@3 documentation](https://v3.vuejs.org/guide/transitions-enterleave.html)
+   * @see [vue@2 documentation](https://v2.vuejs.org/v2/guide/transitions.html)
+   * @see [vue@3 documentation](https://vuejs.org/guide/built-ins/transition-group.html#enter-leave-transitions)
    * @version 2
    */
   layoutTransition: {
