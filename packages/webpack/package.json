@@ -66,10 +66,10 @@
     "@types/webpack-hot-middleware": "^2.25.5",
     "@types/webpack-virtual-modules": "^0",
     "unbuild": "latest",
-    "vue": "3.2.29"
+    "vue": "3.2.30"
   },
   "peerDependencies": {
-    "vue": "3.2.29"
+    "vue": "3.2.30"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
