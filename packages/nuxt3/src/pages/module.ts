@@ -102,8 +102,7 @@ export default defineNuxtModule({
     })
 
     addTemplate({
-      filename: 'middleware.d.ts',
-      write: true,
+      filename: 'types/middleware.d.ts',
       getContents: async () => {
         const composablesFile = resolve(runtimeDir, 'composables')
         const middleware = await resolveMiddleware()
@@ -121,8 +120,7 @@ export default defineNuxtModule({
     })
 
     addTemplate({
-      filename: 'layouts.d.ts',
-      write: true,
+      filename: 'types/layouts.d.ts',
       getContents: async () => {
         const composablesFile = resolve(runtimeDir, 'composables')
         const layouts = await resolveLayouts(nuxt)
@@ -155,8 +153,8 @@ export default defineNuxtModule({
 
     // Add declarations for middleware and layout keys
     nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'middleware.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'layouts.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
     })
   }
 })

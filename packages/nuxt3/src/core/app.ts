@@ -1,5 +1,5 @@
 import { promises as fsp } from 'fs'
-import { resolve } from 'pathe'
+import { dirname, resolve } from 'pathe'
 import defu from 'defu'
 import type { Nuxt, NuxtApp } from '@nuxt/schema'
 import { tryResolvePath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils } from '@nuxt/kit'
@@ -45,6 +45,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
     }
 
     if (template.write) {
+      await fsp.mkdir(dirname(fullPath), { recursive: true })
       await fsp.writeFile(fullPath, contents, 'utf8')
     }
   }))

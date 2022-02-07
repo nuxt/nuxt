@@ -58,6 +58,11 @@ export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplat
     throw new Error('Invalid template. Either filename should be provided: ' + JSON.stringify(template))
   }
 
+  // Always write declaration files
+  if (template.filename.endsWith('.d.ts')) {
+    template.write = true
+  }
+
   // Resolve dst
   if (!template.dst) {
     const nuxt = useNuxt()

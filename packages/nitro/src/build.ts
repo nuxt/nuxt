@@ -88,7 +88,7 @@ export async function writeTypes (nitroContext: NitroContext) {
     'export {}'
   ]
 
-  await writeFile(join(nitroContext._nuxt.buildDir, 'nitro.d.ts'), lines.join('\n'))
+  await writeFile(join(nitroContext._nuxt.buildDir, 'types/nitro.d.ts'), lines.join('\n'))
 }
 
 async function _build (nitroContext: NitroContext) {

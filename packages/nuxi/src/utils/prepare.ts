@@ -1,5 +1,5 @@
 import { promises as fsp } from 'fs'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import { Nuxt, TSReference } from '@nuxt/schema'
 import defu from 'defu'
 import type { TSConfig } from 'pkg-types'
@@ -46,7 +46,9 @@ export const writeTypes = async (nuxt: Nuxt) => {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const relativePath = relative(nuxt.options.rootDir, aliases[alias]).replace(/(?<=\w)\.\w+$/g, '') /* remove extension */ || '.'
+    const relativePath = isAbsolute(aliases[alias])
+      ? relative(nuxt.options.rootDir, aliases[alias]).replace(/(?<=\w)\.\w+$/g, '') /* remove extension */ || '.'
+      : aliases[alias]
     tsConfig.compilerOptions.paths[alias] = [relativePath]
 
     try {
@@ -71,7 +73,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const declaration = [
     ...references.map((ref) => {
-      if ('path' in ref) {
+      if ('path' in ref && isAbsolute(ref.path)) {
         ref.path = relative(nuxt.options.buildDir, ref.path)
       }
       return `/// <reference ${renderAttrs(ref)} />`

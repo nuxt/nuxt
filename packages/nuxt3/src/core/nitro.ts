@@ -41,7 +41,7 @@ export function initNitro (nuxt: Nuxt) {
 
   // Add typed route responses
   nuxt.hook('prepare:types', (opts) => {
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'nitro.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
   // Add nitro client plugin (to inject $fetch helper)
