@@ -97,7 +97,7 @@ export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
 }
 
 /** Try to resolve the path of a module, but don't emit an error if it can't be found. */
-export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}) {
+export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}): string | null {
   try {
     return resolveModule(path, opts)
   } catch (error) {
@@ -105,6 +105,7 @@ export function tryResolveModule (path: string, opts: ResolveModuleOptions = {})
       throw error
     }
   }
+  return null
 }
 
 /** Require a module and return it. */

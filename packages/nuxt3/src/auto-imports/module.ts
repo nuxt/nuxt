@@ -112,7 +112,7 @@ function generateDts (ctx: AutoImportContext) {
   const resolved = {}
   const r = (id: string) => {
     if (resolved[id]) { return resolved[id] }
-    let path = resolveAlias(id, nuxt.options.alias)
+    let path = resolveAlias(id)
     if (isAbsolute(path)) {
       path = relative(join(nuxt.options.buildDir, 'types'), path)
     }

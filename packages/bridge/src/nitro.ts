@@ -133,7 +133,7 @@ export function setupNitroBridge () {
     await nuxt.callHook('nitro:context', nitroDevContext)
 
     // Resolve middleware
-    const { middleware, legacyMiddleware } = resolveMiddleware(nuxt)
+    const { middleware, legacyMiddleware } = await resolveMiddleware(nuxt)
     if (nuxt.server) {
       nuxt.server.setLegacyMiddleware(legacyMiddleware)
     }

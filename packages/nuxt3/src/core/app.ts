@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import { dirname, resolve } from 'pathe'
 import defu from 'defu'
 import type { Nuxt, NuxtApp } from '@nuxt/schema'
-import { tryResolvePath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils } from '@nuxt/kit'
+import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils } from '@nuxt/kit'
 
 import * as defaultTemplates from './templates'
 
@@ -54,15 +54,9 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
-  const resolveOptions = {
-    base: nuxt.options.srcDir,
-    alias: nuxt.options.alias,
-    extensions: nuxt.options.extensions
-  }
-
   // Resolve main (app.vue)
   if (!app.mainComponent) {
-    app.mainComponent = tryResolvePath('~/App', resolveOptions) || tryResolvePath('~/app', resolveOptions)
+    app.mainComponent = await findPath(['~/App', '~/app'])
   }
   if (!app.mainComponent) {
     app.mainComponent = resolve(nuxt.options.appDir, 'components/nuxt-welcome.vue')

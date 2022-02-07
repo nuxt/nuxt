@@ -2,7 +2,7 @@ import { resolve, join, extname } from 'pathe'
 import { joinURL } from 'ufo'
 import { globby } from 'globby'
 import { watch } from 'chokidar'
-import { tryResolveModule, tryResolvePath } from '@nuxt/kit'
+import { resolvePath } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { Middleware } from 'h3'
 
@@ -68,7 +68,7 @@ export function scanMiddleware (serverDir: string, onChange?: (results: ServerMi
   return scan()
 }
 
-export function resolveMiddleware (nuxt: Nuxt) {
+export async function resolveMiddleware (nuxt: Nuxt) {
   const middleware: ServerMiddleware[] = []
   const legacyMiddleware: ServerMiddleware[] = []
 
@@ -83,11 +83,7 @@ export function resolveMiddleware (nuxt: Nuxt) {
       delete m.path
       middleware.push({
         ...m,
-        handle: tryResolvePath(handle, {
-          extensions: ['.ts', '.mjs', '.js', '.cjs'],
-          alias: nuxt.options.alias,
-          base: nuxt.options.srcDir
-        }) || tryResolveModule(handle, { paths: nuxt.options.modulesDir }),
+        handle: await resolvePath(handle),
         route
       })
     }

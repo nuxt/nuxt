@@ -55,7 +55,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
-        const dirPath = resolveAlias(dirOptions.path, nuxt.options.alias)
+        const dirPath = resolveAlias(dirOptions.path)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
         const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
 

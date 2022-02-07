@@ -1,89 +1,101 @@
-import { existsSync, lstatSync, readdirSync } from 'fs'
-import { basename, dirname, resolve, join } from 'pathe'
+import { promises as fsp, existsSync } from 'fs'
+import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
 import { globby } from 'globby'
+import { useNuxt } from './context'
+import { tryResolveModule } from '.'
 
-export interface ResolveOptions {
-  /**
-   * The base path against which to resolve the path
-   *
-   * @default .
-   */
-  base?: string
-  /**
-   * An object of aliases (alias, path) to take into account, for example
-   * `{ 'example/alias': '/full/path/to/alias' }`
-   */
+export interface ResolvePathOptions {
+  /** Base for resolving paths from. Default is Nuxt rootDir. */
+  cwd?: string
+
+  /** An object of aliases. Default is Nuxt configured aliases. */
   alias?: Record<string, string>
-  /** The file extensions to try (for example, ['js', 'ts']) */
+
+  /** The file extensions to try. Default is Nuxt configured extensions. */
   extensions?: string[]
 }
 
-function resolvePath (path: string, opts: ResolveOptions = {}) {
+/**
+ * Resolve full path to a file or directory respecting Nuxt alias and extensions options
+ *
+ * If path could not be resolved, normalized input path will be returned
+ */
+export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
+  // Always normalize input
+  path = normalize(path)
+
   // Fast return if the path exists
-  if (existsSyncSensitive(path)) {
+  if (existsSync(path)) {
     return path
   }
 
-  let resolvedPath: string
+  // Use current nuxt options
+  const nuxt = useNuxt()
+  const cwd = opts.cwd || nuxt.options.rootDir
+  const extensions = opts.extensions || nuxt.options.extensions
+  const modulesDir = nuxt.options.modulesDir
 
-  // Resolve alias
-  if (opts.alias) {
-    resolvedPath = resolveAlias(path, opts.alias)
+  // Resolve aliases
+  path = resolveAlias(path)
+
+  // Resolve relative to cwd
+  if (!isAbsolute(path)) {
+    path = resolve(cwd, path)
   }
-
-  // Resolve relative to base or cwd
-  resolvedPath = resolve(opts.base || '.', resolvedPath)
-
-  const resolvedPathFiles = readdirSync(dirname(resolvedPath))
 
   // Check if resolvedPath is a file
   let isDirectory = false
-  if (existsSyncSensitive(resolvedPath, resolvedPathFiles)) {
-    isDirectory = lstatSync(resolvedPath).isDirectory()
+  if (existsSync(path)) {
+    isDirectory = (await fsp.lstat(path)).isDirectory()
     if (!isDirectory) {
-      return resolvedPath
+      return path
     }
   }
 
   // Check possible extensions
-  for (const ext of opts.extensions) {
-    // resolvedPath.[ext]
-    const resolvedPathwithExt = resolvedPath + ext
-    if (!isDirectory && existsSyncSensitive(resolvedPathwithExt, resolvedPathFiles)) {
-      return resolvedPathwithExt
+  for (const ext of extensions) {
+    // path.[ext]
+    const pathWithExt = path + ext
+    if (!isDirectory && existsSync(pathWithExt)) {
+      return pathWithExt
     }
-    // resolvedPath/index.[ext]
-    const resolvedPathwithIndex = join(resolvedPath, 'index' + ext)
-    if (isDirectory && existsSyncSensitive(resolvedPathwithIndex)) {
-      return resolvedPathwithIndex
+    // path/index.[ext]
+    const pathWithIndex = join(path, 'index' + ext)
+    if (isDirectory && existsSync(pathWithIndex)) {
+      return pathWithIndex
     }
   }
 
-  // If extension check fails and resolvedPath is a valid directory, return it
-  if (isDirectory) {
-    return resolvedPath
+  // Try to resolve as module id
+  const resolveModulePath = tryResolveModule(path, { paths: modulesDir })
+  if (resolveModulePath) {
+    return resolveModulePath
   }
 
-  // Give up if it is neither a directory
-  throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
-}
-
-function existsSyncSensitive (path: string, files?: string[]) {
-  if (!existsSync(path)) { return false }
-  const _files = files || readdirSync(dirname(path))
-  return _files.includes(basename(path))
+  // Return normalized input
+  return path
 }
 
 /**
- * Return a path with any relevant aliases resolved.
- *
- * @example
- * ```js
- * const aliases = { 'test': '/here/there' }
- * resolveAlias('test/everywhere', aliases)
- * // '/here/there/everywhere'
+ * Try to resolve first existing file in paths
  */
-export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
+export async function findPath (paths: string[], opts?: ResolvePathOptions): Promise<string|null> {
+  for (const path of paths) {
+    const rPath = await resolvePath(path, opts)
+    if (await existsSensitive(rPath)) {
+      return rPath
+    }
+  }
+  return null
+}
+
+/**
+ * Resolve path aliases respecting Nuxt alias options
+ */
+export function resolveAlias (path: string, alias?: Record<string, string>): string {
+  if (!alias) {
+    alias = useNuxt().options.alias
+  }
   for (const key in alias) {
     if (key === '@' && !path.startsWith('@/')) { continue } // Don't resolve @foo/bar
     if (path.startsWith(key)) {
@@ -93,21 +105,15 @@ export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
   return path
 }
 
-/**
- * Resolve the path of a file but don't emit an error,
- * even if the module can't be resolved.
- */
-export function tryResolvePath (path: string, opts: ResolveOptions = {}) {
-  try {
-    return resolvePath(path, opts)
-  } catch (e) {
-  }
+// --- Internal ---
+
+async function existsSensitive (path: string) {
+  if (!existsSync(path)) { return false }
+  const dirFiles = await fsp.readdir(dirname(path))
+  return dirFiles.includes(basename(path))
 }
 
 export async function resolveFiles (path: string, pattern: string | string[]) {
-  const files = await globby(pattern, {
-    cwd: path,
-    followSymbolicLinks: true
-  })
+  const files = await globby(pattern, { cwd: path, followSymbolicLinks: true })
   return files.map(p => resolve(path, p))
 }
