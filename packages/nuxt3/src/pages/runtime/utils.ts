@@ -6,8 +6,8 @@ export type RouterViewSlotProps = Parameters<InstanceOf<typeof RouterView>['$slo
 
 const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocationMatched) => {
   return match.path
-    .replace(/(?<=:\w+)\([^)]+\)/g, '')
-    .replace(/(?<=:\w+)[?+*]/g, '')
+    .replace(/(:\w+)\([^)]+\)/g, '$1')
+    .replace(/(:\w+)[?+*]/g, '$1')
     .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
 }
 
