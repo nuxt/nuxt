@@ -9,7 +9,7 @@ body:
         👉 https://v3.nuxtjs.org/community/reporting-bugs
 
         Please use the code sandbox template below to create a minimal reproduction
-        👉 https://codesandbox.io/s/github/nuxt/starter/tree/bridge-codesandbox
+        👉 https://codesandbox.io/s/github/nuxt/starter/tree/v2-bridge-codesandbox
   - type: textarea
     id: bug-env
     attributes:
