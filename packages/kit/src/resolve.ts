@@ -1,4 +1,5 @@
 import { promises as fsp, existsSync } from 'fs'
+import { fileURLToPath } from 'url'
 import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
 import { globby } from 'globby'
 import { useNuxt } from './context'
@@ -22,18 +23,19 @@ export interface ResolvePathOptions {
  */
 export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
   // Always normalize input
+  const _path = path
   path = normalize(path)
 
   // Fast return if the path exists
-  if (existsSync(path)) {
+  if (isAbsolute(path) && existsSync(path)) {
     return path
   }
 
   // Use current nuxt options
   const nuxt = useNuxt()
-  const cwd = opts.cwd || nuxt.options.rootDir
-  const extensions = opts.extensions || nuxt.options.extensions
-  const modulesDir = nuxt.options.modulesDir
+  const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
   path = resolveAlias(path)
@@ -67,7 +69,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Try to resolve as module id
-  const resolveModulePath = tryResolveModule(path, { paths: modulesDir })
+  const resolveModulePath = tryResolveModule(_path, { paths: [cwd, ...modulesDir] })
   if (resolveModulePath) {
     return resolveModulePath
   }
@@ -94,7 +96,7 @@ export async function findPath (paths: string[], opts?: ResolvePathOptions): Pro
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
   if (!alias) {
-    alias = useNuxt().options.alias
+    alias = useNuxt()?.options.alias || {}
   }
   for (const key in alias) {
     if (key === '@' && !path.startsWith('@/')) { continue } // Don't resolve @foo/bar
@@ -103,6 +105,30 @@ export function resolveAlias (path: string, alias?: Record<string, string>): str
     }
   }
   return path
+}
+
+export interface Resolver {
+  resolve(...path): string
+  resolvePath(path: string, opts?: ResolvePathOptions): Promise<string>
+}
+
+/**
+ * Create a relative resolver
+ */
+export function createResolver (base: string | URL): Resolver {
+  if (!base) {
+    throw new Error('`base` argument is missing for createResolver(base)!')
+  }
+
+  base = base.toString()
+  if (base.startsWith('file://')) {
+    base = dirname(fileURLToPath(base))
+  }
+
+  return {
+    resolve: (...path) => resolve(base as string, ...path),
+    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
+  }
 }
 
 // --- Internal ---
