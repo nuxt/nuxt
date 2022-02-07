@@ -2967,6 +2967,7 @@ __metadata:
     "@rollup/plugin-virtual": ^2.0.3
     "@rollup/plugin-wasm": ^5.1.2
     "@rollup/pluginutils": ^4.1.2
+    "@types/aws-lambda": ^8.10.92
     "@types/fs-extra": ^9.0.13
     "@types/http-proxy": ^1.17.8
     "@types/jsdom": ^16.2.14
@@ -3899,6 +3900,13 @@ __metadata:
     "@types/browserslist": "*"
     postcss: 7.x.x
   checksum: 7370a9b126cc5a2f4f20c5e1acb8b4ab17790f1d0108735fc732c3043314b0c7260c262d41bcaa3330b93432873063810662054d2483b786094afa76af467d8e
+  languageName: node
+  linkType: hard
+
+"@types/aws-lambda@npm:^8.10.92":
+  version: 8.10.92
+  resolution: "@types/aws-lambda@npm:8.10.92"
+  checksum: 71c44d83a1c88aa6dbc920baedfb2d100b8843a3d210c695ccaafb30dfb75f04398b0e5368100022acbf75c55d456c61774242f20dd70915fc63d85430cbcf8a
   languageName: node
   linkType: hard
 

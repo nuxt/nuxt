@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "3.0.0",
+    "@types/aws-lambda": "^8.10.92",
     "@types/fs-extra": "^9.0.13",
     "@types/http-proxy": "^1.17.8",
     "@types/node-fetch": "^3.0.2",
