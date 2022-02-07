@@ -40,7 +40,7 @@
     "hash-sum": "^2.0.0",
     "knitwork": "^0.1.0",
     "magic-string": "^0.25.7",
-    "mlly": "^0.4.1",
+    "mlly": "^0.4.2",
     "murmurhash-es": "^0.1.1",
     "node-fetch": "^3.2.0",
     "nuxi": "3.0.0",
