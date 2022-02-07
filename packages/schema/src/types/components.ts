@@ -5,11 +5,12 @@ export interface Component {
   filePath: string
   shortPath: string
   chunkName: string
-  level: number
   prefetch: boolean
   preload: boolean
   global?: boolean
 
+  /** @deprecated */
+  level?: number
   /** @deprecated */
   import?: string
   /** @deprecated */
@@ -46,6 +47,7 @@ export interface ScanDir {
   enabled?: boolean
   /**
    * Level is used to define a hint when overwriting the components which have the same name in two different directories.
+   * @deprecated Not used by Nuxt 3 anymore
    */
   level?: number
   /**

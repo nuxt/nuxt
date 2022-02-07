@@ -9,7 +9,6 @@ const rFixture = (...p) => resolve(fixtureDir, ...p)
 const dirs: ComponentsDir[] = [
   {
     path: rFixture('components'),
-    level: 0,
     enabled: true,
     extensions: [
       'vue'
@@ -24,7 +23,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components'),
-    level: 0,
     enabled: true,
     extensions: [
       'vue'
@@ -43,7 +41,6 @@ const dirs: ComponentsDir[] = [
       'vue'
     ],
     prefix: 'nuxt',
-    level: 0,
     enabled: true,
     pattern: '**/*.{vue,}',
     ignore: [
@@ -63,7 +60,6 @@ const expectedComponents = [
     shortPath: 'components/HelloWorld.vue',
     export: 'default',
     global: undefined,
-    level: 0,
     prefetch: false,
     preload: false
   },
@@ -74,7 +70,6 @@ const expectedComponents = [
     shortPath: 'components/Nuxt3.vue',
     export: 'default',
     global: undefined,
-    level: 0,
     prefetch: false,
     preload: false
   },
@@ -85,7 +80,6 @@ const expectedComponents = [
     shortPath: 'components/parent-folder/index.vue',
     export: 'default',
     global: undefined,
-    level: 0,
     prefetch: false,
     preload: false
   }

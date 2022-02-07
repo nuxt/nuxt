@@ -1,5 +1,5 @@
 import { statSync } from 'fs'
-import { resolve } from 'pathe'
+import { resolve, basename } from 'pathe'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { componentsTemplate, componentsTypeTemplate } from './templates'
@@ -8,6 +8,9 @@ import { loaderPlugin } from './loader'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
+function compareDirByPathLength ({ path: pathA }, { path: pathB }) {
+  return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
+}
 
 export default defineNuxtModule<ComponentsOptions>({
   meta: {
@@ -17,15 +20,40 @@ export default defineNuxtModule<ComponentsOptions>({
   defaults: {
     dirs: ['~/components']
   },
-  setup (options, nuxt) {
+  setup (componentOptions, nuxt) {
     let componentDirs = []
     let components: Component[] = []
 
+    const normalizeDirs = (dir: any, cwd: string) => {
+      if (Array.isArray(dir)) {
+        return dir.map(dir => normalizeDirs(dir, cwd)).flat().sort(compareDirByPathLength)
+      }
+      if (dir === true || dir === undefined) {
+        return [{ path: resolve(cwd, 'components') }]
+      }
+      if (typeof dir === 'string') {
+        return {
+          path: resolve(cwd, resolveAlias(dir, {
+            ...nuxt.options.alias,
+            '~': cwd
+          }))
+        }
+      }
+      return []
+    }
+
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
-      await nuxt.callHook('components:dirs', options.dirs)
+      const allDirs = [
+        ...normalizeDirs(componentOptions.dirs, nuxt.options.srcDir),
+        ...nuxt.options._extends
+          .map(layer => normalizeDirs(layer.config.components, layer.cwd))
+          .flat()
+      ]
 
-      componentDirs = options.dirs.filter(isPureObjectOrString).map((dir) => {
+      await nuxt.callHook('components:dirs', allDirs)
+
+      componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path, nuxt.options.alias)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
@@ -34,7 +62,7 @@ export default defineNuxtModule<ComponentsOptions>({
         dirOptions.level = Number(dirOptions.level || 0)
 
         const present = isDirectory(dirPath)
-        if (!present && dirOptions.path !== '~/components') {
+        if (!present && basename(dirOptions.path) !== 'components') {
           // eslint-disable-next-line no-console
           console.warn('Components directory not found: `' + dirPath + '`')
         }

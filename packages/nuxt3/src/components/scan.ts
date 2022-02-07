@@ -1,15 +1,11 @@
 import { basename, extname, join, dirname, relative } from 'pathe'
 import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
-import type { ScanDir, Component, ComponentsDir } from '@nuxt/schema'
-
-export function sortDirsByPathLength ({ path: pathA }: ScanDir, { path: pathB }: ScanDir): number {
-  return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
-}
+import type { Component, ComponentsDir } from '@nuxt/schema'
 
 // vue@2 src/shared/util.js
 // TODO: update to vue3?
-function hyphenate (str: string):string {
+function hyphenate (str: string): string {
   return str.replace(/\B([A-Z])/g, '-$1').toLowerCase()
 }
 
@@ -31,7 +27,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   // All scanned paths
   const scannedPaths: string[] = []
 
-  for (const dir of dirs.sort(sortDirsByPathLength)) {
+  for (const dir of dirs) {
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
@@ -112,7 +108,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         global: dir.global,
-        level: Number(dir.level),
         prefetch: Boolean(dir.prefetch),
         preload: Boolean(dir.preload)
       }
@@ -121,11 +116,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         component = (await dir.extendComponent(component)) || component
       }
 
-      // Check if component is already defined, used to overwite if level is inferiour
-      const definedComponent = components.find(c => c.pascalName === component.pascalName)
-      if (definedComponent && component.level < definedComponent.level) {
-        Object.assign(definedComponent, component)
-      } else if (!definedComponent) {
+      // Ignore component if component is already defined
+      if (!components.find(c => c.pascalName === component.pascalName)) {
         components.push(component)
       }
     }

@@ -12,16 +12,11 @@ export default {
    */
   components: {
     $resolve: (val, get) => {
-      if (!val) {
-        // Nuxt 2 and Nuxt 3 have different default values when this option is not set,
-        // so we defer to the module's own defaults here.
-        return undefined
+      if (Array.isArray(val)) {
+        return { dirs: val }
       }
       if (val === undefined || val === true) {
         return { dirs: ['~/components'] }
-      }
-      if (Array.isArray(val)) {
-        return { dirs: val }
       }
       return val
     }

@@ -6,6 +6,8 @@ const themeConfig = useRuntimeConfig().theme
   <NuxtExampleLayout example="config-extends">
     theme runtimeConfig
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
+    <BaseButton>Base Button</BaseButton>
+    <FancyButton>Fancy Button</FancyButton>
   </NuxtExampleLayout>
 </template>
 
