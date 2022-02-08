@@ -58,7 +58,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.16.0, @babel/core@npm:^7.16.10, @babel/core@npm:^7.16.5, @babel/core@npm:^7.16.7, @babel/core@npm:^7.17.0":
+"@babel/core@npm:^7.12.16, @babel/core@npm:^7.14.0, @babel/core@npm:^7.16.0, @babel/core@npm:^7.16.10, @babel/core@npm:^7.16.5, @babel/core@npm:^7.16.7":
   version: 7.17.0
   resolution: "@babel/core@npm:7.17.0"
   dependencies:
@@ -78,6 +78,29 @@ __metadata:
     json5: ^2.1.2
     semver: ^6.3.0
   checksum: b05ab50ee3234cf6ead6fc947fff1c577773040d88b6fea64efda046c3b87aa596c5bbfe2bd287680102bda620e5294625fe1350a54d800d09cca51435b70918
+  languageName: node
+  linkType: hard
+
+"@babel/core@npm:^7.17.2":
+  version: 7.17.2
+  resolution: "@babel/core@npm:7.17.2"
+  dependencies:
+    "@ampproject/remapping": ^2.0.0
+    "@babel/code-frame": ^7.16.7
+    "@babel/generator": ^7.17.0
+    "@babel/helper-compilation-targets": ^7.16.7
+    "@babel/helper-module-transforms": ^7.16.7
+    "@babel/helpers": ^7.17.2
+    "@babel/parser": ^7.17.0
+    "@babel/template": ^7.16.7
+    "@babel/traverse": ^7.17.0
+    "@babel/types": ^7.17.0
+    convert-source-map: ^1.7.0
+    debug: ^4.1.0
+    gensync: ^1.0.0-beta.2
+    json5: ^2.1.2
+    semver: ^6.3.0
+  checksum: 68ab3459f41b41feb5cb263937f15e418e1c46998d482d1b6dfe34f78064765466cfd5b10205c22fb16b69dbd1d46e7a3c26c067884ca4eb514b3dac1e09a57f
   languageName: node
   linkType: hard
 
@@ -368,6 +391,17 @@ __metadata:
     "@babel/traverse": ^7.17.0
     "@babel/types": ^7.17.0
   checksum: fed0b0d8fe1b0aef18a0dbc4a0683bbcb039fd3fcff09a4f5b2a1e8f5fc911368983a9a177610c4a88f35ed5c3f5d51bf971ff01596e6f384414dcee2de694a4
+  languageName: node
+  linkType: hard
+
+"@babel/helpers@npm:^7.17.2":
+  version: 7.17.2
+  resolution: "@babel/helpers@npm:7.17.2"
+  dependencies:
+    "@babel/template": ^7.16.7
+    "@babel/traverse": ^7.17.0
+    "@babel/types": ^7.17.0
+  checksum: 5fa06bbf59636314fb4098bb2e70cf488e0fb6989553438abab90356357b79976102ac129fb16fc8186893c79e0809de1d90e3304426d6fcdb1750da2b6dff9d
   languageName: node
   linkType: hard
 
@@ -3367,7 +3401,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
-    "@babel/core": ^7.17.0
+    "@babel/core": ^7.17.2
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
@@ -4855,10 +4889,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.24.1":
-  version: 0.24.1
-  resolution: "@unocss/reset@npm:0.24.1"
-  checksum: 34d6725cb3f659dcf87eb9d70f3abc9d4e5f552f41e6eb0649eaf894512f2088388ec294308e744f840c5b751a82cf0da9e24d89c35147c334ef6b61920e1c64
+"@unocss/reset@npm:^0.24.2":
+  version: 0.24.2
+  resolution: "@unocss/reset@npm:0.24.2"
+  checksum: 8e5f7fcb7546a0fe7d3826bd83f1370c8ce7af498eca2742c3f1071333f95349fc3081c7f41bb1430b64243cd9f2d8b356f246e1957550dd7dca0df88c217247
   languageName: node
   linkType: hard
 
@@ -15202,7 +15236,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.22
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.24.1
+    "@unocss/reset": ^0.24.2
     esbuild: ^0.14.20
     eslint: ^8.8.0
     eslint-plugin-jsdoc: ^37.8.0
