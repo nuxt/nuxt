@@ -2,6 +2,9 @@
   "extends": [
     "@nuxtjs"
   ],
+  "ignorePaths": [
+    "**/bridge/**"
+  ],
   "ignoreDeps": [
     "docus",
     "@docus/app",
