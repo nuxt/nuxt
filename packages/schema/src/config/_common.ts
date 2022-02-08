@@ -289,6 +289,14 @@ export default {
   _modules: [],
 
   /**
+   * Installed module metadata
+   *
+   * @version 3
+   * @private
+  */
+  _installedModules: [],
+
+  /**
    * Allows customizing the global ID used in the main HTML template as well as the main
    * Vue instance name and other options.
    * @version 2
@@ -678,13 +686,13 @@ export default {
 
   /**
    * Runtime config allows passing dynamic config and environment variables to the Nuxt app context.
-   * 
+   *
    * The value of this object is accessible from server only using `$config` or `useRuntimeConfig`.
    * It will override `publicRuntimeConfig` on the server-side.
    *
    * It should hold _private_ environment variables (that should not be exposed on the frontend).
    * This could include a reference to your API secret tokens.
-   * 
+   *
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment
    * variable `API_SECRET=my-api-key` would overwrite the value in the example below.
    * Note that the env variable has to be named exactly the same as the config key.
@@ -705,9 +713,9 @@ export default {
 
   /**
    * Runtime config allows passing dynamic config and environment variables to the Nuxt app context.
-   * 
+   *
    * The value of this object is accessible from both client and server using `$config` or `useRuntimeConfig`.
-   * 
+   *
    * It should hold env variables that are _public_ as they will be accessible on the frontend. This could include a
    * reference to your public URL.
    *

@@ -32,7 +32,7 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
     } else {
       src = moduleOpts
     }
-    await installModule(src, inlineOptions, nuxt)
+    await installModule(src, inlineOptions)
   }
 
   nuxt[MODULE_CONTAINER_KEY] = <ModuleContainer>{

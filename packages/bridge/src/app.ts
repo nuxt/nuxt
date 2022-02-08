@@ -1,6 +1,8 @@
-import { useNuxt, resolveModule, addTemplate } from '@nuxt/kit'
+import { useNuxt, resolveModule, addTemplate, resolveAlias } from '@nuxt/kit'
+import { NuxtModule } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { componentsTypeTemplate } from '../../nuxt3/src/components/templates'
+import { schemaTemplate } from '../../nuxt3/src/core/templates'
 import { distDir } from './dirs'
 
 export function setupAppBridge (_options: any) {
@@ -36,6 +38,15 @@ export function setupAppBridge (_options: any) {
   })
   nuxt.hook('prepare:types', ({ references }) => {
     references.push({ path: resolve(nuxt.options.buildDir, 'types/components.d.ts') })
+  })
+
+  // Augment schema with module types
+  nuxt.hook('modules:done', async (container: any) => {
+    nuxt.options._installedModules = await Promise.all(Object.values(container.requiredModules).map(async (m: { src: string, handler: NuxtModule }) => ({
+      meta: await m.handler.getMeta?.(),
+      entryPath: resolveAlias(m.src, nuxt.options.alias)
+    })))
+    addTemplate(schemaTemplate)
   })
 
   // Alias vue to have identical vue3 exports

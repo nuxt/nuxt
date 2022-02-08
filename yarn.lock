@@ -2576,6 +2576,7 @@ __metadata:
     defu: ^5.0.1
     destr: ^1.1.0
     enhanced-resolve: ^5.9.0
+    escape-string-regexp: ^5.0.0
     estree-walker: ^3.0.1
     externality: ^0.1.6
     fs-extra: ^10.0.0
