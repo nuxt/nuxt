@@ -33,7 +33,7 @@
     "cookie-es": "^0.5.0",
     "defu": "^5.0.1",
     "destr": "^1.1.0",
-    "enhanced-resolve": "^5.8.3",
+    "enhanced-resolve": "^5.9.0",
     "estree-walker": "^3.0.1",
     "externality": "^0.1.6",
     "fs-extra": "^10.0.0",
@@ -57,7 +57,7 @@
     "semver": "^7.3.5",
     "ufo": "^0.7.9",
     "unplugin": "^0.3.2",
-    "unplugin-vue2-script-setup": "0.9.1",
+    "unplugin-vue2-script-setup": "0.9.2",
     "vite": "^2.7.13",
     "vite-plugin-vue2": "^1.9.3",
     "vue-template-compiler": "^2.6.14"

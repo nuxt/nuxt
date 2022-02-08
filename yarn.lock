@@ -2584,7 +2584,7 @@ __metadata:
     cookie-es: ^0.5.0
     defu: ^5.0.1
     destr: ^1.1.0
-    enhanced-resolve: ^5.8.3
+    enhanced-resolve: ^5.9.0
     estree-walker: ^3.0.1
     externality: ^0.1.6
     fs-extra: ^10.0.0
@@ -2610,7 +2610,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.3.2
-    unplugin-vue2-script-setup: 0.9.1
+    unplugin-vue2-script-setup: 0.9.2
     vite: ^2.7.13
     vite-plugin-vue2: ^1.9.3
     vue: ^2
@@ -4855,10 +4855,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.23.0":
-  version: 0.23.0
-  resolution: "@unocss/reset@npm:0.23.0"
-  checksum: 61139e35bdc00e314bec00cc801e94b026c2ca2feb254d362f8661d16aaa557ad116e660f8367e2294bf787922155d7ad5e89ad58b9ba5453bfef3848914ce05
+"@unocss/reset@npm:^0.24.1":
+  version: 0.24.1
+  resolution: "@unocss/reset@npm:0.24.1"
+  checksum: 34d6725cb3f659dcf87eb9d70f3abc9d4e5f552f41e6eb0649eaf894512f2088388ec294308e744f840c5b751a82cf0da9e24d89c35147c334ef6b61920e1c64
   languageName: node
   linkType: hard
 
@@ -9215,6 +9215,16 @@ __metadata:
     graceful-fs: ^4.2.4
     tapable: ^2.2.0
   checksum: d79fbe531106448b768bb0673fb623ec0202d7ee70373ab7d4f4745d5dfe0806f38c9db7e7da8c941288fe475ab3d538db3791fce522056eeea40ca398c9e287
+  languageName: node
+  linkType: hard
+
+"enhanced-resolve@npm:^5.9.0":
+  version: 5.9.0
+  resolution: "enhanced-resolve@npm:5.9.0"
+  dependencies:
+    graceful-fs: ^4.2.4
+    tapable: ^2.2.0
+  checksum: 06435f52670229eb7fd8d92ea2d988a275f9a1b8c08b9023ba45767c6ed844bc87aa9c9c7e6d044eef99ad73fc3b066b78101163696e5c53121909e5bf8efe8b
   languageName: node
   linkType: hard
 
@@ -15192,7 +15202,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.22
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.23.0
+    "@unocss/reset": ^0.24.1
     esbuild: ^0.14.20
     eslint: ^8.8.0
     eslint-plugin-jsdoc: ^37.8.0
@@ -15206,7 +15216,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.5
     unbuild: ^0.6.9
-    vitest: ^0.2.7
+    vitest: ^0.2.8
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -21115,9 +21125,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin-vue2-script-setup@npm:0.9.1":
-  version: 0.9.1
-  resolution: "unplugin-vue2-script-setup@npm:0.9.1"
+"unplugin-vue2-script-setup@npm:0.9.2":
+  version: 0.9.2
+  resolution: "unplugin-vue2-script-setup@npm:0.9.2"
   dependencies:
     "@antfu/utils": ^0.4.0
     "@babel/core": ^7.16.7
@@ -21142,7 +21152,7 @@ __metadata:
   peerDependenciesMeta:
     pug:
       optional: true
-  checksum: 3ecee02633f71c9f1b86968343886c706bc01063eadf454b8f7a539f9317f4d8ed6b7e2fd551c48c2333fa354a1bc089e9bbad4677add6ecb7e605fc9026e7c3
+  checksum: 66be272e11b17c4aa3905610ae37ab61e839c728a05478ea01fdebc6217984da260edf35a3c429afdf89c6763fbf6c437284d9d62d10bd1efa6f7c51daab0fbf
   languageName: node
   linkType: hard
 
@@ -21493,9 +21503,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "vitest@npm:0.2.7"
+"vitest@npm:^0.2.8":
+  version: 0.2.8
+  resolution: "vitest@npm:0.2.8"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21520,7 +21530,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 32f757f868c607eac0cf0e4160a371b1f32f50a306680b03a39dc9dafede025ec662ce11fb6176bca740cf97eb08e156253a62010bf6199677fad4aefada6779
+  checksum: d39d26d2057dd50058d641bd660df13726a1bc80423f9d15c3c1fe96670ea368787b2dcc63ed492362bd205e9f44e1ca25edff14f59986eca615ebadbf72a9e0
   languageName: node
   linkType: hard
 
