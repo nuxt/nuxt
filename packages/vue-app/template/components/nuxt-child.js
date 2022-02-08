@@ -7,6 +7,7 @@ export default {
       type: String,
       default: ''
     },
+    transition: Object,
     keepAlive: Boolean,
     keepAliveProps: {
       type: Object,
@@ -29,7 +30,7 @@ export default {
       parent = parent.$parent
     }
     data.nuxtChildDepth = depth
-    const transition = transitions[depth] || defaultTransition
+    const transition = props.transition || transitions[depth] || defaultTransition
     const transitionProps = {}
     transitionsKeys.forEach((key) => {
       if (typeof transition[key] !== 'undefined') {
