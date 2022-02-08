@@ -10,8 +10,6 @@ export function setupTypescript () {
   nuxt.options.extensions.push(...extensions)
   nuxt.options.build.additionalExtensions.push(...extensions)
 
-  const _require = createRequire(import.meta.url)
-  const babelPlugin = _require.resolve('@babel/plugin-transform-typescript')
   nuxt.options.build.babel.plugins = nuxt.options.build.babel.plugins || []
 
   // Error if `@nuxt/typescript-build` is added
@@ -19,7 +17,12 @@ export function setupTypescript () {
     throw new Error('Please remove `@nuxt/typescript-build` from `buildModules` or set `bridge.typescript: false` to avoid conflict with bridge.')
   }
 
-  nuxt.options.build.babel.plugins.unshift(babelPlugin)
+  const _require = createRequire(import.meta.url)
+  nuxt.options.build.babel.plugins.unshift(
+    _require.resolve('@babel/plugin-proposal-optional-chaining'),
+    _require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'),
+    _require.resolve('@babel/plugin-transform-typescript')
+  )
 
   extendWebpackConfig((config) => {
     config.resolve.extensions!.push(...extensions.map(e => `.${e}`))
