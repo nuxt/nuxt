@@ -506,8 +506,9 @@ export default {
    * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
    *
-   * @note If you are using TypeScript and want to use the alias you define within
-   * your TypeScript files, you will need to add the aliases to your `paths` object within `tsconfig.json` .
+   * @note These aliases will be automatically added to the generated `.nuxt/tsconfig.json` so you can get full
+   * type support and path auto-complete. In case you need to extend options provided by `./.nuxt/tsconfig.json`
+   * further, make sure to add them here or within the `typescript.tsConfig` property in `nuxt.config`.
    *
    * @example
    * ```js
