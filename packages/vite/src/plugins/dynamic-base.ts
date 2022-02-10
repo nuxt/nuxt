@@ -42,7 +42,8 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
       return null
     },
     enforce: 'post',
-    transform (code, id) {
+    transform (original, id) {
+      let code = original
       if (options.globalPublicPath && id.includes('entry.ts')) {
         code = 'import { joinURL } from "ufo";' +
           `${options.globalPublicPath} = joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir);` + code
@@ -84,6 +85,7 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
         code = code.replace(delimiterRE, '`$1${NUXT_BASE}$2`')
       }
 
+      if (code === original) { return }
       return code
     }
   }

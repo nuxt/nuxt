@@ -27,7 +27,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
         }
       }
 
-      if (!parseQuery(search).macro) { return code }
+      if (!parseQuery(search).macro) { return }
 
       // [webpack] Re-export any imports from script blocks in the components
       // with workaround for vue-loader bug: https://github.com/vuejs/vue-loader/pull/1911
