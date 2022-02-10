@@ -42,6 +42,7 @@
     "knitwork": "^0.1.0",
     "mlly": "^0.4.2",
     "murmurhash-es": "^0.1.1",
+    "nitropack": "npm:nitropack-edge@latest",
     "nuxi": "3.0.0",
     "ohmyfetch": "^0.4.15",
     "pathe": "^0.2.0",

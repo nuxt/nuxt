@@ -3186,7 +3186,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/ui@npm:@nuxt/ui-edge@^0.0.0-27376194.a859489":
+"@nuxt/ui@npm:@nuxt/ui-edge@latest":
   version: 0.0.0-27376194.a859489
   resolution: "@nuxt/ui-edge@npm:0.0.0-27376194.a859489"
   dependencies:
@@ -6807,6 +6807,21 @@ __metadata:
     pathe: ^0.2.0
     rc9: ^1.2.0
   checksum: 628bd42845926249f9dfbaf14371793de72c4b9fa764e8a635ae56f5e67c99d765f8ea09ac44e3876e334095a627ca24d7029ca5d6254829998b9fab67927460
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "c12@npm:0.1.2"
+  dependencies:
+    defu: ^5.0.1
+    dotenv: ^14.3.2
+    gittar: ^0.1.1
+    jiti: ^1.12.14
+    mlly: ^0.4.1
+    pathe: ^0.2.0
+    rc9: ^1.2.0
+  checksum: 1977c1de00603a68b0ce0d825ec809afbf6443179dbf6cc2615cc050046dc8e43faa7aca30b538c7f177187fad23031fa8e263a427d9fc06e8d35fbdd9d5fe38
   languageName: node
   linkType: hard
 
@@ -11456,7 +11471,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:^13.1.1":
+"globby@npm:^13.1.0, globby@npm:^13.1.1":
   version: 13.1.1
   resolution: "globby@npm:13.1.1"
   dependencies:
@@ -14450,6 +14465,73 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nitropack@npm:nitropack-edge@latest":
+  version: 0.0.0-27408562.5d3ca2f
+  resolution: "nitropack-edge@npm:0.0.0-27408562.5d3ca2f"
+  dependencies:
+    "@cloudflare/kv-asset-handler": ^0.2.0
+    "@netlify/functions": ^0.11.0
+    "@nuxt/devalue": ^2.0.0
+    "@rollup/plugin-alias": ^3.1.9
+    "@rollup/plugin-commonjs": ^21.0.1
+    "@rollup/plugin-inject": ^4.0.4
+    "@rollup/plugin-json": ^4.1.0
+    "@rollup/plugin-node-resolve": ^13.1.3
+    "@rollup/plugin-replace": ^3.0.1
+    "@rollup/plugin-virtual": ^2.0.3
+    "@rollup/plugin-wasm": ^5.1.2
+    "@rollup/pluginutils": ^4.1.2
+    "@types/jsdom": ^16.2.14
+    "@vercel/nft": ^0.17.4
+    archiver: ^5.3.0
+    c12: ^0.1.2
+    chalk: ^5.0.0
+    chokidar: ^3.5.3
+    connect: ^3.7.0
+    consola: ^2.15.3
+    defu: ^5.0.1
+    destr: ^1.1.0
+    dot-prop: ^7.1.1
+    esbuild: ^0.14.14
+    etag: ^1.8.1
+    fs-extra: ^10.0.0
+    globby: ^13.1.0
+    gzip-size: ^7.0.0
+    h3: ^0.3.9
+    hasha: ^5.2.2
+    hookable: ^5.1.1
+    http-proxy: ^1.18.1
+    is-primitive: ^3.0.1
+    jiti: ^1.12.13
+    listhen: ^0.2.6
+    mime: ^3.0.0
+    mlly: ^0.4.1
+    mri: ^1.2.0
+    node-fetch: ^3.2.0
+    ohmyfetch: ^0.4.15
+    ora: ^6.0.1
+    p-debounce: ^4.0.0
+    pathe: ^0.2.0
+    pkg-types: ^0.3.2
+    pretty-bytes: ^5.6.0
+    rollup: ^2.66.1
+    rollup-plugin-terser: ^7.0.2
+    rollup-plugin-visualizer: ^5.5.4
+    scule: ^0.2.1
+    serve-placeholder: ^1.2.4
+    serve-static: ^1.14.2
+    std-env: ^3.0.1
+    table: ^6.8.0
+    ufo: ^0.7.9
+    unenv: ^0.4.3
+    unstorage: ^0.3.3
+  bin:
+    nitro: ./dist/cli.mjs
+    nitropack: ./dist/cli.mjs
+  checksum: 525586f69228de053f7b7513acaf7fde635ca0b1c74325f907a07510c535791d061811e97601484fcd62792db84aa394c2c7693166cc4f63c0e11b3431ceb4d3
+  languageName: node
+  linkType: hard
+
 "no-case@npm:^2.2.0":
   version: 2.3.2
   resolution: "no-case@npm:2.3.2"
@@ -15129,6 +15211,7 @@ __metadata:
     knitwork: ^0.1.0
     mlly: ^0.4.2
     murmurhash-es: ^0.1.1
+    nitropack: "npm:nitropack-edge@latest"
     nuxi: 3.0.0
     ohmyfetch: ^0.4.15
     pathe: ^0.2.0

@@ -9,7 +9,6 @@ import autoImportsModule from '../auto-imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
-import { initNitro } from './nitro'
 import { addModuleTranspiles } from './modules'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -39,6 +38,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('close', () => nuxtCtx.unset())
 
   // Init nitro
+  const { initNitro } = await import(nuxt.options.experimentNitropack ? './nitro-nitropack' : './nitro-legacy')
   await initNitro(nuxt)
 
   // Add nuxt3 types

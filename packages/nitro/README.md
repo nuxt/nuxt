@@ -1,5 +1,3 @@
 # Nitro
 
-> The Server engine for Nuxt
-
-Learn more about this package: <https://v3.nuxtjs.org/concepts/server-engine>
+**Notice:** This package is being deprecated. Read more: <https://github.com/nuxt/framework/issues/3161>

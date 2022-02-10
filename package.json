@@ -28,8 +28,9 @@
   },
   "resolutions": {
     "nuxt3": "workspace:./packages/nuxt3",
-    "@nuxt/ui": "npm:@nuxt/ui-edge@^0.0.0-27376194.a859489",
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
     "unbuild": "^0.6.9",
+    "nitropack-dev": "link:../nitropack",
     "jiti": "^1.12.15"
   },
   "devDependencies": {

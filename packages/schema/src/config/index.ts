@@ -11,6 +11,7 @@ import server from './server'
 import cli from './cli'
 import generate from './generate'
 import typescript from './typescript'
+import nitro from './nitro'
 
 /*
 TODO for top level normalizations: (nuxt2)
@@ -35,6 +36,7 @@ export default {
   ..._app,
   ..._common,
   ..._internal,
+  ...nitro,
   build,
   messages,
   render,
