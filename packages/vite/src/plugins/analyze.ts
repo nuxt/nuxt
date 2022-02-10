@@ -6,7 +6,7 @@ import { ViteBuildContext } from '../vite'
 export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
   return [
     {
-      name: 'nuxt-analyze-minify',
+      name: 'nuxt:analyze-minify',
       async generateBundle (_opts, outputBundle) {
         for (const [_bundleId, bundle] of Object.entries(outputBundle)) {
           if (bundle.type !== 'chunk') { continue }

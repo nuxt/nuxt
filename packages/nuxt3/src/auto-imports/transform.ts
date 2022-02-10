@@ -33,7 +33,7 @@ function stripCommentsAndStrings (code: string) {
 
 export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
   return {
-    name: 'nuxt-auto-imports-transform',
+    name: 'nuxt:auto-imports-transform',
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(id)

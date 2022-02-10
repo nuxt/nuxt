@@ -9,7 +9,7 @@ export interface TransformMacroPluginOptions {
 
 export const TransformMacroPlugin = createUnplugin((options: TransformMacroPluginOptions) => {
   return {
-    name: 'nuxt-pages-macros-transform',
+    name: 'nuxt:pages-macros-transform',
     enforce: 'post',
     transformInclude (id) {
       const { search, pathname } = parseURL(id)

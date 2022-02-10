@@ -8,7 +8,7 @@ interface LoaderOptions {
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => ({
-  name: 'nuxt-components-loader',
+  name: 'nuxt:components-loader',
   enforce: 'post',
   transformInclude (id) {
     const { pathname, search } = parseURL(id)
