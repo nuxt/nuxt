@@ -4884,7 +4884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.17.5":
+"@vercel/nft@npm:^0.17.4, @vercel/nft@npm:^0.17.5":
   version: 0.17.5
   resolution: "@vercel/nft@npm:0.17.5"
   dependencies:
