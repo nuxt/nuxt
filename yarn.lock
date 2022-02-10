@@ -3263,6 +3263,7 @@ __metadata:
     escape-string-regexp: ^5.0.0
     externality: ^0.1.6
     fs-extra: ^10.0.0
+    get-port-please: ^2.3.0
     knitwork: ^0.1.0
     magic-string: ^0.25.7
     mlly: ^0.4.2
@@ -11228,6 +11229,15 @@ __metadata:
   dependencies:
     fs-memo: ^1.2.0
   checksum: b584c4704e5d29853e531633fd5d85b4b897143f83b20a24a485a07654c0dd3075729093ec8b555d82ce3c02c7280caf717e24c3e1b61d2023c37fd19f54ea08
+  languageName: node
+  linkType: hard
+
+"get-port-please@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "get-port-please@npm:2.3.0"
+  dependencies:
+    fs-memo: ^1.2.0
+  checksum: ae361940392d44a3157f9256e366ea4f979202d7c52a7d323eebc0cbe24e32b1b196405be0b06af1d898db0f6d36b859479489f849e7ee698aefa9db1110c292
   languageName: node
   linkType: hard
 
