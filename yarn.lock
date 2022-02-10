@@ -2889,7 +2889,7 @@ __metadata:
     "@nuxt/schema": ^3.0.0
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.1.1
+    c12: ^0.1.2
     consola: ^2.15.3
     defu: ^5.0.1
     globby: ^13.1.1
@@ -2970,7 +2970,7 @@ __metadata:
     "@types/jsdom": ^16.2.14
     "@types/node-fetch": ^3.0.2
     "@types/serve-static": ^1.13.10
-    "@vercel/nft": ^0.17.4
+    "@vercel/nft": ^0.17.5
     archiver: ^5.3.0
     chalk: ^5.0.0
     chokidar: ^3.5.3
@@ -3001,7 +3001,7 @@ __metadata:
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     pretty-bytes: ^5.6.0
-    rollup: ^2.67.1
+    rollup: ^2.67.2
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.4
     serve-placeholder: ^1.2.4
@@ -3053,7 +3053,7 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.1.1
+    c12: ^0.1.2
     create-require: ^1.1.1
     defu: ^5.0.1
     jiti: ^1.12.15
@@ -4278,10 +4278,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.22":
-  version: 16.11.22
-  resolution: "@types/node@npm:16.11.22"
-  checksum: 9d879b9b0427e21a11e3162917553d5bc3c7d68d1ef4aa631512144801fe59bc3b4da5965e7ea7c2db99394487b543d4f2499b318e12392574802ac4f975b7c4
+"@types/node@npm:^16.11.24":
+  version: 16.11.24
+  resolution: "@types/node@npm:16.11.24"
+  checksum: d4827d548c04ca55db30901ea248ce1a1f8d2958b3143a7e71fd86d3d7b804faebfa9b80b934c7c6030a82553323dfe70f01dd0000176561a2cb3fc9db06a7b3
   languageName: node
   linkType: hard
 
@@ -4884,9 +4884,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.17.4":
-  version: 0.17.4
-  resolution: "@vercel/nft@npm:0.17.4"
+"@vercel/nft@npm:^0.17.5":
+  version: 0.17.5
+  resolution: "@vercel/nft@npm:0.17.5"
   dependencies:
     "@mapbox/node-pre-gyp": ^1.0.5
     acorn: ^8.6.0
@@ -4901,7 +4901,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: 149b1175324feccdd024c81c8f91ce591658cc48ccf49497ef8ec77e761125d0c087f4f44ee4b84c149e518dbacc851b33a6683bdd00845d98364ff104bff959
+  checksum: 812de9ed9dc9116ddc514fbb8ece044ba9427a16fe999110ebdea7581f1055d891d05ad1d8bb4cb6dfb497bdac605168440be64b00f1fad9581a42158a97a02c
   languageName: node
   linkType: hard
 
@@ -15154,7 +15154,7 @@ __metadata:
     "@nuxtjs/eslint-config": ^7.0.0
     "@nuxtjs/eslint-config-typescript": ^7.0.2
     "@types/jsdom": ^16
-    "@types/node": ^16.11.22
+    "@types/node": ^16.11.24
     "@types/object-hash": ^2
     "@unocss/reset": ^0.24.3
     esbuild: ^0.14.21
@@ -18596,7 +18596,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.66.1, rollup@npm:^2.67.1":
+"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.66.1":
   version: 2.67.1
   resolution: "rollup@npm:2.67.1"
   dependencies:
@@ -18607,6 +18607,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 4320927ae9d42abf0a72ccdfd14303f7b6d6908ec94be953900a41bd4c0bbba3131887c3925dec65361a3e394cb572a4fa8e1f1be4db587a775068ad71d42acd
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.67.2":
+  version: 2.67.2
+  resolution: "rollup@npm:2.67.2"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 9aca5251ba4b441064183cde2394b91567259002d68086bdd3906db66d55dd148ab27e57c51eb53830d7b9b813c2d4e834b7735d65e2a869780bc639d4a20c38
   languageName: node
   linkType: hard
 
