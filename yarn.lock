@@ -3176,14 +3176,14 @@ __metadata:
     "@nuxt/schema": 3.0.0
     defu: ^5.0.1
     execa: ^6.0.0
-    get-port-please: ^2.2.0
+    get-port-please: ^2.3.0
     jiti: ^1.12.15
     ohmyfetch: ^0.4.15
-    playwright: ^1.18.0
+    playwright: ^1.18.1
     unbuild: latest
     vitest: ^0.3.2
   peerDependencies:
-    vue: 3.2.29
+    vue: 3.2.30
   languageName: unknown
   linkType: soft
 
@@ -3304,7 +3304,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.3.2
-    vite: ^2.8.0
+    vite: ^2.8.1
     vue: 3.2.30
   peerDependencies:
     vue: 3.2.30
@@ -16174,7 +16174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.18.0":
+"playwright@npm:^1.18.1":
   version: 1.18.1
   resolution: "playwright@npm:1.18.1"
   dependencies:
@@ -21314,13 +21314,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.8.0":
-  version: 2.8.0
-  resolution: "vite@npm:2.8.0"
+"vite@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "vite@npm:2.8.1"
   dependencies:
     esbuild: ^0.14.14
     fsevents: ~2.3.2
-    postcss: ^8.4.5
+    postcss: ^8.4.6
     resolve: ^1.22.0
     rollup: ^2.59.0
   peerDependencies:
@@ -21339,7 +21339,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: b6deeab38fc5a952dd448940a174608347ef4cf98608e540df9dc0ce4a9a2e4b0af116e73fed28402e5d30dfddc8a19086033ca422c5d7d960524167405c3672
+  checksum: 4ce8acc2dd2a7ca8727511ff575f72de162114402e55e5d081001f05ef1656782cd5611d4f6091c29efb455e72d30967467bad5b6b329bfe5279fbe8d5169d67
   languageName: node
   linkType: hard
 

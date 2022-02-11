@@ -41,7 +41,7 @@
     "rollup-plugin-visualizer": "^5.5.4",
     "ufo": "^0.7.9",
     "unplugin": "^0.3.2",
-    "vite": "^2.8.0"
+    "vite": "^2.8.1"
   },
   "peerDependencies": {
     "vue": "3.2.30"
