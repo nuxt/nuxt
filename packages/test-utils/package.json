@@ -1,0 +1,35 @@
+{
+  "name": "@nuxt/test-utils",
+  "version": "3.0.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "type": "module",
+  "exports": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "dependencies": {
+    "@nuxt/kit": "3.0.0",
+    "@nuxt/schema": "3.0.0",
+    "defu": "^5.0.1",
+    "execa": "^6.0.0",
+    "get-port-please": "^2.2.0",
+    "jiti": "^1.12.15",
+    "ohmyfetch": "^0.4.15"
+  },
+  "devDependencies": {
+    "playwright": "^1.18.0",
+    "unbuild": "latest",
+    "vitest": "^0.3.2"
+  },
+  "peerDependencies": {
+    "vue": "3.2.29"
+  },
+  "engines": {
+    "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
+  }
+}
