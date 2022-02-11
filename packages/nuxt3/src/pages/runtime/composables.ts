@@ -25,7 +25,7 @@ declare module 'vue-router' {
 const warnRuntimeUsage = (method: string) =>
   console.warn(
     `${method}() is a compiler-hint helper that is only usable inside ` +
-      '<script setup> of a single file component. Its arguments should be ' +
+      'the script block of a single file component. Its arguments should be ' +
       'compiled away and passing it at runtime has no effect.'
   )
 

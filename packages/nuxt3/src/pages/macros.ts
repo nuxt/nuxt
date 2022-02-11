@@ -13,9 +13,10 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
     enforce: 'post',
     transformInclude (id) {
       const { search, pathname } = parseURL(id)
-      return pathname.endsWith('.vue') || parseQuery(search).macro
+      return pathname.endsWith('.vue') || !!parseQuery(search).macro
     },
     transform (code, id) {
+      const originalCode = code
       const { search } = parseURL(id)
 
       // Tree-shake out any runtime references to the macro.
@@ -27,7 +28,9 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
         }
       }
 
-      if (!parseQuery(search).macro) { return }
+      if (!parseQuery(search).macro) {
+        return originalCode === code ? undefined : code
+      }
 
       // [webpack] Re-export any imports from script blocks in the components
       // with workaround for vue-loader bug: https://github.com/vuejs/vue-loader/pull/1911
