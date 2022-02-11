@@ -6,6 +6,7 @@ import type { InlineConfig, SSROptions } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import { sanitizeFilePath } from 'mlly'
 import { joinURL, withoutLeadingSlash } from 'ufo'
+import { getPort } from 'get-port-please'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -23,6 +24,13 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
+  // TODO: After nitropack refactor, try if we can resuse the same server port as Nuxt
+  const hmrPortDefault = 24678 // Vite's default HMR port
+  const hmrPort = await getPort({
+    port: hmrPortDefault,
+    ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i)
+  })
+
   const ctx: ViteBuildContext = {
     nuxt,
     config: vite.mergeConfig(
@@ -85,6 +93,10 @@ export async function bundle (nuxt: Nuxt) {
           virtual(nuxt.vfs)
         ],
         server: {
+          hmr: {
+            clientPort: hmrPort,
+            port: hmrPort
+          },
           fs: {
             strict: false,
             allow: [

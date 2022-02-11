@@ -6,7 +6,6 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { Connect } from 'vite'
 
 import { joinURL } from 'ufo'
-import { getPort } from 'get-port-please'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { analyzePlugin } from './plugins/analyze'
 import { wpfs } from './utils/wpfs'
@@ -16,13 +15,6 @@ import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { DynamicBasePlugin, RelativeAssetPlugin } from './plugins/dynamic-base'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  // TODO: After nitropack refactor, try if we can resuse the same server port as Nuxt
-  const hmrPortDefault = 24678 // Vite's default HMR port
-  const hmrPort = await getPort({
-    port: hmrPortDefault,
-    ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i)
-  })
-
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     define: {
       'process.server': false,
@@ -56,11 +48,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       })
     ],
     server: {
-      middlewareMode: true,
-      hmr: {
-        port: hmrPort,
-        clientPort: hmrPort
-      }
+      middlewareMode: true
     }
   } as ViteOptions)
 
