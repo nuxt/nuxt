@@ -3181,7 +3181,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.18.1
     unbuild: latest
-    vitest: ^0.3.2
+    vitest: ^0.3.4
   peerDependencies:
     vue: 3.2.30
   languageName: unknown
@@ -15285,7 +15285,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.5
     unbuild: ^0.6.9
-    vitest: ^0.2.8
+    vitest: ^0.3.4
     vue-router: next
   languageName: unknown
   linkType: soft
@@ -21285,7 +21285,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:>=2.7.13, vite@npm:^2.7.13":
+"vite@npm:^2.7.13":
   version: 2.7.13
   resolution: "vite@npm:2.7.13"
   dependencies:
@@ -21343,9 +21343,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "vitest@npm:0.2.8"
+"vitest@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "vitest@npm:0.3.4"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21353,7 +21353,7 @@ __metadata:
     local-pkg: ^0.4.1
     tinypool: ^0.1.1
     tinyspy: ^0.2.10
-    vite: ">=2.7.13"
+    vite: ^2.7.13
   peerDependencies:
     "@vitest/ui": "*"
     c8: "*"
@@ -21370,38 +21370,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: d39d26d2057dd50058d641bd660df13726a1bc80423f9d15c3c1fe96670ea368787b2dcc63ed492362bd205e9f44e1ca25edff14f59986eca615ebadbf72a9e0
-  languageName: node
-  linkType: hard
-
-"vitest@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "vitest@npm:0.3.2"
-  dependencies:
-    "@types/chai": ^4.3.0
-    "@types/chai-subset": ^1.3.3
-    chai: ^4.3.6
-    local-pkg: ^0.4.1
-    tinypool: ^0.1.1
-    tinyspy: ^0.2.10
-    vite: ">=2.7.13"
-  peerDependencies:
-    "@vitest/ui": "*"
-    c8: "*"
-    happy-dom: "*"
-    jsdom: "*"
-  peerDependenciesMeta:
-    "@vitest/ui":
-      optional: true
-    c8:
-      optional: true
-    happy-dom:
-      optional: true
-    jsdom:
-      optional: true
-  bin:
-    vitest: vitest.mjs
-  checksum: 858dd3d16f7583b77bca0ab7810d4b1efdba92392cd6a2d97a62cf26ef1c041bda08e15e1694f69d1654bb7aaaab65d52c3684e03a8c364e5edab261f992e218
+  checksum: af38249d385d3ee441f9fdb7189a1f2b795310a94eea584721e1c83f1e1b4bd7fdfdd0ff2168636579a1bd3bd77744388db551fc83b8a2635d0e2d97b8a2fc2d
   languageName: node
   linkType: hard
 
