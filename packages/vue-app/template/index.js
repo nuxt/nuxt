@@ -4,10 +4,10 @@ import Vue from 'vue'
 <% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
 <% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
 import { createRouter } from './router.js'
+import App from '<%= appPath %>'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 import Nuxt from './components/nuxt.js'
-import App from '<%= appPath %>'
 import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% if (store) { %>import { createStore } from './store.js'<% } %>
 

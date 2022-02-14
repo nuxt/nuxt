@@ -13,12 +13,16 @@ import { decode, parsePath, withoutBase, withoutTrailingSlash, normalizeURL } fr
   ]: []
 ] %>
 <% if (utilsImports.length) { %>import { <%= utilsImports.join(', ') %> } from './utils'<% } %>
-import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
-<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
-<% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
+
+// Import CSS before importing any Vue components which might rely on overriding static CSS
+// styles applied in these files 
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
+
+import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
+<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
+<% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 
 <% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
