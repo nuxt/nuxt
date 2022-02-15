@@ -16,18 +16,18 @@
     "@nuxt/kit": "3.0.0",
     "@nuxt/schema": "3.0.0",
     "defu": "^5.0.1",
-    "execa": "^6.0.0",
+    "execa": "^6.1.0",
     "get-port-please": "^2.3.0",
     "jiti": "^1.12.15",
     "ohmyfetch": "^0.4.15"
   },
   "devDependencies": {
-    "playwright": "^1.18.1",
+    "playwright": "^1.19.0",
     "unbuild": "latest",
-    "vitest": "^0.3.4"
+    "vitest": "^0.3.5"
   },
   "peerDependencies": {
-    "vue": "3.2.30"
+    "vue": "3.2.31"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"

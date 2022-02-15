@@ -31,7 +31,7 @@
     "consola": "^2.15.3",
     "deep-object-diff": "^1.1.7",
     "destr": "^1.1.0",
-    "execa": "^6.0.0",
+    "execa": "^6.1.0",
     "flat": "^5.0.2",
     "jiti": "^1.12.15",
     "listhen": "^0.2.6",
