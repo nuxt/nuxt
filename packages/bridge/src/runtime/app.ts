@@ -58,12 +58,24 @@ export const setNuxtAppInstance = (nuxt: NuxtAppCompat | null) => {
   currentNuxtAppInstance = nuxt
 }
 
-export function defineNuxtPlugin (plugin: (nuxtApp: NuxtAppCompat) => void): (ctx: Context) => void {
-  return (ctx) => {
-    setNuxtAppInstance(ctx.$_nuxtApp)
-    plugin(ctx.$_nuxtApp)
+/**
+ * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
+ *
+ * @param nuxt A Nuxt instance
+ * @param setup The function to call
+ */
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtAppCompat, setup: T, args?: Parameters<T>) {
+  setNuxtAppInstance(nuxt)
+  const p: ReturnType<T> = args ? setup(...args as Parameters<T>) : setup()
+  if (process.server) {
+    // Unset nuxt instance to prevent context-sharing in server-side
     setNuxtAppInstance(null)
   }
+  return p
+}
+
+export function defineNuxtPlugin (plugin: (nuxtApp: NuxtAppCompat) => void): (ctx: Context) => void {
+  return ctx => callWithNuxt(ctx.$_nuxtApp, plugin, [ctx.$_nuxtApp])
 }
 
 export const useNuxtApp = (): NuxtAppCompat => {

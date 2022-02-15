@@ -2,7 +2,7 @@ import { getCurrentInstance, onBeforeUnmount, isRef, watch, reactive, toRef, isR
 import type { CombinedVueInstance } from 'vue/types/vue'
 import type { MetaInfo } from 'vue-meta'
 import type VueRouter from 'vue-router'
-import type { Route } from 'vue-router'
+import type { Location, Route } from 'vue-router'
 import type { RuntimeConfig } from '@nuxt/schema'
 import defu from 'defu'
 import { useNuxtApp } from './app'
@@ -141,3 +141,69 @@ export const useNuxt2Meta = (metaOptions: Reffed<MetaInfo> | (() => Reffed<MetaI
     }
   }
 }
+
+export interface AddRouteMiddlewareOptions {
+  global?: boolean
+}
+
+/** internal */
+function convertToLegacyMiddleware (middleware) {
+  return async (ctx: any) => {
+    const result = await middleware(ctx.route, ctx.from)
+    if (result instanceof Error) {
+      return ctx.error(result)
+    }
+    if (result) {
+      return ctx.redirect(result)
+    }
+    return result
+  }
+}
+
+export const addRouteMiddleware = (name: string, middleware: any, options: AddRouteMiddlewareOptions = {}) => {
+  const nuxtApp = useNuxtApp()
+  if (options.global) {
+    nuxtApp._middleware.global.push(middleware)
+  } else {
+    nuxtApp._middleware.named[name] = convertToLegacyMiddleware(middleware)
+  }
+}
+
+const isProcessingMiddleware = () => {
+  try {
+    if (useNuxtApp()._processingMiddleware) {
+      return true
+    }
+  } catch {
+    // Within an async middleware
+    return true
+  }
+  return false
+}
+
+export const navigateTo = (to: Route) => {
+  if (isProcessingMiddleware()) {
+    return to
+  }
+  const router: VueRouter = process.server ? useRouter() : (window as any).$nuxt.router
+  return router.push(to)
+}
+
+/** This will abort navigation within a Nuxt route middleware handler. */
+export const abortNavigation = (err?: Error | string) => {
+  if (process.dev && !isProcessingMiddleware()) {
+    throw new Error('abortNavigation() is only usable inside a route middleware handler.')
+  }
+  if (err) {
+    throw err instanceof Error ? err : new Error(err)
+  }
+  return false
+}
+
+type RouteMiddlewareReturn = void | Error | string | Location | boolean
+
+export interface RouteMiddleware {
+  (to: Route, from: Route): RouteMiddlewareReturn | Promise<RouteMiddlewareReturn>
+}
+
+export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware

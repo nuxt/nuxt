@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { createHooks } from 'hookable'
-import { setNuxtAppInstance } from '#app'
+import { callWithNuxt, setNuxtAppInstance } from '#app'
 
 // Reshape payload to match key `useLazyAsyncData` expects
 function proxiedState (state) {
@@ -19,7 +19,7 @@ function proxiedState (state) {
   })
 }
 
-export default (ctx, inject) => {
+export default async (ctx, inject) => {
   const nuxtApp = {
     vueApp: {
       component: Vue.component.bind(Vue),
@@ -47,6 +47,27 @@ export default (ctx, inject) => {
   nuxtApp.hooks = createHooks()
   nuxtApp.hook = nuxtApp.hooks.hook
   nuxtApp.callHook = nuxtApp.hooks.callHook
+
+  const middleware = await import('#build/middleware').then(r => r.default)
+  nuxtApp._middleware = nuxtApp._middleware || {
+    global: [],
+    named: middleware
+  }
+
+  ctx.app.router.beforeEach(async (to, from, next) => {
+    nuxtApp._processingMiddleware = true
+
+    for (const middleware of nuxtApp._middleware.global) {
+      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
+      if (result || result === false) { return next(result) }
+    }
+
+    next()
+  })
+
+  ctx.app.router.afterEach(() => {
+    delete nuxtApp._processingMiddleware
+  })
 
   if (!Array.isArray(ctx.app.created)) {
     ctx.app.created = [ctx.app.created].filter(Boolean)

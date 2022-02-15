@@ -60,7 +60,10 @@ const isProcessingMiddleware = () => {
     if (useNuxtApp()._processingMiddleware) {
       return true
     }
-  } catch {}
+  } catch {
+    // Within an async middleware
+    return true
+  }
   return false
 }
 
