@@ -77,5 +77,11 @@ export default (ctx, inject) => {
 
   setNuxtAppInstance(proxiedApp)
 
+  if (process.client) {
+    window.onNuxtReady(() => {
+      nuxtApp.hooks.callHook('app:mounted', nuxtApp.vueApp)
+    })
+  }
+
   inject('_nuxtApp', proxiedApp)
 }
