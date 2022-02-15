@@ -75,6 +75,9 @@ export function testNitroBehavior (_ctx, getHandler) {
     const { data: helloData } = await handler({ url: '/api/hello' })
     const { data: heyData } = await handler({ url: '/api/hey' })
     expect(destr(helloData)).to.have.string('Hello API')
-    expect(destr(heyData)).to.have.string('Hey API')
+    expect(destr(heyData)).to.deep.equal({
+      foo: 'bar',
+      baz: 'qux'
+    })
   })
 }

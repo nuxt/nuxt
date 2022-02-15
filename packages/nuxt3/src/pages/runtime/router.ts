@@ -9,7 +9,7 @@ import {
 import { createError } from 'h3'
 import NuxtPage from './page'
 import NuxtLayout from './layout'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, NuxtApp } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -93,7 +93,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         console.warn(`Unknown middleware: ${entry}. Valid options are ${Object.keys(namedMiddleware).join(', ')}.`)
       }
 
-      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
+      const result = await callWithNuxt(nuxtApp as NuxtApp, middleware, [to, from])
       if (process.server) {
         if (result === false || result instanceof Error) {
           const error = result || createError({

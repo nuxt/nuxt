@@ -77,7 +77,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
   if (await isExternal(opts, withoutVersionQuery)) {
     const path = builtinModules.includes(withoutVersionQuery.split('node:').pop())
       ? withoutVersionQuery
-      : pathToFileURL(withoutVersionQuery)
+      : pathToFileURL(withoutVersionQuery).href
     return {
       code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) => ${genDynamicImport(path, { wrapper: false })}.then(r => { exports.default = r.default; ssrExportAll(r) }).catch(e => { console.error(e); throw new Error(${JSON.stringify(`[vite dev] Error loading external "${id}".`)}) })`,
       deps: [],

@@ -8,5 +8,6 @@ export default defineNuxtConfig({
   publicRuntimeConfig: {
     // @ts-ignore TODO: Fix schema types
     testConfig: '123'
-  }
+  },
+  modules: ['~/modules/example']
 })

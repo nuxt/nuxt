@@ -23,6 +23,7 @@
     "test:presets": "vitest test/presets",
     "test:bridge:webpack": "TEST_BRIDGE=1 yarn test:presets",
     "test:bridge:vite": "TEST_BRIDGE_VITE=1 TEST_BRIDGE=1 yarn test:presets",
+    "test:types": "yarn run nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
     "test:unit": "vitest packages",
     "test:utils": "vitest run test/examples",
     "version": "yarn && git add yarn.lock"
@@ -47,6 +48,7 @@
     "eslint": "^8.8.0",
     "eslint-plugin-jsdoc": "^37.8.2",
     "execa": "^6.0.0",
+    "expect-type": "^0.13.0",
     "globby": "^13.1.1",
     "jiti": "^1.12.15",
     "lerna": "^4.0.0",
@@ -57,7 +59,8 @@
     "typescript": "^4.5.5",
     "unbuild": "^0.6.9",
     "vitest": "^0.3.4",
-    "vue-router": "next"
+    "vue-router": "next",
+    "vue-tsc": "^0.31.2"
   },
   "packageManager": "yarn@3.1.1",
   "engines": {

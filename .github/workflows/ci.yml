@@ -60,6 +60,9 @@ jobs:
       - name: Test (presets)
         run: yarn test:presets
 
+      - name: Test (types)
+        run: yarn test:types
+
   test-bridge:
     runs-on: ${{ matrix.os }}
 

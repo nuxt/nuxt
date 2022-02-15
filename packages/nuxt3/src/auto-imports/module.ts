@@ -90,7 +90,7 @@ export default defineNuxtModule<AutoImportsOptions>({
     // Add generated types to `nuxt.d.ts`
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolve(nuxt.options.buildDir, 'types/auto-imports.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/imports.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'imports.d.ts') })
     })
 
     // Watch composables/ directory
@@ -121,7 +121,7 @@ function addDeclarationTemplates (ctx: AutoImportContext) {
   }
 
   addTemplate({
-    filename: 'types/imports.d.ts',
+    filename: 'imports.d.ts',
     getContents: () => toExports(ctx.autoImports)
   })
 

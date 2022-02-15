@@ -72,7 +72,7 @@ export async function writeTypes (nitroContext: NitroContext) {
 
   for (const mw of middleware) {
     if (typeof mw.handle !== 'string') { continue }
-    const relativePath = relative(nitroContext._nuxt.buildDir, mw.handle).replace(/\.[a-z]+$/, '')
+    const relativePath = relative(join(nitroContext._nuxt.buildDir, 'types'), mw.handle).replace(/\.[a-z]+$/, '')
     routeTypes[mw.route] = routeTypes[mw.route] || []
     routeTypes[mw.route].push(`Awaited<ReturnType<typeof ${genDynamicImport(relativePath, { wrapper: false })}.default>>`)
   }

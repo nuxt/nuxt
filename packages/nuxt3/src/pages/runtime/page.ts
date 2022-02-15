@@ -22,7 +22,7 @@ export default defineComponent({
               wrapInKeepAlive(routeProps.route.meta.keepalive, h(Suspense, {
                 onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
                 onResolve: () => nuxtApp.callHook('page:finish', routeProps.Component)
-              }, { default: () => h(routeProps.Component, { key: generateRouteKey(props.pageKey, routeProps) }) }))).default()
+              }, { default: () => h(routeProps.Component, { key: generateRouteKey(props.pageKey, routeProps) } as {}) }))).default()
       })
     }
   }

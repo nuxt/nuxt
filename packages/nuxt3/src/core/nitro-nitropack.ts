@@ -87,7 +87,7 @@ export async function initNitro (nuxt: Nuxt) {
     }
   })
 
-  nuxt.hook('builder:generateApp', async () => {
+  nuxt.hook('build:before', async () => {
     nitro.scannedMiddleware = await scanMiddleware(nitro.options.srcDir)
     await writeTypes(nitro)
   })

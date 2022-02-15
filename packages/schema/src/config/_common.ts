@@ -151,7 +151,7 @@ export default {
   createRequire: {
     $resolve: (val: any) => {
       val = process.env.NUXT_CREATE_REQUIRE || val ||
-        (typeof jest !== 'undefined' ? 'native' : 'jiti')
+        (typeof globalThis.jest !== 'undefined' ? 'native' : 'jiti')
       if (val === 'jiti') {
         return p => jiti(typeof p === 'string' ? p : p.filename)
       }
@@ -737,6 +737,6 @@ export default {
    * @version 3
    */
   publicRuntimeConfig: {
-    $resolve: (val = {}, get) => ({ ...val, app: defu(val.app, get('app')) })
+    $resolve: (val: Record<string, any> = {}, get) => ({ ...val, app: defu(val.app, get('app')) })
   },
 }

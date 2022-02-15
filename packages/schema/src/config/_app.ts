@@ -238,7 +238,9 @@ export default {
    * @version 2
    * @version 3
    */
-  css: [],
+  css: {
+    $resolve: val => (val ?? []).map(c => c.src || c)
+  },
 
   /**
    * An object where each key name maps to a path to a layout .vue file.

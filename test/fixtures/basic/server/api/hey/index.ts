@@ -1,1 +1,4 @@
-export default () => 'Hey API'
+export default () => ({
+  foo: 'bar',
+  baz: 'qux'
+})
