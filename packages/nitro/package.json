@@ -58,7 +58,7 @@
     "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",
     "pkg-types": "^0.3.2",
-    "pretty-bytes": "^5.6.0",
+    "pretty-bytes": "^6.0.0",
     "rollup": "^2.67.2",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-visualizer": "^5.5.4",

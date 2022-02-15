@@ -3009,7 +3009,7 @@ __metadata:
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     pkg-types: ^0.3.2
-    pretty-bytes: ^5.6.0
+    pretty-bytes: ^6.0.0
     rollup: ^2.67.2
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.4
@@ -17795,6 +17795,13 @@ __metadata:
   version: 5.6.0
   resolution: "pretty-bytes@npm:5.6.0"
   checksum: 9c082500d1e93434b5b291bd651662936b8bd6204ec9fa17d563116a192d6d86b98f6d328526b4e8d783c07d5499e2614a807520249692da9ec81564b2f439cd
+  languageName: node
+  linkType: hard
+
+"pretty-bytes@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "pretty-bytes@npm:6.0.0"
+  checksum: 0bb9f95e617236404b29a8392c6efd82d65805f622f5e809ecd70068102be857d4e3276c86d2a32fa2ef851cc29472e380945dab7bec83ec79bd57a19a10faf7
   languageName: node
   linkType: hard
 
