@@ -7,11 +7,14 @@ import { defineNuxtConfig } from '~~/../../../packages/nuxt3/src'
 import { useRouter } from '#imports'
 import { isVue3 } from '#app'
 
+interface TestResponse { message: string }
+
 describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toMatchTypeOf<Promise<string>>()
     expectTypeOf($fetch('/api/hey')).toMatchTypeOf<Promise<{ foo:string, baz: string }>>()
     expectTypeOf($fetch('/api/other')).toMatchTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/test')).toMatchTypeOf<Promise<TestResponse>>()
   })
 
   it('works with useFetch', () => {
@@ -19,10 +22,13 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/hey').data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
     expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
     expectTypeOf(useFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
+    expectTypeOf(useFetch<TestResponse>('/test').data).toMatchTypeOf<Ref<TestResponse>>()
     expectTypeOf(useLazyFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
     expectTypeOf(useLazyFetch('/api/hey').data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
     expectTypeOf(useLazyFetch('/api/hey', { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
     expectTypeOf(useLazyFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyFetch<TestResponse>('/test').data).toMatchTypeOf<Ref<TestResponse>>()
   })
 })
 
