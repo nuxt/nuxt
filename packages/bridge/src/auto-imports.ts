@@ -9,7 +9,7 @@ const ImportRewrites = {
   vue: '@vue/composition-api'
 }
 
-export async function setupAutoImports () {
+export function setupAutoImports () {
   const nuxt = useNuxt()
 
   nuxt.hook('autoImports:extend', (autoImports) => {
@@ -39,5 +39,5 @@ export async function setupAutoImports () {
     autoImports.push({ name: 'useNuxt2Meta', as: 'useNuxt2Meta', from: '#app' })
   })
 
-  await installModule(autoImports)
+  nuxt.hook('modules:done', () => installModule(autoImports))
 }
