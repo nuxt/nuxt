@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import * as vite from 'vite'
-import consola from 'consola'
+import { logger } from '@nuxt/kit'
 import { withoutLeadingSlash } from 'ufo'
 import { distDir } from '../dirs'
 import { warmupViteServer } from '../../../vite/src/utils/warmup'
@@ -95,8 +95,8 @@ async function bundle (nuxt: Nuxt, builder: any) {
     ctx.nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
       const start = Date.now()
       warmupViteServer(server, ['/.nuxt/entry.mjs']).then(() => {
-        consola.info(`Vite warmed up in ${Date.now() - start}ms`)
-      }).catch(consola.error)
+        logger.info(`Vite warmed up in ${Date.now() - start}ms`)
+      }).catch(logger.error)
     })
   }
 

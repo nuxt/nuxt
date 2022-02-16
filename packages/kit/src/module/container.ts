@@ -1,6 +1,6 @@
 import { parse, relative } from 'pathe'
-import consola from 'consola'
 import type { Nuxt, NuxtPluginTemplate, NuxtTemplate, ModuleContainer } from '@nuxt/schema'
+import { logger } from '../logger'
 import { chainFn } from '../internal/task'
 import { addTemplate } from '../template'
 import { addServerMiddleware } from '../server'
@@ -67,7 +67,7 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
       const layout = nuxt.options.layouts[layoutName]
 
       if (layout) {
-        consola.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
+        logger.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
       }
       nuxt.options.layouts[layoutName] = `./${filename}`
       if (name === 'error') {

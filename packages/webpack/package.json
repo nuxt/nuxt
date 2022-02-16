@@ -22,7 +22,6 @@
     "@vue/babel-preset-jsx": "^1.2.4",
     "autoprefixer": "^10.4.2",
     "babel-loader": "^8.2.3",
-    "consola": "^2.15.3",
     "css-loader": "^6.6.0",
     "css-minimizer-webpack-plugin": "^3.4.1",
     "cssnano": "^5.0.17",

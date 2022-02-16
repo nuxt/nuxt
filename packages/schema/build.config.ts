@@ -24,6 +24,7 @@ export default defineBuildConfig({
     'webpack-bundle-analyzer',
     'rollup-plugin-visualizer',
     'vite',
+    'consola',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared'

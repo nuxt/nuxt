@@ -2652,7 +2652,6 @@ __metadata:
     "@vue/composition-api": ^1.4.6
     "@vueuse/head": ^0.7.5
     acorn: ^8.7.0
-    consola: ^2.15.3
     cookie-es: ^0.5.0
     defu: ^5.0.1
     destr: ^1.1.0
@@ -3359,7 +3358,6 @@ __metadata:
     "@vitejs/plugin-vue-jsx": ^1.3.7
     autoprefixer: ^10.4.2
     chokidar: ^3.5.3
-    consola: ^2.15.3
     defu: ^5.0.1
     esbuild: ^0.14.21
     escape-string-regexp: ^5.0.0
@@ -3476,7 +3474,6 @@ __metadata:
     "@vue/babel-preset-jsx": ^1.2.4
     autoprefixer: ^10.4.2
     babel-loader: ^8.2.3
-    consola: ^2.15.3
     css-loader: ^6.6.0
     css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.0.17
@@ -15385,7 +15382,6 @@ __metadata:
     "@vue/shared": ^3.2.31
     "@vueuse/head": ^0.7.5
     chokidar: ^3.5.3
-    consola: ^2.15.3
     cookie-es: ^0.5.0
     defu: ^5.0.1
     destr: ^1.1.0

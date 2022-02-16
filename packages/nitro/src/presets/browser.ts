@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'fs'
 import { resolve } from 'pathe'
-import consola from 'consola'
+import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import { genString } from 'knitwork'
 import { extendPreset, prettyPath } from '../utils'
@@ -77,7 +77,7 @@ if ('serviceWorker' in navigator) {
         if (!existsSync(resolve(output.publicDir, '404.html'))) {
           await fsp.writeFile(resolve(output.publicDir, '404.html'), html, 'utf8')
         }
-        consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
+        logger.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
       }
     }
   }

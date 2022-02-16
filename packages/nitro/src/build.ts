@@ -1,5 +1,5 @@
 import { relative, resolve, join } from 'pathe'
-import consola from 'consola'
+import { logger } from '@nuxt/kit'
 import * as rollup from 'rollup'
 import fse from 'fs-extra'
 import { genDynamicImport } from 'knitwork'
@@ -10,7 +10,7 @@ import { NitroContext } from './context'
 import { scanMiddleware } from './server/middleware'
 
 export async function prepare (nitroContext: NitroContext) {
-  consola.info(`Nitro preset is ${hl(nitroContext.preset)}`)
+  logger.info(`Nitro preset is ${hl(nitroContext.preset)}`)
 
   await cleanupDir(nitroContext.output.dir)
 
@@ -24,12 +24,12 @@ export async function prepare (nitroContext: NitroContext) {
 }
 
 async function cleanupDir (dir: string) {
-  consola.info('Cleaning up', prettyPath(dir))
+  logger.info('Cleaning up', prettyPath(dir))
   await fse.emptyDir(dir)
 }
 
 export async function generate (nitroContext: NitroContext) {
-  consola.start('Generating public...')
+  logger.start('Generating public...')
 
   await nitroContext._internal.hooks.callHook('nitro:generate', nitroContext)
 
@@ -44,7 +44,7 @@ export async function generate (nitroContext: NitroContext) {
     await fse.copy(clientDist, buildAssetsDir)
   }
 
-  consola.success('Generated public ' + prettyPath(nitroContext.output.publicDir))
+  logger.success('Generated public ' + prettyPath(nitroContext.output.publicDir))
 }
 
 export async function build (nitroContext: NitroContext) {
@@ -96,13 +96,13 @@ async function _build (nitroContext: NitroContext) {
   nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir)
   await writeTypes(nitroContext)
 
-  consola.start('Building server...')
+  logger.start('Building server...')
   const build = await rollup.rollup(nitroContext.rollupConfig).catch((error) => {
-    consola.error('Rollup error: ' + error.message)
+    logger.error('Rollup error: ' + error.message)
     throw error
   })
 
-  consola.start('Writing server bundle...')
+  logger.start('Writing server bundle...')
   await build.write(nitroContext.rollupConfig.output)
 
   const rewriteBuildPaths = (input: unknown, to: string) =>
@@ -120,7 +120,7 @@ async function _build (nitroContext: NitroContext) {
   }
   await writeFile(nitroConfigPath, JSON.stringify(buildInfo, null, 2))
 
-  consola.success('Server built')
+  logger.success('Server built')
   await printFSTree(nitroContext.output.serverDir)
   await nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
 
@@ -128,10 +128,10 @@ async function _build (nitroContext: NitroContext) {
   const rOutDir = relative(process.cwd(), nitroContext.output.dir)
   if (nitroContext.commands.preview) {
     // consola.info(`You can preview this build using \`${rewriteBuildPaths(nitroContext.commands.preview, rOutDir)}\``)
-    consola.info('You can preview this build using `nuxi preview`')
+    logger.info('You can preview this build using `nuxi preview`')
   }
   if (nitroContext.commands.deploy) {
-    consola.info(`You can deploy this build using \`${rewriteBuildPaths(nitroContext.commands.deploy, rOutDir)}\``)
+    logger.info(`You can deploy this build using \`${rewriteBuildPaths(nitroContext.commands.deploy, rOutDir)}\``)
   }
 
   return {
@@ -157,12 +157,12 @@ function startRollupWatcher (nitroContext: NitroContext) {
       // Finished building all bundles
       case 'END':
         nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
-        consola.success('Nitro built', start ? `in ${Date.now() - start} ms` : '')
+        logger.success('Nitro built', start ? `in ${Date.now() - start} ms` : '')
         return
 
       // Encountered an error while bundling
       case 'ERROR':
-        consola.error('Rollup error: ' + event.error)
+        logger.error('Rollup error: ' + event.error)
         // consola.error(event.error)
     }
   })

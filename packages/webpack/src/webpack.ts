@@ -6,8 +6,7 @@ import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import VirtualModulesPlugin from 'webpack-virtual-modules'
-import consola from 'consola'
-
+import { logger } from '@nuxt/kit'
 import type { Compiler, Watching } from 'webpack'
 import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
@@ -96,7 +95,7 @@ class WebpackBundler {
     // Check styleResource existence
     const { styleResources } = this.nuxt.options.build
     if (styleResources && Object.keys(styleResources).length) {
-      consola.warn(
+      logger.warn(
         'Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.',
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
@@ -204,7 +203,7 @@ class WebpackBundler {
   }
 
   async webpackDev (compiler: Compiler) {
-    consola.debug('Creating webpack middleware...')
+    logger.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
     const buildOptions = this.nuxt.options.build

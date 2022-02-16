@@ -18,6 +18,7 @@ export * from './plugin'
 export * from './resolve'
 export * from './server'
 export * from './template'
+export * from './logger'
 
 // Internal Utils
 // TODO

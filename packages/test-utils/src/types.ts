@@ -15,6 +15,7 @@ export interface TestOptions {
   waitFor: number
   browser: boolean
   runner: TestRunner
+  logLevel: number
   browserOptions: {
     type: 'chromium' | 'firefox' | 'webkit'
     launch?: LaunchOptions

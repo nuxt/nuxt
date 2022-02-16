@@ -3,15 +3,15 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
  */
 
-import consola from 'consola'
+import { logger } from '@nuxt/kit'
 
 export const validate = (compiler) => {
   if (compiler.options.target !== 'node') {
-    consola.warn('webpack config `target` should be "node".')
+    logger.warn('webpack config `target` should be "node".')
   }
 
   if (!compiler.options.externals) {
-    consola.info(
+    logger.info(
       'It is recommended to externalize dependencies in the server build for ' +
       'better build performance.'
     )

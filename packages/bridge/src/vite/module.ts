@@ -1,5 +1,4 @@
-import consola from 'consola'
-import { addPluginTemplate, defineNuxtModule } from '@nuxt/kit'
+import { logger, addPluginTemplate, defineNuxtModule } from '@nuxt/kit'
 import { version } from '../../package.json'
 import { middlewareTemplate, storeTemplate } from './templates'
 import type { ViteOptions } from './types'
@@ -15,9 +14,9 @@ export default defineNuxtModule<ViteOptions>({
     nuxt.options.cli.badgeMessages.push(`⚡  Vite Mode Enabled (v${version})`)
     // eslint-disable-next-line no-console
     if (viteOptions.experimentWarning !== false && !nuxt.options.test) {
-      consola.log(
+      logger.log(
         '🧪  Vite mode is experimental and some nuxt modules might be incompatible\n',
-        '   If found a bug, please report via https://github.com/nuxt/vite/issues with a minimal reproduction.'
+        '   If found a bug, please report via https://github.com/nuxt/framework/issues with a minimal reproduction.'
       )
     }
 

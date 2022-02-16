@@ -1,5 +1,5 @@
 import { join, resolve } from 'pathe'
-import { isDevelopment } from 'std-env'
+import { isDevelopment, isTest } from 'std-env'
 import createRequire from 'create-require'
 import { pascalCase } from 'scule'
 import jiti from 'jiti'
@@ -7,7 +7,7 @@ import defu from 'defu'
 
 export default {
   /**
-   * Extend nested configurations from multiple local or remoted sources
+   * Extend nested configurations from multiple local or remote sources
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
@@ -738,5 +738,5 @@ export default {
    */
   publicRuntimeConfig: {
     $resolve: (val: Record<string, any> = {}, get) => ({ ...val, app: defu(val.app, get('app')) })
-  },
+  }
 }

@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
 import * as vite from 'vite'
 import { createVuePlugin } from 'vite-plugin-vue2'
-import consola from 'consola'
+import { logger } from '@nuxt/kit'
 import fse from 'fs-extra'
 import pDebounce from 'p-debounce'
 import { bundleRequest } from '../../../vite/src/dev-bundler'
@@ -80,10 +80,10 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Production build
   if (!ctx.nuxt.options.dev) {
     const start = Date.now()
-    consola.info('Building server...')
+    logger.info('Building server...')
     await vite.build(serverConfig)
     await onBuild()
-    consola.success(`Server built in ${Date.now() - start}ms`)
+    logger.success(`Server built in ${Date.now() - start}ms`)
     return
   }
 

@@ -58,4 +58,4 @@ export interface NuxtApp {
 }
 
 type _TemplatePlugin = NuxtPlugin & NuxtTemplate
-export interface NuxtPluginTemplate extends _TemplatePlugin {}
+export interface NuxtPluginTemplate extends _TemplatePlugin { }

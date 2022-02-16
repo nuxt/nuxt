@@ -1,6 +1,5 @@
 import { resolve } from 'pathe'
 import consola from 'consola'
-
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
