@@ -2410,12 +2410,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/functions@npm:^0.11.0, @netlify/functions@npm:^0.11.1":
+"@netlify/functions@npm:^0.11.0":
   version: 0.11.1
   resolution: "@netlify/functions@npm:0.11.1"
   dependencies:
     is-promise: ^4.0.0
   checksum: 760f7e042b054314203ed4503ce674c973c5fe939c56811a0c4376525ff7fe4da46dbf3a8e611b81124d8c231e848e7f468969ba6d53ffdde187f8dc415c3f99
+  languageName: node
+  linkType: hard
+
+"@netlify/functions@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@netlify/functions@npm:1.0.0"
+  dependencies:
+    is-promise: ^4.0.0
+  checksum: 1e3c234f14fd2fe8f46cae9336679054bf067b60217ee1c424adec1b1d1e4208eeaacb3401c48b625fe057df56f5dc553b961d4758f53bb0eae6f5b78d6385ad
   languageName: node
   linkType: hard
 
@@ -2975,7 +2984,7 @@ __metadata:
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
-    "@netlify/functions": ^0.11.1
+    "@netlify/functions": ^1.0.0
     "@nuxt/design": 0.1.5
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
