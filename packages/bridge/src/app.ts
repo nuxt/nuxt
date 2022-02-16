@@ -48,6 +48,10 @@ export function setupAppBridge (_options: any) {
     })))
     addTemplate(schemaTemplate)
   })
+  nuxt.hook('prepare:types', ({ references }) => {
+    // Add module augmentations directly to NuxtConfig
+    references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
+  })
 
   // Alias vue to have identical vue3 exports
   nuxt.options.alias['vue2-bridge'] = resolve(distDir, 'runtime/vue2-bridge.mjs')
