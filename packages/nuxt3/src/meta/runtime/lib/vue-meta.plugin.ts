@@ -30,7 +30,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         headAttrs: nuxtApp.ssrContext.teleports.headAttrs || '',
         bodyAttrs: nuxtApp.ssrContext.teleports.bodyAttrs || '',
         headTags: nuxtApp.ssrContext.teleports.head || '',
-        bodyPrepend: nuxtApp.ssrContext.teleports['body-prepend'] || '',
+        bodyScriptsPrepend: nuxtApp.ssrContext.teleports['body-prepend'] || '',
         bodyScripts: nuxtApp.ssrContext.teleports.body || ''
       }
     }

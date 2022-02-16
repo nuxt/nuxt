@@ -10,7 +10,7 @@ type NuxtMeta = {
   headAttrs?: string
   bodyAttrs?: string
   headTags?: string
-  bodyPrepend?: string
+  bodyScriptsPrepend?: string
   bodyScripts?: string
 }
 
