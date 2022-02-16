@@ -134,10 +134,10 @@ export const useNuxt2Meta = (metaOptions: Reffed<MetaInfo> | (() => Reffed<MetaI
       const originalHead = app.head
       app.head = function () {
         const head = originalHead.call(this) || {}
-        return defu(unwrap(metaInfoFromOptions(metaOptions)), head)
+        return defu(unwrap(metaInfoFromOptions(metaOptions)()), head)
       }
     } else {
-      app.head = defu(unwrap(metaInfoFromOptions(metaOptions)), app.head)
+      app.head = defu(unwrap(metaInfoFromOptions(metaOptions)()), app.head)
     }
   }
 }
