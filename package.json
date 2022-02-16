@@ -36,7 +36,7 @@
     "jiti": "^1.12.15"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.0",
+    "@iconify-json/carbon": "^1.1.1",
     "@nuxt/ui": "^0.0.0-alpha.5",
     "@nuxtjs/eslint-config": "^7.0.0",
     "@nuxtjs/eslint-config-typescript": "^7.0.2",
@@ -58,7 +58,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.5.5",
     "unbuild": "^0.6.9",
-    "vitest": "^0.3.5",
+    "vitest": "^0.3.6",
     "vue-router": "next",
     "vue-tsc": "^0.31.4"
   },

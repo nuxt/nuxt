@@ -232,7 +232,7 @@ class WebpackBundler {
 
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
-        compiler,
+        compiler as any,
         {
           log: false,
           heartbeat: 10000,
