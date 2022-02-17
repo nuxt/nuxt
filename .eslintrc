@@ -3,7 +3,9 @@
     "NodeJS": true,
     "$fetch": true
   },
-  "plugins": ["jsdoc"],
+  "plugins": [
+    "jsdoc"
+  ],
   "extends": [
     "plugin:jsdoc/recommended",
     "@nuxtjs/eslint-config-typescript",
@@ -17,30 +19,36 @@
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
     "jsdoc/require-param-type": "off",
-    "import/no-restricted-paths": ["error", {
-      "zones": [
-        {
-          "target": "packages/nuxt3/src/!(core)/**/*",
-          "from": "packages/nuxt3/src/core",
-          "message": "core should not directly import from modules."
-        },
-        {
-          "target": "packages/nuxt3/src/!(app)/**/*",
-          "from": "packages/nuxt3/src/app",
-          "message": "app should not directly import from modules."
-        },
-        {
-          "target": "packages/nitro",
-          "from": "packages/!(nitro)/**/*",
-          "message": "nitro should not directly import other packages."
-        }
-      ]
-    }],
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_",
-      "ignoreRestSiblings": true
-    }]
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "from": "packages/nuxt3/src/!(core)/**/*",
+            "target": "packages/nuxt3/src/core",
+            "message": "core should not directly import from modules."
+          },
+          {
+            "from": "packages/nuxt3/src/!(app)/**/*",
+            "target": "packages/nuxt3/src/app",
+            "message": "app should not directly import from modules."
+          },
+          {
+            "from": "packages/nitro",
+            "target": "packages/!(nitro)/**/*",
+            "message": "nitro should not directly import other packages."
+          }
+        ]
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ]
   },
   "settings": {
     "jsdoc": {

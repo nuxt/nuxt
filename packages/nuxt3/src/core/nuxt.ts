@@ -2,10 +2,13 @@ import { resolve } from 'pathe'
 import { createHooks } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '@nuxt/schema'
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+// Temporary until finding better placement
+/* eslint-disable import/no-restricted-paths */
 import pagesModule from '../pages/module'
 import metaModule from '../meta/module'
 import componentsModule from '../components/module'
 import autoImportsModule from '../auto-imports/module'
+/* eslint-enable */
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
