@@ -2,14 +2,15 @@ import type { IncomingMessage, ServerResponse } from 'http'
 import type { App } from 'vue'
 import type { Component } from '@vue/runtime-core'
 import mockContext from 'unenv/runtime/mock/proxy'
+import type { RouteLocationNormalized, Router } from 'vue-router'
 import { NuxtApp, useRuntimeConfig } from '../nuxt'
 
-type Route = any
 type Store = any
 
 export type LegacyApp = App<Element> & {
   $root: LegacyApp
   constructor: LegacyApp
+  $router?: Router
 }
 
 export interface LegacyContext {
@@ -28,12 +29,12 @@ export interface LegacyContext {
   // -> unsupported
   store: Store
   // vue-router integration
-  route: Route
-  params: Route['params']
-  query: Route['query']
+  route: RouteLocationNormalized
+  params: RouteLocationNormalized['params']
+  query: RouteLocationNormalized['query']
   base: string /** TODO: */
   payload: any /** TODO: */
-  from: Route /** TODO: */
+  from: RouteLocationNormalized /** TODO: */
   // -> nuxt.payload.data
   nuxtState: Record<string, any>
   // TODO: needs app implementation
@@ -48,8 +49,8 @@ export interface LegacyContext {
   /** TODO: */
   next?: (err?: any) => any
   error (params: any): void
-  redirect (status: number, path: string, query?: Route['query']): void
-  redirect (path: string, query?: Route['query']): void
+  redirect (status: number, path: string, query?: RouteLocationNormalized['query']): void
+  redirect (path: string, query?: RouteLocationNormalized['query']): void
   redirect (location: Location): void
   redirect (status: number, location: Location): void
   ssrContext?: {
@@ -199,13 +200,15 @@ export const legacyPlugin = (nuxtApp: NuxtApp) => {
 
   if (process.client) {
     nuxtApp.hook('app:created', () => {
-      const legacyApp = { ...nuxtApp.vueApp } as LegacyApp
-      legacyApp.$root = legacyApp
-
-      // @ts-ignore
-      // TODO: https://github.com/nuxt/framework/issues/244
-      legacyApp.constructor = legacyApp
-
+      const legacyApp = new Proxy(nuxtApp.vueApp as LegacyApp, {
+        get (source, p: keyof LegacyApp) {
+          // TODO: https://github.com/nuxt/framework/issues/244
+          if (['$root', 'constructor'].includes(p)) {
+            return legacyApp
+          }
+          return source[p] || nuxtApp[p]
+        }
+      })
       window[`$${nuxtApp.globalName}`] = legacyApp
     })
   }
