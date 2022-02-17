@@ -37,7 +37,7 @@ function transform (content: string, components: Component[]) {
     if (component) {
       const identifier = map.get(component) || `__nuxt_component_${num++}`
       map.set(component, identifier)
-      imports += genImport(component.filePath, identifier)
+      imports += genImport(component.filePath, [{ name: component.export, as: identifier }])
       return ` ${identifier}`
     }
     // no matched
