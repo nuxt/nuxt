@@ -3,7 +3,7 @@
     <Head>
       <Title>Basic fixture</Title>
     </Head>
-    <h1>Hello Vue 3</h1>
+    <h1>Hello Nuxt 3!</h1>
     <div>Config: {{ $config.testConfig }}</div>
     <CustomComponent />
   </div>

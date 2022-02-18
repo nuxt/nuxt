@@ -10,30 +10,27 @@
   ],
   "scripts": {
     "build": "FORCE_COLOR=1 lerna run prepack --stream --no-prefix",
-    "stub": "lerna run prepack -- --stub",
-    "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
-    "nuxi": "./node_modules/.bin/nuxi",
-    "nuxt": "./node_modules/.bin/nuxi",
-    "play": "yarn run nuxi dev playground",
     "example": "yarn workspace example-$0 dev",
     "example:build": "yarn workspace example-$0 build",
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
     "lint:docs": "./node_modules/.bin/markdownlint ./",
-    "test": "yarn lint && yarn test:presets",
-    "test:presets": "vitest test/presets",
-    "test:bridge:webpack": "TEST_BRIDGE=1 yarn test:presets",
-    "test:bridge:vite": "TEST_BRIDGE_VITE=1 TEST_BRIDGE=1 yarn test:presets",
+    "nuxi": "./node_modules/.bin/nuxi",
+    "nuxt": "./node_modules/.bin/nuxi",
+    "play": "yarn run nuxi dev playground",
+    "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
+    "stub": "lerna run prepack -- --stub",
+    "test:fixtures": "JITI_ESM_RESOLVE=1 vitest test",
+    "test:fixtures:webpack": "TEST_WITH_WEBPACK=1 yarn test:fixtures",
     "test:types": "yarn run nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
-    "test:unit": "vitest packages",
-    "test:utils": "vitest run test/examples",
+    "test:unit": "JITI_ESM_RESOLVE=1 yarn vitest packages",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
-    "nuxt3": "workspace:./packages/nuxt3",
     "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
-    "unbuild": "^0.6.9",
+    "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
-    "jiti": "^1.12.15"
+    "nuxt3": "workspace:./packages/nuxt3",
+    "unbuild": "^0.6.9"
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.1.1",
@@ -50,7 +47,7 @@
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",
-    "jiti": "^1.12.15",
+    "jiti": "^1.13.0",
     "lerna": "^4.0.0",
     "markdownlint-cli": "^0.31.1",
     "miniflare": "^1.4.1",
@@ -58,12 +55,12 @@
     "pathe": "^0.2.0",
     "typescript": "^4.5.5",
     "unbuild": "^0.6.9",
-    "vitest": "^0.3.6",
+    "vitest": "^0.4.1",
     "vue-router": "next",
     "vue-tsc": "^0.31.4"
   },
-  "packageManager": "yarn@3.1.1",
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
-  }
+  },
+  "packageManager": "yarn@3.1.1"
 }

@@ -33,7 +33,7 @@ jobs:
       - name: Lint (docs)
         run: yarn lint:docs
 
-  test:
+  test-fixtures:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -51,19 +51,16 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - name: Build
-        run: yarn build
+      - name: Stub
+        run: yarn stub
 
       - name: Test (unit)
         run: yarn test:unit
 
-      - name: Test (presets)
-        run: yarn test:presets
+      - name: Test (fixtures)
+        run: yarn test:fixtures
 
-      - name: Test (types)
-        run: yarn test:types
-
-  test-bridge:
+  test-fixtures-webpack:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -77,8 +74,30 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: 'yarn'
-          cache-dependency-path: |
-            yarn.lock
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - name: Stub
+        run: yarn stub
+
+      - name: Test (fixtures)
+        run: yarn test:fixtures:webpack
+
+  test-types:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn --immutable
@@ -86,17 +105,15 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Test with webpack
-        run: yarn test:bridge:webpack
-
-      - name: Test with vite
-        run: yarn test:bridge:vite
+      - name: Test (types)
+        run: yarn test:types
 
   build-release:
     needs:
-      - test
-      - test-bridge
       - lint
+      - test-fixtures
+      - test-fixtures-webpack
+      - test-types
     runs-on: ${{ matrix.os }}
 
     strategy:

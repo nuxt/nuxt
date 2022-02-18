@@ -21,7 +21,7 @@ function checkPort (port: number, host: string): Promise<number|false> {
 export async function listen () {
   const ctx = useTestContext()
   const host = process.env.HOST || '0.0.0.0'
-  const port = await getPort({ host })
+  const port = await getPort({ host, random: true })
 
   ctx.url = 'http://localhost:' + port
   execa('node', [

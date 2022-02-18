@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url'
 import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
 import { globby } from 'globby'
 import { useNuxt } from './context'
-import { tryResolveModule } from '.'
+import { tryResolveModule } from './internal/cjs'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */

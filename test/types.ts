@@ -3,7 +3,7 @@ import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 
 import { useRouter as vueUseRouter } from 'vue-router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt3/src'
+import { defineNuxtConfig } from '~~/../../packages/nuxt3/src'
 import { useRouter } from '#imports'
 import { isVue3 } from '#app'
 
