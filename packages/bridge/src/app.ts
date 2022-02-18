@@ -10,6 +10,8 @@ export function setupAppBridge (_options: any) {
 
   // Setup aliases
   nuxt.options.alias['#app'] = resolve(distDir, 'runtime/index.mjs')
+  nuxt.options.alias['nuxt3/app'] = nuxt.options.alias['#app']
+  nuxt.options.alias['nuxt/app'] = nuxt.options.alias['#app']
   nuxt.options.alias['#build'] = nuxt.options.buildDir
 
   // Mock `bundleBuilder.build` to support `nuxi prepare`

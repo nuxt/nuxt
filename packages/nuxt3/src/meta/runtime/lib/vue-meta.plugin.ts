@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createMetaManager } from 'vue-meta'
-import type { MetaObject } from '../types'
+import type { MetaObject } from '..'
 import { defineNuxtPlugin } from '#app'
 
 export default defineNuxtPlugin((nuxtApp) => {

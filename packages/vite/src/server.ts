@@ -46,8 +46,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         /\.(es|esm|esm-browser|esm-bundler).js$/,
         '/__vue-jsx',
         '#app',
-        /nuxt3\/dist/,
-        /nuxt3\/src/,
+        'nuxt3',
         /@nuxt\/nitro\/dist/,
         /@nuxt\/nitro\/src/
       ]
