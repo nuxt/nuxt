@@ -1539,14 +1539,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:~0.20.0":
-  version: 0.20.0
-  resolution: "@es-joy/jsdoccomment@npm:0.20.0"
+"@es-joy/jsdoccomment@npm:~0.20.1":
+  version: 0.20.1
+  resolution: "@es-joy/jsdoccomment@npm:0.20.1"
   dependencies:
     comment-parser: 1.3.0
     esquery: ^1.4.0
     jsdoc-type-pratt-parser: ~2.2.3
-  checksum: e71897653d1abe20a79ab30b3812687c583064fa12ece6b51d8963e52e95b0d009607b2c4871737c1e35ad7fd24f6ae2409116afa9505b90b5302a458893d3d3
+  checksum: b64afeaddccbc8da185c640e608496f6d6f8ee564c6255cdb44b16e00fe441e1f0552b5748033df2baf42187cfbfa9f31c46716982945d4343f8eaf44e253087
   languageName: node
   linkType: hard
 
@@ -3106,7 +3106,7 @@ __metadata:
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     pretty-bytes: ^6.0.0
-    rollup: ^2.67.2
+    rollup: ^2.67.3
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.5.4
     serve-placeholder: ^1.2.4
@@ -3377,7 +3377,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
-    "@vitejs/plugin-vue": ^2.2.0
+    "@vitejs/plugin-vue": ^2.2.2
     "@vitejs/plugin-vue-jsx": ^1.3.7
     autoprefixer: ^10.4.2
     chokidar: ^3.5.3
@@ -3399,7 +3399,7 @@ __metadata:
     ufo: ^0.7.9
     unbuild: latest
     unplugin: ^0.3.2
-    vite: ^2.8.3
+    vite: ^2.8.4
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -4983,10 +4983,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.24.4":
-  version: 0.24.4
-  resolution: "@unocss/reset@npm:0.24.4"
-  checksum: b62a7af5939fb2a76f7608348f3f8a87496595054cf4c66c329619c43f95b264cc4e2f01973643fc0b8ce4b9531c5357c988d0cf397d2c04969485587fe1448a
+"@unocss/reset@npm:^0.25.0":
+  version: 0.25.0
+  resolution: "@unocss/reset@npm:0.25.0"
+  checksum: 4e1cf77ddbc2f46cf4b671225c2210b97afa6a1af6115e788f7e2321604869d147ac718f7b884967f8d26a3bae829a4594e4c198be4de3b3039b9d91f4a6afd0
   languageName: node
   linkType: hard
 
@@ -5075,13 +5075,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "@vitejs/plugin-vue@npm:2.2.0"
+"@vitejs/plugin-vue@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "@vitejs/plugin-vue@npm:2.2.2"
   peerDependencies:
     vite: ^2.5.10
     vue: ^3.2.25
-  checksum: ab3e3c77c251eada60c8394f8cdce67430a7efdf9f8f7d98bbfc98dd1915c639db43228a2a95d5d43e41acc54a65573169ae23044e848a36c1e8bf609fe41acf
+  checksum: f05920e282569c3721dbbd730c83e40978134c0f53cd10f9429cc37b22152c494782f7b9541db937a2fd7ed324b819ec8aa0b54f136c3c6adbed7298c9c9e9da
   languageName: node
   linkType: hard
 
@@ -10273,11 +10273,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^37.9.2":
-  version: 37.9.2
-  resolution: "eslint-plugin-jsdoc@npm:37.9.2"
+"eslint-plugin-jsdoc@npm:^37.9.4":
+  version: 37.9.4
+  resolution: "eslint-plugin-jsdoc@npm:37.9.4"
   dependencies:
-    "@es-joy/jsdoccomment": ~0.20.0
+    "@es-joy/jsdoccomment": ~0.20.1
     comment-parser: 1.3.0
     debug: ^4.3.3
     escape-string-regexp: ^4.0.0
@@ -10287,7 +10287,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: 529a3c6dcf09bbdb1399255e76abbdadb88f593372bd09a606cf51c14499c0f659dbe368319d7a8c56a6e5e626a6ca67305e612bfefeed552cc301cb77b00d10
+  checksum: 1e338f03020b2efab6077c91f2a8c251f1ee8be4a2299fa49db84ecb1f8f1e362be2d005ac7b9d9ceff5596bd7c0a9a5ed816edb8b3e904ed3edb0aab8b88799
   languageName: node
   linkType: hard
 
@@ -15570,10 +15570,10 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.25
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.24.4
+    "@unocss/reset": ^0.25.0
     esbuild: ^0.14.22
     eslint: ^8.9.0
-    eslint-plugin-jsdoc: ^37.9.2
+    eslint-plugin-jsdoc: ^37.9.4
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -19234,7 +19234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.66.1, rollup@npm:^2.67.2":
+"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.66.1":
   version: 2.67.2
   resolution: "rollup@npm:2.67.2"
   dependencies:
@@ -19245,6 +19245,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 9aca5251ba4b441064183cde2394b91567259002d68086bdd3906db66d55dd148ab27e57c51eb53830d7b9b813c2d4e834b7735d65e2a869780bc639d4a20c38
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.67.3":
+  version: 2.67.3
+  resolution: "rollup@npm:2.67.3"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: c4013a2ceef6918375fd07a6548e05d0f3df1db9f0a0281aebe6e993a45c0e667c5a06f53b55c0ffaf72f72266c1879bc181b13199aace97d93f0fc47691d4a9
   languageName: node
   linkType: hard
 
@@ -21734,7 +21748,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.8.2, vite@npm:^2.8.3":
+"vite@npm:^2.8.2":
   version: 2.8.3
   resolution: "vite@npm:2.8.3"
   dependencies:
@@ -21760,6 +21774,35 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: f18f62037741ae8ac8b377da9ba4ed9556bebe9857531bbf33b2691cba15c5720264410385cd628bbccee5bfe105d3d0ead6286e3fbe0211de94ea061e2e876c
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.8.4":
+  version: 2.8.4
+  resolution: "vite@npm:2.8.4"
+  dependencies:
+    esbuild: ^0.14.14
+    fsevents: ~2.3.2
+    postcss: ^8.4.6
+    resolve: ^1.22.0
+    rollup: ^2.59.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 0531ea17d354c35026c87e732d28c777492cc5165c4abdaa507c4894535ecbbfcf447fa3f270bbb160cd7cba8ad319cc86a221be18b2ccd40d8be139f9d7381d
   languageName: node
   linkType: hard
 
