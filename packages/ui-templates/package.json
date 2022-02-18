@@ -35,7 +35,7 @@
     "scule": "^0.2.1",
     "upath": "^2.0.1",
     "vite": "^2.8.3",
-    "vite-plugin-windicss": "^1.7.0",
+    "vite-plugin-windicss": "^1.7.1",
     "windicss": "^3.4.3"
   },
   "publishConfig": {
