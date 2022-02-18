@@ -92,5 +92,16 @@ export interface ComponentsDir extends ScanDir {
 
 export interface ComponentsOptions {
   dirs: (string | ComponentsDir)[]
+  /**
+   * The default value for whether to globally register components.
+   *
+   * When components are registered globally, they will still be directly imported where used,
+   * but they can also be used dynamically, for example `<component :is="`icon-${myIcon}`">`.
+   *
+   * This can be overridden by an individual component directory entry.
+   *
+   * @default false
+   */
+  global?: boolean
   loader?: boolean
 }

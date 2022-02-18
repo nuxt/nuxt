@@ -68,6 +68,7 @@ export default defineNuxtModule<ComponentsOptions>({
         }
 
         return {
+          global: componentOptions.global,
           ...dirOptions,
           // TODO: https://github.com/nuxt/framework/pull/251
           enabled: true,
