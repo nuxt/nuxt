@@ -15581,7 +15581,7 @@ __metadata:
     lerna: ^4.0.0
     markdownlint-cli: ^0.31.1
     miniflare: ^1.4.1
-    object-hash: ^2.2.0
+    object-hash: ^3.0.0
     pathe: ^0.2.0
     typescript: ^4.5.5
     unbuild: ^0.6.9
@@ -15699,6 +15699,13 @@ __metadata:
   version: 2.2.0
   resolution: "object-hash@npm:2.2.0"
   checksum: 55ba841e3adce9c4f1b9b46b41983eda40f854e0d01af2802d3ae18a7085a17168d6b81731d43fdf1d6bcbb3c9f9c56d22c8fea992203ad90a38d7d919bc28f1
+  languageName: node
+  linkType: hard
+
+"object-hash@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "object-hash@npm:3.0.0"
+  checksum: 80b4904bb3857c52cc1bfd0b52c0352532ca12ed3b8a6ff06a90cd209dfda1b95cee059a7625eb9da29537027f68ac4619363491eedb2f5d3dddbba97494fd6c
   languageName: node
   linkType: hard
 

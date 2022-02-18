@@ -51,7 +51,7 @@
     "lerna": "^4.0.0",
     "markdownlint-cli": "^0.31.1",
     "miniflare": "^1.4.1",
-    "object-hash": "^2.2.0",
+    "object-hash": "^3.0.0",
     "pathe": "^0.2.0",
     "typescript": "^4.5.5",
     "unbuild": "^0.6.9",
