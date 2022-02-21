@@ -1,3 +1,4 @@
+import { join } from 'pathe'
 import { isCI, isTest } from 'std-env'
 import { normalizeURL, withTrailingSlash } from 'ufo'
 
@@ -25,7 +26,19 @@ export default {
    * ```
    * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
    */
-  analyze: false,
+  analyze: {
+    $resolve: (val, get) => {
+      if(val !== true) {
+        return val ?? false
+      }
+      const rootDir = get('rootDir')
+      return {
+        template: 'treemap',
+        projectRoot: rootDir,
+        filename: join(rootDir, '.nuxt/stats', '{name}.html')
+      }
+    }
+  },
 
   /**
    * Enable the profiler in webpackbar.

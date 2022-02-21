@@ -2,7 +2,7 @@ import { promises as fsp } from 'fs'
 import fetch from 'node-fetch'
 import { addPluginTemplate, useNuxt } from '@nuxt/kit'
 import { joinURL, stringifyQuery } from 'ufo'
-import { resolve } from 'pathe'
+import { resolve, join } from 'pathe'
 import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware, scanMiddleware, writeTypes } from '@nuxt/nitro'
 import { AsyncLoadingPlugin } from './async-loading'
 import { distDir } from './dirs'
@@ -28,6 +28,15 @@ export function setupNitroBridge () {
   nuxt.options.build.loadingScreen = false
   // @ts-ignore
   nuxt.options.build.indicator = false
+
+  if (nuxt.options.build.analyze === true) {
+    const { rootDir } = nuxt.options
+    nuxt.options.build.analyze = {
+      template: 'treemap',
+      projectRoot: rootDir,
+      filename: join(rootDir, '.nuxt/stats', '{name}.html')
+    }
+  }
 
   // Create contexts
   const nitroOptions = (nuxt.options as any).nitro || {}

@@ -1,7 +1,6 @@
 import { promises as fsp } from 'fs'
 import { join, resolve } from 'pathe'
 import { createApp, lazyHandle } from 'h3'
-import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import { createServer } from '../utils/server'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
@@ -22,18 +21,11 @@ export default defineNuxtCommand({
 
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
-    const analyzeOptions: PluginVisualizerOptions = {
-      template: 'treemap',
-      projectRoot: rootDir,
-      filename: join(statsDir, '{name}.html')
-    }
-
     const nuxt = await loadNuxt({
       rootDir,
       config: {
         build: {
-          // @ts-ignore
-          analyze: analyzeOptions
+          analyze: true
         }
       }
     })
