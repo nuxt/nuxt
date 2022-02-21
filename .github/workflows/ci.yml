@@ -9,6 +9,33 @@ on:
       - main
 
 jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Cache dist
+        uses: actions/cache@v2
+        with:
+          path: packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
+
   lint:
     runs-on: ${{ matrix.os }}
 
@@ -85,6 +112,8 @@ jobs:
         run: yarn test:fixtures:webpack
 
   test-types:
+    needs:
+      - build
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -102,8 +131,11 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - name: Build
-        run: yarn build
+      - name: Restore dist cache
+        uses: actions/cache@v2
+        with:
+          path: packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
 
       - name: Test (types)
         run: yarn test:types
@@ -111,6 +143,7 @@ jobs:
   build-release:
     needs:
       - lint
+      - build
       - test-fixtures
       - test-fixtures-webpack
       - test-types
@@ -131,8 +164,11 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
 
-      - name: Build
-        run: yarn build
+      - name: Restore dist cache
+        uses: actions/cache@v2
+        with:
+          path: packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
 
       - name: Release Edge
         if: |
