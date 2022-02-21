@@ -160,15 +160,6 @@ function convertToLegacyMiddleware (middleware) {
   }
 }
 
-export const addRouteMiddleware = (name: string, middleware: any, options: AddRouteMiddlewareOptions = {}) => {
-  const nuxtApp = useNuxtApp()
-  if (options.global) {
-    nuxtApp._middleware.global.push(middleware)
-  } else {
-    nuxtApp._middleware.named[name] = convertToLegacyMiddleware(middleware)
-  }
-}
-
 const isProcessingMiddleware = () => {
   try {
     if (useNuxtApp()._processingMiddleware) {
@@ -207,3 +198,17 @@ export interface RouteMiddleware {
 }
 
 export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware
+
+interface AddRouteMiddleware {
+  (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): void
+  (middleware: RouteMiddleware): void
+}
+
+export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
+  const nuxtApp = useNuxtApp()
+  if (options.global || typeof name === 'function') {
+    nuxtApp._middleware.global.push(typeof name === 'function' ? name : middleware)
+  } else {
+    nuxtApp._middleware.named[name] = convertToLegacyMiddleware(middleware)
+  }
+}

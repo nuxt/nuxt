@@ -10774,6 +10774,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-with-universal-router@workspace:examples/with-universal-router":
+  version: 0.0.0-use.local
+  resolution: "example-with-universal-router@workspace:examples/with-universal-router"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-with-wasm@workspace:examples/with-wasm":
   version: 0.0.0-use.local
   resolution: "example-with-wasm@workspace:examples/with-wasm"

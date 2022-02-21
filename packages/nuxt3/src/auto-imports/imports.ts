@@ -15,7 +15,13 @@ export const Nuxt3AutoImports: AutoImportSource[] = [
       'useFetch',
       'useLazyFetch',
       'useCookie',
-      'useRequestHeaders'
+      'useRequestHeaders',
+      'useRouter',
+      'useRoute',
+      'defineNuxtRouteMiddleware',
+      'navigateTo',
+      'abortNavigation',
+      'addRouteMiddleware'
     ]
   },
   // #meta

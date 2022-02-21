@@ -15,8 +15,9 @@ export default defineNuxtModule({
     const pagesDir = resolve(nuxt.options.srcDir, nuxt.options.dir.pages)
     const runtimeDir = resolve(distDir, 'pages/runtime')
 
-    // Disable module if pages dir do not exists
+    // Disable module (and use universal router) if pages dir do not exists
     if (!existsSync(pagesDir)) {
+      addPlugin(resolve(distDir, 'app/plugins/router'))
       return
     }
 
@@ -47,19 +48,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('autoImports:extend', (autoImports) => {
-      const composablesFile = resolve(runtimeDir, 'composables')
-      const composables = [
-        'useRouter',
-        'useRoute',
-        'defineNuxtRouteMiddleware',
-        'definePageMeta',
-        'navigateTo',
-        'abortNavigation',
-        'addRouteMiddleware'
-      ]
-      for (const composable of composables) {
-        autoImports.push({ name: composable, as: composable, from: composablesFile })
-      }
+      autoImports.push({ name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') })
     })
 
     // Extract macros from pages

@@ -2,8 +2,8 @@ import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 
-import { useRouter as vueUseRouter } from 'vue-router'
-import { defineNuxtConfig } from '~~/../../packages/nuxt3/src'
+import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+import { defineNuxtConfig } from '~~/../../../packages/nuxt3/src'
 import { useRouter } from '#imports'
 import { isVue3 } from '#app'
 
@@ -45,6 +45,19 @@ describe('middleware', () => {
     definePageMeta({ middleware: 'pascal-case' })
     // @ts-expect-error Invalid middleware
     definePageMeta({ middleware: 'invalid-middleware' })
+  })
+  it('handles adding middleware', () => {
+    addRouteMiddleware('example', (to, from) => {
+      expectTypeOf(to).toMatchTypeOf<RouteLocationNormalizedLoaded>()
+      expectTypeOf(from).toMatchTypeOf<RouteLocationNormalizedLoaded>()
+      expectTypeOf(navigateTo).toMatchTypeOf<(to: RouteLocationRaw) => RouteLocationRaw | Promise<void | NavigationFailure>>()
+      navigateTo('/')
+      abortNavigation()
+      abortNavigation('error string')
+      abortNavigation(new Error('my error'))
+      // @ts-expect-error Must return error or string
+      abortNavigation(true)
+    }, { global: true })
   })
 })
 
