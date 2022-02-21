@@ -24,7 +24,7 @@
     "autoprefixer": "^10.4.2",
     "chokidar": "^3.5.3",
     "defu": "^5.0.1",
-    "esbuild": "^0.14.22",
+    "esbuild": "^0.14.23",
     "escape-string-regexp": "^5.0.0",
     "externality": "^0.1.6",
     "fs-extra": "^10.0.0",
