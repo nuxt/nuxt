@@ -9,7 +9,7 @@ const timer = useState('timer', () => 0)
     <br>
 
     <template v-if="timer">
-      Processing navigation in {{ timer }} seconds
+      Processing navigation in 0.{{ timer }}s
     </template>
 
     <template #nav>
