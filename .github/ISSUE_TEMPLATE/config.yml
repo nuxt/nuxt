@@ -1,5 +1,9 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Issues using `@nuxt/bridge`
+    url: https://github.com/nuxt/framework
+    about: |
+      Please use GitHub Discussions for other issues and asking questions about Nuxt 3 and Bridge.
   - name: ❗️ All other issues | 其他问题
     url: https://github.com/nuxt/nuxt.js/discussions
     about: |

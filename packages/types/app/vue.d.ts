@@ -105,7 +105,7 @@ declare module 'vue/types/vue' {
   interface Vue {
     $config: NuxtRuntimeConfig
     $nuxt: NuxtApp
-    $fetch(): void
+    $fetch(): Promise<void> | void
     $fetchState: {
       error: Error | null
       pending: boolean
