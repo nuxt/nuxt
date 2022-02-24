@@ -16,7 +16,7 @@ async function _main () {
   // @ts-ignore
   const command = args._.shift() || 'usage'
 
-  showBanner(command === 'dev' && args.clear !== false)
+  showBanner(command === 'dev' && args.clear !== false && !args.help)
 
   if (!(command in commands)) {
     console.log('\n' + red('Invalid command ' + command))
