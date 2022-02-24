@@ -18,7 +18,7 @@ export default defineNuxtModule<ComponentsOptions>({
     configKey: 'components'
   },
   defaults: {
-    dirs: ['~/components']
+    dirs: []
   },
   setup (componentOptions, nuxt) {
     let componentDirs = []
@@ -34,6 +34,15 @@ export default defineNuxtModule<ComponentsOptions>({
       if (typeof dir === 'string') {
         return {
           path: resolve(cwd, resolveAlias(dir, {
+            ...nuxt.options.alias,
+            '~': cwd
+          }))
+        }
+      }
+      if (dir && typeof dir === 'object') {
+        return {
+          ...dir,
+          path: resolve(cwd, resolveAlias(dir.path, {
             ...nuxt.options.alias,
             '~': cwd
           }))
