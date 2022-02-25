@@ -9,7 +9,7 @@ export function setupAppBridge (_options: any) {
   const nuxt = useNuxt()
 
   // Setup aliases
-  nuxt.options.alias['#app'] = resolve(distDir, 'runtime/index.mjs')
+  nuxt.options.alias['#app'] = resolve(distDir, 'runtime/index')
   nuxt.options.alias['nuxt3/app'] = nuxt.options.alias['#app']
   nuxt.options.alias['nuxt/app'] = nuxt.options.alias['#app']
   nuxt.options.alias['#build'] = nuxt.options.buildDir
