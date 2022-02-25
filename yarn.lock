@@ -3063,7 +3063,7 @@ __metadata:
     "@rollup/plugin-inject": ^4.0.4
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.1.3
-    "@rollup/plugin-replace": ^3.1.0
+    "@rollup/plugin-replace": ^4.0.0
     "@rollup/plugin-virtual": ^2.1.0
     "@rollup/plugin-wasm": ^5.1.2
     "@rollup/pluginutils": ^4.1.2
@@ -3951,7 +3951,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-replace@npm:^3.0.1, @rollup/plugin-replace@npm:^3.1.0":
+"@rollup/plugin-replace@npm:^3.0.1":
   version: 3.1.0
   resolution: "@rollup/plugin-replace@npm:3.1.0"
   dependencies:
@@ -3960,6 +3960,18 @@ __metadata:
   peerDependencies:
     rollup: ^1.20.0 || ^2.0.0
   checksum: 9f833d40f7ebd6bb32b1c7a118fedd27a6d63e591018543740c78d3bc6fe67efa7048c6457bcadf8f982385b78e33ff8e38a67ddd4d11c15d9c81898a0757c13
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-replace@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@rollup/plugin-replace@npm:4.0.0"
+  dependencies:
+    "@rollup/pluginutils": ^3.1.0
+    magic-string: ^0.25.7
+  peerDependencies:
+    rollup: ^1.20.0 || ^2.0.0
+  checksum: b61701e612661a46da06ca88f390c3839b586708abc0329a476411b90aa8ac59fe94437ede4c3fe53fea268b3054ea9d7d4ee851d7bd0cb7a5f06906002067cb
   languageName: node
   linkType: hard
 
