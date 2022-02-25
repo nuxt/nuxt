@@ -103,9 +103,6 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
 
   const route: Route = reactive(getRouteFromPath(process.client ? window.location.href : nuxtApp.ssrContext.url))
   async function handleNavigation (url: string, replace?: boolean): Promise<void> {
-    if (process.dev && process.client && !hooks.error.length) {
-      console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`')
-    }
     try {
       // Resolve route
       const to = getRouteFromPath(url)
@@ -131,6 +128,9 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
         await middleware(to, route)
       }
     } catch (err) {
+      if (process.dev && !hooks.error.length) {
+        console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`', err)
+      }
       for (const handler of hooks.error) {
         await handler(err)
       }
