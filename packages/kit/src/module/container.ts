@@ -83,6 +83,10 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
     extendBuild (fn) {
       // @ts-ignore
       nuxt.options.build.extend = chainFn(nuxt.options.build.extend, fn)
+
+      if (!isNuxt2(nuxt)) {
+        console.warn('[kit] [compat] Using `extendBuild` in Nuxt 3 has no effect. Instead call extendWebpackConfig and extendViteConfig.')
+      }
     },
 
     extendRoutes (fn) {

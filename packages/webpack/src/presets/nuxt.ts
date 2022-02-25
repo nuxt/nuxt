@@ -11,7 +11,6 @@ export function nuxt (ctx: WebpackConfigContext) {
   applyPresets(ctx, [
     base,
     assets,
-    // babel,
     esbuild,
     pug,
     style,

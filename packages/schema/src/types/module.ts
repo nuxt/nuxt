@@ -70,7 +70,7 @@ export interface ModuleContainer {
   /** Allows extending webpack build config by chaining `options.build.extend` function. */
   extendBuild(fn): void
 
-  /** Allows extending routes by chaining `options.build.extendRoutes` function. */
+  /** Allows extending routes by chaining `options.router.extendRoutes` function. */
   extendRoutes(fn): void
 
   /** Registers a module */

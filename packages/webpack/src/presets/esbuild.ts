@@ -17,14 +17,10 @@ export function esbuild (ctx: WebpackConfigContext) {
       test: /\.m?[jt]s$/i,
       loader: 'esbuild-loader',
       exclude: (file) => {
-        file = file.split('node_modules', 2)[1]
-
         // Not exclude files outside node_modules
-        if (!file) {
-          return false
-        }
+        file = file.split('node_modules', 2)[1]
+        if (!file) { return false }
 
-        // Item in transpile can be string or regex object
         return !ctx.transpile.some(module => module.test(file))
       },
       resolve: {

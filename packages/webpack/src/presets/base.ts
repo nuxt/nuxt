@@ -6,7 +6,7 @@ import { logger } from '@nuxt/kit'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
-import WarningIgnorePlugin from '../plugins/warning-ignore'
+import WarningIgnorePlugin, { WarningFilter } from '../plugins/warning-ignore'
 import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
 
 export function base (ctx: WebpackConfigContext) {
@@ -28,7 +28,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     plugins: [],
     externals: [],
     optimization: {
-      ...options.build.optimization as any,
+      ...options.webpack.optimization,
       minimizer: []
     },
     experiments: {},
@@ -43,13 +43,13 @@ function baseConfig (ctx: WebpackConfigContext) {
 function basePlugins (ctx: WebpackConfigContext) {
   const { config, options, nuxt } = ctx
 
-  // Add timefix-plugin before others plugins
+  // Add timefix-plugin before other plugins
   if (options.dev) {
     config.plugins.push(new TimeFixPlugin())
   }
 
   // User plugins
-  config.plugins.push(...(options.build.plugins || []))
+  config.plugins.push(...(options.webpack.plugins || []))
 
   // Ignore empty warnings
   config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
@@ -60,7 +60,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   // Friendly errors
   if (
     ctx.isServer ||
-    (ctx.isDev && !options.build.quiet && options.build.friendlyErrors)
+    (ctx.isDev && !options.build.quiet && options.webpack.friendlyErrors)
   ) {
     ctx.config.plugins.push(
       new FriendlyErrorsWebpackPlugin({
@@ -71,39 +71,41 @@ function basePlugins (ctx: WebpackConfigContext) {
     )
   }
 
-  // Webpackbar
-  const colors = {
-    client: 'green',
-    server: 'orange',
-    modern: 'blue'
-  }
-  config.plugins.push(new WebpackBar({
-    name: ctx.name,
-    color: colors[ctx.name],
-    reporters: ['stats'],
-    stats: !ctx.isDev,
-    reporter: {
-      // @ts-ignore
-      change: (_, { shortPath }) => {
-        if (!ctx.isServer) {
-          nuxt.callHook('bundler:change', shortPath)
-        }
-      },
-      done: ({ state }) => {
-        if (state.hasErrors) {
-          nuxt.callHook('bundler:error')
-        } else {
-          logger.success(`${state.name} ${state.message}`)
-        }
-      },
-      allDone: () => {
-        nuxt.callHook('bundler:done')
-      },
-      progress ({ statesArray }) {
-        nuxt.callHook('bundler:progress', statesArray)
-      }
+  if (nuxt.options.webpack.profile) {
+    // Webpackbar
+    const colors = {
+      client: 'green',
+      server: 'orange',
+      modern: 'blue'
     }
-  }))
+    config.plugins.push(new WebpackBar({
+      name: ctx.name,
+      color: colors[ctx.name],
+      reporters: ['stats'],
+      stats: !ctx.isDev,
+      reporter: {
+      // @ts-ignore
+        change: (_, { shortPath }) => {
+          if (!ctx.isServer) {
+            nuxt.callHook('bundler:change', shortPath)
+          }
+        },
+        done: ({ state }) => {
+          if (state.hasErrors) {
+            nuxt.callHook('bundler:error')
+          } else {
+            logger.success(`${state.name} ${state.message}`)
+          }
+        },
+        allDone: () => {
+          nuxt.callHook('bundler:done')
+        },
+        progress ({ statesArray }) {
+          nuxt.callHook('bundler:progress', statesArray)
+        }
+      }
+    }))
+  }
 }
 
 function baseAlias (ctx: WebpackConfigContext) {
@@ -198,15 +200,15 @@ function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] 
   }
 }
 
-function getWarningIgnoreFilter (ctx: WebpackConfigContext) {
+function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
   const { options } = ctx
 
-  const filters = [
+  const filters: WarningFilter[] = [
     // Hide warnings about plugins without a default export (#1179)
     warn => warn.name === 'ModuleDependencyWarning' &&
       warn.message.includes('export \'default\'') &&
       warn.message.includes('nuxt_plugin_'),
-    ...(options.build.warningIgnoreFilters || [])
+    ...(options.webpack.warningIgnoreFilters || [])
   ]
 
   return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
@@ -224,11 +226,10 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
-    'process.server': ctx.isServer,
-    'process.modern': ctx.isModern
+    'process.server': ctx.isServer
   }
 
-  if (options.build.aggressiveCodeRemoval) {
+  if (options.webpack.aggressiveCodeRemoval) {
     _env['typeof process'] = JSON.stringify(ctx.isServer ? 'object' : 'undefined')
     _env['typeof window'] = _env['typeof document'] = JSON.stringify(!ctx.isServer ? 'object' : 'undefined')
   }

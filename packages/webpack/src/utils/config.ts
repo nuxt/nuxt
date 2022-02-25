@@ -8,21 +8,19 @@ export interface WebpackConfigContext extends ReturnType<typeof createWebpackCon
 type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void
 type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
 
-export function createWebpackConfigContext ({ nuxt }) {
+export function createWebpackConfigContext (nuxt: Nuxt) {
   return {
-    nuxt: nuxt as Nuxt,
-    options: nuxt.options as Nuxt['options'],
+    nuxt,
+    options: nuxt.options,
     config: {} as Configuration,
 
     name: 'base',
     isDev: nuxt.options.dev,
     isServer: false,
     isClient: false,
-    isModern: undefined, // TODO
-    isLegacy: false,
 
     alias: {} as Configuration['resolve']['alias'],
-    transpile: [] as any[]
+    transpile: [] as RegExp[]
   }
 }
 
@@ -42,7 +40,7 @@ export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigP
 export function fileName (ctx: WebpackConfigContext, key: string) {
   const { options } = ctx
 
-  let fileName = options.build.filenames[key]
+  let fileName = options.webpack.filenames[key]
 
   if (typeof fileName === 'function') {
     fileName = fileName(ctx)

@@ -35,7 +35,6 @@
     "@nuxt/nitro": "3.0.0",
     "@nuxt/schema": "3.0.0",
     "@nuxt/vite-builder": "3.0.0",
-    "@nuxt/webpack-builder": "3.0.0",
     "@vue/reactivity": "^3.2.31",
     "@vue/shared": "^3.2.31",
     "@vueuse/head": "^0.7.5",

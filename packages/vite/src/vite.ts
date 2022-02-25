@@ -5,7 +5,6 @@ import type { InlineConfig, SSROptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import type { Options } from '@vitejs/plugin-vue'
 import { sanitizeFilePath } from 'mlly'
-import { joinURL, withoutLeadingSlash } from 'ufo'
 import { getPort } from 'get-port-please'
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -35,14 +34,7 @@ export async function bundle (nuxt: Nuxt) {
     nuxt,
     config: vite.mergeConfig(
       {
-        root: nuxt.options.srcDir,
-        mode: nuxt.options.dev ? 'development' : 'production',
-        logLevel: 'warn',
-        define: {
-          'process.dev': nuxt.options.dev
-        },
         resolve: {
-          extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
@@ -56,37 +48,16 @@ export async function bundle (nuxt: Nuxt) {
             'abort-controller': 'unenv/runtime/mock/empty'
           }
         },
-        base: nuxt.options.dev
-          ? joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
-          : '/__NUXT_BASE__/',
-        publicDir: resolve(nuxt.options.srcDir, nuxt.options.dir.public),
-        // TODO: move to kit schema when it exists
-        vue: {
-          isProduction: !nuxt.options.dev,
-          template: { compilerOptions: nuxt.options.vue.compilerOptions }
-        },
-        css: resolveCSSOptions(nuxt),
         optimizeDeps: {
-          exclude: [
-            ...nuxt.options.build.transpile.filter(i => typeof i === 'string'),
-            'vue-demi'
-          ],
           entries: [
             resolve(nuxt.options.appDir, 'entry.ts')
           ]
         },
-        esbuild: {
-          jsxFactory: 'h',
-          jsxFragment: 'Fragment',
-          tsconfigRaw: '{}'
-        },
-        clearScreen: false,
+        css: resolveCSSOptions(nuxt),
         build: {
-          assetsDir: nuxt.options.dev ? withoutLeadingSlash(nuxt.options.app.buildAssetsDir) : '.',
-          emptyOutDir: false,
           rollupOptions: {
-            input: resolve(nuxt.options.appDir, 'entry'),
-            output: { sanitizeFileName: sanitizeFilePath }
+            output: { sanitizeFileName: sanitizeFilePath },
+            input: resolve(nuxt.options.appDir, 'entry')
           }
         },
         plugins: [
@@ -98,18 +69,13 @@ export async function bundle (nuxt: Nuxt) {
             port: hmrPort
           },
           fs: {
-            strict: false,
             allow: [
-              nuxt.options.buildDir,
-              nuxt.options.appDir,
-              nuxt.options.srcDir,
-              nuxt.options.rootDir,
-              ...nuxt.options.modulesDir
+              nuxt.options.appDir
             ]
           }
         }
-      } as ViteOptions,
-      nuxt.options.vite as any || {}
+      },
+      nuxt.options.vite
     )
   }
 

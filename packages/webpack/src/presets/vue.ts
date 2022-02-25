@@ -14,7 +14,7 @@ export function vue (ctx: WebpackConfigContext) {
   config.module.rules.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
-    options: options.build.loaders.vue
+    options: options.webpack.loaders.vue
   })
 
   if (ctx.isClient) {

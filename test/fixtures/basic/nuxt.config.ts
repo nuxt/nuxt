@@ -3,7 +3,7 @@ import { addComponent } from '@nuxt/kit'
 
 export default defineNuxtConfig({
   buildDir: process.env.NITRO_BUILD_DIR,
-  vite: !process.env.TEST_WITH_WEBPACK,
+  builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
   nitro: {
     output: { dir: process.env.NITRO_OUTPUT_DIR }
   },

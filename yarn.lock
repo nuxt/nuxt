@@ -3163,6 +3163,7 @@ __metadata:
     defu: ^5.0.1
     jiti: ^1.13.0
     pathe: ^0.2.0
+    postcss-import-resolver: ^2.0.0
     scule: ^0.2.1
     std-env: ^3.0.1
     ufo: ^0.7.9
@@ -3393,7 +3394,6 @@ __metadata:
     p-debounce: ^4.0.0
     pathe: ^0.2.0
     postcss-import: ^14.0.2
-    postcss-import-resolver: ^2.0.0
     postcss-url: ^10.1.3
     rollup-plugin-visualizer: ^5.6.0
     ufo: ^0.7.9
@@ -3480,7 +3480,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/webpack-builder@3.0.0, @nuxt/webpack-builder@workspace:packages/webpack":
+"@nuxt/webpack-builder@workspace:packages/webpack":
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
@@ -3489,14 +3489,11 @@ __metadata:
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
     "@types/pify": ^5.0.1
-    "@types/terser-webpack-plugin": ^5.0.4
     "@types/webpack-bundle-analyzer": ^4.4.1
     "@types/webpack-dev-middleware": ^5.0.2
     "@types/webpack-hot-middleware": ^2.25.6
     "@types/webpack-virtual-modules": ^0
-    "@vue/babel-preset-jsx": ^1.2.4
     autoprefixer: ^10.4.2
-    babel-loader: ^8.2.3
     css-loader: ^6.6.0
     css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.0.17
@@ -3504,7 +3501,6 @@ __metadata:
     escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
     fs-extra: ^10.0.1
-    glob: ^7.2.0
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
     memfs: ^3.4.1
@@ -3514,7 +3510,6 @@ __metadata:
     pify: ^5.0.0
     postcss: ^8.4.7
     postcss-import: ^14.0.2
-    postcss-import-resolver: ^2.0.0
     postcss-loader: ^6.2.1
     postcss-url: ^10.1.3
     style-resources-loader: ^1.5.0
@@ -4627,16 +4622,6 @@ __metadata:
     "@types/webpack": ^4
     terser: ^4.6.13
   checksum: d120ddafc8993c8861526ea93ea2668c945aa00739fc465430be8882c58df17e72e42fed0d6306f4ad6b697a68ea39ce79424370fb8a9e373f516a7ae9ba94a9
-  languageName: node
-  linkType: hard
-
-"@types/terser-webpack-plugin@npm:^5.0.4":
-  version: 5.0.4
-  resolution: "@types/terser-webpack-plugin@npm:5.0.4"
-  dependencies:
-    terser: ^5.3.8
-    webpack: ^5.1.0
-  checksum: 7b3845526d4ed7b636f7b2f8f35b5d7e45211f7a55afc85e32a66655eaf65cd193e2fec195bcdb473c0d9a5b2828798b9c23196fdc86e9cd2e9420227012f438
   languageName: node
   linkType: hard
 
@@ -15675,7 +15660,6 @@ __metadata:
     "@nuxt/nitro": 3.0.0
     "@nuxt/schema": 3.0.0
     "@nuxt/vite-builder": 3.0.0
-    "@nuxt/webpack-builder": 3.0.0
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.31
@@ -20771,7 +20755,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser@npm:^5.0.0, terser@npm:^5.3.4, terser@npm:^5.3.8, terser@npm:^5.7.2":
+"terser@npm:^5.0.0, terser@npm:^5.3.4, terser@npm:^5.7.2":
   version: 5.10.0
   resolution: "terser@npm:5.10.0"
   dependencies:
@@ -22553,44 +22537,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.38.1":
-  version: 5.69.0
-  resolution: "webpack@npm:5.69.0"
-  dependencies:
-    "@types/eslint-scope": ^3.7.3
-    "@types/estree": ^0.0.51
-    "@webassemblyjs/ast": 1.11.1
-    "@webassemblyjs/wasm-edit": 1.11.1
-    "@webassemblyjs/wasm-parser": 1.11.1
-    acorn: ^8.4.1
-    acorn-import-assertions: ^1.7.6
-    browserslist: ^4.14.5
-    chrome-trace-event: ^1.0.2
-    enhanced-resolve: ^5.9.0
-    es-module-lexer: ^0.9.0
-    eslint-scope: 5.1.1
-    events: ^3.2.0
-    glob-to-regexp: ^0.4.1
-    graceful-fs: ^4.2.9
-    json-parse-better-errors: ^1.0.2
-    loader-runner: ^4.2.0
-    mime-types: ^2.1.27
-    neo-async: ^2.6.2
-    schema-utils: ^3.1.0
-    tapable: ^2.1.1
-    terser-webpack-plugin: ^5.1.3
-    watchpack: ^2.3.1
-    webpack-sources: ^3.2.3
-  peerDependenciesMeta:
-    webpack-cli:
-      optional: true
-  bin:
-    webpack: bin/webpack.js
-  checksum: 0b0fc2ffcb926fc7506ec56901ae9a69f1ae969a6afc63395a3ed56f938d385c1d16d1dea39fd56dbb9362189c05da49174219904e5a337040aed5a46080e926
-  languageName: node
-  linkType: hard
-
-"webpack@npm:^5.69.1":
+"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.69.1":
   version: 5.69.1
   resolution: "webpack@npm:5.69.1"
   dependencies:

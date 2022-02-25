@@ -1,8 +1,6 @@
-import createResolver from 'postcss-import-resolver'
-import defu from 'defu'
 import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { ViteOptions } from './vite'
+import type { ViteOptions } from './vite'
 import { distDir } from './dirs'
 
 export function resolveCSSOptions (nuxt: Nuxt): ViteOptions['css'] {
@@ -12,25 +10,7 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteOptions['css'] {
     }
   }
 
-  const plugins = defu(nuxt.options.build.postcss.postcssOptions.plugins, {
-    // https://github.com/postcss/postcss-import
-    'postcss-import': {
-      resolve: createResolver({
-        alias: { ...nuxt.options.alias },
-        modules: [
-          nuxt.options.srcDir,
-          nuxt.options.rootDir,
-          ...nuxt.options.modulesDir
-        ]
-      })
-    },
-
-    // https://github.com/postcss/postcss-url
-    'postcss-url': {},
-
-    // https://github.com/postcss/autoprefixer
-    autoprefixer: {}
-  })
+  const plugins = nuxt.options.postcss.plugins
 
   for (const name in plugins) {
     const opts = plugins[name]
