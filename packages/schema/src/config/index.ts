@@ -12,6 +12,7 @@ import cli from './cli'
 import generate from './generate'
 import typescript from './typescript'
 import nitro from './nitro'
+import experimental from './experimental'
 
 /*
 TODO for top level normalizations: (nuxt2)
@@ -45,6 +46,7 @@ export default {
   cli,
   generate,
   typescript,
+  experimental,
 
   /**
    * Configuration that will be passed directly to Vite.

@@ -617,5 +617,6 @@ export default {
    * Set to true to scan files within symlinks in the build (such as within `pages/`).
    * @version 2
    */
+
   followSymlinks: false
 }
