@@ -24,7 +24,7 @@ export async function listen () {
   const port = await getPort({ host, random: true })
 
   ctx.url = 'http://localhost:' + port
-  execa('node', [
+  ctx.serverProcess = execa('node', [
     // @ts-ignore
     resolve(ctx.nuxt.options.nitro.output.dir, 'server/index.mjs')
   ], {

@@ -1,4 +1,5 @@
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
+import type { ExecaChildProcess } from 'execa'
 import type { Browser, LaunchOptions } from 'playwright'
 
 export type TestRunner = 'vitest' | 'jest'
@@ -28,6 +29,7 @@ export interface TestContext {
   nuxt?: Nuxt
   browser?: Browser
   url?: string
+  serverProcess?: ExecaChildProcess
 }
 
 export interface TestHooks {
