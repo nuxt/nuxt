@@ -17,14 +17,14 @@
     "@nuxt/schema": "3.0.0",
     "defu": "^5.0.1",
     "execa": "^6.1.0",
-    "get-port-please": "^2.3.0",
+    "get-port-please": "^2.4.2",
     "jiti": "^1.13.0",
     "ohmyfetch": "^0.4.15"
   },
   "devDependencies": {
     "playwright": "^1.19.2",
     "unbuild": "latest",
-    "vitest": "^0.5.5"
+    "vitest": "^0.5.7"
   },
   "peerDependencies": {
     "vue": "3.2.31"
