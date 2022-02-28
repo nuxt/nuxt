@@ -3278,7 +3278,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.19.2
     unbuild: latest
-    vitest: ^0.5.7
+    vitest: ^0.5.8
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -15657,7 +15657,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.5.5
     unbuild: ^0.6.9
-    vitest: ^0.5.7
+    vitest: ^0.5.8
     vue-router: next
     vue-tsc: ^0.32.0
   languageName: unknown
@@ -21928,9 +21928,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.5.7":
-  version: 0.5.7
-  resolution: "vitest@npm:0.5.7"
+"vitest@npm:^0.5.8":
+  version: 0.5.8
+  resolution: "vitest@npm:0.5.8"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21955,7 +21955,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 6a02c0dc3af45d871084abf56a5227ee3be713f9bda20aa9cf371e290f24f413c01ede3702130c2630173342b3dd32e80aff9e221886c0c1b43df40bdae0be00
+  checksum: 8b035020873898f63ca48774386cec42713f8f1cf4d72b3e140f9d1c5ce8ed239d8379da7e885cc2f027589ded4e398915bb105720939f0eab986c9805d0dcbe
   languageName: node
   linkType: hard
 

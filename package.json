@@ -55,7 +55,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.5.5",
     "unbuild": "^0.6.9",
-    "vitest": "^0.5.7",
+    "vitest": "^0.5.8",
     "vue-router": "next",
     "vue-tsc": "^0.32.0"
   },
