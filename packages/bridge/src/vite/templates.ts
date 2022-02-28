@@ -12,7 +12,6 @@ type TemplateContext = {
 // TODO: Use an alias
 export const middlewareTemplate = {
   filename: 'middleware.js',
-  src: '',
   getContents (ctx: TemplateContext) {
     const { dir, router: { middleware }, srcDir } = ctx.nuxt.options
     const _middleware = ((typeof middleware !== 'undefined' && middleware) || []).map((m) => {
@@ -33,7 +32,6 @@ export default middleware`
 
 export const storeTemplate = {
   filename: 'store.js',
-  src: '',
   getContents (ctx: TemplateContext) {
     const { dir, srcDir } = ctx.nuxt.options
     const { templateVars: { storeModules = [] } } = ctx.app

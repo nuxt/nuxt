@@ -52,7 +52,6 @@ export default defineNuxtModule<AutoImportsOptions>({
       // Add all imports to globalThis in development mode
       addPluginTemplate({
         filename: 'auto-imports.mjs',
-        src: '',
         getContents: () => {
           const imports = toImports(ctx.autoImports)
           const globalThisSet = ctx.autoImports.map(i => `globalThis.${i.as} = ${i.as};`).join('\n')
