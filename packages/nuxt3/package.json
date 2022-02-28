@@ -49,6 +49,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.1.1",
     "knitwork": "^0.1.0",
+    "magic-string-extra": "^0.1.2",
     "mlly": "^0.4.3",
     "murmurhash-es": "^0.1.1",
     "nitropack": "npm:nitropack-edge@latest",

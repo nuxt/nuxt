@@ -2,6 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Component } from '@nuxt/schema'
 import { genImport } from 'knitwork'
+import MagicString from 'magic-string-extra'
 
 interface LoaderOptions {
   getComponents(): Component[]
@@ -17,8 +18,8 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => ({
     // from `type=template` (in Webpack) and bare `.vue` file (in Vite)
     return pathname.endsWith('.vue') && (query.type === 'template' || !search)
   },
-  transform (code) {
-    return transform(code, options.getComponents())
+  transform (code, id) {
+    return transform(code, id, options.getComponents())
   }
 }))
 
@@ -26,13 +27,14 @@ function findComponent (components: Component[], name:string) {
   return components.find(({ pascalName, kebabName }) => [pascalName, kebabName].includes(name))
 }
 
-function transform (content: string, components: Component[]) {
+function transform (code: string, id: string, components: Component[]) {
   let num = 0
   let imports = ''
   const map = new Map<Component, string>()
+  const s = new MagicString(code)
 
   // replace `_resolveComponent("...")` to direct import
-  const newContent = content.replace(/ _resolveComponent\("(.*?)"\)/g, (full, name) => {
+  s.replace(/ _resolveComponent\("(.*?)"\)/g, (full, name) => {
     const component = findComponent(components, name)
     if (component) {
       const identifier = map.get(component) || `__nuxt_component_${num++}`
@@ -44,7 +46,9 @@ function transform (content: string, components: Component[]) {
     return full
   })
 
-  if (!imports || newContent === content) { return }
+  if (imports) {
+    s.prepend(imports + '\n')
+  }
 
-  return `${imports}\n${newContent}`
+  return s.toRollupResult(true, { source: id, includeContent: true })
 }
