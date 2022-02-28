@@ -96,11 +96,9 @@ export default defineNuxtPlugin((nuxtApp) => {
       const result = await callWithNuxt(nuxtApp as NuxtApp, middleware, [to, from])
       if (process.server) {
         if (result === false || result instanceof Error) {
-          const error = result || createError({
+          return result || createError({
             statusMessage: `Route navigation aborted: ${nuxtApp.ssrContext.url}`
           })
-          nuxtApp.ssrContext.error = error
-          throw error
         }
       }
       if (result || result === false) { return result }
