@@ -3380,8 +3380,8 @@ __metadata:
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
     "@types/cssnano": ^5
-    "@vitejs/plugin-vue": ^2.2.2
-    "@vitejs/plugin-vue-jsx": ^1.3.7
+    "@vitejs/plugin-vue": ^2.2.4
+    "@vitejs/plugin-vue-jsx": ^1.3.8
     autoprefixer: ^10.4.2
     chokidar: ^3.5.3
     cssnano: ^5.0.17
@@ -3401,8 +3401,8 @@ __metadata:
     rollup-plugin-visualizer: ^5.6.0
     ufo: ^0.7.11
     unbuild: latest
-    unplugin: ^0.3.2
-    vite: ^2.8.4
+    unplugin: ^0.3.3
+    vite: ^2.8.5
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -3519,7 +3519,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.7.11
     unbuild: latest
-    unplugin: ^0.3.2
+    unplugin: ^0.3.3
     url-loader: ^4.1.1
     vue: 3.2.31
     vue-loader: ^17.0.0
@@ -5096,9 +5096,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue-jsx@npm:^1.3.7":
-  version: 1.3.7
-  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.7"
+"@vitejs/plugin-vue-jsx@npm:^1.3.8":
+  version: 1.3.8
+  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.8"
   dependencies:
     "@babel/core": ^7.17.2
     "@babel/plugin-syntax-import-meta": ^7.10.4
@@ -5106,17 +5106,17 @@ __metadata:
     "@rollup/pluginutils": ^4.1.2
     "@vue/babel-plugin-jsx": ^1.1.1
     hash-sum: ^2.0.0
-  checksum: 2cb2969becfb33e6ff1f9e3b06c756be5a3f85bd24e222b6e0511866425701a2678db0ecc8826e4aa1749e71339ebd152e5c65c9521eb2d6f589d116b40baff6
+  checksum: c2e0684b06a63281ce2c53548cb927f02bcea0df1bfe9d542a757e5561a1ac08f5ab75aaeaa3fd43fee205c149417b26e36c840d41abcc8ed97c493842c0c9eb
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^2.2.2":
-  version: 2.2.2
-  resolution: "@vitejs/plugin-vue@npm:2.2.2"
+"@vitejs/plugin-vue@npm:^2.2.4":
+  version: 2.2.4
+  resolution: "@vitejs/plugin-vue@npm:2.2.4"
   peerDependencies:
     vite: ^2.5.10
     vue: ^3.2.25
-  checksum: f05920e282569c3721dbbd730c83e40978134c0f53cd10f9429cc37b22152c494782f7b9541db937a2fd7ed324b819ec8aa0b54f136c3c6adbed7298c9c9e9da
+  checksum: 915f494940dd62d20204671a0d3bd81bcd44c02b314847325c9d0ad2f634eb3c012d3a00ffcac60416a5239e1d5e47e9cbf38f9c8cc9de708e12b98876ce946b
   languageName: node
   linkType: hard
 
@@ -5420,7 +5420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/devtools-api@npm:^6.0.0-beta.18":
+"@vue/devtools-api@npm:^6.0.0, @vue/devtools-api@npm:^6.0.0-beta.18":
   version: 6.0.12
   resolution: "@vue/devtools-api@npm:6.0.12"
   checksum: 5eb4601a6f6601c4481eab54c7f05f8e373ac3f2b5ab6973847a47e7ddbec7a9d2cd80dc692905da9e8615ac64a208702c54f7dfac47f7aa2168a5b7dd176545
@@ -10308,9 +10308,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^37.9.4":
-  version: 37.9.4
-  resolution: "eslint-plugin-jsdoc@npm:37.9.4"
+"eslint-plugin-jsdoc@npm:^37.9.5":
+  version: 37.9.5
+  resolution: "eslint-plugin-jsdoc@npm:37.9.5"
   dependencies:
     "@es-joy/jsdoccomment": ~0.20.1
     comment-parser: 1.3.0
@@ -10322,7 +10322,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: 1e338f03020b2efab6077c91f2a8c251f1ee8be4a2299fa49db84ecb1f8f1e362be2d005ac7b9d9ceff5596bd7c0a9a5ed816edb8b3e904ed3edb0aab8b88799
+  checksum: 9a5cc587e4896a5f20115bc2ef26fd9b1f914963f92c99b4a75d2476b687bca8b0c0ff4acec1ec5d58cf9835a7c8065a08595a9524596b91875c602af74738cf
   languageName: node
   linkType: hard
 
@@ -15646,7 +15646,7 @@ __metadata:
     "@unocss/reset": ^0.26.4
     esbuild: ^0.14.23
     eslint: ^8.10.0
-    eslint-plugin-jsdoc: ^37.9.4
+    eslint-plugin-jsdoc: ^37.9.5
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -15706,10 +15706,10 @@ __metadata:
     scule: ^0.2.1
     ufo: ^0.7.11
     unbuild: latest
-    unplugin: ^0.3.2
+    unplugin: ^0.3.3
     vue: ^3.2.31
     vue-meta: next
-    vue-router: ^4.0.12
+    vue-router: ^4.0.13
   bin:
     nuxi: ./bin/nuxt.mjs
     nuxt: ./bin/nuxt.mjs
@@ -21575,6 +21575,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unplugin@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "unplugin@npm:0.3.3"
+  dependencies:
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    esbuild: ">=0.13"
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    esbuild:
+      optional: true
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 11361432eed70ebd61da313d68f85b8c582738560a41cbfcb7c52e99c0654c9bcf83abb7db2bce74cbda63f8c691501cafb4208f04f0ef2542eee254c93cd3c5
+  languageName: node
+  linkType: hard
+
 "unquote@npm:~1.1.1":
   version: 1.1.1
   resolution: "unquote@npm:1.1.1"
@@ -21870,7 +21893,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.7.10, vite@npm:^2.8.4":
+"vite@npm:^2.7.10":
   version: 2.8.4
   resolution: "vite@npm:2.8.4"
   dependencies:
@@ -21925,6 +21948,35 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: f18f62037741ae8ac8b377da9ba4ed9556bebe9857531bbf33b2691cba15c5720264410385cd628bbccee5bfe105d3d0ead6286e3fbe0211de94ea061e2e876c
+  languageName: node
+  linkType: hard
+
+"vite@npm:^2.8.5":
+  version: 2.8.5
+  resolution: "vite@npm:2.8.5"
+  dependencies:
+    esbuild: ^0.14.14
+    fsevents: ~2.3.2
+    postcss: ^8.4.6
+    resolve: ^1.22.0
+    rollup: ^2.59.0
+  peerDependencies:
+    less: "*"
+    sass: "*"
+    stylus: "*"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    less:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 07688f8183fee2595e389d966011e94b2a069a3b6f3ff06b8edf452daaea76e2432c26e0eb60156543b3e42fb93e739a5d74667cc4bfc2c86b7c58ac7912a333
   languageName: node
   linkType: hard
 
@@ -22247,7 +22299,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.12, vue-router@npm:next":
+"vue-router@npm:^4.0.13":
+  version: 4.0.13
+  resolution: "vue-router@npm:4.0.13"
+  dependencies:
+    "@vue/devtools-api": ^6.0.0
+  peerDependencies:
+    vue: ^3.2.0
+  checksum: c1a4345e05af7e45d4808b89a92c6083891383759bba5f27a0e63840b19dbb4743fdaada48191445c652d6194792563dc76edf85557ae612a4908befa9148a57
+  languageName: node
+  linkType: hard
+
+"vue-router@npm:next":
   version: 4.0.12
   resolution: "vue-router@npm:4.0.12"
   dependencies:

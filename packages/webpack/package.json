@@ -41,7 +41,7 @@
     "style-resources-loader": "^1.5.0",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^0.7.11",
-    "unplugin": "^0.3.2",
+    "unplugin": "^0.3.3",
     "url-loader": "^4.1.1",
     "vue-loader": "^17.0.0",
     "vue-style-loader": "^4.1.3",

@@ -57,9 +57,9 @@
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.11",
-    "unplugin": "^0.3.2",
+    "unplugin": "^0.3.3",
     "vue": "^3.2.31",
-    "vue-router": "^4.0.12"
+    "vue-router": "^4.0.13"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
