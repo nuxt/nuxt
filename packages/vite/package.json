@@ -15,7 +15,7 @@
   "devDependencies": {
     "@nuxt/schema": "3.0.0",
     "@types/cssnano": "^5",
-    "magic-string-extra": "^0.1.0",
+    "magic-string-extra": "^0.1.2",
     "unbuild": "latest",
     "vue": "3.2.31"
   },

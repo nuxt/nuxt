@@ -3372,7 +3372,7 @@ __metadata:
     get-port-please: ^2.4.2
     knitwork: ^0.1.0
     magic-string: ^0.25.7
-    magic-string-extra: ^0.1.0
+    magic-string-extra: ^0.1.2
     mlly: ^0.4.3
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -13759,15 +13759,6 @@ __metadata:
   dependencies:
     yallist: ^4.0.0
   checksum: f97f499f898f23e4585742138a22f22526254fdba6d75d41a1c2526b3b6cc5747ef59c5612ba7375f42aca4f8461950e925ba08c991ead0651b4918b7c978297
-  languageName: node
-  linkType: hard
-
-"magic-string-extra@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "magic-string-extra@npm:0.1.0"
-  dependencies:
-    magic-string: ^0.25.7
-  checksum: 875f7f976f77d9bf697af46541420ffe5c9d5dca93f6d181aac7d875466bc3f8abf72b05f914a55ccf0abed75523362fd1882c3d407a920b280f72ed3b45e499
   languageName: node
   linkType: hard
 
