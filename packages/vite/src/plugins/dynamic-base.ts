@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import escapeRE from 'escape-string-regexp'
 import type { Plugin } from 'vite'
+import MagicString from 'magic-string-extra'
 
 interface DynamicBasePluginOptions {
   env: 'dev' | 'server' | 'client'
@@ -42,51 +43,57 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
       return null
     },
     enforce: 'post',
-    transform (original, id) {
-      let code = original
+    transform (code, id) {
+      const s = new MagicString(code)
+      let injectUtils = false
+
       if (options.globalPublicPath && id.includes('entry.ts')) {
-        code = 'import { joinURL } from "ufo";' +
-          `${options.globalPublicPath} = joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir);` + code
+        injectUtils = true
+        s.prepend(`${options.globalPublicPath} = joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir);`)
       }
 
       const assetId = code.match(VITE_ASSET_RE)
       if (assetId) {
-        code = 'import { joinURL } from "ufo";' +
-          `export default joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir, "${assetId[1]}".replace("/__NUXT_BASE__", ""));`
+        injectUtils = true
+        s.overwrite(0, code.length, `export default joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir, "${assetId[1]}".replace("/__NUXT_BASE__", ""));`)
       }
 
-      if (code.includes('NUXT_BASE') && !code.includes('const NUXT_BASE =')) {
-        code = 'const NUXT_BASE = NUXT_CONFIG.app.cdnURL || NUXT_CONFIG.app.baseURL;' + code
+      if (injectUtils || (code.includes('NUXT_BASE') && !code.includes('const NUXT_BASE ='))) {
+        s.prepend('const NUXT_BASE = NUXT_CONFIG.app.cdnURL || NUXT_CONFIG.app.baseURL;')
 
         if (options.env === 'dev') {
-          code = `const NUXT_CONFIG = { app: ${JSON.stringify(options.devAppConfig)} };` + code
+          s.prepend(`const NUXT_CONFIG = { app: ${JSON.stringify(options.devAppConfig)} };`)
         } else if (options.env === 'server') {
-          code = 'import NUXT_CONFIG from "#config";' + code
+          s.prepend('import NUXT_CONFIG from "#config";')
         } else {
-          code = 'const NUXT_CONFIG = __NUXT__.config;' + code
+          s.prepend('const NUXT_CONFIG = __NUXT__.config;')
         }
       }
 
       if (id === 'vite/preload-helper') {
+        injectUtils = true
         // Define vite base path as buildAssetsUrl (i.e. including _nuxt/)
-        code = code.replace(
+        code.replace(
           /const base = ['"]\/__NUXT_BASE__\/['"]/,
-          'import { joinURL } from "ufo";' +
-          'const base = joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir);')
+          'const base = joinURL(NUXT_BASE, NUXT_CONFIG.app.buildAssetsDir);'
+        )
       }
 
       // Sanitize imports
-      code = code.replace(/from *['"]\/__NUXT_BASE__(\/[^'"]*)['"]/g, 'from "$1"')
+      s.replace(/from *['"]\/__NUXT_BASE__(\/[^'"]*)['"]/g, 'from "$1"')
 
       // Dynamically compute string URLs featuring baseURL
       for (const delimiter of ['`', '"', "'"]) {
         const delimiterRE = new RegExp(`${delimiter}([^${delimiter}]*)\\/__NUXT_BASE__\\/([^${delimiter}]*)${delimiter}`, 'g')
         /* eslint-disable-next-line no-template-curly-in-string */
-        code = code.replace(delimiterRE, '`$1${NUXT_BASE}$2`')
+        s.replace(delimiterRE, '`$1${NUXT_BASE}$2`')
       }
 
-      if (code === original) { return }
-      return code
+      if (injectUtils) {
+        s.prepend('import { joinURL } from "ufo";\n')
+      }
+
+      return s.toRollupResult(true, { source: id, includeContent: true })
     }
   }
 })
