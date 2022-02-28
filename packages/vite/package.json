@@ -31,7 +31,7 @@
     "escape-string-regexp": "^5.0.0",
     "externality": "^0.1.6",
     "fs-extra": "^10.0.1",
-    "get-port-please": "^2.4.2",
+    "get-port-please": "^2.4.3",
     "knitwork": "^0.1.0",
     "magic-string": "^0.25.7",
     "mlly": "^0.4.3",
