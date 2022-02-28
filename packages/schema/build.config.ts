@@ -34,6 +34,7 @@ export default defineBuildConfig({
     'webpack-hot-middleware',
     'postcss',
     'consola',
+    'ignore',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared'

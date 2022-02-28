@@ -1,6 +1,6 @@
 import chokidar from 'chokidar'
 import type { Nuxt } from '@nuxt/schema'
-import { tryImportModule } from '@nuxt/kit'
+import { isIgnored, tryImportModule } from '@nuxt/kit'
 import { createApp, generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
@@ -37,8 +37,8 @@ function watch (nuxt: Nuxt) {
     cwd: nuxt.options.srcDir,
     ignoreInitial: true,
     ignored: [
+      isIgnored,
       '.nuxt',
-      '.output',
       'node_modules'
     ]
   })

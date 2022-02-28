@@ -72,7 +72,7 @@ export default defineNuxtCommand({
     watcher.on('all', (event, file) => {
       if (!currentNuxt) { return }
       if (file.startsWith(currentNuxt.options.buildDir)) { return }
-      if (file.match(/nuxt\.config\.(js|ts|mjs|cjs)$/)) {
+      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore)$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
 

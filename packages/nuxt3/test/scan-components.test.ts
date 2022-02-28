@@ -1,10 +1,14 @@
 import { resolve } from 'path'
 import { ComponentsDir } from '@nuxt/schema'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { scanComponents } from '../src/components/scan'
 
 const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p) => resolve(fixtureDir, ...p)
+
+vi.mock('@nuxt/kit', () => ({
+  isIgnored: () => false
+}))
 
 const dirs: ComponentsDir[] = [
   {
