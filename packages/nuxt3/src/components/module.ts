@@ -115,7 +115,6 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async () => {
       options.components = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', options.components)
-      await nuxt.callHook('builder:generateApp')
     })
 
     nuxt.hook('prepare:types', ({ references }) => {
