@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [14]
+        node: [14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -58,7 +58,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [14]
+        node: [14, 16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -92,7 +92,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [14]
+        node: [14, 16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -131,7 +131,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [14]
+        node: [14, 16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
