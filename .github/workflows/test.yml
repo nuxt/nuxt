@@ -19,7 +19,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [12, 14]
+        node: [12, 14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -96,7 +96,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -127,7 +127,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [12, 14]
+        node: [12, 14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -164,7 +164,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [12, 14]
+        node: [12, 14, 16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -203,7 +203,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -240,7 +240,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [12, 14]
+        node: [12, 14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -277,7 +277,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [12, 14]
+        node: [12, 14, 16]
 
     steps:
       - uses: actions/setup-node@v2
@@ -313,7 +313,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [14, 16]
 
     steps:
       - name: checkout
