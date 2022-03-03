@@ -17,15 +17,26 @@ const logEnd = id => { const t = end(_s[id]); delete _s[id]; metrics.push([id, t
 ${TIMING} = { start, end, metrics, logStart, logEnd };
 `)
 
+const HELPERIMPORT = "import './timing.js';"
+
 export function timing (_opts: Options = {}): Plugin {
   return {
     name: 'timing',
+    generateBundle () {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'timing.js',
+        source: HELPER
+      })
+    },
     renderChunk (code, chunk: RenderedChunk) {
       let name = chunk.fileName || ''
       name = name.replace(extname(name), '')
+
       const logName = name === 'index' ? 'Cold Start' : ('Load ' + name)
+
       return {
-        code: (chunk.isEntry ? HELPER : '') + `${TIMING}.logStart('${logName}');` + code + `;${TIMING}.logEnd('${logName}');`,
+        code: (chunk.isEntry ? HELPERIMPORT : '') + `${TIMING}.logStart('${logName}');` + code + `;${TIMING}.logEnd('${logName}');`,
         map: null
       }
     }
