@@ -3371,8 +3371,7 @@ __metadata:
     fs-extra: ^10.0.1
     get-port-please: ^2.4.3
     knitwork: ^0.1.0
-    magic-string: ^0.25.7
-    magic-string-extra: ^0.1.2
+    magic-string: ^0.26.0
     mlly: ^0.4.3
     p-debounce: ^4.0.0
     pathe: ^0.2.0
@@ -13771,21 +13770,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-string-extra@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "magic-string-extra@npm:0.1.2"
-  dependencies:
-    magic-string: ^0.25.7
-  checksum: 196dec128985162ff559752dd28f358bacd203e9e9e2bcb7d3eb8a1cdacc8a60ce1d49709f31de16f594adb60566959dbb04750560c3cbc872f520d062dba0ee
-  languageName: node
-  linkType: hard
-
 "magic-string@npm:^0.25.7":
   version: 0.25.7
   resolution: "magic-string@npm:0.25.7"
   dependencies:
     sourcemap-codec: ^1.4.4
   checksum: 727a1fb70f9610304fe384f1df0251eb7d1d9dd779c07ef1225690361b71b216f26f5d934bfb11c919b5b0e7ba50f6240c823a6f2e44cfd33d4a07d7747ca829
+  languageName: node
+  linkType: hard
+
+"magic-string@npm:^0.26.0":
+  version: 0.26.0
+  resolution: "magic-string@npm:0.26.0"
+  dependencies:
+    sourcemap-codec: ^1.4.8
+  checksum: 2065de79cdbb76fe1b073244d51a2094cabf317e95a4ce385d7ddbe1d1f16b864c0f2a1ae514872251e64edc44bf56c8bb6a7dbe5eff9c9c236f877bcdfec9f9
   languageName: node
   linkType: hard
 
@@ -15437,7 +15436,7 @@ __metadata:
     hash-sum: ^2.0.0
     hookable: ^5.1.1
     knitwork: ^0.1.0
-    magic-string-extra: ^0.1.2
+    magic-string: ^0.26.0
     mlly: ^0.4.3
     murmurhash-es: ^0.1.1
     nitropack: "npm:nitropack-edge@latest"
@@ -19740,7 +19739,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sourcemap-codec@npm:^1.4.4":
+"sourcemap-codec@npm:^1.4.4, sourcemap-codec@npm:^1.4.8":
   version: 1.4.8
   resolution: "sourcemap-codec@npm:1.4.8"
   checksum: b57981c05611afef31605732b598ccf65124a9fcb03b833532659ac4d29ac0f7bfacbc0d6c5a28a03e84c7510e7e556d758d0bb57786e214660016fb94279316

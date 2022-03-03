@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL, withQuery } from 'ufo'
 import { findStaticImports, findExports } from 'mlly'
-import MagicString from 'magic-string-extra'
+import MagicString from 'magic-string'
 
 export interface TransformMacroPluginOptions {
   macros: Record<string, string>
@@ -17,8 +17,14 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
       return pathname.endsWith('.vue') || !!parseQuery(search).macro
     },
     transform (code, id) {
-      const s = new MagicString(code, { sourcemapOptions: { source: id, includeContent: true } })
+      const s = new MagicString(code)
       const { search } = parseURL(id)
+
+      function result () {
+        if (s.hasChanged()) {
+          return { code: s.toString(), map: s.generateMap({ source: id, includeContent: true }) }
+        }
+      }
 
       // Tree-shake out any runtime references to the macro.
       // We do this first as it applies to all files, not just those with the query
@@ -30,7 +36,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
       }
 
       if (!parseQuery(search).macro) {
-        return s.toRollupResult()
+        return result()
       }
 
       // [webpack] Re-export any imports from script blocks in the components
@@ -39,7 +45,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
       if (scriptImport) {
         const specifier = withQuery(scriptImport.specifier.replace('?macro=true', ''), { macro: 'true' })
         s.overwrite(0, code.length, `export { meta } from "${specifier}"`)
-        return s.toRollupResult()
+        return result()
       }
 
       const currentExports = findExports(code)
@@ -50,7 +56,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
         if (match.specifier && match._type === 'named') {
           // [webpack] Export named exports rather than the default (component)
           s.overwrite(match.start, match.end, `export {${Object.values(options.macros).join(', ')}} from "${match.specifier}"`)
-          return s.toRollupResult()
+          return result()
         } else if (!options.dev) {
           // ensure we tree-shake any _other_ default exports out of the macro script
           s.overwrite(match.start, match.end, '/*#__PURE__*/ false &&')
@@ -70,7 +76,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
         s.append(`\nexport const ${options.macros[macro]} = ${macroContent}`)
       }
 
-      return s.toRollupResult()
+      return result()
     }
   }
 })

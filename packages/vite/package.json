@@ -15,7 +15,7 @@
   "devDependencies": {
     "@nuxt/schema": "3.0.0",
     "@types/cssnano": "^5",
-    "magic-string-extra": "^0.1.2",
+    "magic-string": "^0.26.0",
     "unbuild": "latest",
     "vue": "3.2.31"
   },
@@ -33,7 +33,6 @@
     "fs-extra": "^10.0.1",
     "get-port-please": "^2.4.3",
     "knitwork": "^0.1.0",
-    "magic-string": "^0.25.7",
     "mlly": "^0.4.3",
     "p-debounce": "^4.0.0",
     "pathe": "^0.2.0",

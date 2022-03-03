@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Component } from '@nuxt/schema'
 import { genImport } from 'knitwork'
-import MagicString from 'magic-string-extra'
+import MagicString from 'magic-string'
 
 interface LoaderOptions {
   getComponents(): Component[]
@@ -50,5 +50,10 @@ function transform (code: string, id: string, components: Component[]) {
     s.prepend(imports + '\n')
   }
 
-  return s.toRollupResult(true, { source: id, includeContent: true })
+  if (s.hasChanged()) {
+    return {
+      code: s.toString(),
+      map: s.generateMap({ source: id, includeContent: true })
+    }
+  }
 }

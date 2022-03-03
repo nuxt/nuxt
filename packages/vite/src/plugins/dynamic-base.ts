@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import escapeRE from 'escape-string-regexp'
 import type { Plugin } from 'vite'
-import MagicString from 'magic-string-extra'
+import MagicString from 'magic-string'
 
 interface DynamicBasePluginOptions {
   env: 'dev' | 'server' | 'client'
@@ -93,7 +93,12 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
         s.prepend('import { joinURL } from "ufo";\n')
       }
 
-      return s.toRollupResult(true, { source: id, includeContent: true })
+      if (s.hasChanged()) {
+        return {
+          code: s.toString(),
+          map: s.generateMap({ source: id, includeContent: true })
+        }
+      }
     }
   }
 })
