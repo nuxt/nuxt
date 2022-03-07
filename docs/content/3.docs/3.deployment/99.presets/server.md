@@ -69,7 +69,7 @@ export default {
 
 ```bash
 $ node .output/server/index.mjs
-> Cold Start (3ms)
+> Nitro Start (3ms)
 Listening on http://localhost:3000
 > Load chunks/nitro/static (0ms)
 > Load chunks/app/render (1ms)
