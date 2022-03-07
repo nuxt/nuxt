@@ -75,7 +75,6 @@ describe('modules', () => {
     defineNuxtConfig({ sampleModule: { enabled: false } })
     // @ts-expect-error
     defineNuxtConfig({ sampleModule: { other: false } })
-    // @ts-expect-error
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 })
