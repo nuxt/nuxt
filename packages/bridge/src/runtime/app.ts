@@ -74,8 +74,20 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtAppCo
   return p
 }
 
-export function defineNuxtPlugin (plugin: (nuxtApp: NuxtAppCompat) => void): (ctx: Context) => void {
-  return ctx => callWithNuxt(ctx.$_nuxtApp, plugin, [ctx.$_nuxtApp])
+interface Plugin {
+  (nuxt: NuxtAppCompat): Promise<void> | Promise<{ provide?: Record<string, any> }> | void | { provide?: Record<string, any> }
+}
+
+export function defineNuxtPlugin (plugin: Plugin): (ctx: Context, inject: (id: string, value: any) => void) => void {
+  return async (ctx, inject) => {
+    const result = await callWithNuxt(ctx.$_nuxtApp, plugin, [ctx.$_nuxtApp])
+    if (result && result.provide) {
+      for (const key in result.provide) {
+        inject(key, result.provide[key])
+      }
+    }
+    return result
+  }
 }
 
 export const useNuxtApp = (): NuxtAppCompat => {

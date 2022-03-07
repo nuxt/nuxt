@@ -2,10 +2,14 @@ import { onGlobalSetup, ref } from '@nuxtjs/composition-api'
 
 import { defineNuxtPlugin } from '#app'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(() => {
   const globalsetup = ref('🚧')
   onGlobalSetup(() => {
     globalsetup.value = '✅'
   })
-  nuxtApp.provide('globalsetup', globalsetup)
+  return {
+    provide: {
+      globalsetup
+    }
+  }
 })
