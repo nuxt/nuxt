@@ -72,9 +72,7 @@ export default defineNuxtModule<AutoImportsOptions>({
           : { name: importName.name, as: importName.as || importName.name, from: source.from }
       ))
       // Scan composables/
-      for (const composablesDir of composablesDirs) {
-        await scanForComposables(composablesDir, ctx.autoImports)
-      }
+      await scanForComposables(composablesDirs, ctx.autoImports)
       // Allow modules extending
       await nuxt.callHook('autoImports:extend', ctx.autoImports)
       // Update context
@@ -96,9 +94,12 @@ export default defineNuxtModule<AutoImportsOptions>({
     nuxt.hook('builder:watch', async (_, path) => {
       const _resolved = resolve(nuxt.options.srcDir, path)
       if (composablesDirs.find(dir => _resolved.startsWith(dir))) {
-        await regenerateAutoImports()
         await nuxt.callHook('builder:generateApp')
       }
+    })
+
+    nuxt.hook('builder:generateApp', async () => {
+      await regenerateAutoImports()
     })
   }
 })
