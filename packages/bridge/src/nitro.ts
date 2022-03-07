@@ -1,11 +1,13 @@
 import { promises as fsp } from 'fs'
 import fetch from 'node-fetch'
+import fse from 'fs-extra'
 import { addPluginTemplate, useNuxt } from '@nuxt/kit'
-import { joinURL, stringifyQuery } from 'ufo'
+import { joinURL, stringifyQuery, withoutTrailingSlash } from 'ufo'
 import { resolve, join } from 'pathe'
 import { build, generate, prepare, getNitroContext, NitroContext, createDevServer, wpfs, resolveMiddleware, scanMiddleware, writeTypes } from '@nuxt/nitro'
 import { AsyncLoadingPlugin } from './async-loading'
 import { distDir } from './dirs'
+import { isDirectory, readDirRecursively } from './vite/utils/fs'
 
 export function setupNitroBridge () {
   const nuxt = useNuxt()
@@ -68,6 +70,34 @@ export function setupNitroBridge () {
       template.contents = await fsp.readFile(nuxt.options.appTemplatePath, 'utf-8')
     })
   }
+
+  nuxt.hook('nitro:generate', async () => {
+    const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
+
+    // Remove public files that have been duplicated into buildAssetsDir
+    // TODO: Add option to configure this behaviour in vite
+    const publicDir = join(nuxt.options.srcDir, nuxt.options.dir.static)
+    let publicFiles: string[] = []
+    if (await isDirectory(publicDir)) {
+      publicFiles = readDirRecursively(publicDir).map(r => r.replace(publicDir, ''))
+      for (const file of publicFiles) {
+        try {
+          fse.rmSync(join(clientDist, file))
+        } catch {}
+      }
+    }
+
+    // Copy doubly-nested /_nuxt/_nuxt files into buildAssetsDir
+    // TODO: Workaround vite issue
+    if (await isDirectory(clientDist)) {
+      const nestedAssetsPath = withoutTrailingSlash(join(clientDist, nuxt.options.app.buildAssetsDir))
+
+      if (await isDirectory(nestedAssetsPath)) {
+        await fse.copy(nestedAssetsPath, clientDist, { recursive: true })
+        await fse.remove(nestedAssetsPath)
+      }
+    }
+  })
 
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
