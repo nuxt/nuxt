@@ -4,9 +4,10 @@
       <Title>Basic fixture</Title>
     </Head>
     <h1>Hello Nuxt 3!</h1>
-    <div>RuntimeConfig: {{ config.testConfig }}</div>
-    <div>{{ foo }}</div>
-    <div>{{ bar }}</div>
+    <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
+    <div>Composable | foo: {{ foo }}</div>
+    <div>Composable | bar: {{ bar }}</div>
+    <div>Plugin | myPlugin: {{ $myPlugin() }}</div>
     <CustomComponent />
   </div>
 </template>

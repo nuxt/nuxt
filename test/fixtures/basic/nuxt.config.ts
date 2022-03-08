@@ -8,7 +8,6 @@ export default defineNuxtConfig({
     output: { dir: process.env.NITRO_OUTPUT_DIR }
   },
   publicRuntimeConfig: {
-    // @ts-ignore TODO: Fix schema types
     testConfig: '123'
   },
   modules: ['~/modules/example'],

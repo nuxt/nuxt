@@ -40,9 +40,10 @@ describe('aliases', () => {
 })
 
 describe('middleware', () => {
-  it('recognises named middleware', () => {
-    definePageMeta({ middleware: 'test-middleware' })
-    definePageMeta({ middleware: 'pascal-case' })
+  it('recognizes named middleware', () => {
+    definePageMeta({ middleware: 'inject-auth' })
+    // @ts-expect-error ignore global middleware
+    definePageMeta({ middleware: 'redirect' })
     // @ts-expect-error Invalid middleware
     definePageMeta({ middleware: 'invalid-middleware' })
   })
@@ -62,8 +63,8 @@ describe('middleware', () => {
 })
 
 describe('layouts', () => {
-  it('recognises named layouts', () => {
-    definePageMeta({ layout: 'test-layout' })
+  it('recognizes named layouts', () => {
+    definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
