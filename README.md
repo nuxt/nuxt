@@ -60,6 +60,7 @@ We are using [Docus](https://nuxtlabs.com/docus) for documentation (*It is plann
 
 We recommend to install the [Docus extension](https://marketplace.visualstudio.com/items?itemName=NuxtLabs.docus) for VS Code.
 
+- Run `npx yarn stub` once in the root directory
 - Go into the docs directory: `cd docs`
 - Install docs dependencies with `npx yarn install`
 - Run `npx yarn dev` to start Docus in development mode
