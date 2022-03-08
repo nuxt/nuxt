@@ -107,6 +107,9 @@ export default defineNuxtModule<AutoImportsOptions>({
 function addDeclarationTemplates (ctx: AutoImportContext) {
   const nuxt = useNuxt()
 
+  // Remove file extension for benefit of TypeScript
+  const stripExtension = (path: string) => path.replace(/\.[a-z]+$/, '')
+
   const resolved = {}
   const r = (id: string) => {
     if (resolved[id]) { return resolved[id] }
@@ -114,15 +117,14 @@ function addDeclarationTemplates (ctx: AutoImportContext) {
     if (isAbsolute(path)) {
       path = relative(join(nuxt.options.buildDir, 'types'), path)
     }
-    // Remove file extension for benefit of TypeScript
-    path = path.replace(/\.[a-z]+$/, '')
+    path = stripExtension(path)
     resolved[id] = path
     return path
   }
 
   addTemplate({
     filename: 'imports.d.ts',
-    getContents: () => toExports(ctx.autoImports)
+    getContents: () => toExports(ctx.autoImports.map(i => ({ ...i, from: stripExtension(i.from) })))
   })
 
   addTemplate({
