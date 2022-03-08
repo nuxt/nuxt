@@ -49,7 +49,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.1.1",
     "knitwork": "^0.1.0",
-    "magic-string": "^0.26.0",
+    "magic-string": "^0.26.1",
     "mlly": "^0.4.3",
     "murmurhash-es": "^0.1.1",
     "nitropack": "npm:nitropack-edge@latest",
@@ -58,7 +58,7 @@
     "pathe": "^0.2.0",
     "scule": "^0.2.1",
     "ufo": "^0.7.11",
-    "unplugin": "^0.3.3",
+    "unplugin": "^0.4.0",
     "vue": "^3.2.31",
     "vue-router": "^4.0.13"
   },
