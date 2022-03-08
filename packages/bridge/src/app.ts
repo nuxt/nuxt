@@ -1,4 +1,4 @@
-import { useNuxt, resolveModule, addTemplate, resolveAlias } from '@nuxt/kit'
+import { useNuxt, resolveModule, addTemplate, resolveAlias, extendWebpackConfig } from '@nuxt/kit'
 import { NuxtModule } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { componentsTypeTemplate } from '../../nuxt3/src/components/templates'
@@ -22,8 +22,19 @@ export function setupAppBridge (_options: any) {
   }
 
   // Resolve vue2 builds
-  nuxt.options.alias.vue2 = resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
+  const vue2ESM = resolveModule('vue/dist/vue.runtime.esm.js', { paths: nuxt.options.modulesDir })
+  const vue2CJS = resolveModule('vue/dist/vue.runtime.common.js', { paths: nuxt.options.modulesDir })
+  nuxt.options.alias.vue2 = vue2ESM
   nuxt.options.build.transpile.push('vue')
+
+  extendWebpackConfig((config) => {
+    (config.resolve.alias as any).vue2 = vue2CJS
+  }, { client: false })
+  nuxt.hook('vite:extendConfig', (config, { isServer }) => {
+    if (isServer && !nuxt.options.dev) {
+      (config.resolve.alias as any).vue2 = vue2CJS
+    }
+  })
 
   // Disable legacy fetch polyfills
   nuxt.options.fetch.server = false

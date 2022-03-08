@@ -165,7 +165,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       'process.env.NUXT_FULL_STATIC': nitroContext._nuxt.fullStatic as unknown as string,
       'process.env.NITRO_PRESET': JSON.stringify(nitroContext.preset),
       'process.env.RUNTIME_CONFIG': devalue(nitroContext._nuxt.runtimeConfig),
-      'process.env.DEBUG': JSON.stringify(nitroContext._nuxt.dev)
+      'process.env.DEBUG': JSON.stringify(nitroContext._nuxt.dev),
+      // Needed for vue 2 server build
+      'commonjsGlobal.process.env.VUE_ENV': '"server"'
     }
   }))
 
