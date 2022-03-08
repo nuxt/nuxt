@@ -68,8 +68,8 @@ export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions 
 /**
  * Adds a template and registers as a nuxt plugin.
  */
-export function addPluginTemplate (plugin: Omit<NuxtPluginTemplate, 'src'> | string, opts: AddPluginOptions = {}): NuxtPluginTemplate {
-  const normalizedPlugin: NuxtPluginTemplate = typeof plugin === 'string'
+export function addPluginTemplate (plugin: NuxtPluginTemplate | string, opts: AddPluginOptions = {}): NuxtPlugin {
+  const normalizedPlugin: NuxtPlugin = typeof plugin === 'string'
     ? { src: plugin }
     // Update plugin src to template destination
     : { ...plugin, src: addTemplate(plugin).dst }
