@@ -1,5 +1,7 @@
 <script setup>
 const themeConfig = useRuntimeConfig().theme
+const foo = useFoo()
+const bar = getBar()
 </script>
 
 <template>
@@ -8,6 +10,9 @@ const themeConfig = useRuntimeConfig().theme
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
     <BaseButton>Base Button</BaseButton>
     <FancyButton>Fancy Button</FancyButton>
+    <br>
+    {{ foo }} {{ bar }}
+    <br>
     {{ $myPlugin() }}
   </NuxtExampleLayout>
 </template>

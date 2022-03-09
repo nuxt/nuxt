@@ -36,6 +36,15 @@ export default defineNuxtModule<AutoImportsOptions>({
       join(nuxt.options.srcDir, 'composables'),
       ...options.dirs
     ]
+
+    // Extend with layers
+    for (const layer of nuxt.options._extends) {
+      composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
+      for (const dir of (layer.config.autoImports?.dirs ?? [])) {
+        composablesDirs.push(resolve(layer.config.srcDir, dir))
+      }
+    }
+
     await nuxt.callHook('autoImports:dirs', composablesDirs)
     composablesDirs = composablesDirs.map(dir => normalize(dir))
 
