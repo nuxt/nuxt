@@ -71,7 +71,7 @@ export function setupNitroBridge () {
     })
   }
 
-  nuxt.hook('nitro:generate', async () => {
+  async function updateViteBase () {
     const clientDist = resolve(nuxt.options.buildDir, 'dist/client')
 
     // Remove public files that have been duplicated into buildAssetsDir
@@ -97,7 +97,9 @@ export function setupNitroBridge () {
         await fse.remove(nestedAssetsPath)
       }
     }
-  })
+  }
+  nuxt.hook('nitro:generate', updateViteBase)
+  nuxt.hook('generate:before', updateViteBase)
 
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
