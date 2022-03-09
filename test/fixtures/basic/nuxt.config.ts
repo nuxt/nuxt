@@ -8,7 +8,10 @@ export default defineNuxtConfig({
     output: { dir: process.env.NITRO_OUTPUT_DIR }
   },
   publicRuntimeConfig: {
-    testConfig: '123'
+    testConfig: 123
+  },
+  privateRuntimeConfig: {
+    privateConfig: 'secret_key'
   },
   modules: ['~/modules/example'],
   hooks: {

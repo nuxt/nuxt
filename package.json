@@ -30,7 +30,7 @@
     "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
-    "unbuild": "^0.6.9"
+    "unbuild": "^0.7.0"
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.1.1",

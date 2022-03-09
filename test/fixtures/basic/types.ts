@@ -79,3 +79,12 @@ describe('modules', () => {
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 })
+
+describe('runtimeConfig', () => {
+  it('generated runtimeConfig types', () => {
+    const runtimeConfig = useRuntimeConfig()
+    expectTypeOf(runtimeConfig.testConfig).toMatchTypeOf<number>()
+    expectTypeOf(runtimeConfig.privateConfig).toMatchTypeOf<string>()
+    expectTypeOf(runtimeConfig.unknown).toMatchTypeOf<any>()
+  })
+})
