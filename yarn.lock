@@ -3056,7 +3056,7 @@ __metadata:
     "@types/serve-static": ^1.13.10
     "@vercel/nft": ^0.17.5
     archiver: ^5.3.0
-    chalk: ^5.0.0
+    chalk: ^5.0.1
     chokidar: ^3.5.3
     connect: ^3.7.0
     consola: ^2.15.3
@@ -3363,7 +3363,7 @@ __metadata:
     "@vitejs/plugin-vue-jsx": ^1.3.8
     autoprefixer: ^10.4.2
     chokidar: ^3.5.3
-    cssnano: ^5.1.0
+    cssnano: ^5.1.1
     defu: ^5.0.1
     esbuild: ^0.14.25
     escape-string-regexp: ^5.0.0
@@ -3480,7 +3480,7 @@ __metadata:
     autoprefixer: ^10.4.2
     css-loader: ^6.7.1
     css-minimizer-webpack-plugin: ^3.4.1
-    cssnano: ^5.1.0
+    cssnano: ^5.1.1
     esbuild-loader: ^2.18.0
     escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
@@ -7301,6 +7301,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "chalk@npm:5.0.1"
+  checksum: 7b45300372b908f0471fbf7389ce2f5de8d85bb949026fd51a1b95b10d0ed32c7ed5aab36dd5e9d2bf3191867909b4404cef75c5f4d2d1daeeacd301dd280b76
+  languageName: node
+  linkType: hard
+
 "character-parser@npm:^2.2.0":
   version: 2.2.0
   resolution: "character-parser@npm:2.2.0"
@@ -8625,6 +8632,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cssnano-preset-default@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "cssnano-preset-default@npm:5.2.1"
+  dependencies:
+    css-declaration-sorter: ^6.0.3
+    cssnano-utils: ^3.1.0
+    postcss-calc: ^8.2.3
+    postcss-colormin: ^5.3.0
+    postcss-convert-values: ^5.1.0
+    postcss-discard-comments: ^5.1.1
+    postcss-discard-duplicates: ^5.1.0
+    postcss-discard-empty: ^5.1.0
+    postcss-discard-overridden: ^5.1.0
+    postcss-merge-longhand: ^5.1.0
+    postcss-merge-rules: ^5.1.0
+    postcss-minify-font-values: ^5.1.0
+    postcss-minify-gradients: ^5.1.0
+    postcss-minify-params: ^5.1.0
+    postcss-minify-selectors: ^5.2.0
+    postcss-normalize-charset: ^5.1.0
+    postcss-normalize-display-values: ^5.1.0
+    postcss-normalize-positions: ^5.1.0
+    postcss-normalize-repeat-style: ^5.1.0
+    postcss-normalize-string: ^5.1.0
+    postcss-normalize-timing-functions: ^5.1.0
+    postcss-normalize-unicode: ^5.1.0
+    postcss-normalize-url: ^5.1.0
+    postcss-normalize-whitespace: ^5.1.0
+    postcss-ordered-values: ^5.1.0
+    postcss-reduce-initial: ^5.1.0
+    postcss-reduce-transforms: ^5.1.0
+    postcss-svgo: ^5.1.0
+    postcss-unique-selectors: ^5.1.1
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 085ddf9c87297f74844851339c4fd10d178be65c87723a8e8240ea359d08a05344f9fff2f7e26e5fa13cd39cc3ba5dac3f70e4ea602bebe3f61a47d5567c2c29
+  languageName: node
+  linkType: hard
+
 "cssnano-util-get-arguments@npm:^4.0.0":
   version: 4.0.0
   resolution: "cssnano-util-get-arguments@npm:4.0.0"
@@ -8676,7 +8722,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:^5.0.6, cssnano@npm:^5.1.0":
+"cssnano@npm:^5.0.6":
   version: 5.1.0
   resolution: "cssnano@npm:5.1.0"
   dependencies:
@@ -8686,6 +8732,19 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: f44d33e2c99d2ae4ac68fb37762c81091de6346f3798f8aede134839a0accf4dcdc063ab2319f545f048be78c59990d208a2cdaeadc0ced6d20a65ff60d2d953
+  languageName: node
+  linkType: hard
+
+"cssnano@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "cssnano@npm:5.1.1"
+  dependencies:
+    cssnano-preset-default: ^5.2.1
+    lilconfig: ^2.0.3
+    yaml: ^1.10.2
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 8b2bfa7ca2a88eb858bd06378dbc0ef71e0eac70db30fbe3d3ce359fe34dbaa880bf3d3a16cd46df32a80e5aafaf1f849dd548b9ecbe9c8631a3823dbd52f919
   languageName: node
   linkType: hard
 
@@ -16619,6 +16678,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"postcss-discard-comments@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "postcss-discard-comments@npm:5.1.1"
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 578c3cb3e8c6194cf8b5f2170abd6636bf2fe1ec9ba6e03431f5a7e4aae22c6c6605a5e8e2731e824df07c1188f3defa2f4ba28da4adafe45c068af1189f1f2c
+  languageName: node
+  linkType: hard
+
 "postcss-discard-duplicates@npm:^4.0.2":
   version: 4.0.2
   resolution: "postcss-discard-duplicates@npm:4.0.2"
@@ -17815,6 +17883,17 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: daa9369c8c1efa2ddf61e69b0cc73dbac72fc3fc0f0bd3475c9a20d696eed9b480a303611f819f9dafd1285cff05955a46b3dc9866bcbd4a561b3baebabe2bd2
+  languageName: node
+  linkType: hard
+
+"postcss-unique-selectors@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "postcss-unique-selectors@npm:5.1.1"
+  dependencies:
+    postcss-selector-parser: ^6.0.5
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 637e7b786e8558265775c30400c54b6b3b24d4748923f4a39f16a65fd0e394f564ccc9f0a1d3c0e770618a7637a7502ea1d0d79f731d429cb202255253c23278
   languageName: node
   linkType: hard
 
