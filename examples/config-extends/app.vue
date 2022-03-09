@@ -8,6 +8,7 @@ const themeConfig = useRuntimeConfig().theme
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
     <BaseButton>Base Button</BaseButton>
     <FancyButton>Fancy Button</FancyButton>
+    {{ $myPlugin() }}
   </NuxtExampleLayout>
 </template>
 
