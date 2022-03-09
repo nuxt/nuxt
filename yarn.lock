@@ -15446,7 +15446,7 @@ __metadata:
     object-hash: ^3.0.0
     pathe: ^0.2.0
     typescript: ^4.6.2
-    unbuild: ^0.6.9
+    unbuild: ^0.7.0
     vitest: ^0.6.0
     vue-router: ^4.0.13
     vue-tsc: ^0.32.1
