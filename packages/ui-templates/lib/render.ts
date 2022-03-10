@@ -77,23 +77,30 @@ export const RenderPlugin = () => {
           .match(/<body.*?>([\s\S]*)<\/body>/)?.[0]
           .replace(/(?<=<|<\/)body/g, 'div')
           .replace(/messages\./g, '')
+          .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>$3</NuxtLink>')
-          .replace(/>{{\s*([\s\S]+?)\s*}}<\/[\w-]*>/g, ' v-html="$1" />')
+          .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
         const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/{{([\s\S]+?)}}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1])
+        const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
+          .map(block => block[1])
+          .filter(i => !i.includes('const t=document.createElement("link")'))
         const props = genObjectFromRawEntries(Object.entries({ ...genericMessages, ...messages }).map(([key, value]) => [key, {
           type: typeof value === 'string' ? 'String' : typeof value === 'number' ? 'Number' : typeof value === 'boolean' ? 'Boolean' : 'undefined',
           default: JSON.stringify(value)
         }]))
         const vueCode = [
           '<script setup lang="ts">',
-          title && '  import { useMeta } from \'#app\'',
-          `  const props = defineProps(${props})`,
-          title && `  useMeta({ title: \`${title}\` })`,
+          title && 'import { useMeta } from \'#app\'',
+          `const props = defineProps(${props})`,
+          title && 'useMeta(' + genObjectFromRawEntries([
+            ['title', `\`${title}\``],
+            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))]
+          ]) + ')',
           '</script>',
           '<template>',
           templateContent,
