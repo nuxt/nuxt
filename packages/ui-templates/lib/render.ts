@@ -85,7 +85,8 @@ export const RenderPlugin = () => {
         const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/{{([\s\S]+?)}}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
-        const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1])
+        const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
+        const globalStyles = styleContent.match(/^([^.][^{]*\{[^}]*\})*/)?.[0]
         const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
           .map(block => block[1])
           .filter(i => !i.includes('const t=document.createElement("link")'))
@@ -99,14 +100,15 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useMeta(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))]
+            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
+            ['style', [{ children: `\`${globalStyles}\`` }]]
           ]) + ')',
           '</script>',
           '<template>',
           templateContent,
           '</template>',
-          '<style>',
-          ...styleContent,
+          '<style scoped>',
+          styleContent.replace(globalStyles, ''),
           '</style>'
         ].filter(Boolean).join('\n').trim()
 
