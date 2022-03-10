@@ -105,7 +105,7 @@ export const RenderPlugin = () => {
           '<template>',
           templateContent,
           '</template>',
-          '<style scoped>',
+          '<style>',
           ...styleContent,
           '</style>'
         ].filter(Boolean).join('\n').trim()
