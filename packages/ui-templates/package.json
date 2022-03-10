@@ -11,7 +11,7 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist/templates",
+    "dist/templates/*",
     "dist/index.*"
   ],
   "scripts": {
