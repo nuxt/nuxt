@@ -95,7 +95,7 @@ export const RenderPlugin = () => {
           default: JSON.stringify(value)
         }]))
         const vueCode = [
-          '<script setup lang="ts">',
+          '<script setup>',
           title && 'import { useMeta } from \'#app\'',
           `const props = defineProps(${props})`,
           title && 'useMeta(' + genObjectFromRawEntries([
