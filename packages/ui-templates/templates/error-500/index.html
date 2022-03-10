@@ -17,22 +17,23 @@
       dark:text-sky-surface
     ">
   <div class="min-h-screen md:flex">
-    <div class="flex items-center justify-center w-full md:w-1/2">
-      <div class="max-w-sm m-8">
-        <div class="text-5xl font-bold dark:text-white md:text-15xl">
+    <div class="flex items-center justify-center w-full max-w-full">
+      <div class="max-w-full lg:max-w-10xl m-8 p-4">
+        <div class="md:max-w-sm text-5xl font-bold dark:text-white md:text-15xl">
           {{ messages.statusCode }}
         </div>
         <div class="w-16 h-1 my-3 bg-primary md:my-6"></div>
-        <p class="
-              mb-8
-              text-2xl
-              font-light
-              leading-normal
-              dark:text-cloud-lighter
-              md:text-3xl
-            ">
+        <div class="
+          mb-8
+          text-2xl
+          font-light
+          leading-normal
+          dark:text-cloud-lighter
+          md:text-3xl
+          max-w-sm
+        ">
           {{ messages.description }}
-        </p>
+        </div>
       </div>
     </div>
     <div class="
