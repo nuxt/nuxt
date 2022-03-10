@@ -78,7 +78,7 @@ export const RenderPlugin = () => {
           .replace(/(?<=<|<\/)body/g, 'div')
           .replace(/messages\./g, '')
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
-          .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>$3</NuxtLink>')
+          .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
           .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
