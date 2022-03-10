@@ -4,7 +4,7 @@
   "repository": "nuxt/ui",
   "license": "CC-BY-ND-4.0",
   "exports": {
-    "./templates/*": "./dist/templates/*.mjs",
+    "./templates/*": "./dist/templates/*",
     ".": "./dist/index.mjs",
     "./*": "./dist/*"
   },
@@ -31,6 +31,7 @@
     "globby": "^13.1.1",
     "html-minifier": "^4.0.0",
     "jiti": "^1.13.0",
+    "knitwork": "^0.1.1",
     "lodash.template": "^4.5.0",
     "scule": "^0.2.1",
     "upath": "^2.0.1",
