@@ -15,9 +15,9 @@
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.2.0",
     "@netlify/functions": "^1.0.0",
-    "@nuxt/design": "0.1.5",
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/kit": "3.0.0",
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest",
     "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-inject": "^4.0.4",

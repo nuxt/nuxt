@@ -37,7 +37,10 @@ export const appPreset = defineUnimportPreset({
     'defineNuxtRouteMiddleware',
     'navigateTo',
     'abortNavigation',
-    'addRouteMiddleware'
+    'addRouteMiddleware',
+    'throwError',
+    'clearError',
+    'useError'
   ]
 })
 

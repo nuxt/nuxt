@@ -2,7 +2,7 @@ import { Worker } from 'worker_threads'
 
 import { IncomingMessage, ServerResponse } from 'http'
 import { existsSync, promises as fsp } from 'fs'
-import { loading as loadingTemplate } from '@nuxt/design'
+import { loading as loadingTemplate } from '@nuxt/ui-templates'
 import chokidar, { FSWatcher } from 'chokidar'
 import debounce from 'p-debounce'
 import { promisifyHandle, createApp, Middleware, useBase } from 'h3'

@@ -1,6 +1,6 @@
 import type { RequestListener } from 'http'
 import type { ListenOptions } from 'listhen'
-import { loading } from '@nuxt/design'
+import { loading } from '@nuxt/ui-templates'
 
 export function createServer (defaultApp?) {
   const listener = createDynamicFunction(defaultApp || createLoadingHandler('Loading...'))

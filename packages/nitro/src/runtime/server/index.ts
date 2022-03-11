@@ -1,4 +1,4 @@
-import { createApp, useBase } from 'h3'
+import { createApp, lazyHandle, useBase } from 'h3'
 import { createFetch, Headers } from 'ohmyfetch'
 import destr from 'destr'
 import { createCall, createFetch as createLocalFetch } from 'unenv/runtime/fetch/index'
@@ -13,9 +13,12 @@ const app = createApp({
   onError: handleError
 })
 
+const renderMiddleware = lazyHandle(() => import('../app/render').then(e => e.renderMiddleware))
+
+app.use('/_nitro', renderMiddleware)
 app.use(timingMiddleware)
 app.use(serverMiddleware)
-app.use(() => import('../app/render').then(e => e.renderMiddleware), { lazy: true })
+app.use(renderMiddleware)
 
 export const stack = app.stack
 export const handle = useBase(baseURL(), app)

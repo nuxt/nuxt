@@ -17,9 +17,9 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/design": "0.1.5",
     "@nuxt/kit": "3.0.0",
     "@nuxt/schema": "3.0.0",
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest",
     "@types/clear": "^0",
     "@types/mri": "^1.1.1",
     "@types/rimraf": "^3",

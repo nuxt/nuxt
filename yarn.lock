@@ -2892,13 +2892,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/design@npm:0.1.5, @nuxt/design@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "@nuxt/design@npm:0.1.5"
-  checksum: 1e75ba0c7e9519754d185133e1bc97d2056201b2c6ad99a9196ffb94e787a4ee9fa2a64b1dd868febece5b3370c8a50388033b65455edc939fe67bcc1f4bbe8b
-  languageName: node
-  linkType: hard
-
 "@nuxt/devalue@npm:^1.2.5":
   version: 1.2.5
   resolution: "@nuxt/devalue@npm:1.2.5"
@@ -3035,10 +3028,10 @@ __metadata:
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
-    "@nuxt/design": 0.1.5
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest"
     "@rollup/plugin-alias": ^3.1.9
     "@rollup/plugin-commonjs": ^21.0.2
     "@rollup/plugin-inject": ^4.0.4
@@ -3291,6 +3284,13 @@ __metadata:
     "@types/webpack-hot-middleware": 2.25.4
     sass-loader: 10.1.1
   checksum: 4195d528fdd93d23879ff7009bc30e4c5bde4851f204c679a761c958c3c46af41c85183f321513c6223f9d8fe24a26459c45e2dc271f7f88a54a015e61465604
+  languageName: node
+  linkType: hard
+
+"@nuxt/ui-templates@npm:@nuxt/ui-templates-edge@latest":
+  version: 0.0.0-27449202.0cb54cc
+  resolution: "@nuxt/ui-templates-edge@npm:0.0.0-27449202.0cb54cc"
+  checksum: bbc709d35bf1c586bc604835caf8b6000e4cab22ad56d71d231a7d4e987ab8dd33a9adbba11af684f70826007ad3094480f38524160bf7c6f1a9dc1fcb375f79
   languageName: node
   linkType: hard
 
@@ -10570,6 +10570,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-with-errors@workspace:examples/with-errors":
+  version: 0.0.0-use.local
+  resolution: "example-with-errors@workspace:examples/with-errors"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-with-layouts@workspace:examples/with-layouts":
   version: 0.0.0-use.local
   resolution: "example-with-layouts@workspace:examples/with-layouts"
@@ -15369,9 +15378,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
-    "@nuxt/design": 0.1.5
     "@nuxt/kit": 3.0.0
     "@nuxt/schema": 3.0.0
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest"
     "@types/clear": ^0
     "@types/mri": ^1.1.1
     "@types/rimraf": ^3
@@ -15476,10 +15485,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt3@workspace:packages/nuxt3"
   dependencies:
-    "@nuxt/design": ^0.1.5
     "@nuxt/kit": 3.0.0
     "@nuxt/nitro": 3.0.0
     "@nuxt/schema": 3.0.0
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest"
     "@nuxt/vite-builder": 3.0.0
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0

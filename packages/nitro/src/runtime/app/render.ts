@@ -1,6 +1,7 @@
 import type { ServerResponse } from 'http'
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
+import { useQuery } from 'h3'
 import { privateConfig, publicConfig } from './config'
 import { buildAssetsURL } from './paths'
 // @ts-ignore
@@ -70,7 +71,9 @@ function renderToString (ssrContext) {
 }
 
 export async function renderMiddleware (req, res: ServerResponse) {
-  let url = req.url
+  // Whether we're rendering an error page
+  const ssrError = req.url.startsWith('/__error') ? useQuery(req) : null
+  let url = ssrError?.url || req.url
 
   // payload.json request detection
   let isPayloadReq = false
@@ -86,15 +89,23 @@ export async function renderMiddleware (req, res: ServerResponse) {
     res,
     runtimeConfig: { private: privateConfig, public: publicConfig },
     noSSR: req.spa || req.headers['x-nuxt-no-ssr'],
-    ...(req.context || {})
+    ...(req.context || {}),
+    error: ssrError
   }
 
   // Render app
-  const rendered = await renderToString(ssrContext)
+  const rendered = await renderToString(ssrContext).catch((e) => {
+    if (!ssrError) { throw e }
+  })
+
+  // If we error on rendering error page, we bail out and directly return to the error handler
+  if (!rendered) { return }
 
   // Handle errors
-  if (ssrContext.error) {
-    throw ssrContext.error
+  const error = ssrContext.error /* nuxt 3 */ || ssrContext.nuxt?.error /* nuxt 2 */
+  if (error && !ssrError) {
+    // trigger a re-render by onError handler
+    throw error
   }
 
   if (ssrContext.redirected || res.writableEnded) {
@@ -107,7 +118,6 @@ export async function renderMiddleware (req, res: ServerResponse) {
 
   // TODO: nuxt3 should not reuse `nuxt` property for different purpose!
   const payload = ssrContext.payload /* nuxt 3 */ || ssrContext.nuxt /* nuxt 2 */
-
   if (process.env.NUXT_FULL_STATIC) {
     payload.staticAssetsBase = STATIC_ASSETS_BASE
   }
@@ -121,8 +131,7 @@ export async function renderMiddleware (req, res: ServerResponse) {
     res.setHeader('Content-Type', 'text/html;charset=UTF-8')
   }
 
-  const error = ssrContext.nuxt && ssrContext.nuxt.error
-  res.statusCode = error ? error.statusCode : 200
+  res.statusCode = res.statusCode || 200
   res.end(data, 'utf-8')
 }
 

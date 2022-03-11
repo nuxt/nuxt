@@ -4,7 +4,7 @@ import type { Preset } from 'unimport'
 import autoImports from '../../nuxt3/src/auto-imports/module'
 import { vuePreset, commonPresets, appPreset } from '../../nuxt3/src/auto-imports/presets'
 
-const UnsupportedImports = new Set(['useAsyncData', 'useFetch'])
+const UnsupportedImports = new Set(['useAsyncData', 'useFetch', 'useError', 'throwError', 'clearError'])
 const CapiHelpers = new Set(Object.keys(CompositionApi))
 
 export function setupAutoImports () {

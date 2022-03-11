@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
-import type { App, VNode } from 'vue'
+import type { App, onErrorCaptured, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
 import type { RuntimeConfig } from '@nuxt/schema'
 import { legacyPlugin, LegacyContext } from './compat/legacy-app'
@@ -21,10 +21,13 @@ export interface RuntimeNuxtHooks {
   'app:mounted': (app: App<Element>) => HookResult
   'app:rendered': () => HookResult
   'app:suspense:resolve': (Component?: VNode) => HookResult
+  'app:error': (err: any) => HookResult
+  'app:error:cleared': (options: { redirect?: string }) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'meta:register': (metaRenderers: Array<(nuxt: NuxtApp) => NuxtMeta | Promise<NuxtMeta>>) => HookResult
   'vue:setup': () => void
+  'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
 
 interface _NuxtApp {

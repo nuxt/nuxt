@@ -33,6 +33,11 @@ export const rootComponentTemplate = {
   filename: 'root-component.mjs',
   getContents: (ctx: TemplateContext) => genExport(ctx.app.rootComponent, ['default'])
 }
+// TODO: Use an alias
+export const errorComponentTemplate = {
+  filename: 'error-component.mjs',
+  getContents: (ctx: TemplateContext) => genExport(ctx.app.errorComponent, ['default'])
+}
 
 export const cssTemplate = {
   filename: 'css.mjs',
