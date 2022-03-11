@@ -15,12 +15,12 @@ const getClientManifest = cachedImport(() => import('#build/dist/server/client.m
 const getSSRApp = !process.env.NUXT_NO_SSR && cachedImport(() => import('#build/dist/server/server.mjs'))
 
 const getSSRRenderer = cachedResult(async () => {
-  // Load client manifest
-  const clientManifest = await getClientManifest()
-  if (!clientManifest) { throw new Error('client.manifest is not available') }
   // Load server bundle
   const createSSRApp = await getSSRApp()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
+  // Load client manifest
+  const clientManifest = await getClientManifest()
+  if (!clientManifest) { throw new Error('client.manifest is not available') }
   // Create renderer
   const { renderToString } = await import('#nitro-renderer')
   return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath: buildAssetsURL() }).renderToString

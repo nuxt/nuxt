@@ -20,6 +20,8 @@ export interface ViteOptions extends InlineConfig {
 export interface ViteBuildContext {
   nuxt: Nuxt
   config: ViteOptions
+  clientServer?: vite.ViteDevServer
+  ssrServer?: vite.ViteDevServer
 }
 
 export async function bundle (nuxt: Nuxt) {

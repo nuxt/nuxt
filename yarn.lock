@@ -3387,6 +3387,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.4.0
     vite: ^2.8.6
+    vite-node: ^0.6.0
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -13386,7 +13387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kolorist@npm:^1.5.0":
+"kolorist@npm:^1.5.0, kolorist@npm:^1.5.1":
   version: 1.5.1
   resolution: "kolorist@npm:1.5.1"
   checksum: c113be08834fc03a24699612141c79879fceba9ff9765ad500507fb594ee4fa3465a3453ea90bbc9b0dd82f7ba5dbd79814da28e9ebaf8da27266a0088ba2714
@@ -21677,6 +21678,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"vite-node@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "vite-node@npm:0.6.0"
+  dependencies:
+    kolorist: ^1.5.1
+    minimist: ^1.2.5
+    mlly: ^0.4.3
+    pathe: ^0.2.0
+    vite: ^2.8.4
+  bin:
+    vite-node: vite-node.mjs
+  checksum: 0440416b788c083af43a128242a1e5bb28ffde00867707a4251902aae223cb730c8ec6d4fc1901a00aef551d3c8f5676f4705a361584c0f5876eae952389b4c2
+  languageName: node
+  linkType: hard
+
 "vite-plugin-vue2@npm:^1.9.3":
   version: 1.9.3
   resolution: "vite-plugin-vue2@npm:1.9.3"
@@ -21708,9 +21724,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.7.10, vite@npm:^2.8.2, vite@npm:^2.8.6":
-  version: 2.8.6
-  resolution: "vite@npm:2.8.6"
+"vite@npm:^2.8.4":
+  version: 2.8.4
+  resolution: "vite@npm:2.8.4"
   dependencies:
     esbuild: ^0.14.14
     fsevents: ~2.3.2
@@ -21733,7 +21749,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 4b02d133892c98362c10214b7ad518d74b59745889197a2ba0b63260ed083fcef75a447e8fb58dbd2af8747386274b36017983d93031254df6ead38701950dcc
+  checksum: 0531ea17d354c35026c87e732d28c777492cc5165c4abdaa507c4894535ecbbfcf447fa3f270bbb160cd7cba8ad319cc86a221be18b2ccd40d8be139f9d7381d
   languageName: node
   linkType: hard
 
