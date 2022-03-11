@@ -1,14 +1,12 @@
-import type { AutoImport } from '../../schema/src/types/imports'
+import { Import } from 'unimport'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 
-export function addAutoImport (_autoImports: AutoImport | AutoImport[]) {
+export function addAutoImport (imports: Import | Import[]) {
   assertNuxtCompatibility({ bridge: true })
 
-  useNuxt().hook('autoImports:extend', (autoImports: AutoImport[]) => {
-    for (const composable of (Array.isArray(_autoImports) ? _autoImports : [_autoImports])) {
-      autoImports.push(composable)
-    }
+  useNuxt().hook('autoImports:extend', (autoImports) => {
+    autoImports.push(...(Array.isArray(imports) ? imports : [imports]))
   })
 }
 

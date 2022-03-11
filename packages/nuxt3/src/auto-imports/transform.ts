@@ -1,37 +1,9 @@
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
-import { toImports } from './utils'
-import { AutoImportContext } from './context'
+import { Unimport } from 'unimport'
+import { AutoImportsOptions } from '@nuxt/schema'
 
-const excludeRE = [
-  // imported from other module
-  /\bimport\s*([\s\S]+?)\s*from\b/g,
-  // defined as function
-  /\bfunction\s*([\w_$]+?)\s*\(/g,
-  // defined as local variable
-  /\b(?:const|let|var)\s+?(\[[\s\S]*?\]|\{[\s\S]*?\}|[\s\S]+?)\s*?[=;\n]/g
-]
-
-const importAsRE = /^.*\sas\s+/
-const separatorRE = /[,[\]{}\n]/g
-const multilineCommentsRE = /\/\*\s(.|[\r\n])*?\*\//gm
-const singlelineCommentsRE = /\/\/\s.*$/gm
-const templateLiteralRE = /\$\{(.*)\}/g
-const quotesRE = [
-  /(["'])((?:\\\1|(?!\1)|.|\r)*?)\1/gm,
-  /([`])((?:\\\1|(?!\1)|.|\n|\r)*?)\1/gm
-]
-
-function stripCommentsAndStrings (code: string) {
-  return code
-    .replace(multilineCommentsRE, '')
-    .replace(singlelineCommentsRE, '')
-    .replace(templateLiteralRE, '` + $1 + `')
-    .replace(quotesRE[0], '""')
-    .replace(quotesRE[1], '``')
-}
-
-export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
+export const TransformPlugin = createUnplugin(({ ctx, options }: {ctx: Unimport, options: Partial<AutoImportsOptions> }) => {
   return {
     name: 'nuxt:auto-imports-transform',
     enforce: 'post',
@@ -39,8 +11,10 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
       const { pathname, search } = parseURL(id)
       const { type, macro } = parseQuery(search)
 
+      const exclude = options.transform?.exclude || [/[\\/]node_modules[\\/]/]
+
       // Exclude node_modules by default
-      if (ctx.transform.exclude.some(pattern => id.match(pattern))) {
+      if (exclude.some(pattern => id.match(pattern))) {
         return false
       }
 
@@ -57,35 +31,15 @@ export const TransformPlugin = createUnplugin((ctx: AutoImportContext) => {
         return true
       }
     },
-    transform (code) {
-      // strip comments so we don't match on them
-      const stripped = stripCommentsAndStrings(code)
-
-      // find all possible injection
-      const matched = new Set(Array.from(stripped.matchAll(ctx.matchRE)).map(i => i[1]))
-
-      // remove those already defined
-      for (const regex of excludeRE) {
-        Array.from(stripped.matchAll(regex))
-          .flatMap(i => [
-            ...(i[1]?.split(separatorRE) || []),
-            ...(i[2]?.split(separatorRE) || [])
-          ])
-          .map(i => i.replace(importAsRE, '').trim())
-          .forEach(i => matched.delete(i))
+    async transform (_code, id) {
+      const { code, s } = await ctx.injectImports(_code)
+      if (code === _code) {
+        return
       }
-
-      if (!matched.size) {
-        return null
+      return {
+        code,
+        map: s.generateMap({ source: id, includeContent: true })
       }
-
-      // For webpack4/bridge support
-      const isCJSContext = stripped.includes('require(')
-
-      const matchedImports = Array.from(matched).map(name => ctx.map.get(name)).filter(Boolean)
-      const imports = toImports(matchedImports, isCJSContext)
-
-      return imports + code
     }
   }
 })

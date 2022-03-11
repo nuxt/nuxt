@@ -1,35 +1,32 @@
 import { readFileSync } from 'fs'
-import type { AutoImport } from '@nuxt/schema'
 import { expect, describe, it } from 'vitest'
 import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'
 import * as VueFunctions from 'vue'
-import { AutoImportContext, updateAutoImportContext } from '../src/auto-imports/context'
+import { createUnimport, Import } from 'unimport'
 import { TransformPlugin } from '../src/auto-imports/transform'
-import { Nuxt3AutoImports } from '../src/auto-imports/imports'
+import { defaultPresets } from '../src/auto-imports/presets'
 
 describe('auto-imports:transform', () => {
-  const autoImports: AutoImport[] = [
+  const imports: Import[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
     { name: 'computed', as: 'computed', from: 'bar' },
     { name: 'foo', as: 'foo', from: 'excluded' }
   ]
 
-  const ctx = {
-    autoImports,
-    map: new Map(),
-    transform: {
-      exclude: [/excluded/]
-    }
-  } as AutoImportContext
-  updateAutoImportContext(ctx)
+  const ctx = createUnimport({
+    imports
+  })
 
-  const transformPlugin = TransformPlugin.raw(ctx, { framework: 'rollup' })
-  const transform = (code: string) => transformPlugin.transform.call({ error: null, warn: null }, code, '')
+  const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' })
+  const transform = async (source: string) => {
+    const { code } = await transformPlugin.transform.call({ error: null, warn: null }, source, '') || { code: null }
+    return code
+  }
 
   it('should correct inject', async () => {
-    expect(await transform('const a = ref(0)')).to.equal('import { ref } from "vue";const a = ref(0)')
-    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.include('import { computed } from "bar";')
+    expect(await transform('const a = ref(0)')).toMatchInlineSnapshot('"import { ref } from \'vue\';const a = ref(0)"')
+    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.toMatchInlineSnapshot('"import { computed } from \'bar\';import { computed as ref } from \\"foo\\"; const a = ref(0)"')
   })
 
   it('should ignore existing imported', async () => {
@@ -43,11 +40,14 @@ describe('auto-imports:transform', () => {
 
   it('should ignore comments', async () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
-    expect(result).to.equal('import { computed } from "bar";// import { computed } from "foo"\n;const a = computed(0)')
+    expect(result).toMatchInlineSnapshot(`
+      "import { computed } from 'bar';// import { computed } from \\"foo\\"
+      ;const a = computed(0)"
+    `)
   })
 
-  it('should exclude files from transform', () => {
-    expect(transformPlugin.transformInclude.call({ error: null, warn: null }, 'excluded')).to.equal(false)
+  it('should exclude files from transform', async () => {
+    expect(await transform('excluded')).toEqual(null)
   })
 })
 
@@ -64,7 +64,7 @@ describe('auto-imports:nuxt3', () => {
         continue
       }
       it(`should register ${name} globally`, () => {
-        expect(Nuxt3AutoImports.find(a => a.from === '#app').names).to.include(name)
+        expect(defaultPresets.find(a => a.from === '#app').imports).to.include(name)
       })
     }
   } catch (e) {
@@ -175,7 +175,7 @@ describe('auto-imports:vue', () => {
       continue
     }
     it(`should register ${name} globally`, () => {
-      expect(Nuxt3AutoImports.find(a => a.from === 'vue').names).toContain(name)
+      expect(defaultPresets.find(a => a.from === 'vue').imports).toContain(name)
     })
   }
 })

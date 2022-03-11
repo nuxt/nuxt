@@ -4,7 +4,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { ModuleContainer } from './module'
 import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
-import type { AutoImport, AutoImportSource } from './imports'
+import type { Preset as ImportPreset, Import } from 'unimport'
 import type { NuxtConfig, NuxtOptions } from './config'
 import type { Component, ComponentsDir, ScanDir, ComponentsOptions } from './components'
 import { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
@@ -52,6 +52,13 @@ export type NuxtLayout = {
   file: string
 }
 
+export interface ImportPresetWithDeperection extends ImportPreset {
+  /**
+   * @deprecated renamed to `imports`
+   */
+  names?: string[]
+}
+
 export interface NuxtHooks {
   // Kit
   'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
@@ -66,8 +73,8 @@ export interface NuxtHooks {
   'pages:layouts:extend': (layouts: NuxtLayout[]) => HookResult
 
   // Auto imports
-  'autoImports:sources': (autoImportSources: AutoImportSource[]) => HookResult
-  'autoImports:extend': (autoImports: AutoImport[]) => HookResult
+  'autoImports:sources': (presets: ImportPresetWithDeperection[]) => HookResult
+  'autoImports:extend': (imports: Import[]) => HookResult
   'autoImports:dirs': (dirs: string[]) => HookResult
 
   // Components
