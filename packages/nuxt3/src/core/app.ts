@@ -71,6 +71,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve plugins
+  app.plugins = []
   for (const config of [...nuxt.options._extends.map(layer => layer.config), nuxt.options]) {
     app.plugins.push(...[
       ...config.plugins ?? [],
