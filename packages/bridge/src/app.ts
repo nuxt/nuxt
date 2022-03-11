@@ -27,6 +27,9 @@ export function setupAppBridge (_options: any) {
   nuxt.options.alias.vue2 = vue2ESM
   nuxt.options.build.transpile.push('vue')
 
+  // Transpile libs with modern syntax
+  nuxt.options.build.transpile.push('h3')
+
   extendWebpackConfig((config) => {
     (config.resolve.alias as any).vue2 = vue2CJS
   }, { client: false })

@@ -45,7 +45,7 @@
     "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
-    "h3": "^0.3.9",
+    "h3": "^0.4.0",
     "hash-sum": "^2.0.0",
     "hookable": "^5.1.1",
     "knitwork": "^0.1.1",
@@ -62,7 +62,7 @@
     "unplugin": "^0.4.0",
     "untyped": "^0.4.2",
     "vue": "^3.2.31",
-    "vue-router": "^4.0.13"
+    "vue-router": "^4.0.14"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
