@@ -553,7 +553,7 @@ export default {
       '~': get('srcDir'),
       '@': get('srcDir'),
       [get('dir.assets')]: join(get('srcDir'), get('dir.assets')),
-      [get('dir.static')]: join(get('srcDir', get('dir.static'))),
+      [get('dir.public')]: join(get('srcDir'), get('dir.public')),
       ...val
     })
   },
