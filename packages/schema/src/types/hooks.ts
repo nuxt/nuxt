@@ -143,6 +143,8 @@ export interface NuxtHooks {
 
   // @nuxt/webpack
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
+  'webpack:devMiddleware': (middleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => any) => any) => HookResult
+  'webpack:hotMiddleware': (middleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => any) => any) => HookResult
   'build:compile': (options: { name: string, compiler: Compiler }) => HookResult
   'build:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
   'build:resources': (mfs?: Compiler['outputFileSystem']) => HookResult
