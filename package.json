@@ -37,7 +37,7 @@
     "@iconify-json/carbon": "^1.1.1",
     "@nuxt/ui": "^0.0.0-alpha.5",
     "@nuxtjs/eslint-config": "^8.0.0",
-    "@nuxtjs/eslint-config-typescript": "^8.0.0",
+    "@nuxtjs/eslint-config-typescript": "^9.0.0",
     "@types/jsdom": "^16",
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
