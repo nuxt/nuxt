@@ -41,9 +41,9 @@
     "@types/jsdom": "^16",
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
-    "@unocss/reset": "^0.27.6",
+    "@unocss/reset": "^0.28.0",
     "esbuild": "^0.14.25",
-    "eslint": "^8.10.0",
+    "eslint": "^8.11.0",
     "eslint-plugin-jsdoc": "^37.9.7",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
@@ -58,7 +58,7 @@
     "unbuild": "^0.7.0",
     "vitest": "^0.6.0",
     "vue-router": "^4.0.14",
-    "vue-tsc": "^0.32.1"
+    "vue-tsc": "^0.33.1"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
