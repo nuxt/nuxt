@@ -34,7 +34,7 @@
     "unbuild": "^0.7.0"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.1",
+    "@iconify-json/carbon": "^1.1.2",
     "@nuxt/ui": "^0.0.0-alpha.5",
     "@nuxtjs/eslint-config": "^8.0.0",
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
@@ -42,7 +42,7 @@
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.28.0",
-    "esbuild": "^0.14.25",
+    "esbuild": "^0.14.26",
     "eslint": "^8.11.0",
     "eslint-plugin-jsdoc": "^37.9.7",
     "execa": "^6.1.0",
@@ -56,7 +56,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.6.2",
     "unbuild": "^0.7.0",
-    "vitest": "^0.6.0",
+    "vitest": "^0.6.1",
     "vue-router": "^4.0.14",
     "vue-tsc": "^0.33.1"
   },
