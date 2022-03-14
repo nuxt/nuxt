@@ -74,7 +74,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts
   app.layouts = {}
   for (const config of [nuxt.options, ...nuxt.options._extends.map(layer => layer.config)]) {
-    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir.layouts}/*{${config.extensions.join(',')}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file)
       app.layouts[name] = app.layouts[name] || { name, file }
