@@ -8,7 +8,8 @@ body:
         Please carefully read the contribution docs before creating a bug report
         👉 https://v3.nuxtjs.org/community/reporting-bugs
 
-        Please use the code sandbox template below to create a minimal reproduction
+        Please use a template below to create a minimal reproduction
+        👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
         👉 https://codesandbox.io/s/github/nuxt/starter/tree/v3-codesandbox
   - type: textarea
     id: bug-env
@@ -46,4 +47,3 @@ body:
       description: |
         Optional if provided reproduction. Please try not to insert an image but copy paste the log text.
       render: shell
-
