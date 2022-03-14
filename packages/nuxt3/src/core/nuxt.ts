@@ -90,6 +90,12 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/client-only')
   })
 
+  // Add <NuxtLink>
+  addComponent({
+    name: 'NuxtLink',
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-link')
+  })
+
   for (const m of modulesToInstall) {
     if (Array.isArray(m)) {
       await installModule(m[0], m[1])

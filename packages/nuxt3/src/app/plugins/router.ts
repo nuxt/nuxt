@@ -1,16 +1,10 @@
-import { DefineComponent, reactive, h } from 'vue'
+import { reactive, h } from 'vue'
 import { parseURL, parseQuery } from 'ufo'
 import { NuxtApp } from '@nuxt/schema'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
 import { clearError, throwError } from '#app'
-
-declare module 'vue' {
-  export interface GlobalComponents {
-    NuxtLink: DefineComponent<{ to: String }>
-  }
-}
 
 interface Route {
     /** Percentage encoded pathname section of the URL. */
@@ -34,7 +28,11 @@ interface Route {
     meta: Record<string, any>;
 }
 
-function getRouteFromPath (fullPath: string) {
+function getRouteFromPath (fullPath: string | Record<string, unknown>) {
+  if (typeof fullPath === 'object') {
+    throw new TypeError('[nuxt] Route location object cannot be resolved when vue-router is disabled (no pages).')
+  }
+
   const url = parseURL(fullPath.toString())
   return {
     path: url.pathname,
@@ -46,7 +44,8 @@ function getRouteFromPath (fullPath: string) {
     name: undefined,
     matched: [],
     redirectedFrom: undefined,
-    meta: {}
+    meta: {},
+    href: fullPath
   }
 }
 
@@ -80,7 +79,7 @@ interface Router {
   afterEach: (guard: RouterHooks['navigate:after']) => () => void
   onError: (handler: RouterHooks['error']) => () => void
   // Routes
-  resolve: (url: string) => Route
+  resolve: (url: string | Record<string, unknown>) => Route
   addRoute: (parentName: string, route: Route) => void
   getRoutes: () => any[]
   hasRoute: (name: string) => boolean
@@ -174,6 +173,12 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     }
   }
 
+  nuxtApp.vueApp.component('RouterLink', {
+    functional: true,
+    props: { to: String },
+    setup: (props, { slots }) => () => h('a', { href: props.to, onClick: (e) => { e.preventDefault(); router.push(props.to) } }, slots)
+  })
+
   if (process.client) {
     window.addEventListener('popstate', (event) => {
       const location = (event.target as Window).location
@@ -212,12 +217,6 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
 
   router.afterEach(() => {
     delete nuxtApp._processingMiddleware
-  })
-
-  nuxtApp.vueApp.component('NuxtLink', {
-    functional: true,
-    props: { to: String },
-    setup: (props, { slots }) => () => h('a', { href: props.to, onClick: (e) => { e.preventDefault(); router.push(props.to) } }, slots)
   })
 
   if (process.server) {

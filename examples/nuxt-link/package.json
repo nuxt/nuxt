@@ -1,0 +1,13 @@
+{
+  "name": "example-nuxt-link",
+  "private": true,
+  "scripts": {
+    "build": "nuxi build",
+    "dev": "nuxi dev",
+    "start": "nuxi preview"
+  },
+  "devDependencies": {
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
+    "nuxt3": "latest"
+  }
+}

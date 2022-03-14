@@ -3,7 +3,6 @@ import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  RouterLink,
   NavigationGuard
 } from 'vue-router'
 import { createError } from 'h3'
@@ -17,7 +16,6 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 declare module 'vue' {
   export interface GlobalComponents {
     NuxtPage: typeof NuxtPage
-    NuxtLink: typeof RouterLink
     /** @deprecated */
     NuxtNestedPage: typeof NuxtPage
     /** @deprecated */
@@ -27,7 +25,6 @@ declare module 'vue' {
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('NuxtPage', NuxtPage)
-  nuxtApp.vueApp.component('NuxtLink', RouterLink)
   // TODO: remove before release - present for backwards compatibility & intentionally undocumented
   nuxtApp.vueApp.component('NuxtNestedPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtChild', NuxtPage)

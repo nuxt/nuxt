@@ -2,6 +2,8 @@
 
 export * from './nuxt'
 export * from './composables'
+export * from './components'
+
 // eslint-disable-next-line import/no-restricted-paths
 export type { PageMeta } from '../pages/runtime'
 // eslint-disable-next-line import/no-restricted-paths
