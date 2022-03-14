@@ -131,7 +131,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const viteServer = await vite.createServer(serverConfig)
   ctx.ssrServer = viteServer
 
-  await ctx.nuxt.callHook('vite:serverCreated', viteServer)
+  await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
 
   // Close server on exit
   ctx.nuxt.hook('close', () => viteServer.close())
@@ -140,7 +140,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   await viteServer.pluginContainer.buildStart({})
 
   if (ctx.nuxt.options.experimental.viteNode) {
-    logger.info('Using experimental vite-node server...')
+    logger.info('Vite server using experimental `vite-node`...')
     await prepareDevServerEntry(ctx)
   } else {
     // Build and watch
