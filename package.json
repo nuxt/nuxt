@@ -44,7 +44,7 @@
     "@unocss/reset": "^0.28.0",
     "esbuild": "^0.14.26",
     "eslint": "^8.11.0",
-    "eslint-plugin-jsdoc": "^37.9.7",
+    "eslint-plugin-jsdoc": "^38.0.3",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",
