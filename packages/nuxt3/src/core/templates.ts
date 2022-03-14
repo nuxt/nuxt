@@ -1,6 +1,6 @@
 import { templateUtils } from '@nuxt/kit'
-import type { Nuxt, NuxtApp } from '@nuxt/schema'
-import { genArrayFromRaw, genDynamicImport, genExport, genImport, genString } from 'knitwork'
+import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
+import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString } from 'knitwork'
 
 import { isAbsolute, join, relative } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
@@ -151,6 +151,20 @@ export const schemaTemplate = {
         defaultDescrption: 'This value is only accessible from server-side.'
       }),
       '}'
+    ].join('\n')
+  }
+}
+
+// Add layouts template
+export const layoutTemplate: NuxtTemplate = {
+  filename: 'layouts.mjs',
+  getContents ({ app }) {
+    const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
+      return [name, `defineAsyncComponent({ suspensible: false, loader: ${genDynamicImport(file)} })`]
+    }))
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+          `export default ${layoutsObject}`
     ].join('\n')
   }
 }

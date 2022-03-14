@@ -79,6 +79,11 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')
   })
 
+  addComponent({
+    name: 'NuxtLayout',
+    filePath: resolve(nuxt.options.appDir, 'components/layout')
+  })
+
   // Add <ClientOnly>
   addComponent({
     name: 'ClientOnly',

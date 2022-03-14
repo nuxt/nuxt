@@ -70,7 +70,6 @@ export interface NuxtHooks {
   'builder:generateApp': () => HookResult
   'pages:extend': (pages: NuxtPage[]) => HookResult
   'pages:middleware:extend': (middleware: NuxtMiddleware[]) => HookResult
-  'pages:layouts:extend': (layouts: NuxtLayout[]) => HookResult
 
   // Auto imports
   'autoImports:sources': (presets: ImportPresetWithDeperection[]) => HookResult

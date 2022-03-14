@@ -1,8 +1,9 @@
 import { defineComponent, h, Suspense, Transition } from 'vue'
 import { RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
-import { generateRouteKey, RouterViewSlotProps, wrapIf, wrapInKeepAlive } from './utils'
+import { generateRouteKey, RouterViewSlotProps, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app'
+import { _wrapIf } from '#app/components/utils'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -18,7 +19,7 @@ export default defineComponent({
     return () => {
       return h(RouterView, {}, {
         default: (routeProps: RouterViewSlotProps) => routeProps.Component &&
-            wrapIf(Transition, routeProps.route.meta.pageTransition ?? defaultPageTransition,
+            _wrapIf(Transition, routeProps.route.meta.pageTransition ?? defaultPageTransition,
               wrapInKeepAlive(routeProps.route.meta.keepalive, h(Suspense, {
                 onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
                 onResolve: () => nuxtApp.callHook('page:finish', routeProps.Component)

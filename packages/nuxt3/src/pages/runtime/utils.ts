@@ -1,4 +1,4 @@
-import { Component, KeepAlive, h } from 'vue'
+import { KeepAlive, h } from 'vue'
 import { RouterView, RouteLocationMatched, RouteLocationNormalizedLoaded } from 'vue-router'
 
 type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
@@ -15,16 +15,6 @@ export const generateRouteKey = (override: string | ((route: RouteLocationNormal
   const matchedRoute = routeProps.route.matched.find(m => m.components.default === routeProps.Component.type)
   const source = override ?? matchedRoute?.meta.key ?? interpolatePath(routeProps.route, matchedRoute)
   return typeof source === 'function' ? source(routeProps.route) : source
-}
-
-const Fragment = {
-  setup (_props, { slots }) {
-    return () => slots.default()
-  }
-}
-
-export const wrapIf = (component: Component, props: any, slots: any) => {
-  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
 }
 
 export const wrapInKeepAlive = (props: any, children: any) => {
