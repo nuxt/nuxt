@@ -2,8 +2,12 @@
   "extends": [
     "@nuxtjs"
   ],
-  "ignorePaths": [
-    "**/bridge/**"
+  "packageRules": [
+    {
+      "matchPaths": ["**/bridge/**"],
+      "matchPackageNames": ["vue", "vue-router"],
+      "enabled": false
+    }
   ],
   "ignoreDeps": [
     "docus",
