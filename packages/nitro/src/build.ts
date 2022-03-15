@@ -93,7 +93,15 @@ export async function writeTypes (nitroContext: NitroContext) {
 }
 
 async function _build (nitroContext: NitroContext) {
-  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir)
+  const serverDirs = [
+    ...nitroContext._extends.map(layer => layer.serverDir),
+    nitroContext._nuxt.serverDir
+  ]
+
+  nitroContext.scannedMiddleware = (
+    await Promise.all(serverDirs.map(async dir => await scanMiddleware(dir)))
+  ).flat().sort((a, b) => b.route.localeCompare(a.route))
+
   await writeTypes(nitroContext)
 
   logger.start('Building server...')
@@ -172,15 +180,23 @@ function startRollupWatcher (nitroContext: NitroContext) {
 async function _watch (nitroContext: NitroContext) {
   let watcher = startRollupWatcher(nitroContext)
 
-  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir,
-    (middleware, event) => {
-      nitroContext.scannedMiddleware = middleware
-      if (['add', 'addDir'].includes(event)) {
-        watcher.close()
-        writeTypes(nitroContext).catch(console.error)
-        watcher = startRollupWatcher(nitroContext)
+  const serverDirs = [
+    ...nitroContext._extends.map(layer => layer.serverDir),
+    nitroContext._nuxt.serverDir
+  ]
+
+  nitroContext.scannedMiddleware = (
+    await Promise.all(serverDirs.map(async dir => await scanMiddleware(dir,
+      (middleware, event) => {
+        nitroContext.scannedMiddleware = middleware
+        if (['add', 'addDir'].includes(event)) {
+          watcher.close()
+          writeTypes(nitroContext).catch(console.error)
+          watcher = startRollupWatcher(nitroContext)
+        }
       }
-    }
-  )
+    )))
+  ).flat().sort((a, b) => b.route.localeCompare(a.route))
+
   await writeTypes(nitroContext)
 }

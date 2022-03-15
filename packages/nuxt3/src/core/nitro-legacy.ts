@@ -77,7 +77,15 @@ export function initNitro (nuxt: Nuxt) {
   })
 
   nuxt.hook('build:before', async () => {
-    nitroDevContext.scannedMiddleware = await scanMiddleware(nitroDevContext._nuxt.serverDir)
+    const serverDirs = [
+      ...nitroDevContext._extends.map(layer => layer.serverDir),
+      nitroDevContext._nuxt.serverDir
+    ]
+
+    nitroDevContext.scannedMiddleware = (
+      await Promise.all(serverDirs.map(async dir => await scanMiddleware(dir)))
+    ).flat().sort((a, b) => b.route.localeCompare(a.route))
+
     await writeTypes(nitroDevContext)
   })
 
