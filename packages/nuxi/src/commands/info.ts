@@ -42,9 +42,13 @@ export default defineNuxtCommand({
     // Check nuxt version
     const nuxtVersion = getDepVersion('nuxt') || getDepVersion('nuxt-edge') || getDepVersion('nuxt3') || '0.0.0'
     const isNuxt3 = nuxtVersion.startsWith('3')
-    const useVite = isNuxt3
-      ? nuxtConfig.vite !== false
-      : (nuxtConfig.buildModules?.find(m => m === 'nuxt-vite'))
+    const builder = isNuxt3
+      ? nuxtConfig.builder /* latest schema */ || (nuxtConfig.vite !== false ? 'vite' : 'webpack') /* previous schema */
+      : nuxtConfig.bridge?.vite
+        ? 'vite' /* bridge vite implementation */
+        : (nuxtConfig.buildModules?.includes('nuxt-vite')
+            ? 'vite' /* nuxt-vite */
+            : 'webpack')
 
     let packageManager = getPackageManager(rootDir)
     if (packageManager) {
@@ -58,7 +62,7 @@ export default defineNuxtCommand({
       NodeVersion: process.version,
       NuxtVersion: nuxtVersion,
       PackageManager: packageManager,
-      Bundler: useVite ? 'Vite' : 'Webpack',
+      Builder: builder,
       UserConfig: Object.keys(nuxtConfig).map(key => '`' + key + '`').join(', '),
       RuntimeModules: listModules(nuxtConfig.modules),
       BuildModules: listModules(nuxtConfig.buildModules)
