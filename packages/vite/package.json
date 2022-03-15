@@ -26,7 +26,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.4",
     "defu": "^5.0.1",
-    "esbuild": "^0.14.26",
+    "esbuild": "^0.14.27",
     "escape-string-regexp": "^5.0.0",
     "externality": "^0.2.1",
     "fs-extra": "^10.0.1",
@@ -42,7 +42,7 @@
     "rollup": "^2.70.1",
     "rollup-plugin-visualizer": "^5.6.0",
     "ufo": "^0.7.11",
-    "unplugin": "^0.4.0",
+    "unplugin": "^0.5.2",
     "vite": "^2.8.6",
     "vite-node": "^0.6.1"
   },

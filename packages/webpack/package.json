@@ -16,7 +16,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.17.5",
+    "@babel/core": "^7.17.7",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0",
     "autoprefixer": "^10.4.2",
@@ -42,7 +42,7 @@
     "style-resources-loader": "^1.5.0",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^0.7.11",
-    "unplugin": "^0.4.0",
+    "unplugin": "^0.5.2",
     "url-loader": "^4.1.1",
     "vue-loader": "^17.0.0",
     "vue-style-loader": "^4.1.3",

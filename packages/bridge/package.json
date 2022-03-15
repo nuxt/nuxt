@@ -56,9 +56,9 @@
     "scule": "^0.2.1",
     "semver": "^7.3.5",
     "ufo": "^0.7.11",
-    "unplugin": "^0.4.0",
+    "unplugin": "^0.5.2",
     "unplugin-vue2-script-setup": "^0.10.0",
-    "untyped": "^0.4.2",
+    "untyped": "^0.4.3",
     "vite": "^2.8.6",
     "vite-plugin-vue2": "^1.9.3",
     "vue-template-compiler": "^2.6.14"

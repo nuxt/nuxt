@@ -30,7 +30,7 @@
     "semver": "^7.3.5",
     "unctx": "^1.0.2",
     "unimport": "^0.1.0",
-    "untyped": "^0.4.2"
+    "untyped": "^0.4.3"
   },
   "devDependencies": {
     "@types/lodash.template": "^4",
