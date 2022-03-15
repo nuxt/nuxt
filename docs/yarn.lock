@@ -11150,10 +11150,10 @@ untyped@^0.2.5, untyped@^0.2.8, untyped@^0.2.9:
   resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.9.tgz#3e3df96a303dec3e2eda55fcbdc02e2ab468683d"
   integrity sha512-8d8V+q/y5CGzV+IYnoOCMjrK+NSNp1HKO8iPQ+bV4rBP8knPIme3+j/bpej8IuMnEMxOJZNptXNOXCx7w+VJxQ==
 
-untyped@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.3.0.tgz#854df4dec055cc6a0a2217aa2d20152277b6ada9"
-  integrity sha512-n4M5/T1wWlHFmohk0EhS+yM7W/h5dOtQldOV3MVEbZY1fTy5A47UL8+d8GLW1iwmaAwNrM5ERy3qe1k0T/Yc7A==
+untyped@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.4.2.tgz#302e53b1733ff383749342b06f38277af97516ad"
+  integrity sha512-akHdcDop+tvtwPQxrbDfGf6zfQUgMjJXA8hXYYxcnmH6NnuMQatiY9wYDZ+jkUCcWuctb70f/QBYmbMsJpl48g==
 
 upath@^1.1.1:
   version "1.2.0"
