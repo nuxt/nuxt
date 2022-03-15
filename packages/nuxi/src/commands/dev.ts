@@ -3,6 +3,7 @@ import chokidar from 'chokidar'
 import debounce from 'p-debounce'
 import type { Nuxt } from '@nuxt/schema'
 import consola from 'consola'
+import { withTrailingSlash } from 'ufo'
 import { createServer, createLoadingHandler } from '../utils/server'
 import { showBanner } from '../utils/banner'
 import { writeTypes } from '../utils/prepare'
@@ -46,12 +47,13 @@ export default defineNuxtCommand({
         if (currentNuxt) {
           await currentNuxt.close()
         }
-        const newNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
-        await clearDir(newNuxt.options.buildDir)
-        currentNuxt = newNuxt
+        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        await clearDir(currentNuxt.options.buildDir)
         await currentNuxt.ready()
-        writeTypes(currentNuxt).catch(console.error)
-        await buildNuxt(currentNuxt)
+        await Promise.all([
+          writeTypes(currentNuxt).catch(console.error),
+          buildNuxt(currentNuxt)
+        ])
         server.setApp(currentNuxt.server.app)
         if (isRestart && args.clear !== false) {
           showBanner()
@@ -67,12 +69,12 @@ export default defineNuxtCommand({
 
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
-    const dLoad = debounce(load, 250)
+    const dLoad = debounce(debounce.promise(load), 250)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (event, file) => {
       if (!currentNuxt) { return }
-      if (file.startsWith(currentNuxt.options.buildDir)) { return }
-      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore)$/)) {
+      if (file.startsWith(withTrailingSlash(currentNuxt.options.buildDir))) { return }
+      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
 

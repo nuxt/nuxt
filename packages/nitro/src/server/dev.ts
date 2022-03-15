@@ -128,7 +128,7 @@ export function createDevServer (nitroContext: NitroContext) {
   let watcher: FSWatcher
   function watch () {
     if (watcher) { return }
-    const dReload = debounce(() => reload().catch(console.warn), 200, { before: true })
+    const dReload = debounce(debounce.promise(() => reload().catch(console.warn)), 200, { before: true })
     watcher = chokidar.watch([
       resolve(nitroContext.output.serverDir, pattern),
       resolve(nitroContext._nuxt.buildDir, 'dist/server', pattern)

@@ -118,7 +118,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     consola.info(`Server built in ${time}ms`)
     await onBuild()
   }
-  const doBuild = pDebounce(_doBuild, 300)
+  const doBuild = pDebounce(pDebounce.promise(_doBuild), 300)
 
   // Initial build
   await _doBuild()

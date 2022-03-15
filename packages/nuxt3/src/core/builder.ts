@@ -1,11 +1,13 @@
 import chokidar from 'chokidar'
 import type { Nuxt } from '@nuxt/schema'
 import { isIgnored, tryImportModule } from '@nuxt/kit'
-import { createApp, generateApp } from './app'
+import debounce from 'p-debounce'
+import { createApp, generateApp as _generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
-  await generateApp(nuxt, app)
+  const generateApp = debounce(debounce.promise(() => _generateApp(nuxt, app)), 1)
+  await generateApp()
 
   if (nuxt.options.dev) {
     watch(nuxt)
@@ -17,10 +19,10 @@ export async function build (nuxt: Nuxt) {
         if (path.match(/error/i)) {
           app.errorComponent = null
         }
-        await generateApp(nuxt, app)
+        await generateApp()
       }
     })
-    nuxt.hook('builder:generateApp', () => generateApp(nuxt, app))
+    nuxt.hook('builder:generateApp', generateApp)
   }
 
   await nuxt.callHook('build:before', { nuxt }, nuxt.options.build)
@@ -45,7 +47,8 @@ function watch (nuxt: Nuxt) {
       'node_modules'
     ]
   })
-  const watchHook = (event, path) => nuxt.callHook('builder:watch', event, path)
+
+  const watchHook = debounce(debounce.promise((event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => nuxt.callHook('builder:watch', event, path)), 1)
   watcher.on('all', watchHook)
   nuxt.hook('close', () => watcher.close())
   return watcher
