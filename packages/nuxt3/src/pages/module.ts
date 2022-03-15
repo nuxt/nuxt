@@ -1,5 +1,5 @@
 import { existsSync } from 'fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath } from '@nuxt/kit'
 import { resolve } from 'pathe'
 import { genDynamicImport, genString, genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -72,6 +72,25 @@ export default defineNuxtModule({
         await nuxt.callHook('pages:extend', pages)
         const { routes, imports } = normalizeRoutes(pages)
         return [...imports, `export default ${routes}`].join('\n')
+      }
+    })
+
+    // Add router options template
+    addTemplate({
+      filename: 'router.options.mjs',
+      getContents: async () => {
+        // Check for router options
+        const routerOptionsFile = await findPath('~/app/router.options')
+        const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
+          .map(([key, value]) => [key, genString(value as string)]))
+        return [
+          routerOptionsFile ? genImport(routerOptionsFile, 'routerOptions') : '',
+          `const configRouterOptions = ${configRouterOptions}`,
+          'export default {',
+          '...configRouterOptions,',
+          routerOptionsFile ? '...routerOptions' : '',
+          '}'
+        ].join('\n')
       }
     })
 

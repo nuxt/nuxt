@@ -2,6 +2,21 @@ import { normalizeURL, withTrailingSlash } from 'ufo'
 
 export default {
   /**
+   * Additional options passed to vue-router
+   *
+   * Note: Only JSON serializable options should be passed by nuxt config.
+   *
+   * For more control, you can use `app/router.optionts.ts` file.
+   *
+   * @see [documentation](https://router.vuejs.org/api/#routeroptions)
+   * @type {import('vue-router').RouterOptions}
+   *
+   * @version 3
+   */
+  options: {},
+
+
+  /**
    * Configure the router mode.
    *
    * For server-side rendering it is not recommended to change it./**
