@@ -4944,10 +4944,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:0.28.2, @unocss/reset@npm:^0.28.1, @unocss/reset@npm:^0.28.2":
+"@unocss/reset@npm:0.28.2, @unocss/reset@npm:^0.28.1":
   version: 0.28.2
   resolution: "@unocss/reset@npm:0.28.2"
   checksum: 02ec692e45629515f438abb19da7da1c9b0843450717b25976f4a929e61d32ee2ec9e6f2ebbdb7a92e86bd488ab93cea83a9967f4e56177c25f7853453cd40fb
+  languageName: node
+  linkType: hard
+
+"@unocss/reset@npm:^0.28.3":
+  version: 0.28.3
+  resolution: "@unocss/reset@npm:0.28.3"
+  checksum: c433504a50571456bbf1ac62d5c585955560a60fa243820ec230f1d5cade79b7d38d18c70f9d4b3a3c8439d7dcfd43895c5ee59368072cf1c16961a113ba7612
   languageName: node
   linkType: hard
 
@@ -15385,7 +15392,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.28.2
+    "@unocss/reset": ^0.28.3
     esbuild: ^0.14.27
     eslint: ^8.11.0
     eslint-plugin-jsdoc: ^38.0.4
