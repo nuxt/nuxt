@@ -1,6 +1,6 @@
-import { defineUnimportPreset } from 'unimport'
+import { defineUnimportPreset, Preset } from 'unimport'
 
-export const commonPresets = [
+export const commonPresets: Preset[] = [
   // #meta
   defineUnimportPreset({
     from: '#meta',

@@ -20,6 +20,7 @@ export default defineBuildConfig({
   externals: [
     // Type imports
     'vue-meta',
+    'vue-router',
     'vue',
     'hookable',
     'webpack',
