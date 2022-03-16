@@ -1,7 +1,10 @@
 import { defineNuxtConfig } from 'nuxt3'
 
 export default defineNuxtConfig({
-  extends: './base',
+  extends: [
+    './ui',
+    './base'
+  ],
   publicRuntimeConfig: {
     theme: {
       primaryColor: 'user_primary'

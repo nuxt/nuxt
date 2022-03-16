@@ -71,9 +71,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     app.errorComponent = (await findPath(['~/error'])) || resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
   }
 
-  // Resolve layouts
+  // Resolve layouts/ from all config layers
   app.layouts = {}
-  for (const config of [nuxt.options, ...nuxt.options._extends.map(layer => layer.config)]) {
+  for (const config of nuxt.options._layers.map(layer => layer.config)) {
     const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file)
@@ -82,16 +82,19 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve plugins
-  app.plugins = []
-  for (const config of [...nuxt.options._extends.map(layer => layer.config), nuxt.options]) {
+  app.plugins = [
+    ...nuxt.options.plugins.map(normalizePlugin)
+  ]
+  for (const config of nuxt.options._layers.map(layer => layer.config)) {
     app.plugins.push(...[
-      ...config.plugins ?? [],
+      ...(config.plugins || []),
       ...await resolveFiles(config.srcDir, [
         'plugins/*.{ts,js,mjs,cjs,mts,cts}',
         'plugins/*/index.*{ts,js,mjs,cjs,mts,cts}'
       ])
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
+  app.plugins = uniqueBy(app.plugins, 'src')
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
@@ -99,4 +102,16 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
 function getNameFromPath (path: string) {
   return kebabCase(basename(path).replace(extname(path), '')).replace(/["']/g, '')
+}
+
+function uniqueBy (arr: any[], uniqueKey: string) {
+  const seen = new Set<string>()
+  const res = []
+  for (const i of arr) {
+    const key = i[uniqueKey]
+    if (seen.has(key)) { continue }
+    res.push(i)
+    seen.add(key)
+  }
+  return res
 }

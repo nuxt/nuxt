@@ -41,8 +41,12 @@ export default defineNuxtModule({
       nuxtCtx.set(nuxt)
     }
 
-    // Mock _extends
-    nuxt.options._extends = nuxt.options._extends || []
+    // Mock _layers
+    nuxt.options._layers = nuxt.options._layers || [{
+      config: nuxt.options,
+      cwd: nuxt.options.rootDir,
+      configFile: nuxt.options._nuxtConfigFile
+    }]
 
     if (opts.nitro) {
       await setupNitroBridge()

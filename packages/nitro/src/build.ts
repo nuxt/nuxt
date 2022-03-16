@@ -93,10 +93,7 @@ export async function writeTypes (nitroContext: NitroContext) {
 }
 
 async function _build (nitroContext: NitroContext) {
-  const serverDirs = [
-    ...nitroContext._extends.map(layer => layer.serverDir),
-    nitroContext._nuxt.serverDir
-  ]
+  const serverDirs = nitroContext._layers.map(layer => layer.serverDir)
 
   nitroContext.scannedMiddleware = (
     await Promise.all(serverDirs.map(async dir => await scanMiddleware(dir)))
@@ -181,7 +178,7 @@ async function _watch (nitroContext: NitroContext) {
   let watcher = startRollupWatcher(nitroContext)
 
   const serverDirs = [
-    ...nitroContext._extends.map(layer => layer.serverDir),
+    ...nitroContext._layers.map(layer => layer.serverDir),
     nitroContext._nuxt.serverDir
   ]
 

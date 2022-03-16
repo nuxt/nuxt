@@ -10,6 +10,7 @@ const bar = getBar()
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
     <BaseButton>Base Button</BaseButton>
     <FancyButton>Fancy Button</FancyButton>
+    <UIButton>UI Button</UIButton>
     <br>
     {{ foo }} {{ bar }}
     <br>

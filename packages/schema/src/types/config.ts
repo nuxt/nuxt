@@ -10,7 +10,7 @@ export interface NuxtConfig extends DeepPartial<ConfigSchema> {
 
 /** Normalized Nuxt options available as `nuxt.options.*` */
 export interface NuxtOptions extends ConfigSchema {
-  _extends: ResolvedConfig<NuxtConfig>[]
+  _layers: ResolvedConfig<NuxtConfig>[]
 }
 
 export interface PublicRuntimeConfig extends Record<string, any> { }

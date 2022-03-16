@@ -84,7 +84,7 @@ export interface NitroContext {
     runtimeDir: string
     hooks: Hookable<NitroHooks>
   },
-  _extends: Array<{
+  _layers: Array<{
     serverDir: string
   }>
 }
@@ -158,7 +158,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       runtimeDir,
       hooks: createHooks<NitroHooks>()
     },
-    _extends: nuxtOptions._extends.map(layer => ({
+    _layers: nuxtOptions._layers.map(layer => ({
       serverDir: resolve(layer.config.srcDir, (layer.config.dir as any)?.server || 'server')
     }))
   }
