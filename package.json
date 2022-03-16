@@ -30,6 +30,7 @@
     "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
+    "@nuxt/test-utils": "workspace:./packages/test-utils",
     "vite": "^2.8.6",
     "unbuild": "^0.7.0"
   },
