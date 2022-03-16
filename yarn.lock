@@ -3206,7 +3206,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.20.0
     unbuild: latest
-    vitest: ^0.6.1
+    vitest: ^0.6.3
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3339,7 +3339,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.5.2
     vite: ^2.8.6
-    vite-node: ^0.6.1
+    vite-node: ^0.6.3
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -15391,7 +15391,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.2
     unbuild: ^0.7.0
-    vitest: ^0.6.1
+    vitest: ^0.6.3
     vue-router: ^4.0.14
     vue-tsc: ^0.33.1
   languageName: unknown
@@ -21522,7 +21522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.6.1":
+"vite-node@npm:^0.6.3":
   version: 0.6.3
   resolution: "vite-node@npm:0.6.3"
   dependencies:
@@ -21628,7 +21628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.6.1":
+"vitest@npm:^0.6.3":
   version: 0.6.3
   resolution: "vitest@npm:0.6.3"
   dependencies:

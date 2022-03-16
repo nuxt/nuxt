@@ -19,10 +19,10 @@
     "play": "yarn run nuxi dev playground",
     "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "stub": "lerna run prepack -- --stub",
-    "test:fixtures": "JITI_ESM_RESOLVE=1 vitest test",
+    "test:fixtures": "JITI_ESM_RESOLVE=1 vitest --dir test",
     "test:fixtures:webpack": "TEST_WITH_WEBPACK=1 yarn test:fixtures",
     "test:types": "yarn run nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
-    "test:unit": "JITI_ESM_RESOLVE=1 yarn vitest packages",
+    "test:unit": "JITI_ESM_RESOLVE=1 yarn vitest --dir packages",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
@@ -56,7 +56,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.6.2",
     "unbuild": "^0.7.0",
-    "vitest": "^0.6.1",
+    "vitest": "^0.6.3",
     "vue-router": "^4.0.14",
     "vue-tsc": "^0.33.1"
   },
