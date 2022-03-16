@@ -41,7 +41,7 @@
     "@types/jsdom": "^16",
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
-    "@unocss/reset": "^0.28.3",
+    "@unocss/reset": "^0.29.0",
     "esbuild": "^0.14.27",
     "eslint": "^8.11.0",
     "eslint-plugin-jsdoc": "^38.0.4",
