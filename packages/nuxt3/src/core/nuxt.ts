@@ -84,6 +84,12 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/layout')
   })
 
+  // Add <NuxtErrorBoundary>
+  addComponent({
+    name: 'NuxtErrorBoundary',
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-error-boundary')
+  })
+
   // Add <ClientOnly>
   addComponent({
     name: 'ClientOnly',

@@ -21,6 +21,9 @@ function triggerError () {
         <NuxtLink to="/" class="n-link-base">
           Home
         </NuxtLink>
+        <NuxtLink to="/other" class="n-link-base">
+          Other
+        </NuxtLink>
         <NuxtLink to="/404" class="n-link-base">
           404
         </NuxtLink>
@@ -35,6 +38,8 @@ function triggerError () {
         </button>
       </nav>
     </template>
+
+    <FaultyComponent />
 
     <template #footer>
       <div class="text-center p-4 op-50">
