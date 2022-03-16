@@ -7,7 +7,6 @@
     "start": "nuxi preview"
   },
   "devDependencies": {
-    "@nuxt/test-utils": "latest",
     "nuxt3": "latest"
   }
 }

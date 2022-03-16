@@ -3194,7 +3194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/test-utils@workspace:./packages/test-utils, @nuxt/test-utils@workspace:packages/test-utils":
+"@nuxt/test-utils@workspace:packages/test-utils":
   version: 0.0.0-use.local
   resolution: "@nuxt/test-utils@workspace:packages/test-utils"
   dependencies:
@@ -10561,7 +10561,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-with-test@workspace:examples/with-test"
   dependencies:
-    "@nuxt/test-utils": latest
     nuxt3: latest
   languageName: unknown
   linkType: soft
