@@ -10,7 +10,7 @@ export * from './types/imports'
 export * from './types/meta'
 export * from './types/module'
 export * from './types/nuxt'
-export * from './types/pages'
+export * from './types/router'
 
 // Schema
 export { default as NuxtConfigSchema } from './config/index'
