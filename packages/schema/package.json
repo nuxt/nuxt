@@ -27,7 +27,7 @@
     "postcss-import-resolver": "^2.0.0",
     "scule": "^0.2.1",
     "std-env": "^3.0.1",
-    "ufo": "^0.8.0",
+    "ufo": "^0.8.1",
     "unimport": "^0.1.0"
   },
   "engines": {
