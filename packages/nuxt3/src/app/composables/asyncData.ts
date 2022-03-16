@@ -1,5 +1,5 @@
-import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance } from 'vue'
-import type { Ref } from 'vue'
+import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch } from 'vue'
+import type { Ref, WatchSource } from 'vue'
 import { NuxtApp, useNuxtApp } from '#app'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
@@ -7,6 +7,8 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output
 export type PickFrom<T, K extends Array<string>> = T extends Array<any> ? T : T extends Record<string, any> ? Pick<T, K[number]> : T
 export type KeysOf<T> = Array<keyof T extends string ? keyof T : string>
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
+
+type MultiWatchSources = (WatchSource<unknown> | object)[];
 
 export interface AsyncDataOptions<
   DataT,
@@ -18,6 +20,7 @@ export interface AsyncDataOptions<
   default?: () => DataT
   transform?: Transform
   pick?: PickKeys
+  watch?: MultiWatchSources
 }
 
 export interface _AsyncData<DataT> {
@@ -132,6 +135,14 @@ export function useAsyncData<
     } else {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       asyncData.refresh()
+    }
+    if (options.watch) {
+      const unwatch = watch(options.watch, () => {
+        asyncData.refresh()
+      })
+      if (instance) {
+        onUnmounted(() => unwatch())
+      }
     }
   }
 

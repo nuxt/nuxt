@@ -1,5 +1,6 @@
 <script setup>
-const { data, refresh, pending } = await useAsyncData('/api/hello', () => $fetch('/api/hello'))
+const ctr = ref(0)
+const { data, refresh, pending } = await useAsyncData('/api/hello', () => $fetch(`/api/hello/${ctr.value}`), { watch: [ctr] })
 </script>
 
 <template>
@@ -8,6 +9,9 @@ const { data, refresh, pending } = await useAsyncData('/api/hello', () => $fetch
     <div>
       <NButton :disabled="pending" @click="refresh">
         Refresh Data
+      </NButton>
+      <NButton :disabled="pending" @click="ctr++">
+        +
       </NButton>
     </div>
     <template #tips>

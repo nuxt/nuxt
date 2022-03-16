@@ -1,1 +1,1 @@
-export default () => `Hello world! (Generated at ${new Date().toGMTString()})`
+export default req => `Hello world (${req.url.substr(1)}) (Generated at ${new Date().toGMTString()})`
