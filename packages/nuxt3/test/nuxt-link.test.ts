@@ -53,8 +53,10 @@ describe('nuxt-link:to', () => {
     consoleWarnSpy.mockRestore()
   })
 
-  it('defaults to `null`', () => {
-    expect(nuxtLink().props.href).toBe(null)
+  it('without to and href', () => {
+    const link = nuxtLink()
+    expect(link.props.href).toBe(null)
+    expect(link.props.rel).toBe(null)
   })
 })
 

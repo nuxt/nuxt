@@ -21,5 +21,6 @@
     <MyNuxtLink to="/">
       Index page with a custom link component with a custom active class
     </MyNuxtLink>
+    <NuxtLink>Link without href and to</NuxtLink>
   </div>
 </template>

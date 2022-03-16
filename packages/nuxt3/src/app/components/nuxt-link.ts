@@ -141,8 +141,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return false
         }
 
-        // Directly check if `to` is an external URL by checking protocol
-        return hasProtocol(to.value, true)
+        return to.value === '' || hasProtocol(to.value, true)
       })
 
       return () => {
@@ -171,10 +170,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
-        const rel = props.noRel
+        const rel = (props.noRel)
           ? null
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          : firstNonUndefined<string | null>(props.rel, options.externalRelAttribute, DEFAULT_EXTERNAL_REL_ATTRIBUTE) || null
+          : firstNonUndefined<string | null>(props.rel, options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : '') || null
 
         return h('a', { href, rel, target }, slots.default())
       }
