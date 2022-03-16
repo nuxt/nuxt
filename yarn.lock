@@ -3316,7 +3316,7 @@ __metadata:
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^2.2.4
     "@vitejs/plugin-vue-jsx": ^1.3.8
-    autoprefixer: ^10.4.2
+    autoprefixer: ^10.4.4
     chokidar: ^3.5.3
     cssnano: ^5.1.4
     defu: ^5.0.1
@@ -3330,7 +3330,7 @@ __metadata:
     mlly: ^0.4.3
     p-debounce: ^4.0.0
     pathe: ^0.2.0
-    postcss: ^8.4.8
+    postcss: ^8.4.12
     postcss-import: ^14.0.2
     postcss-url: ^10.1.3
     rollup: ^2.70.1
@@ -3433,7 +3433,7 @@ __metadata:
     "@types/webpack-dev-middleware": ^5.0.2
     "@types/webpack-hot-middleware": ^2.25.6
     "@types/webpack-virtual-modules": ^0
-    autoprefixer: ^10.4.2
+    autoprefixer: ^10.4.4
     css-loader: ^6.7.1
     css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.1.4
@@ -3449,7 +3449,7 @@ __metadata:
     mlly: ^0.4.3
     pathe: ^0.2.0
     pify: ^5.0.0
-    postcss: ^8.4.8
+    postcss: ^8.4.12
     postcss-import: ^14.0.2
     postcss-loader: ^6.2.1
     postcss-url: ^10.1.3
@@ -4943,7 +4943,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:0.28.2, @unocss/reset@npm:^0.28.1":
+"@unocss/reset@npm:0.28.2, @unocss/reset@npm:^0.28.1, @unocss/reset@npm:^0.28.2":
   version: 0.28.2
   resolution: "@unocss/reset@npm:0.28.2"
   checksum: 02ec692e45629515f438abb19da7da1c9b0843450717b25976f4a929e61d32ee2ec9e6f2ebbdb7a92e86bd488ab93cea83a9967f4e56177c25f7853453cd40fb
@@ -6514,7 +6514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.2.5, autoprefixer@npm:^10.4.2":
+"autoprefixer@npm:^10.2.5, autoprefixer@npm:^10.4.2, autoprefixer@npm:^10.4.4":
   version: 10.4.4
   resolution: "autoprefixer@npm:10.4.4"
   dependencies:
@@ -15376,7 +15376,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.28.1
+    "@unocss/reset": ^0.28.2
     esbuild: ^0.14.27
     eslint: ^8.11.0
     eslint-plugin-jsdoc: ^38.0.4
@@ -17889,7 +17889,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.4.6, postcss@npm:^8.4.7, postcss@npm:^8.4.8":
+"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.4.12, postcss@npm:^8.4.6, postcss@npm:^8.4.7":
   version: 8.4.12
   resolution: "postcss@npm:8.4.12"
   dependencies:
