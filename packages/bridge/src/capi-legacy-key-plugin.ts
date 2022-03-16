@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { pathToFileURL } from 'url'
 import { createUnplugin } from 'unplugin'
 import { parse } from 'acorn'
 import MagicString from 'magic-string'
@@ -22,7 +23,7 @@ export const KeyPlugin = createUnplugin(() => {
     name: 'nuxt-legacy-capi-key-transform',
     enforce: 'pre',
     transformInclude (id) {
-      const { pathname, search } = parseURL(id)
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
 
       if (id.includes('node_modules')) {

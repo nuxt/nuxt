@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Unimport } from 'unimport'
@@ -8,7 +9,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options }: {ctx: Unimport,
     name: 'nuxt:auto-imports-transform',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname, search } = parseURL(id)
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const { type, macro } = parseQuery(search)
 
       const exclude = options.transform?.exclude || [/[\\/]node_modules[\\/]/]

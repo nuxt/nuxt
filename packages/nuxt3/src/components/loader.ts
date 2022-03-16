@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Component } from '@nuxt/schema'
@@ -12,7 +13,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => ({
   name: 'nuxt:components-loader',
   enforce: 'post',
   transformInclude (id) {
-    const { pathname, search } = parseURL(id)
+    const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
     const query = parseQuery(search)
     // we only transform render functions
     // from `type=template` (in Webpack) and bare `.vue` file (in Vite)
