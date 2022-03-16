@@ -1,4 +1,5 @@
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw } from 'vue-router'
+import { sendRedirect } from 'h3'
 import { useNuxtApp } from '#app'
 
 export const useRouter = () => {
@@ -45,12 +46,23 @@ const isProcessingMiddleware = () => {
   return false
 }
 
-export const navigateTo = (to: RouteLocationRaw) => {
+export interface NavigateToOptions {
+  replace?: boolean
+}
+
+export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}) => {
   if (isProcessingMiddleware()) {
     return to
   }
-  const router: Router = process.server ? useRouter() : (window as any).$nuxt.$router
-  return router.push(to)
+  const router = useRouter()
+  if (process.server && useNuxtApp().ssrContext) {
+    // Server-side redirection using h3 res from ssrContext
+    const res = useNuxtApp().ssrContext?.res
+    const redirectLocation = router.resolve(to).fullPath
+    return sendRedirect(res, redirectLocation)
+  }
+  // Client-side redirection using vue-router
+  return options.replace ? router.replace(to) : router.push(to)
 }
 
 /** This will abort navigation within a Nuxt route middleware handler. */
