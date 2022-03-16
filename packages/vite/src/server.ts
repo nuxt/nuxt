@@ -4,7 +4,7 @@ import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule } from '@nuxt/kit'
 import fse from 'fs-extra'
-import pDebounce from 'p-debounce'
+import { debounce } from 'perfect-debounce'
 import { withoutTrailingSlash } from 'ufo'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
@@ -154,7 +154,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       logger.success(`Vite server built in ${time}ms`)
       await onBuild()
     }
-    const doBuild = pDebounce(pDebounce.promise(_doBuild), 100)
+    const doBuild = debounce(_doBuild)
 
     // Initial build
     await _doBuild()

@@ -1,6 +1,6 @@
 import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
-import debounce from 'p-debounce'
+import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
 import consola from 'consola'
 import { withTrailingSlash } from 'ufo'
@@ -69,7 +69,7 @@ export default defineNuxtCommand({
 
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
-    const dLoad = debounce(debounce.promise(load), 250)
+    const dLoad = debounce(load)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (event, file) => {
       if (!currentNuxt) { return }
