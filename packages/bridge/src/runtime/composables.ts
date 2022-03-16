@@ -177,7 +177,7 @@ export interface NavigateToOptions {
   replace?: boolean
 }
 
-export const navigateTo = (to: Route, options: NavigateToOptions = {}) => {
+export const navigateTo = (to: Route, options: NavigateToOptions = {}): Promise<Route | void> | Route => {
   if (isProcessingMiddleware()) {
     return to
   }

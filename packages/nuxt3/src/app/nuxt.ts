@@ -183,8 +183,8 @@ export const setNuxtAppInstance = (nuxt: NuxtApp | null) => {
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp, setup: T, args?: Parameters<T>) {
-  setNuxtAppInstance(nuxt)
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+  setNuxtAppInstance(nuxt as NuxtApp)
   const p: ReturnType<T> = args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
     // Unset nuxt instance to prevent context-sharing in server-side

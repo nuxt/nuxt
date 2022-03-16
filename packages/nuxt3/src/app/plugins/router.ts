@@ -1,6 +1,5 @@
 import { reactive, h } from 'vue'
 import { parseURL, parseQuery } from 'ufo'
-import { NuxtApp } from '@nuxt/schema'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
@@ -109,7 +108,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
 
       if (process.client && !nuxtApp.isHydrating) {
       // Clear any existing errors
-        await callWithNuxt(nuxtApp as NuxtApp, clearError)
+        await callWithNuxt(nuxtApp, clearError)
       }
 
       // Run beforeEach hooks
@@ -198,11 +197,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     to.meta = reactive(to.meta || {})
     nuxtApp._processingMiddleware = true
 
-    type MiddlewareDef = string | RouteGuard
-    const middlewareEntries = new Set<MiddlewareDef>(nuxtApp._middleware.global)
+    const middlewareEntries = new Set<RouteGuard>(nuxtApp._middleware.global)
 
     for (const middleware of middlewareEntries) {
-      const result = await callWithNuxt(nuxtApp as NuxtApp, middleware, [to, from])
+      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
       if (process.server) {
         if (result === false || result instanceof Error) {
           const error = result || createError({

@@ -7,7 +7,7 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import NuxtPage from './page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, NuxtApp, throwError, clearError } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -85,7 +85,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     if (process.client && !nuxtApp.isHydrating) {
       // Clear any existing errors
-      await callWithNuxt(nuxtApp as NuxtApp, clearError)
+      await callWithNuxt(nuxtApp, clearError)
     }
 
     for (const entry of middlewareEntries) {
@@ -95,7 +95,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         console.warn(`Unknown middleware: ${entry}. Valid options are ${Object.keys(namedMiddleware).join(', ')}.`)
       }
 
-      const result = await callWithNuxt(nuxtApp as NuxtApp, middleware, [to, from])
+      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
       if (process.server) {
         if (result === false || result instanceof Error) {
           const error = result || createError({

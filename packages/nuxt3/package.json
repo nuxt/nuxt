@@ -45,7 +45,7 @@
     "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
-    "h3": "^0.4.1",
+    "h3": "^0.4.2",
     "hash-sum": "^2.0.0",
     "hookable": "^5.1.1",
     "knitwork": "^0.1.1",

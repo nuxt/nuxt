@@ -51,7 +51,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toMatchTypeOf<RouteLocationNormalizedLoaded>()
       expectTypeOf(from).toMatchTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toMatchTypeOf<(to: RouteLocationRaw) => RouteLocationRaw | Promise<void | unknown | NavigationFailure>>()
+      expectTypeOf(navigateTo).toMatchTypeOf<(to: RouteLocationRaw) => RouteLocationRaw | Promise<void | NavigationFailure>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')

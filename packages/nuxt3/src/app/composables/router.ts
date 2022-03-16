@@ -1,4 +1,4 @@
-import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw } from 'vue-router'
+import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { useNuxtApp } from '#app'
 
@@ -50,7 +50,7 @@ export interface NavigateToOptions {
   replace?: boolean
 }
 
-export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}) => {
+export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}): Promise<void | NavigationFailure> | RouteLocationRaw => {
   if (isProcessingMiddleware()) {
     return to
   }
