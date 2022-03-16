@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
     branches:
       - main
   pull_request:
+    paths-ignore:
+      - 'docs/**'
     branches:
       - main
 
@@ -56,9 +60,6 @@ jobs:
 
       - name: Lint
         run: yarn lint
-
-      - name: Lint (docs)
-        run: yarn lint:docs
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
@@ -141,6 +142,11 @@ jobs:
         run: yarn test:types
 
   build-release:
+    if: |
+      github.event_name == 'push' &&
+      !contains(github.event.head_commit.message, '[skip-release]') &&
+      !contains(github.event.head_commit.message, 'chore') &&
+      !contains(github.event.head_commit.message, 'docs')
     needs:
       - lint
       - build
@@ -171,11 +177,6 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
 
       - name: Release Edge
-        if: |
-          github.event_name == 'push' &&
-          !contains(github.event.head_commit.message, '[skip-release]') &&
-          !contains(github.event.head_commit.message, 'chore') &&
-          !contains(github.event.head_commit.message, 'docs')
         run: ./scripts/release-edge.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}

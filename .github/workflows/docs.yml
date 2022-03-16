@@ -1,0 +1,37 @@
+name: Docs
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+    branches:
+      - main
+
+jobs:
+  lint-docs:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - name: Lint (docs)
+        run: yarn lint:docs
