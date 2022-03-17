@@ -52,8 +52,8 @@ export function useLazyFetch<
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
-  url: ReqT,
+  request: Ref<ReqT> | ReqT | (() => ReqT),
   opts: Omit<UseFetchOptions<_ResT, Transform, PickKeys>, 'lazy'> = {}
 ) {
-  return useFetch(url, { ...opts, lazy: true })
+  return useFetch(request, { ...opts, lazy: true })
 }
