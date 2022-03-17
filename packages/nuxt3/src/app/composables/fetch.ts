@@ -1,6 +1,7 @@
 import type { FetchOptions, FetchRequest } from 'ohmyfetch'
 import type { TypedInternalResponse } from '@nuxt/nitro'
-import { murmurHashV3 } from 'murmurhash-es'
+import { hash } from 'ohash'
+import { computed, isRef, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes } from './asyncData'
 import { useAsyncData } from './asyncData'
 
@@ -14,29 +15,34 @@ export type UseFetchOptions<
 
 export function useFetch<
   ResT = void,
-  ReqT extends string = string,
+  ReqT extends FetchRequest = FetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
-  url: ReqT,
+  request: Ref<ReqT> | ReqT | (() => ReqT),
   opts: UseFetchOptions<_ResT, Transform, PickKeys> = {}
 ) {
-  if (!opts.key) {
-    const keys: any = { u: url }
-    if (opts.baseURL) {
-      keys.b = opts.baseURL
+  const key = '$f_' + (opts.key || hash([request, opts]))
+  const _request = computed<FetchRequest>(() => {
+    let r = request
+    if (typeof r === 'function') {
+      r = r()
     }
-    if (opts.method && opts.method.toLowerCase() !== 'get') {
-      keys.m = opts.method.toLowerCase()
-    }
-    if (opts.params) {
-      keys.p = opts.params
-    }
-    opts.key = generateKey(keys)
-  }
+    return isRef(r) ? r.value : r
+  })
 
-  return useAsyncData(opts.key, () => $fetch(url, opts) as Promise<_ResT>, opts)
+  const asyncData = useAsyncData(key, () => {
+    return $fetch(_request.value, opts) as Promise<_ResT>
+  }, {
+    ...opts,
+    watch: [
+      _request,
+      ...(opts.watch || [])
+    ]
+  })
+
+  return asyncData
 }
 
 export function useLazyFetch<
@@ -50,8 +56,4 @@ export function useLazyFetch<
   opts: Omit<UseFetchOptions<_ResT, Transform, PickKeys>, 'lazy'> = {}
 ) {
   return useFetch(url, { ...opts, lazy: true })
-}
-
-function generateKey (keys) {
-  return '$f' + murmurHashV3(JSON.stringify(keys))
 }

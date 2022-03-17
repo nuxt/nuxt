@@ -46,6 +46,7 @@
     "murmurhash-es": "^0.1.1",
     "node-fetch": "^3.2.3",
     "nuxi": "3.0.0",
+    "ohash": "^0.1.0",
     "pathe": "^0.2.0",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8",

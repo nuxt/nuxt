@@ -1,11 +1,17 @@
 <script setup>
-const { data } = await useFetch('/api/hello', { params: { foo: 'bar' } })
+const count = ref(1)
+const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { token: 123 } })
 </script>
 
 <template>
-  <NuxtExampleLayout example="use-fetch" show-tips="true">
-    Server response
-    <pre class="text-left"><code>{{ data }}</code></pre>
+  <NuxtExampleLayout example="use-fetch" :show-tips="true">
+    <div>
+      Fetch result:
+      <pre class="text-left"><code>{{ data }}</code></pre>
+      <NButton @click="count++">
+        +
+      </NButton>
+    </div>
     <template #tips>
       <div>
         Nuxt will automatically read in files in the

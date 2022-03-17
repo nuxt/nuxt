@@ -2620,6 +2620,7 @@ __metadata:
     node-fetch: ^3.2.3
     nuxi: 3.0.0
     nuxt: ^2
+    ohash: ^0.1.0
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
     postcss: ^8
@@ -15464,9 +15465,9 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.4.3
-    murmurhash-es: ^0.1.1
     nitropack: "npm:nitropack-edge@latest"
     nuxi: 3.0.0
+    ohash: ^0.1.0
     ohmyfetch: ^0.4.15
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
@@ -15605,6 +15606,13 @@ __metadata:
     define-properties: ^1.1.3
     es-abstract: ^1.19.1
   checksum: 0f17e99741ebfbd0fa55ce942f6184743d3070c61bd39221afc929c8422c4907618c8da694c6915bc04a83ab3224260c779ba37fc07bb668bdc5f33b66a902a4
+  languageName: node
+  linkType: hard
+
+"ohash@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "ohash@npm:0.1.0"
+  checksum: b2bfde97c96bb4e71f3e0b7718239c7e49435394f1f562e0d21a069b84302bea0a235c65e2615009f6a4e2008963914917bfcd576d65ff56016f174d0b1e206b
   languageName: node
   linkType: hard
 
