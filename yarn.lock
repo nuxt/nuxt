@@ -3207,7 +3207,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.20.0
     unbuild: latest
-    vitest: ^0.6.3
+    vitest: ^0.7.0
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3340,7 +3340,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.5.2
     vite: ^2.8.6
-    vite-node: ^0.6.3
+    vite-node: ^0.7.0
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -15422,7 +15422,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.2
     unbuild: ^0.7.0
-    vitest: ^0.6.3
+    vitest: ^0.7.0
     vue-router: ^4.0.14
     vue-tsc: ^0.33.1
   languageName: unknown
@@ -21561,9 +21561,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.6.3":
-  version: 0.6.3
-  resolution: "vite-node@npm:0.6.3"
+"vite-node@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "vite-node@npm:0.7.0"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.5
@@ -21572,7 +21572,7 @@ __metadata:
     vite: ^2.8.4
   bin:
     vite-node: vite-node.mjs
-  checksum: bdf09be18b5e3747e98c3d453740d168e707c8393597f8da94e3087529efb90e6a7f4e3012eb6fd49299ab7fbf0f887ab87f0b477eb80eab8933c5b5dc122aaa
+  checksum: 93a28b9c0f13a212b671d07dbba85f24dc785ac96f0d075a87d549f0d93547fa71da6f759a4718b1f6b7db7bfca66c2d5c51946f8b7f0a0fc5b3a72f41d21020
   languageName: node
   linkType: hard
 
@@ -21667,9 +21667,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.6.3":
-  version: 0.6.3
-  resolution: "vitest@npm:0.6.3"
+"vitest@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "vitest@npm:0.7.0"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21694,7 +21694,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 8910891e12df16a7fdd6228812ead9cb185dba35f78193b657d6cf29849e028fc78e4d72ce645ad1c5d2686053ce8c5f548a37d84314cc1b7dbd092bedbc9de3
+  checksum: c8b19d373e788ee730ce3cf7fe033f85943e06ea7f719687fa3f2f14e4f8911343b7dbde007c892482e16de2fd65a18f1cf82c8a074f4e4deaa807c98af0866a
   languageName: node
   linkType: hard
 
