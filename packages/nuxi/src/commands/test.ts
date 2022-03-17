@@ -4,7 +4,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'test',
-    usage: 'npx nuxi test',
+    usage: 'npx nuxi test [--dev] [--watch] [rootDir]',
     description: 'Run tests'
   },
   async invoke (args) {
@@ -12,7 +12,9 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
     const { runTests } = await importTestUtils()
     await runTests({
-      rootDir
+      rootDir,
+      dev: !!args.dev,
+      watch: !!args.watch
     })
   }
 })

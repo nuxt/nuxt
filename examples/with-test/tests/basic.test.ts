@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
+import { setup, $fetch, isDev } from '@nuxt/test-utils'
 
 describe('example', async () => {
   await setup({
@@ -11,4 +11,10 @@ describe('example', async () => {
   it('Renders Hello Nuxt', async () => {
     expect(await $fetch('/')).toMatch('Hello Nuxt!')
   })
+
+  if (isDev()) {
+    it('[dev] ensure vite client script is added', async () => {
+      expect(await $fetch('/')).toMatch('/_nuxt/@vite/client"')
+    })
+  }
 })

@@ -10,6 +10,7 @@ export default defineBuildConfig({
   externals: [
     'vitest',
     'playwright',
-    'playwright-core'
+    'playwright-core',
+    'listhen'
   ]
 })
