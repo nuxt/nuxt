@@ -63,8 +63,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     app.mainComponent = tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')
   }
 
-  // Default root component
-  app.rootComponent = resolve(nuxt.options.appDir, 'components/nuxt-root.vue')
+  // Resolve root component
+  if (!app.rootComponent) {
+    app.rootComponent = await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
+  }
 
   // Resolve error component
   if (!app.errorComponent) {
