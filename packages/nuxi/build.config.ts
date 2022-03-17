@@ -7,6 +7,7 @@ export default defineBuildConfig({
     cjsBridge: true
   },
   entries: [
+    'src/cli',
     'src/index'
   ],
   externals: [
