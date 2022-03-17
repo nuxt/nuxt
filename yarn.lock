@@ -3341,7 +3341,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.5.2
     vite: ^2.8.6
-    vite-node: ^0.7.0
+    vite-node: ^0.7.1
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -21569,9 +21569,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "vite-node@npm:0.7.0"
+"vite-node@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "vite-node@npm:0.7.1"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.5
@@ -21580,7 +21580,7 @@ __metadata:
     vite: ^2.8.4
   bin:
     vite-node: vite-node.mjs
-  checksum: 93a28b9c0f13a212b671d07dbba85f24dc785ac96f0d075a87d549f0d93547fa71da6f759a4718b1f6b7db7bfca66c2d5c51946f8b7f0a0fc5b3a72f41d21020
+  checksum: c0d7e60dfc8b0e4dc94ebc4127486c27e4723da0c43da98f5c837680d360318531c741faf842c06bde66cbea852bc3dd3137993269bb06b1a7073845ec433cc5
   languageName: node
   linkType: hard
 
