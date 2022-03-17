@@ -4,8 +4,9 @@ import { getRandomPort, waitForPort } from 'get-port-please'
 import { fetch as _fetch, $fetch as _$fetch, FetchOptions } from 'ohmyfetch'
 import { useTestContext } from './context'
 
-export async function listen () {
+export async function startServer () {
   const ctx = useTestContext()
+  await stopServer()
   const port = await getRandomPort()
   ctx.url = 'http://localhost:' + port
   ctx.serverProcess = execa('node', [
@@ -13,11 +14,19 @@ export async function listen () {
     resolve(ctx.nuxt.options.nitro.output.dir, 'server/index.mjs')
   ], {
     env: {
+      ...process.env,
       PORT: String(port),
       NODE_ENV: 'test'
     }
   })
   await waitForPort(port, { retries: 8 })
+}
+
+export async function stopServer () {
+  const ctx = useTestContext()
+  if (ctx.serverProcess) {
+    await ctx.serverProcess.kill()
+  }
 }
 
 export function fetch (path: string, options?: any) {
