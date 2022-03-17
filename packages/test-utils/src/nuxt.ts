@@ -49,8 +49,8 @@ export async function loadFixture () {
   })
 
   ctx.nuxt = await kit.loadNuxt({
-    rootDir: ctx.options.rootDir,
-    config: ctx.options.nuxtConfig,
+    cwd: ctx.options.rootDir,
+    overrides: ctx.options.nuxtConfig,
     configFile: ctx.options.configFile
   })
 

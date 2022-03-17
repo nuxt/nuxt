@@ -1,40 +1,23 @@
 import { resolve } from 'pathe'
 import { applyDefaults } from 'untyped'
-import { loadConfig, DotenvOptions } from 'c12'
-import type { NuxtOptions } from '@nuxt/schema'
+import { loadConfig, LoadConfigOptions } from 'c12'
+import type { NuxtOptions, NuxtConfig } from '@nuxt/schema'
 import { NuxtConfigSchema } from '@nuxt/schema'
-// TODO
-// import { tryResolveModule, requireModule, scanRequireTree } from '../internal/cjs'
 
-export interface LoadNuxtConfigOptions {
-  /** Your project root directory (either absolute or relative to the current working directory). */
-  rootDir?: string
-
-  /** The path to your `nuxt.config` file (either absolute or relative to your project `rootDir`). */
-  configFile?: string
-
-  /** Any overrides to your Nuxt configuration. */
-  config?: Record<string, any>
-
-  /** Configuration for loading dotenv */
-  dotenv?: DotenvOptions | false
-}
+export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
-  const rootDir = resolve(process.cwd(), opts.rootDir || '.')
-
-  const { config: nuxtConfig, configFile, layers } = await loadConfig({
-    cwd: rootDir,
+  const { config: nuxtConfig, configFile, layers, cwd } = await loadConfig({
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
-    dotenv: typeof opts.dotenv === 'undefined' ? {} as DotenvOptions : opts.dotenv,
+    dotenv: true,
     globalRc: true,
-    overrides: opts.config
+    ...opts
   })
 
-  nuxtConfig.rootDir = nuxtConfig.rootDir || rootDir
-
+  // Fill config
+  nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
 
@@ -44,6 +27,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     layer.config.srcDir = resolve(layer.config.rootDir, layer.config.srcDir)
   }
 
+  // Filter layers
   nuxtConfig._layers = layers.filter(layer => layer.configFile && !layer.configFile.endsWith('.nuxtrc'))
 
   // Resolve and apply defaults

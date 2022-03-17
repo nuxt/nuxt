@@ -1,24 +1,37 @@
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import type { Nuxt, NuxtConfig } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import { importModule, tryImportModule, RequireModuleOptions } from '../internal/cjs'
 import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
-  rootDir: string
+  /** Load nuxt with development mode */
   dev?: boolean
-  config?: NuxtConfig
-  configFile?: string
+
+  /** Use lazy initialization of nuxt if set to false */
   ready?: boolean
+
+  /** @deprecated Use cwd option */
+  rootDir?: LoadNuxtConfigOptions['cwd']
+
+  /** @deprecated use overrides option */
+  config?: LoadNuxtConfigOptions['overrides']
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  const resolveOpts: RequireModuleOptions = { paths: opts.rootDir }
+  // Backward compatibility
+  opts.cwd = opts.cwd || opts.rootDir
+  opts.overrides = opts.overrides || opts.config || {}
+
+  const resolveOpts: RequireModuleOptions = { paths: opts.cwd }
+
+  // Apply dev as config override
+  opts.overrides.dev = !!opts.dev
 
   const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt-edge', 'nuxt']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.rootDir }).catch(() => null)))
+    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
     .then(r => r.filter(Boolean).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
-    throw new Error(`Cannot find any nuxt version from ${opts.rootDir}`)
+    throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
   const majorVersion = parseInt((pkg.version || '').split('.')[0])
@@ -33,9 +46,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Nuxt 2
   const { loadNuxt } = await tryImportModule('nuxt-edge', resolveOpts) || await importModule('nuxt', resolveOpts)
   const nuxt = await loadNuxt({
-    rootDir: opts.rootDir,
+    rootDir: opts.cwd,
     for: opts.dev ? 'dev' : 'build',
-    configOverrides: opts.config,
+    configOverrides: opts.overrides,
     ready: opts.ready,
     envConfig: opts.dotenv // TODO: Backward format convertion
   })
