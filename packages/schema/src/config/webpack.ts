@@ -163,10 +163,16 @@ export default {
       },
       css: {
         importLoaders: 0,
+        url: {
+          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+        },
         esModule: false
       },
       cssModules: {
         importLoaders: 0,
+        url: {
+          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+        },
         esModule: false,
         modules: {
           localIdentName: '[local]_[hash:base64:5]'
