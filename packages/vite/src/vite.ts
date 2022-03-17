@@ -65,6 +65,9 @@ export async function bundle (nuxt: Nuxt) {
         plugins: [
           virtual(nuxt.vfs)
         ],
+        vue: {
+          reactivityTransform: nuxt.options.experimental.reactivityTransform
+        },
         server: {
           watch: {
             ignored: isIgnored

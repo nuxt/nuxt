@@ -19,7 +19,7 @@
     "play": "yarn run nuxi dev playground",
     "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "stub": "lerna run prepack -- --stub",
-    "test:fixtures": "JITI_ESM_RESOLVE=1 vitest --dir test",
+    "test:fixtures": "yarn nuxi prepare test/fixtures/basic && JITI_ESM_RESOLVE=1 vitest --dir test",
     "test:fixtures:webpack": "TEST_WITH_WEBPACK=1 yarn test:fixtures",
     "test:types": "yarn run nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
     "test:unit": "JITI_ESM_RESOLVE=1 yarn vitest --dir packages",

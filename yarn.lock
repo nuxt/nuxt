@@ -10580,6 +10580,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-with-reactivity-transform@workspace:examples/with-reactivity-transform":
+  version: 0.0.0-use.local
+  resolution: "example-with-reactivity-transform@workspace:examples/with-reactivity-transform"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-with-test@workspace:examples/with-test":
   version: 0.0.0-use.local
   resolution: "example-with-test@workspace:examples/with-test"

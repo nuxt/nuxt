@@ -148,4 +148,12 @@ describe('fixtures:basic', async () => {
       expect(html).toContain('Custom Layout:')
     })
   })
+
+  describe('reactivity transform', () => {
+    it('should works', async () => {
+      const html = await $fetch('/')
+
+      expect(html).toContain('Sugar Counter 12 x 2 = 24')
+    })
+  })
 })

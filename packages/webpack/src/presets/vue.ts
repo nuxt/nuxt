@@ -14,7 +14,10 @@ export function vue (ctx: WebpackConfigContext) {
   config.module.rules.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
-    options: options.webpack.loaders.vue
+    options: {
+      reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
+      ...options.webpack.loaders.vue
+    }
   })
 
   if (ctx.isClient) {

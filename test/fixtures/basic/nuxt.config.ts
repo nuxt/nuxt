@@ -22,5 +22,8 @@ export default defineNuxtConfig({
         filePath: '~/other-components-folder/named-export'
       })
     }
+  },
+  experimental: {
+    reactivityTransform: true
   }
 })
