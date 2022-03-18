@@ -5,7 +5,7 @@
   </Suspense>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onErrorCaptured } from 'vue'
 import { callWithNuxt, throwError, useError, useNuxtApp } from '#app'
 // @ts-ignore

@@ -2,7 +2,7 @@
   <ErrorTemplate v-bind="{ statusCode, statusMessage, description, stack }" />
 </template>
 
-<script setup lang="ts">
+<script setup>
 import Error404 from '@nuxt/ui-templates/templates/error-404.vue'
 import Error500 from '@nuxt/ui-templates/templates/error-500.vue'
 import ErrorDev from '@nuxt/ui-templates/templates/error-dev.vue'
