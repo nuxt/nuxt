@@ -14,9 +14,9 @@
       <div>
         Components under <code>components/</code> folder are auto imported and can be directly used in your templates.
         Read more about
-        <NLink href="https://v3.nuxtjs.org/docs/directory-structure/components" target="_blank">
+        <NuxtLink to="https://v3.nuxtjs.org/docs/directory-structure/components" target="_blank">
           the components directory.
-        </NLink>
+        </NuxtLink>
       </div>
     </template>
   </NuxtExampleLayout>

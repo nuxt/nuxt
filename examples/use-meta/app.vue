@@ -24,9 +24,9 @@
     <template #tips>
       <div class="flex-auto">
         Learn more about
-        <NLink href="https://v3.nuxtjs.org/docs/usage/meta-tags" target="_blank">
+        <NuxtLink to="https://v3.nuxtjs.org/docs/usage/meta-tags" target="_blank">
           Meta tags
-        </NLink>.
+        </NuxtLink>.
         Open in editor to see the source code 👉
       </div>
     </template>

@@ -16,9 +16,9 @@ const counter = useState('counter', () => Math.round(Math.random() * 1000))
 
     <template #tips>
       <div>
-        <NLink href="https://v3.nuxtjs.org/docs/usage/state" target="_blank">
+        <NuxtLink to="https://v3.nuxtjs.org/docs/usage/state" target="_blank">
           useState
-        </NLink>
+        </NuxtLink>
         is an SSR-friendly ref replacement.
         Its value will be preserved after server-side rendering
         and shared across all components using a unique key.

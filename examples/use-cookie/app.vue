@@ -3,22 +3,19 @@ const user = useCookie<{ name: string }>('user')
 const logins = useCookie<number>('logins')
 
 const name = ref('')
-const interacted = ref(false)
 
 const login = () => {
   logins.value = (logins.value || 0) + 1
   user.value = { name: name.value }
-  interacted.value = true
 }
 
 const logout = () => {
   user.value = null
-  interacted.value = true
 }
 </script>
 
 <template>
-  <NuxtExampleLayout :show-tips="interacted" class="h-50" example="use-cookie">
+  <NuxtExampleLayout show-tips="true" class="h-50" example="use-cookie">
     <template v-if="user">
       <h1 class="text-3xl mb-3">
         Welcome, {{ user.name }}! 👋
@@ -49,9 +46,9 @@ const logout = () => {
     <template #tips>
       <div>
         This demo showcases using the
-        <NLink href="https://v3.nuxtjs.org/docs/usage/cookies" target="_blank">
+        <NuxtLink to="https://v3.nuxtjs.org/docs/usage/cookies" target="_blank">
           useCookie
-        </NLink>
+        </NuxtLink>
         API to persist small amounts of data that can be used both client-side and server-side.
       </div>
     </template>
