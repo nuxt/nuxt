@@ -3,12 +3,7 @@ import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { isIgnored } from '@nuxt/kit'
-
-// vue@2 src/shared/util.js
-// TODO: update to vue3?
-function hyphenate (str: string): string {
-  return str.replace(/\B([A-Z])/g, '-$1').toLowerCase()
-}
+import { hyphenate } from '@vue/shared'
 
 /**
  * Scan the components inside different components folders
