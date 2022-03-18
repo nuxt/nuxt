@@ -68,7 +68,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
     .filter(f => typeof f === 'string')
     .map(id => ({ types: getNearestPackage(id, modulePaths)?.name || id }))
 
-  if (nuxt.options.experimental.reactivityTransform) {
+  if (nuxt.options.experimental?.reactivityTransform) {
     references.push({ types: 'vue/macros-global' })
   }
 
