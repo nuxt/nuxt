@@ -97,7 +97,7 @@ async function _build (nitroContext: NitroContext) {
 
   nitroContext.scannedMiddleware = (
     await Promise.all(serverDirs.map(async dir => await scanMiddleware(dir)))
-  ).flat().sort((a, b) => b.route.localeCompare(a.route))
+  ).flat()
 
   await writeTypes(nitroContext)
 
@@ -190,7 +190,7 @@ async function _watch (nitroContext: NitroContext) {
         }
       }
     )))
-  ).flat().sort((a, b) => b.route.localeCompare(a.route))
+  ).flat()
 
   await writeTypes(nitroContext)
 }
