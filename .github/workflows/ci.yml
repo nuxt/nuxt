@@ -35,7 +35,7 @@ jobs:
         run: yarn build
 
       - name: Cache dist
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
@@ -133,7 +133,7 @@ jobs:
         run: yarn --immutable
 
       - name: Restore dist cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
@@ -171,7 +171,7 @@ jobs:
         run: yarn --immutable
 
       - name: Restore dist cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
