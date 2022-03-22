@@ -56,8 +56,8 @@ export default defineNuxtCommand({
     console.log(`\n 🎉  Another ${superb.random()} Nuxt project just made! Next steps:` + [
       '',
       `📁  \`cd ${rpath(dstDir)}\``,
-      '💿  Install dependencies with `npm install` or `yarn install`',
-      '🚀  Start development server with `npm run dev` or `yarn dev`',
+      '💿  Install dependencies with `npm install` or `yarn install` or `pnpm install --shamefully-hoist`',
+      '🚀  Start development server with `npm run dev` or `yarn dev` or `pnpm run dev',
       ''
     ].join('\n\n     '))
   }
