@@ -16,13 +16,13 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.17.7",
+    "@babel/core": "^7.17.8",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0",
     "autoprefixer": "^10.4.4",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^3.4.1",
-    "cssnano": "^5.1.4",
+    "cssnano": "^5.1.5",
     "esbuild-loader": "^2.18.0",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",

@@ -24,7 +24,7 @@
     "@vitejs/plugin-vue-jsx": "^1.3.8",
     "autoprefixer": "^10.4.4",
     "chokidar": "^3.5.3",
-    "cssnano": "^5.1.4",
+    "cssnano": "^5.1.5",
     "defu": "^6.0.0",
     "esbuild": "^0.14.27",
     "escape-string-regexp": "^5.0.0",
@@ -44,7 +44,7 @@
     "ufo": "^0.8.1",
     "unplugin": "^0.5.2",
     "vite": "^2.8.6",
-    "vite-node": "^0.7.4"
+    "vite-node": "^0.7.7"
   },
   "peerDependencies": {
     "vue": "3.2.31"

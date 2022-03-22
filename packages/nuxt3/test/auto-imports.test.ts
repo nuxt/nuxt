@@ -26,11 +26,11 @@ describe('auto-imports:transform', () => {
 
   it('should correct inject', async () => {
     expect(await transform('const a = ref(0)')).toMatchInlineSnapshot('"import { ref } from \'vue\';const a = ref(0)"')
-    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.toMatchInlineSnapshot('"import { computed } from \'bar\';import { computed as ref } from \\"foo\\"; const a = ref(0)"')
   })
 
   it('should ignore existing imported', async () => {
     expect(await transform('import { ref } from "foo"; const a = ref(0)')).to.equal(null)
+    expect(await transform('import { computed as ref } from "foo"; const a = ref(0)')).to.equal(null)
     expect(await transform('import ref from "foo"; const a = ref(0)')).to.equal(null)
     expect(await transform('import { z as ref } from "foo"; const a = ref(0)')).to.equal(null)
     expect(await transform('let ref = () => {}; const a = ref(0)')).to.equal(null)
