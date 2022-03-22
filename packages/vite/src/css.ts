@@ -4,28 +4,25 @@ import type { ViteOptions } from './vite'
 import { distDir } from './dirs'
 
 export function resolveCSSOptions (nuxt: Nuxt): ViteOptions['css'] {
-  const css: ViteOptions['css'] = {
+  const css: ViteOptions['css'] & { postcss: Exclude<ViteOptions['css']['postcss'], string> } = {
     postcss: {
       plugins: []
     }
   }
 
-  const plugins = nuxt.options.postcss.plugins
-
-  for (const name in plugins) {
-    const opts = plugins[name]
-    if (!opts) {
-      continue
-    }
-    const plugin = requireModule(name, {
-      paths: [
-        ...nuxt.options.modulesDir,
-        distDir
-      ]
+  const lastPlugins = ['autoprefixer', 'cssnano']
+  css.postcss.plugins = Object.entries(nuxt.options.postcss.plugins)
+    .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))
+    .filter(([, opts]) => opts)
+    .map(([name, opts]) => {
+      const plugin = requireModule(name, {
+        paths: [
+          ...nuxt.options.modulesDir,
+          distDir
+        ]
+      })
+      return plugin(opts)
     })
-    // @ts-ignore
-    css.postcss.plugins.push(plugin(opts))
-  }
 
   return css
 }
