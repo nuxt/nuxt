@@ -2973,7 +2973,7 @@ __metadata:
     scule: ^0.2.1
     semver: ^7.3.5
     unbuild: latest
-    unctx: ^1.0.2
+    unctx: ^1.1.0
     unimport: ^0.1.1
     untyped: ^0.4.3
   languageName: unknown
@@ -21207,6 +21207,18 @@ __metadata:
   version: 1.0.2
   resolution: "unctx@npm:1.0.2"
   checksum: bb850eef93e58ed00aa0db04401e77fa446b4c18a323dc314599d40aea58a6b45c5bb5b78c7316b250a9849e71d2ad97506f4116a9901240b2f0ca702691e7ff
+  languageName: node
+  linkType: hard
+
+"unctx@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "unctx@npm:1.1.0"
+  dependencies:
+    acorn: ^8.7.0
+    estree-walker: ^2.0.2
+    magic-string: ^0.26.1
+    unplugin: ^0.5.2
+  checksum: 6a9031c86ec2a9c9d5c730835db1127b165ad2d4aa29ebb1dab2fe3be7e39e35125a94d9dc4dfc0d06cf8af5246aabb1f0fce8ffa4edf42c4e7c9e0cfa12e79e
   languageName: node
   linkType: hard
 
