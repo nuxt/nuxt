@@ -12,14 +12,17 @@ export default defineNuxtModule({
     name: 'router'
   },
   setup (_options, nuxt) {
-    const pagesDir = resolve(nuxt.options.srcDir, nuxt.options.dir.pages)
-    const runtimeDir = resolve(distDir, 'pages/runtime')
+    const pagesDirs = nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+    )
 
     // Disable module (and use universal router) if pages dir do not exists
-    if (!existsSync(pagesDir)) {
+    if (!pagesDirs.some(dir => existsSync(dir))) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
       return
     }
+
+    const runtimeDir = resolve(distDir, 'pages/runtime')
 
     // Add $router types
     nuxt.hook('prepare:types', ({ references }) => {
@@ -68,7 +71,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       async getContents () {
-        const pages = await resolvePagesRoutes(nuxt)
+        const pages = await resolvePagesRoutes()
         await nuxt.callHook('pages:extend', pages)
         const { routes, imports } = normalizeRoutes(pages)
         return [...imports, `export default ${routes}`].join('\n')
@@ -99,6 +102,7 @@ export default defineNuxtModule({
       filename: 'middleware.mjs',
       async getContents () {
         const middleware = await resolveMiddleware()
+        await nuxt.callHook('pages:middleware:extend', middleware)
         const globalMiddleware = middleware.filter(mw => mw.global)
         const namedMiddleware = middleware.filter(mw => !mw.global)
         const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
