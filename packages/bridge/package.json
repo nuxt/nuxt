@@ -30,7 +30,7 @@
     "@vueuse/head": "^0.7.5",
     "acorn": "^8.7.0",
     "cookie-es": "^0.5.0",
-    "defu": "^5.0.1",
+    "defu": "^6.0.0",
     "destr": "^1.1.0",
     "enhanced-resolve": "^5.9.2",
     "escape-string-regexp": "^5.0.0",

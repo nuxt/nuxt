@@ -40,7 +40,7 @@
     "@vueuse/head": "^0.7.5",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
-    "defu": "^5.0.1",
+    "defu": "^6.0.0",
     "destr": "^1.1.0",
     "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.0.1",
