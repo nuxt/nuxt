@@ -271,13 +271,13 @@ export default {
    * ]
    * ```
    *
-   * @note Using `buildModules` helps to make production startup faster and also significantly
+   * @note In Nuxt 2, using `buildModules` helps to make production startup faster and also significantly
    * decreases the size of `node_modules` in production deployments. Please refer to each
    * module's documentation to see if it is recommended to use `modules` or `buildModules`.
    *
    * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
    * @version 2
-   * @version 3
+   * @deprecated This is no longer needed in Nuxt 3 and Nuxt Bridge; all modules should be added to `modules` instead.
    */
   buildModules: [],
 
