@@ -33,22 +33,16 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       if (typeof dir === 'string') {
         return {
-          path: resolve(cwd, resolveAlias(dir, {
-            ...nuxt.options.alias,
-            '~': cwd
-          }))
+          path: resolve(cwd, resolveAlias(dir))
         }
       }
       if (!dir) {
         return []
       }
-      const dirs = (dir.dirs || [dir]).filter(_dir => _dir.path)
+      const dirs = (dir.dirs || [dir]).map(dir => typeof dir === 'string' ? { path: dir } : dir).filter(_dir => _dir.path)
       return dirs.map(_dir => ({
         ..._dir,
-        path: resolve(cwd, resolveAlias(_dir.path, {
-          ...nuxt.options.alias,
-          '~': cwd
-        }))
+        path: resolve(cwd, resolveAlias(_dir.path))
       }))
     }
 
@@ -56,7 +50,7 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.cwd))
+        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir))
         .flat()
 
       await nuxt.callHook('components:dirs', allDirs)
