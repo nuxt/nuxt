@@ -46,7 +46,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile
   ]
-  const external = ['#config']
+  const external = ['#_config']
 
   if (!Array.isArray(ctx.config.externals)) { return }
   ctx.config.externals.push(({ request }, cb) => {

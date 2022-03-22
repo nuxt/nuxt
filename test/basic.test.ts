@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
+import { setup, $fetch, startServer } from '@nuxt/test-utils'
 
 describe('fixtures:basic', async () => {
   await setup({
@@ -154,6 +154,61 @@ describe('fixtures:basic', async () => {
       const html = await $fetch('/')
 
       expect(html).toContain('Sugar Counter 12 x 2 = 24')
+    })
+  })
+
+  describe('dynamic paths', () => {
+    it('should work with no overrides', async () => {
+      const html = await $fetch('/assets')
+      for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
+        const url = match[2]
+        expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
+      }
+    })
+
+    it('adds relative paths to CSS', async () => {
+      const html = await $fetch('/assets')
+      const urls = Array.from(html.matchAll(/(href|src)="(.*?)"/g)).map(m => m[2])
+      const cssURL = urls.find(u => /_nuxt\/entry.*\.css$/.test(u))
+      if (process.env.TEST_WITH_WEBPACK) {
+        // Webpack injects CSS differently
+        return
+      }
+      const css = await $fetch(cssURL)
+      const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
+      expect(imageUrls).toMatchInlineSnapshot(`
+        [
+          "./logo.svg",
+          "../public.svg",
+        ]
+      `)
+    })
+
+    it('should allow setting base URL and build assets directory', async () => {
+      process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_other/'
+      process.env.NUXT_APP_BASE_URL = '/foo/'
+      await startServer()
+
+      const html = await $fetch('/assets')
+      for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
+        const url = match[2]
+        // TODO: webpack does not yet support dynamic static paths
+        expect(url.startsWith('/foo/_other/') || url === '/foo/public.svg' || (process.env.TEST_WITH_WEBPACK && url === '/public.svg')).toBeTruthy()
+      }
+    })
+
+    it('should allow setting CDN URL', async () => {
+      process.env.NUXT_APP_BASE_URL = '/foo/'
+      process.env.NUXT_APP_CDN_URL = 'https://example.com/'
+      process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_cdn/'
+      await startServer()
+
+      const html = await $fetch('/assets')
+      for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
+        const url = match[2]
+        // TODO: webpack does not yet support dynamic static paths
+        expect(url.startsWith('https://example.com/_cdn/') || url === 'https://example.com/public.svg' || (process.env.TEST_WITH_WEBPACK && url === '/public.svg')).toBeTruthy()
+      }
     })
   })
 })

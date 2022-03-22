@@ -168,3 +168,32 @@ export const layoutTemplate: NuxtTemplate = {
     ].join('\n')
   }
 }
+
+export const clientConfigTemplate: NuxtTemplate = {
+  filename: 'config.client.mjs',
+  getContents: () => 'export default window?.__NUXT__?.config || {}'
+}
+
+export const publicPathTemplate: NuxtTemplate = {
+  filename: 'paths.mjs',
+  getContents ({ nuxt }) {
+    return [
+      'import { joinURL } from \'ufo\'',
+      'import config from \'#_config\'',
+
+      nuxt.options.dev
+        ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
+        : 'const appConfig = config.app',
+
+      'export const baseURL = () => appConfig.baseURL',
+      'export const buildAssetsDir = () => appConfig.buildAssetsDir',
+
+      'export const buildAssetsURL = (...path) => joinURL(publicAssetsURL(), buildAssetsDir(), ...path)',
+
+      'export const publicAssetsURL = (...path) => {',
+      '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
+      '  return path.length ? joinURL(publicBase, ...path) : publicBase',
+      '}'
+    ].join('\n')
+  }
+}
