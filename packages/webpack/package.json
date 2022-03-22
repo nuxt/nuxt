@@ -36,7 +36,7 @@
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.4.12",
-    "postcss-import": "^14.0.2",
+    "postcss-import": "^14.1.0",
     "postcss-loader": "^6.2.1",
     "postcss-url": "^10.1.3",
     "style-resources-loader": "^1.5.0",

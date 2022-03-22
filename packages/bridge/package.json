@@ -50,7 +50,7 @@
     "pathe": "^0.2.0",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8",
-    "postcss-import": "^14.0.2",
+    "postcss-import": "^14.1.0",
     "postcss-import-resolver": "^2.0.0",
     "postcss-preset-env": "^7.4.3",
     "postcss-url": "^10.1.3",
