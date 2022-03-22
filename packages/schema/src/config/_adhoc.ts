@@ -9,6 +9,8 @@ export default {
    * @see [Nuxt 3](https://v3.nuxtjs.org/docs/directory-structure/components) and
    * [Nuxt 2](https://nuxtjs.org/docs/directory-structure/components/) documentation
    * @type {boolean | typeof import('../src/types/components').ComponentsOptions | typeof import('../src/types/components').ComponentsOptions['dirs']}
+   * @version 2
+   * @version 3
    */
   components: {
     $resolve: (val, get) => {
@@ -27,6 +29,7 @@ export default {
    *
    * @see [Nuxt 3 documentation](https://v3.nuxtjs.org/docs/directory-structure/composables)
    * @type {typeof import('../src/types/imports').AutoImportsOptions}
+   * @version 3
    */
   autoImports: {
     global: false,

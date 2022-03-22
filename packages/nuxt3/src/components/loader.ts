@@ -2,7 +2,7 @@ import { pathToFileURL } from 'url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Component } from '@nuxt/schema'
-import { genImport } from 'knitwork'
+import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 
@@ -37,13 +37,19 @@ function transform (code: string, id: string, components: Component[]) {
   const s = new MagicString(code)
 
   // replace `_resolveComponent("...")` to direct import
-  s.replace(/ _resolveComponent\("(.*?)"\)/g, (full, name) => {
+  s.replace(/(?<=[ (])_?resolveComponent\(["'](lazy-|Lazy)?([^'"]*?)["']\)/g, (full, lazy, name) => {
     const component = findComponent(components, name)
     if (component) {
       const identifier = map.get(component) || `__nuxt_component_${num++}`
       map.set(component, identifier)
-      imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
-      return ` ${identifier}`
+      if (lazy) {
+        // Nuxt will auto-import `defineAsyncComponent` for us
+        imports.add(`const ${identifier}_lazy = defineAsyncComponent(${genDynamicImport(component.filePath)})`)
+        return `${identifier}_lazy`
+      } else {
+        imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
+        return identifier
+      }
     }
     // no matched
     return full

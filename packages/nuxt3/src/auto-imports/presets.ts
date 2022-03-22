@@ -104,6 +104,7 @@ export const vuePreset = defineUnimportPreset({
     // Component
     'defineComponent',
     'defineAsyncComponent',
+    'resolveComponent',
     'getCurrentInstance',
     'h',
     'inject',

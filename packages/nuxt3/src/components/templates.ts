@@ -51,6 +51,7 @@ export const componentsTypeTemplate = {
 declare module 'vue' {
   export interface GlobalComponents {
 ${options.components.map(c => `    '${c.pascalName}': typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(join(options.buildDir, 'types'), c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join(',\n')}
+${options.components.map(c => `    'Lazy${c.pascalName}': typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(join(options.buildDir, 'types'), c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join(',\n')}
   }
 }
 export {}
