@@ -2675,7 +2675,7 @@ __metadata:
     semver: ^7.3.5
     ufo: ^0.8.1
     unbuild: latest
-    unimport: ^0.1.1
+    unimport: ^0.1.2
     unplugin: ^0.5.2
     unplugin-vue2-script-setup: ^0.10.0
     untyped: ^0.4.3
@@ -2974,7 +2974,7 @@ __metadata:
     semver: ^7.3.5
     unbuild: latest
     unctx: ^1.1.0
-    unimport: ^0.1.1
+    unimport: ^0.1.2
     untyped: ^0.4.3
   languageName: unknown
   linkType: soft
@@ -3138,7 +3138,7 @@ __metadata:
     std-env: ^3.0.1
     ufo: ^0.8.1
     unbuild: latest
-    unimport: ^0.1.1
+    unimport: ^0.1.2
   languageName: unknown
   linkType: soft
 
@@ -3251,7 +3251,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.20.0
     unbuild: latest
-    vitest: ^0.7.8
+    vitest: ^0.7.9
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3384,7 +3384,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.5.2
     vite: ^2.8.6
-    vite-node: ^0.7.8
+    vite-node: ^0.7.9
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -15554,7 +15554,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.2
     unbuild: ^0.7.0
-    vitest: ^0.7.8
+    vitest: ^0.7.9
     vue-router: ^4.0.14
     vue-tsc: ^0.33.7
   languageName: unknown
@@ -15605,7 +15605,7 @@ __metadata:
     scule: ^0.2.1
     ufo: ^0.8.1
     unbuild: latest
-    unimport: ^0.1.1
+    unimport: ^0.1.2
     unplugin: ^0.5.2
     untyped: ^0.4.3
     vue: ^3.2.31
@@ -21301,9 +21301,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "unimport@npm:0.1.1"
+"unimport@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "unimport@npm:0.1.2"
   dependencies:
     "@rollup/pluginutils": ^4.1.2
     escape-string-regexp: ^5.0.0
@@ -21314,7 +21314,7 @@ __metadata:
     pathe: ^0.2.0
     scule: ^0.2.1
     unplugin: ^0.3.3
-  checksum: 00737efdd11d7adff04229731313413ff964c940e4146a1f3e2661bfed67b50fc7a549903d2a132756a1bcc616b5fa5babbdcada6dc891adf924d0c1dc48cc19
+  checksum: 212b56cd24796471c7af635f90275aa6f8d8c4c2085e89a8ebef0da5533e1d5fb56eeeb3b36753ee6365e62ccb241bf7baac961b34c123bbf5ce06c7f86d2a2c
   languageName: node
   linkType: hard
 
@@ -21797,9 +21797,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.7.8":
-  version: 0.7.8
-  resolution: "vite-node@npm:0.7.8"
+"vite-node@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "vite-node@npm:0.7.9"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.5
@@ -21808,7 +21808,7 @@ __metadata:
     vite: ^2.8.6
   bin:
     vite-node: vite-node.mjs
-  checksum: 8d12d3935e3a1997e9e4359263b9b11773dcfd99f147d36464e4f015278451d257885affe4dc629a987d0f56e0651b6d0d8f175bfa0d8c89aece2daea7341408
+  checksum: b516268798352ba49ace4d5bc2c1aadb714a143110557e8f5102245cc8b05797dd39c94dd74dedd16c06853b2ded3d4c219f2b21c15d05c98a4d23d096b14c9e
   languageName: node
   linkType: hard
 
@@ -21872,9 +21872,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.7.8":
-  version: 0.7.8
-  resolution: "vitest@npm:0.7.8"
+"vitest@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "vitest@npm:0.7.9"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21899,7 +21899,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: c5d59810f147f5c75e9ca37eb7b78f5019d916877e82f0c76be9f8ae7105a44a3f92355e12252962bf264ebb2ccd4a5773116fb219e4da91abe9c54b59dc895d
+  checksum: ec6b61a68a5013e56d14587f13850617cb302ceb495fde2fc213d915ea26230cb7facd87e481bf5962c3cfb149160d3c31ae7fda3d57214f7b893820069e331f
   languageName: node
   linkType: hard
 
