@@ -5139,83 +5139,83 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volar/code-gen@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/code-gen@npm:0.33.6"
+"@volar/code-gen@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/code-gen@npm:0.33.7"
   dependencies:
-    "@volar/source-map": 0.33.6
-  checksum: e37aaee0a1e114fe7f39284f83e467c4da89c30630413b5401483a5ae410633b6383018ae20946782da30c9509a31cf2e0754715fe5590774ca080874a38be43
+    "@volar/source-map": 0.33.7
+  checksum: c4b1f21d004806b59fcc62a2a62ccf3b985a50231dd010afbc882cfb120d5be2b7b45963acc423e8a27a60dea5b90773e8386bdba1cf3899bd98b097e1dab293
   languageName: node
   linkType: hard
 
-"@volar/pug-language-service@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/pug-language-service@npm:0.33.6"
+"@volar/pug-language-service@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/pug-language-service@npm:0.33.7"
   dependencies:
-    "@volar/code-gen": 0.33.6
-    "@volar/shared": 0.33.6
-    "@volar/source-map": 0.33.6
-    "@volar/transforms": 0.33.6
+    "@volar/code-gen": 0.33.7
+    "@volar/shared": 0.33.7
+    "@volar/source-map": 0.33.7
+    "@volar/transforms": 0.33.7
     pug-lexer: ^5.0.1
     pug-parser: ^6.0.0
     vscode-languageserver-textdocument: ^1.0.3
     vscode-languageserver-types: ^3.17.0-next.6
-  checksum: e152799d2138c50d26192c1d6325e774e4e1ebbca360c85b354fd243ad16938a96eacb1ea926b77a380e36c6e1f7ee126097272ec0e6d456f0424ad5088b6209
+  checksum: e9c34a87a6382b2e7d9db51c132dc4b270f7b8d11472901564785136255f8c260d080086801d7dd3ecc4209b9fedf354f49765d27bb137951596424709591b8f
   languageName: node
   linkType: hard
 
-"@volar/shared@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/shared@npm:0.33.6"
+"@volar/shared@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/shared@npm:0.33.7"
   dependencies:
     upath: ^2.0.1
     vscode-jsonrpc: ^8.0.0-next.5
     vscode-uri: ^3.0.3
-  checksum: 2497c1f9d97b1682fe9a77a645ab3022c906961b3a177053571861dbdbe6694c85e23cdc68651da536ff110bebb5de9fe6a239f78390f4ccbdce1c8194c65219
+  checksum: 6be5b208217f91c333d3ace9ae9fe6fea4b75f8babdc3d184efe94d7c6139cbc6f3a44b2c1c7538fb6a3a50cc7c541fe7f7160cd41257255b36fe649c55dfd12
   languageName: node
   linkType: hard
 
-"@volar/source-map@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/source-map@npm:0.33.6"
-  checksum: 0e312aecc82c9b0c3042ca88ae2ac4cff00f6e60e425e41d15fcc22db22bf892bba84fc48b338d9f0aadf256a8d06916674acf42c518d36df3cdaa5ea77e0861
+"@volar/source-map@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/source-map@npm:0.33.7"
+  checksum: 705fabcc7bc25c76ae76ec75fabe0793902420fc65f2246297a4d10fa882ddf0c0c32d1017cdbb97b20dcb6dec4034eac4c544bb996096fc6058b012c52fcc2e
   languageName: node
   linkType: hard
 
-"@volar/transforms@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/transforms@npm:0.33.6"
+"@volar/transforms@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/transforms@npm:0.33.7"
   dependencies:
-    "@volar/shared": 0.33.6
+    "@volar/shared": 0.33.7
     vscode-languageserver-types: ^3.17.0-next.6
-  checksum: 679c3faa83dfb5dce76730612b509030e49ec9622d2ddc06192bfb02fb1526df115afd97f669b921e89c8c4059bad876902648113aecf89c67b5181ffb62de02
+  checksum: bcb815790a6e890e8e88af32658e79619446b6c75f73a37e1645801b911880933e5ae32f2c2dc5ab4d74a6a1921146ca83572d26524ab1577288673b99613d7d
   languageName: node
   linkType: hard
 
-"@volar/vue-code-gen@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/vue-code-gen@npm:0.33.6"
+"@volar/vue-code-gen@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/vue-code-gen@npm:0.33.7"
   dependencies:
-    "@volar/code-gen": 0.33.6
-    "@volar/source-map": 0.33.6
+    "@volar/code-gen": 0.33.7
+    "@volar/source-map": 0.33.7
     "@vue/compiler-core": ^3.2.27
     "@vue/compiler-dom": ^3.2.27
     "@vue/shared": ^3.2.27
-  checksum: 6ea2fba1112cd7c38c7c657d27232dc775ee10edffe3d40208b72f52dd2204833c8cf880a77211928a1d1a55c37b85cbd6bc89fa6976ce8711b919ef3bac3f28
+  checksum: bac243b608caa6326ce2149eb3def2e11f32db449eda21b0d0a07e090f81a580cf3d030818ad005b8dcf8e01cc5514d2f4dbddefd24ee48917285550ce0ea8ec
   languageName: node
   linkType: hard
 
-"@volar/vue-typescript@npm:0.33.6":
-  version: 0.33.6
-  resolution: "@volar/vue-typescript@npm:0.33.6"
+"@volar/vue-typescript@npm:0.33.7":
+  version: 0.33.7
+  resolution: "@volar/vue-typescript@npm:0.33.7"
   dependencies:
-    "@volar/code-gen": 0.33.6
-    "@volar/pug-language-service": 0.33.6
-    "@volar/source-map": 0.33.6
-    "@volar/vue-code-gen": 0.33.6
+    "@volar/code-gen": 0.33.7
+    "@volar/pug-language-service": 0.33.7
+    "@volar/source-map": 0.33.7
+    "@volar/vue-code-gen": 0.33.7
     "@vue/compiler-sfc": ^3.2.27
     "@vue/reactivity": ^3.2.27
-  checksum: dc6e5cc6367711cd4de01a73c17cfc18ee2bdb791a1547b500f60cc44c52603d2bfebf58ec1ff9daaebcc2ad21683a47a964d801904cbfe7876f966d55ce9663
+  checksum: 7f98fa18149186fe8c0590fea424dc3bb86a7e6c528c0f0331d246409ed3a169e300447e0755a3207c53a1fae27fd7e9cd4d148c742f5d64380f769a64c6601f
   languageName: node
   linkType: hard
 
@@ -15556,7 +15556,7 @@ __metadata:
     unbuild: ^0.7.0
     vitest: ^0.7.7
     vue-router: ^4.0.14
-    vue-tsc: ^0.33.6
+    vue-tsc: ^0.33.7
   languageName: unknown
   linkType: soft
 
@@ -22115,16 +22115,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-tsc@npm:^0.33.6":
-  version: 0.33.6
-  resolution: "vue-tsc@npm:0.33.6"
+"vue-tsc@npm:^0.33.7":
+  version: 0.33.7
+  resolution: "vue-tsc@npm:0.33.7"
   dependencies:
-    "@volar/vue-typescript": 0.33.6
+    "@volar/vue-typescript": 0.33.7
   peerDependencies:
     typescript: "*"
   bin:
     vue-tsc: bin/vue-tsc.js
-  checksum: 5c5e21c377fdc72dd2fb3030adb0be0ade08381da77fe3d2d08f33989e791792994e346068551ac1f6a572911ce8daf15263235378f9719c10826b8f51ea854d
+  checksum: 56c290da46af3f58833ce8e511845846bf2e3b633dea3c23b42f8e3c8996d1935d33ada9994d04ec6082438fa060c2f9bdd955abe28407c614f08c60b3a1f863
   languageName: node
   linkType: hard
 
