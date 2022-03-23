@@ -3,7 +3,7 @@ const route = useRoute()
 </script>
 
 <template>
-  <NuxtExampleLayout example="with-pages">
+  <NuxtExampleLayout show-tips example="with-pages">
     <NuxtPage />
 
     <template #nav>
@@ -32,6 +32,15 @@ const route = useRoute()
     <template #footer>
       <div class="text-center p-4 op-50">
         Current route: <code>{{ route.path }}</code>
+      </div>
+    </template>
+
+    <template #tips>
+      <div>
+        <p>This example shows how to use the <code>pages/</code> directory.</p>
+        <a href="https://v3.nuxtjs.org/docs/directory-structure/pages" target="_blank">
+          Read more about pages
+        </a>
       </div>
     </template>
   </NuxtExampleLayout>

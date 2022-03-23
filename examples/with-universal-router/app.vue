@@ -4,7 +4,7 @@ const timer = useState('timer', () => 0)
 </script>
 
 <template>
-  <NuxtExampleLayout example="with-universal-router">
+  <NuxtExampleLayout show-tips example="with-universal-router">
     A page...
     <br>
 
@@ -29,6 +29,14 @@ const timer = useState('timer', () => 0)
     <template #footer>
       <div class="text-center p-4 op-50">
         Current route: <code>{{ route.path }}</code>
+      </div>
+    </template>
+
+    <template #tips>
+      <div>
+        <p>
+          This example demonstrates Nuxt universal routing utilities without depending on `pages/` and `vue-router`.
+        </p>
       </div>
     </template>
   </NuxtExampleLayout>

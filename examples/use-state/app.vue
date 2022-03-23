@@ -3,7 +3,7 @@ const counter = useState('counter', () => Math.round(Math.random() * 1000))
 </script>
 
 <template>
-  <NuxtExampleLayout :show-tips="true" example="use-state">
+  <NuxtExampleLayout show-tips example="use-state">
     <div>Counter: {{ counter }}</div>
     <div>
       <NButton class="font-mono" @click="counter++">

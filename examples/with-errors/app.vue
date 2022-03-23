@@ -15,7 +15,7 @@ function triggerError () {
 </script>
 
 <template>
-  <NuxtExampleLayout example="with-errors">
+  <NuxtExampleLayout show-tips example="with-errors">
     <template #nav>
       <nav class="flex align-center gap-4 p-4">
         <NuxtLink to="/" class="n-link-base">
@@ -39,11 +39,17 @@ function triggerError () {
       </nav>
     </template>
 
-    <FaultyComponent />
-
     <template #footer>
       <div class="text-center p-4 op-50">
         Current route: <code>{{ route.path }}</code>
+      </div>
+    </template>
+    <template #tips>
+      <div>
+        <p>This example shows how to handle errors in different contexts: pages, plugins, components and middleware.</p>
+        <a href="https://v3.nuxtjs.org/docs/usage/error-handling" target="_blank">
+          Read more about error handling
+        </a>
       </div>
     </template>
   </NuxtExampleLayout>

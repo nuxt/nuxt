@@ -8,7 +8,23 @@ const { data } = await useAsyncData('sum',
 </script>
 
 <template>
-  <NuxtExampleLayout example="with-wasm">
-    {{ a }} + {{ b }} = {{ data.sum }}
+  <NuxtExampleLayout show-tips example="with-wasm">
+    <p>
+      <code>a = 100</code>
+    </p>
+    <p>
+      <code>b = 250</code>
+    </p>
+    <p>
+      Computation performed server-side with WASM :
+      <br>
+      <code>{{ a }} + {{ b }} = {{ data.sum }}</code>
+    </p>
+
+    <template #tips>
+      <p>
+        This example demonstrates the server-side support of WebAssembly in Nuxt 3.
+      </p>
+    </template>
   </NuxtExampleLayout>
 </template>

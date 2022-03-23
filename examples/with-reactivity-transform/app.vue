@@ -12,7 +12,7 @@ function dec () {
 </script>
 
 <template>
-  <NuxtExampleLayout :show-tips="true" example="with-reactivity-transform">
+  <NuxtExampleLayout show-tips example="with-reactivity-transform">
     <div>
       <Label :count="count" />
       <div class="flex gap-1 justify-center">
@@ -27,10 +27,15 @@ function dec () {
 
     <template #tips>
       <div class="flex-auto">
-        Read the documentation about
-        <NLink href="https://vuejs.org/guide/extras/reactivity-transform.html" target="_blank">
-          Reactivity Transform.
-        </NLink>
+        <p>
+          This example demonstrates the support of Reactivity transforms in Nuxt 3.
+        </p>
+        <p>
+          Read the documentation about
+          <a href="https://vuejs.org/guide/extras/reactivity-transform.html" target="_blank">
+            Reactivity Transform.
+          </a>
+        </p>
       </div>
     </template>
   </NuxtExampleLayout>

@@ -1,5 +1,5 @@
 <template>
-  <NuxtExampleLayout example="use-meta" :show-tips="true">
+  <NuxtExampleLayout example="use-meta" show-tips>
     <div
       class="bg-gray-400/10 border-2 border-dashed border-gray-400/50 rounded-xl py-8 px-2 op-80"
     >
@@ -23,11 +23,16 @@
 
     <template #tips>
       <div class="flex-auto">
-        Learn more about
-        <NuxtLink to="https://v3.nuxtjs.org/docs/usage/meta-tags" target="_blank">
-          Meta tags
-        </NuxtLink>.
-        Open in editor to see the source code 👉
+        <p>
+          This example shows how to use <code>useMeta</code> and Nuxt built-in components to bind meta data to the <code>head</code> of the page.
+        </p>
+        <p>
+          Learn more about
+          <NuxtLink to="https://v3.nuxtjs.org/docs/usage/meta-tags" target="_blank">
+            Meta tags
+          </NuxtLink>.
+          Open in editor to see the source code 👉
+        </p>
       </div>
     </template>
   </NuxtExampleLayout>
