@@ -82,7 +82,7 @@ export async function bundle (nuxt: Nuxt) {
             ]
           }
         }
-      },
+      } as ViteOptions,
       nuxt.options.vite
     )
   }

@@ -62,7 +62,6 @@ export async function buildServer (ctx: ViteBuildContext) {
           preferConst: true,
           format: 'module'
         },
-        external: ['#config'],
         onwarn (warning, rollupWarn) {
           if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
             rollupWarn(warning)
