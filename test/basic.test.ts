@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
-import { setup, $fetch, startServer } from '@nuxt/test-utils'
+import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -157,27 +157,66 @@ describe('reactivity transform', () => {
 })
 
 describe('extends support', () => {
-  describe('pages', () => {
-    it('extends foo/pages/index.vue', async () => {
+  describe('layouts & pages', () => {
+    it('extends foo/layouts/default & foo/pages/index', async () => {
       const html = await $fetch('/foo')
-      expect(html).toContain('Hello from extended page of foo!')
+      expect(html).toContain('Extended layout from foo')
+      expect(html).toContain('Extended page from foo')
     })
 
-    it('extends bar/pages/override.vue over foo/pages/override.vue', async () => {
+    it('extends [bar/layouts/override & bar/pages/override] over [foo/layouts/override & foo/pages/override]', async () => {
       const html = await $fetch('/override')
+      expect(html).toContain('Extended layout from bar')
       expect(html).toContain('Extended page from bar')
+    })
+  })
+
+  describe('components', () => {
+    it('extends foo/components/ExtendsFoo', async () => {
+      const html = await $fetch('/foo')
+      expect(html).toContain('Extended component from foo')
+    })
+
+    it('extends bar/components/ExtendsOverride over foo/components/ExtendsOverride', async () => {
+      const html = await $fetch('/override')
+      expect(html).toContain('Extended component from bar')
     })
   })
 
   describe('middlewares', () => {
     it('extends foo/middleware/foo', async () => {
-      const html = await $fetch('/with-middleware')
-      expect(html).toContain('Injected by extended middleware')
+      const html = await $fetch('/foo')
+      expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
     })
 
-    it('extends bar/middleware/override.vue over foo/middleware/override.vue', async () => {
-      const html = await $fetch('/with-middleware-override')
-      expect(html).toContain('Injected by extended middleware from bar')
+    it('extends bar/middleware/override over foo/middleware/override', async () => {
+      const html = await $fetch('/override')
+      expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
+    })
+  })
+
+  describe('composables', () => {
+    it('extends foo/composables/foo', async () => {
+      const html = await $fetch('/foo')
+      expect(html).toContain('Composable | useExtendsFoo: foo')
+    })
+  })
+
+  describe('plugins', () => {
+    it('extends foo/plugins/foo', async () => {
+      const html = await $fetch('/foo')
+      expect(html).toContain('Plugin | foo: String generated from foo plugin!')
+    })
+  })
+
+  describe('server', () => {
+    it('extends foo/server/api/foo', async () => {
+      expect(await $fetch('/api/foo')).toBe('foo')
+    })
+
+    it('extends foo/server/middleware/foo', async () => {
+      const { headers } = await fetch('/')
+      expect(headers.get('injected-header')).toEqual('foo')
     })
   })
 })

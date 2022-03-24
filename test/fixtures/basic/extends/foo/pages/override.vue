@@ -1,3 +1,3 @@
 <template>
-  <div>Extended page from foo</div>
+  <div>This page should be overriden by bar</div>
 </template>
