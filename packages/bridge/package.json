@@ -58,7 +58,7 @@
     "semver": "^7.3.5",
     "ufo": "^0.8.1",
     "unimport": "^0.1.2",
-    "unplugin": "^0.5.2",
+    "unplugin": "^0.6.0",
     "unplugin-vue2-script-setup": "^0.10.0",
     "untyped": "^0.4.3",
     "vite": "^2.8.6",

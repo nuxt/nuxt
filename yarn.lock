@@ -2676,7 +2676,7 @@ __metadata:
     ufo: ^0.8.1
     unbuild: latest
     unimport: ^0.1.2
-    unplugin: ^0.5.2
+    unplugin: ^0.6.0
     unplugin-vue2-script-setup: ^0.10.0
     untyped: ^0.4.3
     vite: ^2.8.6
@@ -3249,9 +3249,9 @@ __metadata:
     get-port-please: ^2.4.3
     jiti: ^1.13.0
     ohmyfetch: ^0.4.15
-    playwright: ^1.20.0
+    playwright: ^1.20.1
     unbuild: latest
-    vitest: ^0.7.9
+    vitest: ^0.7.10
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3382,9 +3382,9 @@ __metadata:
     rollup-plugin-visualizer: ^5.6.0
     ufo: ^0.8.1
     unbuild: latest
-    unplugin: ^0.5.2
+    unplugin: ^0.6.0
     vite: ^2.8.6
-    vite-node: ^0.7.9
+    vite-node: ^0.7.10
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -3502,7 +3502,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.8.1
     unbuild: latest
-    unplugin: ^0.5.2
+    unplugin: ^0.6.0
     url-loader: ^4.1.1
     vue: 3.2.31
     vue-loader: ^17.0.0
@@ -4995,10 +4995,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.29.5":
-  version: 0.29.5
-  resolution: "@unocss/reset@npm:0.29.5"
-  checksum: bf3b21c40f7f0b9cd987dc87c289a186050f9dc6e928fce6872f76fdad53e1efdfd6148c64ecc4cfefadb163df163e6bfb4b1f64425011b521d68104e26a3294
+"@unocss/reset@npm:^0.30.0":
+  version: 0.30.0
+  resolution: "@unocss/reset@npm:0.30.0"
+  checksum: addb8e0e503539d0d6256d4b8d38437b56a88145eb3f4731fcfd8d408d0b938be25414b0ee758bd814a9d474615bcb7ac8c380f0eb2e17ba866d2c482cd1acbc
   languageName: node
   linkType: hard
 
@@ -15539,7 +15539,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.29.5
+    "@unocss/reset": ^0.30.0
     esbuild: ^0.14.27
     eslint: ^8.11.0
     eslint-plugin-jsdoc: ^38.0.6
@@ -15554,7 +15554,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.2
     unbuild: ^0.7.0
-    vitest: ^0.7.9
+    vitest: ^0.7.10
     vue-router: ^4.0.14
     vue-tsc: ^0.33.7
   languageName: unknown
@@ -15606,7 +15606,7 @@ __metadata:
     ufo: ^0.8.1
     unbuild: latest
     unimport: ^0.1.2
-    unplugin: ^0.5.2
+    unplugin: ^0.6.0
     untyped: ^0.4.3
     vue: ^3.2.31
     vue-meta: next
@@ -16454,9 +16454,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.20.0":
-  version: 1.20.0
-  resolution: "playwright-core@npm:1.20.0"
+"playwright-core@npm:1.20.1":
+  version: 1.20.1
+  resolution: "playwright-core@npm:1.20.1"
   dependencies:
     colors: 1.4.0
     commander: 8.3.0
@@ -16478,18 +16478,18 @@ __metadata:
     yazl: 2.5.1
   bin:
     playwright: cli.js
-  checksum: 24a28715a1d9acda0fd0107b4a5b2955013bcb06b5412fa423cd7fcd8a6b35e46a6c80198d9b2d461bfe87fca3a08adb35b1b6f4eaffbe4db54d076e55f4638c
+  checksum: a436eff4cfb88a68d6c2da7941c0ace35f940f885f97c125e1a0103e4601f1be313eada81283f1208d5cded57a841482f743526fc3960c5f2a383b08220401de
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.20.0":
-  version: 1.20.0
-  resolution: "playwright@npm:1.20.0"
+"playwright@npm:^1.20.1":
+  version: 1.20.1
+  resolution: "playwright@npm:1.20.1"
   dependencies:
-    playwright-core: 1.20.0
+    playwright-core: 1.20.1
   bin:
     playwright: cli.js
-  checksum: 09813217eb8c5f003dce158f25cb8aa0b6801a02bccaf258c02e1781ac71e0d721c221ea7cede806ea98a8b3a2cf803e9ced01f7b8a785bc38d4a9a257711e91
+  checksum: cf16309063467aa7dcccbef1fd4bacd19aa83827320ddd4806a0b9676f4cf683aae0a7cf9c73cf43ae99db02b16d5019c039c98fe811394d537be3a1331ea314
   languageName: node
   linkType: hard
 
@@ -21528,6 +21528,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unplugin@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "unplugin@npm:0.6.0"
+  dependencies:
+    chokidar: ^3.5.3
+    webpack-sources: ^3.2.3
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    esbuild: ">=0.13"
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    esbuild:
+      optional: true
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 33e0d033f984f9013df72fd810ac5a6c803bbb6f2506cd2c711f0d72942698fe781a22a1c60f13a470d547caf9ec645eda42e3dcd102551326daf38f3bd682b5
+  languageName: node
+  linkType: hard
+
 "unquote@npm:~1.1.1":
   version: 1.1.1
   resolution: "unquote@npm:1.1.1"
@@ -21797,9 +21822,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.7.9":
-  version: 0.7.9
-  resolution: "vite-node@npm:0.7.9"
+"vite-node@npm:^0.7.10":
+  version: 0.7.10
+  resolution: "vite-node@npm:0.7.10"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.5
@@ -21808,7 +21833,7 @@ __metadata:
     vite: ^2.8.6
   bin:
     vite-node: vite-node.mjs
-  checksum: b516268798352ba49ace4d5bc2c1aadb714a143110557e8f5102245cc8b05797dd39c94dd74dedd16c06853b2ded3d4c219f2b21c15d05c98a4d23d096b14c9e
+  checksum: 2405880790afcd4f34474baf5cc27b59003f2ed6c21a6280be982ec7a55060add3cd9c229fe20af9c1b46b15a0a2454e8b17c8f08b8bb52f733480f71b8a0493
   languageName: node
   linkType: hard
 
@@ -21872,9 +21897,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.7.9":
-  version: 0.7.9
-  resolution: "vitest@npm:0.7.9"
+"vitest@npm:^0.7.10":
+  version: 0.7.10
+  resolution: "vitest@npm:0.7.10"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21899,7 +21924,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: ec6b61a68a5013e56d14587f13850617cb302ceb495fde2fc213d915ea26230cb7facd87e481bf5962c3cfb149160d3c31ae7fda3d57214f7b893820069e331f
+  checksum: cabe891d741ea8879cfe64ea37a0783054f484640a63994869d83155b918317b1503068da985408073349b2508bd0f29acfabdba42d6a394f8c57a25e0d17725
   languageName: node
   linkType: hard
 

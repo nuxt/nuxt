@@ -60,7 +60,7 @@
     "scule": "^0.2.1",
     "ufo": "^0.8.1",
     "unimport": "^0.1.2",
-    "unplugin": "^0.5.2",
+    "unplugin": "^0.6.0",
     "untyped": "^0.4.3",
     "vue": "^3.2.31",
     "vue-router": "^4.0.14"
