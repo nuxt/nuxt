@@ -3,7 +3,9 @@ export default {
    * Set to true to generate an async entrypoint for the Vue bundle (for module federation support).
    * @version 3
    */
-  asyncEntry: false,
+  asyncEntry: {
+    $resolve: (val, get) => val ?? (get('dev') && get('experimental.viteNode')) ?? false
+  },
 
   /**
    * Use vite-node for on-demand server chunk loading
