@@ -1,7 +1,7 @@
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, logger } from '@nuxt/kit'
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import { createUnimport, Import, toImports, Unimport } from 'unimport'
-import { AutoImportsOptions, ImportPresetWithDeperection } from '@nuxt/schema'
+import { AutoImportsOptions, ImportPresetWithDeprecation } from '@nuxt/schema'
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
 import { scanForComposables } from './composables'
@@ -22,9 +22,9 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
   },
   async setup (options, nuxt) {
     // Allow modules extending sources
-    await nuxt.callHook('autoImports:sources', options.presets as ImportPresetWithDeperection[])
+    await nuxt.callHook('autoImports:sources', options.presets as ImportPresetWithDeprecation[])
 
-    options.presets.forEach((i: ImportPresetWithDeperection) => {
+    options.presets.forEach((i: ImportPresetWithDeprecation) => {
       if (typeof i !== 'string' && i.names && !i.imports) {
         i.imports = i.names
         logger.warn('auto-imports: presets.names is deprecated, use presets.imports instead')
@@ -36,7 +36,7 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
 
     // Create a context to share state between module internals
     const ctx = createUnimport({
-      presets: defaultPresets,
+      presets: options.presets,
       imports: options.imports
     })
 
