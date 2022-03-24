@@ -9,8 +9,6 @@ export const isVue3 = false
 
 export const defineNuxtComponent = defineComponent
 
-export interface RuntimeNuxtHooks { }
-
 export interface VueAppCompat {
   component: Vue['component'],
   config: {
@@ -24,6 +22,12 @@ export interface VueAppCompat {
   unmount: Vue['unmount'],
   use: Vue['use']
   version: string
+}
+
+export interface RuntimeNuxtHooks {
+  'vue:setup': () => void
+  'app:mounted': (app: VueAppCompat) => void | Promise<void>
+  'meta:register': (metaRenderers: any[]) => void | Promise<void>
 }
 
 export interface NuxtAppCompat {
