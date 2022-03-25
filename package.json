@@ -31,7 +31,7 @@
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
     "vite": "^2.8.6",
-    "unbuild": "^0.7.0"
+    "unbuild": "^0.7.2"
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.1.2",
@@ -41,7 +41,7 @@
     "@types/jsdom": "^16",
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
-    "@unocss/reset": "^0.30.1",
+    "@unocss/reset": "^0.30.3",
     "esbuild": "^0.14.27",
     "eslint": "^8.11.0",
     "eslint-plugin-jsdoc": "^38.0.6",
@@ -54,11 +54,11 @@
     "miniflare": "^1.4.1",
     "object-hash": "^3.0.0",
     "pathe": "^0.2.0",
-    "typescript": "^4.6.2",
-    "unbuild": "^0.7.0",
-    "vitest": "^0.7.10",
+    "typescript": "^4.6.3",
+    "unbuild": "^0.7.2",
+    "vitest": "^0.7.11",
     "vue-router": "^4.0.14",
-    "vue-tsc": "^0.33.7"
+    "vue-tsc": "^0.33.9"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"

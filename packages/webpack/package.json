@@ -32,7 +32,7 @@
     "magic-string": "^0.26.1",
     "memfs": "^3.4.1",
     "mini-css-extract-plugin": "^2.6.0",
-    "mlly": "^0.4.3",
+    "mlly": "^0.5.1",
     "pathe": "^0.2.0",
     "pify": "^5.0.0",
     "postcss": "^8.4.12",

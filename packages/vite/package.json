@@ -33,7 +33,7 @@
     "get-port-please": "^2.4.3",
     "knitwork": "^0.1.1",
     "magic-string": "^0.26.1",
-    "mlly": "^0.4.3",
+    "mlly": "^0.5.1",
     "pathe": "^0.2.0",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8.4.12",
@@ -44,7 +44,7 @@
     "ufo": "^0.8.1",
     "unplugin": "^0.6.0",
     "vite": "^2.8.6",
-    "vite-node": "^0.7.10"
+    "vite-node": "^0.7.11"
   },
   "peerDependencies": {
     "vue": "3.2.31"
