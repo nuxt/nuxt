@@ -179,7 +179,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinURL } from \'ufo\'',
-      'import config from \'#_config\'',
+      !nuxt.options.dev && 'import config from \'#_config\'',
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
@@ -194,6 +194,6 @@ export const publicPathTemplate: NuxtTemplate = {
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
       '  return path.length ? joinURL(publicBase, ...path) : publicBase',
       '}'
-    ].join('\n')
+    ].filter(Boolean).join('\n')
   }
 }
