@@ -106,14 +106,13 @@ function getNameFromPath (path: string) {
   return kebabCase(basename(path).replace(extname(path), '')).replace(/["']/g, '')
 }
 
-function uniqueBy (arr: any[], uniqueKey: string) {
-  const seen = new Set<string>()
-  const res = []
-  for (const i of arr) {
-    const key = i[uniqueKey]
-    if (seen.has(key)) { continue }
-    res.push(i)
-    seen.add(key)
+function uniqueBy <T, K extends keyof T> (arr: T[], key: K) {
+  const res: T[] = []
+  const seen = new Set<T[K]>()
+  for (const item of arr) {
+    if (seen.has(item[key])) { continue }
+    seen.add(item[key])
+    res.push(item)
   }
   return res
 }

@@ -272,14 +272,12 @@ export function getImportName (name: string) {
   return pascalCase(name).replace(/[^\w]/g, '')
 }
 
-function uniqueBy (arr: any[], key: string) {
-  const res = []
-  const keys = new Set<string>()
+function uniqueBy <T, K extends keyof T> (arr: T[], key: K) {
+  const res: T[] = []
+  const seen = new Set<T[K]>()
   for (const item of arr) {
-    if (keys.has(item[key])) {
-      continue
-    }
-    keys.add(item[key])
+    if (seen.has(item[key])) { continue }
+    seen.add(item[key])
     res.push(item)
   }
   return res
