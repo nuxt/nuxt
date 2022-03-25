@@ -40,7 +40,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     })
   )).flat()
 
-  return uniqueBy(allRoutes, 'name')
+  return uniqueBy(allRoutes, 'path')
 }
 
 export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtPage[] {

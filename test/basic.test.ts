@@ -91,6 +91,16 @@ describe('pages', () => {
     expect(html).toContain('foo: foobar')
     expect(html).toContain('group: admin')
   })
+
+  it('/parent', async () => {
+    const html = await $fetch('/parent')
+    expect(html).toContain('parent/index')
+  })
+
+  it('/another-parent', async () => {
+    const html = await $fetch('/another-parent')
+    expect(html).toContain('another-parent/index')
+  })
 })
 
 describe('navigate', () => {
