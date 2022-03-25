@@ -1,4 +1,4 @@
-import Vue from 'vue' // eslint-disable-line import/default
+import Vue from 'vue'
 import VueCompositionAPI from '@vue/composition-api'
 import { defineNuxtPlugin } from '#app'
 

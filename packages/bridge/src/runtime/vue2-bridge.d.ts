@@ -1,7 +1,60 @@
-import Vue from 'vue'
+import * as VueCapi from '@vue/composition-api'
 
-export * from '@vue/composition-api'
+declare module 'vue' {
+  export const EffectScope: typeof VueCapi['EffectScope']
+  export const computed: typeof VueCapi['computed']
+  export const createApp: typeof VueCapi['createApp']
+  export const createRef: typeof VueCapi['createRef']
+  export const customRef: typeof VueCapi['customRef']
+  export const defineAsyncComponent: typeof VueCapi['defineAsyncComponent']
+  export const defineComponent: typeof VueCapi['defineComponent']
+  export const del: typeof VueCapi['del']
+  export const effectScope: typeof VueCapi['effectScope']
+  export const getCurrentInstance: typeof VueCapi['getCurrentInstance']
+  export const getCurrentScope: typeof VueCapi['getCurrentScope']
+  export const h: typeof VueCapi['h']
+  export const inject: typeof VueCapi['inject']
+  export const isRaw: typeof VueCapi['isRaw']
+  export const isReactive: typeof VueCapi['isReactive']
+  export const isReadonly: typeof VueCapi['isReadonly']
+  export const isRef: typeof VueCapi['isRef']
+  export const markRaw: typeof VueCapi['markRaw']
+  export const nextTick: typeof VueCapi['nextTick']
+  export const onActivated: typeof VueCapi['onActivated']
+  export const onBeforeMount: typeof VueCapi['onBeforeMount']
+  export const onBeforeUnmount: typeof VueCapi['onBeforeUnmount']
+  export const onBeforeUpdate: typeof VueCapi['onBeforeUpdate']
+  export const onDeactivated: typeof VueCapi['onDeactivated']
+  export const onErrorCaptured: typeof VueCapi['onErrorCaptured']
+  export const onMounted: typeof VueCapi['onMounted']
+  export const onScopeDispose: typeof VueCapi['onScopeDispose']
+  export const onServerPrefetch: typeof VueCapi['onServerPrefetch']
+  export const onUnmounted: typeof VueCapi['onUnmounted']
+  export const onUpdated: typeof VueCapi['onUpdated']
+  export const provide: typeof VueCapi['provide']
+  export const proxyRefs: typeof VueCapi['proxyRefs']
+  export const reactive: typeof VueCapi['reactive']
+  export const readonly: typeof VueCapi['readonly']
+  export const ref: typeof VueCapi['ref']
+  export const set: typeof VueCapi['set']
+  export const shallowReactive: typeof VueCapi['shallowReactive']
+  export const shallowReadonly: typeof VueCapi['shallowReadonly']
+  export const shallowRef: typeof VueCapi['shallowRef']
+  export const toRaw: typeof VueCapi['toRaw']
+  export const toRef: typeof VueCapi['toRef']
+  export const toRefs: typeof VueCapi['toRefs']
+  export const triggerRef: typeof VueCapi['triggerRef']
+  export const unref: typeof VueCapi['unref']
+  export const useAttrs: typeof VueCapi['useAttrs']
+  export const useCSSModule: typeof VueCapi['useCSSModule']
+  export const useCssModule: typeof VueCapi['useCssModule']
+  export const useSlots: typeof VueCapi['useSlots']
+  export const warn: typeof VueCapi['warn']
+  export const watch: typeof VueCapi['watch']
+  export const watchEffect: typeof VueCapi['watchEffect']
+  export const watchPostEffect: typeof VueCapi['watchPostEffect']
+  export const watchSyncEffect: typeof VueCapi['watchSyncEffect']
+  export const isFunction: (fn: unknown) => boolean
+}
 
-export declare const isFunction: (fn: unknown) => boolean
-
-export { Vue as default }
+export {}

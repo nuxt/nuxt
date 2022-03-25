@@ -12,6 +12,9 @@ describe('fixtures:bridge', async () => {
     it('render hello world', async () => {
       expect(await $fetch('/')).to.contain('Hello Vue 2!')
     })
+    it('uses server Vue build', async () => {
+      expect(await $fetch('/')).to.contain('Rendered on server: true')
+    })
   })
 
   describe('navigate', () => {

@@ -58,9 +58,7 @@ async function bundle (nuxt: Nuxt, builder: any) {
             'ufo',
             'date-fns',
             'nanoid',
-            'vue',
-            'vue2',
-            'vue2-bridge'
+            'vue'
             // TODO(Anthony): waiting for Vite's fix https://github.com/vitejs/vite/issues/5688
             // ...nuxt.options.build.transpile.filter(i => typeof i === 'string'),
             // 'vue-demi'

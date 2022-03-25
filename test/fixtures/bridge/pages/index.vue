@@ -6,6 +6,7 @@
         Update
       </button>
     </div>
+    Rendered on server: {{ serverBuild }}
   </div>
 </template>
 
@@ -15,4 +16,5 @@ const version = ref('2')
 const state = useState('test-state')
 state.value = '123'
 const updateState = () => { state.value = '456' }
+const serverBuild = useState('server-build', () => getCurrentInstance().proxy.$isServer)
 </script>
