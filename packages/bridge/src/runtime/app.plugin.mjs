@@ -19,20 +19,29 @@ function proxiedState (state) {
   })
 }
 
+const runOnceWith = (obj, fn) => {
+  if (!obj || !['function', 'object'].includes(typeof obj)) {
+    return fn()
+  }
+  if (obj.__nuxt_installed) { return }
+  obj.__nuxt_installed = true
+  return fn()
+}
+
 export default async (ctx, inject) => {
   const nuxtApp = {
     vueApp: {
-      component: Vue.component.bind(Vue),
+      component: (id, definition) => runOnceWith(definition, () => Vue.component(id, definition)),
       config: {
         globalProperties: {}
       },
-      directive: Vue.directive.bind(Vue),
-      mixin: Vue.mixin.bind(Vue),
+      directive: (id, definition) => runOnceWith(definition, () => Vue.directive(id, definition)),
+      mixin: mixin => runOnceWith(mixin, () => Vue.mixin(mixin)),
       mount: () => { },
       provide: inject,
       unmount: () => { },
       use (vuePlugin) {
-        vuePlugin.install(this)
+        runOnceWith(vuePlugin, () => vuePlugin.install(this))
       },
       version: Vue.version
     },
