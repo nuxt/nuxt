@@ -44,11 +44,11 @@ async function writeManifest (extraEntries) {
   await fs.writeFile(join(dir, 'client.manifest.mjs'), 'export default ' + JSON.stringify(clientManifest, null, 2), 'utf8')
 }
 
-export default (async () => {
+export default async (ssrContext) => {
   const { default: render } = await runner.executeFile(entry)
-  const result = await render()
+  const result = await render(ssrContext)
   const modules = Array.from(runner.moduleCache.keys())
   // Write CSS modules intro manifest to prevent FOUC
   await writeManifest(modules.filter(i => isCSS(i)).map(i => i.slice(1)))
   return result
-})()
+}

@@ -33,7 +33,8 @@ function createViteNodeMiddleware (ctx: ViteBuildContext): Connect.NextHandleFun
       node = new ViteNodeServer(ctx.ssrServer, {
         deps: {
           inline: [
-            'nuxt3',
+            /\/nuxt3\//,
+            /^#/,
             ...ctx.nuxt.options.build.transpile as string[]
           ]
         }
