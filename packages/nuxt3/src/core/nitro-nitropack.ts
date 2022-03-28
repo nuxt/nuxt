@@ -24,9 +24,11 @@ export async function initNitro (nuxt: Nuxt) {
       private: nuxt.options.privateRuntimeConfig
     },
     output: {
-      dir: nuxt.options.dev
-        ? join(nuxt.options.buildDir, 'nitro')
-        : resolve(nuxt.options.rootDir, '.output')
+      dir: nitroOptions.output?.dir || (
+        nuxt.options.dev
+          ? join(nuxt.options.buildDir, 'nitro')
+          : resolve(nuxt.options.rootDir, '.output')
+      )
     },
     dev: nuxt.options.dev,
     preset: nuxt.options.dev ? 'dev' : undefined
