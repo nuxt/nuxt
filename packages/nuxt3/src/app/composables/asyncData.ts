@@ -137,12 +137,15 @@ export function useAsyncData<
       asyncData.refresh()
     }
     if (options.watch) {
-      const unwatch = watch(options.watch, () => {
-        asyncData.refresh()
-      })
-      if (instance) {
-        onUnmounted(() => unwatch())
+      watch(options.watch, () => asyncData.refresh())
+    }
+    const off = nuxt.hook('app:data:refresh', (keys) => {
+      if (!keys || keys.includes(key)) {
+        return asyncData.refresh()
       }
+    })
+    if (instance) {
+      onUnmounted(off)
     }
   }
 
@@ -164,6 +167,14 @@ export function useLazyAsyncData<
   options: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'> = {}
 ): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
   return useAsyncData(key, handler, { ...options, lazy: true })
+}
+
+export function refreshNuxtData (keys?: string | string[]): Promise<void> {
+  if (process.server) {
+    return Promise.resolve()
+  }
+  const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
+  return useNuxtApp().callHook('app:data:refresh', _keys)
 }
 
 function pick (obj: Record<string, any>, keys: string[]) {
