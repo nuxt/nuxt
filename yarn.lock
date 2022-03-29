@@ -3209,7 +3209,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.20.1
     unbuild: latest
-    vitest: ^0.7.12
+    vitest: ^0.8.0
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3342,7 +3342,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.6.0
     vite: ^2.8.6
-    vite-node: ^0.7.12
+    vite-node: ^0.8.0
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -4956,10 +4956,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.30.6":
-  version: 0.30.6
-  resolution: "@unocss/reset@npm:0.30.6"
-  checksum: 828864eeff7340976f4feecb3efbfe9cd8cf7d8ef9a85b81d62add1b4644d6638c586aa07f7d35ea46d0fc6d5aaf6b41b04733acc873c9d9fbbea8fee0048725
+"@unocss/reset@npm:^0.30.7":
+  version: 0.30.7
+  resolution: "@unocss/reset@npm:0.30.7"
+  checksum: ccdf559fd0270dcf77483746f89b9e94b97f7717c323ab7ff339e2137e6a9436aaf4d577732fb58168d497240f121cb02785ad9f43b93d9caa9c208ad7f78395
   languageName: node
   linkType: hard
 
@@ -10324,9 +10324,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^38.1.3":
-  version: 38.1.3
-  resolution: "eslint-plugin-jsdoc@npm:38.1.3"
+"eslint-plugin-jsdoc@npm:^38.1.4":
+  version: 38.1.4
+  resolution: "eslint-plugin-jsdoc@npm:38.1.4"
   dependencies:
     "@es-joy/jsdoccomment": ~0.22.1
     comment-parser: 1.3.1
@@ -10338,7 +10338,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: 4b9523423c6c5fbbe378997e2deaa651bbfa9badca6e9f2785c69f4e5de05fecf32ca3557efd4f9f14f8bc0708ff6fd9aacdd91c5dac88f5768dd05d269d6045
+  checksum: 24cf53cfa2282a967f5af25a8feed02b6faa19a818b9c3cfe6ba615b499e2940bf1004fc1c06e1b44f8370ed61c65d90acc44ef26032c09804d6484eb1e8cfd7
   languageName: node
   linkType: hard
 
@@ -15652,10 +15652,10 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.30.6
+    "@unocss/reset": ^0.30.7
     esbuild: ^0.14.28
     eslint: ^8.12.0
-    eslint-plugin-jsdoc: ^38.1.3
+    eslint-plugin-jsdoc: ^38.1.4
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -15667,7 +15667,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.3
     unbuild: ^0.7.2
-    vitest: ^0.7.12
+    vitest: ^0.8.0
     vue-router: ^4.0.14
     vue-tsc: ^0.33.9
   languageName: unknown
@@ -21866,18 +21866,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.7.12":
-  version: 0.7.12
-  resolution: "vite-node@npm:0.7.12"
+"vite-node@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "vite-node@npm:0.8.0"
   dependencies:
     kolorist: ^1.5.1
-    minimist: ^1.2.5
-    mlly: ^0.4.3
+    minimist: ^1.2.6
+    mlly: ^0.5.1
     pathe: ^0.2.0
     vite: ^2.8.6
   bin:
     vite-node: vite-node.mjs
-  checksum: fae00ca889e053e6ce95313c8aeb3b3bbfc792148d618f68a2069dc67b36ef379ad547e94de29b6a4ca92f6325cffabe38fe6d599aefcb9410f36bc06665a57c
+  checksum: d6275d264892f695b40257be9f968ba7a3c58334b5ec62f19b3a58e718cbbb7d6be1aed5fe738b09779aa64c571ce4b9aa78e5878b5baa3d3eeff27a6378f877
   languageName: node
   linkType: hard
 
@@ -21941,9 +21941,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.7.12":
-  version: 0.7.12
-  resolution: "vitest@npm:0.7.12"
+"vitest@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "vitest@npm:0.8.0"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
@@ -21968,7 +21968,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 62ed3078336e0b6cd093fe8d7f7ef2eb8f97996732e8aa78b1d2d495539e23a1e905253aeb515956b56b1c92cfe9346537416a90c4b0e7061fc6b944eec2ae61
+  checksum: efc6e998f79377804bfed7354eac1dfd73add7be1be249b86bff698bf4535eb69a79eed47e958e9a5fa29d07a8eac47b0cd0e22d87eb88571163e0d97000b069
   languageName: node
   linkType: hard
 
