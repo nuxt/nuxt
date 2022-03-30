@@ -10,81 +10,75 @@
         background: linear-gradient(45deg, #00DC82 0%, #36E4DA 50%, #0047E1 100%);
         filter: blur(20vh);
       }
+      .spotlight-wrapper {
+        opacity: 0.5;
+        transition: opacity 0.4s ease-in;
+      }
+      .nuxt-logo:hover ~ .spotlight-wrapper {
+        opacity: 0.95;
+      }
       .gradient-border {
         position: relative;
         border-radius: 0.5rem;
-      }
-      .gradient-border::after {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(90deg, #0047E1 0%, #34CDFE 50%, #00DC82 100%);
-        z-index: -1;
-        border-radius: 0.5rem;
-        transition: opacity 0.5s ease-in-out;
-        opacity: 0;
-      }
-      .gradient-border:hover::after {
-        opacity: 1;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        width: 100%;
       }
       @media (prefers-color-scheme: light) {
         .gradient-border {
-          background: rgb(250, 250, 250);
-          border: 2px solid rgba(225, 225, 225, var(--tw-bg-opacity));
-          --tw-bg-opacity: 0.1;
-          -webkit-background-clip: padding-box;
-          /* for Safari */
-          background-clip: padding-box;
+          background-color: rgba(255, 255, 255, 0.3);
         }
-        .gradient-border:hover {
-          background: rgb(250, 250, 250);
-          border: 2px solid rgba(255, 0, 0, 0);
-          -webkit-background-clip: padding-box;
-          /* for Safari */
-          background-clip: padding-box;
+        .gradient-border::before {
+          background: linear-gradient(90deg, #e2e2e2 0%, #e2e2e2 25%, #00DC82 50%, #36E4DA 75%, #0047E1 100%);
         }
       }
       @media (prefers-color-scheme: dark) {
         .gradient-border {
-          background: #1F2524;
-          border: 2px solid rgba(0, 0, 0, var(--tw-bg-opacity));
-          --tw-bg-opacity: 0.1;
-          -webkit-background-clip: padding-box;
-          /* for Safari */
-          background-clip: padding-box;
+          background-color: rgba(20, 20, 20, 0.3);
         }
-        .gradient-border:hover {
-          background: #1F2524;
-          border: 2px solid rgba(255, 0, 0, 0);
-          -webkit-background-clip: padding-box;
-          /* for Safari */
-          background-clip: padding-box;
+        .gradient-border::before {
+          background: linear-gradient(90deg, #303030 0%, #303030 25%, #00DC82 50%, #36E4DA 75%, #0047E1 100%);
         }
+      }
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0.5rem;
+        padding: 2px;
+        width: 100%;
+        background-size: 400% auto;
+        background-position: 0 0;
+        opacity: 0.5;
+        transition: background-position 0.3s ease-in-out, opacity 0.2s ease-in-out;
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+                mask:
+                  linear-gradient(#fff 0 0) content-box,
+                  linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+                mask-composite: exclude;
+      }
+      .gradient-border:hover::before {
+        background-position: -50% 0;
+        opacity: 1;
       }
     </style>
   </head>
   <body class="font-sans antialiased bg-white dark:bg-black text-black dark:text-white min-h-screen place-content-center flex flex-col items-center justify-center p-8 text-sm sm:text-base">
-    <div class="fixed -bottom-1/2 left-0 right-0 h-1/2 spotlight"></div>
-    <div class="grid grid-cols-3 gap-4 md:gap-8 max-w-5xl w-full">
+    <div class="grid grid-cols-3 gap-4 md:gap-8 max-w-5xl w-full z-20">
       <div class="flex justify-between items-end col-span-3">
-        <svg viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-40 sm:w-48 h-full text-black dark:text-white">
-          <path d="M76.333 20.5005H82.8185L96.5631 42.4764V20.5005H102.55V51.6393H96.1087L82.3198 29.7091V51.6393H76.333V20.5005Z" fill="currentColor"/>
-          <path d="M129.311 51.6393H123.732V48.1611C122.462 50.6089 119.877 51.9871 116.612 51.9871C111.441 51.9871 108.083 48.3393 108.083 43.0894V29.2178H113.662V41.9416C113.662 45.0111 115.568 47.1459 118.425 47.1459C121.555 47.1459 123.732 44.7437 123.732 41.4524V29.2178H129.311V51.6393Z" fill="currentColor"/>
-          <path d="M148.724 51.2848L143.372 43.811L138.019 51.2848H132.076L140.333 39.5849L132.712 28.8633H138.79L143.372 35.3154L147.906 28.8633H154.031L146.364 39.5849L154.62 51.2848H148.724Z" fill="currentColor"/>
-          <path d="M165.96 22.4565V29.2173H172.311V33.7999H165.96V44.9302C165.96 45.304 166.111 45.6626 166.381 45.9271C166.65 46.1916 167.015 46.3405 167.397 46.3411H172.311V51.6302H168.636C163.646 51.6302 160.381 48.7824 160.381 43.8042V33.8043H155.891V29.2173H158.708C160.022 29.2173 160.787 28.45 160.787 27.1804V22.4565H165.96Z" fill="currentColor"/>
-          <path d="M186.374 44.5872V20.5005H192.359V42.7416C192.359 48.748 189.411 51.6393 184.422 51.6393H177.455V46.3502H184.577C185.053 46.3502 185.511 46.1645 185.848 45.8339C186.185 45.5032 186.374 45.0548 186.374 44.5872" fill="currentColor"/>
-          <path d="M195.945 41.1847H201.708C202.027 44.6629 204.386 46.8781 208.196 46.8781C211.598 46.8781 213.959 45.5455 213.959 42.7869C213.959 36.113 196.892 40.739 196.892 28.8174C196.896 23.7023 201.387 20.1479 207.839 20.1479C214.553 20.1479 219.088 23.9283 219.365 29.7565H213.633C213.363 27.0435 211.195 25.2196 207.828 25.2196C204.698 25.2196 202.748 26.6435 202.748 28.8218C202.748 35.7174 220.037 30.5609 220.037 42.7021C220.037 48.4846 215.182 51.9998 208.198 51.9998C200.986 51.9998 196.269 47.7281 195.952 41.189" fill="currentColor"/>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M29.7513 14.261C28.0767 11.3817 23.8903 11.3817 22.2157 14.261L3.96535 45.641C2.29077 48.5204 4.38399 52.1195 7.73316 52.1195H21.9804C20.5493 50.8688 20.0193 48.7051 21.1023 46.8487L34.9243 23.1556L29.7513 14.261Z" fill="#80EEC0"/>
-          <path d="M41.3151 21.1443C42.701 18.7885 46.1656 18.7885 47.5515 21.1443L62.6552 46.8188C64.0411 49.1746 62.3088 52.1194 59.537 52.1194H29.3296C26.5579 52.1194 24.8255 49.1746 26.2114 46.8188L41.3151 21.1443Z" fill="#00DC82"/>
-        </svg>
-        <p class="flex justify-end pb-1 sm:pb-2">
-          {{ messages.version }}
-        </p>
+        <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="nuxt-logo">
+          <svg viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-40 text-black dark:text-white"><g clip-path="url(#a)"><path fill="currentColor" d="M82.5623 18.5705h7.3017l15.474 24.7415V18.5705h6.741v35.0576h-7.252L89.3025 28.938v24.6901h-6.7402V18.5705ZM142.207 53.628h-6.282v-3.916c-1.429 2.7559-4.339 4.3076-8.015 4.3076-5.822 0-9.603-4.1069-9.603-10.0175V28.3847h6.282v14.3251c0 3.4558 2.146 5.8592 5.362 5.8592 3.524 0 5.974-2.7044 5.974-6.4099V28.3847h6.282V53.628ZM164.064 53.2289l-6.026-8.4144-6.027 8.4144h-6.69l9.296-13.1723-8.58-12.0709h6.843l5.158 7.2641 5.106-7.2641h6.895l-8.632 12.0709 9.295 13.1723h-6.638ZM183.469 20.7726v7.6116h7.149v5.1593h-7.149v12.5311c0 .4208.17.8245.473 1.1223.303.2978.715.4654 1.144.4661h5.532v5.9547h-4.137c-5.617 0-9.293-3.2062-9.293-8.8109V33.5484h-5.056v-5.1642h3.172c1.479 0 2.34-.8639 2.34-2.2932v-5.3184h5.825Z"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1185 11.5456c-1.8853-3.24168-6.5987-3.24169-8.484 0L1.08737 46.8747c-1.885324 3.2417.47133 7.2938 4.24199 7.2938H21.3695c-1.6112-1.4081-2.2079-3.8441-.9886-5.9341l15.5615-26.675-5.8239-10.0138Z" fill="#80EEC0"></path> <path d="M43.1374 19.2952c1.5603-2.6523 5.461-2.6523 7.0212 0l17.0045 28.9057c1.5603 2.6522-.39 5.9676-3.5106 5.9676h-34.009c-3.1206 0-5.0709-3.3154-3.5106-5.9676l17.0045-28.9057ZM209.174 53.8005H198.483c0-1.8514.067-3.4526 0-6.0213h10.641c1.868 0 3.353.1001 4.354-.934 1-1.0341 1.501-2.3351 1.501-3.9029 0-1.8347-.667-3.2191-2.002-4.1532-1.301-.9674-2.985-1.4511-5.054-1.4511h-2.601v-5.2539h2.652c1.701 0 3.119-.4003 4.253-1.2009 1.134-.8006 1.701-1.9849 1.701-3.5527 0-1.301-.434-2.3351-1.301-3.1023-.834-.8007-2.001-1.201-3.503-1.201-1.634 0-2.918.4837-3.853 1.4511-.9.9674-1.401 2.1517-1.501 3.5527h-6.254c.133-3.2358 1.251-5.7877 3.352-7.6558 2.135-1.868 4.887-2.8021 8.256-2.8021 2.402 0 4.42.4337 6.055 1.301 1.668.834 2.919 1.9515 3.753 3.3525.867 1.4011 1.301 2.9523 1.301 4.6536 0 1.9681-.551 3.636-1.651 5.0037-1.068 1.3344-2.402 2.235-4.004 2.7021 1.969.4003 3.57 1.3677 4.804 2.9022 1.234 1.5011 1.852 3.4025 1.852 5.7043 0 1.9347-.468 3.7028-1.402 5.304-.934 1.6012-2.301 2.8855-4.103 3.8529-1.768.9674-3.953 1.4511-6.555 1.4511Z" fill="#00DC82"></path></g> <defs><clipPath id="a"><path fill="#fff" d="M0 0h221v65H0z"></path></clipPath></defs></svg>
+        </a>
+        <a href="https://github.com/nuxt/framework/releases/tag/{{ messages.version }}" target="_blank" rel="noopener" class="flex justify-end pb-1 sm:pb-2">{{ messages.version }}</a>
+        <div class="spotlight-wrapper"><div class="absolute z-10 -bottom-1/2 left-0 right-0 h-1/2 spotlight"></div></div>
       </div>
-      <div class="col-span-3 rounded bg-[#fafafa] dark:bg-[#1F2524] p-4 flex flex-col">
+      <div class="col-span-3 rounded p-4 flex flex-col gradient-border">
         <div class="flex justify-between items-center mb-4">
           <h4 class="font-medium text-2xl">
             Get Started
@@ -96,7 +90,7 @@
         </div>
         <p class="mb-2">Remove this welcome page by removing <a class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold">&lt;NuxtWelcome /&gt;</a> tag or creating an <a href="https://v3.nuxtjs.org/docs/directory-structure/app" target="_blank" rel="noopener" class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold">app.vue</a> file.</p>
       </div>
-      <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="cursor-pointer col-span-3 sm:col-span-1 p-4 flex flex-col gradient-border">
+      <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="gradient-border cursor-pointer col-span-3 sm:col-span-1 p-4 flex flex-col">
         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M20 10.4217C21.9467 9.12833 24.59 8.33333 27.5 8.33333C30.4117 8.33333 33.0533 9.12833 35 10.4217V32.0883C33.0533 30.795 30.4117 30 27.5 30C24.59 30 21.9467 30.795 20 32.0883M20 10.4217V32.0883V10.4217ZM20 10.4217C18.0533 9.12833 15.41 8.33333 12.5 8.33333C9.59 8.33333 6.94667 9.12833 5 10.4217V32.0883C6.94667 30.795 9.59 30 12.5 30C15.41 30 18.0533 30.795 20 32.0883V10.4217Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <rect x="23.3334" y="13.3333" width="8.33334" height="1.66667" rx="0.833333" fill="currentColor"/>
