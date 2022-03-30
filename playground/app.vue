@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <img src="./assets/logo.svg" class="h-20 mb-4">
+    <img src="~/assets/logo.svg" class="h-20 mb-4">
     <h1 class="greeting">
       {{ hello }}, <br>Nuxt 3!
     </h1>
