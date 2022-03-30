@@ -12,8 +12,8 @@ export function createTestContext (options: Partial<TestOptions>): TestContext {
     setupTimeout: 60000,
     dev: !!JSON.parse(process.env.NUXT_TEST_DEV || 'false'),
     logLevel: 1,
-    server: options.browser,
-    build: options.browser || options.server,
+    server: true,
+    build: (options.browser !== false) || (options.server !== false),
     nuxtConfig: {},
     // TODO: auto detect based on process.env
     runner: <TestRunner>'vitest',
