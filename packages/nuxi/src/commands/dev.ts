@@ -23,8 +23,8 @@ export default defineNuxtCommand({
     const listener = await server.listen({
       clipboard: args.clipboard,
       open: args.open || args.o,
-      port: args.port || args.p,
-      hostname: args.host || args.h,
+      port: args.port || args.p || process.env.NUXT_PORT,
+      hostname: args.host || args.h || process.env.NUXT_HOST,
       https: Boolean(args.https),
       certificate: (args['ssl-cert'] && args['ssl-key']) && {
         cert: args['ssl-cert'],
