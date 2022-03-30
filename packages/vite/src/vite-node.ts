@@ -62,18 +62,18 @@ export async function prepareDevServerEntry (ctx: ViteBuildContext) {
     entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async')
   }
 
-  const raw = await fse.readFile(resolve(distDir, 'runtime/server.mjs'), 'utf-8')
   const host = ctx.nuxt.options.server.host || 'localhost'
   const port = ctx.nuxt.options.server.port || '3000'
   const protocol = ctx.nuxt.options.server.https ? 'https' : 'http'
-  const code = raw
-    .replace('__NUXT_SERVER_FETCH_URL__', `${protocol}://${host}:${port}/__nuxt_vite_node__/`)
-    .replace('__NUXT_SERVER_ENTRY__', entryPath)
-    .replace('__NUXT_SERVER_BASE__', ctx.ssrServer.config.base || '/_nuxt/')
-  await fse.writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
-    code,
-    'utf-8'
+
+  process.env.NUXT_VITE_SERVER_FETCH = `${protocol}://${host}:${port}/__nuxt_vite_node__/`
+  process.env.NUXT_VITE_SERVER_ENTRY = entryPath
+  process.env.NUXT_VITE_SERVER_BASE = ctx.ssrServer.config.base || '/_nuxt/'
+  process.env.NUXT_VITE_SERVER_ROOT = ctx.nuxt.options.rootDir
+
+  await fse.copyFile(
+    resolve(distDir, 'runtime/server.mjs'),
+    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs')
   )
 }
 
