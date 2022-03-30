@@ -10837,6 +10837,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-with-wasm@workspace:examples/with-wasm"
   dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
     nuxt3: latest
   languageName: unknown
   linkType: soft

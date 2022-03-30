@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import Label from './label.vue'
-
 let count = $ref(0)
 
 function inc () {

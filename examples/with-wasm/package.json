@@ -2,6 +2,7 @@
   "name": "example-with-wasm",
   "private": true,
   "devDependencies": {
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
     "nuxt3": "latest"
   },
   "scripts": {
