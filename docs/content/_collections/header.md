@@ -10,6 +10,9 @@ links:
     title: 'Docs'
     to: '/docs/usage/data-fetching'
   -
+    title: 'Examples'
+    to: '/examples/essentials/hello-world'
+  -
     title: 'Community'
     to: '/community/getting-help'
 ---

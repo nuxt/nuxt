@@ -2,7 +2,7 @@
   <div class="relative w-full">
     <AppHeader :links="headerLinks" />
 
-    <div class="lg:flex" :class="{ 'd-container': layout.aside }">
+    <div class="lg:flex" :class="containerClass">
       <slot v-if="['xs', 'sm', 'md'].includes($mq) || layout.aside" name="aside">
         <AppAside :links="headerLinks" :class="layout.asideClass" />
       </slot>
@@ -33,6 +33,11 @@ export default defineComponent({
   computed: {
     layout () {
       return this.$docus.layout.value
+    },
+    containerClass () {
+      if (this.layout.aside && this.layout.fluid) { return 'd-container-fluid' }
+      if (this.layout.aside) { return 'd-container' }
+      return ''
     }
   }
 })
