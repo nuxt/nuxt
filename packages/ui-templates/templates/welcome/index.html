@@ -1,93 +1,132 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>{{ messages.title }}</title>
-  <meta charset="utf-8" />
-  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
-  <script type="module" src="/styles.ts"></script>
-</head>
-<body class="text-secondary-darker dark:text-white bg-cloud-surface dark:bg-sky-darkest">
-  <div class="relative flex items-top justify-center min-h-screen sm:items-center sm:pt-0">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-      <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
-        <svg width="221" height="65" viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M76.333 20.5005H82.8185L96.5631 42.4764V20.5005H102.55V51.6393H96.1087L82.3198 29.7091V51.6393H76.333V20.5005Z"
-            fill="currentColor" />
-          <path
-            d="M129.311 51.6393H123.732V48.1611C122.462 50.6089 119.877 51.9871 116.612 51.9871C111.441 51.9871 108.083 48.3393 108.083 43.0894V29.2178H113.662V41.9416C113.662 45.0111 115.568 47.1459 118.425 47.1459C121.555 47.1459 123.732 44.7437 123.732 41.4524V29.2178H129.311V51.6393Z"
-            fill="currentColor" />
-          <path
-            d="M148.724 51.2848L143.372 43.811L138.019 51.2848H132.076L140.333 39.5849L132.712 28.8633H138.79L143.372 35.3154L147.906 28.8633H154.031L146.364 39.5849L154.62 51.2848H148.724Z"
-            fill="currentColor" />
-          <path
-            d="M165.96 22.4565V29.2173H172.311V33.7999H165.96V44.9302C165.96 45.304 166.111 45.6626 166.381 45.9271C166.65 46.1916 167.015 46.3405 167.397 46.3411H172.311V51.6302H168.636C163.646 51.6302 160.381 48.7824 160.381 43.8042V33.8043H155.891V29.2173H158.708C160.022 29.2173 160.787 28.45 160.787 27.1804V22.4565H165.96Z"
-            fill="currentColor" />
-          <path
-            d="M186.374 44.5872V20.5005H192.359V42.7416C192.359 48.748 189.411 51.6393 184.422 51.6393H177.455V46.3502H184.577C185.053 46.3502 185.511 46.1645 185.848 45.8339C186.185 45.5032 186.374 45.0548 186.374 44.5872"
-            fill="currentColor" />
-          <path
-            d="M195.945 41.1847H201.708C202.027 44.6629 204.386 46.8781 208.196 46.8781C211.598 46.8781 213.959 45.5455 213.959 42.7869C213.959 36.113 196.892 40.739 196.892 28.8174C196.896 23.7023 201.387 20.1479 207.839 20.1479C214.553 20.1479 219.088 23.9283 219.365 29.7565H213.633C213.363 27.0435 211.195 25.2196 207.828 25.2196C204.698 25.2196 202.748 26.6435 202.748 28.8218C202.748 35.7174 220.037 30.5609 220.037 42.7021C220.037 48.4846 215.182 51.9998 208.198 51.9998C200.986 51.9998 196.269 47.7281 195.952 41.189"
-            fill="currentColor" />
-          <path fill-rule="evenodd" clip-rule="evenodd"
-            d="M29.7513 14.261C28.0767 11.3817 23.8903 11.3817 22.2157 14.261L3.96535 45.641C2.29077 48.5204 4.38399 52.1195 7.73316 52.1195H21.9804C20.5493 50.8688 20.0193 48.7051 21.1023 46.8487L34.9243 23.1556L29.7513 14.261Z"
-            fill="#80EEC0" />
-          <path
-            d="M41.3151 21.1443C42.701 18.7885 46.1656 18.7885 47.5515 21.1443L62.6552 46.8188C64.0411 49.1746 62.3088 52.1194 59.537 52.1194H29.3296C26.5579 52.1194 24.8255 49.1746 26.2114 46.8188L41.3151 21.1443Z"
-            fill="#00DC82" />
+  <head>
+    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
+    <script type="module" src="/styles.ts"></script>
+    <style>
+      :root {
+        --gradient-color: linear-gradient(90deg, #0047E1 0%, #34CDFE 50%, #00DC82 99.48%);
+      }
+      .spotlight {
+        z-index: -1;
+        background: linear-gradient(45deg, #00DC82 0%, #36E4DA 50%, #0047E1 100%);
+        filter: blur(20vh);
+      }
+      .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+      }
+      .gradient-border::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--gradient-color);
+        z-index: -1;
+        border-radius: 0.5rem;
+        transition: opacity 0.5s ease-in-out;
+        opacity: 0;
+      }
+      .gradient-border:hover::after {
+        opacity: 1;
+      }
+      @media (prefers-color-scheme: light) {
+        .gradient-border {
+          background: rgb(250, 250, 250);
+          border: 2px solid rgba(225, 225, 225, var(--tw-bg-opacity));
+          --tw-bg-opacity: 0.1;
+          -webkit-background-clip: padding-box;
+          /* for Safari */
+          background-clip: padding-box;
+        }
+        .gradient-border:hover {
+          background: rgb(250, 250, 250);
+          border: 2px solid rgba(255, 0, 0, 0);
+          -webkit-background-clip: padding-box;
+          /* for Safari */
+          background-clip: padding-box;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        .gradient-border {
+          background: #1F2524;
+          border: 2px solid rgba(0, 0, 0, var(--tw-bg-opacity));
+          --tw-bg-opacity: 0.1;
+          -webkit-background-clip: padding-box;
+          /* for Safari */
+          background-clip: padding-box;
+        }
+        .gradient-border:hover {
+          background: #1F2524;
+          border: 2px solid rgba(255, 0, 0, 0);
+          -webkit-background-clip: padding-box;
+          /* for Safari */
+          background-clip: padding-box;
+        }
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased bg-white dark:bg-black text-black dark:text-white min-h-screen place-content-center flex flex-col items-center justify-center p-8 text-sm sm:text-base">
+    <div class="fixed -bottom-1/2 left-0 right-0 h-1/2 spotlight"></div>
+    <div class="grid grid-cols-3 gap-4 md:gap-8 max-w-5xl w-full">
+      <div class="flex justify-between items-end col-span-3">
+        <svg viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-40 sm:w-48 h-full text-black dark:text-white">
+          <path d="M76.333 20.5005H82.8185L96.5631 42.4764V20.5005H102.55V51.6393H96.1087L82.3198 29.7091V51.6393H76.333V20.5005Z" fill="currentColor"/>
+          <path d="M129.311 51.6393H123.732V48.1611C122.462 50.6089 119.877 51.9871 116.612 51.9871C111.441 51.9871 108.083 48.3393 108.083 43.0894V29.2178H113.662V41.9416C113.662 45.0111 115.568 47.1459 118.425 47.1459C121.555 47.1459 123.732 44.7437 123.732 41.4524V29.2178H129.311V51.6393Z" fill="currentColor"/>
+          <path d="M148.724 51.2848L143.372 43.811L138.019 51.2848H132.076L140.333 39.5849L132.712 28.8633H138.79L143.372 35.3154L147.906 28.8633H154.031L146.364 39.5849L154.62 51.2848H148.724Z" fill="currentColor"/>
+          <path d="M165.96 22.4565V29.2173H172.311V33.7999H165.96V44.9302C165.96 45.304 166.111 45.6626 166.381 45.9271C166.65 46.1916 167.015 46.3405 167.397 46.3411H172.311V51.6302H168.636C163.646 51.6302 160.381 48.7824 160.381 43.8042V33.8043H155.891V29.2173H158.708C160.022 29.2173 160.787 28.45 160.787 27.1804V22.4565H165.96Z" fill="currentColor"/>
+          <path d="M186.374 44.5872V20.5005H192.359V42.7416C192.359 48.748 189.411 51.6393 184.422 51.6393H177.455V46.3502H184.577C185.053 46.3502 185.511 46.1645 185.848 45.8339C186.185 45.5032 186.374 45.0548 186.374 44.5872" fill="currentColor"/>
+          <path d="M195.945 41.1847H201.708C202.027 44.6629 204.386 46.8781 208.196 46.8781C211.598 46.8781 213.959 45.5455 213.959 42.7869C213.959 36.113 196.892 40.739 196.892 28.8174C196.896 23.7023 201.387 20.1479 207.839 20.1479C214.553 20.1479 219.088 23.9283 219.365 29.7565H213.633C213.363 27.0435 211.195 25.2196 207.828 25.2196C204.698 25.2196 202.748 26.6435 202.748 28.8218C202.748 35.7174 220.037 30.5609 220.037 42.7021C220.037 48.4846 215.182 51.9998 208.198 51.9998C200.986 51.9998 196.269 47.7281 195.952 41.189" fill="currentColor"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M29.7513 14.261C28.0767 11.3817 23.8903 11.3817 22.2157 14.261L3.96535 45.641C2.29077 48.5204 4.38399 52.1195 7.73316 52.1195H21.9804C20.5493 50.8688 20.0193 48.7051 21.1023 46.8487L34.9243 23.1556L29.7513 14.261Z" fill="#80EEC0"/>
+          <path d="M41.3151 21.1443C42.701 18.7885 46.1656 18.7885 47.5515 21.1443L62.6552 46.8188C64.0411 49.1746 62.3088 52.1194 59.537 52.1194H29.3296C26.5579 52.1194 24.8255 49.1746 26.2114 46.8188L41.3151 21.1443Z" fill="#00DC82"/>
         </svg>
+        <p class="flex justify-end pb-1 sm:pb-2">
+          {{ messages.version }}
+        </p>
       </div>
-      <div class="mt-4 bg-white dark:bg-sky-darker overflow-hidden shadow sm:rounded-lg">
-        <div class="grid grid-cols-1 md:grid-cols-2">
-          <div class="p-6">
-            <div class="flex items-center">
-              <svg class="w-6 h-6 text-cloud-dark dark:text-cloud-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-              </svg>
-              <div class="ml-4 text-lg leading-7 font-semibold">
-                <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="hover:underline text-sky-black dark:text-white">
-                  {{ messages.documentation }}
-                </a>
-              </div>
-            </div>
-            <div class="ml-10">
-              <div class="mt-2 text-cloud-dark dark:text-cloud-light text-sm">
-                {{ messages.readDocs }}<br/>
-                <a href="https://v3.nuxtjs.org" class="inline-block mt-2 text-primary hover:underline" target="_blank" rel="noopener">
-                  {{ messages.documentation }}
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="p-6 border-t border-gray-200 dark:border-sky-darkest md:border-t-0 md:border-l">
-            <div class="flex items-center">
-              <svg class="w-6 h-6 text-cloud-dark dark:text-cloud-light" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
-              </svg>
-              <div class="ml-4 text-lg leading-7 font-semibold">
-                <a href="https://twitter.com/nuxt_js" target="_blank" rel="noopener"
-                  class="hover:underline text-sky-black dark:text-white">Twitter</a>
-              </div>
-            </div>
-            <div class="ml-10">
-              <div class="mt-2 text-cloud-dark dark:text-cloud-light text-sm">
-                {{ messages.followTwitter }}<br>
-                <a href="https://twitter.com/nuxt_js" target="_blank" class="inline-block mt-2 text-primary hover:underline" rel="noopener">@nuxt_js</a>
-              </div>
-            </div>
-          </div>
+      <div class="col-span-3 rounded bg-[#fafafa] dark:bg-[#1F2524] p-4 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="font-medium text-2xl">
+            Get Started
+          </h4>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M29.4284 31.095C26.9278 33.5955 23.5364 35.0003 20.0001 35.0003C16.4637 35.0003 13.0723 33.5955 10.5717 31.095C8.07118 28.5944 6.66638 25.203 6.66638 21.6667C6.66638 18.1304 8.07118 14.7389 10.5717 12.2383C10.5717 12.2383 11.6667 15 15.0001 16.6667C15.0001 13.3333 15.8334 8.33333 19.9767 5C23.3334 8.33333 26.8167 9.62833 29.4267 12.2383C30.667 13.475 31.6506 14.9446 32.321 16.5626C32.9915 18.1806 33.3355 19.9152 33.3334 21.6667C33.3357 23.418 32.9919 25.1525 32.3218 26.7705C31.6516 28.3886 30.6683 29.8582 29.4284 31.095V31.095Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16.465 26.8683C17.0456 27.4491 17.7604 27.878 18.5462 28.1169C19.3319 28.3559 20.1644 28.3976 20.9701 28.2385C21.7758 28.0793 22.5299 27.7241 23.1657 27.2043C23.8015 26.6845 24.2995 26.016 24.6157 25.2581C24.9318 24.5001 25.0564 23.6759 24.9784 22.8584C24.9004 22.0408 24.6222 21.2551 24.1684 20.5705C23.7146 19.886 23.0992 19.3238 22.3766 18.9336C21.6539 18.5434 20.8463 18.3373 20.025 18.3333L18.3333 23.3333H15C15 24.6133 15.4883 25.8933 16.465 26.8683Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
+        <p class="mb-2">Remove this welcome page by removing <a class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold">&lt;NuxtWelcome /&gt;</a> tag or creating an <a href="https://v3.nuxtjs.org/docs/directory-structure/app" target="_blank" rel="noopener" class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold">app.vue</a> file.</p>
       </div>
-      <div
-        class="mt-4 text-sm bg-white border-l-8 border-cloud-light dark:bg-sky-darker dark:border-sky overflow-hidden shadow sm:rounded-lg p-6 pl-4">
-        <p>To remove this welcome page, <strong class="font-bold">you have 2 options</strong>:</p>
-        <ul class="list-inside list-disc pt-1 pl-2">
-          <li>Create an <code class="text-primary">app.vue</code></li>
-          <li>Create a <code class="text-primary">pages/index.vue</code></li>
-        </ul>
-      </div>
+      <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="cursor-pointer col-span-3 sm:col-span-1 p-4 flex flex-col gradient-border">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 10.4217C21.9467 9.12833 24.59 8.33333 27.5 8.33333C30.4117 8.33333 33.0533 9.12833 35 10.4217V32.0883C33.0533 30.795 30.4117 30 27.5 30C24.59 30 21.9467 30.795 20 32.0883M20 10.4217V32.0883V10.4217ZM20 10.4217C18.0533 9.12833 15.41 8.33333 12.5 8.33333C9.59 8.33333 6.94667 9.12833 5 10.4217V32.0883C6.94667 30.795 9.59 30 12.5 30C15.41 30 18.0533 30.795 20 32.0883V10.4217Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="23.3334" y="13.3333" width="8.33334" height="1.66667" rx="0.833333" fill="currentColor"/>
+          <rect x="8.33337" y="13.3333" width="8.33333" height="1.66667" rx="0.833333" fill="currentColor"/>
+          <rect x="8.33337" y="18.3333" width="8.33333" height="1.66667" rx="0.833333" fill="currentColor"/>
+          <rect x="8.33337" y="23.3333" width="8.33333" height="1.66667" rx="0.833334" fill="currentColor"/>
+          <rect x="23.3334" y="18.3333" width="8.33334" height="1.66667" rx="0.833333" fill="currentColor"/>
+          <rect x="23.3334" y="23.3333" width="8.33334" height="1.66667" rx="0.833334" fill="currentColor"/>
+        </svg>
+        <h5 class="font-semibold text-xl mt-4">Documentation</h5>
+        <p class="mt-2">{{ messages.readDocs }}</p>
+      </a>
+      <a href="https://github.com/nuxt/framework" target="_blank" rel="noopener" class="cursor-pointer gradient-border col-span-3 sm:col-span-1 p-4 flex flex-col">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M20 3.33333C10.795 3.33333 3.33337 10.8067 3.33337 20.0283C3.33337 27.4033 8.10837 33.6617 14.7317 35.8683C15.565 36.0217 15.8684 35.5067 15.8684 35.0633C15.8684 34.6683 15.855 33.6167 15.8467 32.225C11.21 33.2333 10.2317 29.9867 10.2317 29.9867C9.47504 28.0567 8.38171 27.5433 8.38171 27.5433C6.86837 26.51 8.49671 26.53 8.49671 26.53C10.1684 26.6467 11.0484 28.25 11.0484 28.25C12.535 30.8 14.95 30.0633 15.8984 29.6367C16.0517 28.5583 16.4817 27.8233 16.9584 27.4067C13.2584 26.985 9.36671 25.5517 9.36671 19.155C9.36671 17.3333 10.0167 15.8417 11.0817 14.675C10.91 14.2533 10.3384 12.555 11.245 10.2583C11.245 10.2583 12.645 9.80833 15.8284 11.9683C17.188 11.5975 18.5908 11.4087 20 11.4067C21.4167 11.4133 22.8417 11.5983 24.1734 11.9683C27.355 9.80833 28.7517 10.2567 28.7517 10.2567C29.6617 12.555 29.0884 14.2533 28.9184 14.675C29.985 15.8417 30.6317 17.3333 30.6317 19.155C30.6317 25.5683 26.7334 26.98 23.0217 27.3933C23.62 27.9083 24.1517 28.9267 24.1517 30.485C24.1517 32.715 24.1317 34.5167 24.1317 35.0633C24.1317 35.51 24.4317 36.03 25.2784 35.8667C28.5972 34.7535 31.4823 32.6255 33.5258 29.7834C35.5694 26.9413 36.6681 23.5289 36.6667 20.0283C36.6667 10.8067 29.2034 3.33333 20 3.33333Z" fill="currentColor"/>
+        </svg>
+        <h5 class="font-semibold text-xl mt-4">GitHub</h5>
+        <p class="mt-2">{{ messages.starGitHub }}</p>
+      </a>
+      <a href="https://twitter.com/nuxt_js" target="_blank" rel="noopener" class="cursor-pointer gradient-border col-span-3 sm:col-span-1 p-4 flex flex-col gap-y-4">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.8167 33.7557C26.395 33.7557 33.275 23.334 33.275 14.2973C33.275 14.0007 33.275 13.7057 33.255 13.414C34.5937 12.4449 35.7489 11.245 36.6667 9.87066C35.4185 10.424 34.0943 10.7869 32.7384 10.9473C34.1661 10.0924 35.2346 8.74791 35.745 7.164C34.4029 7.96048 32.9345 8.52188 31.4034 8.824C30.3724 7.72694 29.0084 7.00039 27.5228 6.75684C26.0371 6.51329 24.5126 6.76633 23.1852 7.47678C21.8579 8.18723 20.8018 9.31545 20.1805 10.6868C19.5592 12.0581 19.4073 13.596 19.7484 15.0623C17.0294 14.9261 14.3694 14.2195 11.9411 12.9886C9.51285 11.7577 7.37059 10.0299 5.65337 7.91733C4.7789 9.42267 4.51102 11.2047 4.90427 12.9006C5.29751 14.5965 6.32232 16.0788 7.77004 17.0457C6.68214 17.0142 5.61776 16.7215 4.66671 16.1923V16.279C4.66736 17.8578 5.21403 19.3878 6.21404 20.6096C7.21404 21.8313 8.60582 22.6696 10.1534 22.9823C9.14639 23.2569 8.08986 23.2968 7.06504 23.099C7.50198 24.4581 8.35284 25.6467 9.49859 26.4984C10.6443 27.35 12.0277 27.8223 13.455 27.849C12.0369 28.9633 10.413 29.7871 8.67625 30.2732C6.93948 30.7594 5.12391 30.8984 3.33337 30.6823C6.46105 32.6896 10.1004 33.7542 13.8167 33.749" fill="currentColor"/>
+        </svg>
+        <h5 class="font-semibold text-xl">Twitter</h5>
+        <p>{{ messages.followTwitter }}</p>
+      </a>
     </div>
-  </div>
-</body>
+  </body>
 </html>

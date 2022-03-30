@@ -1,54 +1,24 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
-  <meta charset="utf-8" />
-  <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
-  <script type="module" src="/styles.ts"></script>
-</head>
-
-<body class="
-      font-sans
-      antialiased
-      bg-cloud-surface
-      dark:bg-sky-darker
-      text-sky-darkest
-      dark:text-sky-surface
-    ">
-  <div class="min-h-screen md:flex">
-    <div class="flex items-center justify-center w-full max-w-full">
-      <div class="max-w-full lg:max-w-10xl m-8 p-4">
-        <div class="md:max-w-sm text-5xl font-bold dark:text-white md:text-15xl">
-          {{ messages.statusCode }}
-        </div>
-        <div class="w-16 h-1 my-3 bg-primary md:my-6"></div>
-        <div class="
-          mb-8
-          text-2xl
-          font-light
-          leading-normal
-          dark:text-cloud-lighter
-          md:text-3xl
-          max-w-sm
-        ">
-          {{ messages.description }}
-        </div>
-        <div class="
-          mb-8
-          text-sm
-          leading-normal
-          dark:text-cloud-lighter
-          md:text-lg
-          white
-          overflow-scroll
-          max-w-full
-        ">
-          {{ messages.stack }}
-        </div>
-      </div>
+  <head>
+    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
+    <script type="module" src="/styles.ts"></script>
+    <style>
+      .spotlight {
+        z-index: -1;
+        background: linear-gradient(45deg, #00DC82 0%, #36E4DA 50%, #0047E1 100%);
+        filter: blur(40vh);
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased bg-white px-10 pt-14 dark:bg-black text-black dark:text-white min-h-screen flex flex-col">
+    <div class="fixed -bottom-1/2 left-0 right-0 h-2/3 spotlight"></div>
+    <h1 class="text-6xl sm:text-8xl font-medium mb-6">{{ messages.statusCode }}</h1>
+    <p class="text-xl sm:text-2xl font-light mb-8 leading-tight">{{ messages.description }}</p>
+    <div class="bg-white rounded-t-md bg-black/5 dark:bg-white/10 flex-1 overflow-y-auto h-auto">
+      <pre class="text-xl font-light leading-tight z-10 p-8">{{ messages.stack }}</pre>
     </div>
-  </div>
-</body>
-
+  </body>
 </html>
