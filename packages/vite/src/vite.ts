@@ -53,7 +53,8 @@ export async function bundle (nuxt: Nuxt) {
         optimizeDeps: {
           entries: [
             resolve(nuxt.options.appDir, 'entry.ts')
-          ]
+          ],
+          include: ['vue']
         },
         css: resolveCSSOptions(nuxt),
         build: {
