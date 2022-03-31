@@ -10,7 +10,7 @@ function dec () {
 </script>
 
 <template>
-  <NuxtExampleLayout example="reactivity-transform">
+  <NuxtExampleLayout example="experimental/reactivity-transform">
     <div>
       <Label :count="count" />
       <div class="flex gap-1 justify-center">

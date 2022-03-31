@@ -15,7 +15,7 @@ function triggerError () {
 </script>
 
 <template>
-  <NuxtExampleLayout example="errors">
+  <NuxtExampleLayout example="app/error-handling">
     <template #nav>
       <nav class="flex align-center gap-4 p-4">
         <NuxtLink to="/" class="n-link-base">

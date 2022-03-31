@@ -3,7 +3,7 @@ const route = useRoute()
 </script>
 
 <template>
-  <NuxtExampleLayout example="middleware">
+  <NuxtExampleLayout example="routing/middleware">
     <NuxtPage />
 
     <template #nav>

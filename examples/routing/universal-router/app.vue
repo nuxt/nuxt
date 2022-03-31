@@ -4,7 +4,7 @@ const timer = useState('timer', () => 0)
 </script>
 
 <template>
-  <NuxtExampleLayout example="universal-router">
+  <NuxtExampleLayout example="routing/universal-router">
     A page...
     <br>
 

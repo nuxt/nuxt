@@ -5,7 +5,7 @@ const bar = getBar()
 </script>
 
 <template>
-  <NuxtExampleLayout example="config-extends">
+  <NuxtExampleLayout example="advanced/config-extends">
     theme runtimeConfig
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
     <BaseButton>Base Button</BaseButton>

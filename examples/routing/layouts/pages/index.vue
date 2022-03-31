@@ -1,5 +1,5 @@
 <template>
-  <NuxtExampleLayout example="layouts">
+  <NuxtExampleLayout example="routing/layouts">
     <template #nav>
       <nav class="flex align-center gap-4 p-4">
         <NuxtLink to="/default">

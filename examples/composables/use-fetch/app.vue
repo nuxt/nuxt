@@ -4,7 +4,7 @@ const { data } = await useFetch(() => `/api/hello/${count.value}`, { params: { t
 </script>
 
 <template>
-  <NuxtExampleLayout example="use-fetch">
+  <NuxtExampleLayout example="composables/use-fetch">
     <div>
       Fetch result:
       <pre class="text-left"><code>{{ data }}</code></pre>
