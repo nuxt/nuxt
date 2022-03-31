@@ -2637,7 +2637,7 @@ __metadata:
     unplugin: ^0.6.0
     unplugin-vue2-script-setup: ^0.10.1
     untyped: ^0.4.3
-    vite: ~2.8.6
+    vite: ^2.9.0
     vite-plugin-vue2: ^1.9.3
     vue: ^2
     vue-router: ^3
@@ -3341,7 +3341,7 @@ __metadata:
     ufo: ^0.8.1
     unbuild: latest
     unplugin: ^0.6.0
-    vite: ~2.8.6
+    vite: ^2.9.0
     vite-node: ^0.8.1
     vue: 3.2.31
   peerDependencies:
@@ -9880,7 +9880,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.14, esbuild@npm:^0.14.25, esbuild@npm:^0.14.27, esbuild@npm:^0.14.29, esbuild@npm:^0.14.6":
+"esbuild@npm:^0.14.25, esbuild@npm:^0.14.27, esbuild@npm:^0.14.29, esbuild@npm:^0.14.6":
   version: 0.14.29
   resolution: "esbuild@npm:0.14.29"
   dependencies:
@@ -17967,7 +17967,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.4.12, postcss@npm:^8.4.6, postcss@npm:^8.4.7":
+"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.2.15, postcss@npm:^8.3.5, postcss@npm:^8.4.12, postcss@npm:^8.4.7":
   version: 8.4.12
   resolution: "postcss@npm:8.4.12"
   dependencies:
@@ -21651,13 +21651,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~2.8.6":
-  version: 2.8.6
-  resolution: "vite@npm:2.8.6"
+"vite@npm:^2.9.0":
+  version: 2.9.0
+  resolution: "vite@npm:2.9.0"
   dependencies:
-    esbuild: ^0.14.14
+    esbuild: ^0.14.27
     fsevents: ~2.3.2
-    postcss: ^8.4.6
+    postcss: ^8.4.12
     resolve: ^1.22.0
     rollup: ^2.59.0
   peerDependencies:
@@ -21676,7 +21676,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 4b02d133892c98362c10214b7ad518d74b59745889197a2ba0b63260ed083fcef75a447e8fb58dbd2af8747386274b36017983d93031254df6ead38701950dcc
+  checksum: 2355a5a7a57a86558fb2378b493c98c97218ffdf5c7555df5531147217c8ec804d66434dfed130034c920cb0913cd5f0fa1f5d7756101601558320349c0e1cee
   languageName: node
   linkType: hard
 

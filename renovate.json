@@ -16,7 +16,6 @@
     "@docus/social-image",
     "@docus/theme",
     "@docus/twitter",
-    "vite",
     "h3"
   ]
 }
