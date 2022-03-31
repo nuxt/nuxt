@@ -1,4 +1,4 @@
-import { resolve, relative } from 'pathe'
+import { resolve, relative, normalize } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
@@ -73,7 +73,7 @@ export default defineNuxtCommand({
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
     watcher.on('all', (event, file) => {
       if (!currentNuxt) { return }
-      if (file.startsWith(withTrailingSlash(currentNuxt.options.buildDir))) { return }
+      if (normalize(file).startsWith(withTrailingSlash(normalize(currentNuxt.options.buildDir)))) { return }
       if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
         dLoad(true, `${relative(rootDir, file)} updated`)
       }
