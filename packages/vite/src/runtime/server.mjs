@@ -50,6 +50,9 @@ async function writeManifest () {
 let render
 
 export default async (ssrContext) => {
+  // Workaround for stub mode
+  // https://github.com/nuxt/framework/pull/3983
+  process.server = true
   render = render || (await runner.executeFile(entry)).default
   const result = await render(ssrContext)
   await writeManifest()
