@@ -96,7 +96,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
   ::section-content-item
   ---
   title: Nuxt Kit
-  description: 'Brand new module development with Typescript and cross-version compatibility.'
+  description: 'Brand new module development with TypeScript and cross-version compatibility.'
   image: IconKit
   imageClass: w-10 h-10
   ---
