@@ -7,11 +7,16 @@ import { useAsyncData } from './asyncData'
 
 export type FetchResult<ReqT extends FetchRequest> = TypedInternalResponse<ReqT, unknown>
 
-export type UseFetchOptions<
+export interface UseFetchOptions<
   DataT,
   Transform extends _Transform<DataT, any> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-> = AsyncDataOptions<DataT, Transform, PickKeys> & FetchOptions & { key?: string }
+> extends
+  AsyncDataOptions<DataT, Transform, PickKeys>,
+  FetchOptions
+  {
+  key?: string
+ }
 
 export function useFetch<
   ResT = void,
@@ -32,15 +37,22 @@ export function useFetch<
     return isRef(r) ? r.value : r
   })
 
-  const asyncData = useAsyncData(key, () => {
-    return $fetch(_request.value, opts) as Promise<_ResT>
-  }, {
+  const _fetchOptions = {
+    ...opts,
+    cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
+  }
+
+  const _asyncDataOptions: AsyncDataOptions<any> = {
     ...opts,
     watch: [
       _request,
       ...(opts.watch || [])
     ]
-  })
+  }
+
+  const asyncData = useAsyncData(key, () => {
+    return $fetch(_request.value, _fetchOptions) as Promise<_ResT>
+  }, _asyncDataOptions)
 
   return asyncData
 }

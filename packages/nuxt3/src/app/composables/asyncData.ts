@@ -21,12 +21,17 @@ export interface AsyncDataOptions<
   transform?: Transform
   pick?: PickKeys
   watch?: MultiWatchSources
+  initialCache?: boolean
+}
+
+export interface RefreshOptions {
+  _initial?: boolean
 }
 
 export interface _AsyncData<DataT> {
   data: Ref<DataT>
   pending: Ref<boolean>
-  refresh: (force?: boolean) => Promise<void>
+  refresh: (opts?: RefreshOptions) => Promise<void>
   error?: any
 }
 
@@ -58,6 +63,7 @@ export function useAsyncData<
     console.warn('[useAsyncData] `defer` has been renamed to `lazy`. Support for `defer` will be removed in RC.')
   }
   options.lazy = options.lazy ?? (options as any).defer ?? false
+  options.initialCache = options.initialCache ?? true
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
@@ -81,10 +87,14 @@ export function useAsyncData<
     error: ref(nuxt.payload._errors[key] ?? null)
   } as AsyncData<DataT>
 
-  asyncData.refresh = (force?: boolean) => {
+  asyncData.refresh = (opts = {}) => {
     // Avoid fetching same key more than once at a time
-    if (nuxt._asyncDataPromises[key] && !force) {
+    if (nuxt._asyncDataPromises[key]) {
       return nuxt._asyncDataPromises[key]
+    }
+    // Avoid fetching same key that is already fetched
+    if (opts._initial && options.initialCache && nuxt.payload.data[key] !== undefined) {
+      return nuxt.payload.data[key]
     }
     asyncData.pending.value = true
     // TODO: Cancel previous promise
@@ -115,11 +125,13 @@ export function useAsyncData<
     return nuxt._asyncDataPromises[key]
   }
 
+  const initialFetch = () => asyncData.refresh({ _initial: true })
+
   const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
 
   // Server side
   if (process.server && fetchOnServer) {
-    const promise = asyncData.refresh()
+    const promise = initialFetch()
     onServerPrefetch(() => promise)
   }
 
@@ -131,10 +143,10 @@ export function useAsyncData<
     } else if (instance && (nuxt.isHydrating || options.lazy)) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Navigation (lazy: true): fetch on mounted
-      instance._nuxtOnBeforeMountCbs.push(asyncData.refresh)
+      instance._nuxtOnBeforeMountCbs.push(initialFetch)
     } else {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
-      asyncData.refresh()
+      initialFetch()
     }
     if (options.watch) {
       watch(options.watch, () => asyncData.refresh())
