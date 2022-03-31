@@ -2631,13 +2631,13 @@ __metadata:
     postcss-url: ^10.1.3
     scule: ^0.2.1
     semver: ^7.3.5
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
     unimport: ^0.1.3
-    unplugin: ^0.6.0
+    unplugin: ^0.6.1
     unplugin-vue2-script-setup: ^0.10.1
-    untyped: ^0.4.3
-    vite: ^2.9.0
+    untyped: ^0.4.4
+    vite: ^2.9.1
     vite-plugin-vue2: ^1.9.3
     vue: ^2
     vue-router: ^3
@@ -2931,9 +2931,9 @@ __metadata:
     scule: ^0.2.1
     semver: ^7.3.5
     unbuild: latest
-    unctx: ^1.1.3
+    unctx: ^1.1.4
     unimport: ^0.1.3
-    untyped: ^0.4.3
+    untyped: ^0.4.4
   languageName: unknown
   linkType: soft
 
@@ -3041,7 +3041,7 @@ __metadata:
     serve-static: ^1.15.0
     std-env: ^3.0.1
     table: ^6.8.0
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
     unenv: ^0.4.3
     unstorage: ^0.3.3
@@ -3094,7 +3094,7 @@ __metadata:
     postcss-import-resolver: ^2.0.0
     scule: ^0.2.1
     std-env: ^3.0.1
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
     unimport: ^0.1.3
   languageName: unknown
@@ -3338,10 +3338,10 @@ __metadata:
     postcss-url: ^10.1.3
     rollup: ^2.70.1
     rollup-plugin-visualizer: ^5.6.0
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
-    unplugin: ^0.6.0
-    vite: ^2.9.0
+    unplugin: ^0.6.1
+    vite: ^2.9.1
     vite-node: ^0.8.1
     vue: 3.2.31
   peerDependencies:
@@ -3458,9 +3458,9 @@ __metadata:
     postcss-url: ^10.1.3
     style-resources-loader: ^1.5.0
     time-fix-plugin: ^2.0.7
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
-    unplugin: ^0.6.0
+    unplugin: ^0.6.1
     url-loader: ^4.1.1
     vue: 3.2.31
     vue-loader: ^17.0.0
@@ -15498,11 +15498,11 @@ __metadata:
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
     scule: ^0.2.1
-    ufo: ^0.8.1
+    ufo: ^0.8.3
     unbuild: latest
     unimport: ^0.1.3
-    unplugin: ^0.6.0
-    untyped: ^0.4.3
+    unplugin: ^0.6.1
+    untyped: ^0.4.4
     vue: ^3.2.31
     vue-meta: next
     vue-router: ^4.0.14
@@ -20951,6 +20951,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ufo@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "ufo@npm:0.8.3"
+  checksum: 7ea20e9d0fbd92b3310de4b020919f0a0542db60a6787ccecf232285d55795ddc0ea482b04d6c07cac60367a294aee705d888999867a5c3c69e47ed8d0ae3009
+  languageName: node
+  linkType: hard
+
 "uglify-js@npm:^3.1.4, uglify-js@npm:^3.5.1":
   version: 3.15.3
   resolution: "uglify-js@npm:3.15.3"
@@ -21043,6 +21050,18 @@ __metadata:
     magic-string: ^0.26.1
     unplugin: ^0.5.2
   checksum: 33f4d7c5bf2824a054d687e21b505ae253aaf03d4aa1b3061446060649cccf26d59baf5d587f4ce7266965fa9f74212cd3c67efe2f440db3d4e02dfac199b06d
+  languageName: node
+  linkType: hard
+
+"unctx@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "unctx@npm:1.1.4"
+  dependencies:
+    acorn: ^8.7.0
+    estree-walker: ^2.0.2
+    magic-string: ^0.26.1
+    unplugin: ^0.6.1
+  checksum: 5b42fae7af0ab02279a313d14ac9df6026a758e44692c384781b1a4e198396bb7f3f31b9291f6fb9669cc485e81716ac228c245d5d3a40a43f6d917818137257
   languageName: node
   linkType: hard
 
@@ -21336,6 +21355,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unplugin@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "unplugin@npm:0.6.1"
+  dependencies:
+    chokidar: ^3.5.3
+    webpack-sources: ^3.2.3
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    esbuild: ">=0.13"
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    esbuild:
+      optional: true
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: ece0552cef85fc042ffd91d26554b4d66bde7270551d21acfc7ec556134bd59a99785e427be395b85fefad1db9dea4e3769f281cf413bde846ec23782e715d88
+  languageName: node
+  linkType: hard
+
 "unquote@npm:~1.1.1":
   version: 1.1.1
   resolution: "unquote@npm:1.1.1"
@@ -21380,6 +21424,18 @@ __metadata:
     "@babel/types": ^7.17.0
     scule: ^0.2.1
   checksum: 9d4b2945dc50fe11268dad37e7cb9e7ebbb43ca7205b1f6803811868fec2fed90b61d8ddc2e87785d53b95db659f5caec1976796daf9e2bd3bf6c9e3aa8cf097
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "untyped@npm:0.4.4"
+  dependencies:
+    "@babel/core": ^7.17.7
+    "@babel/standalone": ^7.17.7
+    "@babel/types": ^7.17.0
+    scule: ^0.2.1
+  checksum: 674506884b49d8648a96ac54791f7f29b1d14c28e3efc5fdd973c4a44ae6d3ad38a0b8ad0198e70fa223760491309822fb403e7a0bc6b28aa43eca31b717305e
   languageName: node
   linkType: hard
 
@@ -21651,9 +21707,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.0":
-  version: 2.9.0
-  resolution: "vite@npm:2.9.0"
+"vite@npm:^2.9.1":
+  version: 2.9.1
+  resolution: "vite@npm:2.9.1"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -21676,7 +21732,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 2355a5a7a57a86558fb2378b493c98c97218ffdf5c7555df5531147217c8ec804d66434dfed130034c920cb0913cd5f0fa1f5d7756101601558320349c0e1cee
+  checksum: 0f0ac9337fa5c17faa4a59831a2df17475563b23a6162e86b2b60b19835ca1277f3249ea7a6608880354b39caf05779e9bad1e3b1f5b27010deced224aae47ea
   languageName: node
   linkType: hard
 

@@ -66,7 +66,7 @@
     "serve-static": "^1.15.0",
     "std-env": "^3.0.1",
     "table": "^6.8.0",
-    "ufo": "^0.8.1",
+    "ufo": "^0.8.3",
     "unenv": "^0.4.3",
     "unstorage": "^0.3.3",
     "vue-bundle-renderer": "^0.3.5",
