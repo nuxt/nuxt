@@ -15460,7 +15460,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt-playground@workspace:playground"
   dependencies:
-    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
     nuxt3: latest
   languageName: unknown
   linkType: soft

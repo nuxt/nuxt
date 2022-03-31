@@ -1,30 +1,12 @@
+<script setup lang="ts">
+</script>
+
 <template>
-  <div class="app">
-    <img src="~/assets/logo.svg" class="h-20 mb-4">
-    <h1 class="greeting">
-      {{ hello }}, <br>Nuxt 3!
-    </h1>
+  <!-- Edit this file to play around with Nuxt but never commit changes! -->
+  <div>
+    Nuxt 3 Playground
   </div>
 </template>
 
-<script setup>
-const greetings = [
-  'Hello',
-  'Hi',
-  'Salut',
-  'こんにちは',
-  '你好'
-]
-const hello = useState('hello', () => greetings[Math.random() * greetings.length | 0])
-</script>
-
 <style scoped>
-.app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  padding: 1rem 1.5rem;
-}
-.greeting {
-  font-size: 4em;
-  font-weight: 400;
-}
 </style>
