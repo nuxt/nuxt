@@ -80,7 +80,7 @@ export const appViewTemplate = {
   {{ HEAD }}
 </head>
 
-<body {{ BODY_ATTRS }}>
+<body {{ BODY_ATTRS }}>{{ BODY_PREPEND }}
   {{ APP }}
 </body>
 

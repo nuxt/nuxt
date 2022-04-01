@@ -158,6 +158,7 @@ async function renderHTML (payload, rendered, ssrContext) {
     HEAD: headTags +
       rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
     BODY_ATTRS: bodyAttrs,
+    BODY_PREPEND: ssrContext.teleports?.body || '',
     APP: bodyScriptsPrepend + html + state + rendered.renderScripts() + bodyScripts
   })
 }
@@ -171,7 +172,7 @@ function _interopDefault (e) {
 }
 
 function cachedImport <M> (importer: () => Promise<M>) {
-  return cachedResult(() => importer().then(_interopDefault))
+  return cachedResult(() => importer().then(_interopDefault)) as () => Promise<M>
 }
 
 function cachedResult <T> (fn: () => Promise<T>): () => Promise<T> {

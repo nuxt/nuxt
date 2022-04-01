@@ -16,6 +16,7 @@
     "vue/multi-word-component-names": "off",
     "vue/one-component-per-file": "off",
     "vue/require-default-prop": "off",
+    "vue/no-multiple-template-root": "off",
     "jsdoc/require-jsdoc": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
