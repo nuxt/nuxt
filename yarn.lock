@@ -3465,7 +3465,7 @@ __metadata:
     vue: 3.2.31
     vue-loader: ^17.0.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.70.0
+    webpack: ^5.71.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.3.1
     webpack-hot-middleware: ^2.25.1
@@ -22304,7 +22304,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.70.0":
+"webpack@npm:^5, webpack@npm:^5.38.1":
   version: 5.70.0
   resolution: "webpack@npm:5.70.0"
   dependencies:
@@ -22338,6 +22338,43 @@ __metadata:
   bin:
     webpack: bin/webpack.js
   checksum: 00439884a9cdd5305aed3ce93735635785a15c5464a6d2cfce87e17727a07585de02420913e82aa85ddd2ae7322175d2cfda6ac0878a17f061cb605e6a7db57a
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.71.0":
+  version: 5.71.0
+  resolution: "webpack@npm:5.71.0"
+  dependencies:
+    "@types/eslint-scope": ^3.7.3
+    "@types/estree": ^0.0.51
+    "@webassemblyjs/ast": 1.11.1
+    "@webassemblyjs/wasm-edit": 1.11.1
+    "@webassemblyjs/wasm-parser": 1.11.1
+    acorn: ^8.4.1
+    acorn-import-assertions: ^1.7.6
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.9.2
+    es-module-lexer: ^0.9.0
+    eslint-scope: 5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.9
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.1.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.3
+    watchpack: ^2.3.1
+    webpack-sources: ^3.2.3
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: 84b273a15180d45dafe4fc4a3ccccba2f72210f327a1af39713b3ef78148768afb0e18fa0cddaea4af5dd54ace199fbbdfcef9aec8da7e9c248f8b1b7cc413e1
   languageName: node
   linkType: hard
 
