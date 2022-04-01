@@ -24,6 +24,7 @@
     "@types/mri": "^1.1.1",
     "@types/rimraf": "^3",
     "@types/semver": "^7",
+    "c12": "^0.2.4",
     "chokidar": "^3.5.3",
     "clear": "^0.1.0",
     "clipboardy": "^3.0.0",
