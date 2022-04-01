@@ -1,4 +1,5 @@
-import { logger, addPluginTemplate, defineNuxtModule } from '@nuxt/kit'
+import { logger, addPluginTemplate, defineNuxtModule, addTemplate } from '@nuxt/kit'
+import { publicPathTemplate, clientConfigTemplate } from '../../../nuxt3/src/core/templates'
 import { version } from '../../package.json'
 import { middlewareTemplate, storeTemplate } from './templates'
 import type { ViteOptions } from './types'
@@ -42,6 +43,12 @@ export default defineNuxtModule<ViteOptions>({
       addPluginTemplate(storeTemplate)
     }
     addPluginTemplate(middlewareTemplate)
+
+    addTemplate(clientConfigTemplate)
+    addTemplate({
+      ...publicPathTemplate,
+      options: { nuxt }
+    })
 
     nuxt.hook('builder:prepared', async (builder) => {
       if (nuxt.options._prepare) { return }

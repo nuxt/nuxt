@@ -9,6 +9,7 @@ import { getPort } from 'get-port-please'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
+import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 
@@ -25,7 +26,6 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
-  // TODO: After nitropack refactor, try if we can resuse the same server port as Nuxt
   const hmrPortDefault = 24678 // Vite's default HMR port
   const hmrPort = await getPort({
     port: hmrPortDefault,
@@ -64,7 +64,8 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         plugins: [
-          virtual(nuxt.vfs)
+          virtual(nuxt.vfs),
+          DynamicBasePlugin.vite()
         ],
         vue: {
           reactivityTransform: nuxt.options.experimental.reactivityTransform

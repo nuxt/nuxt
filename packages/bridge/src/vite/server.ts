@@ -45,7 +45,11 @@ export async function buildServer (ctx: ViteBuildContext) {
         'axios'
       ],
       noExternal: [
+        // TODO: Use externality for production (rollup) build
+        /\/esm\/.*\.js$/,
         /\.(es|esm|esm-browser|esm-bundler).js$/,
+        '#app',
+        /@nuxt\/nitro\/(dist|src)/,
         ...ctx.nuxt.options.build.transpile.filter(i => typeof i === 'string')
       ]
     },
@@ -54,11 +58,14 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: ctx.nuxt.options.ssr ?? true,
       ssrManifest: true,
       rollupOptions: {
+        // Private nitro alias: packages/nitro/src/rollup/config.ts#L234
+        external: ['#_config'],
         input: resolve(ctx.nuxt.options.buildDir, 'server.js'),
         output: {
-          format: 'esm',
           entryFileNames: 'server.mjs',
-          chunkFileNames: 'chunks/[name].mjs'
+          chunkFileNames: 'chunks/[name].mjs',
+          preferConst: true,
+          format: 'module'
         },
         onwarn (warning, rollupWarn) {
           if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
@@ -66,6 +73,10 @@ export async function buildServer (ctx: ViteBuildContext) {
           }
         }
       }
+    },
+    server: {
+      // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
+      preTransformRequests: false
     },
     plugins: [
       jsxPlugin(),

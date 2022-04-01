@@ -34,8 +34,6 @@ export async function bundle (nuxt: Nuxt) {
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
     config.plugins.push(DynamicBasePlugin.webpack({
-      env: nuxt.options.dev ? 'dev' : config.name as 'client',
-      devAppConfig: nuxt.options.app,
       globalPublicPath: '__webpack_public_path__'
     }))
 

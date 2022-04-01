@@ -11,7 +11,7 @@ import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { writeManifest } from './manifest'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
-import { DynamicBasePlugin, RelativeAssetPlugin } from './plugins/dynamic-base'
+import { RelativeAssetPlugin } from './plugins/dynamic-base'
 import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -41,7 +41,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
       viteJsxPlugin(),
-      DynamicBasePlugin.vite({ env: 'client', devAppConfig: ctx.nuxt.options.app }),
       RelativeAssetPlugin(),
       devStyleSSRPlugin({
         rootDir: ctx.nuxt.options.rootDir,

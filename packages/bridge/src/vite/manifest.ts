@@ -56,22 +56,27 @@ export async function generateBuildManifest (ctx: ViteBuildContext) {
 
   // Search for polyfill file, we don't include it in the client entry
   const polyfillName = initialEntries.find(id => id.startsWith('polyfills-legacy.'))
+  const polyfill = await fse.readFile(rDist('client/' + polyfillName), 'utf-8')
 
   // @vitejs/plugin-legacy uses SystemJS which need to call `System.import` to load modules
   const clientImports = initialJs.filter(id => id !== polyfillName)
-  const clientEntryCode = `var imports = ${JSON.stringify(clientImports)}\nimports.reduce((p, id) => p.then(() => System.import(id)), Promise.resolve())`
+  const clientEntryCode = [
+    polyfill,
+    'var appConfig = window?.__NUXT__?.config.app || {}',
+    'var publicBase = appConfig.cdnURL || ("." + appConfig.baseURL)',
+    `var imports = ${JSON.stringify(clientImports)};`,
+    'imports.reduce((p, id) => p.then(() => System.import(publicBase + appConfig.buildAssetsDir.slice(1) + id)), Promise.resolve())'
+  ].join('\n')
   const clientEntryName = 'entry-legacy.' + hash(clientEntryCode) + '.js'
 
   const clientManifest = {
     // This publicPath will be ignored by Nitro and computed dynamically
     publicPath: ctx.nuxt.options.app.buildAssetsDir,
     all: uniq([
-      polyfillName,
       clientEntryName,
       ...clientEntries.flatMap(getModuleIds)
     ]).filter(Boolean),
     initial: [
-      polyfillName,
       clientEntryName,
       ...initialAssets
     ].filter(Boolean),
