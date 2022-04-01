@@ -7,7 +7,6 @@
     <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
-    <div>Plugin | myPlugin: {{ $myPlugin() }}</div>
     <SugarCounter :count="12" />
     <CustomComponent />
   </div>

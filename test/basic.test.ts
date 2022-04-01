@@ -40,8 +40,6 @@ describe('pages', () => {
     // composables auto import
     expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
     expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
-    // plugins
-    expect(html).toContain('Plugin | myPlugin: Injected by my-plugin')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
   })
@@ -143,6 +141,18 @@ describe('middlewares', () => {
     expect(html).toContain('no-auth.vue')
     expect(html).toContain('auth: ')
     expect(html).not.toContain('Injected by injectAuth middleware')
+  })
+})
+
+describe('plugins', () => {
+  it('basic plugin', async () => {
+    const html = await $fetch('/plugins')
+    expect(html).toContain('myPlugin: Injected by my-plugin')
+  })
+
+  it('async plugin', async () => {
+    const html = await $fetch('/plugins')
+    expect(html).toContain('asyncPlugin: Async plugin works! 123')
   })
 })
 

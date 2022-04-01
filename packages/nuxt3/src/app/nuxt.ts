@@ -3,7 +3,10 @@ import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
 import type { RuntimeConfig } from '@nuxt/schema'
+import { getContext } from 'unctx'
 import { legacyPlugin, LegacyContext } from './compat/legacy-app'
+
+const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
@@ -172,12 +175,6 @@ export function isLegacyPlugin (plugin: unknown): plugin is LegacyPlugin {
   return !plugin[NuxtPluginIndicator]
 }
 
-let currentNuxtAppInstance: NuxtApp | null
-
-export const setNuxtAppInstance = (nuxt: NuxtApp | null) => {
-  currentNuxtAppInstance = nuxt
-}
-
 /**
  * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
  *
@@ -185,13 +182,14 @@ export const setNuxtAppInstance = (nuxt: NuxtApp | null) => {
  * @param setup The function to call
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
-  setNuxtAppInstance(nuxt as NuxtApp)
-  const p: ReturnType<T> = args ? setup(...args as Parameters<T>) : setup()
+  const fn = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    // Unset nuxt instance to prevent context-sharing in server-side
-    setNuxtAppInstance(null)
+    return nuxtAppCtx.callAsync<ReturnType<T>>(nuxt, fn)
+  } else {
+    // In client side we could assume nuxt app is singleton
+    nuxtAppCtx.set(nuxt)
+    return fn()
   }
-  return p
 }
 
 /**
@@ -201,10 +199,11 @@ export function useNuxtApp () {
   const vm = getCurrentInstance()
 
   if (!vm) {
-    if (!currentNuxtAppInstance) {
+    const nuxtAppInstance = nuxtAppCtx.use()
+    if (!nuxtAppInstance) {
       throw new Error('nuxt instance unavailable')
     }
-    return currentNuxtAppInstance
+    return nuxtAppInstance
   }
 
   return vm.appContext.app.$nuxt as NuxtApp
