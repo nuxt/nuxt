@@ -24,7 +24,7 @@
     "@vitejs/plugin-vue-jsx": "^1.3.9",
     "autoprefixer": "^10.4.4",
     "chokidar": "^3.5.3",
-    "cssnano": "^5.1.5",
+    "cssnano": "^5.1.6",
     "defu": "^6.0.0",
     "esbuild": "^0.14.29",
     "escape-string-regexp": "^5.0.0",

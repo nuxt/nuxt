@@ -2635,7 +2635,7 @@ __metadata:
     unbuild: latest
     unimport: ^0.1.3
     unplugin: ^0.6.1
-    unplugin-vue2-script-setup: ^0.10.1
+    unplugin-vue2-script-setup: ^0.10.2
     untyped: ^0.4.4
     vite: ^2.9.1
     vite-plugin-vue2: ^1.9.3
@@ -3321,7 +3321,7 @@ __metadata:
     "@vitejs/plugin-vue-jsx": ^1.3.9
     autoprefixer: ^10.4.4
     chokidar: ^3.5.3
-    cssnano: ^5.1.5
+    cssnano: ^5.1.6
     defu: ^6.0.0
     esbuild: ^0.14.29
     escape-string-regexp: ^5.0.0
@@ -3439,7 +3439,7 @@ __metadata:
     autoprefixer: ^10.4.4
     css-loader: ^6.7.1
     css-minimizer-webpack-plugin: ^3.4.1
-    cssnano: ^5.1.5
+    cssnano: ^5.1.6
     esbuild-loader: ^2.18.0
     escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
@@ -8336,7 +8336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-declaration-sorter@npm:^6.0.3":
+"css-declaration-sorter@npm:^6.0.3, css-declaration-sorter@npm:^6.2.2":
   version: 6.2.2
   resolution: "css-declaration-sorter@npm:6.2.2"
   peerDependencies:
@@ -8662,6 +8662,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cssnano-preset-default@npm:^5.2.6":
+  version: 5.2.6
+  resolution: "cssnano-preset-default@npm:5.2.6"
+  dependencies:
+    css-declaration-sorter: ^6.2.2
+    cssnano-utils: ^3.1.0
+    postcss-calc: ^8.2.3
+    postcss-colormin: ^5.3.0
+    postcss-convert-values: ^5.1.0
+    postcss-discard-comments: ^5.1.1
+    postcss-discard-duplicates: ^5.1.0
+    postcss-discard-empty: ^5.1.1
+    postcss-discard-overridden: ^5.1.0
+    postcss-merge-longhand: ^5.1.3
+    postcss-merge-rules: ^5.1.1
+    postcss-minify-font-values: ^5.1.0
+    postcss-minify-gradients: ^5.1.1
+    postcss-minify-params: ^5.1.2
+    postcss-minify-selectors: ^5.2.0
+    postcss-normalize-charset: ^5.1.0
+    postcss-normalize-display-values: ^5.1.0
+    postcss-normalize-positions: ^5.1.0
+    postcss-normalize-repeat-style: ^5.1.0
+    postcss-normalize-string: ^5.1.0
+    postcss-normalize-timing-functions: ^5.1.0
+    postcss-normalize-unicode: ^5.1.0
+    postcss-normalize-url: ^5.1.0
+    postcss-normalize-whitespace: ^5.1.1
+    postcss-ordered-values: ^5.1.1
+    postcss-reduce-initial: ^5.1.0
+    postcss-reduce-transforms: ^5.1.0
+    postcss-svgo: ^5.1.0
+    postcss-unique-selectors: ^5.1.1
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: e15cc624cf46540ca8d22769153a232182400ea9bbbce9309447f3eae5eeca2241d61d525629158729f16bcd5a593ff1e4c00de3587fdd9fd97ccdaf00fdd984
+  languageName: node
+  linkType: hard
+
 "cssnano-util-get-arguments@npm:^4.0.0":
   version: 4.0.0
   resolution: "cssnano-util-get-arguments@npm:4.0.0"
@@ -8713,7 +8752,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:^5.0.6, cssnano@npm:^5.1.5":
+"cssnano@npm:^5.0.6":
   version: 5.1.5
   resolution: "cssnano@npm:5.1.5"
   dependencies:
@@ -8723,6 +8762,19 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: 7fec29799355f1ccefa370b249bb3b3fb498fb4c6ccd7c7a39e9c6af0632bfffd71b7c93baa19da67d04dcf56de71365b9f8bec9198daa29e8e5847a9f3ec881
+  languageName: node
+  linkType: hard
+
+"cssnano@npm:^5.1.6":
+  version: 5.1.6
+  resolution: "cssnano@npm:5.1.6"
+  dependencies:
+    cssnano-preset-default: ^5.2.6
+    lilconfig: ^2.0.3
+    yaml: ^1.10.2
+  peerDependencies:
+    postcss: ^8.2.15
+  checksum: 9eb334220a8054cecb95b2c2e44e91186a69d7619f38c4b911ab74b7a6aa89e56105ae464bf7a8164a78b0422602d756d76b4a6a15d9075bdb117c6949e817a7
   languageName: node
   linkType: hard
 
@@ -21255,9 +21307,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin-vue2-script-setup@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "unplugin-vue2-script-setup@npm:0.10.1"
+"unplugin-vue2-script-setup@npm:^0.10.2":
+  version: 0.10.2
+  resolution: "unplugin-vue2-script-setup@npm:0.10.2"
   dependencies:
     "@antfu/utils": ^0.5.0
     "@babel/core": ^7.17.5
@@ -21280,7 +21332,7 @@ __metadata:
   peerDependenciesMeta:
     pug:
       optional: true
-  checksum: 4838f48e7259202ab71415b4bc80d1b2debca09ba7a798682446e4109ff231e19c47ce9cd49ccd9d43761aef2397991be305f30b056a82ba7a08d3bc52277d36
+  checksum: 934bcaf8a43d4cd0063a052171f68534d06a4b314af125efeda278660a79326510cb84c3957353a2a9b7ad51afa632b611224650c0642e3cb8ec41e46a45c05b
   languageName: node
   linkType: hard
 
