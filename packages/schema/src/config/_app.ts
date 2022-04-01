@@ -3,7 +3,11 @@ import { existsSync, readdirSync } from 'fs'
 import defu from 'defu'
 
 export default {
-  /** Vue.js config */
+  /**
+   * Vue.js config
+   * @version 2
+   * @version 3
+   */
   vue: {
     /**
      * Properties that will be set directly on `Vue.config` for vue@2.

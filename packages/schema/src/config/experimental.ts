@@ -1,22 +1,22 @@
 export default {
-  /**
-   * Set to true to generate an async entrypoint for the Vue bundle (for module federation support).
-   * @version 3
-   */
-  asyncEntry: {
-    $resolve: (val, get) => val ?? (get('dev') && get('experimental.viteNode')) ?? false
-  },
+  /** @version 3 */
+  experimental: {
+    /**
+     * Set to true to generate an async entrypoint for the Vue bundle (for module federation support).
+     */
+    asyncEntry: {
+      $resolve: (val, get) => val ?? (get('dev') && get('experimental.viteNode')) ?? false
+    },
 
-  /**
-   * Use vite-node for on-demand server chunk loading
-   * @version 3
-   */
-  viteNode: process.env.EXPERIMENTAL_VITE_NODE ? true : false,
+    /**
+     * Use vite-node for on-demand server chunk loading
+     */
+    viteNode: process.env.EXPERIMENTAL_VITE_NODE ? true : false,
 
-  /**
-   * Enable Vue's reactivity transform
-   * @see https://vuejs.org/guide/extras/reactivity-transform.html
-   * @version 3
-   */
-  reactivityTransform: false
+    /**
+     * Enable Vue's reactivity transform
+     * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     */
+    reactivityTransform: false
+  }
 }

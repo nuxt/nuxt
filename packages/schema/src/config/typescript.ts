@@ -1,4 +1,10 @@
 export default {
+  /**
+   * Configuration for Nuxt's TypeScript integration.
+   *
+   * @version 2
+   * @version 3
+   */
   typescript: {
     /**
    * TypeScript comes with certain checks to give you more safety and analysis of your program.

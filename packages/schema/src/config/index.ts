@@ -45,6 +45,7 @@ export default {
   ...vite,
   ...webpack,
   ...nitro,
+  ...experimental,
   // Legacy
   ...build,
   messages,
@@ -53,5 +54,4 @@ export default {
   server,
   cli,
   generate,
-  experimental,
 }

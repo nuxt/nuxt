@@ -8,6 +8,7 @@ export default {
    * The builder to use for bundling the Vue part of your application.
    *
    * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @version 3
    */
   builder: {
     $resolve: (val, get) => {
@@ -21,17 +22,21 @@ export default {
       return map[val] || (get('vite') === false ? map.webpack : map.vite)
     },
   },
-
-  build: {
-    /**
-   * Suppresses most of the build output log.
-   *
-   * It is enabled by default when a CI or test environment is detected.
-   *
-   * @see [std-env](https://github.com/unjs/std-env)
+  /**
+   * Shared build configuration.
    * @version 2
    * @version 3
    */
+  build: {
+    /**
+     * Suppresses most of the build output log.
+     *
+     * It is enabled by default when a CI or test environment is detected.
+     *
+     * @see [std-env](https://github.com/unjs/std-env)
+     * @version 2
+     * @version 3
+     */
     quiet: Boolean(isCI || isTest),
 
     /**
