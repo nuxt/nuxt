@@ -42,7 +42,7 @@ export function useFetch<
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   }
 
-  const _asyncDataOptions: AsyncDataOptions<any> = {
+  const _asyncDataOptions: AsyncDataOptions<_ResT, Transform, PickKeys> = {
     ...opts,
     watch: [
       _request,

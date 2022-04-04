@@ -165,8 +165,7 @@ export function useAsyncData<
   const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<DataT>
   Object.assign(asyncDataPromise, asyncData)
 
-  // @ts-ignore
-  return asyncDataPromise as AsyncData<DataT>
+  return asyncDataPromise as AsyncData<PickFrom<ReturnType<Transform>, PickKeys>>
 }
 
 export function useLazyAsyncData<
