@@ -10,4 +10,4 @@ This example shows how to handle errors in different contexts: pages, plugins, c
 Learn more about [error handling](/docs/usage/error-handling).
 ::
 
-::sandbox{repo="nuxt/framework" branch="main" dir="examples/app/errors" file="app.vue"}
+::sandbox{repo="nuxt/framework" branch="main" dir="examples/app/error-handling" file="app.vue"}
