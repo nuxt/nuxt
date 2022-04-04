@@ -87,7 +87,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
   ::section-content-item
   ---
   soon: true
-  title: Nuxt Devtools
+  title: Nuxt DevTools
   description: 'Work faster with info and quick fixes right in the browser.'
   image: IconDevtools
   imageClass: w-10 h-10
@@ -180,7 +180,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
     ::list{.mb-8}
     - Using [Nitro server](/concepts/server-engine) with Nuxt 2
     - Using Composition API (same as Nuxt 3) with Nuxt 2
-    - Using new CLI and Devtools with Nuxt 2
+    - Using new CLI and DevTools with Nuxt 2
     - Progressively upgrade to Nuxt 3
     - Compatibility with Nuxt 2 module ecosystem
     - Upgrade piece by piece (Nitro, Composition API, Nuxt Kit)
