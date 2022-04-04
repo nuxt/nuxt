@@ -1,13 +1,18 @@
 import { existsSync, readFileSync } from 'fs'
 import ignore from 'ignore'
 import { join, relative } from 'pathe'
-import { useNuxt } from './context'
+import { tryUseNuxt } from './context'
 
 /**
  * Return a filter function to filter an array of paths
  */
 export function isIgnored (pathname: string): boolean {
-  const nuxt = useNuxt()
+  const nuxt = tryUseNuxt()
+
+  // Happens with CLI reloads
+  if (!nuxt) {
+    return null
+  }
 
   if (!nuxt._ignore) {
     nuxt._ignore = ignore(nuxt.options.ignoreOptions)

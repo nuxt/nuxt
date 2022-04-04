@@ -4,7 +4,7 @@ import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
 import type { Nuxt, NuxtTemplate, NuxtModule, ModuleOptions, ModuleDefinition } from '@nuxt/schema'
 import { logger } from '../logger'
-import { useNuxt, nuxtCtx } from '../context'
+import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
 import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
 import { templateUtils, compileTemplate } from '../internal/template'
 
@@ -43,7 +43,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: OptionsT, nuxt: Nuxt) {
     if (!nuxt) {
-      nuxt = useNuxt() || this.nuxt /* invoked by nuxt 2 */
+      nuxt = tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
     }
 
     // Avoid duplicate installs

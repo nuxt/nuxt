@@ -2,7 +2,7 @@ import { promises as fsp, existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
 import { globby } from 'globby'
-import { useNuxt } from './context'
+import { tryUseNuxt, useNuxt } from './context'
 import { tryResolveModule } from './internal/cjs'
 import { isIgnored } from './ignore'
 
@@ -103,7 +103,7 @@ export async function findPath (paths: string|string[], opts?: ResolvePathOption
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
   if (!alias) {
-    alias = useNuxt()?.options.alias || {}
+    alias = tryUseNuxt()?.options.alias || {}
   }
   for (const key in alias) {
     if (key === '@' && !path.startsWith('@/')) { continue } // Don't resolve @foo/bar
