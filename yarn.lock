@@ -1542,6 +1542,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@iconify-json/carbon@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@iconify-json/carbon@npm:1.1.3"
+  dependencies:
+    "@iconify/types": ^1.0.12
+  checksum: 86bbfea18e1ec0f6d05c83095d2c51e15ccb5e9c5e60177a8e46a8e30d59d3a84acfd3b4d84515ccb3376366cc279070e46dc74826dec016b5d78cdbc9b45a61
+  languageName: node
+  linkType: hard
+
 "@iconify/types@npm:^1.0.12, @iconify/types@npm:^1.1.0":
   version: 1.1.0
   resolution: "@iconify/types@npm:1.1.0"
@@ -15723,7 +15732,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt-framework@workspace:."
   dependencies:
-    "@iconify-json/carbon": ^1.1.2
+    "@iconify-json/carbon": ^1.1.3
     "@nuxtjs/eslint-config": ^9.0.0
     "@nuxtjs/eslint-config-typescript": ^9.0.0
     "@types/jsdom": ^16

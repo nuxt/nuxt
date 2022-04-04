@@ -36,7 +36,7 @@
     "unbuild": "^0.7.2"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.2",
+    "@iconify-json/carbon": "^1.1.3",
     "@nuxtjs/eslint-config": "^9.0.0",
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
     "@types/jsdom": "^16",
