@@ -1,5 +1,5 @@
 <template>
-  <NuxtExampleLayout example="composables/use-meta">
+  <NuxtExampleLayout example="composables/use-head">
     <div
       class="bg-gray-400/10 border-2 border-dashed border-gray-400/50 rounded-xl py-8 px-2 op-80"
     >
@@ -26,7 +26,7 @@
 <script>
 export default {
   setup () {
-    useMeta({
+    useHead({
       bodyAttrs: {
         class: 'test'
       }

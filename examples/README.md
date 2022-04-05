@@ -8,7 +8,7 @@
 | `use-async-data` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-async-data) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-async-data?file=app.vue&terminal=dev) |
 | `use-cookie` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-cookie) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-cookie?file=app.vue&terminal=dev) |
 | `use-fetch` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-fetch) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-fetch?file=app.vue&terminal=dev) |
-| `use-meta` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-meta) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-meta?file=app.vue&terminal=dev) |
+| `use-head` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-head) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-head?file=app.vue&terminal=dev) |
 | `use-state` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/use-state) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-state?file=app.vue&terminal=dev) |
 | `components` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/components) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/components?file=app.vue&terminal=dev) |
 | `composables` | [GitHub](https://github.com/nuxt/framework/tree/main/examples/composables) | [Play Online](https://stackblitz.com/github/nuxt/framework/tree/main/examples/composables?file=app.vue&terminal=dev) |

@@ -1,5 +1,5 @@
 {
-  "name": "example-use-meta",
+  "name": "example-use-head",
   "private": true,
   "scripts": {
     "build": "nuxi build",

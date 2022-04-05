@@ -1,6 +1,6 @@
 import { computed, getCurrentInstance } from 'vue'
 import * as Components from './components'
-import { useMeta } from './composables'
+import { useHead } from './composables'
 import { defineNuxtPlugin, useNuxtApp } from '#app'
 // @ts-ignore
 import metaConfig from '#build/meta.config.mjs'
@@ -23,12 +23,12 @@ const metaMixin = {
       ? computed(() => options.head(nuxtApp))
       : options.head
 
-    useMeta(source)
+    useHead(source)
   }
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  useMeta(metaConfig.globalMeta)
+  useHead(metaConfig.globalMeta)
 
   nuxtApp.vueApp.mixin(metaMixin)
 

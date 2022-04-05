@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 import type { SetupContext } from 'vue'
-import { useMeta } from './composables'
+import { useHead } from './composables'
 
 type Props = Readonly<Record<string, any>>
 
@@ -8,7 +8,7 @@ const removeUndefinedProps = (props: Props) =>
   Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined))
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
-  useMeta(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))
+  useHead(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))
   return () => renderChild ? ctx.slots.default?.() : null
 }
 

@@ -17,7 +17,7 @@
   },
   "imports": {
     "#app": "./dist/app/index.mjs",
-    "#meta": "./dist/meta/runtime/index.mjs",
+    "#head": "./dist/head/runtime/index.mjs",
     "#pages": "./dist/pages/runtime/index.mjs"
   },
   "files": [

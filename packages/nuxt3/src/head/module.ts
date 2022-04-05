@@ -13,16 +13,16 @@ export default defineNuxtModule({
     viewport: 'width=device-width, initial-scale=1'
   },
   setup (options, nuxt) {
-    const runtimeDir = nuxt.options.alias['#meta'] || resolve(distDir, 'meta/runtime')
+    const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
     // Transpile @nuxt/meta and @vueuse/head
     nuxt.options.build.transpile.push('@vueuse/head')
 
-    // Add #meta alias
-    nuxt.options.alias['#meta'] = runtimeDir
+    // Add #head alias
+    nuxt.options.alias['#head'] = runtimeDir
 
     // Global meta
-    const globalMeta: MetaObject = defu(nuxt.options.meta, {
+    const globalMeta: MetaObject = defu(nuxt.options.app.head, {
       meta: [
         { charset: options.charset },
         { name: 'viewport', content: options.viewport }

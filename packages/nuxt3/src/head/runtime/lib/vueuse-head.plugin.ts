@@ -14,7 +14,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     headReady = true
   })
 
-  nuxtApp._useMeta = (meta: MetaObject) => {
+  nuxtApp._useHead = (meta: MetaObject) => {
     const headObj = ref(meta as any)
     head.addHeadObjs(headObj)
 

@@ -11,7 +11,21 @@ import { useNuxtApp } from '#app'
  * Alternatively, for reactive meta state, you can pass in a function
  * that returns a meta object.
  */
-export function useMeta (meta: MetaObject | ComputedGetter<MetaObject>) {
+export function useHead (meta: MetaObject | ComputedGetter<MetaObject>) {
   const resolvedMeta = isFunction(meta) ? computed(meta) : meta
-  useNuxtApp()._useMeta(resolvedMeta)
+  useNuxtApp()._useHead(resolvedMeta)
+}
+
+const _warned = {}
+const warnOnce = (id: string, message: string) => {
+  if (!_warned[id]) {
+    console.warn(message)
+    _warned[id] = true
+  }
+}
+// TODO: remove useMeta support when Nuxt 3 is stable
+/** @deprecated */
+export function useMeta (meta: MetaObject | ComputedGetter<MetaObject>) {
+  warnOnce('useMeta', '[meta] useMeta has been renamed to useHead.')
+  return useHead(meta)
 }

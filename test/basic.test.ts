@@ -101,6 +101,18 @@ describe('pages', () => {
   })
 })
 
+describe('head tags', () => {
+  it('should render tags', async () => {
+    const html = await $fetch('/head')
+    expect(html).toContain('<title>Using a dynamic component</title>')
+    expect(html).not.toContain('<meta name="description" content="first">')
+    expect(html).toContain('<meta name="description" content="overriding with an inline useHead call">')
+    expect(html).toMatch(/<html[^>]*class="html-attrs-test"/)
+    expect(html).toMatch(/<body[^>]*class="body-attrs-test"/)
+    expect(html).toContain('script>console.log("works with useMeta too")</script>')
+  })
+})
+
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
     const html = await $fetch('/navigate-to/')

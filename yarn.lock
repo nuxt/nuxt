@@ -10895,9 +10895,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"example-use-meta@workspace:examples/composables/use-meta":
+"example-use-head@workspace:examples/composables/use-head":
   version: 0.0.0-use.local
-  resolution: "example-use-meta@workspace:examples/composables/use-meta"
+  resolution: "example-use-head@workspace:examples/composables/use-head"
   dependencies:
     "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
     nuxt3: latest

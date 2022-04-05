@@ -5,7 +5,7 @@ import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, 
 // Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
 import pagesModule from '../pages/module'
-import metaModule from '../meta/module'
+import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import autoImportsModule from '../auto-imports/module'
 /* eslint-enable */

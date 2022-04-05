@@ -8,7 +8,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.vueApp.use(manager)
 
-  nuxtApp._useMeta = (meta: MetaObject) => manager.addMeta(meta)
+  nuxtApp._useHead = (meta: MetaObject) => manager.addMeta(meta)
 
   if (process.client) {
     const teleportTarget = document.createElement('div')
