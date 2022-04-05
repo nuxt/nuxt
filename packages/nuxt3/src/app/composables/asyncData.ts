@@ -81,9 +81,11 @@ export function useAsyncData<
     }
   }
 
+  const useInitialCache = () => options.initialCache && nuxt.payload.data[key] !== undefined
+
   const asyncData = {
     data: ref(nuxt.payload.data[key] ?? options.default()),
-    pending: ref(true),
+    pending: ref(!useInitialCache()),
     error: ref(nuxt.payload._errors[key] ?? null)
   } as AsyncData<DataT>
 
@@ -93,7 +95,7 @@ export function useAsyncData<
       return nuxt._asyncDataPromises[key]
     }
     // Avoid fetching same key that is already fetched
-    if (opts._initial && options.initialCache && nuxt.payload.data[key] !== undefined) {
+    if (opts._initial && useInitialCache()) {
       return nuxt.payload.data[key]
     }
     asyncData.pending.value = true
