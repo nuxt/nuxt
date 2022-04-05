@@ -39,7 +39,7 @@ export default defineNuxtCommand({
       consola.info('Removing lock-file and node_modules...')
       await Promise.all([
         fsp.rm(packageManagerLocks[packageManager]),
-        fsp.rmdir('node_modules', { recursive: true })
+        fsp.rm('node_modules', { recursive: true })
       ])
       execSync(`${packageManager} install`, { stdio: 'inherit' })
     } else {
