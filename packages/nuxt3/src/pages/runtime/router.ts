@@ -3,9 +3,11 @@ import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  NavigationGuard
+  NavigationGuard,
+  RouteLocation
 } from 'vue-router'
 import { createError } from 'h3'
+import { withoutBase } from 'ufo'
 import NuxtPage from './page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError } from '#app'
 // @ts-ignore
@@ -23,6 +25,27 @@ declare module 'vue' {
     /** @deprecated */
     NuxtChild: typeof NuxtPage
   }
+}
+
+// https://github.dev/vuejs/router/blob/main/src/history/html5.ts#L33-L56
+function createCurrentLocation (
+  base: string,
+  location: Location
+): string {
+  const { pathname, search, hash } = location
+  // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
+  const hashPos = base.indexOf('#')
+  if (hashPos > -1) {
+    const slicePos = hash.includes(base.slice(hashPos))
+      ? base.slice(hashPos).length
+      : 1
+    let pathFromHash = hash.slice(slicePos)
+    // prepend the starting slash to hash so the url starts with /#
+    if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
+    return withoutBase(pathFromHash, '')
+  }
+  const path = withoutBase(pathname, base)
+  return path + search + hash
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -52,10 +75,22 @@ export default defineNuxtPlugin((nuxtApp) => {
     get: () => previousRoute.value
   })
 
+  // Allows suspending the route object until page navigation completes
+  const path = process.server ? nuxtApp.ssrContext.req.url : createCurrentLocation(baseURL, window.location)
+  const currentRoute = shallowRef(router.resolve(path) as RouteLocation)
+  const syncCurrentRoute = () => { currentRoute.value = router.currentRoute.value }
+  nuxtApp.hook('page:finish', syncCurrentRoute)
+  router.afterEach((to, from) => {
+    // We won't trigger suspense if the component is reused between routes
+    // so we need to update the route manually
+    if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+      syncCurrentRoute()
+    }
+  })
   // https://github.com/vuejs/vue-router-next/blob/master/src/router.ts#L1192-L1200
   const route = {}
-  for (const key in router.currentRoute.value) {
-    route[key] = computed(() => router.currentRoute.value[key])
+  for (const key in currentRoute.value) {
+    route[key] = computed(() => currentRoute.value[key])
   }
 
   nuxtApp._route = reactive(route)
