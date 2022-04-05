@@ -1,10 +1,12 @@
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
+import { expectNoClientErrors } from './utils'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
-  server: true
+  server: true,
+  browser: true
 })
 
 describe('server api', () => {
@@ -42,6 +44,8 @@ describe('pages', () => {
     expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
+
+    expectNoClientErrors('/')
   })
 
   it('render 404', async () => {
@@ -52,6 +56,8 @@ describe('pages', () => {
 
     expect(html).toContain('[...slug].vue')
     expect(html).toContain('404 at not-found')
+
+    expectNoClientErrors('/not-found')
   })
 
   it('/nested/[foo]/[bar].vue', async () => {
@@ -77,6 +83,8 @@ describe('pages', () => {
 
     expect(html).toContain('nested/[foo]/index.vue')
     expect(html).toContain('foo: foobar')
+
+    expectNoClientErrors('/nested/foobar')
   })
 
   it('/nested/[foo]/user-[group].vue', async () => {
@@ -88,16 +96,22 @@ describe('pages', () => {
     expect(html).toContain('nested/[foo]/user-[group].vue')
     expect(html).toContain('foo: foobar')
     expect(html).toContain('group: admin')
+
+    expectNoClientErrors('/nested/foobar/user-admin')
   })
 
   it('/parent', async () => {
     const html = await $fetch('/parent')
     expect(html).toContain('parent/index')
+
+    expectNoClientErrors('/parent')
   })
 
   it('/another-parent', async () => {
     const html = await $fetch('/another-parent')
     expect(html).toContain('another-parent/index')
+
+    expectNoClientErrors('/another-parent')
   })
 })
 
