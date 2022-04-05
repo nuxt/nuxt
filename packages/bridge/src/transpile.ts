@@ -5,6 +5,8 @@ export const setupTranspile = () => {
   const nuxt = useNuxt()
 
   nuxt.hook('modules:done', () => {
-    addModuleTranspiles()
+    addModuleTranspiles({
+      additionalModules: ['@nuxt/bridge-edge']
+    })
   })
 }

@@ -1,9 +1,14 @@
 import { useNuxt } from '@nuxt/kit'
 
-export const addModuleTranspiles = () => {
+export interface AddModuleTranspilesOptions {
+  additionalModules?: string[]
+}
+
+export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   const nuxt = useNuxt()
 
   const modules = [
+    ...opts.additionalModules || [],
     ...nuxt.options.buildModules,
     ...nuxt.options.modules,
     ...nuxt.options._modules
