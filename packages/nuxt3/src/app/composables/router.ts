@@ -10,6 +10,10 @@ export const useRoute = () => {
   return useNuxtApp()._route as RouteLocationNormalizedLoaded
 }
 
+export const useActiveRoute = () => {
+  return useNuxtApp()._activeRoute as RouteLocationNormalizedLoaded
+}
+
 export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }

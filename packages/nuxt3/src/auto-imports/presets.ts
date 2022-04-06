@@ -36,6 +36,7 @@ export const appPreset = defineUnimportPreset({
     'useRequestHeaders',
     'useRouter',
     'useRoute',
+    'useActiveRoute',
     'defineNuxtRouteMiddleware',
     'navigateTo',
     'abortNavigation',
