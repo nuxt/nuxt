@@ -38,10 +38,10 @@ export default {
     /**
      * The base path of your Nuxt application.
      *
-     * This can be set at runtime by setting the BASE_PATH environment variable.
+     * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
      * @example
      * ```bash
-     * BASE_PATH=/prefix/ node .output/server/index.mjs
+     * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
      * ```
      */
     baseURL: '/',
