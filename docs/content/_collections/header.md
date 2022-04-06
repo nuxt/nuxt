@@ -2,13 +2,13 @@
 links:
   -
     title: 'Getting Started'
-    to: '/getting-started/introduction'
+    to: '/getting-started/quick-start'
   -
-    title: 'Concepts'
-    to: '/concepts/introduction'
+    title: 'Guide'
+    to: '/guide/concepts/introduction'
   -
-    title: 'Docs'
-    to: '/docs/usage/data-fetching'
+    title: 'API'
+    to: '/api/composables/use-async-data'
   -
     title: 'Examples'
     to: '/examples/essentials/hello-world'

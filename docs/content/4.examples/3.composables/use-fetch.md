@@ -2,7 +2,7 @@
 template: Example
 ---
 
-# useFetch
+# `useFetch`
 
 This example shows how to use `useFetch` to fetch data from an API endpoint.
 
@@ -10,8 +10,10 @@ This example shows how to use `useFetch` to fetch data from an API endpoint.
 Nuxt will automatically read files in the ~/server/api directory to create API endpoints.
 ::
 
-::alert{type=info icon=👉}
-Learn more about [data fetching](/docs/usage/data-fetching).
+::ReadMore{link="/api/composables/use-fetch"}
+::
+
+::ReadMore{link="/guide/features/data-fetching"}
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/composables/use-fetch" file="app.vue"}

@@ -1,0 +1,33 @@
+# Getting started
+/getting-started/introduction     /getting-started/quick-start 302!
+/getting-started/installation     /getting-started/quick-start 302!
+/getting-started/commands         /api/commands/add 302!
+/getting-started/bridge           /bridge 302!
+# Concepts
+/concepts/introduction            /guide/concepts/introduction 302!
+/concepts/vuejs-development       /guide/concepts/vuejs-development 302!
+/concepts/rendering               /guide/concepts/rendering 302!
+/concepts/auto-imports            /guide/concepts/auto-imports 302!
+/concepts/server-engine           /guide/concepts/server-engine 302!
+/concepts/typescript              /guide/concepts/typescript 302!
+/concepts/esm                     /guide/going-further/esm 302!
+# Docs
+/docs/usage/data-fetching         /guide/features/data-fetching 302!
+/docs/usage/state                 /guide/features/state-management 302!
+/docs/usage/meta-tags             /guide/features/head-management 302!
+/docs/usage/nuxt-app              /guide/going-further/nuxt-app 302!
+/docs/usage/runtime-config        /guide/going-further/runtime-config 302!
+/docs/usage/cookies               /api/composables/use-cookie 302!
+/docs/usage/ssr                   /api/composables/use-request-headers 302!
+/docs/usage/cli                   /api/commands/add 302!
+/docs/usage/error-handling        /guide/features/error-handling 302!
+/docs/usage/nuxt-link             /api/components/nuxt-link 302!
+/docs/usage/teleports             /guide/features/teleports 302!
+/docs/directory-structure/*       /guide/directory-structure/:splat 302!
+/docs/deployment/*                /guide/deployment/:splat 302!
+/docs/advanced/testing            /guide/going-further/testing 302!
+/docs/advanced/nuxt               /guide/going-further/internals 302!
+/docs/advanced/modules            /guide/going-further/modules 302!
+/docs/advanced/kit                /guide/going-further/kit 302!
+/docs/advanced/hooks              /guide/going-further/hooks 302!
+/docs/migration/*                 /migration/:splat 302!

@@ -21,7 +21,7 @@ Build your next application with Vue 3 and experience hybrid rendering, powerful
 Nuxt 3 is an open source framework making web development simple and powerful.
 
 #secondary-button
-:button-link[Get started]{ href="/getting-started" size="medium" aria-label="Get started" }
+:button-link[Get started]{ href="/getting-started/quick-start" size="medium" aria-label="Get started" }
 ::
 
 ::home-features{.dark:bg-secondary-darkest .bg-gray-50}
@@ -142,17 +142,17 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
     :icon-nuxt-nitro{.h-32}
     :headline[Nitro Engine]
 
-    We worked for 9 months on Nuxt's new server engine for Nuxt: [**Nitro**](/concepts/server-engine). It unlocks new **full-stack capabilities** to Nuxt server and beyond.
+    We worked for 9 months on Nuxt's new server engine for Nuxt: [**Nitro**](/guide/concepts/server-engine). It unlocks new **full-stack capabilities** to Nuxt server and beyond.
 
-    In development, it uses [Rollup](https://rollupjs.org/guide/en/) and [Node.js workers](https://nodejs.org/api/worker_threads.html) for your server code and context isolation. It also **generates your server API** by reading files in [`server/api/`](/docs/directory-structure/server#api-routes) and **server middleware** from [`server/middleware/`](/docs/directory-structure/server#server-middleware).
+    In development, it uses [Rollup](https://rollupjs.org/guide/en/) and [Node.js workers](https://nodejs.org/api/worker_threads.html) for your server code and context isolation. It also **generates your server API** by reading files in [`server/api/`](/guide/directory-structure/server#api-routes) and **server middleware** from [`server/middleware/`](/guide/directory-structure/server#server-middleware).
 
-    In production, it builds your app and server into one universal [`.output`](/docs/directory-structure/output) directory. This **output is light**: minified and removed from any Node.js modules (except polyfills). You can deploy this output on any system supporting JavaScript, from Node.js, Serverless, Workers, Edge-side rendering or purely static.
+    In production, it builds your app and server into one universal [`.output`](/guide/directory-structure/output) directory. This **output is light**: minified and removed from any Node.js modules (except polyfills). You can deploy this output on any system supporting JavaScript, from Node.js, Serverless, Workers, Edge-side rendering or purely static.
 
     The output is combined with both runtime code to run your Nuxt server in any environment (including experimental browser Service Workers!) and serve you static files, making it a **true hybrid framework** for the JAMStack. In addition, a native storage layer is implemented, supporting multi source, drivers and local assets.
 
     The foundation of the Nitro server is rollup and [h3](https://github.com/unjs/h3): a minimal http framework built for high performance and portability.
 
-    :button-link[Learn more about Nitro]{ href="/concepts/server-engine" size="medium" aria-label="Learn more about Nitro" }
+    :button-link[Learn more about Nitro]{ href="/guide/concepts/server-engine" size="medium" aria-label="Learn more about Nitro" }
   ::
 ::
 
@@ -178,7 +178,7 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
     As we've been working on new features for Nuxt 3, we've back-ported some of them to Nuxt 2.
 
     ::list{.mb-8}
-    - Using [Nitro server](/concepts/server-engine) with Nuxt 2
+    - Using [Nitro server](/guide/concepts/server-engine) with Nuxt 2
     - Using Composition API (same as Nuxt 3) with Nuxt 2
     - Using new CLI and DevTools with Nuxt 2
     - Progressively upgrade to Nuxt 3
@@ -186,6 +186,6 @@ Nuxt 3 has been re-architected with a smaller core and optimized for faster perf
     - Upgrade piece by piece (Nitro, Composition API, Nuxt Kit)
     ::
 
-    :button-link[Get started with Nuxt Bridge]{ href="/getting-started/bridge" size="medium" aria-label="Get started" }
+    :button-link[Get started with Nuxt Bridge]{ href="/bridge" size="medium" aria-label="Get started" }
   ::
 ::

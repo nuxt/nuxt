@@ -10851,9 +10851,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"example-test@workspace:examples/advanced/test":
+"example-testing@workspace:examples/advanced/testing":
   version: 0.0.0-use.local
-  resolution: "example-test@workspace:examples/advanced/test"
+  resolution: "example-testing@workspace:examples/advanced/testing"
   dependencies:
     nuxt3: latest
   languageName: unknown

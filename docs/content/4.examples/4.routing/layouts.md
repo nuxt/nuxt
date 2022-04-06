@@ -6,8 +6,7 @@ template: Example
 
 This example shows how to define default and custom layouts.
 
-::alert{type=info icon=👉}
-Learn more about [layouts](/docs/directory-structure/layouts).
+::ReadMore{link="/guide/directory-structure/layouts"}
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/routing/layouts" file="pages/index.vue"}

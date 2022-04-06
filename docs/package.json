@@ -5,6 +5,8 @@
     "dev": "yarn gendocs && nuxt dev",
     "build": "yarn gendocs && nuxt generate --force-build",
     "build:ci": "./scripts/make-schema.sh && yarn build",
+    "lint:docs": "cd .. && yarn lint:docs",
+    "lint:docs:fix": "cd .. && yarn lint:docs:fix",
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {

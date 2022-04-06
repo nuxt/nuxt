@@ -24,3 +24,7 @@ button:focus-visible, div:focus-visible, a:focus-visible {
   border-radius: 2px;
   box-shadow: 0 0 0 2px #00DC82;
 }
+
+h1 > code, h2 > code, h3 > code, h4 > code, h5 > code, h6 > code {
+  font-size: inherit !important;
+}
