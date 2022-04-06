@@ -2,6 +2,7 @@ import chokidar from 'chokidar'
 import type { Nuxt } from '@nuxt/schema'
 import { importModule, isIgnored } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
+import { normalize } from 'pathe'
 import { createApp, generateApp as _generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
@@ -48,7 +49,7 @@ function watch (nuxt: Nuxt) {
     ]
   })
 
-  const watchHook = debounce((event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => nuxt.callHook('builder:watch', event, path))
+  const watchHook = debounce((event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string) => nuxt.callHook('builder:watch', event, normalize(path)))
   watcher.on('all', watchHook)
   nuxt.hook('close', () => watcher.close())
   return watcher
