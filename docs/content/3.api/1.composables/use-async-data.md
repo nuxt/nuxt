@@ -8,7 +8,7 @@ const {
   data: Ref<DataT>,
   pending: Ref<boolean>,
   refresh: () => Promise<void>,
-  error?: any
+  error: Ref<any>
 } = useAsyncData(
   key: string,
   handler: (ctx?: NuxtApp) => Promise<Object>,

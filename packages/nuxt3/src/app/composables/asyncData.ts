@@ -28,26 +28,27 @@ export interface RefreshOptions {
   _initial?: boolean
 }
 
-export interface _AsyncData<DataT> {
+export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
   pending: Ref<boolean>
   refresh: (opts?: RefreshOptions) => Promise<void>
-  error?: any
+  error: Ref<ErrorT>
 }
 
-export type AsyncData<Data> = _AsyncData<Data> & Promise<_AsyncData<Data>>
+export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
 const getDefault = () => null
 
 export function useAsyncData<
   DataT,
+  DataE = any,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options: AsyncDataOptions<DataT, Transform, PickKeys> = {}
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE> {
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('asyncData key must be a string')
@@ -87,7 +88,7 @@ export function useAsyncData<
     data: ref(nuxt.payload.data[key] ?? options.default()),
     pending: ref(!useInitialCache()),
     error: ref(nuxt.payload._errors[key] ?? null)
-  } as AsyncData<DataT>
+  } as AsyncData<DataT, DataE>
 
   asyncData.refresh = (opts = {}) => {
     // Avoid fetching same key more than once at a time
@@ -164,21 +165,22 @@ export function useAsyncData<
   }
 
   // Allow directly awaiting on asyncData
-  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<DataT>
+  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<DataT, DataE>
   Object.assign(asyncDataPromise, asyncData)
 
-  return asyncDataPromise as AsyncData<PickFrom<ReturnType<Transform>, PickKeys>>
+  return asyncDataPromise as AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE>
 }
 
 export function useLazyAsyncData<
   DataT,
+  DataE = any,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'> = {}
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>> {
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE> {
   return useAsyncData(key, handler, { ...options, lazy: true })
 }
 

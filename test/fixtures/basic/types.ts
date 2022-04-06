@@ -17,6 +17,22 @@ describe('API routes', () => {
     expectTypeOf($fetch<TestResponse>('/test')).toMatchTypeOf<Promise<TestResponse>>()
   })
 
+  it('works with useAsyncData', () => {
+    expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toMatchTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
+    expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toMatchTypeOf<Ref<unknown>>()
+    expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/test')).error).toMatchTypeOf<Ref<string>>()
+
+    expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toMatchTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toMatchTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/test')).error).toMatchTypeOf<Ref<string>>()
+  })
+
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
     expectTypeOf(useFetch('/api/hey').data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
