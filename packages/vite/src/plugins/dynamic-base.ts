@@ -33,6 +33,12 @@ export const RelativeAssetPlugin = function (): Plugin {
             .replace(assetRE, r => r.replace(/\/__NUXT_BASE__/g, assetBase))
             .replace(/\/__NUXT_BASE__/g, publicBase)
         }
+        if (asset.type === 'chunk' && typeof asset.code === 'string') {
+          asset.code = asset.code
+            .replace(/`\$\{(_?_?publicAssetsURL|buildAssetsURL|)\(\)\}([^`]*)`/g, '$1(`$2`)')
+            .replace(/"\/__NUXT_BASE__\/([^"]*)"\.replace\("\/__NUXT_BASE__", ""\)/g, '"$1"')
+            .replace(/'\/__NUXT_BASE__\/([^']*)'\.replace\("\/__NUXT_BASE__", ""\)/g, '"$1"')
+        }
       }
     }
   }
