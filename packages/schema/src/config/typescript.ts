@@ -15,7 +15,7 @@ export default {
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option
-     * @typedef {Awaited<ReturnType<typeof import('pkg-types')['readPackageJSON']>>}
+     * @type {typeof import('pkg-types')['readPackageJSON']}
      */
     tsConfig: {},
 

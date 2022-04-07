@@ -13,7 +13,7 @@ export default {
    *
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
    *
-   * @typedef {string|string[]}
+   * @type {string|string[]}
    *
    * @version 3
    */

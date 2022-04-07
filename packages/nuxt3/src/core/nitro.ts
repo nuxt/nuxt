@@ -60,7 +60,11 @@ export async function initNitro (nuxt: Nuxt) {
       dir: nuxt.options.dev ? join(nuxt.options.buildDir, 'nitro') : resolve(nuxt.options.rootDir, '.output')
     },
     externals: {
-      inline: nuxt.options.dev ? [] : [nuxt.options.buildDir]
+      inline: [
+        ...(nuxt.options.dev ? [] : [nuxt.options.buildDir]),
+        'nuxt/dist',
+        'nuxt3/dist'
+      ]
     },
     alias: {
       // TODO: #590
