@@ -96,9 +96,9 @@ export const RenderPlugin = () => {
         }]))
         const vueCode = [
           '<script setup>',
-          title && 'import { useMeta } from \'#app\'',
+          title && 'import { useHead } from \'#imports\'',
           `const props = defineProps(${props})`,
-          title && 'useMeta(' + genObjectFromRawEntries([
+          title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
             ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
             ['style', [{ children: `\`${globalStyles}\`` }]]
