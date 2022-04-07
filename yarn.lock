@@ -3394,7 +3394,7 @@ __metadata:
     vue: 3.2.31
     vue-loader: ^17.0.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.71.0
+    webpack: ^5.72.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.3.1
     webpack-hot-middleware: ^2.25.1
@@ -22045,7 +22045,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.71.0":
+"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.72.0":
   version: 5.72.0
   resolution: "webpack@npm:5.72.0"
   dependencies:
