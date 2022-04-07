@@ -88,6 +88,11 @@ jobs:
       - name: Test (fixtures)
         run: yarn test:fixtures
 
+      - name: Test (fixtures with dev)
+        run: yarn test:fixtures:dev
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
   test-fixtures-webpack:
     runs-on: ${{ matrix.os }}
 

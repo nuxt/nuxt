@@ -10,14 +10,24 @@ export async function startServer () {
   const port = await getRandomPort()
   ctx.url = 'http://localhost:' + port
   if (ctx.options.dev) {
-    ctx.listener = await ctx.nuxt.server.listen(port)
-    await waitForPort(port, { retries: 8 })
+    ctx.serverProcess = execa('npx', ['nuxi', 'dev'], {
+      cwd: ctx.nuxt.options.rootDir,
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        PORT: String(port),
+        NODE_ENV: 'development'
+      }
+    })
+    await waitForPort(port, { retries: 16 })
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
-      const res = await $fetch('/')
-      if (!res.includes('__NUXT_LOADING__')) {
-        return
-      }
+      try {
+        const res = await $fetch('/')
+        if (!res.includes('__NUXT_LOADING__')) {
+          return
+        }
+      } catch {}
     }
     throw new Error('Timeout waiting for dev server!')
   } else {

@@ -147,7 +147,9 @@ describe('errors', () => {
       }
     })
     expect(res.status).toBe(500)
-    expect(await res.json()).toMatchInlineSnapshot(`
+    const error = await res.json()
+    delete error.stack
+    expect(error).toMatchInlineSnapshot(`
       {
         "message": "This is a custom error",
         "statusCode": 500,
@@ -302,6 +304,12 @@ describe('extends support', () => {
 })
 
 describe('dynamic paths', () => {
+  if (process.env.NUXT_TEST_DEV) {
+    // TODO:
+    it.todo('dynamic paths in dev')
+    return
+  }
+
   it('should work with no overrides', async () => {
     const html = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
@@ -311,13 +319,15 @@ describe('dynamic paths', () => {
   })
 
   it('adds relative paths to CSS', async () => {
-    const html = await $fetch('/assets')
-    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"/g)).map(m => m[2])
-    const cssURL = urls.find(u => /_nuxt\/entry.*\.css$/.test(u))
     if (process.env.TEST_WITH_WEBPACK) {
       // Webpack injects CSS differently
       return
     }
+
+    const html = await $fetch('/assets')
+    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"/g)).map(m => m[2])
+    const cssURL = urls.find(u => /_nuxt\/entry.*\.css$/.test(u))
+    expect(cssURL).toBeDefined()
     const css = await $fetch(cssURL)
     const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
     expect(imageUrls).toMatchInlineSnapshot(`

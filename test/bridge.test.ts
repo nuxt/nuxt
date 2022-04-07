@@ -32,7 +32,9 @@ describe('fixtures:bridge', async () => {
         }
       })
       expect(res.status).toBe(500)
-      expect(await res.json()).toMatchInlineSnapshot(`
+      const error = await res.json()
+      delete error.stack
+      expect(error).toMatchInlineSnapshot(`
       {
         "message": "This is a custom error",
         "statusCode": 500,
@@ -49,6 +51,11 @@ describe('fixtures:bridge', async () => {
   })
 
   describe('dynamic paths', () => {
+    if (process.env.NUXT_TEST_DEV) {
+      // TODO:
+      it.todo('dynamic paths in dev')
+      return
+    }
     if (process.env.TEST_WITH_WEBPACK) {
       // TODO:
       it.todo('work with webpack')

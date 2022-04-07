@@ -8,5 +8,8 @@ export default defineConfig({
   },
   esbuild: {
     tsconfigRaw: '{}'
+  },
+  test: {
+    testTimeout: 10000
   }
 })
