@@ -90,7 +90,11 @@ export async function setupNitroBridge () {
       dir: nuxt.options.dev ? join(nuxt.options.buildDir, 'nitro') : resolve(nuxt.options.rootDir, '.output')
     },
     externals: {
-      inline: nuxt.options.dev ? [] : [nuxt.options.buildDir]
+      inline: [
+        ...(nuxt.options.dev ? [] : [nuxt.options.buildDir]),
+        '@nuxt/bridge/dist',
+        '@nuxt/bridge-edge/dist'
+      ]
     },
     alias: {
       // Vue 2 mocks
