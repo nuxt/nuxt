@@ -19,7 +19,7 @@ export async function startServer () {
         NODE_ENV: 'development'
       }
     })
-    await waitForPort(port, { retries: 16 })
+    await waitForPort(port, { retries: 32 })
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
