@@ -17,6 +17,7 @@ export interface CookieOptions<T=any> extends _CookieOptions {
 export interface CookieRef<T> extends Ref<T> {}
 
 const CookieDefaults: CookieOptions<any> = {
+  path: '/',
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
