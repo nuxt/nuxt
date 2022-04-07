@@ -45,7 +45,7 @@
     "@types/node": "^16.11.26",
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.30.12",
-    "case-police": "^0.5.1",
+    "case-police": "^0.5.2",
     "esbuild": "^0.14.34",
     "eslint": "^8.12.0",
     "eslint-plugin-jsdoc": "^38.1.6",
@@ -60,7 +60,7 @@
     "pathe": "^0.2.0",
     "typescript": "^4.6.3",
     "unbuild": "^0.7.2",
-    "vitest": "^0.9.0",
+    "vitest": "^0.9.1",
     "vue-router": "^4.0.14",
     "vue-tsc": "^0.33.9"
   },

@@ -3137,7 +3137,7 @@ __metadata:
     ohmyfetch: ^0.4.15
     playwright: ^1.20.2
     unbuild: latest
-    vitest: ^0.9.0
+    vitest: ^0.9.1
   peerDependencies:
     vue: 3.2.31
   languageName: unknown
@@ -3272,7 +3272,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.6.1
     vite: ^2.9.1
-    vite-node: ^0.9.0
+    vite-node: ^0.9.1
     vue: 3.2.31
   peerDependencies:
     vue: 3.2.31
@@ -7167,12 +7167,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"case-police@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "case-police@npm:0.5.1"
+"case-police@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "case-police@npm:0.5.2"
   bin:
     case-police: bin/case-police.mjs
-  checksum: 315d1e58c684c944454e5734b923e3e9ae061e63cb3c866ccf9fb3b88fd23321a9caab4b7c8841a488af66524ce13107ceb8f47916e2659133a0493f59c29a28
+  checksum: b87d8a6a46177ae9786fd319ebe6b05343d682b5160ad00b9c564a521255021d76c99024a8e0d39f0602859e1a7a8caa63a0b21eb6608a608002bbe7f6c4caa7
   languageName: node
   linkType: hard
 
@@ -15354,7 +15354,7 @@ __metadata:
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
     "@unocss/reset": ^0.30.12
-    case-police: ^0.5.1
+    case-police: ^0.5.2
     esbuild: ^0.14.34
     eslint: ^8.12.0
     eslint-plugin-jsdoc: ^38.1.6
@@ -15369,7 +15369,7 @@ __metadata:
     pathe: ^0.2.0
     typescript: ^4.6.3
     unbuild: ^0.7.2
-    vitest: ^0.9.0
+    vitest: ^0.9.1
     vue-router: ^4.0.14
     vue-tsc: ^0.33.9
   languageName: unknown
@@ -20521,7 +20521,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyspy@npm:^0.3.0":
+"tinyspy@npm:^0.3.2":
   version: 0.3.2
   resolution: "tinyspy@npm:0.3.2"
   checksum: 674d238c9b879a9d7acee3c30cfbc94334016d15a43b9db2f750aa74f107fa7096821d3866603576ea8efda9f2ec0683ffbd960f83de166f250ed583e68f25b3
@@ -21521,9 +21521,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "vite-node@npm:0.9.0"
+"vite-node@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "vite-node@npm:0.9.1"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.6
@@ -21532,7 +21532,7 @@ __metadata:
     vite: ^2.9.1
   bin:
     vite-node: vite-node.mjs
-  checksum: f66a5ee6ea6edfb37beda70ca76a05bf725ff45b06bfe072a3dc081fc33fc43547f1fe3b7c034e2cf1f5237239e769dfaa3a245d755201c6d40b645b861f83cc
+  checksum: 7d17110ab84411c5b69aef30b9c4912ac793da88603097a182a2b4d96e5c1e859f322c35a76dc280e0930a869e394fc5369cf61772781ad574416559b9265aea
   languageName: node
   linkType: hard
 
@@ -21596,16 +21596,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "vitest@npm:0.9.0"
+"vitest@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "vitest@npm:0.9.1"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-subset": ^1.3.3
     chai: ^4.3.6
     local-pkg: ^0.4.1
     tinypool: ^0.1.2
-    tinyspy: ^0.3.0
+    tinyspy: ^0.3.2
     vite: ^2.9.1
   peerDependencies:
     "@vitest/ui": "*"
@@ -21623,7 +21623,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 728ebb085f0fa8fd9d364e5770cc59b95cf57fe8ed6bc4ea6241cd28bf8a44bcd5b1835cfdf1da194e47da0b137c6c9436932e94688fb1fa60615d60c806ab0f
+  checksum: dfbae922ee2eca4018b1cdb017bd2c941b5628ee53e28eeef930b2935180a190fad6b10ed04447e5173586e5bd2906ad343bfd2d2f2c550061c218568f07bd45
   languageName: node
   linkType: hard
 
