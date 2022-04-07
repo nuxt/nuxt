@@ -60,12 +60,9 @@ export function setupAppBridge (_options: any) {
   })
 
   // Alias vue to have identical vue3 exports
-  addWebpackPlugin(VueCompat.webpack({
-    src: resolve(distDir, 'runtime/vue2-bridge.mjs')
-  }))
-  addVitePlugin(VueCompat.vite({
-    src: resolve(distDir, 'runtime/vue2-bridge.mjs')
-  }))
+  const { dst: vueCompat } = addTemplate({ src: resolve(distDir, 'runtime/vue2-bridge.mjs') })
+  addWebpackPlugin(VueCompat.webpack({ src: vueCompat }))
+  addVitePlugin(VueCompat.vite({ src: vueCompat }))
 
   nuxt.hook('prepare:types', ({ tsConfig, references }) => {
     // Type 'vue' module with composition API exports
