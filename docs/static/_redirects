@@ -3,6 +3,7 @@
 /getting-started/installation     /getting-started/quick-start 302!
 /getting-started/commands         /api/commands/add 302!
 /getting-started/bridge           /bridge 302!
+/getting-started/bridge-composition-api /bridge/bridge-composition-api 302!
 # Concepts
 /concepts/introduction            /guide/concepts/introduction 302!
 /concepts/vuejs-development       /guide/concepts/vuejs-development 302!
