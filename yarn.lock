@@ -2618,7 +2618,7 @@ __metadata:
     magic-string: ^0.26.1
     mlly: ^0.5.1
     murmurhash-es: ^0.1.1
-    nitropack: ^0.1.0
+    nitropack: ^0.1.1
     node-fetch: ^3.2.3
     nuxi: 3.0.0
     nuxt: ^2
@@ -14628,7 +14628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.1.0":
+"nitropack@npm:^0.1.1":
   version: 0.1.1
   resolution: "nitropack@npm:0.1.1"
   dependencies:
@@ -15379,7 +15379,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.1
-    nitropack: ^0.1.0
+    nitropack: ^0.1.1
     nuxi: 3.0.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
@@ -15389,7 +15389,7 @@ __metadata:
     ufo: ^0.8.3
     unbuild: latest
     unctx: ^1.1.4
-    unenv: ^0.4.3
+    unenv: ^0.4.5
     unimport: ^0.1.4
     unplugin: ^0.6.1
     untyped: ^0.4.4
@@ -20953,7 +20953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.4.3, unenv@npm:^0.4.5":
+"unenv@npm:^0.4.5":
   version: 0.4.5
   resolution: "unenv@npm:0.4.5"
   dependencies:
