@@ -97,6 +97,10 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions) {
 
   if (options.webpack.extractCSS) {
     if (ctx.isServer) {
+      // https://webpack.js.org/loaders/css-loader/#exportonlylocals
+      if (cssLoader.options.modules) {
+        cssLoader.options.modules.exportOnlyLocals = cssLoader.options.modules.exportOnlyLocals ?? true
+      }
       return [cssLoader]
     }
 
