@@ -2611,6 +2611,7 @@ __metadata:
     estree-walker: ^3.0.1
     externality: ^0.2.1
     fs-extra: ^10.0.1
+    get-port-please: ^2.4.3
     globby: ^13.1.1
     h3: ^0.7.1
     hash-sum: ^2.0.0
