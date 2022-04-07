@@ -2,7 +2,7 @@ import type { Middleware } from 'h3'
 import { useNuxt } from './context'
 
 export interface ServerMiddleware {
-  path?: string,
+  route?: string,
   handler: Middleware | string
 }
 
