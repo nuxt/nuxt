@@ -24,7 +24,7 @@ You can use the [Nuxt config](/guide/directory-structure/nuxt.config) to explici
 ```js [nuxt.config.js|ts]
 export default {
   nitro: {
-    preset: 'worker'
+    'browser-worker'
   }
 }
 ```

@@ -13,7 +13,7 @@ You can use the [Nuxt config](/guide/directory-structure/nuxt.config) to explici
 ```ts [nuxt.config.js|ts]
 export default {
   nitro: {
-    preset: 'lambda'
+    preset: 'aws-lambda'
   }
 }
 ```

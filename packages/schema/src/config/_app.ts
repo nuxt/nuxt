@@ -44,9 +44,11 @@ export default {
      * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
      * ```
      */
-    baseURL: '/',
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
+
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
-    buildAssetsDir: '/_nuxt/',
+    buildAssetsDir: process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/',
+
     /**
      * The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set).
      * @deprecated - use `buildAssetsDir` instead
@@ -65,7 +67,7 @@ export default {
      * ```
     */
     cdnURL: {
-      $resolve: (val, get) => get('dev') ? null : val || null
+      $resolve: (val, get) => get('dev') ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || ''
     },
     /**
      * Set default configuration for `<head>` on every page.

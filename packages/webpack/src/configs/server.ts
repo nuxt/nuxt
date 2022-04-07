@@ -46,7 +46,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile
   ]
-  const external = ['#_config']
+  const external = ['#nitro']
 
   if (!Array.isArray(ctx.config.externals)) { return }
   ctx.config.externals.push(({ request }, cb) => {

@@ -23,6 +23,7 @@ export default defineBuildConfig({
     'vue-router',
     'vue',
     'hookable',
+    'nitropack',
     'webpack',
     'pkg-types',
     'webpack-bundle-analyzer',

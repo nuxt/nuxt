@@ -1,6 +1,4 @@
 export default {
-  experimentNitropack: process.env.EXPERIMENT_NITROPACK ? true : false,
-
   /**
    * Configuration for Nuxt Nitro.
    *

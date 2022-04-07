@@ -8,7 +8,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'build',
-    usage: 'npx nuxi build [rootDir]',
+    usage: 'npx nuxi build [--prerender] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
   async invoke (args) {
@@ -17,7 +17,12 @@ export default defineNuxtCommand({
 
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
-    const nuxt = await loadNuxt({ rootDir })
+    const nuxt = await loadNuxt({
+      rootDir,
+      overrides: {
+        _generate: args.prerender
+      }
+    })
 
     await clearDir(nuxt.options.buildDir)
 

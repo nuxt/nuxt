@@ -1,7 +1,12 @@
-import { getBrowser, url } from '@nuxt/test-utils'
+import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
 import { expect } from 'vitest'
 
 export async function renderPage (path = '/') {
+  const ctx = useTestContext()
+  if (!ctx.options.browser) {
+    return
+  }
+
   const browser = await getBrowser()
   const page = await browser.newPage({})
   const pageErrors = []
@@ -29,6 +34,11 @@ export async function renderPage (path = '/') {
 }
 
 export async function expectNoClientErrors (path: string) {
+  const ctx = useTestContext()
+  if (!ctx.options.browser) {
+    return
+  }
+
   const { pageErrors, consoleLogs } = await renderPage(path)
 
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')

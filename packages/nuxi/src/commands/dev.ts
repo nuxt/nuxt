@@ -4,11 +4,10 @@ import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
 import consola from 'consola'
 import { withTrailingSlash } from 'ufo'
-import { createServer, createLoadingHandler } from '../utils/server'
 import { showBanner } from '../utils/banner'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
-import { clearDir } from '../utils/fs'
+import { importModule } from '../utils/cjs'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -19,8 +18,21 @@ export default defineNuxtCommand({
   },
   async invoke (args) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'development'
-    const server = createServer()
-    const listener = await server.listen({
+
+    const { listen } = await import('listhen')
+    let currentHandler
+    let loadingMessage = 'Nuxt is starting...'
+    const loadingHandler = async (_req, res) => {
+      const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates')
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
+      res.statusCode = 503 // Service Unavailable
+      res.end(loadingTemplate({ loading: loadingMessage }))
+    }
+    const serverHandler = (req, res) => {
+      return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
+    }
+
+    const listener = await listen(serverHandler, {
       clipboard: args.clipboard,
       open: args.open || args.o,
       port: args.port || args.p || process.env.NUXT_PORT,
@@ -39,31 +51,29 @@ export default defineNuxtCommand({
     let currentNuxt: Nuxt
     const load = async (isRestart: boolean, reason?: string) => {
       try {
-        const message = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
-        server.setApp(createLoadingHandler(message))
+        loadingMessage = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
+        currentHandler = null
         if (isRestart) {
-          consola.info(message)
+          consola.info(loadingMessage)
         }
         if (currentNuxt) {
           await currentNuxt.close()
         }
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
-        await clearDir(currentNuxt.options.buildDir)
         await currentNuxt.ready()
         await Promise.all([
           writeTypes(currentNuxt).catch(console.error),
           buildNuxt(currentNuxt)
         ])
-        server.setApp(currentNuxt.server.app)
+        currentHandler = currentNuxt.server.app
         if (isRestart && args.clear !== false) {
           showBanner()
           listener.showURL()
         }
       } catch (err) {
         consola.error(`Cannot ${isRestart ? 'restart' : 'start'} nuxt: `, err)
-        server.setApp(createLoadingHandler(
-          'Error while loading nuxt. Please check console and fix errors.'
-        ))
+        currentHandler = null
+        loadingMessage = 'Error while loading nuxt. Please check console and fix errors.'
       }
     }
 

@@ -15,7 +15,6 @@
     "@docus/github",
     "@docus/social-image",
     "@docus/theme",
-    "@docus/twitter",
-    "h3"
+    "@docus/twitter"
   ]
 }

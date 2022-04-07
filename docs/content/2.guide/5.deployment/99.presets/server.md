@@ -20,7 +20,7 @@ You can use the [Nuxt config](/guide/directory-structure/nuxt.config) to explici
 ```js [nuxt.config.js|ts]
 export default {
   nitro: {
-    preset: 'server'
+    preset: 'node-server'
   }
 }
 ```
@@ -61,7 +61,7 @@ You can enable the `nitro.timing` option to have the logs about the chunk loadin
 ```js [nuxt.config.js|ts]
 export default {
   nitro: {
-    preset: 'server',
+    preset: 'node-server',
     timing: true
   }
 }

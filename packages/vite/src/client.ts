@@ -24,7 +24,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     resolve: {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#_config': resolve(ctx.nuxt.options.buildDir, 'config.client.mjs')
+        '#nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       }
     },
     build: {

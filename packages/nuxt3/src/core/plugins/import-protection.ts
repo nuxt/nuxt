@@ -18,9 +18,7 @@ export const vueAppPatterns = (nuxt: Nuxt) => [
   [/(^|node_modules\/)@vue\/composition-api/],
   ...nuxt.options.modules.filter(m => typeof m === 'string').map((m: string) =>
     [new RegExp(`^${escapeRE(m)}$`), 'Importing directly from module entrypoints is not allowed.']),
-  ...['#static-assets', '#static', '#config', '#assets', '#storage', '#server-middleware']
-    .map(i => [i, 'Nitro aliases cannot be imported in the Vue part of your app.']),
-  ...[/(^|node_modules\/)@nuxt\/kit/, /^@nuxt\/nitro/]
+  ...[/(^|node_modules\/)@nuxt\/kit/, /^nitropack/]
     .map(i => [i, 'This module cannot be imported in the Vue part of your app.']),
   [new RegExp(escapeRE(resolve(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server'))), 'Importing from server middleware is not allowed in the Vue part of your app.']
 ] as ImportProtectionOptions['patterns']

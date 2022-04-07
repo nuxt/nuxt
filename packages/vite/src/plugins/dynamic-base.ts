@@ -53,7 +53,7 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
       if (id.startsWith('/__NUXT_BASE__')) {
         return id.replace('/__NUXT_BASE__', '')
       }
-      if (id === '#_config') { return '#_config' }
+      if (id === '#nitro') { return '#nitro' }
       return null
     },
     enforce: 'post',

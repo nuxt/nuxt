@@ -55,8 +55,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: ctx.nuxt.options.ssr ?? true,
       rollupOptions: {
-        // Private nitro alias: packages/nitro/src/rollup/config.ts#L234
-        external: ['#_config'],
+        external: ['#nitro'],
         output: {
           entryFileNames: 'server.mjs',
           preferConst: true,

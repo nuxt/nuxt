@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
+// import { isWindows } from 'std-env'
 import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
 import { expectNoClientErrors } from './utils'
 
@@ -135,6 +136,30 @@ describe('navigate', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('Hello Nuxt 3!')
+  })
+})
+
+describe('errors', () => {
+  it('should render a JSON error page', async () => {
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toBe(500)
+    expect(await res.json()).toMatchInlineSnapshot(`
+      {
+        "message": "This is a custom error",
+        "statusCode": 500,
+        "statusMessage": "Internal Server Error",
+        "url": "/error",
+      }
+    `)
+  })
+
+  it('should render a HTML error page', async () => {
+    const res = await fetch('/error')
+    expect(await res.text()).toContain('This is a custom error')
   })
 })
 
@@ -308,7 +333,7 @@ describe('dynamic paths', () => {
     process.env.NUXT_APP_BASE_URL = '/foo/'
     await startServer()
 
-    const html = await $fetch('/assets')
+    const html = await $fetch('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
       const url = match[2]
       // TODO: webpack does not yet support dynamic static paths
@@ -322,7 +347,7 @@ describe('dynamic paths', () => {
     process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_cdn/'
     await startServer()
 
-    const html = await $fetch('/assets')
+    const html = await $fetch('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
       const url = match[2]
       // TODO: webpack does not yet support dynamic static paths

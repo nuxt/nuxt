@@ -33,7 +33,7 @@ export default {
 You can also define a preset in a separate file (or publish as a separate npm package).
 
 ```ts [my-preset/index.ts]
-import type { NitroPreset } from '@nuxt/nitro'
+import type { NitroPreset } from 'nitropack'
 
 const myPreset: NitroPreset = {
   // Your custom configuration

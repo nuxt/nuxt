@@ -1,5 +1,5 @@
 import type { FetchOptions, FetchRequest } from 'ohmyfetch'
-import type { TypedInternalResponse } from '@nuxt/nitro'
+import type { TypedInternalResponse } from 'nitropack'
 import { hash } from 'ohash'
 import { computed, isRef, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes } from './asyncData'

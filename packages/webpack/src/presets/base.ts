@@ -119,7 +119,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     ...ctx.alias
   }
   if (ctx.isClient) {
-    ctx.alias['#_config'] = resolve(ctx.nuxt.options.buildDir, 'config.client.mjs')
+    ctx.alias['#nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
   }
 }
 

@@ -749,7 +749,6 @@ export default {
       app: {
         baseURL: get('app.baseURL'),
         buildAssetsDir: get('app.buildAssetsDir'),
-        assetsPath: get('app.assetsPath'),
         cdnURL: get('app.cdnURL'),
         ...val.app || {},
       }

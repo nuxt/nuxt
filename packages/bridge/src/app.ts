@@ -1,4 +1,4 @@
-import { useNuxt, addTemplate, resolveAlias, addWebpackPlugin, addVitePlugin } from '@nuxt/kit'
+import { useNuxt, addTemplate, resolveAlias, addWebpackPlugin, addVitePlugin, addPlugin } from '@nuxt/kit'
 import { NuxtModule } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { componentsTypeTemplate } from '../../nuxt3/src/components/templates'
@@ -93,5 +93,10 @@ export function setupAppBridge (_options: any) {
         include: [/node_modules/]
       })
     }
+  })
+
+  addPlugin({
+    src: resolve(distDir, 'runtime/error.plugin.server.mjs'),
+    mode: 'server'
   })
 }

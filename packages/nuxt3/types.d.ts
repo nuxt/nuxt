@@ -1,2 +1,2 @@
-import type { } from '@nuxt/nitro'
+/// <reference types="nitropack" />
 export * from './dist/index'

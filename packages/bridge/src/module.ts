@@ -49,7 +49,9 @@ export default defineNuxtModule({
     }]
 
     if (opts.nitro) {
-      await setupNitroBridge()
+      nuxt.hook('modules:done', async () => {
+        await setupNitroBridge()
+      })
     }
     if (opts.app) {
       await setupAppBridge(opts.app)

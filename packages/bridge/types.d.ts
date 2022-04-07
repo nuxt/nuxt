@@ -1,4 +1,4 @@
-import type {} from '@nuxt/nitro'
+/// <reference types="nitropack" />
 import type { NuxtConfig as _NuxtConfig } from '@nuxt/schema'
 import type { MetaInfo } from 'vue-meta'
 import type { PluginOptions as ScriptSetupPluginOptions } from 'unplugin-vue2-script-setup/dist'

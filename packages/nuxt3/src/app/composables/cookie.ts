@@ -1,9 +1,9 @@
-import type { ServerResponse } from 'http'
 import { Ref, ref, watch } from 'vue'
 import { parse, serialize, CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { appendHeader } from 'h3'
-import type { NuxtApp } from '@nuxt/schema'
+import type { CompatibilityEvent } from 'h3'
 import destr from 'destr'
+import { useRequestEvent } from './ssr'
 import { useNuxtApp } from '#app'
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
@@ -34,8 +34,7 @@ export function useCookie <T=string> (name: string, _opts?: CookieOptions<T>): C
     const nuxtApp = useNuxtApp()
     nuxtApp.hooks.hookOnce('app:rendered', () => {
       if (cookie.value !== initialValue) {
-        // @ts-ignore
-        writeServerCookie(useSSRRes(nuxtApp), name, cookie.value, opts)
+        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts)
       }
     })
   }
@@ -43,15 +42,9 @@ export function useCookie <T=string> (name: string, _opts?: CookieOptions<T>): C
   return cookie as CookieRef<T>
 }
 
-// @ts-ignore
-function useSSRReq (nuxtApp?: NuxtApp = useNuxtApp()) { return nuxtApp.ssrContext?.req }
-
-// @ts-ignore
-function useSSRRes (nuxtApp?: NuxtApp = useNuxtApp()) { return nuxtApp.ssrContext?.res }
-
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> {
   if (process.server) {
-    return parse(useSSRReq().headers.cookie || '', opts)
+    return parse(useRequestEvent()?.req.headers.cookie || '', opts)
   } else if (process.client) {
     return parse(document.cookie, opts)
   }
@@ -70,9 +63,9 @@ function writeClientCookie (name: string, value: any, opts: CookieSerializeOptio
   }
 }
 
-function writeServerCookie (res: ServerResponse, name: string, value: any, opts: CookieSerializeOptions = {}) {
-  if (res) {
+function writeServerCookie (event: CompatibilityEvent, name: string, value: any, opts: CookieSerializeOptions = {}) {
+  if (event) {
     // TODO: Try to smart join with existing Set-Cookie headers
-    appendHeader(res, 'Set-Cookie', serializeCookie(name, value, opts))
+    appendHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
   }
 }
