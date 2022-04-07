@@ -2,7 +2,7 @@ import { statSync } from 'fs'
 import { resolve, basename } from 'pathe'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin, addTemplate, addPluginTemplate } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
-import { componentsTemplate, componentsTypeTemplate } from './templates'
+import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 
@@ -97,6 +97,12 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     addPluginTemplate({
+      ...componentsPluginTemplate,
+      options
+    })
+
+    nuxt.options.alias['#components'] = resolve(nuxt.options.buildDir, componentsTemplate.filename)
+    addTemplate({
       ...componentsTemplate,
       options
     })
@@ -108,7 +114,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/components.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
     // Watch for changes
