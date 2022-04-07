@@ -7,9 +7,7 @@ interface Template {
 const api: Template = ({ name }) => ({
   path: `server/api/${name}.ts`,
   contents: `
-import { defineHandle } from 'h3'
-
-export default defineHandle((req, res) => {
+export default defineEventHandler((event) => {
   return 'Hello ${name}'
 })
 `
