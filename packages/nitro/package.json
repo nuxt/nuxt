@@ -37,7 +37,7 @@
     "defu": "^6.0.0",
     "destr": "^1.1.0",
     "dot-prop": "^7.2.0",
-    "esbuild": "^0.14.32",
+    "esbuild": "^0.14.34",
     "etag": "^1.8.1",
     "fs-extra": "^10.0.1",
     "globby": "^13.1.1",
@@ -67,7 +67,7 @@
     "std-env": "^3.0.1",
     "table": "^6.8.0",
     "ufo": "^0.8.3",
-    "unenv": "^0.4.3",
+    "unenv": "^0.4.5",
     "unstorage": "^0.3.3",
     "vue-bundle-renderer": "^0.3.5",
     "vue-server-renderer": "^2.6.14"
