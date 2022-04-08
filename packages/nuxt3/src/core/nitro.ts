@@ -1,4 +1,5 @@
-import { existsSync } from 'fs'
+import { existsSync, promises as fsp } from 'fs'
+import { dirname } from 'path'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroEventHandler, NitroDevEventHandler, NitroConfig } from 'nitropack'
@@ -56,12 +57,9 @@ export async function initNitro (nuxt: Nuxt) {
       crawlLinks: nuxt.options.generate.crawler,
       routes: nuxt.options.generate.routes
     },
-    output: {
-      dir: nuxt.options.dev ? join(nuxt.options.buildDir, 'nitro') : resolve(nuxt.options.rootDir, '.output')
-    },
     externals: {
       inline: [
-        ...(nuxt.options.dev ? [] : [nuxt.options.buildDir]),
+        ...(nuxt.options.dev ? [] : ['vue', '@vue/', '@nuxt/', nuxt.options.buildDir]),
         'nuxt/dist',
         'nuxt3/dist'
       ]
@@ -87,7 +85,10 @@ export async function initNitro (nuxt: Nuxt) {
       '#nitro/error': resolve(distDir, 'core/runtime/nitro/error'),
 
       // Paths
-      '#paths': resolve(distDir, 'core/runtime/nitro/paths')
+      '#paths': resolve(distDir, 'core/runtime/nitro/paths'),
+
+      // Nuxt aliases
+      ...nuxt.options.alias
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false ? true : undefined
@@ -108,7 +109,6 @@ export async function initNitro (nuxt: Nuxt) {
 
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
-  nitro.hooks.hook('nitro:document', template => nuxt.callHook('nitro:document', template))
 
   // Register nuxt3 protection patterns
   nitro.hooks.hook('nitro:rollup:before', (nitro) => {
@@ -146,15 +146,16 @@ export async function initNitro (nuxt: Nuxt) {
 
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
+    await writeDocumentTemplate(nuxt)
     if (nuxt.options.dev) {
       await build(nitro)
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
-      await build(nitro)
-      if (nuxt.options._generate) {
+      if (nuxt.options._generate || nuxt.options.target === 'static') {
         await prerender(nitro)
       }
+      await build(nitro)
     }
   })
 
@@ -197,5 +198,19 @@ async function resolveHandlers (nuxt: Nuxt) {
   return {
     handlers,
     devHandlers
+  }
+}
+
+async function writeDocumentTemplate (nuxt: Nuxt) {
+  // Compile html template
+  const src = resolve(nuxt.options.buildDir, 'views/app.template.html')
+  const dst = src.replace(/.html$/, '.mjs').replace('app.template.mjs', 'document.template.mjs')
+  const contents = nuxt.vfs[src] || await fsp.readFile(src, 'utf-8').catch(() => '')
+  if (contents) {
+    const compiled = 'export default ' +
+    // eslint-disable-next-line no-template-curly-in-string
+    `(params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
+    await fsp.mkdir(dirname(dst), { recursive: true })
+    await fsp.writeFile(dst, compiled, 'utf8')
   }
 }
