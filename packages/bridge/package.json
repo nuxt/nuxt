@@ -24,6 +24,7 @@
     "@nuxt/kit": "3.0.0",
     "@nuxt/postcss8": "^1.1.3",
     "@nuxt/schema": "3.0.0",
+    "@nuxt/ui-templates": "npm:@nuxt/ui-templates-edge@latest",
     "@vitejs/plugin-legacy": "^1.8.0",
     "@vue/composition-api": "^1.4.9",
     "@vueuse/head": "^0.7.5",
