@@ -44,7 +44,7 @@
     "ufo": "^0.8.3",
     "unplugin": "^0.6.1",
     "vite": "^2.9.1",
-    "vite-node": "^0.9.1"
+    "vite-node": "^0.9.2"
   },
   "peerDependencies": {
     "vue": "3.2.31"
