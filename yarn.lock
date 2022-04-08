@@ -7168,12 +7168,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"case-police@npm:^0.5.2":
-  version: 0.5.2
-  resolution: "case-police@npm:0.5.2"
+"case-police@npm:^0.5.3":
+  version: 0.5.3
+  resolution: "case-police@npm:0.5.3"
   bin:
     case-police: bin/case-police.mjs
-  checksum: b87d8a6a46177ae9786fd319ebe6b05343d682b5160ad00b9c564a521255021d76c99024a8e0d39f0602859e1a7a8caa63a0b21eb6608a608002bbe7f6c4caa7
+  checksum: 6dbc684afd7bf6a75123389b75dce2d047e60218d0df1b3d3993057d4fee56d8a5cb89552862c3f239efc3d561434a1a5e6792653c7146674439367726aa54da
   languageName: node
   linkType: hard
 
@@ -15355,7 +15355,7 @@ __metadata:
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
     "@unocss/reset": ^0.30.12
-    case-police: ^0.5.2
+    case-police: ^0.5.3
     esbuild: ^0.14.34
     eslint: ^8.12.0
     eslint-plugin-jsdoc: ^38.1.6
