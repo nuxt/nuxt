@@ -48,7 +48,7 @@
     "case-police": "^0.5.3",
     "esbuild": "^0.14.34",
     "eslint": "^8.12.0",
-    "eslint-plugin-jsdoc": "^38.1.6",
+    "eslint-plugin-jsdoc": "^39.0.0",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",

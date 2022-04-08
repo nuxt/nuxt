@@ -10004,21 +10004,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^38.1.6":
-  version: 38.1.6
-  resolution: "eslint-plugin-jsdoc@npm:38.1.6"
+"eslint-plugin-jsdoc@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "eslint-plugin-jsdoc@npm:39.0.0"
   dependencies:
     "@es-joy/jsdoccomment": ~0.22.1
     comment-parser: 1.3.1
     debug: ^4.3.4
     escape-string-regexp: ^4.0.0
     esquery: ^1.4.0
-    regextras: ^0.8.0
-    semver: ^7.3.5
+    semver: ^7.3.6
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: 600dac3a9b81ac6fcb62a30a30e83a85a003ca3ecfe5376d99a1042ba703cfdf3ef404413c74a75f61c2a77e6cc7435628cfc51d80081108a67965ac238d14b4
+  checksum: 4d6eda5b8697ed38c6cb0d4c608ef298c80487961c0fe418b0558d540e1dc7049f8fc34cb8bd43bb7e468e3476a0ca311216bc685e299bb2ae9fd3f54b4fb0ac
   languageName: node
   linkType: hard
 
@@ -15358,7 +15357,7 @@ __metadata:
     case-police: ^0.5.3
     esbuild: ^0.14.34
     eslint: ^8.12.0
-    eslint-plugin-jsdoc: ^38.1.6
+    eslint-plugin-jsdoc: ^39.0.0
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -18608,13 +18607,6 @@ __metadata:
     unicode-match-property-ecmascript: ^2.0.0
     unicode-match-property-value-ecmascript: ^2.0.0
   checksum: 6151a9700dad512fadb5564ad23246d54c880eb9417efa5e5c3658b910c1ff894d622dfd159af2ed527ffd44751bfe98682ae06c717155c254d8e2b4bab62785
-  languageName: node
-  linkType: hard
-
-"regextras@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "regextras@npm:0.8.0"
-  checksum: b7ec5b32a2b98b4b27048d44f8ab90009873c1307f2cf89321aa8c4cbb8147f1bee07863f4dadf585546ca0b91a234ad9804954dea5fc029421f6c25a4523798
   languageName: node
   linkType: hard
 
