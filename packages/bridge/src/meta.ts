@@ -16,7 +16,7 @@ export const setupMeta = async (opts: SetupMetaOptions) => {
   if (opts.needsExplicitEnable) {
     const metaPath = addTemplate({
       filename: 'meta.mjs',
-      getContents: () => `export const useHead = () => console.warn('${msgPrefix} To use \`useHead\`, please set \`bridge.meta\` to \`true\` in your \`nuxt.config\`. ${checkDocsMsg}')`
+      getContents: () => `export const useHead = () => console.warn('${msgPrefix} To enable experimental \`useHead\` support, set \`bridge.meta\` to \`true\` in your \`nuxt.config\`. ${checkDocsMsg}')`
     })
     nuxt.options.alias['#head'] = metaPath.dst
     return
