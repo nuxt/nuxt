@@ -152,3 +152,5 @@ export default (req, res) => {
   return { counter }
 }
 ```
+
+:LinkExample{link="/examples/composables/use-cookie"}

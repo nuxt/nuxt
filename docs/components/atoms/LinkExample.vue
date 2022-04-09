@@ -1,6 +1,6 @@
 <template>
-  <Alert icon="👉">
-    Read more in <Link :to="link" v-text="computedTitle" />.
+  <Alert type="info" icon="🔎">
+    Read and edit a live example in <NuxtLink :to="link" v-text="computedTitle" />
   </Alert>
 </template>
 
@@ -21,7 +21,6 @@ export default defineComponent({
   },
   computed: {
     computedTitle () {
-      // Guess title from link!
       return createTitle(this.title, this.link)
     }
   }
