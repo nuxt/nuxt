@@ -228,7 +228,7 @@ export async function setupNitroBridge () {
   nitro.options.handlers.push(...handlers)
   nitro.options.devHandlers.push(...devHandlers)
   nitro.options.handlers.unshift({
-    route: '/_nitro',
+    route: '/__nuxt_error',
     lazy: true,
     handler: resolve(distDir, 'runtime/nitro/renderer')
   })

@@ -29,7 +29,7 @@ export default async function handleError (error: any, event: CompatibilityEvent
   }
 
   // HTML response
-  const url = withQuery('/_nitro/__error', errorObject as any)
+  const url = withQuery('/__nuxt_error', errorObject as any)
   const html = await $fetch(url).catch(() => errorObject.statusMessage)
 
   event.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
