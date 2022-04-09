@@ -108,5 +108,7 @@ export default defineNuxtCommand({
     if (currentNuxt) {
       await currentNuxt.hooks.callHook('listen', listener.server, listener)
     }
+
+    return 'wait'
   }
 })

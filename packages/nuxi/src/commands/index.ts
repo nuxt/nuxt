@@ -30,8 +30,10 @@ export interface NuxtCommandMeta {
   [key: string]: any;
 }
 
+export type CLIInvokeResult = void | 'error' | 'wait'
+
 export interface NuxtCommand {
-  invoke(args: Argv): Promise<void> | void
+  invoke(args: Argv): Promise<CLIInvokeResult> | CLIInvokeResult
   meta: NuxtCommandMeta
 }
 

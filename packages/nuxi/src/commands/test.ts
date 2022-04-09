@@ -16,6 +16,10 @@ export default defineNuxtCommand({
       dev: !!args.dev,
       watch: !!args.watch
     })
+
+    if (args.watch) {
+      return 'wait'
+    }
   }
 })
 

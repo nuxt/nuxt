@@ -26,24 +26,16 @@ async function _main () {
   }
 
   // Check Node.js version in background
-  setTimeout(() => { checkEngines() }, 1000)
+  setTimeout(() => { checkEngines().catch(() => {}) }, 1000)
 
-  try {
-    // @ts-ignore default.default is hotfix for #621
-    const cmd = await commands[command as Command]() as NuxtCommand
-    if (args.h || args.help) {
-      showHelp(cmd.meta)
-    } else {
-      await cmd.invoke(args)
-    }
-  } catch (err) {
-    onFatalError(err)
+  // @ts-ignore default.default is hotfix for #621
+  const cmd = await commands[command as Command]() as NuxtCommand
+  if (args.h || args.help) {
+    showHelp(cmd.meta)
+  } else {
+    const result = await cmd.invoke(args)
+    return result
   }
-}
-
-function onFatalError (err: unknown) {
-  consola.error(err)
-  process.exit(1)
 }
 
 // Wrap all console logs with consola for better DX
@@ -53,5 +45,16 @@ process.on('unhandledRejection', err => consola.error('[unhandledRejection]', er
 process.on('uncaughtException', err => consola.error('[uncaughtException]', err))
 
 export function main () {
-  _main().catch(onFatalError)
+  _main()
+    .then((result) => {
+      if (result === 'error') {
+        process.exit(1)
+      } else if (result !== 'wait') {
+        process.exit(0)
+      }
+    })
+    .catch((error) => {
+      consola.error(error)
+      process.exit(1)
+    })
 }
