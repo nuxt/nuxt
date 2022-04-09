@@ -75,6 +75,8 @@ export async function bundle (nuxt: Nuxt) {
             ignored: isIgnored
           },
           hmr: {
+            // https://github.com/nuxt/framework/issues/4191
+            protocol: 'ws',
             clientPort: hmrPort,
             port: hmrPort
           },
@@ -106,7 +108,6 @@ export async function bundle (nuxt: Nuxt) {
       .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
       .catch(logger.error)
   })
-
   await buildClient(ctx)
   await buildServer(ctx)
 }
