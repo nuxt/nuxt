@@ -32,7 +32,7 @@ const getSPARenderer = cachedResult(async () => {
     ssrContext.nuxt = {
       serverRendered: false,
       config: {
-        ...config.public,
+        public: config.public,
         app: config.app
       }
     }
@@ -84,13 +84,12 @@ export default eventHandler(async (event) => {
   }
 
   // Initialize ssr context
-  const config = useRuntimeConfig()
   const ssrContext = {
     url,
     event,
     req: event.req,
     res: event.res,
-    runtimeConfig: { private: config, public: { ...config.public, app: config.app } },
+    runtimeConfig: useRuntimeConfig(),
     noSSR: event.req.headers['x-nuxt-no-ssr'],
 
     error: ssrError,
