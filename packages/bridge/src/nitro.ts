@@ -56,6 +56,9 @@ export async function setupNitroBridge () {
     }
   }
 
+  // Resolve Handlers
+  const { handlers, devHandlers } = await resolveHandlers(nuxt)
+
   // Resolve config
   const _nitroConfig = (nuxt.options as any).nitro || {} as NitroConfig
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
@@ -67,7 +70,7 @@ export async function setupNitroBridge () {
     scanDirs: nuxt.options._layers.map(layer => join(layer.config.srcDir, 'server')),
     renderer: resolve(distDir, 'runtime/nitro/renderer'),
     nodeModulesDirs: nuxt.options.modulesDir,
-    handlers: [],
+    handlers,
     devHandlers: [],
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
@@ -231,8 +234,6 @@ export async function setupNitroBridge () {
   // Setup handlers
   const devMidlewareHandler = dynamicEventHandler()
   nitro.options.devHandlers.unshift({ handler: devMidlewareHandler })
-  const { handlers, devHandlers } = await resolveHandlers(nuxt)
-  nitro.options.handlers.push(...handlers)
   nitro.options.devHandlers.push(...devHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
