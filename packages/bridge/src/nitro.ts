@@ -26,9 +26,20 @@ export async function setupNitroBridge () {
   nuxt.options.app.assetsPath = nuxt.options.app.buildAssetsDir
   nuxt.options.app.baseURL = nuxt.options.app.baseURL || (nuxt.options.app as any).basePath
   nuxt.options.app.cdnURL = nuxt.options.app.cdnURL || ''
-  // Nitro expects app config on `config.app` rather than `config._app`
-  nuxt.options.publicRuntimeConfig.app = nuxt.options.publicRuntimeConfig.app || {}
-  Object.assign(nuxt.options.publicRuntimeConfig.app, nuxt.options.publicRuntimeConfig._app)
+
+  // Extract publicConfig and app
+  const publicConfig = nuxt.options.publicRuntimeConfig
+  const appConfig = { ...publicConfig._app, ...publicConfig.app }
+  delete publicConfig.app
+  delete publicConfig._app
+
+  // Merge with new `runtimeConfig` format
+  nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+    ...publicConfig,
+    ...nuxt.options.privateRuntimeConfig,
+    public: publicConfig,
+    app: appConfig
+  })
 
   // Disable loading-screen
   // @ts-ignore
@@ -59,14 +70,10 @@ export async function setupNitroBridge () {
     handlers: [],
     devHandlers: [],
     runtimeConfig: {
-      // Private
-      ...nuxt.options.publicRuntimeConfig,
-      ...nuxt.options.privateRuntimeConfig,
-      // Public
-      public: nuxt.options.publicRuntimeConfig,
-      // Nitro
+      ...nuxt.options.runtimeConfig,
       nitro: {
-        envPrefix: 'NUXT_'
+        envPrefix: 'NUXT_',
+        ...nuxt.options.runtimeConfig.nitro
       }
     },
     typescript: {

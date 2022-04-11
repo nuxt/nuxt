@@ -134,22 +134,14 @@ export const schemaTemplate = {
       `    [${genString(meta.configKey)}]?: typeof ${genDynamicImport(meta.importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       ),
       '  }',
-      generateTypes(resolveSchema(nuxt.options.publicRuntimeConfig),
+      generateTypes(resolveSchema(nuxt.options.runtimeConfig),
         {
-          interfaceName: 'PublicRuntimeConfig',
+          interfaceName: 'RuntimeConfig',
           addExport: false,
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2
         }),
-      generateTypes(resolveSchema(nuxt.options.privateRuntimeConfig), {
-        interfaceName: 'PrivateRuntimeConfig',
-        addExport: false,
-        addDefaults: false,
-        indentation: 2,
-        allowExtraKeys: false,
-        defaultDescrption: 'This value is only accessible from server-side.'
-      }),
       '}'
     ].join('\n')
   }

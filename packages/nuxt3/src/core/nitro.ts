@@ -27,17 +27,10 @@ export async function initNitro (nuxt: Nuxt) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     runtimeConfig: {
-      // Private
-      ...nuxt.options.publicRuntimeConfig,
-      ...nuxt.options.privateRuntimeConfig,
-      // Public
-      public: {
-        ...nuxt.options.publicRuntimeConfig,
-        app: undefined // avoid dupicate
-      },
-      // Nitro
+      ...nuxt.options.runtimeConfig,
       nitro: {
-        envPrefix: 'NUXT_'
+        envPrefix: 'NUXT_',
+        ...nuxt.options.runtimeConfig.nitro
       }
     },
     typescript: {
