@@ -2612,7 +2612,7 @@ __metadata:
     estree-walker: ^3.0.1
     externality: ^0.2.1
     fs-extra: ^10.0.1
-    get-port-please: ^2.4.3
+    get-port-please: ^2.5.0
     globby: ^13.1.1
     h3: ^0.7.2
     hash-sum: ^2.0.0
@@ -2620,7 +2620,7 @@ __metadata:
     magic-string: ^0.26.1
     mlly: ^0.5.1
     murmurhash-es: ^0.1.1
-    nitropack: ^0.2.2
+    nitropack: ^0.2.3
     node-fetch: ^3.2.3
     nuxi: 3.0.0
     nuxt: ^2
@@ -3133,7 +3133,7 @@ __metadata:
     "@nuxt/schema": 3.0.0
     defu: ^6.0.0
     execa: ^6.1.0
-    get-port-please: ^2.4.3
+    get-port-please: ^2.5.0
     jiti: ^1.13.0
     ohmyfetch: ^0.4.15
     playwright: ^1.20.2
@@ -3258,7 +3258,7 @@ __metadata:
     escape-string-regexp: ^5.0.0
     externality: ^0.2.1
     fs-extra: ^10.0.1
-    get-port-please: ^2.4.3
+    get-port-please: ^2.5.0
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.1
@@ -11265,12 +11265,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-port-please@npm:^2.1.0, get-port-please@npm:^2.2.0, get-port-please@npm:^2.4.3":
+"get-port-please@npm:^2.1.0, get-port-please@npm:^2.2.0":
   version: 2.4.3
   resolution: "get-port-please@npm:2.4.3"
   dependencies:
     fs-memo: ^1.2.0
   checksum: ad29938ddafab5dc9d100e9c7dc9348bc81dd5c8f0dc9e1c45c41abd452654c9fb69cc6ff77f9f31e448567216479770cedfa96e17f54796222bc17145d2f228
+  languageName: node
+  linkType: hard
+
+"get-port-please@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "get-port-please@npm:2.5.0"
+  dependencies:
+    fs-memo: ^1.2.0
+  checksum: c54ffe32f3f04e3ca1978abe032b2a14ba9f128c96c014f0c13bfa77331b6fcff674684a112e496223d716ed81602035454e1badc8ef121026c983ae9908a07c
   languageName: node
   linkType: hard
 
@@ -14604,9 +14613,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "nitropack@npm:0.2.2"
+"nitropack@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "nitropack@npm:0.2.3"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -14672,7 +14681,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 5ee78da4e52cca35acc1d44024d62cf7f11d95945c01483443017f3b96737f0743fd39f6eb5bfb2c66027c9016a5415dd9e6c771c02b3c9eca04ca5390abb2ca
+  checksum: 3494511cede41f5b2016ffb4f2a638ea69df1ade5ba78407bb81e8fb5cc72e83ae3c2bd4733e3631af8abc7379ff2e54ca9239a7ba649231431bf21f9e24c1ed
   languageName: node
   linkType: hard
 
@@ -15355,7 +15364,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.1
-    nitropack: ^0.2.2
+    nitropack: ^0.2.3
     nuxi: 3.0.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
