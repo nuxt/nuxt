@@ -1,23 +1,32 @@
 # `useAsyncData`
 
-::ReadMore{link="/guide/features/data-fetching"}
-::
+Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
-```ts
-const {
-  data: Ref<DataT>,
-  pending: Ref<boolean>,
-  refresh: () => Promise<void>,
-  error: Ref<any>
-} = useAsyncData(
+## Type
+
+```ts [Signature]
+function useAsyncData(
   key: string,
-  handler: (ctx?: NuxtApp) => Promise<Object>,
-  options?: {
-    lazy: boolean,
-    server: boolean,
-    watch: WatchSource[]
-  }
-)
+  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+  options?: AsyncDataOptions
+): Promise<DataT>
+
+type AsyncDataOptions = {
+  server?: boolean
+  lazy?: boolean
+  default?: () => DataT
+  transform?: (input: DataT) => DataT
+  pick?: string[]
+  watch?: WatchSource[]
+  initialCache?: boolean
+}
+
+type DataT = {
+  data: Ref<DataT>
+  pending: Ref<boolean>
+  refresh: () => Promise<void>
+  error: Ref<any>
+}
 ```
 
 ## Params
@@ -43,3 +52,18 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 * **error**: an error object if the data fetching failed
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again. Passing `true` as parameter skips that wait.
+
+## Example
+
+```ts
+const { data, pending, error, refresh } = useAsyncData(
+  'mountains',
+  () => $fetch('https://api.nuxtjs.dev/mountains),
+  {
+    pick: ['title']
+  }
+)
+```
+
+::ReadMore{link="/guide/features/data-fetching"}
+::
