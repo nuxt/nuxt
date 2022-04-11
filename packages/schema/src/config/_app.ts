@@ -102,6 +102,8 @@ export default {
     head: {
       $resolve: (val, get) => {
         return defu(val, get('meta'), {
+          charset: 'utf-8',
+          viewport: 'width=device-width, initial-scale=1',
           meta: [],
           link: [],
           style: [],

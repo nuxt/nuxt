@@ -21,4 +21,6 @@ export interface MetaObject extends Record<string, any> {
   style?: Array<Record<string, any>>
   /** Each item in the array maps to a newly-created `<script>` element, where object properties map to attributes. */
   script?: Array<Record<string, any>>
+
+  titleTemplate?: string | ((title: string) => string)
 }

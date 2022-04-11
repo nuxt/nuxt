@@ -36,8 +36,6 @@ describe('pages', () => {
 
     // should render text
     expect(html).toContain('Hello Nuxt 3!')
-    // should render <Head> components
-    expect(html).toContain('<title>Basic fixture</title>')
     // should inject runtime config
     expect(html).toContain('RuntimeConfig | testConfig: 123')
     // composables auto import
@@ -119,12 +117,20 @@ describe('pages', () => {
 describe('head tags', () => {
   it('should render tags', async () => {
     const html = await $fetch('/head')
-    expect(html).toContain('<title>Using a dynamic component</title>')
+    expect(html).toContain('<title>Using a dynamic component - Fixture</title>')
     expect(html).not.toContain('<meta name="description" content="first">')
+    expect(html).toContain('<meta charset="utf-16">')
+    expect(html).not.toContain('<meta charset="utf-8">')
     expect(html).toContain('<meta name="description" content="overriding with an inline useHead call">')
     expect(html).toMatch(/<html[^>]*class="html-attrs-test"/)
     expect(html).toMatch(/<body[^>]*class="body-attrs-test"/)
     expect(html).toContain('script>console.log("works with useMeta too")</script>')
+
+    const index = await $fetch('/')
+    // should render charset by default
+    expect(index).toContain('<meta charset="utf-8">')
+    // should render <Head> components
+    expect(index).toContain('<title>Basic fixture - Fixture</title>')
   })
 })
 

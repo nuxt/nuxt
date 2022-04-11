@@ -27,6 +27,7 @@
 export default {
   setup () {
     useHead({
+      titleTemplate: '%s - useHead example',
       bodyAttrs: {
         class: 'test'
       }
