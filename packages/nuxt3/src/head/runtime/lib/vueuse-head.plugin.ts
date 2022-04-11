@@ -17,22 +17,24 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const titleTemplate = ref<MetaObject['titleTemplate']>()
 
-  nuxtApp._useHead = (meta: MetaObject | ComputedGetter<MetaObject>) => {
-    titleTemplate.value = (unref(meta) as MetaObject).titleTemplate || titleTemplate.value
+  nuxtApp._useHead = (_meta: MetaObject | ComputedGetter<MetaObject>) => {
+    const meta = ref<MetaObject>(_meta)
+    if ('titleTemplate' in meta.value) {
+      titleTemplate.value = meta.value.titleTemplate
+    }
 
     const headObj = computed(() => {
       const overrides: MetaObject = { meta: [] }
-      const val = unref(meta) as MetaObject
-      if (titleTemplate.value && 'title' in val) {
-        overrides.title = typeof titleTemplate.value === 'function' ? titleTemplate.value(val.title) : titleTemplate.value.replace(/%s/g, val.title)
+      if (titleTemplate.value && 'title' in meta.value) {
+        overrides.title = typeof titleTemplate.value === 'function' ? titleTemplate.value(meta.value.title) : titleTemplate.value.replace(/%s/g, meta.value.title)
       }
-      if (val.charset) {
-        overrides.meta!.push({ key: 'charset', charset: val.charset })
+      if (meta.value.charset) {
+        overrides.meta!.push({ key: 'charset', charset: meta.value.charset })
       }
-      if (val.viewport) {
-        overrides.meta!.push({ name: 'viewport', content: val.viewport })
+      if (meta.value.viewport) {
+        overrides.meta!.push({ name: 'viewport', content: meta.value.viewport })
       }
-      return defu(overrides, val)
+      return defu(overrides, meta.value)
     })
     head.addHeadObjs(headObj as any)
 
