@@ -1,11 +1,12 @@
-import { IncomingMessage } from 'http'
+import { createApp, createError, defineEventHandler, defineLazyEventHandler } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
-import type { Connect, Plugin as VitePlugin } from 'vite'
+import type { Plugin as VitePlugin, ViteDevServer } from 'vite'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
+import { isCSS } from './utils'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 fixed for adding middlewares after setup
@@ -26,34 +27,54 @@ export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
   })
 }
 
-function createViteNodeMiddleware (ctx: ViteBuildContext): Connect.NextHandleFunction {
-  let node: ViteNodeServer | undefined
-  return async (req, res, next) => {
-    if (!node && ctx.ssrServer) {
-      node = new ViteNodeServer(ctx.ssrServer, {
-        deps: {
-          inline: [
-            /\/nuxt3\//,
-            /^#/,
-            ...ctx.nuxt.options.build.transpile as string[]
-          ]
-        }
-      })
-    }
-    if (!node) {
-      return next()
-    }
+function getManifest (server: ViteDevServer) {
+  const ids = Array.from(server.moduleGraph.urlToModuleMap.keys())
+    .filter(i => isCSS(i))
 
-    const body = await getBodyJson(req) || {}
-    const { id } = body
-    if (!id) {
-      res.statusCode = 400
-      res.end()
-    } else {
-      res.write(JSON.stringify(await node.fetchModule(id)))
-      res.end()
-    }
+  const entries = [
+    '@vite/client',
+    'entry.mjs',
+    ...ids.map(i => i.slice(1))
+  ]
+
+  return {
+    publicPath: '',
+    all: entries,
+    initial: entries,
+    async: [],
+    modules: {}
   }
+}
+
+function createViteNodeMiddleware (ctx: ViteBuildContext) {
+  const app = createApp()
+
+  app.use('/manifest', defineEventHandler(async () => {
+    const manifest = await getManifest(ctx.ssrServer)
+    return manifest
+  }))
+
+  app.use('/module', defineLazyEventHandler(() => {
+    const node: ViteNodeServer = new ViteNodeServer(ctx.ssrServer, {
+      deps: {
+        inline: [
+          /\/nuxt3\//,
+          /^#/,
+          ...ctx.nuxt.options.build.transpile as string[]
+        ]
+      }
+    })
+    return async (event) => {
+      const moduleId = decodeURI(event.req.url).substring(1)
+      if (moduleId === '/') {
+        throw createError({ statusCode: 400 })
+      }
+      const module = await node.fetchModule(moduleId) as any
+      return module
+    }
+  }))
+
+  return app.nodeHandler
 }
 
 export async function prepareDevServerEntry (ctx: ViteBuildContext) {
@@ -62,32 +83,26 @@ export async function prepareDevServerEntry (ctx: ViteBuildContext) {
     entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async')
   }
 
+  // TODO: Update me
   const host = ctx.nuxt.options.server.host || 'localhost'
   const port = ctx.nuxt.options.server.port || '3000'
   const protocol = ctx.nuxt.options.server.https ? 'https' : 'http'
 
-  process.env.NUXT_VITE_SERVER_FETCH = `${protocol}://${host}:${port}/__nuxt_vite_node__/`
-  process.env.NUXT_VITE_SERVER_ENTRY = entryPath
-  process.env.NUXT_VITE_SERVER_BASE = ctx.ssrServer.config.base || '/_nuxt/'
-  process.env.NUXT_VITE_SERVER_ROOT = ctx.nuxt.options.rootDir
+  // Serialize and pass vite-node runtime options
+  const viteNodeServerOptions = {
+    baseURL: `${protocol}://${host}:${port}/__nuxt_vite_node__`,
+    rootDir: ctx.nuxt.options.rootDir,
+    entryPath,
+    base: ctx.ssrServer.config.base || '/_nuxt/'
+  }
+  process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
-  await fse.copyFile(
-    resolve(distDir, 'runtime/server.mjs'),
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs')
+  await fse.writeFile(
+    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
+    `export { default } from ${JSON.stringify(resolve(distDir, 'runtime/vite-node.mjs'))}`
   )
-}
-
-function getBodyJson (req: IncomingMessage) {
-  return new Promise<any>((resolve, reject) => {
-    let body = ''
-    req.on('data', (chunk) => { body += chunk })
-    req.on('error', reject)
-    req.on('end', () => {
-      try {
-        resolve(JSON.parse(body) || {})
-      } catch (e) {
-        reject(e)
-      }
-    })
-  })
+  await fse.writeFile(
+    resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
+    `export { default } from ${JSON.stringify(resolve(distDir, 'runtime/client.manifest.mjs'))}`
+  )
 }

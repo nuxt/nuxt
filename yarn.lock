@@ -10755,6 +10755,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-vite-node@workspace:examples/experimental/vite-node":
+  version: 0.0.0-use.local
+  resolution: "example-vite-node@workspace:examples/experimental/vite-node"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-wasm@workspace:examples/experimental/wasm":
   version: 0.0.0-use.local
   resolution: "example-wasm@workspace:examples/experimental/wasm"
