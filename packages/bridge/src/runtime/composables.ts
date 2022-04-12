@@ -26,7 +26,7 @@ export const useRuntimeConfig = () => {
   const nuxtApp = useNuxtApp()
   if (!nuxtApp.$config) {
     const runtimeConfig = reactive(nuxtApp.nuxt2Context.app.$config)
-    const copatibilityConfig = new Proxy(runtimeConfig, {
+    const compatibilityConfig = new Proxy(runtimeConfig, {
       get (target, prop) {
         if (prop === 'public') {
           return target.public
@@ -42,8 +42,8 @@ export const useRuntimeConfig = () => {
         return true
       }
     })
-    nuxtApp.provide('config', copatibilityConfig)
-    nuxtApp.$config = copatibilityConfig
+    nuxtApp.provide('config', compatibilityConfig)
+    nuxtApp.$config = compatibilityConfig
   }
   return nuxtApp.$config as RuntimeConfig
 }
