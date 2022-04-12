@@ -25,6 +25,7 @@ export async function initNitro (nuxt: Nuxt) {
     buildDir: nuxt.options.buildDir,
     scanDirs: nuxt.options._layers.map(layer => join(layer.config.srcDir, 'server')),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
+    errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers,
     devHandlers: [],
@@ -76,9 +77,6 @@ export async function initNitro (nuxt: Nuxt) {
 
       // Renderer
       '#vue-renderer': resolve(distDir, 'core/runtime/nitro/vue3'),
-
-      // Error renderer
-      '#nitro/error': resolve(distDir, 'core/runtime/nitro/error'),
 
       // Paths
       '#paths': resolve(distDir, 'core/runtime/nitro/paths'),

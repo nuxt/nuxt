@@ -2620,7 +2620,7 @@ __metadata:
     magic-string: ^0.26.1
     mlly: ^0.5.1
     murmurhash-es: ^0.1.1
-    nitropack: ^0.2.6
+    nitropack: ^0.2.7
     node-fetch: ^3.2.3
     nuxi: 3.0.0
     nuxt: ^2
@@ -14547,9 +14547,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.2.6":
-  version: 0.2.6
-  resolution: "nitropack@npm:0.2.6"
+"nitropack@npm:^0.2.7":
+  version: 0.2.7
+  resolution: "nitropack@npm:0.2.7"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -14603,7 +14603,7 @@ __metadata:
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.6.0
     scule: ^0.2.1
-    semver: ^7.3.6
+    semver: ^7.3.7
     serve-placeholder: ^2.0.1
     serve-static: ^1.15.0
     std-env: ^3.0.1
@@ -14615,7 +14615,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: f932d6f8e648746f9d9b69aa14fe0231a125ffd0a9f8fb3f911d9ed559daa411b9add68a882f6d525c759fd1924edb054e4977628e4727d0160d2849b3503930
+  checksum: 99cf3b20325e3ef27c84ad9d991376fb352bad0bf880741b31534c872067c9d39247b9fe4887c151c3b8e3e0001db6abfdc1be7bde159a1d554c6c4c9747fedd
   languageName: node
   linkType: hard
 
@@ -15296,7 +15296,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.1
-    nitropack: ^0.2.6
+    nitropack: ^0.2.7
     nuxi: 3.0.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15

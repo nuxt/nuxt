@@ -1,10 +1,13 @@
-import type { CompatibilityEvent } from 'h3'
 import { withQuery } from 'ufo'
+import type { NitroErrorHandler } from 'nitropack'
+// @ts-ignore TODO
 import { normalizeError, isJsonRequest } from '#nitro/utils'
 
-export default async function handleError (error: any, event: CompatibilityEvent) {
-  const { stack, statusCode, statusMessage, message } = normalizeError(error)
+export default <NitroErrorHandler> async function errorhandler (_error, event) {
+  // Parse and normalize error
+  const { stack, statusCode, statusMessage, message } = normalizeError(_error)
 
+  // Create an error object
   const errorObject = {
     url: event.req.url,
     statusCode,
@@ -14,24 +17,30 @@ export default async function handleError (error: any, event: CompatibilityEvent
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : ''
   }
-  event.res.statusCode = error.statusCode || 500
-  event.res.statusMessage = error.statusMessage || 'Internal Server Error'
+
+  // Set response code and message
+  event.res.statusCode = errorObject.statusCode
+  event.res.statusMessage = errorObject.statusMessage
 
   // Console output
-  if (error.statusCode !== 404) {
-    console.error('[nuxt] [request error]', error.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+  if (errorObject.statusCode !== 404) {
+    console.error('[nuxt] [request error]', errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   // JSON response
   if (isJsonRequest(event)) {
     event.res.setHeader('Content-Type', 'application/json')
-    return event.res.end(JSON.stringify(errorObject))
+    event.res.end(JSON.stringify(errorObject))
+    return
   }
 
   // HTML response
   const url = withQuery('/__nuxt_error', errorObject as any)
-  const html = await $fetch(url).catch(() => errorObject.statusMessage)
+  const html = await $fetch(url).catch((error) => {
+    console.error('[nitro] Error while generating error response', error)
+    return errorObject.statusMessage
+  })
 
   event.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
-  return event.res.end(html)
+  event.res.end(html)
 }

@@ -69,6 +69,7 @@ export async function setupNitroBridge () {
     buildDir: resolve(nuxt.options.buildDir),
     scanDirs: nuxt.options._layers.map(layer => join(layer.config.srcDir, 'server')),
     renderer: resolve(distDir, 'runtime/nitro/renderer'),
+    errorHandler: resolve(distDir, 'runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers,
     devHandlers: [],
@@ -115,9 +116,6 @@ export async function setupNitroBridge () {
       // Renderer
       '#vue-renderer': resolve(distDir, 'runtime/nitro/vue2'),
       '#vue2-server-renderer': 'vue-server-renderer/' + (nuxt.options.dev ? 'build.dev.js' : 'build.prod.js'),
-
-      // Error renderer
-      '#nitro/error': resolve(distDir, 'runtime/nitro/error'),
 
       // Paths
       '#paths': resolve(distDir, 'runtime/nitro/paths'),
