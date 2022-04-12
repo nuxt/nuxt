@@ -127,7 +127,24 @@ export function createNuxtApp (options: CreateOptions) {
       app: options.ssrContext.runtimeConfig.app
     }
   } else {
-    nuxtApp.provide('config', reactive(nuxtApp.payload.config))
+    const runtimeConfig = reactive(nuxtApp.payload.config)
+    const copatibilityConfig = new Proxy(runtimeConfig, {
+      get (target, prop) {
+        if (prop === 'public') {
+          return target.public
+        }
+        return target[prop] ?? target.public[prop]
+      },
+      set (target, prop, value) {
+        if (prop === 'public' || prop === 'app') {
+          return false // Throws TypeError
+        }
+        target[prop] = value
+        target.public[prop] = value
+        return true
+      }
+    })
+    nuxtApp.provide('config', copatibilityConfig)
   }
 
   return nuxtApp
