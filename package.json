@@ -46,7 +46,7 @@
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.31.0",
     "case-police": "^0.5.3",
-    "esbuild": "^0.14.35",
+    "esbuild": "^0.14.36",
     "eslint": "^8.13.0",
     "eslint-plugin-jsdoc": "^39.1.1",
     "execa": "^6.1.0",
