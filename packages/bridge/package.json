@@ -56,7 +56,7 @@
     "postcss-preset-env": "^7.4.3",
     "postcss-url": "^10.1.3",
     "scule": "^0.2.1",
-    "semver": "^7.3.6",
+    "semver": "^7.3.7",
     "ufo": "^0.8.3",
     "unimport": "^0.1.4",
     "unplugin": "^0.6.1",

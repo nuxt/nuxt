@@ -2633,7 +2633,7 @@ __metadata:
     postcss-preset-env: ^7.4.3
     postcss-url: ^10.1.3
     scule: ^0.2.1
-    semver: ^7.3.6
+    semver: ^7.3.7
     ufo: ^0.8.3
     unbuild: latest
     unimport: ^0.1.4
@@ -2933,7 +2933,7 @@ __metadata:
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     scule: ^0.2.1
-    semver: ^7.3.6
+    semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
     unimport: ^0.1.4
@@ -15215,7 +15215,7 @@ __metadata:
     pkg-types: ^0.3.2
     rimraf: ^3.0.2
     scule: ^0.2.1
-    semver: ^7.3.6
+    semver: ^7.3.7
     superb: ^4.0.0
     tiged: ^2.12.0
     unbuild: latest
@@ -19081,6 +19081,17 @@ __metadata:
   bin:
     semver: bin/semver.js
   checksum: 9845f96b22268190b30025e02feca391451f2bd49b2c51920c27cc56744f64cbe397df089018fdb347d4b4fd800eabbd85661870eb63eb28055d2b72e457f759
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.3.7":
+  version: 7.3.7
+  resolution: "semver@npm:7.3.7"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 2fa3e877568cd6ce769c75c211beaed1f9fce80b28338cadd9d0b6c40f2e2862bafd62c19a6cff42f3d54292b7c623277bcab8816a2b5521cf15210d43e75232
   languageName: node
   linkType: hard
 
