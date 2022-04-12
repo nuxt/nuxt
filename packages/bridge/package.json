@@ -44,7 +44,7 @@
     "magic-string": "^0.26.1",
     "mlly": "^0.5.1",
     "murmurhash-es": "^0.1.1",
-    "nitropack": "^0.2.4",
+    "nitropack": "^0.2.6",
     "node-fetch": "^3.2.3",
     "nuxi": "3.0.0",
     "ohash": "^0.1.0",

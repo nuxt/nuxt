@@ -2,7 +2,8 @@ import { fileURLToPath } from 'url'
 import { describe, expect, it } from 'vitest'
 import { setup, $fetch, fetch, startServer } from '@nuxt/test-utils'
 
-describe('fixtures:bridge', async () => {
+// Moving to nuxt/bridge soon
+describe.skip('fixtures:bridge', async () => {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/bridge', import.meta.url)),
     server: true
