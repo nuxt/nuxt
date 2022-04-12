@@ -4124,16 +4124,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/glob@npm:*":
-  version: 7.2.0
-  resolution: "@types/glob@npm:7.2.0"
-  dependencies:
-    "@types/minimatch": "*"
-    "@types/node": "*"
-  checksum: 6ae717fedfdfdad25f3d5a568323926c64f52ef35897bcac8aca8e19bc50c0bd84630bbd063e5d52078b2137d8e7d3c26eabebd1a2f03ff350fff8a91e79fc19
-  languageName: node
-  linkType: hard
-
 "@types/hash-sum@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/hash-sum@npm:1.0.0"
@@ -4214,7 +4204,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/minimatch@npm:*, @types/minimatch@npm:^3.0.3":
+"@types/minimatch@npm:^3.0.3":
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
   checksum: c41d136f67231c3131cf1d4ca0b06687f4a322918a3a5adddc87ce90ed9dbd175a3610adee36b106ae68c0b92c637c35e02b58c8a56c424f71d30993ea220b92
@@ -4366,16 +4356,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: dc6a6df507656004e242dcb02c784479deca516d5f4b58a1707e708022b269ae147e1da0521f3e8ad0d63638869d87e0adc023f0bd5454aa6f72ac66c7525cf5
-  languageName: node
-  linkType: hard
-
-"@types/rimraf@npm:^3":
-  version: 3.0.2
-  resolution: "@types/rimraf@npm:3.0.2"
-  dependencies:
-    "@types/glob": "*"
-    "@types/node": "*"
-  checksum: b47fa302f46434cba704d20465861ad250df79467d3d289f9d6490d3aeeb41e8cb32dd80bd1a8fd833d1e185ac719fbf9be12e05ad9ce9be094d8ee8f1405347
   languageName: node
   linkType: hard
 
@@ -15193,7 +15173,6 @@ __metadata:
     "@nuxt/schema": 3.0.0
     "@types/clear": ^0
     "@types/mri": ^1.1.1
-    "@types/rimraf": ^3
     "@types/semver": ^7
     c12: ^0.2.5
     chokidar: ^3.5.3
@@ -15213,7 +15192,6 @@ __metadata:
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
     pkg-types: ^0.3.2
-    rimraf: ^3.0.2
     scule: ^0.2.1
     semver: ^7.3.7
     superb: ^4.0.0
