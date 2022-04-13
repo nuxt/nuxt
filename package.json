@@ -34,7 +34,7 @@
     "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
-    "vite": "^2.9.1",
+    "vite": "^2.9.2",
     "unbuild": "^0.7.3"
   },
   "devDependencies": {
@@ -48,7 +48,7 @@
     "case-police": "^0.5.3",
     "esbuild": "^0.14.36",
     "eslint": "^8.13.0",
-    "eslint-plugin-jsdoc": "^39.2.0",
+    "eslint-plugin-jsdoc": "^39.2.1",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",

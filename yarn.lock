@@ -47,7 +47,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.17.7, @babel/core@npm:^7.17.8, @babel/core@npm:^7.17.9":
+"@babel/core@npm:^7.17.7, @babel/core@npm:^7.17.9":
   version: 7.17.9
   resolution: "@babel/core@npm:7.17.9"
   dependencies:
@@ -1507,7 +1507,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.1.4
+    unimport: ^0.1.5
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1554,7 +1554,7 @@ __metadata:
     std-env: ^3.0.1
     ufo: ^0.8.3
     unbuild: latest
-    unimport: ^0.1.4
+    unimport: ^0.1.5
   languageName: unknown
   linkType: soft
 
@@ -1633,7 +1633,7 @@ __metadata:
     "@nuxt/schema": 3.0.0
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^2.3.1
-    "@vitejs/plugin-vue-jsx": ^1.3.9
+    "@vitejs/plugin-vue-jsx": ^1.3.10
     autoprefixer: ^10.4.4
     chokidar: ^3.5.3
     cssnano: ^5.1.7
@@ -1656,7 +1656,7 @@ __metadata:
     ufo: ^0.8.3
     unbuild: latest
     unplugin: ^0.6.1
-    vite: ^2.9.1
+    vite: ^2.9.2
     vite-node: ^0.9.3
     vue: 3.2.32
   peerDependencies:
@@ -2768,17 +2768,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue-jsx@npm:^1.3.9":
-  version: 1.3.9
-  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.9"
+"@vitejs/plugin-vue-jsx@npm:^1.3.10":
+  version: 1.3.10
+  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.10"
   dependencies:
-    "@babel/core": ^7.17.8
+    "@babel/core": ^7.17.9
     "@babel/plugin-syntax-import-meta": ^7.10.4
     "@babel/plugin-transform-typescript": ^7.16.8
     "@rollup/pluginutils": ^4.2.0
     "@vue/babel-plugin-jsx": ^1.1.1
     hash-sum: ^2.0.0
-  checksum: e4ec9869c1929eb8a6cc0659eeb1453d192f45792c3a280ad9dfafd059fb8c17d7da526c13a8e3c63866da1b991ef7b9daf724b2004cbbcfab76d75cfd550b67
+  checksum: 868e90363e1234be43c3ced5097c8da430b9feed526c1f6c2dcc8a0546182e942018e6b5e1a0c16c66810b82cd17fa3a8e04ba969db6f253c6f7c490dce83a0b
   languageName: node
   linkType: hard
 
@@ -6113,9 +6113,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^39.2.0":
-  version: 39.2.0
-  resolution: "eslint-plugin-jsdoc@npm:39.2.0"
+"eslint-plugin-jsdoc@npm:^39.2.1":
+  version: 39.2.1
+  resolution: "eslint-plugin-jsdoc@npm:39.2.1"
   dependencies:
     "@es-joy/jsdoccomment": ~0.22.1
     comment-parser: 1.3.1
@@ -6126,7 +6126,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: a6441ca6a6ef45f5e6053824551a994bcabea6c4d4b267ba1b3821cf9ced9e04abed41eea13fc99b12043eb35ca486b6ee2d9f2be8279892f9c50b26def4ab10
+  checksum: 5c35e23dcd5da020a7d875a57e9a116f2617b980977412991379ebb413dae4df107902cecdd23e4e3c258627a07524b0506ff251371e12d78f9af98cdf840640
   languageName: node
   linkType: hard
 
@@ -10180,7 +10180,7 @@ __metadata:
     case-police: ^0.5.3
     esbuild: ^0.14.36
     eslint: ^8.13.0
-    eslint-plugin-jsdoc: ^39.2.0
+    eslint-plugin-jsdoc: ^39.2.1
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -10243,7 +10243,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.4.6
-    unimport: ^0.1.4
+    unimport: ^0.1.5
     unplugin: ^0.6.1
     untyped: ^0.4.4
     vue: ^3.2.32
@@ -13632,6 +13632,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unimport@npm:^0.1.5":
+  version: 0.1.5
+  resolution: "unimport@npm:0.1.5"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.0
+    escape-string-regexp: ^5.0.0
+    globby: ^13.1.1
+    local-pkg: ^0.4.1
+    magic-string: ^0.26.1
+    mlly: ^0.5.1
+    pathe: ^0.2.0
+    scule: ^0.2.1
+    unplugin: ^0.6.1
+  checksum: 8c9d2b36a999be7f713b642f8afed9e39641a2ff3373c3ba918c298429b6a3d0e9b240e2af993fa0b7273619d8d8923a718c2323548063e1852cdba53d0f2a25
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^1.1.1":
   version: 1.1.1
   resolution: "unique-filename@npm:1.1.1"
@@ -13924,9 +13941,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.1":
-  version: 2.9.1
-  resolution: "vite@npm:2.9.1"
+"vite@npm:^2.9.2":
+  version: 2.9.3
+  resolution: "vite@npm:2.9.3"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -13949,7 +13966,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 0f0ac9337fa5c17faa4a59831a2df17475563b23a6162e86b2b60b19835ca1277f3249ea7a6608880354b39caf05779e9bad1e3b1f5b27010deced224aae47ea
+  checksum: 48cb8509bce4a00fb7cdb17cd13b21c43642cd220553a8ee0ae2bfb40f73869ce8cebb3c9b4324dd3bb642084161044e70dc737cf935ca4d6c3432faeb84687a
   languageName: node
   linkType: hard
 
