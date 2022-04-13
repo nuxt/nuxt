@@ -2614,7 +2614,7 @@ __metadata:
     fs-extra: ^10.0.1
     get-port-please: ^2.5.0
     globby: ^13.1.1
-    h3: ^0.7.2
+    h3: ^0.7.3
     hash-sum: ^2.0.0
     knitwork: ^0.1.1
     magic-string: ^0.26.1
@@ -3758,7 +3758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^21.0.2, @rollup/plugin-commonjs@npm:^21.0.3":
+"@rollup/plugin-commonjs@npm:^21.0.3":
   version: 21.0.3
   resolution: "@rollup/plugin-commonjs@npm:21.0.3"
   dependencies:
@@ -3799,7 +3799,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.1.3, @rollup/plugin-node-resolve@npm:^13.2.0":
+"@rollup/plugin-node-resolve@npm:^13.2.0":
   version: 13.2.0
   resolution: "@rollup/plugin-node-resolve@npm:13.2.0"
   dependencies:
@@ -4830,10 +4830,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.0":
-  version: 0.31.0
-  resolution: "@unocss/reset@npm:0.31.0"
-  checksum: 0b957a0b3d5beed6a856fe1b56f3ce9ac236bbfdb6463b291427820b452f7a586931bb8b65a9190d3acff0d35f59b55d10371c6d70121686f6b3bbd0211e72f7
+"@unocss/reset@npm:^0.31.2":
+  version: 0.31.2
+  resolution: "@unocss/reset@npm:0.31.2"
+  checksum: 7519d621e633cf85d822191fbc398faf210057e4a3603e4d90ea515d71857f02372941f941f5ca105a2da3d68b491fa07a4838c330ef805f5afe7dbb7f6a55d9
   languageName: node
   linkType: hard
 
@@ -9696,7 +9696,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.25, esbuild@npm:^0.14.27, esbuild@npm:^0.14.36, esbuild@npm:^0.14.6":
+"esbuild@npm:^0.14.27, esbuild@npm:^0.14.36, esbuild@npm:^0.14.6":
   version: 0.14.36
   resolution: "esbuild@npm:0.14.36"
   dependencies:
@@ -11529,6 +11529,18 @@ __metadata:
     radix3: ^0.1.1
     ufo: ^0.7.11
   checksum: 7c7d605d3d608f4b3448c619bab51921c946911faa3cf50977c1210c4f36d05f55c40bc937dbeac686ee325943aefd8684252dcba575ced23d2c7941e1b18563
+  languageName: node
+  linkType: hard
+
+"h3@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "h3@npm:0.7.3"
+  dependencies:
+    cookie-es: ^0.5.0
+    destr: ^1.1.0
+    radix3: ^0.1.1
+    ufo: ^0.7.11
+  checksum: 95944776863ee388f2b01c08bae8d86fdc859d6be66a09ce1c8595f13888560f4ba37c4a83c32c9244733424f862c4fb6bd95ce100fcad75ca07d736131ea94c
   languageName: node
   linkType: hard
 
@@ -15240,7 +15252,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.26
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.31.0
+    "@unocss/reset": ^0.31.2
     case-police: ^0.5.3
     esbuild: ^0.14.36
     eslint: ^8.13.0
@@ -15255,7 +15267,7 @@ __metadata:
     object-hash: ^3.0.0
     pathe: ^0.2.0
     typescript: ^4.6.3
-    unbuild: ^0.7.2
+    unbuild: ^0.7.3
     vitest: ^0.9.3
     vue-router: ^4.0.14
     vue-tsc: ^0.34.6
@@ -15290,7 +15302,7 @@ __metadata:
     escape-string-regexp: ^5.0.0
     fs-extra: ^10.0.1
     globby: ^13.1.1
-    h3: ^0.7.2
+    h3: ^0.7.3
     hash-sum: ^2.0.0
     hookable: ^5.1.1
     knitwork: ^0.1.1
@@ -18723,7 +18735,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-dts@npm:^4.2.0":
+"rollup-plugin-dts@npm:^4.2.1":
   version: 4.2.1
   resolution: "rollup-plugin-dts@npm:4.2.1"
   dependencies:
@@ -18739,7 +18751,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-esbuild@npm:^4.8.2":
+"rollup-plugin-esbuild@npm:^4.9.1":
   version: 4.9.1
   resolution: "rollup-plugin-esbuild@npm:4.9.1"
   dependencies:
@@ -18794,7 +18806,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.70.0, rollup@npm:^2.70.1":
+"rollup@npm:^2.58.0, rollup@npm:^2.59.0, rollup@npm:^2.70.1":
   version: 2.70.1
   resolution: "rollup@npm:2.70.1"
   dependencies:
@@ -20657,7 +20669,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.3.4, typescript@npm:^4.6.2, typescript@npm:^4.6.3":
+"typescript@npm:^4.3.4, typescript@npm:^4.6.3":
   version: 4.6.3
   resolution: "typescript@npm:4.6.3"
   bin:
@@ -20667,7 +20679,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.3.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.2#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.3#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.3.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.3#~builtin<compat/typescript>":
   version: 4.6.3
   resolution: "typescript@patch:typescript@npm%3A4.6.3#~builtin<compat/typescript>::version=4.6.3&hash=bda367"
   bin:
@@ -20772,40 +20784,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.7.2":
-  version: 0.7.2
-  resolution: "unbuild@npm:0.7.2"
+"unbuild@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "unbuild@npm:0.7.3"
   dependencies:
     "@rollup/plugin-alias": ^3.1.9
-    "@rollup/plugin-commonjs": ^21.0.2
+    "@rollup/plugin-commonjs": ^21.0.3
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.1.3
+    "@rollup/plugin-node-resolve": ^13.2.0
     "@rollup/plugin-replace": ^4.0.0
     "@rollup/pluginutils": ^4.2.0
     chalk: ^5.0.1
     consola: ^2.15.3
-    defu: ^5.0.1
-    esbuild: ^0.14.25
+    defu: ^6.0.0
+    esbuild: ^0.14.36
     hookable: ^5.1.1
     jiti: ^1.13.0
     magic-string: ^0.26.1
     mkdirp: ^1.0.4
     mkdist: ^0.3.10
-    mlly: ^0.4.3
+    mlly: ^0.5.1
     mri: ^1.2.0
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     pretty-bytes: ^6.0.0
     rimraf: ^3.0.2
-    rollup: ^2.70.0
-    rollup-plugin-dts: ^4.2.0
-    rollup-plugin-esbuild: ^4.8.2
+    rollup: ^2.70.1
+    rollup-plugin-dts: ^4.2.1
+    rollup-plugin-esbuild: ^4.9.1
     scule: ^0.2.1
-    typescript: ^4.6.2
-    untyped: ^0.4.0
+    typescript: ^4.6.3
+    untyped: ^0.4.4
   bin:
     unbuild: dist/cli.mjs
-  checksum: 6f412c9cbd2dca17ac9907440ebab5fe294446b0aa31073091fc6f9701929e292bf7365cb7e3097c761b76d695c073a6646d5012a8d5aa099fc78d946e57f014
+  checksum: 879f5a0f338de2c7abab4ccaac718eca1fa1ef1ed35ffe6a3bd56b31e67a822affa85bc952e866cf96dce1ed6d6c7c6e01d99f987a7861837d856cf0d7d13628
   languageName: node
   linkType: hard
 
@@ -21132,7 +21144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"untyped@npm:^0.4.0, untyped@npm:^0.4.4":
+"untyped@npm:^0.4.4":
   version: 0.4.4
   resolution: "untyped@npm:0.4.4"
   dependencies:
