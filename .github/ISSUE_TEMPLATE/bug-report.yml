@@ -1,6 +1,6 @@
-name: "\U0001F41E Bug report (Nuxt 3)"
-description: Create a report to help us improve Nuxt 3
-labels: ["pending triage", "nuxt3"]
+name: "\U0001F41E Bug report"
+description: Create a report to help us improve Nuxt
+labels: ["pending triage"]
 body:
   - type: markdown
     attributes:
