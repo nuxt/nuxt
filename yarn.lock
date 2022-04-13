@@ -6514,6 +6514,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"example-server-routes@workspace:examples/server/routes":
+  version: 0.0.0-use.local
+  resolution: "example-server-routes@workspace:examples/server/routes"
+  dependencies:
+    "@nuxt/ui": "npm:@nuxt/ui-edge@latest"
+    nuxt3: latest
+  languageName: unknown
+  linkType: soft
+
 "example-teleport@workspace:examples/app/teleport":
   version: 0.0.0-use.local
   resolution: "example-teleport@workspace:examples/app/teleport"
