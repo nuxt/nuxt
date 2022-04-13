@@ -1656,7 +1656,7 @@ __metadata:
     ufo: ^0.8.3
     unbuild: latest
     unplugin: ^0.6.1
-    vite: ^2.9.2
+    vite: ^2.9.3
     vite-node: ^0.9.3
     vue: 3.2.32
   peerDependencies:
@@ -13941,7 +13941,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.2":
+"vite@npm:^2.9.3":
   version: 2.9.3
   resolution: "vite@npm:2.9.3"
   dependencies:
