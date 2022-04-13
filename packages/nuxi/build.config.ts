@@ -3,8 +3,7 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   declaration: true,
   rollup: {
-    inlineDependencies: true,
-    cjsBridge: true
+    inlineDependencies: true
   },
   entries: [
     'src/cli',
