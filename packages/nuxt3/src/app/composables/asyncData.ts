@@ -1,5 +1,6 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
+import { wrapInRef } from './utils'
 import { NuxtApp, useNuxtApp } from '#app'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
@@ -17,7 +18,7 @@ export interface AsyncDataOptions<
   > {
   server?: boolean
   lazy?: boolean
-  default?: () => DataT
+  default?: () => DataT | Ref<DataT>
   transform?: Transform
   pick?: PickKeys
   watch?: MultiWatchSources
@@ -85,7 +86,7 @@ export function useAsyncData<
   const useInitialCache = () => options.initialCache && nuxt.payload.data[key] !== undefined
 
   const asyncData = {
-    data: ref(nuxt.payload.data[key] ?? options.default()),
+    data: wrapInRef(nuxt.payload.data[key] ?? options.default()),
     pending: ref(!useInitialCache()),
     error: ref(nuxt.payload._errors[key] ?? null)
   } as AsyncData<DataT, DataE>

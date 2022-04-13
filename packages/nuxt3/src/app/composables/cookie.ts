@@ -1,9 +1,10 @@
-import { Ref, ref, watch } from 'vue'
+import { Ref, watch } from 'vue'
 import { parse, serialize, CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { appendHeader } from 'h3'
 import type { CompatibilityEvent } from 'h3'
 import destr from 'destr'
 import { useRequestEvent } from './ssr'
+import { wrapInRef } from './utils'
 import { useNuxtApp } from '#app'
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
@@ -11,7 +12,7 @@ type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode'
 export interface CookieOptions<T=any> extends _CookieOptions {
   decode?(value: string): T
   encode?(value: T): string;
-  default?: () => T
+  default?: () => T | Ref<T>
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -26,7 +27,7 @@ export function useCookie <T=string> (name: string, _opts?: CookieOptions<T>): C
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts)
 
-  const cookie = ref(cookies[name] ?? opts.default?.())
+  const cookie = wrapInRef<T>(cookies[name] ?? opts.default?.())
 
   if (process.client) {
     watch(cookie, () => { writeClientCookie(name, cookie.value, opts as CookieSerializeOptions) })
