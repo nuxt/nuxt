@@ -9,15 +9,15 @@ import { TransformMacroPlugin, TransformMacroPluginOptions } from './macros'
 
 export default defineNuxtModule({
   meta: {
-    name: 'router'
+    name: 'pages'
   },
   setup (_options, nuxt) {
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     )
 
-    // Disable module (and use universal router) if pages dir do not exists
-    if (!pagesDirs.some(dir => existsSync(dir))) {
+    // Disable module (and use universal router) if pages dir do not exists or user has disabled it
+    if (nuxt.options.pages === false || (nuxt.options.pages !== true && !pagesDirs.some(dir => existsSync(dir)))) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
       return
     }
