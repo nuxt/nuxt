@@ -2607,7 +2607,7 @@ __metadata:
     cookie-es: ^0.5.0
     defu: ^6.0.0
     destr: ^1.1.1
-    enhanced-resolve: ^5.9.2
+    enhanced-resolve: ^5.9.3
     escape-string-regexp: ^5.0.0
     estree-walker: ^3.0.1
     externality: ^0.2.1
@@ -9226,6 +9226,16 @@ __metadata:
     graceful-fs: ^4.2.4
     tapable: ^2.2.0
   checksum: 792b7a01abb4ee4433b658c71f92d5948675938e0c03cad1732abe843b87395f15cb880ace4f819f78ead94163278283afc79b8be63c0eddca8ab45f7d8c515d
+  languageName: node
+  linkType: hard
+
+"enhanced-resolve@npm:^5.9.3":
+  version: 5.9.3
+  resolution: "enhanced-resolve@npm:5.9.3"
+  dependencies:
+    graceful-fs: ^4.2.4
+    tapable: ^2.2.0
+  checksum: 64c2dbbdd608d1a4df93b6e60786c603a1faf3b2e66dfd051d62cf4cfaeeb5e800166183685587208d62e9f7afff3f78f3d5978e32cd80125ba0c83b59a79d78
   languageName: node
   linkType: hard
 
