@@ -162,8 +162,10 @@ export function resolveRouteComponents (route, fn) {
 
             // check for previous reload time not to reload infinitely
             if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
-              window.sessionStorage.setItem('nuxt-reload', timeNow)
-              window.location.reload(true /* skip cache */)
+              try {
+                window.sessionStorage.setItem('nuxt-reload', timeNow)
+                window.location.reload(true /* skip cache */)
+              } catch (sessionstorageError) {}
             }
           }
 
