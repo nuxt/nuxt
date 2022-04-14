@@ -61,6 +61,7 @@ export default defineNuxtCommand({
         }
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
         await currentNuxt.ready()
+        await currentNuxt.hooks.callHook('listen', listener.server, listener)
         await Promise.all([
           writeTypes(currentNuxt).catch(console.error),
           buildNuxt(currentNuxt)
@@ -105,9 +106,6 @@ export default defineNuxtCommand({
     })
 
     await load(false)
-    if (currentNuxt) {
-      await currentNuxt.hooks.callHook('listen', listener.server, listener)
-    }
 
     return 'wait'
   }
