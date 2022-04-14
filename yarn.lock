@@ -2255,10 +2255,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.26":
-  version: 16.11.26
-  resolution: "@types/node@npm:16.11.26"
-  checksum: 57757caaba3f0d95de82198cb276a1002c49b710108c932a1d02d7c91ff2fa57cfe2dd19fde60853b6dd90b0964b3cf35557981d2628e20aed6a909057aedfe6
+"@types/node@npm:^16.11.27":
+  version: 16.11.27
+  resolution: "@types/node@npm:16.11.27"
+  checksum: 6ed0c8c4d29a549d0cfd607d19edf9a4668fbd39087701d923b4a04cd760564e47ad27f9403968cb9c11ee006f0ea6ab698b2491b4b2d2dec3f4a53d0fc22df7
   languageName: node
   linkType: hard
 
@@ -10192,7 +10192,7 @@ __metadata:
     "@nuxtjs/eslint-config": ^9.0.0
     "@nuxtjs/eslint-config-typescript": ^9.0.0
     "@types/jsdom": ^16
-    "@types/node": ^16.11.26
+    "@types/node": ^16.11.27
     "@types/object-hash": ^2
     "@unocss/reset": ^0.31.2
     case-police: ^0.5.3

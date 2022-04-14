@@ -42,7 +42,7 @@
     "@nuxtjs/eslint-config": "^9.0.0",
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
     "@types/jsdom": "^16",
-    "@types/node": "^16.11.26",
+    "@types/node": "^16.11.27",
     "@types/object-hash": "^2",
     "@unocss/reset": "^0.31.2",
     "case-police": "^0.5.3",
