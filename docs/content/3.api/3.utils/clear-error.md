@@ -6,7 +6,7 @@ Within your pages, components, and plugins, you can use `clearError` to clear al
 
 **Parameters:**
 
-- `redirect` (optional): `string`
+- `options?: { redirect?: string }`
 
 You can provide an optional path to redirect to (for example, if you want to navigate to a 'safe' page).
 
@@ -15,7 +15,7 @@ You can provide an optional path to redirect to (for example, if you want to nav
 clearError()
 
 // With redirect
-clearError('/homepage')
+clearError({ redirect: '/homepage' })
 ```
 
 Errors are set in state using [`useError()`](/api/composables/useError). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
