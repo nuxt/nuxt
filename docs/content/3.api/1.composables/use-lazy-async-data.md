@@ -1,11 +1,14 @@
 # `useLazyAsyncData`
 
-This composable behaves identically to [useAsyncData](/api/composables/use-async-data) with the `lazy: true` option set.  
+## Description
 
-Otherwise, this function does not block navigation. That means you will need to handle the situation where the data is `null` (or whatever value you have provided in a custom `default` factory function).
+By default, [useAsyncData](/api/composables/use-async-data) blocks navigation until its async handler is resolved.
 
-::ReadMore{link="/api/composables/use-async-data"}
-::
+`useLazyAsyncData` provides a wrapper around `useAsyncData` that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+
+> `useLazyAsyncData` has the same signature as `useAsyncData`.
+
+:ReadMore{link="/api/composables/use-async-data"}
 
 ## Example
 
@@ -17,7 +20,11 @@ Otherwise, this function does not block navigation. That means you will need to 
 </template>
 
 <script setup>
+/* Navigation will occur before fetching is complete.
+  Handle pending and error state directly within your component's template
+*/
 const { pending, data: count } = useLazyAsyncData('count', () => $fetch('/api/count'))
+
 watch(count, (newCount) => {
   // Because count starts out null, you won't have access
   // to its contents immediately, but you can watch it.
@@ -25,5 +32,4 @@ watch(count, (newCount) => {
 </script>
 ```
 
-::ReadMore{link="/guide/features/data-fetching"}
-::
+:ReadMore{link="/guide/features/data-fetching#uselazyasyncdata"}

@@ -1,17 +1,19 @@
 # `useLazyFetch`
 
-This composable behaves identically to [useFetch](/api/composables/use-fetch) with the `lazy: true` option set.  
+## Description
 
-Otherwise, this function does not block navigation. That means you will need to handle the situation where the data is `null` (or whatever value you have provided in a custom `default` factory function).
+By default, [useFetch](/api/composables/use-fetch) blocks navigation until its async handler is resolved.
 
-::ReadMore{link="/api/composables/use-fetch"}
-::
+`useLazyFetch` provides a wrapper around `useFetch` that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+
+> `useLazyFetch` has the same signature as `useFetch`.
+
+:ReadMore{link="/api/composables/use-fetch"}
 
 ## Example
 
 ```vue
 <template>
-  <!-- you'll need to handle a loading state -->
   <div v-if="pending">
     Loading ...
   </div>
@@ -23,6 +25,9 @@ Otherwise, this function does not block navigation. That means you will need to 
 </template>
 
 <script setup>
+/* Navigation will occur before fetching is complete.
+  Handle pending and error state directly within your component's template
+*/
 const { pending, data: posts } = useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {
   // Because posts starts out null, you won't have access
@@ -31,5 +36,4 @@ watch(posts, (newPosts) => {
 </script>
 ```
 
-::ReadMore{link="/guide/features/data-fetching"}
-::
+:ReadMore{link="/guide/features/data-fetching#uselazyfetch"}
