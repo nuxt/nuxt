@@ -16,7 +16,7 @@
     "@nuxt/schema": "3.0.0",
     "@types/cssnano": "^5",
     "unbuild": "latest",
-    "vue": "3.2.32"
+    "vue": "3.2.33"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0",
@@ -42,12 +42,12 @@
     "rollup": "^2.70.1",
     "rollup-plugin-visualizer": "^5.6.0",
     "ufo": "^0.8.3",
-    "unplugin": "^0.6.1",
+    "unplugin": "^0.6.2",
     "vite": "^2.9.4",
     "vite-node": "^0.9.3"
   },
   "peerDependencies": {
-    "vue": "3.2.32"
+    "vue": "3.2.33"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
