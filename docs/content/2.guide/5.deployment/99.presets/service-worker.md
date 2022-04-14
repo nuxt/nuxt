@@ -39,4 +39,4 @@ NITRO_PRESET=worker npx nuxt build
 
 The worker preset produces a service worker that can provide full HTML rendering within a worker context (for example [Cloudflare Workers](/guide/deployment/cloudflare)). It registers appropriate handlers for `fetch`, `install` and `activate`.
 
-For more information you can see the [source code](https://github.com/nuxt/framework/blob/main/packages/nitro/src/runtime/entries/service-worker.ts).
+For more information you can see the [source code](https://github.com/unjs/nitro/blob/main/src/presets/service-worker.ts).

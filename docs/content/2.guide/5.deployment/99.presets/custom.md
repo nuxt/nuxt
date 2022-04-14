@@ -14,7 +14,7 @@ Back to [presets list](/guide/deployment/presets).
 
 ## Setup
 
-You can create your own custom-built preset. See [the provided presets](https://github.com/nuxt/framework/blob/main/packages/nitro/src/presets) for examples.
+You can create your own custom-built preset. See [the provided presets](https://github.com/unjs/nitro/tree/main/src/presets) for examples.
 
 ### Inline preset definition
 
