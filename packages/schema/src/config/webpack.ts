@@ -50,7 +50,7 @@ export default {
      * @example
      * ```js
      * export default {
-     *   build: {
+     *   webpack: {
      *     extractCSS: true,
      *     // or
      *     extractCSS: {
@@ -69,7 +69,7 @@ export default {
      * @example
      * ```js
      * export default {
-     *   build: {
+     *   webpack: {
      *     extractCSS: true,
      *     optimization: {
      *       splitChunks: {
