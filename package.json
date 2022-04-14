@@ -34,7 +34,7 @@
     "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
-    "vite": "^2.9.4",
+    "vite": "^2.9.5",
     "unbuild": "^0.7.4"
   },
   "devDependencies": {

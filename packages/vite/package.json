@@ -43,7 +43,7 @@
     "rollup-plugin-visualizer": "^5.6.0",
     "ufo": "^0.8.3",
     "unplugin": "^0.6.2",
-    "vite": "^2.9.4",
+    "vite": "^2.9.5",
     "vite-node": "^0.9.3"
   },
   "peerDependencies": {

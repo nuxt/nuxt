@@ -1656,7 +1656,7 @@ __metadata:
     ufo: ^0.8.3
     unbuild: latest
     unplugin: ^0.6.2
-    vite: ^2.9.4
+    vite: ^2.9.5
     vite-node: ^0.9.3
     vue: 3.2.33
   peerDependencies:
@@ -14063,9 +14063,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.4":
-  version: 2.9.4
-  resolution: "vite@npm:2.9.4"
+"vite@npm:^2.9.5":
+  version: 2.9.5
+  resolution: "vite@npm:2.9.5"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -14088,7 +14088,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 40c8e37f9442cda3021bdbfda25b9aeb9e2204d346565588f87eb4d157b5e10fbe937f8feb4b0fb3e67ab86858763015166aca7ca45f1adb29bd40da4cb1afb6
+  checksum: 354189cbce6904a3b58ca70b7ad9e1bb751ded9c13e483165562e634804cfb29bbf1507a4e6334cb9987e3f1f41e9f50764878a3c837523762e9da65229c9543
   languageName: node
   linkType: hard
 
