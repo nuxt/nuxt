@@ -1500,7 +1500,7 @@ __metadata:
     jiti: ^1.13.0
     knitwork: ^0.1.1
     lodash.template: ^4.5.0
-    mlly: ^0.5.1
+    mlly: ^0.5.2
     pathe: ^0.2.0
     pkg-types: ^0.3.2
     scule: ^0.2.1
@@ -1645,7 +1645,7 @@ __metadata:
     get-port-please: ^2.5.0
     knitwork: ^0.1.1
     magic-string: ^0.26.1
-    mlly: ^0.5.1
+    mlly: ^0.5.2
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
     postcss: ^8.4.12
@@ -1656,7 +1656,7 @@ __metadata:
     ufo: ^0.8.3
     unbuild: latest
     unplugin: ^0.6.1
-    vite: ^2.9.3
+    vite: ^2.9.4
     vite-node: ^0.9.3
     vue: 3.2.32
   peerDependencies:
@@ -1690,7 +1690,7 @@ __metadata:
     magic-string: ^0.26.1
     memfs: ^3.4.1
     mini-css-extract-plugin: ^2.6.0
-    mlly: ^0.5.1
+    mlly: ^0.5.2
     pathe: ^0.2.0
     pify: ^5.0.0
     postcss: ^8.4.12
@@ -3754,7 +3754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base64-js@npm:^1.3.1":
+"base64-js@npm:^1.3.1, base64-js@npm:^1.5.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 669632eb3745404c2f822a18fc3a0122d2f9a7a13f7fb8b5823ee19d1d2ff9ee5b52c53367176ea4ad093c332fd5ab4bd0ebae5a8e27917a4105a4cfc86b1005
@@ -6391,7 +6391,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.2.0":
+"events@npm:^3.2.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
@@ -7446,7 +7446,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.7.2, h3@npm:^0.7.3":
+"h3@npm:^0.7.3":
   version: 0.7.3
   resolution: "h3@npm:0.7.3"
   dependencies:
@@ -9652,9 +9652,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "nitropack@npm:0.2.7"
+"nitropack@npm:^0.2.8":
+  version: 0.2.8
+  resolution: "nitropack@npm:0.2.8"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9671,23 +9671,28 @@ __metadata:
     "@types/jsdom": ^16.2.14
     "@vercel/nft": ^0.18.1
     archiver: ^5.3.0
+    base64-js: ^1.5.1
+    buffer: ^6.0.3
     c12: ^0.2.5
     chalk: ^5.0.1
     chokidar: ^3.5.3
     connect: ^3.7.0
     consola: ^2.15.3
+    cookie-es: ^0.5.0
     defu: ^6.0.0
     destr: ^1.1.1
     dot-prop: ^7.2.0
     esbuild: ^0.14.36
     etag: ^1.8.1
+    events: ^3.3.0
     fs-extra: ^10.0.1
     globby: ^13.1.1
     gzip-size: ^7.0.0
-    h3: ^0.7.2
+    h3: ^0.7.3
     hasha: ^5.2.2
     hookable: ^5.1.1
     http-proxy: ^1.18.1
+    ieee754: ^1.2.1
     is-primitive: ^3.0.1
     jiti: ^1.13.0
     klona: ^2.0.5
@@ -9703,6 +9708,7 @@ __metadata:
     perfect-debounce: ^0.1.3
     pkg-types: ^0.3.2
     pretty-bytes: ^6.0.0
+    process: ^0.11.10
     radix3: ^0.1.1
     rollup: ^2.70.1
     rollup-plugin-terser: ^7.0.2
@@ -9711,16 +9717,18 @@ __metadata:
     semver: ^7.3.7
     serve-placeholder: ^2.0.1
     serve-static: ^1.15.0
+    source-map-support: ^0.5.21
     std-env: ^3.0.1
     table: ^6.8.0
     ufo: ^0.8.3
     unenv: ^0.4.6
-    unimport: ^0.1.4
+    unimport: ^0.1.5
     unstorage: ^0.3.3
+    util: ^0.12.4
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 99cf3b20325e3ef27c84ad9d991376fb352bad0bf880741b31534c872067c9d39247b9fe4887c151c3b8e3e0001db6abfdc1be7bde159a1d554c6c4c9747fedd
+  checksum: 74c76e7aa0aa567e4662de6626b2982d61bdf4998f128cdf68555fc1707cf814b7c4f62f7a2ea5dd00807040ad0d08bf4269474b512f950e53f56203aa34ab82
   languageName: node
   linkType: hard
 
@@ -10158,7 +10166,7 @@ __metadata:
     fsevents: ~2.3.2
     jiti: ^1.13.0
     listhen: ^0.2.8
-    mlly: ^0.5.1
+    mlly: ^0.5.2
     mri: ^1.2.0
     pathe: ^0.2.0
     perfect-debounce: ^0.1.3
@@ -10241,8 +10249,8 @@ __metadata:
     hookable: ^5.1.1
     knitwork: ^0.1.1
     magic-string: ^0.26.1
-    mlly: ^0.5.1
-    nitropack: ^0.2.7
+    mlly: ^0.5.2
+    nitropack: ^0.2.8
     nuxi: 3.0.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
@@ -12527,7 +12535,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.19, source-map-support@npm:~0.5.20":
+"source-map-support@npm:^0.5.19, source-map-support@npm:^0.5.21, source-map-support@npm:~0.5.20":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
   dependencies:
@@ -13951,9 +13959,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.3":
-  version: 2.9.3
-  resolution: "vite@npm:2.9.3"
+"vite@npm:^2.9.4":
+  version: 2.9.4
+  resolution: "vite@npm:2.9.4"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -13976,7 +13984,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 48cb8509bce4a00fb7cdb17cd13b21c43642cd220553a8ee0ae2bfb40f73869ce8cebb3c9b4324dd3bb642084161044e70dc737cf935ca4d6c3432faeb84687a
+  checksum: 40c8e37f9442cda3021bdbfda25b9aeb9e2204d346565588f87eb4d157b5e10fbe937f8feb4b0fb3e67ab86858763015166aca7ca45f1adb29bd40da4cb1afb6
   languageName: node
   linkType: hard
 
