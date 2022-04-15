@@ -79,7 +79,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
       ? withoutVersionQuery
       : pathToFileURL(withoutVersionQuery).href
     return {
-      code: `(global, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) =>
+      code: `(global, module, _, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) =>
 ${genDynamicImport(path, { wrapper: false })}
   .then(r => {
     if (r.default && r.default.__esModule)
@@ -104,7 +104,7 @@ ${genDynamicImport(path, { wrapper: false })}
   }) as SSRTransformResult || { code: '', map: {}, deps: [], dynamicDeps: [] }
 
   // Wrap into a vite module
-  const code = `async function (global, __vite_ssr_exports__, __vite_ssr_import_meta__, __vite_ssr_import__, __vite_ssr_dynamic_import__, __vite_ssr_exportAll__) {
+  const code = `async function (global, module, exports, __vite_ssr_exports__, __vite_ssr_import_meta__, __vite_ssr_import__, __vite_ssr_dynamic_import__, __vite_ssr_exportAll__) {
 ${res.code || '/* empty */'};
 }`
   return { code, deps: res.deps || [], dynamicDeps: res.dynamicDeps || [] }
@@ -209,8 +209,19 @@ async function __instantiateModule__(url, urlStack) {
     }
   }
 
+  const cjsModule = {
+    get exports () {
+      return stubModule.default
+    },
+    set exports (v) {
+      stubModule.default = v
+    },
+  }
+
   await mod(
     __ssrContext__.global,
+    cjsModule,
+    stubModule.default,
     stubModule,
     importMeta,
     ssrImport,
