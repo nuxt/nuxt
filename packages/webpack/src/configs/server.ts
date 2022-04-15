@@ -4,7 +4,7 @@ import { WebpackConfigContext, applyPresets, getWebpackConfig } from '../utils/c
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
 
-const assetPattern = /\.(png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(\?.*)?$/i
+const assetPattern = /\.(css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(\?.*)?$/i
 
 export function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
