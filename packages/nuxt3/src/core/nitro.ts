@@ -105,13 +105,14 @@ export async function initNitro (nuxt: Nuxt) {
 
   // Register nuxt3 protection patterns
   nitro.hooks.hook('nitro:rollup:before', (nitro) => {
-    nitro.options.rollupConfig.plugins.push(ImportProtectionPlugin.rollup({
+    const plugin = ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
       patterns: [
         ...['#app', /^#build(\/|$)/]
           .map(p => [p, 'Vue app aliases are not allowed in server routes.']) as [RegExp | string, string][]
       ]
-    }))
+    })
+    nitro.options.rollupConfig.plugins.push(plugin)
   })
 
   // Setup handlers
