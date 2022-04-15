@@ -71,20 +71,21 @@ export const serverPluginTemplate = {
 }
 
 export const appViewTemplate = {
-  filename: 'views/app.template.html',
+  filename: 'views/document.template.mjs',
+  write: true,
   getContents () {
-    return `<!DOCTYPE html>
-<html {{ HTML_ATTRS }}>
+    return `export default (params) => \`<!DOCTYPE html>
+<html \${params.HTML_ATTRS}>
 
-<head {{ HEAD_ATTRS }}>
-  {{ HEAD }}
+<head \${params.HEAD_ATTRS}>
+  \${params.HEAD}
 </head>
 
-<body {{ BODY_ATTRS }}>{{ BODY_PREPEND }}
-  {{ APP }}
+<body \${params.BODY_ATTRS}>\${params.BODY_PREPEND}
+  \${params.APP}
 </body>
 
-</html>
+</html>\`
 `
   }
 }

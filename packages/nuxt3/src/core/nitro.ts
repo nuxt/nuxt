@@ -1,5 +1,4 @@
-import { existsSync, promises as fsp } from 'fs'
-import { dirname } from 'path'
+import { existsSync } from 'fs'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroEventHandler, NitroDevEventHandler, NitroConfig } from 'nitropack'
@@ -138,7 +137,6 @@ export async function initNitro (nuxt: Nuxt) {
 
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
-    await writeDocumentTemplate(nuxt)
     if (nuxt.options.dev) {
       await build(nitro)
     } else {
@@ -190,19 +188,5 @@ async function resolveHandlers (nuxt: Nuxt) {
   return {
     handlers,
     devHandlers
-  }
-}
-
-async function writeDocumentTemplate (nuxt: Nuxt) {
-  // Compile html template
-  const src = resolve(nuxt.options.buildDir, 'views/app.template.html')
-  const dst = src.replace(/.html$/, '.mjs').replace('app.template.mjs', 'document.template.mjs')
-  const contents = nuxt.vfs[src] || await fsp.readFile(src, 'utf-8').catch(() => '')
-  if (contents) {
-    const compiled = 'export default ' +
-    // eslint-disable-next-line no-template-curly-in-string
-    `(params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
-    await fsp.mkdir(dirname(dst), { recursive: true })
-    await fsp.writeFile(dst, compiled, 'utf8')
   }
 }
