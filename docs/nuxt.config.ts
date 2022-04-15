@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { withDocus } from '@docus/app'
 
 export default withDocus({

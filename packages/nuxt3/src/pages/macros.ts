@@ -1,4 +1,4 @@
-import { pathToFileURL } from 'url'
+import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL, withQuery } from 'ufo'
 import { findStaticImports, findExports } from 'mlly'

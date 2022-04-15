@@ -1,4 +1,4 @@
-import { promises as fsp, existsSync } from 'fs'
+import { promises as fsp, existsSync } from 'node:fs'
 import { parse as parsePath } from 'pathe'
 import { findExports } from 'mlly'
 import { camelCase } from 'scule'

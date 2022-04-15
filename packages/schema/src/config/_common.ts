@@ -670,9 +670,9 @@ export default {
    * object in `nuxt.config` (as below).
    *
    * @example
-   * ```js
-   * import fs from 'fs'
-   * import path from 'path'
+   * ```js'node:fs'
+   * import fs from 'node:fs'
+   * import path from 'node:path'
    * export default {
    *   hooks: {
    *     build: {

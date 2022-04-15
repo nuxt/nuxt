@@ -1,5 +1,5 @@
-import { promises as fsp } from 'fs'
-import { execSync } from 'child_process'
+import { promises as fsp } from 'node:fs'
+import { execSync } from 'node:child_process'
 import { resolve } from 'pathe'
 import { globby } from 'globby'
 

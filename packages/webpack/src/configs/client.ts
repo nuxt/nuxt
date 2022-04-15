@@ -1,4 +1,4 @@
-import querystring from 'querystring'
+import querystring from 'node:querystring'
 import { resolve } from 'pathe'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'

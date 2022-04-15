@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'fs'
+import { existsSync, readdirSync } from 'node:fs'
 import createTiged from 'tiged'
 import { relative, resolve } from 'pathe'
 import superb from 'superb'

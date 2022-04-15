@@ -1,5 +1,5 @@
-import type { Server as HttpServer, IncomingMessage, ServerResponse } from 'http'
-import type { Server as HttpsServer } from 'https'
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from 'node:http'
+import type { Server as HttpsServer } from 'node:https'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { ModuleContainer } from './module'

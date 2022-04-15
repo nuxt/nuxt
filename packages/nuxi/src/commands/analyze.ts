@@ -1,4 +1,4 @@
-import { promises as fsp } from 'fs'
+import { promises as fsp } from 'node:fs'
 import { join, resolve } from 'pathe'
 import { createApp, lazyHandle } from 'h3'
 import { listen } from 'listhen'

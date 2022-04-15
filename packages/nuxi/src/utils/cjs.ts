@@ -1,5 +1,5 @@
-import { createRequire } from 'module'
-import { pathToFileURL } from 'url'
+import { createRequire } from 'node:module'
+import { pathToFileURL } from 'node:url'
 import { normalize, dirname } from 'pathe'
 
 export function getModulePaths (paths?: string | string[]): string[] {

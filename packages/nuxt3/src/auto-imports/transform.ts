@@ -1,4 +1,4 @@
-import { pathToFileURL } from 'url'
+import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Unimport } from 'unimport'

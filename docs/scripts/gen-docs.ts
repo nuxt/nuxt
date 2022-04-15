@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir } from 'fs/promises'
-import { dirname } from 'path'
+import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import type { Schema } from 'untyped'
 import { resolve } from 'pathe'
 import { upperFirst } from 'scule'

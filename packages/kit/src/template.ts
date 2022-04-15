@@ -1,4 +1,4 @@
-import { existsSync } from 'fs'
+import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
 import type { NuxtTemplate } from '@nuxt/schema'

@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 import { expect, describe, it } from 'vitest'
 import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'

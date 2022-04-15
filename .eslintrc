@@ -12,6 +12,7 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "unicorn/prefer-node-protocol": "error",
     "no-console": "off",
     "vue/multi-word-component-names": "off",
     "vue/one-component-per-file": "off",

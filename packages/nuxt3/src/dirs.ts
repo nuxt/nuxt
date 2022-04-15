@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'pathe'
 
 let _distDir = dirname(fileURLToPath(import.meta.url))

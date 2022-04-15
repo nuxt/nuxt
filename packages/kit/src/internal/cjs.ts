@@ -1,4 +1,4 @@
-import { pathToFileURL } from 'url'
+import { pathToFileURL } from 'node:url'
 import { join, normalize } from 'pathe'
 import { interopDefault } from 'mlly'
 import jiti from 'jiti'

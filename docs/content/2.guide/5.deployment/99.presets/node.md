@@ -56,7 +56,7 @@ app.listen(3000)
 ### Node server
 
 ```js
-import { createServer } from 'http'
+import { createServer } from 'node:http'
 import handler from './.output/server'
 
 const server = createServer(handler)

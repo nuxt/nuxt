@@ -1,5 +1,5 @@
-import { existsSync, promises as fsp } from 'fs'
-import { dirname, relative } from 'path'
+import { existsSync, promises as fsp } from 'node:fs'
+import { dirname, relative } from 'node:path'
 import { execa } from 'execa'
 import { loadDotenv } from 'c12'
 import { resolve } from 'pathe'

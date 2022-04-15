@@ -45,7 +45,7 @@ export default myPreset
 Then in your `nuxt.config` you can specify that Nitro should use your custom preset:
 
 ```ts [nuxt.config.js|ts]
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 
 export default {
   nitro: {

@@ -1,5 +1,5 @@
-import { existsSync, promises as fsp } from 'fs'
-import { resolve } from 'path'
+import { existsSync, promises as fsp } from 'node:fs'
+import { resolve } from 'node:path'
 import * as _kit from '@nuxt/kit'
 import { useTestContext } from './context'
 

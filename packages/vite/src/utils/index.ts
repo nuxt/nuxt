@@ -1,5 +1,5 @@
-import { createHash } from 'crypto'
-import { promises as fsp, readdirSync, statSync } from 'fs'
+import { createHash } from 'node:crypto'
+import { promises as fsp, readdirSync, statSync } from 'node:fs'
 import { join } from 'pathe'
 
 export function uniq<T> (arr: T[]): T[] {

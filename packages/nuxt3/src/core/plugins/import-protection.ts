@@ -1,4 +1,4 @@
-import { createRequire } from 'module'
+import { createRequire } from 'node:module'
 import { createUnplugin } from 'unplugin'
 import { logger } from '@nuxt/kit'
 import { isAbsolute, relative, resolve } from 'pathe'

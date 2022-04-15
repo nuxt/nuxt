@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from 'http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import pify from 'pify'
 import webpack from 'webpack'
 import webpackDevMiddleware, { API } from 'webpack-dev-middleware'

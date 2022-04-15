@@ -1,4 +1,4 @@
-import { promises as fsp } from 'fs'
+import { promises as fsp } from 'node:fs'
 import { dirname, resolve, basename, extname } from 'pathe'
 import defu from 'defu'
 import { kebabCase } from 'scule'

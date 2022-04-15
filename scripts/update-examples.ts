@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url'
-import { promises as fs } from 'fs'
+import { fileURLToPath } from 'node:url'
+import { promises as fs } from 'node:fs'
 import { resolve } from 'pathe'
 
 async function run () {

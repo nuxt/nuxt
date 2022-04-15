@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'pathe'
 
 export const distDir = dirname(fileURLToPath(import.meta.url))

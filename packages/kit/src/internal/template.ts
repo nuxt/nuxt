@@ -1,4 +1,4 @@
-import { promises as fsp } from 'fs'
+import { promises as fsp } from 'node:fs'
 import lodashTemplate from 'lodash.template'
 import hash from 'hash-sum'
 import { camelCase } from 'scule'

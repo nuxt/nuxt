@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { resolve, dirname } from 'pathe'
 import consola from 'consola'
 import { loadKit } from '../utils/kit'

@@ -1,5 +1,5 @@
 import { resolve, join } from 'pathe'
-import { existsSync, readdirSync } from 'fs'
+import { existsSync, readdirSync } from 'node:fs'
 import defu from 'defu'
 
 export default {

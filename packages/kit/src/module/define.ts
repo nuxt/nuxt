@@ -1,4 +1,4 @@
-import { promises as fsp } from 'fs'
+import { promises as fsp } from 'node:fs'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'

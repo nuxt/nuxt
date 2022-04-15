@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { execa } from 'execa'
 import { getRandomPort, waitForPort } from 'get-port-please'
 import { fetch as _fetch, $fetch as _$fetch, FetchOptions } from 'ohmyfetch'

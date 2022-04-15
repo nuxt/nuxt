@@ -1,4 +1,4 @@
-import { statSync } from 'fs'
+import { statSync } from 'node:fs'
 import { resolve, basename } from 'pathe'
 import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin, addTemplate, addPluginTemplate } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
