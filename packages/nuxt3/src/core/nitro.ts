@@ -50,8 +50,10 @@ export async function initNitro (nuxt: Nuxt) {
         .map(dir => ({ dir }))
     ],
     prerender: {
-      crawlLinks: nuxt.options.generate.crawler,
-      routes: nuxt.options.generate.routes
+      crawlLinks: nuxt.options._generate ? nuxt.options.generate.crawler : false,
+      routes: []
+        .concat(nuxt.options.generate.routes)
+        .concat(nuxt.options.ssr === false ? ['/', '/200', '/404'] : [])
     },
     externals: {
       inline: [
@@ -143,9 +145,7 @@ export async function initNitro (nuxt: Nuxt) {
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
-      if (nuxt.options._generate || nuxt.options.target === 'static') {
-        await prerender(nitro)
-      }
+      await prerender(nitro)
       await build(nitro)
     }
   })
