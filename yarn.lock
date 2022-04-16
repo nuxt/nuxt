@@ -1551,7 +1551,7 @@ __metadata:
     pathe: ^0.2.0
     postcss-import-resolver: ^2.0.0
     scule: ^0.2.1
-    std-env: ^3.0.1
+    std-env: ^3.1.1
     ufo: ^0.8.3
     unbuild: latest
     unimport: ^0.1.5
@@ -8863,6 +8863,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"listhen@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "listhen@npm:0.2.9"
+  dependencies:
+    clipboardy: ^3.0.0
+    colorette: ^2.0.16
+    defu: ^6.0.0
+    get-port-please: ^2.5.0
+    http-shutdown: ^1.2.2
+    selfsigned: ^2.0.1
+  checksum: ef0504db2bde26d612c6e3e872caf0fafe944250d05c38def1f4e60c828c7eb152586683d183c12ec86e260639ec1a06ba146c08325d37161bd8dd91392ebcec
+  languageName: node
+  linkType: hard
+
 "listr-silent-renderer@npm:^1.1.1":
   version: 1.1.1
   resolution: "listr-silent-renderer@npm:1.1.1"
@@ -10453,7 +10467,7 @@ __metadata:
     flat: ^5.0.2
     fsevents: ~2.3.2
     jiti: ^1.13.0
-    listhen: ^0.2.8
+    listhen: ^0.2.9
     mlly: ^0.5.2
     mri: ^1.2.0
     pathe: ^0.2.0
@@ -12555,7 +12569,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"selfsigned@npm:^2.0.0":
+"selfsigned@npm:^2.0.0, selfsigned@npm:^2.0.1":
   version: 2.0.1
   resolution: "selfsigned@npm:2.0.1"
   dependencies:
@@ -13040,6 +13054,13 @@ __metadata:
   version: 3.0.1
   resolution: "std-env@npm:3.0.1"
   checksum: 253f6175554a2339fdd745a09c30747d2d8e99ce32d1f5fb56652c023ae6c4778a9058821e1d3a06b6cc64a7b98ca65434ed6b589f05456c7c8e97308df0de81
+  languageName: node
+  linkType: hard
+
+"std-env@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "std-env@npm:3.1.1"
+  checksum: 7c8b34e9b81ec0da3c63c96414dafd5c4ef6cfb5914f2cf8727314f9f3532eb0325cfbbfe5a04a43c2aa6ab5960571581a89db2c4f26e73a5c954eb1fe5aa68b
   languageName: node
   linkType: hard
 
