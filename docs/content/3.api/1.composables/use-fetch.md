@@ -40,9 +40,9 @@ type DataT = {
   * `baseURL`: Base URL for the request
 * **Options (from `useAsyncData`)**:
   * `lazy`: Whether to resolve the async function after loading the route, instead of blocking navigation (defaults to `false`).
-  * `server`: Whether to fetch the data on server-side (defaults to `true`).
+  * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
-  * `pick`: Only pick specified keys in this array from `handler` function result.
+  * `pick`: Only pick specified keys in this array from the `handler` function result.
   * `transform`: A function that can be used to alter `handler` function result after resolving.
 
 ## Return values

@@ -26,7 +26,7 @@ By default, [useFetch](/api/composables/use-fetch) blocks navigation until its a
 
 <script setup>
 /* Navigation will occur before fetching is complete.
-  Handle pending and error state directly within your component's template
+  Handle pending and error states directly within your component's template
 */
 const { pending, data: posts } = useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {

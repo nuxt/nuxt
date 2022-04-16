@@ -570,7 +570,7 @@ export default {
     /**
      * You can provide your custom files to watch and regenerate after changes.
      *
-     * This feature is specially useful for using with modules.
+     * This feature is especially useful for using with modules.
      *
      * @example
      * ```js

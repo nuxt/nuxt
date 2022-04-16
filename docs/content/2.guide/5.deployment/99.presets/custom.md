@@ -30,7 +30,7 @@ export default {
 
 ### Reusable preset
 
-You can also define a preset in a separate file (or publish as a separate npm package).
+You can also define a preset in a separate file (or publish it as a separate npm package).
 
 ```ts [my-preset/index.ts]
 import type { NitroPreset } from 'nitropack'

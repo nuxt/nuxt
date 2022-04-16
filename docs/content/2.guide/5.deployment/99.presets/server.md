@@ -52,7 +52,7 @@ This preset will respect the following runtime environment variables:
 
 - `NUXT_PORT` or `PORT` (defaults to `3000`)
 - `NUXT_HOST` or `HOST` (defaults to `'localhost'`)
-- `NITRO_SSL_CERT` and `NITRO_SSL_KEY` - if both are present, this will launch the server in HTTPS mode. In the vast majority of cases this should not be used other than for testing, and the Nitro server should be run behind a reverse proxy like nginx or Cloudflare which terminates SSL.
+- `NITRO_SSL_CERT` and `NITRO_SSL_KEY` - if both are present, this will launch the server in HTTPS mode. In the vast majority of cases, this should not be used other than for testing, and the Nitro server should be run behind a reverse proxy like nginx or Cloudflare which terminates SSL.
 
 ## Server timings
 

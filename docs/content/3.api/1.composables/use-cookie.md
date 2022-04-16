@@ -92,7 +92,7 @@ the server in the future if the browser does not have an HTTPS connection. This 
 ### `domain`
 
 Specifies the value for the [`Domain` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.3). By default, no
-domain is set, and most clients will consider to apply the cookie only to the current domain.
+domain is set, and most clients will consider applying the cookie only to the current domain.
 
 ### `path`
 

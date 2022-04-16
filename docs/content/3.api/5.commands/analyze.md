@@ -1,12 +1,12 @@
 # `nuxi analyze`
 
-Analyze the production bundle or your Nuxt applicaiton.
+Analyze the production bundle or your Nuxt application.
 
 ```{bash}
 npx nuxi analyze [rootDir]
 ```
 
-The `analyze` command builds nuxt and analyzes the production bundle (experimental)
+The `analyze` command builds Nuxt and analyzes the production bundle (experimental).
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------

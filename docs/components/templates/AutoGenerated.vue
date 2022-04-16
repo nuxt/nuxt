@@ -1,6 +1,6 @@
 <template>
   <Alert icon="🤖">
-    This section is auto generated from source-code.
+    This section is auto-generated from the source code.
   </Alert>
 </template>
 

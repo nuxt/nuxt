@@ -4,7 +4,7 @@
 npx nuxi info [rootDir]
 ```
 
-The `info` command logs informations about the current or specified Nuxt project.
+The `info` command logs information about the current or specified Nuxt project.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------

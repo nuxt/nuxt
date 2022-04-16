@@ -14,7 +14,7 @@ Back to [presets list](/guide/deployment/presets).
 ::
 
 ::alert{type=warning}
-Deployment as service worker has some limitations since SSR code is not running in Node.js environment but pure JavaScript.
+Deployment as a service worker has some limitations since SSR code is not running in Node.js environment but pure JavaScript.
 ::
 
 ## Usage
@@ -39,4 +39,4 @@ NITRO_PRESET=worker npx nuxt build
 
 The worker preset produces a service worker that can provide full HTML rendering within a worker context (for example [Cloudflare Workers](/guide/deployment/cloudflare)). It registers appropriate handlers for `fetch`, `install` and `activate`.
 
-For more information you can see the [source code](https://github.com/unjs/nitro/blob/main/src/presets/service-worker.ts).
+For more information, you can check out the [source code](https://github.com/unjs/nitro/blob/main/src/presets/service-worker.ts).

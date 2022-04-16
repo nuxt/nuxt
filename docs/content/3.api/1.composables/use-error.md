@@ -8,7 +8,7 @@ This function will return the global Nuxt error that is being handled.
 const error = useError()
 ```
 
-`useError` set an error in state, create a reactive and SSR-friendly global Nuxt error across components.
+`useError` sets an error in the state and creates a reactive and SSR-friendly global Nuxt error across components.
 
 ::ReadMore{link="/guide/features/error-handling"}
 ::

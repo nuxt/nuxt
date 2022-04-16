@@ -28,7 +28,7 @@ NITRO_PRESET=lambda npx nuxt build
 AWS Lambda [defaults to payload version v2](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html). This Nitro preset supports both v1 and v2 payloads.
 ::
 
-### Entrypoint
+### Entry point
 
 When running `nuxt build` with the Lambda preset, the result will be an entry point that exports a handler function that responds to an event and returns a response.
 
