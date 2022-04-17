@@ -2701,10 +2701,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.3":
-  version: 0.31.3
-  resolution: "@unocss/reset@npm:0.31.3"
-  checksum: 5623144ab1763b1e62b351f95cbac0d19bc3a7fbd8d8e5394101a1eebe04d335197b03d026dbd508fc809166e4c4f280fa13fbe359bc02749128895969d59220
+"@unocss/reset@npm:^0.31.5":
+  version: 0.31.5
+  resolution: "@unocss/reset@npm:0.31.5"
+  checksum: 5bd45b84a6baee68724010505e09ea099a4ce207808ea7198afca97168d0eb4be4b4ec705db52d1bd0bcba315f97cf47d26463f9b790c9a3fe9bb39d19e80719
   languageName: node
   linkType: hard
 
@@ -10507,7 +10507,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.27
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.31.3
+    "@unocss/reset": ^0.31.5
     case-police: ^0.5.3
     esbuild: ^0.14.36
     eslint: ^8.13.0
