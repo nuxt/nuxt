@@ -27,7 +27,7 @@
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^7.2.6",
-    "fs-extra": "^10.0.1",
+    "fs-extra": "^10.1.0",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.26.1",

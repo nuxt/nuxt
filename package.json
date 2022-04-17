@@ -48,7 +48,7 @@
     "case-police": "^0.5.3",
     "esbuild": "^0.14.36",
     "eslint": "^8.13.0",
-    "eslint-plugin-jsdoc": "^39.2.1",
+    "eslint-plugin-jsdoc": "^39.2.2",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",
@@ -62,7 +62,7 @@
     "unbuild": "^0.7.4",
     "vitest": "^0.9.3",
     "vue-router": "^4.0.14",
-    "vue-tsc": "^0.34.6"
+    "vue-tsc": "^0.34.7"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0"
