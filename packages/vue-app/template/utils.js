@@ -165,7 +165,7 @@ export function resolveRouteComponents (route, fn) {
               try {
                 window.sessionStorage.setItem('nuxt-reload', timeNow)
                 window.location.reload(true /* skip cache */)
-              } catch (sessionstorageError) {}
+              } catch {}
             }
           }
 
