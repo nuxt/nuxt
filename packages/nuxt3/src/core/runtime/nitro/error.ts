@@ -1,7 +1,7 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 // @ts-ignore TODO
-import { normalizeError, isJsonRequest } from '#nitro/utils'
+import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (_error, event) {
   // Parse and normalize error

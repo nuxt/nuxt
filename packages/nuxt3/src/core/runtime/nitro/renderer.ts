@@ -1,7 +1,7 @@
 import { createRenderer } from 'vue-bundle-renderer'
 import { eventHandler, useQuery } from 'h3'
 import devalue from '@nuxt/devalue'
-import { useRuntimeConfig } from '#nitro'
+import { useRuntimeConfig } from '#internal/nitro'
 import { buildAssetsURL } from '#paths'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.mjs'
