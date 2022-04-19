@@ -26,7 +26,7 @@
   "devDependencies": {
     "@nuxt/ui-assets": "*",
     "@types/html-minifier": "^4.0.2",
-    "@types/lodash.template": "^4.5.0",
+    "@types/lodash.template": "^4.5.1",
     "critters": "^0.0.16",
     "globby": "^13.1.1",
     "html-minifier": "^4.0.0",
