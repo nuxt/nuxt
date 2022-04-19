@@ -82,7 +82,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // Allows suspending the route object until page navigation completes
-  const path = process.server ? nuxtApp.ssrContext.req.url : createCurrentLocation(baseURL, window.location)
+  const path = process.server ? nuxtApp.ssrContext.url : createCurrentLocation(baseURL, window.location)
   const _activeRoute = shallowRef(router.resolve(path) as RouteLocation)
   const syncCurrentRoute = () => { _activeRoute.value = router.currentRoute.value }
   nuxtApp.hook('page:finish', syncCurrentRoute)
