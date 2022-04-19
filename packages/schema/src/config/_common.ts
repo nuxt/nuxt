@@ -346,7 +346,7 @@ export default {
    *   // Will register file from project server-middleware directory to handle /server-middleware/* requires
    *   { path: '/server-middleware', handler: '~/server-middleware/index.js' },
    *   // We can create custom instances too, but only in development mode, they are ignored for the production bundle.
-   *   { path: '/static2', handler: serveStatic(__dirname + '/static2') }
+   *   { path: '/static2', handler: serveStatic(fileURLToPath(new URL('./static2', import.meta.url))) }
    * ]
    * ```
    *
@@ -516,12 +516,11 @@ export default {
    *
    * @example
    * ```js
-   * import { resolve } from 'pathe'
    * export default {
    *   alias: {
-   *     'images': resolve(__dirname, './assets/images'),
-   *     'style': resolve(__dirname, './assets/style'),
-   *     'data': resolve(__dirname, './assets/other/data')
+   *     'images': fileURLToPath(new URL('./assets/images', import.meta.url),
+   *     'style': fileURLToPath(new URL('./assets/style', import.meta.url),
+   *     'data': fileURLToPath(new URL('./assets/other/data', import.meta.url)
    *   }
    * }
    * ```
