@@ -2720,6 +2720,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@unocss/reset@npm:^0.31.6":
+  version: 0.31.6
+  resolution: "@unocss/reset@npm:0.31.6"
+  checksum: 5cd8b4422e02f1f73c60715f1ff460176ae911100e134986a5ead560f7a8eb88c5cad5a41330e4cfdc4025cac62ea21450640056a502fadf4cee22e857b9216e
+  languageName: node
+  linkType: hard
+
 "@unocss/scope@npm:0.31.5":
   version: 0.31.5
   resolution: "@unocss/scope@npm:0.31.5"
@@ -10241,7 +10248,7 @@ __metadata:
     "@types/jsdom": ^16
     "@types/node": ^16.11.27
     "@types/object-hash": ^2
-    "@unocss/reset": ^0.31.5
+    "@unocss/reset": ^0.31.6
     case-police: ^0.5.3
     esbuild: ^0.14.36
     eslint: ^8.13.0
@@ -10312,7 +10319,7 @@ __metadata:
     unplugin: ^0.6.2
     untyped: ^0.4.4
     vue: ^3.2.33
-    vue-bundle-renderer: ^0.3.5
+    vue-bundle-renderer: ^0.3.6
     vue-meta: next
     vue-router: ^4.0.14
   bin:
@@ -14091,12 +14098,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.3.5":
-  version: 0.3.5
-  resolution: "vue-bundle-renderer@npm:0.3.5"
+"vue-bundle-renderer@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "vue-bundle-renderer@npm:0.3.6"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: 7c6814890b25d480994476b751776af852f87ae320b175b76a1913ba510caf09ff0d938c5468bccebc31a9288fb55d66bf31d044454a098a8c638a73c3580c7a
+  checksum: ad66101ca5748b76bf23ae6ae18a2be0f2516c09c0a840f456a579899e2a59c40a6cca24c72d749331f32262a656b6c7cdc654db6a450b2c2c02283f9422a45c
   languageName: node
   linkType: hard
 

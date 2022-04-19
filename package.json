@@ -43,7 +43,7 @@
     "@types/jsdom": "^16",
     "@types/node": "^16.11.27",
     "@types/object-hash": "^2",
-    "@unocss/reset": "^0.31.5",
+    "@unocss/reset": "^0.31.6",
     "case-police": "^0.5.3",
     "esbuild": "^0.14.36",
     "eslint": "^8.13.0",

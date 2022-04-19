@@ -64,7 +64,7 @@
     "unplugin": "^0.6.2",
     "untyped": "^0.4.4",
     "vue": "^3.2.33",
-    "vue-bundle-renderer": "^0.3.5",
+    "vue-bundle-renderer": "^0.3.6",
     "vue-router": "^4.0.14"
   },
   "devDependencies": {
