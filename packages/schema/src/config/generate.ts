@@ -160,7 +160,7 @@ export default {
      * The full path to the directory underneath `/_nuxt/` where static assets
      * (payload, state and manifest files) will live.
      */
-    base: { $resolve: (val, get) => val || joinURL(get('app.buildAssetsDir'), get('generate.dir')) },
+    base: { $resolve: (val, get) => val || joinURL(get('app').buildAssetsDir, get('generate.dir')) },
     /** The full path to the versioned directory where static assets for the current buidl are located. */
     versionBase: { $resolve: (val, get) => val || joinURL(get('generate.base'), get('generate.version')) },
     /** A unique string to uniquely identify payload versions (defaults to the current timestamp).  */
