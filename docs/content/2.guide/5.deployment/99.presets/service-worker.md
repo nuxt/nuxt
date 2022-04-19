@@ -24,7 +24,7 @@ You can use the [Nuxt config](/guide/directory-structure/nuxt.config) to explici
 ```js [nuxt.config.js|ts]
 export default {
   nitro: {
-    'browser-worker'
+    'service-worker'
   }
 }
 ```
@@ -32,7 +32,7 @@ export default {
 Or directly use the `NITRO_PRESET` environment variable when running `nuxt build`:
 
 ```bash
-NITRO_PRESET=worker npx nuxt build
+NITRO_PRESET=service-worker npx nuxt build
 ```
 
 ## Entry point

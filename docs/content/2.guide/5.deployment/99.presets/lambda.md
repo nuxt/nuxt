@@ -21,7 +21,7 @@ export default {
 Or directly use the `NITRO_PRESET` environment variable when running `nuxt build`:
 
 ```bash
-NITRO_PRESET=lambda npx nuxt build
+NITRO_PRESET=aws-lambda npx nuxt build
 ```
 
 ::alert

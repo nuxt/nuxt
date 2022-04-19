@@ -28,7 +28,7 @@ export default {
 Or directly use the `NITRO_PRESET` environment variable when running `nuxt build`:
 
 ```bash
-NITRO_PRESET=server npx nuxt build
+NITRO_PRESET=node-server npx nuxt build
 ```
 
 ## Entry point
