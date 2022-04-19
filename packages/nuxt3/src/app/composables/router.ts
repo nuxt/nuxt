@@ -52,6 +52,7 @@ const isProcessingMiddleware = () => {
 
 export interface NavigateToOptions {
   replace?: boolean
+  redirectCode?: number
 }
 
 export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}): Promise<void | NavigationFailure> | RouteLocationRaw => {
@@ -59,11 +60,11 @@ export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}
     return to
   }
   const router = useRouter()
-  if (process.server && useNuxtApp().ssrContext) {
-    const { ssrContext } = useNuxtApp()
-    if (ssrContext && ssrContext.event) {
+  if (process.server) {
+    const nuxtApp = useNuxtApp()
+    if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
       const redirectLocation = router.resolve(to).fullPath
-      return sendRedirect(ssrContext.event, redirectLocation)
+      return nuxtApp.callHook('app:redirected').then(() => sendRedirect(nuxtApp.ssrContext.event, redirectLocation, options.redirectCode || 301))
     }
   }
   // Client-side redirection using vue-router

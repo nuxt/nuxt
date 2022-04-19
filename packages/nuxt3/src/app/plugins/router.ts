@@ -3,7 +3,7 @@ import { parseURL, parseQuery } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
-import { clearError, throwError } from '#app'
+import { clearError, navigateTo, throwError } from '#app'
 
 interface Route {
     /** Percentage encoded pathname section of the URL. */
@@ -221,9 +221,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     nuxtApp.hooks.hookOnce('app:created', async () => {
       await router.push(nuxtApp.ssrContext.url)
       if (route.fullPath !== nuxtApp.ssrContext.url) {
-        nuxtApp.ssrContext.res.setHeader('Location', route.fullPath)
-        nuxtApp.ssrContext.res.statusCode = 301
-        nuxtApp.ssrContext.res.end()
+        await navigateTo(route.fullPath)
       }
     })
   }

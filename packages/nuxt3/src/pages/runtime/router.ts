@@ -9,7 +9,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase } from 'ufo'
 import NuxtPage from './page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError, navigateTo } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -167,11 +167,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (process.server) {
       router.push(nuxtApp.ssrContext.url)
 
-      router.afterEach((to) => {
+      router.afterEach(async (to) => {
         if (to.fullPath !== nuxtApp.ssrContext.url) {
-          nuxtApp.ssrContext.res.setHeader('Location', to.fullPath)
-          nuxtApp.ssrContext.res.statusCode = 301
-          nuxtApp.ssrContext.res.end()
+          await navigateTo(to.fullPath)
         }
       })
     }
