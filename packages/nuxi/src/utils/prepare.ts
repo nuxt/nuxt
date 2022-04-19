@@ -43,9 +43,10 @@ export const writeTypes = async (nuxt: Nuxt) => {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const relativePath = isAbsolute(aliases[alias])
-      ? relative(nuxt.options.rootDir, aliases[alias]).replace(/(?<=\w)\.\w+$/g, '') /* remove extension */ || '.'
-      : aliases[alias]
+    const path = aliases[alias].replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
+    const relativePath = isAbsolute(path)
+      ? relative(nuxt.options.rootDir, path) || '.'
+      : path
     tsConfig.compilerOptions.paths[alias] = [relativePath]
 
     try {
