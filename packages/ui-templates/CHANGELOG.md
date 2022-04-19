@@ -1,3 +1,37 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 0.1.0 (2022-04-19)
+
+
+### Bug Fixes
+
+* better gradients ([bc8d393](https://github.com/nuxt/ui/commit/bc8d393129ae80a48372645edeceb377f7dfcc9f))
+* extract inline scripts from template ([042029d](https://github.com/nuxt/ui/commit/042029db138acb7db6796eaf6be13942bbe6cd9f))
+* improve design of error pages ([#68](https://github.com/nuxt/ui/issues/68)) ([9a81dd7](https://github.com/nuxt/ui/commit/9a81dd79ea2ebeb2bd0a29d3828a440a0f5fe741))
+* make style global ([a9d6416](https://github.com/nuxt/ui/commit/a9d641619450822884fd01a7c610ef5e0bd687a8))
+* only convert app links to `<NuxtLink>` ([01e1920](https://github.com/nuxt/ui/commit/01e1920da25da9a4aadf386cfc715ab1ef2c9a43))
+* **templates:** don't use `v-html` on `<NuxtLink>` ([f07bad4](https://github.com/nuxt/ui/commit/f07bad487f02b0b63e307daec3280a2a65c5f281))
+* **templates:** fix title and don't use css variables ([c31c699](https://github.com/nuxt/ui/commit/c31c6996ab17b09cecdb91ab9c725146a2d9d0b7))
+* **templates:** generate js templates ([0cb54cc](https://github.com/nuxt/ui/commit/0cb54ccc7ac8d2d97db259c2eab41ac5adf66147))
+* **templates:** hybrid global + scoped styles ([835c29f](https://github.com/nuxt/ui/commit/835c29f4139a2209e720a826e1d35621099f23cd))
+* **templates:** reduce size and fix z-index ([6f72fd1](https://github.com/nuxt/ui/commit/6f72fd1281044b302f4b0c3542afb3672f8fd000))
+* **ui-templates:** switch to `useHead` import ([#89](https://github.com/nuxt/ui/issues/89)) ([0352482](https://github.com/nuxt/ui/commit/0352482727bbb87f190f1d3791f19a58dfce0b36))
+* use vh for height ([790de8f](https://github.com/nuxt/ui/commit/790de8f7f84ee8e63f76db58fcffb73ff0c59ee2))
+* use vh instead and fixed position ([9f119b8](https://github.com/nuxt/ui/commit/9f119b89a529b306cac654999ca00cd5718830f1))
+
+
+### Features
+
+* new templates design ([#81](https://github.com/nuxt/ui/issues/81)) ([830f557](https://github.com/nuxt/ui/commit/830f55741d8ab0099afe1172c8e8e4e4040e3e4a))
+* **ui:** enable transformers for unocss ([631d265](https://github.com/nuxt/ui/commit/631d2655f0469286fd17b6ea39dbb0650571b156))
+
+
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
