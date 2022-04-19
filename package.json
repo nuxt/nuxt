@@ -30,7 +30,6 @@
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
-    "@nuxt/ui": "npm:@nuxt/ui-edge@latest",
     "jiti": "^1.13.0",
     "nitropack-dev": "link:../nitropack",
     "nuxt3": "workspace:./packages/nuxt3",
