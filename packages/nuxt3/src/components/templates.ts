@@ -1,7 +1,7 @@
-
 import { isAbsolute, relative } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { genDynamicImport, genExport, genObjectFromRawEntries } from 'knitwork'
+import { upperFirst } from 'scule'
 
 export type ComponentsTemplateOptions = {
   buildDir?: string
@@ -53,10 +53,11 @@ export const componentsTemplate = {
       ...options.components.flatMap((c) => {
         const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
         const comment = createImportMagicComments(c)
+        const nameWithSuffix = `${c.pascalName}${c.mode !== 'all' ? upperFirst(c.mode) : ''}`
 
         return [
-          genExport(c.filePath, [{ name: c.export, as: c.pascalName }]),
-          `export const Lazy${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+          genExport(c.filePath, [{ name: c.export, as: nameWithSuffix }]),
+          `export const Lazy${nameWithSuffix} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         ]
       }),
       `export const componentNames = ${JSON.stringify(options.components.map(c => c.pascalName))}`
@@ -73,8 +74,8 @@ ${options.components.map(c => `    '${c.pascalName}': typeof ${genDynamicImport(
 ${options.components.map(c => `    'Lazy${c.pascalName}': typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(options.buildDir, c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join(',\n')}
   }
 }
-${options.components.map(c => `export const ${c.pascalName}: typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(options.buildDir, c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join('\n')}
-${options.components.map(c => `export const Lazy${c.pascalName}: typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(options.buildDir, c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join('\n')}
+${options.components.map(c => `export const ${c.pascalName}${c.mode !== 'all' ? upperFirst(c.mode) : ''}: typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(options.buildDir, c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join('\n')}
+${options.components.map(c => `export const Lazy${c.pascalName}${c.mode !== 'all' ? upperFirst(c.mode) : ''}: typeof ${genDynamicImport(isAbsolute(c.filePath) ? relative(options.buildDir, c.filePath) : c.filePath, { wrapper: false })}['${c.export}']`).join('\n')}
 export const componentNames: string[]
 `
 }

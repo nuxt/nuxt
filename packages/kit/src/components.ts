@@ -39,6 +39,7 @@ export async function addComponent (opts: AddComponentOptions) {
     pascalName: pascalCase(opts.name || ''),
     prefetch: false,
     preload: false,
+    mode: 'all',
 
     // Nuxt 2 support
     shortPath: opts.filePath,

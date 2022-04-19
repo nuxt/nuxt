@@ -58,6 +58,7 @@ const dirs: ComponentsDir[] = [
 
 const expectedComponents = [
   {
+    mode: 'all',
     pascalName: 'HelloWorld',
     kebabName: 'hello-world',
     chunkName: 'components/hello-world',
@@ -68,20 +69,33 @@ const expectedComponents = [
     preload: false
   },
   {
+    mode: 'client',
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
-    chunkName: 'components/nuxt3',
-    shortPath: 'components/Nuxt3.vue',
+    chunkName: 'components/nuxt3-client',
+    shortPath: 'components/Nuxt3.client.vue',
     export: 'default',
     global: undefined,
     prefetch: false,
     preload: false
   },
   {
+    mode: 'server',
+    pascalName: 'Nuxt3',
+    kebabName: 'nuxt3',
+    chunkName: 'components/nuxt3-server',
+    shortPath: 'components/Nuxt3.server.vue',
+    export: 'default',
+    global: undefined,
+    prefetch: false,
+    preload: false
+  },
+  {
+    mode: 'server',
     pascalName: 'ParentFolder',
     kebabName: 'parent-folder',
-    chunkName: 'components/parent-folder',
-    shortPath: 'components/parent-folder/index.vue',
+    chunkName: 'components/parent-folder-server',
+    shortPath: 'components/parent-folder/index.server.vue',
     export: 'default',
     global: undefined,
     prefetch: false,

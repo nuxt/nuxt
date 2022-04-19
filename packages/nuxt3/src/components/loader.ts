@@ -8,6 +8,7 @@ import { pascalCase } from 'scule'
 
 interface LoaderOptions {
   getComponents(): Component[]
+  mode: 'server' | 'client'
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => ({
@@ -21,16 +22,20 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => ({
     return pathname.endsWith('.vue') && (query.type === 'template' || !!query.macro || !search)
   },
   transform (code, id) {
-    return transform(code, id, options.getComponents())
+    return transform(code, id, options.getComponents(), options.mode)
   }
 }))
 
-function findComponent (components: Component[], name: string) {
+function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
   const id = pascalCase(name).replace(/["']/g, '')
-  return components.find(component => id === component.pascalName)
+  const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
+  if (!component && components.some(component => id === component.pascalName)) {
+    return components.find(component => component.pascalName === 'ServerPlaceholder')
+  }
+  return component
 }
 
-function transform (code: string, id: string, components: Component[]) {
+function transform (code: string, id: string, components: Component[], mode: LoaderOptions['mode']) {
   let num = 0
   const imports = new Set<string>()
   const map = new Map<Component, string>()
@@ -38,17 +43,21 @@ function transform (code: string, id: string, components: Component[]) {
 
   // replace `_resolveComponent("...")` to direct import
   s.replace(/(?<=[ (])_?resolveComponent\(["'](lazy-|Lazy)?([^'"]*?)["']\)/g, (full, lazy, name) => {
-    const component = findComponent(components, name)
+    const component = findComponent(components, name, mode)
     if (component) {
       const identifier = map.get(component) || `__nuxt_component_${num++}`
       map.set(component, identifier)
+      const isClientOnly = component.mode === 'client'
+      if (isClientOnly) {
+        imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
+      }
       if (lazy) {
         // Nuxt will auto-import `defineAsyncComponent` for us
         imports.add(`const ${identifier}_lazy = defineAsyncComponent(${genDynamicImport(component.filePath)})`)
-        return `${identifier}_lazy`
+        return isClientOnly ? `createClientOnly(${identifier}_lazy)` : `${identifier}_lazy`
       } else {
         imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
-        return identifier
+        return isClientOnly ? `createClientOnly(${identifier})` : identifier
       }
     }
     // no matched

@@ -97,6 +97,12 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/client-only')
   })
 
+  // Add <ServerPlaceholder>
+  addComponent({
+    name: 'ServerPlaceholder',
+    filePath: resolve(nuxt.options.appDir, 'components/server-placeholder')
+  })
+
   // Add <NuxtLink>
   addComponent({
     name: 'NuxtLink',

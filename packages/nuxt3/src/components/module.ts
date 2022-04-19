@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs'
 import { resolve, basename } from 'pathe'
-import { defineNuxtModule, resolveAlias, addVitePlugin, addWebpackPlugin, addTemplate, addPluginTemplate } from '@nuxt/kit'
+import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
@@ -128,8 +128,22 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    const loaderOptions = { getComponents: () => options.components }
-    addWebpackPlugin(loaderPlugin.webpack(loaderOptions))
-    addVitePlugin(loaderPlugin.vite(loaderOptions))
+    const getComponents = () => options.components
+    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+      config.plugins = config.plugins || []
+      config.plugins.push(loaderPlugin.vite({
+        getComponents,
+        mode: isClient ? 'client' : 'server'
+      }))
+    })
+    nuxt.hook('webpack:config', (configs) => {
+      configs.forEach((config) => {
+        config.plugins = config.plugins || []
+        config.plugins.push(loaderPlugin.webpack({
+          getComponents,
+          mode: config.name === 'client' ? 'client' : 'server'
+        }))
+      })
+    })
   }
 })

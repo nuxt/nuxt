@@ -60,6 +60,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
+      const mode = fileName.match(/(?<=\.)(client|server)$/)?.[0] as 'client' | 'server' || 'all'
+      fileName = fileName.replace(/\.(client|server)$/, '')
+
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
@@ -81,20 +84,21 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       const componentName = pascalCase(componentNameParts) + pascalCase(fileNameParts)
+      const suffix = (mode !== 'all' ? `-${mode}` : '')
 
-      if (resolvedNames.has(componentName)) {
+      if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
         console.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
           `\n - ${filePath}` +
           `\n - ${resolvedNames.get(componentName)}`
         )
         continue
       }
-      resolvedNames.set(componentName, filePath)
+      resolvedNames.set(componentName + suffix, filePath)
 
       const pascalName = pascalCase(componentName).replace(/["']/g, '')
       const kebabName = hyphenate(componentName)
       const shortPath = relative(srcDir, filePath)
-      const chunkName = 'components/' + kebabName
+      const chunkName = 'components/' + kebabName + suffix
 
       let component: Component = {
         filePath,
@@ -105,15 +109,16 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         export: 'default',
         global: dir.global,
         prefetch: Boolean(dir.prefetch),
-        preload: Boolean(dir.preload)
+        preload: Boolean(dir.preload),
+        mode
       }
 
       if (typeof dir.extendComponent === 'function') {
         component = (await dir.extendComponent(component)) || component
       }
 
-      // Ignore component if component is already defined
-      if (!components.find(c => c.pascalName === component.pascalName)) {
+      // Ignore component if component is already defined (with same mode)
+      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
         components.push(component)
       }
     }

@@ -17,3 +17,19 @@ export default defineComponent({
     }
   }
 })
+
+export function createClientOnly (component) {
+  return defineComponent({
+    name: 'ClientOnlyWrapper',
+    setup (props, { attrs, slots }) {
+      const mounted = ref(false)
+      onMounted(() => { mounted.value = true })
+      return () => {
+        if (mounted.value) {
+          return h(component, { props, attrs }, slots)
+        }
+        return h('div')
+      }
+    }
+  })
+}
