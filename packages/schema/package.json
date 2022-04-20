@@ -19,7 +19,7 @@
     "unbuild": "latest"
   },
   "dependencies": {
-    "c12": "^0.2.5",
+    "c12": "^0.2.7",
     "create-require": "^1.1.1",
     "defu": "^6.0.0",
     "jiti": "^1.13.0",

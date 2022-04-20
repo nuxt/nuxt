@@ -1471,7 +1471,7 @@ __metadata:
     "@nuxt/schema": 3.0.0-rc.0
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.5
+    c12: ^0.2.7
     consola: ^2.15.3
     defu: ^6.0.0
     globby: ^13.1.1
@@ -1504,7 +1504,7 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.5
+    c12: ^0.2.7
     create-require: ^1.1.1
     defu: ^6.0.0
     jiti: ^1.13.0
@@ -2610,10 +2610,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:0.31.6, @unocss/reset@npm:^0.31.5, @unocss/reset@npm:^0.31.6":
+"@unocss/reset@npm:0.31.6, @unocss/reset@npm:^0.31.5":
   version: 0.31.6
   resolution: "@unocss/reset@npm:0.31.6"
   checksum: 5cd8b4422e02f1f73c60715f1ff460176ae911100e134986a5ead560f7a8eb88c5cad5a41330e4cfdc4025cac62ea21450640056a502fadf4cee22e857b9216e
+  languageName: node
+  linkType: hard
+
+"@unocss/reset@npm:^0.31.8":
+  version: 0.31.8
+  resolution: "@unocss/reset@npm:0.31.8"
+  checksum: a6701f5e12b928ccbd542601da627e45a1007242b6ad43ca2637b736195ccc8076ba9480462fb95c26fb0189c6f8fcae40da71c2f997371b07905d5601964fb4
   languageName: node
   linkType: hard
 
@@ -3833,6 +3840,21 @@ __metadata:
     pathe: ^0.2.0
     rc9: ^1.2.1
   checksum: 3ce50b327bc85b00d14191d7626412366a08fb6906a668fdae370a49ecc12ac818700722a3689adba29ec7738cec7516d936a3d838ef24a9706e6a34641c5730
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.2.7":
+  version: 0.2.7
+  resolution: "c12@npm:0.2.7"
+  dependencies:
+    defu: ^6.0.0
+    dotenv: ^16.0.0
+    gittar: ^0.1.1
+    jiti: ^1.12.14
+    mlly: ^0.5.1
+    pathe: ^0.2.0
+    rc9: ^1.2.1
+  checksum: 5a4f8179a59b37202b026c112fe38181cf3d6898b5aa45720dff7c408ebb223566d65b83e615ce8d3825d98bad9d29d5b49c51405dbbe4eb10a103a1e1c677f1
   languageName: node
   linkType: hard
 
@@ -9445,9 +9467,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.3.4":
-  version: 0.3.4
-  resolution: "nitropack@npm:0.3.4"
+"nitropack@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "nitropack@npm:0.3.5"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9514,13 +9536,13 @@ __metadata:
     table: ^6.8.0
     ufo: ^0.8.3
     unenv: ^0.4.6
-    unimport: ^0.1.5
+    unimport: ^0.1.6
     unstorage: ^0.3.3
     util: ^0.12.4
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 3813943272a077cb4d6cc9e3e3a9e96bc004ae85f2fa847ddfedf12133fac6b9d7456635477a362675dc6da88276a8a88c162ef47621a9f155d829b3435c5fa7
+  checksum: e904eb5bdd4bc78607d31abc8ab73285f35626f59eb9a385b2771135e71774d42797183a65f4d54bd304472bcf3746f67073cbf79e506f8e72cd10b8fed2d12e
   languageName: node
   linkType: hard
 
@@ -9934,7 +9956,7 @@ __metadata:
     "@types/clear": ^0
     "@types/mri": ^1.1.1
     "@types/semver": ^7
-    c12: ^0.2.5
+    c12: ^0.2.7
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
@@ -9972,7 +9994,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^9.0.0
     "@types/node": ^16.11.27
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.31.6
+    "@unocss/reset": ^0.31.8
     case-police: ^0.5.3
     eslint: ^8.13.0
     eslint-plugin-jsdoc: ^39.2.5
@@ -10032,7 +10054,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.2
-    nitropack: ^0.3.4
+    nitropack: ^0.3.5
     nuxi: 3.0.0-rc.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
@@ -13321,7 +13343,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.1.5, unimport@npm:^0.1.6":
+"unimport@npm:^0.1.6":
   version: 0.1.6
   resolution: "unimport@npm:0.1.6"
   dependencies:
