@@ -52,8 +52,8 @@ function transform (code: string, id: string, components: Component[], mode: Loa
         imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
       }
       if (lazy) {
-        // Nuxt will auto-import `defineAsyncComponent` for us
-        imports.add(`const ${identifier}_lazy = defineAsyncComponent(${genDynamicImport(component.filePath)})`)
+        imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
+        imports.add(`const ${identifier}_lazy = __defineAsyncComponent(${genDynamicImport(component.filePath)})`)
         return isClientOnly ? `createClientOnly(${identifier}_lazy)` : `${identifier}_lazy`
       } else {
         imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
