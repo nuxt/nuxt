@@ -2,7 +2,7 @@
   "name": "nuxt-playground",
   "private": true,
   "devDependencies": {
-    "nuxt3": "latest"
+    "nuxt": "npm:nuxt3@latest"
   },
   "scripts": {
     "dev": "nuxi dev",

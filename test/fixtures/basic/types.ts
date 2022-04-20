@@ -3,7 +3,7 @@ import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 
 import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt3/src'
+import { defineNuxtConfig } from '~~/../../../packages/nuxt/src'
 import { useRouter } from '#imports'
 import { isVue3 } from '#app'
 

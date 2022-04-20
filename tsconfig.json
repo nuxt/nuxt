@@ -15,10 +15,10 @@
     ],
     "paths": {
       "#app": [
-        "./packages/nuxt3/src/app/index"
+        "./packages/nuxt/src/app/index"
       ],
       "#app/*": [
-        "./packages/nuxt3/src/app/*"
+        "./packages/nuxt/src/app/*"
       ]
     }
   },

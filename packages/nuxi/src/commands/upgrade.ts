@@ -7,10 +7,10 @@ import { getPackageManager, packageManagerLocks } from '../utils/packageManagers
 import { defineNuxtCommand } from './index'
 
 async function getNuxtVersion (paths: string | string[]) {
-  const pkgJson = resolveModule('nuxt3/package.json', paths)
+  const pkgJson = resolveModule('nuxt/package.json', paths)
   const pkg = pkgJson && JSON.parse(await fsp.readFile(pkgJson, 'utf8'))
   if (!pkg.version) {
-    consola.warn('Cannot find any installed nuxt3 versions in ', paths)
+    consola.warn('Cannot find any installed nuxt versions in ', paths)
   }
   return pkg.version || '0.0.0'
 }
@@ -19,7 +19,7 @@ export default defineNuxtCommand({
   meta: {
     name: 'upgrade',
     usage: 'npx nuxi upgrade [--force|-f]',
-    description: 'Upgrade nuxt3'
+    description: 'Upgrade nuxt'
   },
   async invoke (args) {
     const rootDir = resolve(args._[0] || '.')
@@ -47,14 +47,14 @@ export default defineNuxtCommand({
       await Promise.all(['node_modules/.cache', resolve(rootDir, '.nuxt'), 'node_modules/.vite'].map((path) => {
         return existsSync(path) ? fsp.rm(path, { recursive: true }) : undefined
       }))
-      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt3@latest`, { stdio: 'inherit' })
+      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@latest`, { stdio: 'inherit' })
     }
 
     const upgradedVersion = await getNuxtVersion(rootDir)
     consola.info('Upgraded nuxt version:', upgradedVersion)
 
     if (upgradedVersion === currentVersion) {
-      consola.success('You\'re already using the latest version of nuxt3.')
+      consola.success('You\'re already using the latest version of nuxt.')
     } else {
       consola.success('Successfully upgraded nuxt from', currentVersion, 'to', upgradedVersion)
       const commitA = currentVersion.split('.').pop()

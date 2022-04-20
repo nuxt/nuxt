@@ -42,9 +42,9 @@ async function initNuxt (nuxt: Nuxt) {
   nuxtCtx.set(nuxt)
   nuxt.hook('close', () => nuxtCtx.unset())
 
-  // Add nuxt3 types
+  // Add nuxt types
   nuxt.hook('prepare:types', (opts) => {
-    opts.references.push({ types: 'nuxt3' })
+    opts.references.push({ types: 'nuxt' })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {

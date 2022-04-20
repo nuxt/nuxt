@@ -53,7 +53,7 @@ describe('auto-imports:transform', () => {
 
 const excludedNuxtHelpers = ['useHydration']
 
-describe('auto-imports:nuxt3', () => {
+describe('auto-imports:nuxt', () => {
   try {
     const { __dirname } = createCommonJS(import.meta.url)
     const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')

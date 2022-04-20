@@ -40,6 +40,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
   const inline = [
     'src/',
     '#app',
+    'nuxt',
     'nuxt3',
     '!',
     '-!',

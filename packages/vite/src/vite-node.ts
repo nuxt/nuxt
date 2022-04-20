@@ -58,7 +58,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
     const node: ViteNodeServer = new ViteNodeServer(ctx.ssrServer, {
       deps: {
         inline: [
-          /\/nuxt3\//,
+          /\/(nuxt|nuxt3)\//,
           /^#/,
           ...ctx.nuxt.options.build.transpile as string[]
         ]

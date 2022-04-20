@@ -105,7 +105,7 @@ export async function initNitro (nuxt: Nuxt) {
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
 
-  // Register nuxt3 protection patterns
+  // Register nuxt protection patterns
   nitro.hooks.hook('rollup:before', (nitro) => {
     const plugin = ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
