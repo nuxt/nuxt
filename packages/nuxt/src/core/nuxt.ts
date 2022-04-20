@@ -138,6 +138,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.build.transpile.push('@nuxt/ui-templates')
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
+  if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
+    options._modules.push('@nuxt/telemetry')
+  }
 
   const nuxt = createNuxt(options)
 

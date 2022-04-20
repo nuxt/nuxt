@@ -43,5 +43,15 @@ export default {
    * @type {boolean}
    * @version 3
    */
-  pages: undefined
+  pages: undefined,
+
+  /**
+   * Manually disable nuxt telemetry
+   *
+   * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
+   *
+   * @type {boolean}
+   * @version 3
+  */
+  telemetry: undefined
 }
