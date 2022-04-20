@@ -69,4 +69,4 @@ The pages are generated from [docs/content/](./docs/content), you can start edit
 
 ## License
 
-[MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE)
+[MIT](./LICENSE)
