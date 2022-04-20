@@ -65,5 +65,7 @@ export default defineNuxtCommand({
 </html>`)
 
     await listen(app)
+
+    return 'wait'
   }
 })
