@@ -1487,7 +1487,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.1.5
+    unimport: ^0.1.6
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1514,7 +1514,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.3
     unbuild: latest
-    unimport: ^0.1.5
+    unimport: ^0.1.6
   languageName: unknown
   linkType: soft
 
@@ -5882,7 +5882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^39.2.3":
+"eslint-plugin-jsdoc@npm:^39.2.5":
   version: 39.2.5
   resolution: "eslint-plugin-jsdoc@npm:39.2.5"
   dependencies:
@@ -9346,7 +9346,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.3.1":
+"nitropack@npm:^0.3.4":
   version: 0.3.4
   resolution: "nitropack@npm:0.3.4"
   dependencies:
@@ -9876,7 +9876,7 @@ __metadata:
     "@unocss/reset": ^0.31.6
     case-police: ^0.5.3
     eslint: ^8.13.0
-    eslint-plugin-jsdoc: ^39.2.3
+    eslint-plugin-jsdoc: ^39.2.5
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -9932,7 +9932,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.2
-    nitropack: ^0.3.1
+    nitropack: ^0.3.4
     nuxi: 3.0.0-rc.0
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
@@ -9943,7 +9943,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.4.6
-    unimport: ^0.1.5
+    unimport: ^0.1.6
     unplugin: ^0.6.2
     untyped: ^0.4.4
     vue: ^3.2.33
@@ -13185,7 +13185,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.1.5":
+"unimport@npm:^0.1.5, unimport@npm:^0.1.6":
   version: 0.1.6
   resolution: "unimport@npm:0.1.6"
   dependencies:

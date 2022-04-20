@@ -49,7 +49,7 @@
     "@unocss/reset": "^0.31.6",
     "case-police": "^0.5.3",
     "eslint": "^8.13.0",
-    "eslint-plugin-jsdoc": "^39.2.3",
+    "eslint-plugin-jsdoc": "^39.2.5",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",
