@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroEventHandler, NitroDevEventHandler, NitroConfig } from 'nitropack'
@@ -144,7 +144,14 @@ export async function initNitro (nuxt: Nuxt) {
       await prepare(nitro)
       await copyPublicAssets(nitro)
       await prerender(nitro)
-      await build(nitro)
+      if (!nuxt.options._generate) {
+        await build(nitro)
+      } else {
+        const distDir = resolve(nuxt.options.rootDir, 'dist')
+        if (!existsSync(distDir)) {
+          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+        }
+      }
     }
   })
 
