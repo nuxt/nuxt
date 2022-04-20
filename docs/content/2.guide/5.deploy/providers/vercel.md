@@ -13,6 +13,17 @@ Nuxt on Vercel supports server-rendered pages and API routes.
 - No configuration required
 ::
 
+## Git
+
+1. Push your code to your git repository (GitHub, GitLab, Bitbucket).
+2. [Import your project](https://vercel.com/new) into Vercel.
+3. Vercel will detect that you are using Nuxt and will enable the correct settings for your deployment.
+4. Your application is deployed! (e.g. [nuxt.vercel.app](https://nuxt.vercel.app/))
+
+After your project has been imported and deployed, all subsequent pushes to branches will generate [Preview Deployments](https://vercel.com/docs/concepts/deployments/environments#preview), and all changes made to the Production Branch (commonly “main”) will result in a [Production Deployment](https://vercel.com/docs/concepts/deployments/environments#production).
+
+Learn more about Vercel’s [Git Integration](https://vercel.com/docs/concepts/git).
+
 ## CLI
 
 1. Install the [Vercel CLI](https://vercel.com/cli).
@@ -25,21 +36,6 @@ npx nuxi init -t v3-vercel
 vercel
 ```
 
-## Git
+## Learn more
 
-1. Push your code to your git repository (GitHub, GitLab, Bitbucket).
-2. [Import your project](https://vercel.com/new) into Vercel.
-3. Vercel will detect that you are using Nuxt and will enable the correct settings for your deployment.
-4. Your application is deployed! (e.g. [nuxt.vercel.app](https://nuxt.vercel.app/))
-
-After your project has been imported and deployed, all subsequent pushes to branches will generate [Preview Deployments](https://vercel.com/docs/concepts/deployments/environments#preview), and all changes made to the Production Branch (commonly “main”) will result in a [Production Deployment](https://vercel.com/docs/concepts/deployments/environments#production).
-
-Learn more about Vercel’s [Git Integration](https://vercel.com/docs/concepts/git).
-
-## More information
-
-See [more information on the node preset](/guide/deployment/presets/node) for full details.
-
-## Demo
-
-A live demo is available at <https://nuxt.vercel.app>.
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/vercel.html" title="the Nitro documentation for Vercel deployment"}
