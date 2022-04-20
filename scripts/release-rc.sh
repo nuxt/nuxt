@@ -8,6 +8,9 @@ git restore -s@ -SW  -- packages examples
 # Bump versions
 yarn lerna version --preid rc --no-changelog --no-push -m "chore: release rc"
 
+# Build all once to ensure things are nice
+yarn build
+
 # Release packages
 for PKG in packages/* ; do
   pushd $PKG
@@ -16,6 +19,6 @@ for PKG in packages/* ; do
     TAG="rc"
   fi
   echo "⚡ Publishing $PKG with tag $TAG"
-  echo yarn npm publish --tag $TAG --access public --tolerate-republish
+  npm publish --tag $TAG --access public --tolerate-republish
   popd > /dev/null
 done
