@@ -53,6 +53,7 @@ async function loadWorkspace (dir: string) {
   }
 
   const rename = (from: string, to: string) => {
+    find(from).data._name = find(from).data.name
     find(from).data.name = to
     for (const pkg of packages) {
       pkg.updateDeps((dep) => {
