@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.0.0",
+  "version": "3.0.0-rc.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -30,10 +30,10 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "3.0.0",
-    "@nuxt/schema": "3.0.0",
+    "@nuxt/kit": "3.0.0-rc.0",
+    "@nuxt/schema": "3.0.0-rc.0",
     "@nuxt/ui-templates": "^0.1.0",
-    "@nuxt/vite-builder": "3.0.0",
+    "@nuxt/vite-builder": "3.0.0-rc.0",
     "@vue/reactivity": "^3.2.33",
     "@vue/shared": "^3.2.33",
     "@vueuse/head": "^0.7.6",
@@ -51,7 +51,7 @@
     "magic-string": "^0.26.1",
     "mlly": "^0.5.2",
     "nitropack": "^0.3.1",
-    "nuxi": "3.0.0",
+    "nuxi": "3.0.0-rc.0",
     "ohash": "^0.1.0",
     "ohmyfetch": "^0.4.15",
     "pathe": "^0.2.0",
