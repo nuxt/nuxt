@@ -1468,7 +1468,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/schema": ^3.0.0-rc.1
     "@types/lodash.template": ^4
     "@types/semver": ^7
     c12: ^0.2.7
@@ -1522,7 +1522,7 @@ __metadata:
   version: 2.1.2
   resolution: "@nuxt/telemetry@npm:2.1.2"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.0
+    "@nuxt/kit": 3.0.0-rc.1
     chalk: ^5.0.1
     ci-info: ^3.3.0
     consola: ^2.15.3
@@ -1552,8 +1552,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/test-utils@workspace:packages/test-utils"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.0
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/kit": ^3.0.0-rc.1
+    "@nuxt/schema": ^3.0.0-rc.1
     defu: ^6.0.0
     execa: ^6.1.0
     get-port-please: ^2.5.0
@@ -1597,12 +1597,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/vite-builder@3.0.0-rc.0, @nuxt/vite-builder@workspace:packages/vite":
+"@nuxt/vite-builder@^3.0.0-rc.1, @nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.0
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/kit": ^3.0.0-rc.1
+    "@nuxt/schema": ^3.0.0-rc.1
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^2.3.1
     "@vitejs/plugin-vue-jsx": ^1.3.10
@@ -1644,8 +1644,8 @@ __metadata:
   dependencies:
     "@babel/core": ^7.17.9
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
-    "@nuxt/kit": 3.0.0-rc.0
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/kit": ^3.0.0-rc.1
+    "@nuxt/schema": ^3.0.0-rc.1
     "@types/pify": ^5.0.1
     "@types/webpack-bundle-analyzer": ^4.4.1
     "@types/webpack-dev-middleware": ^5.0.2
@@ -9951,8 +9951,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.0
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/kit": ^3.0.0-rc.1
+    "@nuxt/schema": ^3.0.0-rc.1
     "@types/clear": ^0
     "@types/mri": ^1.1.1
     "@types/semver": ^7
@@ -10031,11 +10031,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt@workspace:packages/nuxt"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.0
-    "@nuxt/schema": 3.0.0-rc.0
+    "@nuxt/kit": ^3.0.0-rc.1
+    "@nuxt/schema": ^3.0.0-rc.1
     "@nuxt/telemetry": ^2.1.2
     "@nuxt/ui-templates": ^0.1.0
-    "@nuxt/vite-builder": 3.0.0-rc.0
+    "@nuxt/vite-builder": ^3.0.0-rc.1
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.33
@@ -10055,7 +10055,7 @@ __metadata:
     magic-string: ^0.26.1
     mlly: ^0.5.2
     nitropack: ^0.3.5
-    nuxi: 3.0.0-rc.0
+    nuxi: ^3.0.0-rc.1
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
     pathe: ^0.2.0
