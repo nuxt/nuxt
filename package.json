@@ -1,5 +1,6 @@
 {
   "name": "nuxt-framework",
+  "private": true,
   "license": "MIT",
   "type": "module",
   "workspaces": [
@@ -10,16 +11,17 @@
   ],
   "scripts": {
     "build": "FORCE_COLOR=1 lerna run prepack --stream --no-prefix",
+    "cleanup": "rimraf 'packages/**/node_modules' 'examples/**/node_modules' 'node_modules'",
+    "dev": "yarn run nuxi dev playground",
+    "dev:build": "yarn run nuxi build playground",
     "example": "yarn workspace example-$0 dev",
     "example:build": "yarn workspace example-$0 build",
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
     "lint:docs": "markdownlint ./docs/content && case-police 'docs/content**/*.md'",
     "lint:docs:fix": "markdownlint ./docs/content --fix && case-police 'docs/content**/*.md' --fix",
-    "nuxi": "./node_modules/.bin/nuxi",
-    "nuxt": "./node_modules/.bin/nuxi",
+    "nuxi": "node ./packages/nuxi/bin/nuxi.mjs",
+    "nuxt": "node ./packages/nuxi/bin/nuxi.mjs",
     "play": "echo use yarn dev && exit 1",
-    "dev": "yarn run nuxi dev playground",
-    "dev:build": "yarn run nuxi build playground",
     "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "stub": "lerna run prepack -- --stub",
     "test:fixtures": "yarn nuxi prepare test/fixtures/basic && JITI_ESM_RESOLVE=1 vitest run --dir test",
@@ -30,22 +32,22 @@
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
-    "jiti": "^1.13.0",
-    "nitropack-dev": "link:../nitropack",
-    "nuxt": "workspace:./packages/nuxt",
-    "vite": "^2.9.5",
+    "@nuxt/kit": "link:./packages/kit",
+    "@nuxt/schema": "link:./packages/schema",
+    "@nuxt/test-utils": "link:./packages/test-utils",
+    "@nuxt/vite": "link:./packages/vite",
+    "@nuxt/webpack": "link:./packages/webpack",
+    "nuxi": "link:./packages/nuxi",
+    "nuxt": "link:./packages/nuxt",
+    "nuxt3": "link:./packages/nuxt",
     "unbuild": "^0.7.4"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.1.3",
-    "@nuxtjs/eslint-config": "^9.0.0",
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
-    "@types/jsdom": "^16",
     "@types/node": "^16.11.27",
-    "@types/object-hash": "^2",
+    "@types/rimraf": "^3",
     "@unocss/reset": "^0.31.6",
     "case-police": "^0.5.3",
-    "esbuild": "^0.14.36",
     "eslint": "^8.13.0",
     "eslint-plugin-jsdoc": "^39.2.3",
     "execa": "^6.1.0",
@@ -54,17 +56,15 @@
     "jiti": "^1.13.0",
     "lerna": "^4.0.0",
     "markdownlint-cli": "^0.31.1",
-    "miniflare": "^1.4.1",
-    "object-hash": "^3.0.0",
     "pathe": "^0.2.0",
+    "rimraf": "^3.0.2",
     "typescript": "^4.6.3",
     "unbuild": "^0.7.4",
     "vitest": "^0.9.3",
-    "vue-router": "^4.0.14",
     "vue-tsc": "^0.34.7"
   },
+  "packageManager": "yarn@3.2.0",
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"
-  },
-  "packageManager": "yarn@3.2.0"
+  }
 }
