@@ -8,7 +8,7 @@
       </g>
       <defs><clipPath id="a"><path fill="#fff" d="M0 0h221v65H0z" /></clipPath></defs>
     </svg>
-    <span class="inline-flex items-center mt-1.2 px-2 py-0.5 rounded text-xs font-medium font-mono bg-cloud-surface dark:bg-sky-dark dark:text-white">beta</span>
+    <span class="inline-flex items-center mt-1.2 px-2 py-0.5 rounded text-xs font-medium font-mono bg-cloud-surface dark:bg-sky-dark dark:text-white">RC</span>
   </div>
 </template>
 
