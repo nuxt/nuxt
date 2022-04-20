@@ -47,7 +47,7 @@ export default defineNuxtCommand({
       await Promise.all(['node_modules/.cache', resolve(rootDir, '.nuxt'), 'node_modules/.vite'].map((path) => {
         return existsSync(path) ? fsp.rm(path, { recursive: true }) : undefined
       }))
-      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@latest`, { stdio: 'inherit' })
+      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit' })
     }
 
     const upgradedVersion = await getNuxtVersion(rootDir)
