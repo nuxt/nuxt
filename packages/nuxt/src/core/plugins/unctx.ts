@@ -12,7 +12,7 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
   nuxt.hook('app:resolve', (_app) => { app = _app })
   nuxt.hook('pages:middleware:extend', (_middlewares) => { middleware = _middlewares })
 
-  return createUnplugin(() => ({
+  return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
     name: 'unctx:transfrom',
     enforce: 'post',
     transformInclude (id) {
@@ -23,7 +23,7 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
       if (result) {
         return {
           code: result.code,
-          map: result.magicString.generateMap({ source: id, includeContent: true })
+          map: options.sourcemap && result.magicString.generateMap({ source: id, includeContent: true })
         }
       }
     }

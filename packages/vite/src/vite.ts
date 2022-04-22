@@ -65,7 +65,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         plugins: [
           virtual(nuxt.vfs),
-          DynamicBasePlugin.vite()
+          DynamicBasePlugin.vite({ sourcemap: nuxt.options.sourcemap })
         ],
         vue: {
           reactivityTransform: nuxt.options.experimental.reactivityTransform

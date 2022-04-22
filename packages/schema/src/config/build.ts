@@ -23,6 +23,12 @@ export default {
     },
   },
   /**
+   * Whether to generate sourcemaps.
+   *
+   * @version 3
+   */
+  sourcemap: true,
+  /**
    * Shared build configuration.
    * @version 2
    * @version 3
@@ -132,7 +138,7 @@ export default {
      * @version 2
      */
     cssSourceMap: {
-      $resolve: (val, get) => val ?? get('dev')
+      $resolve: (val, get) => val ?? get('sourcemap') ?? get('dev')
     },
 
     /**
@@ -242,8 +248,8 @@ export default {
         ]
         for (const name of styleLoaders) {
           const loader = val[name]
-          if (loader && loader.sourceMap === undefined) {
-            loader.sourceMap = Boolean(get('build.cssSourceMap'))
+          if (loader && loader.sourcemap === undefined) {
+            loader.sourcemap = Boolean(get('build.cssSourceMap'))
           }
         }
         return val
@@ -315,7 +321,7 @@ export default {
      *
      * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin)
      *
-     * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
+     * @note Enabling sourcemap will leave `//# sourcemappingURL` linking comment at
      * the end of each output file if webpack `config.devtool` is set to `source-map`.
      * @version 2
      */
@@ -493,7 +499,7 @@ export default {
           return postcssOptions
         }
       },
-      sourceMap: undefined,
+      sourcemap: undefined,
       implementation: undefined,
       order: ''
     },

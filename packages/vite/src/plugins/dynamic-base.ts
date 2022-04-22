@@ -5,6 +5,7 @@ import MagicString from 'magic-string'
 
 interface DynamicBasePluginOptions {
   globalPublicPath?: string
+  sourcemap?: boolean
 }
 
 export const RelativeAssetPlugin = function (): Plugin {
@@ -95,7 +96,7 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: s.generateMap({ source: id, includeContent: true })
+          map: options.sourcemap && s.generateMap({ source: id, includeContent: true })
         }
       }
     }

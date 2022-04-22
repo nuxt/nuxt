@@ -7,6 +7,7 @@ import MagicString from 'magic-string'
 export interface TransformMacroPluginOptions {
   macros: Record<string, string>
   dev?: boolean
+  sourcemap?: boolean
 }
 
 export const TransformMacroPlugin = createUnplugin((options: TransformMacroPluginOptions) => {
@@ -24,7 +25,7 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
 
       function result () {
         if (s.hasChanged()) {
-          return { code: s.toString(), map: s.generateMap({ source: id, includeContent: true }) }
+          return { code: s.toString(), map: options.sourcemap && s.generateMap({ source: id, includeContent: true }) }
         }
       }
 

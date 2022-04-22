@@ -4,7 +4,7 @@ import { parseQuery, parseURL } from 'ufo'
 import { Unimport } from 'unimport'
 import { AutoImportsOptions } from '@nuxt/schema'
 
-export const TransformPlugin = createUnplugin(({ ctx, options }: {ctx: Unimport, options: Partial<AutoImportsOptions> }) => {
+export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx: Unimport, options: Partial<AutoImportsOptions>, sourcemap?: boolean }) => {
   return {
     name: 'nuxt:auto-imports-transform',
     enforce: 'post',
@@ -39,7 +39,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options }: {ctx: Unimport,
       }
       return {
         code,
-        map: s.generateMap({ source: id, includeContent: true })
+        map: sourcemap && s.generateMap({ source: id, includeContent: true })
       }
     }
   }

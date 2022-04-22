@@ -74,8 +74,8 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
       })
     } else {
       // Transform to inject imports in production mode
-      addVitePlugin(TransformPlugin.vite({ ctx, options }))
-      addWebpackPlugin(TransformPlugin.webpack({ ctx, options }))
+      addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap }))
+      addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap }))
     }
 
     const regenerateAutoImports = async () => {
