@@ -42,7 +42,7 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 </script>
 ```
 
-:button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/framework/tree/main/examples/use-cookie?terminal=dev" blank}
+:button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/framework/tree/main/examples/composables/use-cookie?terminal=dev&file=app.vue" blank}
 
 ## Options
 
