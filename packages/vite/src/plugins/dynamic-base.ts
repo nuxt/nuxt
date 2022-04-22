@@ -88,11 +88,9 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
       s.replace(/from *['"]\/__NUXT_BASE__(\/[^'"]*)['"]/g, 'from "$1"')
 
       // Dynamically compute string URLs featuring baseURL
-      for (const delimiter of ['`', "'", '"']) {
-        const delimiterRE = new RegExp(`(?<!(const base = |from *))${delimiter}([^${delimiter}]*)\\/__NUXT_BASE__\\/([^${delimiter}]*)${delimiter}`, 'g')
-        /* eslint-disable-next-line no-template-curly-in-string */
-        s.replace(delimiterRE, r => '`' + r.replace(/\/__NUXT_BASE__\//g, '${__publicAssetsURL()}').slice(1, -1) + '`')
-      }
+      const delimiterRE = /(?<!(const base = |from *))(`([^`]*)\/__NUXT_BASE__\/([^`]*)`|'([^']*)\/__NUXT_BASE__\/([^']*)'|"([^"]*)\/__NUXT_BASE__\/([^"]*)")/g
+      /* eslint-disable-next-line no-template-curly-in-string */
+      s.replace(delimiterRE, r => '`' + r.replace(/\/__NUXT_BASE__\//g, '${__publicAssetsURL()}').slice(1, -1) + '`')
 
       if (s.hasChanged()) {
         return {
