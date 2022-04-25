@@ -44,12 +44,12 @@
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^9.0.0",
-    "@types/node": "^16.11.27",
+    "@types/node": "^16.11.28",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.31.12",
+    "@unocss/reset": "^0.31.14",
     "case-police": "^0.5.3",
-    "eslint": "^8.13.0",
-    "eslint-plugin-jsdoc": "^39.2.7",
+    "eslint": "^8.14.0",
+    "eslint-plugin-jsdoc": "^39.2.8",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.1",
@@ -61,7 +61,7 @@
     "typescript": "^4.6.3",
     "unbuild": "^0.7.4",
     "vitest": "^0.9.4",
-    "vue-tsc": "^0.34.9"
+    "vue-tsc": "^0.34.10"
   },
   "packageManager": "yarn@3.2.0",
   "engines": {

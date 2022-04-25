@@ -376,20 +376,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@es-joy/jsdoccomment@npm:~0.28.0":
-  version: 0.28.0
-  resolution: "@es-joy/jsdoccomment@npm:0.28.0"
+"@es-joy/jsdoccomment@npm:~0.29.0":
+  version: 0.29.0
+  resolution: "@es-joy/jsdoccomment@npm:0.29.0"
   dependencies:
     comment-parser: 1.3.1
     esquery: ^1.4.0
     jsdoc-type-pratt-parser: ~3.0.1
-  checksum: 41756afb28035fb323b03a5f0ce78fa4ae1741dbd602ef89e912ddbdd6d08f2a7060ce46860a738558c680b6e5b26fce6fcd7f3edaa382c7dff13af60203733e
+  checksum: 75c61b802b9d6b21906b303677d33d26ecb57a9a8bc8f2753cb5e00a3a123032614e4014f9f66aa563c84f3bfe32c01c27714a77e19d5b76df55ff13cd6dd366
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@eslint/eslintrc@npm:1.2.1"
+"@eslint/eslintrc@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@eslint/eslintrc@npm:1.2.2"
   dependencies:
     ajv: ^6.12.4
     debug: ^4.3.2
@@ -400,7 +400,7 @@ __metadata:
     js-yaml: ^4.1.0
     minimatch: ^3.0.4
     strip-json-comments: ^3.1.1
-  checksum: 1f797b9f94d71b965992cf6c44e3bcb574643014fd1e3d4862d25056bd5568f59c488461a7e9a1c1758ca7f0def5d3cb69c3d8b38581bcf4a53af74371243797
+  checksum: d891036bbffb0efec1462aa4a603ed6e349d546b1632dde7d474ddd15c2a8b6895671b25293f1d3ba10ff629c24a3649ad049373fe695a0e44b612537088563c
   languageName: node
   linkType: hard
 
@@ -1606,7 +1606,7 @@ __metadata:
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^2.3.1
     "@vitejs/plugin-vue-jsx": ^1.3.10
-    autoprefixer: ^10.4.4
+    autoprefixer: ^10.4.5
     chokidar: ^3.5.3
     cssnano: ^5.1.7
     defu: ^6.0.0
@@ -1651,14 +1651,14 @@ __metadata:
     "@types/webpack-dev-middleware": ^5.0.2
     "@types/webpack-hot-middleware": ^2.25.6
     "@types/webpack-virtual-modules": ^0
-    autoprefixer: ^10.4.4
+    autoprefixer: ^10.4.5
     css-loader: ^6.7.1
     css-minimizer-webpack-plugin: ^3.4.1
     cssnano: ^5.1.7
     esbuild-loader: ^2.18.0
     escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
-    fork-ts-checker-webpack-plugin: ^7.2.6
+    fork-ts-checker-webpack-plugin: ^7.2.7
     fs-extra: ^10.1.0
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
@@ -2192,10 +2192,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.27":
-  version: 16.11.27
-  resolution: "@types/node@npm:16.11.27"
-  checksum: 6ed0c8c4d29a549d0cfd607d19edf9a4668fbd39087701d923b4a04cd760564e47ad27f9403968cb9c11ee006f0ea6ab698b2491b4b2d2dec3f4a53d0fc22df7
+"@types/node@npm:^16.11.28":
+  version: 16.11.28
+  resolution: "@types/node@npm:16.11.28"
+  checksum: aba39c8a9fdac1d73f69e5308b669952d607504ac2bd6f9f99201b8b974baedd52ca43f8cbbbb2e5015269eb2c680a85f80a4416816accb6019029bae3a7714c
   languageName: node
   linkType: hard
 
@@ -2617,10 +2617,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.12":
-  version: 0.31.12
-  resolution: "@unocss/reset@npm:0.31.12"
-  checksum: 9c23f22adb50de65708fd60cad87fca9f0880a990b696f13066cbaec6697ab5229cf8444be19b5c3a9fefe28b594656885f11f36a166506a379f45c9feabc6b9
+"@unocss/reset@npm:^0.31.14":
+  version: 0.31.14
+  resolution: "@unocss/reset@npm:0.31.14"
+  checksum: 25c29bbd3795f45c276a541d28d8d3747d3fac3d9883a9a1562c2e9d52918646034c2649f31266e0f14618502b6515973acd2618fae4c0d409260cadfac6e464
   languageName: node
   linkType: hard
 
@@ -2727,45 +2727,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volar/code-gen@npm:0.34.9":
-  version: 0.34.9
-  resolution: "@volar/code-gen@npm:0.34.9"
+"@volar/code-gen@npm:0.34.10":
+  version: 0.34.10
+  resolution: "@volar/code-gen@npm:0.34.10"
   dependencies:
-    "@volar/source-map": 0.34.9
-  checksum: 13d03c0a4777ae91f53754d8399e4edec0b0fbee4f350327f94337e258d445ae8c6ae021efbb10db7d91884af3dd6f618d6db0bb9fd439c3d66b6bd318530fa9
+    "@volar/source-map": 0.34.10
+  checksum: e0639b9e105d1845fa67c662a33cda46729dd691c83d6c2b269c9395e2ebf0c20adfba9cb14f41583a560c2fcf72de93e93323d46ba13c3019bd119679e29e3b
   languageName: node
   linkType: hard
 
-"@volar/source-map@npm:0.34.9":
-  version: 0.34.9
-  resolution: "@volar/source-map@npm:0.34.9"
-  checksum: d429eb3a9b2ed1739b6655c1c6e9e0b2fde703de71864f069652d1a6a3d0e39d14bb5250ab2e1f5cf912d3dc21e714bacfde24b2097ab626f940f961fd95bf38
+"@volar/source-map@npm:0.34.10":
+  version: 0.34.10
+  resolution: "@volar/source-map@npm:0.34.10"
+  checksum: 72a386baf607bd198f6d9bf73365fb918f97ba19f0b83007b6628177d2533aa4ea938a68c2ebe294df0ee04e2d3f11c7ea2326f56501b5d569785ff018ba51be
   languageName: node
   linkType: hard
 
-"@volar/vue-code-gen@npm:0.34.9":
-  version: 0.34.9
-  resolution: "@volar/vue-code-gen@npm:0.34.9"
+"@volar/vue-code-gen@npm:0.34.10":
+  version: 0.34.10
+  resolution: "@volar/vue-code-gen@npm:0.34.10"
   dependencies:
-    "@volar/code-gen": 0.34.9
-    "@volar/source-map": 0.34.9
+    "@volar/code-gen": 0.34.10
+    "@volar/source-map": 0.34.10
     "@vue/compiler-core": ^3.2.31
     "@vue/compiler-dom": ^3.2.31
     "@vue/shared": ^3.2.31
-  checksum: 57c9453dce8268227b910b28f7754f253e18d4770db89c8253b545c209f9e3d6b9418168b196b32959f8cb1ba6a240cce1f942e46d92bde893ec09c6cb845409
+  checksum: 81634ae5bd877d750a3ffca0ad452e93b0930fb8ddbdf3775844b6f5971243c90db6a77f2ff9e0ecb13231095fc04a84f9e3e3ab406ebd6e67c3c1144d632400
   languageName: node
   linkType: hard
 
-"@volar/vue-typescript@npm:0.34.9":
-  version: 0.34.9
-  resolution: "@volar/vue-typescript@npm:0.34.9"
+"@volar/vue-typescript@npm:0.34.10":
+  version: 0.34.10
+  resolution: "@volar/vue-typescript@npm:0.34.10"
   dependencies:
-    "@volar/code-gen": 0.34.9
-    "@volar/source-map": 0.34.9
-    "@volar/vue-code-gen": 0.34.9
+    "@volar/code-gen": 0.34.10
+    "@volar/source-map": 0.34.10
+    "@volar/vue-code-gen": 0.34.10
     "@vue/compiler-sfc": ^3.2.31
     "@vue/reactivity": ^3.2.31
-  checksum: 67c189fdeaf5dc2cc2a7e0dfd5cc8158aca50f8baf7cd9a2a7ba18136092beac79b7a713a42a39b49f9e09a35538c2f23e9c3ccdc4d1096ec868b901c1238ab4
+  checksum: 202215514340781cfdbebb44dd6f14a7b9db11ba594eefc342f5005f355ed6ca6b70f969ae5b271cfb2a1ba9af3b47695c2719fe1eda647957d84cf08958820a
   languageName: node
   linkType: hard
 
@@ -3604,12 +3604,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.4.4":
-  version: 10.4.4
-  resolution: "autoprefixer@npm:10.4.4"
+"autoprefixer@npm:^10.4.5":
+  version: 10.4.5
+  resolution: "autoprefixer@npm:10.4.5"
   dependencies:
     browserslist: ^4.20.2
-    caniuse-lite: ^1.0.30001317
+    caniuse-lite: ^1.0.30001332
     fraction.js: ^4.2.0
     normalize-range: ^0.1.2
     picocolors: ^1.0.0
@@ -3618,7 +3618,7 @@ __metadata:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: bd42e23d71af0228b6b0b27d0d0b33c95e67562e55eb4ca0e221cf795a06482c90d565d6544a5f4090d8e303b09b200845fa2bcaaa707d1e8777974250dffe1f
+  checksum: 6c638d8f515a9c37776f9d6b1263e497768d9e8d8ad3b45d901513ba0f26c74df73f4afb84efd3253ab3d1c57803b4e2d97ad9b8919ef1955e373fcf24661213
   languageName: node
   linkType: hard
 
@@ -3828,21 +3828,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"c12@npm:^0.2.5":
-  version: 0.2.5
-  resolution: "c12@npm:0.2.5"
-  dependencies:
-    defu: ^6.0.0
-    dotenv: ^16.0.0
-    gittar: ^0.1.1
-    jiti: ^1.12.14
-    mlly: ^0.5.1
-    pathe: ^0.2.0
-    rc9: ^1.2.1
-  checksum: 3ce50b327bc85b00d14191d7626412366a08fb6906a668fdae370a49ecc12ac818700722a3689adba29ec7738cec7516d936a3d838ef24a9706e6a34641c5730
-  languageName: node
-  linkType: hard
-
 "c12@npm:^0.2.7":
   version: 0.2.7
   resolution: "c12@npm:0.2.7"
@@ -3971,7 +3956,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001317":
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001317, caniuse-lite@npm:^1.0.30001332":
   version: 1.0.30001332
   resolution: "caniuse-lite@npm:1.0.30001332"
   checksum: e54182ea42ab3d2ff1440f9a6480292f7ab23c00c188df7ad65586312e4da567e8bedd5cb5fb8f0ff4193dc027a54e17e0b3c0b6db5d5a3fb61c7726ff9c45b3
@@ -6152,11 +6137,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^39.2.7":
-  version: 39.2.7
-  resolution: "eslint-plugin-jsdoc@npm:39.2.7"
+"eslint-plugin-jsdoc@npm:^39.2.8":
+  version: 39.2.8
+  resolution: "eslint-plugin-jsdoc@npm:39.2.8"
   dependencies:
-    "@es-joy/jsdoccomment": ~0.28.0
+    "@es-joy/jsdoccomment": ~0.29.0
     comment-parser: 1.3.1
     debug: ^4.3.4
     escape-string-regexp: ^4.0.0
@@ -6165,7 +6150,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0
-  checksum: 71f4fe4eb938ba7e65feeeda67fe0540fe7801ecec7895df7a5f66135e1a3888d0e9b270e092dff4c7390d5d05d832960fc1f6b93a771795262da01df97eb028
+  checksum: 13c6e93c44160c57d08e2ca17f5b2707127f1dc48497d9daeccf6f78c9ebf9fe35fe1813e6437e26e6ad8c5ec9ce2652511d811e24bdf0d149e5cb7dda603f38
   languageName: node
   linkType: hard
 
@@ -6293,11 +6278,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.13.0":
-  version: 8.13.0
-  resolution: "eslint@npm:8.13.0"
+"eslint@npm:^8.14.0":
+  version: 8.14.0
+  resolution: "eslint@npm:8.14.0"
   dependencies:
-    "@eslint/eslintrc": ^1.2.1
+    "@eslint/eslintrc": ^1.2.2
     "@humanwhocodes/config-array": ^0.9.2
     ajv: ^6.10.0
     chalk: ^4.0.0
@@ -6334,7 +6319,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: bc7d2fc9a046d42cb2c8987573ecaf534c1fae14747c4695e32388e179c5f21b83eefdb3e4f35924bf76152e226d7cc9dfb21f12348baf12c803109005b17439
+  checksum: 87d2e3e5eb93216d4ab36006e7b8c0bfad02f40b0a0f193f1d42754512cd3a9d8244152f1c69df5db2e135b3c4f1c10d0ed2f0881fe8a8c01af55465968174c1
   languageName: node
   linkType: hard
 
@@ -6970,9 +6955,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:^7.2.6":
-  version: 7.2.6
-  resolution: "fork-ts-checker-webpack-plugin@npm:7.2.6"
+"fork-ts-checker-webpack-plugin@npm:^7.2.7":
+  version: 7.2.7
+  resolution: "fork-ts-checker-webpack-plugin@npm:7.2.7"
   dependencies:
     "@babel/code-frame": ^7.16.7
     chalk: ^4.1.2
@@ -6992,7 +6977,7 @@ __metadata:
   peerDependenciesMeta:
     vue-template-compiler:
       optional: true
-  checksum: d74e8b22e3e4d5159061d93f519d7eb795bafac4b9a993b72eed952a714144d89c8a706414b231a89c69cabf29e00e1fb26d7060e3b5577c08cabb5a3d5a7697
+  checksum: 2aaac6f72c7326c0ac696fe0e630bdd2887e40d5bc8035862851b1abf4132c85808ddc967472a6846764b2b7d38c6f5408088c086188f149db759f2b233e51f5
   languageName: node
   linkType: hard
 
@@ -9678,9 +9663,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.3.5":
-  version: 0.3.5
-  resolution: "nitropack@npm:0.3.5"
+"nitropack@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "nitropack@npm:0.3.6"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9699,7 +9684,7 @@ __metadata:
     archiver: ^5.3.1
     base64-js: ^1.5.1
     buffer: ^6.0.3
-    c12: ^0.2.5
+    c12: ^0.2.7
     chalk: ^5.0.1
     chokidar: ^3.5.3
     connect: ^3.7.0
@@ -9708,7 +9693,7 @@ __metadata:
     defu: ^6.0.0
     destr: ^1.1.1
     dot-prop: ^7.2.0
-    esbuild: ^0.14.36
+    esbuild: ^0.14.38
     etag: ^1.8.1
     events: ^3.3.0
     fs-extra: ^10.1.0
@@ -9753,7 +9738,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: e904eb5bdd4bc78607d31abc8ab73285f35626f59eb9a385b2771135e71774d42797183a65f4d54bd304472bcf3746f67073cbf79e506f8e72cd10b8fed2d12e
+  checksum: 1a750008c3edf6b2ad0413f93a6bb9635a1667cd52f22a8f48caa2051352d279c0545f540c53aff56b5617ce477522bc0af886c9e4460067f6742bac497d2c78
   languageName: node
   linkType: hard
 
@@ -10203,12 +10188,12 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^9.0.0
-    "@types/node": ^16.11.27
+    "@types/node": ^16.11.28
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.31.12
+    "@unocss/reset": ^0.31.14
     case-police: ^0.5.3
-    eslint: ^8.13.0
-    eslint-plugin-jsdoc: ^39.2.7
+    eslint: ^8.14.0
+    eslint-plugin-jsdoc: ^39.2.8
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.1
@@ -10220,7 +10205,7 @@ __metadata:
     typescript: ^4.6.3
     unbuild: ^0.7.4
     vitest: ^0.9.4
-    vue-tsc: ^0.34.9
+    vue-tsc: ^0.34.10
   languageName: unknown
   linkType: soft
 
@@ -10265,7 +10250,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.2
-    nitropack: ^0.3.5
+    nitropack: ^0.3.6
     nuxi: ^3.0.0-rc.1
     ohash: ^0.1.0
     ohmyfetch: ^0.4.15
@@ -14066,16 +14051,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-tsc@npm:^0.34.9":
-  version: 0.34.9
-  resolution: "vue-tsc@npm:0.34.9"
+"vue-tsc@npm:^0.34.10":
+  version: 0.34.10
+  resolution: "vue-tsc@npm:0.34.10"
   dependencies:
-    "@volar/vue-typescript": 0.34.9
+    "@volar/vue-typescript": 0.34.10
   peerDependencies:
     typescript: "*"
   bin:
     vue-tsc: bin/vue-tsc.js
-  checksum: e84e66544204e0f71039e2a9798a148751ee1657eb5fa5dc60a1d36a0d1ee30e1895b8da6927d1e9d022e1d2b3e3adf1ce3072a56db1e319243d55e0711aa320
+  checksum: af1f53aab0603c2afda19c35830915ffc222e15b950af5cac2a3de9dbd90c372d5a188786e948783fe9f1c87127c052ee332882e59be25fe06b3654c2b19490e
   languageName: node
   linkType: hard
 
