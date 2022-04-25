@@ -43,18 +43,17 @@ export const writeTypes = async (nuxt: Nuxt) => {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const path = aliases[alias].replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
-    const relativePath = isAbsolute(path)
-      ? relative(nuxt.options.rootDir, path) || '.'
-      : path
-    tsConfig.compilerOptions.paths[alias] = [relativePath]
+    const relativePath = isAbsolute(aliases[alias])
+      ? relative(nuxt.options.rootDir, aliases[alias]) || '.'
+      : aliases[alias]
 
-    try {
-      const { isDirectory } = await fsp.stat(resolve(nuxt.options.rootDir, relativePath))
-      if (isDirectory) {
-        tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
-      }
-    } catch { }
+    const stats = await fsp.stat(resolve(nuxt.options.rootDir, relativePath)).catch(() => null /* file does not exist */)
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[alias] = [relativePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
+    } else {
+      tsConfig.compilerOptions.paths[alias] = [relativePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+    }
   }
 
   const references: TSReference[] = [
