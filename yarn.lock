@@ -2617,10 +2617,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.14":
-  version: 0.31.14
-  resolution: "@unocss/reset@npm:0.31.14"
-  checksum: 25c29bbd3795f45c276a541d28d8d3747d3fac3d9883a9a1562c2e9d52918646034c2649f31266e0f14618502b6515973acd2618fae4c0d409260cadfac6e464
+"@unocss/reset@npm:^0.31.15":
+  version: 0.31.15
+  resolution: "@unocss/reset@npm:0.31.15"
+  checksum: a54434038ac0897c04c062347a2230805881b717c06ccb302d37bdf3d5646551a260dcb27e850627e460f0c427f058450ebbb478613a0be9fce38a59b1a67bd7
   languageName: node
   linkType: hard
 
@@ -8730,6 +8730,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"listhen@npm:^0.2.11":
+  version: 0.2.11
+  resolution: "listhen@npm:0.2.11"
+  dependencies:
+    clipboardy: ^3.0.0
+    colorette: ^2.0.16
+    defu: ^6.0.0
+    get-port-please: ^2.5.0
+    http-shutdown: ^1.2.2
+    selfsigned: ^2.0.1
+  checksum: c4b7e6f9574643d685577c519f31bf4f24cd3daccb7d9bbace23948a356b068fcd5758d4da154799aca18a032a27aeca5e98b3288369060eb2b939ddc510927d
+  languageName: node
+  linkType: hard
+
 "load-json-file@npm:^4.0.0":
   version: 4.0.0
   resolution: "load-json-file@npm:4.0.0"
@@ -10164,7 +10178,7 @@ __metadata:
     flat: ^5.0.2
     fsevents: ~2.3.2
     jiti: ^1.13.0
-    listhen: ^0.2.10
+    listhen: ^0.2.11
     mlly: ^0.5.2
     mri: ^1.2.0
     pathe: ^0.2.0
@@ -10190,7 +10204,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^9.0.0
     "@types/node": ^16.11.28
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.31.14
+    "@unocss/reset": ^0.31.15
     case-police: ^0.5.3
     eslint: ^8.14.0
     eslint-plugin-jsdoc: ^39.2.8
