@@ -56,7 +56,7 @@ Learn more about in our documentation on [how to contribute to Nuxt](https://v3.
 
 ## 📖 Documentation
 
-We are using [Docus](https://nuxtlabs.com/docus) for documentation (*It is planned to be open sourced it in the following weeks*).
+We are using [Docus](https://nuxtlabs.com/docus) for documentation (*It is planned to be open sourced in the following weeks*).
 
 We recommend to install the [Docus extension](https://marketplace.visualstudio.com/items?itemName=NuxtLabs.docus) for VS Code.
 
