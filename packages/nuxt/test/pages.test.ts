@@ -97,26 +97,48 @@ describe('pages:generateRoutesFromFiles', () => {
       description: 'should generate correct dynamic routes',
       files: [
           `${pagesDir}/[slug].vue`,
+          `${pagesDir}/[[foo]]`,
+          `${pagesDir}/[[foo]]/index.vue`,
+          `${pagesDir}/[bar]/index.vue`,
           `${pagesDir}/sub/[slug].vue`,
-          `${pagesDir}/[sub]/route-[slug].vue`
+          `${pagesDir}/[[sub]]/route-[slug].vue`
       ],
       output: [
         {
           name: 'slug',
-          path: '/:slug?',
+          path: '/:slug',
           file: `${pagesDir}/[slug].vue`,
           children: []
         },
         {
+          children: [
+            {
+
+              name: 'foo',
+              path: '',
+              file: `${pagesDir}/[[foo]]/index.vue`,
+              children: []
+            }
+          ],
+          file: 'pages/[[foo]]',
+          path: '/:foo?'
+        },
+        {
+          children: [],
+          name: 'bar',
+          file: 'pages/[bar]/index.vue',
+          path: '/:bar'
+        },
+        {
           name: 'sub-slug',
-          path: '/sub/:slug?',
+          path: '/sub/:slug',
           file: `${pagesDir}/sub/[slug].vue`,
           children: []
         },
         {
           name: 'sub-route-slug',
-          path: '/:sub/route-:slug',
-          file: `${pagesDir}/[sub]/route-[slug].vue`,
+          path: '/:sub?/route-:slug',
+          file: `${pagesDir}/[[sub]]/route-[slug].vue`,
           children: []
         }
       ]
@@ -150,32 +172,32 @@ describe('pages:generateRoutesFromFiles', () => {
       files: [
           `${pagesDir}/[a1_1a].vue`,
           `${pagesDir}/[b2.2b].vue`,
-          `${pagesDir}/[c3@3c].vue`,
-          `${pagesDir}/[d4-4d].vue`
+          `${pagesDir}/[[c3@3c]].vue`,
+          `${pagesDir}/[[d4-4d]].vue`
       ],
       output: [
         {
           name: 'a1_1a',
-          path: '/:a1_1a?',
+          path: '/:a1_1a',
           file: `${pagesDir}/[a1_1a].vue`,
           children: []
         },
         {
           name: 'b2.2b',
-          path: '/:b2.2b?',
+          path: '/:b2.2b',
           file: `${pagesDir}/[b2.2b].vue`,
           children: []
         },
         {
           name: 'c33c',
           path: '/:c33c?',
-          file: `${pagesDir}/[c3@3c].vue`,
+          file: `${pagesDir}/[[c3@3c]].vue`,
           children: []
         },
         {
           name: 'd44d',
           path: '/:d44d?',
-          file: `${pagesDir}/[d4-4d].vue`,
+          file: `${pagesDir}/[[d4-4d]].vue`,
           children: []
         }
       ]
