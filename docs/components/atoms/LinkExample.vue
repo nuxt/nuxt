@@ -1,6 +1,6 @@
 <template>
   <Alert type="info" icon="🔎">
-    Read and edit a live example in <NuxtLink :to="link" v-text="computedTitle" />
+    Read and edit a live example in <NuxtLink :to="link" v-text="computedTitle" />.
   </Alert>
 </template>
 
