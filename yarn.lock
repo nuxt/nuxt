@@ -1487,7 +1487,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.1.6
+    unimport: ^0.1.7
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1514,7 +1514,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.3
     unbuild: latest
-    unimport: ^0.1.6
+    unimport: ^0.1.7
   languageName: unknown
   linkType: soft
 
@@ -2634,10 +2634,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.16":
-  version: 0.31.16
-  resolution: "@unocss/reset@npm:0.31.16"
-  checksum: 017ae6f25138db9d86b0b1db21786720ab0cde03732b44ae46b42a485bc068bc3e0662c758d9ceffff51a0c1c69de954127ed8f21cdf8ad52c8c4ede48efaafe
+"@unocss/reset@npm:^0.31.17":
+  version: 0.31.17
+  resolution: "@unocss/reset@npm:0.31.17"
+  checksum: 3a11e343e648fcd4894b2941c1daa8dd4076dcce3fd3f624f1b1e97c82fecb5200132835ac4936b1927ac709bc3b1d8b15f9fae8570ae75046a90902ac807bf8
   languageName: node
   linkType: hard
 
@@ -10221,7 +10221,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^9.0.0
     "@types/node": ^16.11.29
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.31.16
+    "@unocss/reset": ^0.31.17
     case-police: ^0.5.3
     eslint: ^8.14.0
     eslint-plugin-jsdoc: ^39.2.9
@@ -10292,7 +10292,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.4.6
-    unimport: ^0.1.6
+    unimport: ^0.1.7
     unplugin: ^0.6.2
     untyped: ^0.4.4
     vue: ^3.2.33
@@ -13584,6 +13584,23 @@ __metadata:
     scule: ^0.2.1
     unplugin: ^0.6.2
   checksum: 9f19f8a325a2e2896dde66a2a31eab8418781cca453528eb1058439b1dec402c33ee966d25606a3601dbc8e5a4bedad7596359aea45cd63e6a84051ae2b13291
+  languageName: node
+  linkType: hard
+
+"unimport@npm:^0.1.7":
+  version: 0.1.7
+  resolution: "unimport@npm:0.1.7"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    escape-string-regexp: ^5.0.0
+    globby: ^13.1.1
+    local-pkg: ^0.4.1
+    magic-string: ^0.26.1
+    mlly: ^0.5.2
+    pathe: ^0.2.0
+    scule: ^0.2.1
+    unplugin: ^0.6.2
+  checksum: 5ffceaf50cd30aa45daa6df90138d0f69bb0244481292f80f066f720ade8bfcc132fa1ee623e01f7cd7f5ec96ce56730b2dfd4a947768dc655b5723970ef481d
   languageName: node
   linkType: hard
 
