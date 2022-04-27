@@ -28,7 +28,10 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts: UseFetchOptions<_ResT, Transform, PickKeys> = {}
 ) {
-  const key = '$f_' + (opts.key || hash([request, opts]))
+  if (process.dev && opts.transform && !opts.key) {
+    console.warn('[nuxt] You should provide a key for `useFetch` when using a custom transform function.')
+  }
+  const key = '$f_' + (opts.key || hash([request, { ...opts, transform: null }]))
   const _request = computed<FetchRequest>(() => {
     let r = request
     if (typeof r === 'function') {

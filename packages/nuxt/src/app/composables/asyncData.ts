@@ -141,7 +141,7 @@ export function useAsyncData<
 
   // Client side
   if (process.client) {
-    if (fetchOnServer && nuxt.isHydrating) {
+    if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
     } else if (instance && (nuxt.isHydrating || options.lazy)) {
