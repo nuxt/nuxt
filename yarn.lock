@@ -40,10 +40,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/compat-data@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/compat-data@npm:7.17.10"
+  checksum: e85051087cd4690de5061909a2dd2d7f8b6434a3c2e30be6c119758db2027ae1845bcd75a81127423dd568b706ac6994a1a3d7d701069a23bf5cfe900728290b
+  languageName: node
+  linkType: hard
+
 "@babel/compat-data@npm:^7.17.7":
   version: 7.17.7
   resolution: "@babel/compat-data@npm:7.17.7"
   checksum: bf13476676884ce9afc199747ff82f3bcd6d42a9cfb01ce91bdb762b83ea11ec619b6ec532d1a80469ab14f191f33b5d4b9f8796fa8be3bc728d42b0c5e737e3
+  languageName: node
+  linkType: hard
+
+"@babel/core@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/core@npm:7.17.10"
+  dependencies:
+    "@ampproject/remapping": ^2.1.0
+    "@babel/code-frame": ^7.16.7
+    "@babel/generator": ^7.17.10
+    "@babel/helper-compilation-targets": ^7.17.10
+    "@babel/helper-module-transforms": ^7.17.7
+    "@babel/helpers": ^7.17.9
+    "@babel/parser": ^7.17.10
+    "@babel/template": ^7.16.7
+    "@babel/traverse": ^7.17.10
+    "@babel/types": ^7.17.10
+    convert-source-map: ^1.7.0
+    debug: ^4.1.0
+    gensync: ^1.0.0-beta.2
+    json5: ^2.2.1
+    semver: ^6.3.0
+  checksum: 2545fb24b4090c1e9ead0daad4713ae6fe779df0843e6e286509146f4dd09958bd067d80995f2cc09fdb01fd0dc936f42cdd6f70b3d058de48e124cd9a3cc93e
   languageName: node
   linkType: hard
 
@@ -70,6 +100,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/generator@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/generator@npm:7.17.10"
+  dependencies:
+    "@babel/types": ^7.17.10
+    "@jridgewell/gen-mapping": ^0.1.0
+    jsesc: ^2.5.1
+  checksum: 9ec596a6ffec7bec239133a4ba79d4f834e6c894019accb1c70a7a5affbec9d0912d3baef200edd9d48e553d4ef72abcbffbc73cfb7d75f327c24186e887f79c
+  languageName: node
+  linkType: hard
+
 "@babel/generator@npm:^7.17.9":
   version: 7.17.9
   resolution: "@babel/generator@npm:7.17.9"
@@ -87,6 +128,20 @@ __metadata:
   dependencies:
     "@babel/types": ^7.16.7
   checksum: d235be963fed5d48a8a4cfabc41c3f03fad6a947810dbcab9cebed7f819811457e10d99b4b2e942ad71baa7ee8e3cd3f5f38a4e4685639ddfddb7528d9a07179
+  languageName: node
+  linkType: hard
+
+"@babel/helper-compilation-targets@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/helper-compilation-targets@npm:7.17.10"
+  dependencies:
+    "@babel/compat-data": ^7.17.10
+    "@babel/helper-validator-option": ^7.16.7
+    browserslist: ^4.20.2
+    semver: ^6.3.0
+  peerDependencies:
+    "@babel/core": ^7.0.0
+  checksum: 5f547c7ebd372e90fa72c2aaea867e7193166e9f469dec5acde4f0e18a78b80bdca8e02a0f641f3e998be984fb5b802c729a9034faaee8b1a9ef6670cb76f120
   languageName: node
   linkType: hard
 
@@ -275,6 +330,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/parser@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/parser@npm:7.17.10"
+  bin:
+    parser: ./bin/babel-parser.js
+  checksum: a9493d9fb8625e0904a178703866c8ee4d3a6003f0954b08df9f772b54dae109c69376812b74732e0c3e1a7f1d5b30915577a1db12e5e16b0abee083539df574
+  languageName: node
+  linkType: hard
+
 "@babel/plugin-syntax-import-meta@npm:^7.10.4":
   version: 7.10.4
   resolution: "@babel/plugin-syntax-import-meta@npm:7.10.4"
@@ -357,6 +421,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/traverse@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/traverse@npm:7.17.10"
+  dependencies:
+    "@babel/code-frame": ^7.16.7
+    "@babel/generator": ^7.17.10
+    "@babel/helper-environment-visitor": ^7.16.7
+    "@babel/helper-function-name": ^7.17.9
+    "@babel/helper-hoist-variables": ^7.16.7
+    "@babel/helper-split-export-declaration": ^7.16.7
+    "@babel/parser": ^7.17.10
+    "@babel/types": ^7.17.10
+    debug: ^4.1.0
+    globals: ^11.1.0
+  checksum: 44ec0a59aa274b59464d52b1796eb6e54c67ae0f946de0d608068e28b1ab7065bdf53c0169d9102854cb00aa01944c83e722f08aeab96d9cc6bf56f8aede70fd
+  languageName: node
+  linkType: hard
+
 "@babel/types@npm:^7.0.0, @babel/types@npm:^7.16.7, @babel/types@npm:^7.17.0, @babel/types@npm:^7.8.3":
   version: 7.17.0
   resolution: "@babel/types@npm:7.17.0"
@@ -364,6 +446,16 @@ __metadata:
     "@babel/helper-validator-identifier": ^7.16.7
     to-fast-properties: ^2.0.0
   checksum: 12e5a287986fe557188e87b2c5202223f1dc83d9239a196ab936fdb9f8c1eb0be717ff19f934b5fad4e29a75586d5798f74bed209bccea1c20376b9952056f0e
+  languageName: node
+  linkType: hard
+
+"@babel/types@npm:^7.17.10":
+  version: 7.17.10
+  resolution: "@babel/types@npm:7.17.10"
+  dependencies:
+    "@babel/helper-validator-identifier": ^7.16.7
+    to-fast-properties: ^2.0.0
+  checksum: 40cfc3f43a3ab7374df8ee6844793f804c65e7bea0fd1b090886b425106ba26e16e8fa698ae4b2caf2746083fe3e62f03f12997a5982e0d131700f17cbdcfca1
   languageName: node
   linkType: hard
 
@@ -466,10 +558,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@jridgewell/gen-mapping@npm:^0.1.0":
+  version: 0.1.1
+  resolution: "@jridgewell/gen-mapping@npm:0.1.1"
+  dependencies:
+    "@jridgewell/set-array": ^1.0.0
+    "@jridgewell/sourcemap-codec": ^1.4.10
+  checksum: 3bcc21fe786de6ffbf35c399a174faab05eb23ce6a03e8769569de28abbf4facc2db36a9ddb0150545ae23a8d35a7cf7237b2aa9e9356a7c626fb4698287d5cc
+  languageName: node
+  linkType: hard
+
 "@jridgewell/resolve-uri@npm:^3.0.3":
   version: 3.0.5
   resolution: "@jridgewell/resolve-uri@npm:3.0.5"
   checksum: 1ee652b693da7979ac4007926cc3f0a32b657ffeb913e111f44e5b67153d94a2f28a1d560101cc0cf8087625468293a69a00f634a2914e1a6d0817ba2039a913
+  languageName: node
+  linkType: hard
+
+"@jridgewell/set-array@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "@jridgewell/set-array@npm:1.1.0"
+  checksum: 86ddd72ce7d2f7756dfb69804b35d0e760a85dcef30ed72e8610bf2c5e843f8878d977a0c77c4fdfa6a0e3d5b18e5bde4a1f1dd73fd2db06b200c998e9b5a6c5
   languageName: node
   linkType: hard
 
@@ -1642,7 +1751,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
-    "@babel/core": ^7.17.9
+    "@babel/core": ^7.17.10
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
     "@nuxt/kit": ^3.0.0-rc.1
     "@nuxt/schema": ^3.0.0-rc.1
