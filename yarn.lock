@@ -1487,7 +1487,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.1.7
+    unimport: ^0.1.8
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1514,7 +1514,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.3
     unbuild: latest
-    unimport: ^0.1.7
+    unimport: ^0.1.8
   languageName: unknown
   linkType: soft
 
@@ -1658,7 +1658,7 @@ __metadata:
     esbuild-loader: ^2.18.0
     escape-string-regexp: ^5.0.0
     file-loader: ^6.2.0
-    fork-ts-checker-webpack-plugin: ^7.2.7
+    fork-ts-checker-webpack-plugin: ^7.2.8
     fs-extra: ^10.1.0
     hash-sum: ^2.0.0
     lodash-es: ^4.17.21
@@ -2209,10 +2209,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.31":
-  version: 16.11.31
-  resolution: "@types/node@npm:16.11.31"
-  checksum: 0bad289e12c7066cd2ea7a204d051a0bb09a32a29da39850812ea14c075f9e2b4aeaab23aa23447ef9e3aa6a30173bf3d3524e37bbeeb56fb8ffa4bbd783c5db
+"@types/node@npm:^16.11.32":
+  version: 16.11.32
+  resolution: "@types/node@npm:16.11.32"
+  checksum: 21f1bcd4f47a443f8a78a58b6ca3488dd9418c71b1185ba067d02222047fb194a3bfba244c32259bcb0cae4d55870b43a908b1f2832ec4aa4f31158f809625fe
   languageName: node
   linkType: hard
 
@@ -2634,10 +2634,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.31.17":
-  version: 0.31.17
-  resolution: "@unocss/reset@npm:0.31.17"
-  checksum: 3a11e343e648fcd4894b2941c1daa8dd4076dcce3fd3f624f1b1e97c82fecb5200132835ac4936b1927ac709bc3b1d8b15f9fae8570ae75046a90902ac807bf8
+"@unocss/reset@npm:^0.32.1":
+  version: 0.32.1
+  resolution: "@unocss/reset@npm:0.32.1"
+  checksum: ea90f01eaaa923a479792e3617dcdd42529cac8c87ff7ce69d5a860e442ac4dfef84c44e55065f2d5618f368117d5d70852a9cd2de0eefea0093c80c0c771fc4
   languageName: node
   linkType: hard
 
@@ -6972,9 +6972,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fork-ts-checker-webpack-plugin@npm:^7.2.7":
-  version: 7.2.7
-  resolution: "fork-ts-checker-webpack-plugin@npm:7.2.7"
+"fork-ts-checker-webpack-plugin@npm:^7.2.8":
+  version: 7.2.8
+  resolution: "fork-ts-checker-webpack-plugin@npm:7.2.8"
   dependencies:
     "@babel/code-frame": ^7.16.7
     chalk: ^4.1.2
@@ -6994,7 +6994,7 @@ __metadata:
   peerDependenciesMeta:
     vue-template-compiler:
       optional: true
-  checksum: 2aaac6f72c7326c0ac696fe0e630bdd2887e40d5bc8035862851b1abf4132c85808ddc967472a6846764b2b7d38c6f5408088c086188f149db759f2b233e51f5
+  checksum: 5be93cbdd4139198bf3bf13ff003f1102efa877cf653c406f5199e41f8b92f2f97e5f2476a7a2f4e09cac7decc9df147c0cef7513c048223805b5a65ad49359c
   languageName: node
   linkType: hard
 
@@ -10219,9 +10219,9 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^9.0.0
-    "@types/node": ^16.11.31
+    "@types/node": ^16.11.32
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.31.17
+    "@unocss/reset": ^0.32.1
     case-police: ^0.5.3
     eslint: ^8.14.0
     eslint-plugin-jsdoc: ^39.2.9
@@ -10233,7 +10233,7 @@ __metadata:
     markdownlint-cli: ^0.31.1
     pathe: ^0.2.0
     rimraf: ^3.0.2
-    typescript: ^4.6.3
+    typescript: ^4.6.4
     unbuild: ^0.7.4
     vitest: ^0.10.0
     vue-tsc: ^0.34.10
@@ -10292,7 +10292,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.4.6
-    unimport: ^0.1.7
+    unimport: ^0.1.8
     unplugin: ^0.6.2
     untyped: ^0.4.4
     vue: ^3.2.33
@@ -13420,6 +13420,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:^4.6.4":
+  version: 4.6.4
+  resolution: "typescript@npm:4.6.4"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: e7bfcc39cd4571a63a54e5ea21f16b8445268b9900bf55aee0e02ad981be576acc140eba24f1af5e3c1457767c96cea6d12861768fb386cf3ffb34013718631a
+  languageName: node
+  linkType: hard
+
 "typescript@patch:typescript@^4.6.3#~builtin<compat/typescript>":
   version: 4.6.3
   resolution: "typescript@patch:typescript@npm%3A4.6.3#~builtin<compat/typescript>::version=4.6.3&hash=bda367"
@@ -13427,6 +13437,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 6bf45caf847062420592e711bc9c28bf5f9a9a7fa8245343b81493e4ededae33f1774009d1234d911422d1646a2c839f44e1a23ecb111b40a60ac2ea4c1482a8
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>":
+  version: 4.6.4
+  resolution: "typescript@patch:typescript@npm%3A4.6.4#~builtin<compat/typescript>::version=4.6.4&hash=bda367"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 1cb434fbc637d347be90e3a0c6cd05e33c38f941713c8786d3031faf1842c2c148ba91d2fac01e7276b0ae3249b8633f1660e32686cc7a8c6a8fd5361dc52c66
   languageName: node
   linkType: hard
 
@@ -13584,6 +13604,23 @@ __metadata:
     scule: ^0.2.1
     unplugin: ^0.6.2
   checksum: 5ffceaf50cd30aa45daa6df90138d0f69bb0244481292f80f066f720ade8bfcc132fa1ee623e01f7cd7f5ec96ce56730b2dfd4a947768dc655b5723970ef481d
+  languageName: node
+  linkType: hard
+
+"unimport@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "unimport@npm:0.1.8"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    escape-string-regexp: ^5.0.0
+    globby: ^13.1.1
+    local-pkg: ^0.4.1
+    magic-string: ^0.26.1
+    mlly: ^0.5.2
+    pathe: ^0.2.0
+    scule: ^0.2.1
+    unplugin: ^0.6.2
+  checksum: d0bfc3d0c59ea95dd863cc7926da525a1c1839f0734a462c5a962ae4d3bbeddf604d37ae57008aa20179c8e69c4aa4206fadf58e28620a6f5376864c68e232fd
   languageName: node
   linkType: hard
 
