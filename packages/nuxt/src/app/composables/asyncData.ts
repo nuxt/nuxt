@@ -42,14 +42,14 @@ const getDefault = () => null
 
 export function useAsyncData<
   DataT,
-  DataE = any,
+  DataE = Error,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options: AsyncDataOptions<DataT, Transform, PickKeys> = {}
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE> {
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true> {
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('asyncData key must be a string')
@@ -174,14 +174,14 @@ export function useAsyncData<
 
 export function useLazyAsyncData<
   DataT,
-  DataE = any,
+  DataE = Error,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'> = {}
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE> {
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true> {
   return useAsyncData(key, handler, { ...options, lazy: true })
 }
 

@@ -6,7 +6,7 @@ This composable provides a convenient wrapper around [`useAsyncData`](/api/compo
 
 ```ts [Signature]
 function useFetch(
-  url: string,
+  url: string | Request,
   options?: UseFetchOptions
 ): Promise<DataT>
 
@@ -26,7 +26,7 @@ type DataT = {
   data: Ref<DataT>
   pending: Ref<boolean>
   refresh: () => Promise<void>
-  error: Ref<any>
+  error: Ref<Error | boolean>
 }
 ```
 
