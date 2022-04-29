@@ -26,7 +26,7 @@ export default defineComponent({
         default: (routeProps: RouterViewSlotProps) => routeProps.Component &&
             _wrapIf(Transition, routeProps.route.meta.pageTransition ?? defaultPageTransition,
               wrapInKeepAlive(routeProps.route.meta.keepalive,
-                isNested
+                isNested && nuxtApp.isHydrating
                   // Include route children in parent suspense
                   ? h(routeProps.Component, { key: generateRouteKey(props.pageKey, routeProps) } as {})
                   : h(Suspense, {
