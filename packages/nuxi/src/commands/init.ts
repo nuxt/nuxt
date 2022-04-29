@@ -57,7 +57,7 @@ export default defineNuxtCommand({
       '',
       `📁  \`cd ${rpath(dstDir)}\``,
       '💿  Install dependencies with `npm install` or `yarn install` or `pnpm install --shamefully-hoist`',
-      '🚀  Start development server with `npm run dev` or `yarn dev` or `pnpm run dev',
+      '🚀  Start development server with `npm run dev` or `yarn dev` or `pnpm run dev`',
       ''
     ].join('\n\n     '))
   }
