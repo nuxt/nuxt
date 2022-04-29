@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addPlugin, addTemplate, defineNuxtModule, isNuxt3 } from '@nuxt/kit'
+import { addPlugin, addTemplate, defineNuxtModule } from '@nuxt/kit'
 import defu from 'defu'
 import { distDir } from '../dirs'
 import type { MetaObject } from './runtime'
@@ -31,7 +31,7 @@ export default defineNuxtModule({
     // Add global meta configuration
     addTemplate({
       filename: 'meta.config.mjs',
-      getContents: () => 'export default ' + JSON.stringify({ globalMeta, mixinKey: isNuxt3() ? 'created' : 'setup' })
+      getContents: () => 'export default ' + JSON.stringify({ globalMeta })
     })
 
     // Add generic plugin
