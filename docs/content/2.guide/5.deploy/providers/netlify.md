@@ -20,7 +20,7 @@ Normally, the deployment to Netlify does not require any configuration. Nuxt wil
 
 To trigger a deploy, just push to your git repository [as you would normally do for Netlify](https://docs.netlify.com/configure-builds/get-started/).
 
-By default, Nuxt will server-render each page on server hit using [Netlify Functions](https://docs.netlify.com/functions/overview/). You can optionaly configure deployment to use [Netlify Edge Functions](https://docs.netlify.com/netlify-labs/experimental-features/edge-functions/) or [Netlify On-demand Builders](https://docs.netlify.com/configure-builds/on-demand-builders/).
+By default, Nuxt will server-render each page on server hit using [Netlify Functions](https://docs.netlify.com/functions/overview/). You can optionally configure deployment to use [Netlify Edge Functions](https://docs.netlify.com/netlify-labs/experimental-features/edge-functions/) or [Netlify On-demand Builders](https://docs.netlify.com/configure-builds/on-demand-builders/).
 
 ## Netlify Edge Functions
 
