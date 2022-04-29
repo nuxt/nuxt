@@ -18,7 +18,7 @@ export default defineNuxtCommand({
     })
 
     if (args.watch) {
-      return 'wait'
+      return 'wait' as const
     }
   }
 })

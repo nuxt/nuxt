@@ -1,4 +1,5 @@
 import { joinURL } from 'ufo'
+// @ts-ignore
 import { useRuntimeConfig } from '#internal/nitro'
 
 export function baseURL (): string {

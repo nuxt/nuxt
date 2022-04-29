@@ -107,6 +107,6 @@ export default defineNuxtCommand({
 
     await load(false)
 
-    return 'wait'
+    return 'wait' as const
   }
 })

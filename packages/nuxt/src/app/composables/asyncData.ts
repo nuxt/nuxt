@@ -1,4 +1,4 @@
-import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch } from 'vue'
+import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import { wrapInRef } from './utils'
 import { NuxtApp, useNuxtApp } from '#app'
@@ -116,7 +116,7 @@ export function useAsyncData<
       })
       .catch((error: any) => {
         asyncData.error.value = error
-        asyncData.data.value = options.default()
+        asyncData.data.value = unref(options.default())
       })
       .finally(() => {
         asyncData.pending.value = false

@@ -19,12 +19,19 @@
       ],
       "#app/*": [
         "./packages/nuxt/src/app/*"
-      ]
+      ],
+      "#head": [
+        "./packages/nuxt/src/head/runtime/index"
+      ],
     }
   },
   "exclude": [
     "**/*/dist/*",
     "**/.nuxt/**",
-    "**/nuxt.d.ts"
+    "**/nuxt.d.ts",
+    "**/examples/**",
+    "**/docs/**",
+    "**/playground/**",
+    "**/test/fixtures/**"
   ]
 }

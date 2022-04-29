@@ -1,6 +1,7 @@
 // We set __webpack_public_path via this import with webpack builder
 import { createSSRApp, createApp, nextTick } from 'vue'
 import { $fetch } from 'ohmyfetch'
+// @ts-ignore
 import { baseURL } from '#build/paths.mjs'
 import { createNuxtApp, applyPlugins, normalizePlugins, CreateOptions } from '#app'
 import '#build/css'
@@ -12,6 +13,7 @@ import RootComponent from '#build/root-component.mjs'
 import AppComponent from '#build/app-component.mjs'
 
 if (!globalThis.$fetch) {
+  // @ts-ignore
   globalThis.$fetch = $fetch.create({
     baseURL: baseURL()
   })

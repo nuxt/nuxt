@@ -66,6 +66,6 @@ export default defineNuxtCommand({
 
     await listen(app)
 
-    return 'wait'
+    return 'wait' as const
   }
 })

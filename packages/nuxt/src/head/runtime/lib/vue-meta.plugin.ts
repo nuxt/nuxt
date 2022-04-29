@@ -4,6 +4,7 @@ import type { MetaObject } from '..'
 import { defineNuxtPlugin } from '#app'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  // @ts-expect-error missing resolver
   const manager = createMetaManager(process.server)
 
   nuxtApp.vueApp.use(manager)
@@ -20,6 +21,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   if (process.server) {
     nuxtApp.ssrContext.renderMeta = async () => {
+      // @ts-ignore
       const { renderMetaToString } = await import('vue-meta/ssr')
       nuxtApp.ssrContext.teleports = nuxtApp.ssrContext.teleports || {}
 

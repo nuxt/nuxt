@@ -1,7 +1,9 @@
 import { createRenderer } from 'vue-bundle-renderer'
 import { eventHandler, useQuery } from 'h3'
 import devalue from '@nuxt/devalue'
+// @ts-ignore
 import { useRuntimeConfig } from '#internal/nitro'
+// @ts-ignore
 import { buildAssetsURL } from '#paths'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.mjs'
@@ -10,7 +12,9 @@ const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + '/' + process.env.NUXT
 const NUXT_NO_SSR = process.env.NUXT_NO_SSR
 const PAYLOAD_JS = '/payload.js'
 
+// @ts-ignore
 const getClientManifest = cachedImport(() => import('#build/dist/server/client.manifest.mjs'))
+// @ts-ignore
 const getSSRApp = !process.env.NUXT_NO_SSR && cachedImport(() => import('#build/dist/server/server.mjs'))
 
 const getSSRRenderer = cachedResult(async () => {
@@ -21,6 +25,7 @@ const getSSRRenderer = cachedResult(async () => {
   const createSSRApp = await getSSRApp()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
   // Create renderer
+  // @ts-ignore
   const { renderToString } = await import('#vue-renderer') // Alias to vue2.ts or vue3.ts
   return createRenderer((createSSRApp), { clientManifest, renderToString, publicPath: buildAssetsURL() }).renderToString
 })

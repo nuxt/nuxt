@@ -19,6 +19,7 @@
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
     "lint:docs": "markdownlint ./docs/content && case-police 'docs/content**/*.md'",
     "lint:docs:fix": "markdownlint ./docs/content --fix && case-police 'docs/content**/*.md' --fix",
+    "typecheck": "tsc --noEmit",
     "nuxi": "NUXT_TELEMETRY_DISABLED=1 node ./packages/nuxi/bin/nuxi.mjs",
     "nuxt": "NUXT_TELEMETRY_DISABLED=1 node ./packages/nuxi/bin/nuxi.mjs",
     "play": "echo use yarn dev && exit 1",
