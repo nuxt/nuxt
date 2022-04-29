@@ -8,7 +8,7 @@ export default {
    * See https://vitejs.dev/config for more information.
    * Please note that not all vite options are supported in Nuxt.
    *
-   * @type {typeof import('vite').InlineConfig}
+   * @type {typeof import('vite').UserConfig}
    * @version 3
    */
   vite: {

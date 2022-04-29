@@ -1,7 +1,7 @@
 import { ConfigSchema } from '../../schema/config'
 import type { ResolvedConfig } from 'c12'
 
-type DeepPartial<T> = T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> | T[P] } : T
+type DeepPartial<T> = T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 /** User configuration in `nuxt.config` file */
 export interface NuxtConfig extends DeepPartial<ConfigSchema> {
