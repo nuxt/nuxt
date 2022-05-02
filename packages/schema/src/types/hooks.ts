@@ -101,6 +101,7 @@ export interface NuxtHooks {
   // nitropack
   'nitro:config': (nitroConfig: NitroConfig) => HookResult
   'nitro:init': (nitro: Nitro) => HookResult
+  'nitro:build:before': (nitro: Nitro) => HookResult
 
   // @nuxt/cli
   'generate:cache:ignore': (ignore: string[]) => HookResult
