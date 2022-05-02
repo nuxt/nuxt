@@ -1,0 +1,7 @@
+{
+ "github": "nuxt/framework",
+ "scopeMap": {
+   "nuxt3": "nuxt",
+   "nuxi": "cli"
+  }
+}
