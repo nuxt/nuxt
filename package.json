@@ -44,7 +44,7 @@
     "unbuild": "^0.7.4"
   },
   "devDependencies": {
-    "@nuxtjs/eslint-config-typescript": "^9.0.0",
+    "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.33",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.32.8",
