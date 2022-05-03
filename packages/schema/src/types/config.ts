@@ -4,7 +4,8 @@ import type { ResolvedConfig } from 'c12'
 type DeepPartial<T> = T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 /** User configuration in `nuxt.config` file */
-export interface NuxtConfig extends DeepPartial<ConfigSchema> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite'>> {
+  vite?: ConfigSchema['vite']
   [key: string]: any
 }
 
