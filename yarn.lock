@@ -1586,7 +1586,7 @@ __metadata:
     ohmyfetch: ^0.4.16
     playwright: ^1.21.1
     unbuild: latest
-    vitest: ^0.10.1
+    vitest: ^0.10.2
   peerDependencies:
     vue: 3.2.33
   languageName: unknown
@@ -1655,7 +1655,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.6.2
     vite: ^2.9.7
-    vite-node: ^0.10.1
+    vite-node: ^0.10.2
     vite-plugin-checker: ^0.4.6
     vue: 3.2.33
   peerDependencies:
@@ -10124,7 +10124,7 @@ __metadata:
     rimraf: ^3.0.2
     typescript: ^4.6.4
     unbuild: ^0.7.4
-    vitest: ^0.10.1
+    vitest: ^0.10.2
     vue-tsc: ^0.34.11
   languageName: unknown
   linkType: soft
@@ -13720,9 +13720,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "vite-node@npm:0.10.1"
+"vite-node@npm:^0.10.2":
+  version: 0.10.2
+  resolution: "vite-node@npm:0.10.2"
   dependencies:
     kolorist: ^1.5.1
     minimist: ^1.2.6
@@ -13731,7 +13731,7 @@ __metadata:
     vite: ^2.9.5
   bin:
     vite-node: vite-node.mjs
-  checksum: b4ee81803e6e8e552bb3abd8b510655d8fd9fea631309107a8265b339a267133220eac70ca42a01ee036d6d422687b761d672ea6892107d1c0fd2e48ff84bf38
+  checksum: 914a58a00d4f5666699135e6a4755319226eaac4dbcdf79f920e47a1e8bc4d4f6626c414537a9bff67c95d999cd376e0c49eb0f867e33374663423cd8ea1e224
   languageName: node
   linkType: hard
 
@@ -13791,9 +13791,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "vitest@npm:0.10.1"
+"vitest@npm:^0.10.2":
+  version: 0.10.2
+  resolution: "vitest@npm:0.10.2"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13818,7 +13818,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 570093f6d5045566a7f6bacba1905ccc80a10867fadad0c5994095fcf18380839ded228c9f9c89cfe5b633e1c2200c3d960fa71009559fb2291fe9eb02f6b91c
+  checksum: 92d226a22e07f313838081286219c83d58d3dbe13bdbdfdb827410a4b19f3df883718ef570fd481ede9550b50f18cccc8c949e2bb7c9f15d654487b4fc4fad2d
   languageName: node
   linkType: hard
 
