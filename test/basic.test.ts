@@ -59,6 +59,18 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('preserves query', async () => {
+    const html = await $fetch('/?test=true')
+
+    // Snapshot
+    // expect(html).toMatchInlineSnapshot()
+
+    // should render text
+    expect(html).toContain('Path: /?test=true')
+
+    await expectNoClientErrors('/?test=true')
+  })
+
   it('/nested/[foo]/[bar].vue', async () => {
     const html = await $fetch('/nested/one/two')
 

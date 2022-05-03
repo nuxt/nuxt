@@ -185,7 +185,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   nuxtApp.hooks.hookOnce('app:created', async () => {
     try {
       await router.replace({
-        path: initialURL,
+        ...router.resolve(initialURL),
         force: true
       })
     } catch (error) {
