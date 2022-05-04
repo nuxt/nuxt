@@ -48,7 +48,7 @@
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.33",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.32.9",
+    "@unocss/reset": "^0.32.12",
     "case-police": "^0.5.3",
     "changelogen": "^0.0.3",
     "eslint": "^8.14.0",

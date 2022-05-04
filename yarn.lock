@@ -2677,10 +2677,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.32.9":
-  version: 0.32.9
-  resolution: "@unocss/reset@npm:0.32.9"
-  checksum: 439f018fac74be0e61e99b67409ab6a64d3280bbb2661dcb92789c26b1e215e94853a0b5f2bf33fdab148fe7d6bcad185b5e9ddf6c13bdcd80ca4b76b6fe0964
+"@unocss/reset@npm:^0.32.12":
+  version: 0.32.12
+  resolution: "@unocss/reset@npm:0.32.12"
+  checksum: 3255a32dfb871b563c69e8b0e5131314fe31eb8b5cb720c308d63f7b14bf57ef9e4ad3d0d1c51097f8cddde4b6ddff6377ecdc46e328bc7fd5567e77a23221dc
   languageName: node
   linkType: hard
 
@@ -10109,7 +10109,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.33
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.32.9
+    "@unocss/reset": ^0.32.12
     case-police: ^0.5.3
     changelogen: ^0.0.3
     eslint: ^8.14.0
