@@ -10187,7 +10187,7 @@ __metadata:
     vue: ^3.2.33
     vue-bundle-renderer: ^0.3.7
     vue-meta: next
-    vue-router: ^4.0.14
+    vue-router: ^4.0.15
   bin:
     nuxi: ./bin/nuxt.mjs
     nuxt: ./bin/nuxt.mjs
@@ -13947,14 +13947,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.14":
-  version: 4.0.14
-  resolution: "vue-router@npm:4.0.14"
+"vue-router@npm:^4.0.15":
+  version: 4.0.15
+  resolution: "vue-router@npm:4.0.15"
   dependencies:
     "@vue/devtools-api": ^6.0.0
   peerDependencies:
     vue: ^3.2.0
-  checksum: 694f6a85f82c11321ecbbb181db9b1a63fe99f781f33feab56c6ed1924370553b9d4325a9bdc1fbd3bfacb4cea12ef37cee77bc91974c1c6314e07fe8193941b
+  checksum: 9fcfcd05db32b565059af8e70499e5f7c9f81d555aa9d95f2e8ef306fba941a288985037874e184e6212e8c49d509ad61d12e6c4bd94f3e4fbf578934293ec51
   languageName: node
   linkType: hard
 
