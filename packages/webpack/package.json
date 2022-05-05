@@ -34,7 +34,7 @@
     "memfs": "^3.4.1",
     "mini-css-extract-plugin": "^2.6.0",
     "mlly": "^0.5.2",
-    "pathe": "^0.2.0",
+    "pathe": "^0.3.0",
     "pify": "^5.0.0",
     "postcss": "^8.4.13",
     "postcss-import": "^14.1.0",

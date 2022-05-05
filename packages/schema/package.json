@@ -23,7 +23,7 @@
     "create-require": "^1.1.1",
     "defu": "^6.0.0",
     "jiti": "^1.13.0",
-    "pathe": "^0.2.0",
+    "pathe": "^0.3.0",
     "postcss-import-resolver": "^2.0.0",
     "scule": "^0.2.1",
     "std-env": "^3.1.1",
