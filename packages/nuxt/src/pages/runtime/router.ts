@@ -176,8 +176,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     delete nuxtApp._processingMiddleware
 
     if (process.server) {
-      if (to.fullPath !== initialURL) {
-        await callWithNuxt(nuxtApp, navigateTo, [to.fullPath])
+      const currentURL = to.fullPath || '/'
+      if (currentURL !== initialURL) {
+        await callWithNuxt(nuxtApp, navigateTo, [currentURL])
       }
     }
   })

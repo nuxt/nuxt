@@ -56,6 +56,9 @@ export interface NavigateToOptions {
 }
 
 export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}): Promise<void | NavigationFailure> | RouteLocationRaw => {
+  if (!to) {
+    to = '/'
+  }
   if (isProcessingMiddleware()) {
     return to
   }
@@ -63,7 +66,7 @@ export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}
   if (process.server) {
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
-      const redirectLocation = router.resolve(to).fullPath
+      const redirectLocation = router.resolve(to).fullPath || '/'
       return nuxtApp.callHook('app:redirected').then(() => sendRedirect(nuxtApp.ssrContext.event, redirectLocation, options.redirectCode || 301))
     }
   }
