@@ -1537,7 +1537,7 @@ __metadata:
     postcss-import-resolver: ^2.0.0
     scule: ^0.2.1
     std-env: ^3.1.1
-    ufo: ^0.8.3
+    ufo: ^0.8.4
     unbuild: latest
     unimport: ^0.1.8
   languageName: unknown
@@ -1651,7 +1651,7 @@ __metadata:
     postcss-url: ^10.1.3
     rollup: ^2.72.0
     rollup-plugin-visualizer: ^5.6.0
-    ufo: ^0.8.3
+    ufo: ^0.8.4
     unbuild: latest
     unplugin: ^0.6.2
     vite: ^2.9.8
@@ -1699,7 +1699,7 @@ __metadata:
     postcss-url: ^10.1.3
     style-resources-loader: ^1.5.0
     time-fix-plugin: ^2.0.7
-    ufo: ^0.8.3
+    ufo: ^0.8.4
     unbuild: latest
     unplugin: ^0.6.2
     url-loader: ^4.1.1
@@ -10081,7 +10081,7 @@ __metadata:
     pathe: ^0.3.0
     perfect-debounce: ^0.1.3
     scule: ^0.2.1
-    ufo: ^0.8.3
+    ufo: ^0.8.4
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.1
@@ -13231,10 +13231,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.8.3":
-  version: 0.8.3
-  resolution: "ufo@npm:0.8.3"
-  checksum: 7ea20e9d0fbd92b3310de4b020919f0a0542db60a6787ccecf232285d55795ddc0ea482b04d6c07cac60367a294aee705d888999867a5c3c69e47ed8d0ae3009
+"ufo@npm:^0.8.3, ufo@npm:^0.8.4":
+  version: 0.8.4
+  resolution: "ufo@npm:0.8.4"
+  checksum: a2ebef6f64b9cc4114fc65405837eeb83eb8975edd6d54c7f37abb6905da6fd1f63524e4a02c8b087e7b0b3db6e6f4f798a3d86a96500410ff590b405f807dc9
   languageName: node
   linkType: hard
 

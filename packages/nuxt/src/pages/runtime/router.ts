@@ -7,7 +7,7 @@ import {
   RouteLocation
 } from 'vue-router'
 import { createError } from 'h3'
-import { withoutBase } from 'ufo'
+import { withoutBase, isEqual } from 'ufo'
 import NuxtPage from './page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError, navigateTo, useError } from '#app'
 // @ts-ignore
@@ -177,7 +177,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
     if (process.server) {
       const currentURL = to.fullPath || '/'
-      if (currentURL !== initialURL) {
+      if (!isEqual(currentURL, initialURL)) {
         await callWithNuxt(nuxtApp, navigateTo, [currentURL])
       }
     }

@@ -1,5 +1,5 @@
 import { reactive, h } from 'vue'
-import { parseURL, parseQuery, withoutBase } from 'ufo'
+import { parseURL, parseQuery, withoutBase, isEqual } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
@@ -221,7 +221,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     })
 
     await router.replace(initialURL)
-    if (route.fullPath !== initialURL) {
+    if (!isEqual(route.fullPath, initialURL)) {
       await callWithNuxt(nuxtApp, navigateTo, [route.fullPath])
     }
   })
