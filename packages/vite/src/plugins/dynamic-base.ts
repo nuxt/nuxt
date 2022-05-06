@@ -81,8 +81,8 @@ export const DynamicBasePlugin = createUnplugin(function (options: DynamicBasePl
 
       if (id === 'vite/preload-helper') {
         // Define vite base path as buildAssetsUrl (i.e. including _nuxt/)
-        s.prepend('import { buildAssetsDir } from \'#build/paths.mjs\';\n')
-        s.replace(/const base = ['"]\/__NUXT_BASE__\/['"]/, 'const base = buildAssetsDir()')
+        s.prepend('import { buildAssetsURL } from \'#build/paths.mjs\';\n')
+        s.replace(/const base = ['"]\/__NUXT_BASE__\/['"]/, 'const base = buildAssetsURL()')
       }
 
       // Sanitize imports
