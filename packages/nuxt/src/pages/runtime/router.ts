@@ -54,7 +54,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   nuxtApp.vueApp.component('NuxtNestedPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtChild', NuxtPage)
 
-  const { baseURL } = useRuntimeConfig().app
+  const baseURL = useRuntimeConfig().app.baseURL
   const routerHistory = process.client
     ? createWebHistory(baseURL)
     : createMemoryHistory(baseURL)
