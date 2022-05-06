@@ -1,4 +1,4 @@
-import { ref, onMounted, defineComponent, createElementBlock } from 'vue'
+import { ref, onMounted, defineComponent, createElementBlock, h } from 'vue'
 
 export default defineComponent({
   name: 'ClientOnly',
