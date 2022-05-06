@@ -191,6 +191,7 @@ async function resolveHandlers (nuxt: Nuxt) {
       handlers.push({
         ...m,
         route,
+        middleware: true,
         handler: await resolvePath(handler)
       })
     }
