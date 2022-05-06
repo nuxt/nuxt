@@ -144,7 +144,7 @@ export function useAsyncData<
     if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
-    } else if (instance && (nuxt.isHydrating || options.lazy)) {
+    } else if (instance && nuxt.payload.serverRendered && (nuxt.isHydrating || options.lazy)) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
