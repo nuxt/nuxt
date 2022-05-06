@@ -107,11 +107,6 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
       // Resolve route
       const to = getRouteFromPath(url)
 
-      if (process.client && !nuxtApp.isHydrating) {
-      // Clear any existing errors
-        await callWithNuxt(nuxtApp, clearError)
-      }
-
       // Run beforeEach hooks
       for (const middleware of hooks['navigate:before']) {
         const result = await middleware(to, route)
@@ -128,6 +123,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
       Object.assign(route, to)
       if (process.client) {
         window.history[replace ? 'replaceState' : 'pushState']({}, '', url)
+        if (!nuxtApp.isHydrating) {
+          // Clear any existing errors
+          await callWithNuxt(nuxtApp, clearError)
+        }
       }
       // Run afterEach hooks
       for (const middleware of hooks['navigate:after']) {

@@ -34,7 +34,7 @@ const stacktrace = (error.stack || '')
 const statusCode = String(error.statusCode || 500)
 const is404 = statusCode === '404'
 
-const statusMessage = error.statusMessage ?? is404 ? 'Page Not Found' : 'Internal Server Error'
+const statusMessage = error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = error.message || error.toString()
 const stack = process.dev && !is404 ? error.description || `<pre>${stacktrace}</pre>` : undefined
 

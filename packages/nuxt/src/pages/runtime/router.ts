@@ -9,7 +9,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase } from 'ufo'
 import NuxtPage from './page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError, navigateTo } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError, navigateTo, useError } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -107,7 +107,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     named: {}
   }
 
-  router.afterEach((to) => {
+  const error = useError()
+  router.afterEach(async (to) => {
+    if (process.client && !nuxtApp.isHydrating && error.value) {
+      // Clear any existing errors
+      await callWithNuxt(nuxtApp, clearError)
+    }
     if (to.matched.length === 0) {
       callWithNuxt(nuxtApp, throwError, [createError({
         statusCode: 404,
@@ -145,11 +150,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       } else {
         middlewareEntries.add(componentMiddleware)
       }
-    }
-
-    if (process.client && !nuxtApp.isHydrating) {
-      // Clear any existing errors
-      await callWithNuxt(nuxtApp, clearError)
     }
 
     for (const entry of middlewareEntries) {
