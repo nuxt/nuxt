@@ -176,9 +176,10 @@ export async function initNitro (nuxt: Nuxt) {
 }
 
 async function resolveHandlers (nuxt: Nuxt) {
-  const handlers: NitroEventHandler[] = []
-  const devHandlers: NitroDevEventHandler[] = []
+  const handlers: NitroEventHandler[] = [...nuxt.options.serverHandlers]
+  const devHandlers: NitroDevEventHandler[] = [...nuxt.options.devServerHandlers]
 
+  // Map legacy serverMiddleware to handlers
   for (let m of nuxt.options.serverMiddleware) {
     if (typeof m === 'string' || typeof m === 'function' /* legacy middleware */) { m = { handler: m } }
     const route = m.path || m.route || '/'

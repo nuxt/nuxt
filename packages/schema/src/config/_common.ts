@@ -393,8 +393,9 @@ export default {
    *   }
    * }
    * ```
+   *
    * @version 2
-   * @version 3
+   * @deprecated Use `serverHandlers` instead
    */
   serverMiddleware: {
     $resolve: (val: any) => {

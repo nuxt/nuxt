@@ -7,6 +7,7 @@ export default defineBuildConfig({
   ],
   externals: [
     '@nuxt/schema',
+    'nitropack',
     'webpack',
     'vite',
     'h3'
