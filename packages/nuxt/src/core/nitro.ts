@@ -64,9 +64,8 @@ export async function initNitro (nuxt: Nuxt) {
       ]
     },
     alias: {
-      // TODO: #590
-      'vue/server-renderer': 'vue/server-renderer',
       'vue/compiler-sfc': 'vue/compiler-sfc',
+      'vue/server-renderer': 'vue/server-renderer',
       vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`),
 
       // Vue 3 mocks
@@ -77,9 +76,6 @@ export async function initNitro (nuxt: Nuxt) {
       '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
       '@vue/devtools-api': 'unenv/runtime/mock/proxy',
 
-      // Renderer
-      '#vue-renderer': resolve(distDir, 'core/runtime/nitro/vue3'),
-
       // Paths
       '#paths': resolve(distDir, 'core/runtime/nitro/paths'),
 
@@ -87,7 +83,7 @@ export async function initNitro (nuxt: Nuxt) {
       ...nuxt.options.alias
     },
     replace: {
-      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false ? true : undefined
+      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false
     },
     rollupConfig: {
       plugins: []

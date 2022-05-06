@@ -10089,7 +10089,7 @@ __metadata:
     unplugin: ^0.6.2
     untyped: ^0.4.4
     vue: ^3.2.33
-    vue-bundle-renderer: ^0.3.7
+    vue-bundle-renderer: ^0.3.8
     vue-meta: next
     vue-router: ^4.0.15
   bin:
@@ -13751,12 +13751,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.3.7":
-  version: 0.3.7
-  resolution: "vue-bundle-renderer@npm:0.3.7"
+"vue-bundle-renderer@npm:^0.3.8":
+  version: 0.3.8
+  resolution: "vue-bundle-renderer@npm:0.3.8"
   dependencies:
     bundle-runner: ^0.0.1
-  checksum: 6ef21f019e2b415554dfc1c4ba554a39248a7d8107001de4a3637098787be06cf9784273ec997ee7e2a348949225d2ee534e5523ca8ec9c981e8d7e3965228d0
+  checksum: f1cc37913369786e60db6cffcda3f016cb073301db765128cddebdcf8367b50a7525e47b60924788def443f3183b92bcfc72ad248ce28d3fed19ef092ae8b662
   languageName: node
   linkType: hard
 
