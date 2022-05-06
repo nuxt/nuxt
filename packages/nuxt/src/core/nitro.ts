@@ -88,6 +88,9 @@ export async function initNitro (nuxt: Nuxt) {
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false ? true : undefined
+    },
+    rollupConfig: {
+      plugins: []
     }
   })
 
