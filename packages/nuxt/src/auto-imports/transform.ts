@@ -13,10 +13,16 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx
       const { type, macro } = parseQuery(search)
 
       const exclude = options.transform?.exclude || [/[\\/]node_modules[\\/]/]
+      const include = options.transform?.include || []
 
       // Exclude node_modules by default
       if (exclude.some(pattern => id.match(pattern))) {
         return false
+      }
+
+      // Custom includes
+      if (include.some(pattern => id.match(pattern))) {
+        return true
       }
 
       // vue files

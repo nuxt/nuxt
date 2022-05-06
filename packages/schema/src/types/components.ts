@@ -105,4 +105,9 @@ export interface ComponentsOptions {
    */
   global?: boolean
   loader?: boolean
+
+  transform?: {
+    exclude?: RegExp[]
+    include?: RegExp[]
+  }
 }

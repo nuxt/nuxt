@@ -5,5 +5,6 @@ export interface AutoImportsOptions extends UnimportOptions {
   global?: boolean,
   transform?: {
     exclude?: RegExp[]
+    include?: RegExp[]
   }
 }
