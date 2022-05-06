@@ -1,7 +1,7 @@
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import type { Plugin } from 'rollup'
 
-const PREFIX = 'virtual:'
+const PREFIX = 'virtual:nuxt:'
 
 export default function virtual (vfs: Record<string, string>): Plugin {
   const extensions = ['', '.ts', '.vue', '.mjs', '.cjs', '.js', '.json']
@@ -37,9 +37,11 @@ export default function virtual (vfs: Record<string, string>): Plugin {
     load (id) {
       if (!id.startsWith(PREFIX)) { return null }
       const idNoPrefix = id.slice(PREFIX.length)
-      return {
-        code: vfs[idNoPrefix],
-        map: null
+      if (idNoPrefix in vfs) {
+        return {
+          code: vfs[idNoPrefix],
+          map: null
+        }
       }
     }
   }
