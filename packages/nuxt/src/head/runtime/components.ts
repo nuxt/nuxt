@@ -135,7 +135,7 @@ export const Base = defineComponent({
 export const Title = defineComponent({
   name: 'Title',
   setup: setupForUseMeta((_, { slots }) => {
-    const title = slots.default()?.[0]?.children || null
+    const title = slots.default?.()?.[0]?.children || null
     if (process.dev && title && typeof title !== 'string') {
       console.error('<Title> can only take a string in its default slot.')
     }

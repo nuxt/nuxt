@@ -3,7 +3,7 @@ import type { Component } from 'vue'
 
 const Fragment = {
   setup (_props, { slots }) {
-    return () => slots.default()
+    return () => slots.default?.()
   }
 }
 

@@ -175,7 +175,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
           : firstNonUndefined<string | null>(props.rel, options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : '') || null
 
-        return h('a', { href, rel, target }, slots.default())
+        return h('a', { href, rel, target }, slots.default?.())
       }
     }
   }) as unknown as DefineComponent<NuxtLinkProps>
