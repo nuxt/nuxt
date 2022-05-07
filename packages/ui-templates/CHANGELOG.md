@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.1.0...@nuxt/ui-templates@0.1.1) (2022-05-07)
+
+
+### Bug Fixes
+
+* use `v-text` rather than `v-html` ([#100](https://github.com/nuxt/ui/issues/100)) ([9902421](https://github.com/nuxt/ui/commit/99024218aab20a1b326b59d986d632da546df6b4))
+
+
+
+
+
 # 0.1.0 (2022-04-19)
 
 
