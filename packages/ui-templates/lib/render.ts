@@ -69,7 +69,7 @@ export const RenderPlugin = () => {
         // Serialize into a js function
         const jsCode = [
           `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
-          `const _render = ${template(html, { variable: '__var__', interpolate: /{{([\s\S]+?)}}/g }).toString().replace('__var__', '{ messages }')}`,
+          `const _render = ${template(html, { variable: '__var__', interpolate: /{{{?([\s\S]+?)}?}}/g }).toString().replace('__var__', '{ messages }')}`,
           'const _template = (messages) => _render({ messages: { ..._messages, ...messages } })'
         ].join('\n').trim()
 
@@ -79,7 +79,8 @@ export const RenderPlugin = () => {
           .replace(/messages\./g, '')
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
-          .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-html="$1" />')
+          .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-text="$1" />')
+          .replace(/>{{{\s*(\w+?)\s*}}}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
         const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/{{([\s\S]+?)}}/g, (r) => {
