@@ -6,7 +6,7 @@ Within the template of a Vue component, you can access the route using `$route`.
 
 ## Example
 
-In the following example, we call an API via `useAsyncData` using a dynamic page parameter - `slug` - as part of the URL.
+In the following example, we call an API via `useFetch` using a dynamic page parameter - `slug` - as part of the URL.
 
 ```html [~/pages/[slug].vue]
 <script setup>

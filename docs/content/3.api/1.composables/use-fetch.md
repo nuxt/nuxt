@@ -57,7 +57,7 @@ By default, Nuxt waits until a `refresh` is finished before it can be executed a
 ## Example
 
 ```ts
-const { data, pending, error, refresh } = useFetch(
+const { data, pending, error, refresh } = await useFetch(
   'https://api.nuxtjs.dev/mountains',
   {
     pick: ['title']
