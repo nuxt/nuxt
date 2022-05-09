@@ -48,7 +48,7 @@
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.33",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.32.13",
+    "@unocss/reset": "^0.33.2",
     "case-police": "^0.5.3",
     "changelogen": "^0.0.5",
     "eslint": "^8.15.0",
@@ -63,7 +63,7 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.6.4",
     "unbuild": "^0.7.4",
-    "vitest": "^0.10.5",
+    "vitest": "^0.12.1",
     "vue-tsc": "^0.34.11"
   },
   "packageManager": "yarn@3.2.0",

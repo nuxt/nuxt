@@ -1512,7 +1512,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.1.8
+    unimport: ^0.1.9
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1539,7 +1539,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.4
     unbuild: latest
-    unimport: ^0.1.8
+    unimport: ^0.1.9
   languageName: unknown
   linkType: soft
 
@@ -1586,16 +1586,16 @@ __metadata:
     ohmyfetch: ^0.4.16
     playwright: ^1.21.1
     unbuild: latest
-    vitest: ^0.10.5
+    vitest: ^0.12.1
   peerDependencies:
     vue: 3.2.33
   languageName: unknown
   linkType: soft
 
-"@nuxt/ui-templates@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@nuxt/ui-templates@npm:0.1.0"
-  checksum: 00a26ab646005b54f230f82aa839fbad3a5bc378ea47a099c1c114a8baa9781c06ffe9af40302d422294dd6ff6463b904ba101581a9685f52f5508fea4695ab6
+"@nuxt/ui-templates@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@nuxt/ui-templates@npm:0.1.1"
+  checksum: ca4def93dc80cb6cffc2e599c4422f2a82ccb251dbc61250140d86b23f2c43a0615a3975d383f24a8e27d8902edc8c5885aad4f6f3343520d3c6fbe44c2b1c40
   languageName: node
   linkType: hard
 
@@ -1649,13 +1649,13 @@ __metadata:
     postcss: ^8.4.13
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
-    rollup: ^2.72.0
+    rollup: ^2.72.1
     rollup-plugin-visualizer: ^5.6.0
     ufo: ^0.8.4
     unbuild: latest
-    unplugin: ^0.6.2
+    unplugin: ^0.6.3
     vite: ^2.9.8
-    vite-node: ^0.10.5
+    vite-node: ^0.12.1
     vite-plugin-checker: ^0.4.6
     vue: 3.2.33
   peerDependencies:
@@ -1701,7 +1701,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.8.4
     unbuild: latest
-    unplugin: ^0.6.2
+    unplugin: ^0.6.3
     url-loader: ^4.1.1
     vue: 3.2.33
     vue-loader: ^17.0.0
@@ -2652,10 +2652,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.32.13":
-  version: 0.32.13
-  resolution: "@unocss/reset@npm:0.32.13"
-  checksum: d019e932d63e55ff52b749562f152660c26b957263bd650913bef561ab7227ec65f8916a9f4a2ef1cf50f60099acb5b8ff12acadef472edde2316e82a96a1ce5
+"@unocss/reset@npm:^0.33.2":
+  version: 0.33.2
+  resolution: "@unocss/reset@npm:0.33.2"
+  checksum: 5384e8466749847ca932d5619e693007b47f41bbe7e90cb35c8fb2201a6354ca1c405441931ab0412ea31c3754f18df0dcc7ad82e4f8d2b49a51259f1aff44a4
   languageName: node
   linkType: hard
 
@@ -9506,9 +9506,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "nitropack@npm:0.4.1"
+"nitropack@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "nitropack@npm:0.4.2"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9564,14 +9564,14 @@ __metadata:
     source-map-support: ^0.5.21
     std-env: ^3.1.1
     table: ^6.8.0
-    ufo: ^0.8.3
+    ufo: ^0.8.4
     unenv: ^0.5.1
     unimport: ^0.1.8
     unstorage: ^0.4.1
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: e421232398f4d2dd87969d70c391f084cc6379c8f899108c61af3e80fec6485ea82c2bac34dc479d12d0a4be6753598bec7c668511f657294af2a7b9a41fc538
+  checksum: 5f9c66882aad0d375770ba67cc80125016c83ea8c396510e0d4698e6eac30155d27c19e856fb00d9ed0ecbc68fb91cbc9b7099f13d3979cdede3b658260b1316
   languageName: node
   linkType: hard
 
@@ -10023,7 +10023,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.33
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.32.13
+    "@unocss/reset": ^0.33.2
     case-police: ^0.5.3
     changelogen: ^0.0.5
     eslint: ^8.15.0
@@ -10038,7 +10038,7 @@ __metadata:
     rimraf: ^3.0.2
     typescript: ^4.6.4
     unbuild: ^0.7.4
-    vitest: ^0.10.5
+    vitest: ^0.12.1
     vue-tsc: ^0.34.11
   languageName: unknown
   linkType: soft
@@ -10065,7 +10065,7 @@ __metadata:
     "@nuxt/kit": ^3.0.0-rc.2
     "@nuxt/schema": ^3.0.0-rc.2
     "@nuxt/telemetry": ^2.1.3
-    "@nuxt/ui-templates": ^0.1.0
+    "@nuxt/ui-templates": ^0.1.1
     "@nuxt/vite-builder": ^3.0.0-rc.2
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
@@ -10085,7 +10085,7 @@ __metadata:
     knitwork: ^0.1.1
     magic-string: ^0.26.1
     mlly: ^0.5.2
-    nitropack: ^0.4.1
+    nitropack: ^0.4.2
     nuxi: ^3.0.0-rc.2
     ohash: ^0.1.0
     ohmyfetch: ^0.4.16
@@ -10096,8 +10096,8 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.1
-    unimport: ^0.1.8
-    unplugin: ^0.6.2
+    unimport: ^0.1.9
+    unplugin: ^0.6.3
     untyped: ^0.4.4
     vue: ^3.2.33
     vue-bundle-renderer: ^0.3.8
@@ -11886,6 +11886,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup@npm:^2.72.1":
+  version: 2.72.1
+  resolution: "rollup@npm:2.72.1"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 3dca122129f560acc3c54dd5bd5f9470dd562d74f61c652c57b6a4355a963c0828640382ebff544f1b0e71387733a51fb963d6f761ae1f05a84f5923bbde883c
+  languageName: node
+  linkType: hard
+
 "run-async@npm:^2.4.0":
   version: 2.4.1
   resolution: "run-async@npm:2.4.1"
@@ -13381,6 +13395,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unimport@npm:^0.1.9":
+  version: 0.1.9
+  resolution: "unimport@npm:0.1.9"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    escape-string-regexp: ^5.0.0
+    globby: ^13.1.1
+    local-pkg: ^0.4.1
+    magic-string: ^0.26.1
+    mlly: ^0.5.2
+    pathe: ^0.3.0
+    scule: ^0.2.1
+    unplugin: ^0.6.3
+  checksum: 5cf8144c7fc35c201a552e264ae5b5e174497d4c9dd7819e36128bba57d04d5fcda511a5a60d16c4d9c3227b2c638153825290817c4af4a6f9548a882b61b88d
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^1.1.1":
   version: 1.1.1
   resolution: "unique-filename@npm:1.1.1"
@@ -13472,6 +13503,31 @@ __metadata:
     webpack:
       optional: true
   checksum: 0ad0b290c00a528196f9af95cb31872d92221f1cd4a3b3ee7c72d6b1cf2130c1c342aca97ccee44e5c911b59cdf996c095c8188802d7ff7a002a98b84eafc4eb
+  languageName: node
+  linkType: hard
+
+"unplugin@npm:^0.6.3":
+  version: 0.6.3
+  resolution: "unplugin@npm:0.6.3"
+  dependencies:
+    chokidar: ^3.5.3
+    webpack-sources: ^3.2.3
+    webpack-virtual-modules: ^0.4.3
+  peerDependencies:
+    esbuild: ">=0.13"
+    rollup: ^2.50.0
+    vite: ^2.3.0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    esbuild:
+      optional: true
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 14e1f9c941e87e97fdda3efc745183e027de7d8b88eed8be5fa0708c2ec5dd114cc10e569c4b9dd2dafc89ba84d8bf90935d01e02cef510b7faedaa8af2b081f
   languageName: node
   linkType: hard
 
@@ -13600,18 +13656,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.10.5":
-  version: 0.10.5
-  resolution: "vite-node@npm:0.10.5"
+"vite-node@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "vite-node@npm:0.12.1"
   dependencies:
     kolorist: ^1.5.1
-    minimist: ^1.2.6
     mlly: ^0.5.2
     pathe: ^0.2.0
     vite: ^2.9.7
   bin:
     vite-node: vite-node.mjs
-  checksum: a17c7168c671ee4c0446101b7a998916d51c8f84310cb19f0f3cde87f8f72f39a7072ecb9db0473fa700d942f1aa2046804764f13268046cd9bd8313bcd4d669
+  checksum: 310f0f62c09fb17f33176cce608fe390f22768095faae914bfb31861ae3933f95fc2b29f18738352fb43946195e86a00544083e5111c77fce1c8195a908c363e
   languageName: node
   linkType: hard
 
@@ -13671,9 +13726,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.10.5":
-  version: 0.10.5
-  resolution: "vitest@npm:0.10.5"
+"vitest@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "vitest@npm:0.12.1"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13698,7 +13753,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: a0468807c3cc7d3c8b7f22c7060080ca3a57840b324ed630a56cf094872e83bf057fccd1e400f694564fcfc64597c375b98ed571807e17832f84a58350db933d
+  checksum: a310aa3bd38ee3ab40ced7c2fab019f8c3fa15c8d36fd0aab784d6432d9fbe683d48513f9526c14cdb36a21d5fb51910f60eb3e68c189ac5e7c93070e5283036
   languageName: node
   linkType: hard
 
