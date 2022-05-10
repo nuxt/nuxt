@@ -63,8 +63,8 @@
     "rimraf": "^3.0.2",
     "typescript": "^4.6.4",
     "unbuild": "^0.7.4",
-    "vitest": "^0.12.1",
-    "vue-tsc": "^0.34.11"
+    "vitest": "^0.12.3",
+    "vue-tsc": "^0.34.12"
   },
   "packageManager": "yarn@3.2.0",
   "engines": {
