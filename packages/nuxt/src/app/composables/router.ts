@@ -1,6 +1,7 @@
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure } from 'vue-router'
 import { sendRedirect } from 'h3'
-import { useNuxtApp } from '#app'
+import { joinURL } from 'ufo'
+import { useNuxtApp, useRuntimeConfig } from '#app'
 
 export const useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -66,7 +67,7 @@ export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}
   if (process.server) {
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
-      const redirectLocation = router.resolve(to).fullPath || '/'
+      const redirectLocation = joinURL(useRuntimeConfig().app.baseURL, router.resolve(to).fullPath || '/')
       return nuxtApp.callHook('app:redirected').then(() => sendRedirect(nuxtApp.ssrContext.event, redirectLocation, options.redirectCode || 301))
     }
   }

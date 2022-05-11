@@ -148,12 +148,9 @@ describe('head tags', () => {
 
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
-    const html = await $fetch('/navigate-to/')
+    const { headers } = await fetch('/navigate-to/', { redirect: 'manual' })
 
-    // Snapshot
-    // expect(html).toMatchInlineSnapshot()
-
-    expect(html).toContain('Hello Nuxt 3!')
+    expect(headers.get('location')).toEqual('/')
   })
 })
 
@@ -366,6 +363,15 @@ describe('dynamic paths', () => {
       // TODO: webpack does not yet support dynamic static paths
       expect(url.startsWith('/foo/_other/') || url === '/foo/public.svg' || (process.env.TEST_WITH_WEBPACK && url === '/public.svg')).toBeTruthy()
     }
+  })
+
+  it('should use baseURL when redirecting', async () => {
+    process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_other/'
+    process.env.NUXT_APP_BASE_URL = '/foo/'
+    await startServer()
+    const { headers } = await fetch('/foo/navigate-to/', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/foo/')
   })
 
   it('should allow setting CDN URL', async () => {

@@ -1,5 +1,5 @@
 import { reactive, h } from 'vue'
-import { parseURL, parseQuery, withoutBase, isEqual } from 'ufo'
+import { parseURL, parseQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
@@ -102,6 +102,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     hooks[hook].push(guard)
     return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1)
   }
+  const baseURL = useRuntimeConfig().app.baseURL
 
   const route: Route = reactive(getRouteFromPath(initialURL))
   async function handleNavigation (url: string, replace?: boolean): Promise<void> {
@@ -124,7 +125,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
       // Perform navigation
       Object.assign(route, to)
       if (process.client) {
-        window.history[replace ? 'replaceState' : 'pushState']({}, '', url)
+        window.history[replace ? 'replaceState' : 'pushState']({}, '', joinURL(baseURL, url))
         if (!nuxtApp.isHydrating) {
           // Clear any existing errors
           await callWithNuxt(nuxtApp, clearError)

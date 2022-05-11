@@ -3,5 +3,5 @@
 </template>
 
 <script setup>
-navigateTo('/', { replace: true })
+await navigateTo('/', { replace: true })
 </script>
