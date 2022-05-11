@@ -1,11 +1,11 @@
 import type { FetchOptions, FetchRequest } from 'ohmyfetch'
-import type { TypedInternalResponse } from 'nitropack'
+import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
 import { hash } from 'ohash'
 import { computed, isRef, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes } from './asyncData'
 import { useAsyncData } from './asyncData'
 
-export type FetchResult<ReqT extends FetchRequest> = TypedInternalResponse<ReqT, unknown>
+export type FetchResult<ReqT extends NitroFetchRequest> = TypedInternalResponse<ReqT, unknown>
 
 export interface UseFetchOptions<
   DataT,
@@ -18,7 +18,7 @@ export interface UseFetchOptions<
 export function useFetch<
   ResT = void,
   ErrorT = Error,
-  ReqT extends FetchRequest = FetchRequest,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
@@ -30,12 +30,12 @@ export function useFetch<
     console.warn('[nuxt] You should provide a key for `useFetch` when using a custom transform function.')
   }
   const key = '$f_' + (opts.key || hash([request, { ...opts, transform: null }]))
-  const _request = computed<FetchRequest>(() => {
-    let r = request
+  const _request = computed(() => {
+    let r = request as Ref<FetchRequest> | FetchRequest | (() => FetchRequest)
     if (typeof r === 'function') {
       r = r()
     }
-    return isRef(r) ? r.value : r
+    return (isRef(r) ? r.value : r) as NitroFetchRequest
   })
 
   const _fetchOptions = {
@@ -61,7 +61,7 @@ export function useFetch<
 export function useLazyFetch<
   ResT = void,
   ErrorT = Error,
-  ReqT extends string = string,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
