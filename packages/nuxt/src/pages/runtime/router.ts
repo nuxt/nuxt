@@ -108,20 +108,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   }
 
   const error = useError()
-  router.afterEach(async (to) => {
-    if (process.client && !nuxtApp.isHydrating && error.value) {
-      // Clear any existing errors
-      await callWithNuxt(nuxtApp, clearError)
-    }
-    if (to.matched.length === 0) {
-      callWithNuxt(nuxtApp, throwError, [createError({
-        statusCode: 404,
-        statusMessage: `Page not found: ${to.fullPath}`
-      })])
-    } else if (process.server && to.matched[0].name === '404' && nuxtApp.ssrContext) {
-      nuxtApp.ssrContext.res.statusCode = 404
-    }
-  })
 
   try {
     if (process.server) {
@@ -175,7 +161,18 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   router.afterEach(async (to) => {
     delete nuxtApp._processingMiddleware
 
-    if (process.server) {
+    if (process.client && !nuxtApp.isHydrating && error.value) {
+      // Clear any existing errors
+      await callWithNuxt(nuxtApp, clearError)
+    }
+    if (to.matched.length === 0) {
+      callWithNuxt(nuxtApp, throwError, [createError({
+        statusCode: 404,
+        statusMessage: `Page not found: ${to.fullPath}`
+      })])
+    } else if (process.server && to.matched[0].name === '404' && nuxtApp.ssrContext) {
+      nuxtApp.ssrContext.res.statusCode = 404
+    } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL)) {
         await callWithNuxt(nuxtApp, navigateTo, [currentURL])
