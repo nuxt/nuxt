@@ -19,7 +19,7 @@
     "execa": "^6.1.0",
     "get-port-please": "^2.5.0",
     "jiti": "^1.13.0",
-    "ohmyfetch": "^0.4.16"
+    "ohmyfetch": "^0.4.17"
   },
   "devDependencies": {
     "playwright": "^1.21.1",
