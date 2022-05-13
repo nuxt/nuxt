@@ -4,6 +4,7 @@ import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
 import { logger, isIgnored } from '@nuxt/kit'
 import type { Options } from '@vitejs/plugin-vue'
+import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { getPort } from 'get-port-please'
 import { buildClient } from './client'
@@ -64,6 +65,10 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         plugins: [
+          replace({
+            ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
+            preventAssignment: true
+          }),
           virtual(nuxt.vfs),
           DynamicBasePlugin.vite({ sourcemap: nuxt.options.sourcemap })
         ],
