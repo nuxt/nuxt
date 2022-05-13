@@ -66,7 +66,7 @@
     "vitest": "^0.12.4",
     "vue-tsc": "^0.34.13"
   },
-  "packageManager": "yarn@3.2.0",
+  "packageManager": "yarn@3.2.1",
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"
   }
