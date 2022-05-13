@@ -82,25 +82,28 @@ export default defineNuxtCommand({
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load)
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
-    watcher.on('all', (event, file) => {
+    watcher.on('all', (event, _file) => {
       if (!currentNuxt) { return }
-      if (normalize(file).startsWith(withTrailingSlash(normalize(currentNuxt.options.buildDir)))) { return }
+      const file = normalize(_file)
+      const buildDir = withTrailingSlash(normalize(currentNuxt.options.buildDir))
+      if (file.startsWith(buildDir)) { return }
+      const relativePath = relative(rootDir, file)
       if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
-        dLoad(true, `${relative(rootDir, file)} updated`)
+        dLoad(true, `${relativePath} updated`)
       }
 
       const isDirChange = ['addDir', 'unlinkDir'].includes(event)
       const isFileChange = ['add', 'unlink'].includes(event)
       const reloadDirs = [currentNuxt.options.dir.pages, 'components', 'composables']
+        .map(d => resolve(currentNuxt.options.srcDir, d))
 
       if (isDirChange) {
-        const dir = reloadDirs.find(dir => file.endsWith(dir))
-        if (dir) {
-          dLoad(true, `Directory \`${dir}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        if (reloadDirs.includes(file)) {
+          dLoad(true, `Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         }
       } else if (isFileChange) {
         if (file.match(/(app|error)\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-          dLoad(true, `\`${relative(rootDir, file)}\` ${event === 'add' ? 'created' : 'removed'}`)
+          dLoad(true, `\`${relativePath}\` ${event === 'add' ? 'created' : 'removed'}`)
         }
       }
     })
