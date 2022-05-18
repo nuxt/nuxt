@@ -710,7 +710,7 @@ export default {
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '' // Default to an empty string, automatically loaded at runtime using process.env.NUXT_API_SECRET
+   *     apiKey: '' // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }
