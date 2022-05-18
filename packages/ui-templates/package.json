@@ -37,7 +37,7 @@
     "upath": "^2.0.1",
     "vite": "^2.9.9",
     "vite-plugin-windicss": "^1.8.4",
-    "windicss": "^3.5.3"
+    "windicss": "^3.5.4"
   },
   "publishConfig": {
     "access": "public"
