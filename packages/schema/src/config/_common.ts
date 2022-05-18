@@ -519,9 +519,9 @@ export default {
    * ```js
    * export default {
    *   alias: {
-   *     'images': fileURLToPath(new URL('./assets/images', import.meta.url),
-   *     'style': fileURLToPath(new URL('./assets/style', import.meta.url),
-   *     'data': fileURLToPath(new URL('./assets/other/data', import.meta.url)
+   *     'images': fileURLToPath(new URL('./assets/images', import.meta.url)),
+   *     'style': fileURLToPath(new URL('./assets/style', import.meta.url)),
+   *     'data': fileURLToPath(new URL('./assets/other/data', import.meta.url))
    *   }
    * }
    * ```
