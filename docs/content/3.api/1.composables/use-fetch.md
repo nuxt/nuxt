@@ -13,6 +13,7 @@ function useFetch(
 type UseFetchOptions = {
   method?: string,
   params?: SearchParams,
+  body?: RequestInit['body'] | Record<string, any>
   headers?: {key: string, value: string}[],
   baseURL?: string,
   server?: boolean
@@ -33,9 +34,10 @@ type DataT = {
 ## Params
 
 * **Url**: The URL to fetch
-* **Options (from [ohmyfetch](https://github.com/unjs/ohmyfetch))**:
+* **Options (extends [unjs/ohmyfetch](https://github.com/unjs/ohmyfetch) options & [AsyncDataOptions](/api/composables/use-async-data#params))**:
   * `method`: Request method
   * `params`: Query params
+  * `body`: Request body - automatically stringified (if an object is passed).
   * `headers`: Request headers
   * `baseURL`: Base URL for the request
 * **Options (from `useAsyncData`)**:
