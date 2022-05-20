@@ -60,10 +60,10 @@ export default {
     /**
      * An absolute URL to serve the public folder from (production-only).
      *
-     * This can be set to a different value at runtime by setting the CDN_URL environment variable.
+     * This can be set to a different value at runtime by setting the NUXT_APP_CDN_URL environment variable.
      * @example
      * ```bash
-     * CDN_URL=https://mycdn.org/ node .output/server/index.mjs
+     * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
      * ```
     */
     cdnURL: {
