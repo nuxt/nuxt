@@ -28,7 +28,7 @@ const metaMixin = {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  useHead(markRaw(metaConfig.globalMeta))
+  useHead(markRaw({ title: '', ...metaConfig.globalMeta }))
 
   nuxtApp.vueApp.mixin(metaMixin)
 
