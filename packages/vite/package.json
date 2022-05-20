@@ -46,7 +46,7 @@
     "ufo": "^0.8.4",
     "unplugin": "^0.6.3",
     "vite": "^2.9.9",
-    "vite-node": "^0.12.6",
+    "vite-node": "^0.12.7",
     "vite-plugin-checker": "^0.4.6"
   },
   "peerDependencies": {
