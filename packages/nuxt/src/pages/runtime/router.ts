@@ -184,6 +184,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     try {
       await router.replace({
         ...router.resolve(initialURL),
+        name: undefined, // #4920, #$4982
         force: true
       })
     } catch (error) {
