@@ -1788,7 +1788,7 @@ __metadata:
     "@types/webpack-virtual-modules": ^0
     autoprefixer: ^10.4.7
     css-loader: ^6.7.1
-    css-minimizer-webpack-plugin: ^3.4.1
+    css-minimizer-webpack-plugin: ^4.0.0
     cssnano: ^5.1.8
     esbuild-loader: ^2.19.0
     escape-string-regexp: ^5.0.0
@@ -4829,13 +4829,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:^3.4.1":
-  version: 3.4.1
-  resolution: "css-minimizer-webpack-plugin@npm:3.4.1"
+"css-minimizer-webpack-plugin@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "css-minimizer-webpack-plugin@npm:4.0.0"
   dependencies:
-    cssnano: ^5.0.6
-    jest-worker: ^27.0.2
-    postcss: ^8.3.5
+    cssnano: ^5.1.8
+    jest-worker: ^27.5.1
+    postcss: ^8.4.13
     schema-utils: ^4.0.0
     serialize-javascript: ^6.0.0
     source-map: ^0.6.1
@@ -4850,7 +4850,7 @@ __metadata:
       optional: true
     esbuild:
       optional: true
-  checksum: 065c6c1eadb7c99267db5d04d6f3909e9968b73c4cb79ab9e4502a5fbf1a3d564cfe6f8e0bff8e4ab00d4ed233e9c3c76a4ebe0ee89150b3d9ecb064ddf1e5e9
+  checksum: 18487ee9aacdb0cc4e9fc1921f5d7a519c94203332b845b9a6d95434365d275fafff7dbfe21355347b8bbb8266078b7e60f7bac771f15eb30dfed5a29016debc
   languageName: node
   linkType: hard
 
@@ -4903,45 +4903,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano-preset-default@npm:^5.2.7":
-  version: 5.2.7
-  resolution: "cssnano-preset-default@npm:5.2.7"
-  dependencies:
-    css-declaration-sorter: ^6.2.2
-    cssnano-utils: ^3.1.0
-    postcss-calc: ^8.2.3
-    postcss-colormin: ^5.3.0
-    postcss-convert-values: ^5.1.0
-    postcss-discard-comments: ^5.1.1
-    postcss-discard-duplicates: ^5.1.0
-    postcss-discard-empty: ^5.1.1
-    postcss-discard-overridden: ^5.1.0
-    postcss-merge-longhand: ^5.1.4
-    postcss-merge-rules: ^5.1.1
-    postcss-minify-font-values: ^5.1.0
-    postcss-minify-gradients: ^5.1.1
-    postcss-minify-params: ^5.1.2
-    postcss-minify-selectors: ^5.2.0
-    postcss-normalize-charset: ^5.1.0
-    postcss-normalize-display-values: ^5.1.0
-    postcss-normalize-positions: ^5.1.0
-    postcss-normalize-repeat-style: ^5.1.0
-    postcss-normalize-string: ^5.1.0
-    postcss-normalize-timing-functions: ^5.1.0
-    postcss-normalize-unicode: ^5.1.0
-    postcss-normalize-url: ^5.1.0
-    postcss-normalize-whitespace: ^5.1.1
-    postcss-ordered-values: ^5.1.1
-    postcss-reduce-initial: ^5.1.0
-    postcss-reduce-transforms: ^5.1.0
-    postcss-svgo: ^5.1.0
-    postcss-unique-selectors: ^5.1.1
-  peerDependencies:
-    postcss: ^8.2.15
-  checksum: 1408ce86e29756a90dafcfff162ccfd983ab31fcfdb1549875bb4cca657b0c520424ea95f88b750ea06967d5a61201de207afe0a4c5514fac90d7265358b9d3a
-  languageName: node
-  linkType: hard
-
 "cssnano-preset-default@npm:^5.2.8":
   version: 5.2.8
   resolution: "cssnano-preset-default@npm:5.2.8"
@@ -4987,19 +4948,6 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: 975c84ce9174cf23bb1da1e9faed8421954607e9ea76440cd3bb0c1bea7e17e490d800fca5ae2812d1d9e9d5524eef23ede0a3f52497d7ccc628e5d7321536f2
-  languageName: node
-  linkType: hard
-
-"cssnano@npm:^5.0.6":
-  version: 5.1.7
-  resolution: "cssnano@npm:5.1.7"
-  dependencies:
-    cssnano-preset-default: ^5.2.7
-    lilconfig: ^2.0.3
-    yaml: ^1.10.2
-  peerDependencies:
-    postcss: ^8.2.15
-  checksum: d69e7e0091b7e6e43f3d61e416a54afb7a55a2a065d96d859650fa34ab5e70b3162a340fb59a8714042762f8e388fbc3cb810d478d775bcd4695d0951b625000
   languageName: node
   linkType: hard
 
@@ -8390,7 +8338,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-worker@npm:^27.0.2, jest-worker@npm:^27.4.5":
+"jest-worker@npm:^27.4.5, jest-worker@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-worker@npm:27.5.1"
   dependencies:
@@ -10889,17 +10837,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-convert-values@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "postcss-convert-values@npm:5.1.0"
-  dependencies:
-    postcss-value-parser: ^4.2.0
-  peerDependencies:
-    postcss: ^8.2.15
-  checksum: d76e9aeaa9cc859fc3077b144d4a382cdaf58d6752418b808ffd67b6e0e8335a0538067d33954845161f6678aad26374de602f932b4ea81859265ec683ad8938
-  languageName: node
-  linkType: hard
-
 "postcss-convert-values@npm:^5.1.1":
   version: 5.1.1
   resolution: "postcss-convert-values@npm:5.1.1"
@@ -11031,19 +10968,6 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: 27354072a07c5e6dab36731103b94ca2354d4ed3c5bc6aacfdf2ede5a55fa324679d8fee5450800bc50888dbb5e9ed67569c0012040c2be128143d0cebb36d67
-  languageName: node
-  linkType: hard
-
-"postcss-minify-params@npm:^5.1.2":
-  version: 5.1.2
-  resolution: "postcss-minify-params@npm:5.1.2"
-  dependencies:
-    browserslist: ^4.16.6
-    cssnano-utils: ^3.1.0
-    postcss-value-parser: ^4.2.0
-  peerDependencies:
-    postcss: ^8.2.15
-  checksum: 3d769b2792564d42bae3ada2f09bd19f358d75dddfb29048160e3e68415ea7f8ed5e6eea20fa8367d08ef8b7e28505b5185049639928dd34cdd258e660440285
   languageName: node
   linkType: hard
 
@@ -11303,7 +11227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.3.5, postcss@npm:^8.4.13, postcss@npm:^8.4.7":
+"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.4.13, postcss@npm:^8.4.7":
   version: 8.4.13
   resolution: "postcss@npm:8.4.13"
   dependencies:
