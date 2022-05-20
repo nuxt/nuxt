@@ -61,6 +61,7 @@ const globalProps = {
 // <script>
 export const Script = defineComponent({
   name: 'Script',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     async: Boolean,
@@ -88,6 +89,7 @@ export const Script = defineComponent({
 // <link>
 export const Link = defineComponent({
   name: 'Link',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     as: String,
@@ -121,6 +123,7 @@ export const Link = defineComponent({
 // <base>
 export const Base = defineComponent({
   name: 'Base',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     href: String,
@@ -134,6 +137,7 @@ export const Base = defineComponent({
 // <title>
 export const Title = defineComponent({
   name: 'Title',
+  inheritAttrs: false,
   setup: setupForUseMeta((_, { slots }) => {
     const title = slots.default?.()?.[0]?.children || null
     if (process.dev && title && typeof title !== 'string') {
@@ -148,6 +152,7 @@ export const Title = defineComponent({
 // <meta>
 export const Meta = defineComponent({
   name: 'Meta',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     charset: String,
@@ -163,6 +168,7 @@ export const Meta = defineComponent({
 // <style>
 export const Style = defineComponent({
   name: 'Style',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     type: String,
@@ -193,12 +199,14 @@ export const Style = defineComponent({
 // <head>
 export const Head = defineComponent({
   name: 'Head',
+  inheritAttrs: false,
   setup: (_props, ctx) => () => ctx.slots.default?.()
 })
 
 // <html>
 export const Html = defineComponent({
   name: 'Html',
+  inheritAttrs: false,
   props: {
     ...globalProps,
     manifest: String,
@@ -211,6 +219,7 @@ export const Html = defineComponent({
 // <body>
 export const Body = defineComponent({
   name: 'Body',
+  inheritAttrs: false,
   props: globalProps,
   setup: setupForUseMeta(bodyAttrs => ({ bodyAttrs }), true)
 })
