@@ -1,6 +1,5 @@
-<h1>
-  <img src="./.github/logo.svg" height="60" >
- </h1>
+![NuxtJS-Logo-Dark](.github/logo-light.svg#gh-dark-mode-only)
+![NuxtJS-Logo-Light](.github/logo.svg#gh-light-mode-only)
 
  <p>
   <a href="https://github.com/nuxt/framework/actions?query=branch%3Amain+event%3Apush"><img src="https://github.com/nuxt/framework/workflows/ci/badge.svg?branch=main&event=push" alt="CI Status"></a>
