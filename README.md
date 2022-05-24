@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="./.github/logo.svg"/></p><br/>
+<p align="center"><img alt="Nuxt" align="center" src="./.github/logo.svg"/></p><br/>
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/windows/badge.svg?branch=dev&event=push" alt="Windows Status"></a>
