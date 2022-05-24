@@ -11,6 +11,7 @@ function useFetch(
 ): Promise<DataT>
 
 type UseFetchOptions = {
+  key?: string,
   method?: string,
   params?: SearchParams,
   body?: RequestInit['body'] | Record<string, any>
@@ -41,6 +42,7 @@ type DataT = {
   * `headers`: Request headers
   * `baseURL`: Base URL for the request
 * **Options (from `useAsyncData`)**:
+  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the `url` and fetch options
   * `lazy`: Whether to resolve the async function after loading the route, instead of blocking navigation (defaults to `false`).
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
