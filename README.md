@@ -3,13 +3,15 @@
 
  <p>
   <a href="https://github.com/nuxt/framework/actions?query=branch%3Amain+event%3Apush"><img src="https://github.com/nuxt/framework/workflows/ci/badge.svg?branch=main&event=push" alt="CI Status"></a>
-  <a href="https://www.npmjs.com/package/nuxt3"><img src="https://badgen.net/npm/dm/nuxt3" alt="Downloads"></a>
-  <a href="https://www.npmjs.com/package/nuxt3"><img src="https://badgen.net/npm/v/nuxt3" alt="Version"></a>
-  <a href="https://www.npmjs.com/package/nuxt3"><img src="https://badgen.net/npm/license/nuxt3" alt="License"></a>
+  <a href="https://www.npmjs.com/package/nuxt/v/rc"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/nuxt/v/rc"><img src="https://badgen.net/npm/v/nuxt/rc" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt3" alt="License"></a>
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
 
-Welcome to Nuxt 3 repository ✨
+Welcome to Nuxt 3 repository: **The Hybrid Vue Framework** ✨
+
+Nuxt's goal is to make web development intuitive and performant with a great developer experience in mind, learn more in the ["What is Nuxt?"](https://v3.nuxtjs.org/guide/concepts/introduction) section of our documentation.
 
 <table>
 <tbody>
