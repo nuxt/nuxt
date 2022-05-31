@@ -23,4 +23,8 @@ export interface MetaObject extends Record<string, any> {
   script?: Array<Record<string, any>>
 
   titleTemplate?: string | ((title: string) => string)
+  title?: string
+  
+  bodyAttrs?: Record<string, any>
+  htmlAttrs?: Record<string, any>
 }
