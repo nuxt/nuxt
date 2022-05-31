@@ -1599,7 +1599,7 @@ __metadata:
     unbuild: latest
     vitest: ^0.12.7
   peerDependencies:
-    vue: 3.2.34
+    vue: ^3.2.34
   languageName: unknown
   linkType: soft
 
@@ -1671,7 +1671,7 @@ __metadata:
     vite-plugin-checker: ^0.4.6
     vue: 3.2.34
   peerDependencies:
-    vue: 3.2.34
+    vue: ^3.2.34
   languageName: unknown
   linkType: soft
 
@@ -1725,7 +1725,7 @@ __metadata:
     webpack-virtual-modules: ^0.4.3
     webpackbar: ^5.0.2
   peerDependencies:
-    vue: 3.2.34
+    vue: ^3.2.34
   languageName: unknown
   linkType: soft
 
