@@ -60,7 +60,8 @@ export const navigateTo = (to: RouteLocationRaw, options: NavigateToOptions = {}
   if (!to) {
     to = '/'
   }
-  if (isProcessingMiddleware()) {
+  // Early redirect on client-side since only possible option is redirectCode and not applied
+  if (process.client && isProcessingMiddleware()) {
     return to
   }
   const router = useRouter()
