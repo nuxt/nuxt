@@ -4388,7 +4388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^2.0.10, colorette@npm:^2.0.16":
+"colorette@npm:^2.0.10, colorette@npm:^2.0.16, colorette@npm:^2.0.17":
   version: 2.0.17
   resolution: "colorette@npm:2.0.17"
   checksum: 693a56d816846e0e213f92c8061b65eb5025030b28a113f90c539fe34c860abc41132c03599af26bcbc213170a31bac1bf2d4c535ccad5ac7b5cb3248f9d98a8
@@ -9877,7 +9877,7 @@ __metadata:
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
-    colorette: ^2.0.16
+    colorette: ^2.0.17
     consola: ^2.15.3
     deep-object-diff: ^1.1.7
     destr: ^1.1.1
