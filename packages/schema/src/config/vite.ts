@@ -16,7 +16,7 @@ export default {
       $resolve: (val, get) => val ?? get('srcDir'),
     },
     mode: {
-      $resolve: (val, get) => val ?? get('dev') ? 'development' : 'production',
+      $resolve: (val, get) => val ?? (get('dev') ? 'development' : 'production'),
     },
     logLevel: 'warn',
     define: {
