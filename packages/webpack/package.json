@@ -16,13 +16,13 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.18.0",
+    "@babel/core": "^7.18.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "^3.0.0-rc.3",
     "autoprefixer": "^10.4.7",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
-    "cssnano": "^5.1.8",
+    "cssnano": "^5.1.9",
     "esbuild-loader": "^2.19.0",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
@@ -31,7 +31,7 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.26.2",
-    "memfs": "^3.4.3",
+    "memfs": "^3.4.4",
     "mini-css-extract-plugin": "^2.6.0",
     "mlly": "^0.5.2",
     "pathe": "^0.3.0",
@@ -62,10 +62,10 @@
     "@types/webpack-hot-middleware": "^2.25.6",
     "@types/webpack-virtual-modules": "^0",
     "unbuild": "latest",
-    "vue": "3.2.34"
+    "vue": "3.2.36"
   },
   "peerDependencies": {
-    "vue": "^3.2.34"
+    "vue": "^3.2.36"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"

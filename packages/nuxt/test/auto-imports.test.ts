@@ -25,7 +25,7 @@ describe('auto-imports:transform', () => {
   }
 
   it('should correct inject', async () => {
-    expect(await transform('const a = ref(0)')).toMatchInlineSnapshot('"import { ref } from \'vue\';const a = ref(0)"')
+    expect(await transform('const a = ref(0)')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0)"')
   })
 
   it('should ignore existing imported', async () => {
@@ -41,7 +41,8 @@ describe('auto-imports:transform', () => {
   it('should ignore comments', async () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
-      "import { computed } from 'bar';// import { computed } from \\"foo\\"
+      "import { computed } from 'bar';
+      // import { computed } from \\"foo\\"
       ;const a = computed(0)"
     `)
   })
