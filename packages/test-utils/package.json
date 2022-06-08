@@ -24,10 +24,10 @@
   "devDependencies": {
     "playwright": "^1.22.2",
     "unbuild": "latest",
-    "vitest": "^0.13.1"
+    "vitest": "^0.14.1"
   },
   "peerDependencies": {
-    "vue": "^3.2.36"
+    "vue": "^3.2.37"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"
