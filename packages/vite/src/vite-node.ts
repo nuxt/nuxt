@@ -50,8 +50,8 @@ function getManifest (server: ViteDevServer) {
 function createViteNodeMiddleware (ctx: ViteBuildContext) {
   const app = createApp()
 
-  app.use('/manifest', defineEventHandler(async () => {
-    const manifest = await getManifest(ctx.ssrServer)
+  app.use('/manifest', defineEventHandler(() => {
+    const manifest = getManifest(ctx.ssrServer)
     return manifest
   }))
 

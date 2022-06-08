@@ -22,7 +22,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 
   // Bridge compatibility check
   if (isNuxt2(nuxt)) {
-    const bridgeRequirement = constraints?.bridge
+    const bridgeRequirement = constraints.bridge
     const hasBridge = !!(nuxt.options as any).bridge
     if (bridgeRequirement === true && !hasBridge) {
       issues.push({
@@ -86,7 +86,7 @@ export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
   const version = (nuxt?._version || nuxt?.version || nuxt?.constructor?.version || '').replace(/^v/g, '')
   if (!version) {
-    throw new Error('Cannot determine nuxt version! Is currect instance passed?')
+    throw new Error('Cannot determine nuxt version! Is current instance passed?')
   }
   return version
 }

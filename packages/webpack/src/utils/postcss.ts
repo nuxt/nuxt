@@ -60,7 +60,7 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
     return false
   }
 
-  const configFile = nuxt.options.postcss?.config
+  const configFile = nuxt.options.postcss.config
   if (configFile) {
     return {
       postcssOptions: {

@@ -18,7 +18,7 @@ import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './ut
 // const plugins: string[] = []
 
 export async function bundle (nuxt: Nuxt) {
-  await registerVirtualModules()
+  registerVirtualModules()
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
     const ctx = createWebpackConfigContext(nuxt)
