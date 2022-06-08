@@ -20,7 +20,7 @@ export const vueAppPatterns = (nuxt: Nuxt) => [
     [new RegExp(`^${escapeRE(m)}$`), 'Importing directly from module entry points is not allowed.']),
   ...[/(^|node_modules\/)@nuxt\/kit/, /^nitropack/]
     .map(i => [i, 'This module cannot be imported in the Vue part of your app.']),
-  [new RegExp(escapeRE(resolve(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server'))), 'Importing from server middleware is not allowed in the Vue part of your app.']
+  [new RegExp(escapeRE(resolve(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'), 'Importing from server is not allowed in the Vue part of your app.']
 ] as ImportProtectionOptions['patterns']
 
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
