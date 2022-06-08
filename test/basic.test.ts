@@ -41,6 +41,7 @@ describe('pages', () => {
     // composables auto import
     expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
     expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
+    expect(html).toContain('Composable | template: auto imported from ~/components/template.ts')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
 

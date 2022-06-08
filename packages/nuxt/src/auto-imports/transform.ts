@@ -39,7 +39,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx
       }
     },
     async transform (_code, id) {
-      const { code, s } = await ctx.injectImports(_code)
+      const { code, s } = await ctx.injectImports(_code, id)
       if (code === _code) {
         return
       }
