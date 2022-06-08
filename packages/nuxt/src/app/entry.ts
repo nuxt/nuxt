@@ -24,7 +24,7 @@ let entry: Function
 const plugins = normalizePlugins(_plugins)
 
 if (process.server) {
-  entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext'] = {}) {
+  entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
     vueApp.component('App', AppComponent)
 

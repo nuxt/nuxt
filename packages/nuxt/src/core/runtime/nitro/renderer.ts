@@ -1,9 +1,9 @@
 import { createRenderer } from 'vue-bundle-renderer'
-import type { SSRContext } from 'vue-bundle-renderer'
-import { CompatibilityEvent, eventHandler, useQuery } from 'h3'
+import { eventHandler, useQuery } from 'h3'
 import devalue from '@nuxt/devalue'
-import { RuntimeConfig } from '@nuxt/schema'
 import { renderToString as _renderToString } from 'vue/server-renderer'
+
+import type { NuxtApp } from '#app'
 
 // @ts-ignore
 import { useRuntimeConfig } from '#internal/nitro'
@@ -12,20 +12,7 @@ import { buildAssetsURL } from '#paths'
 // @ts-ignore
 import htmlTemplate from '#build/views/document.template.mjs'
 
-interface NuxtSSRContext extends SSRContext {
-  url: string
-  noSSR: boolean
-  redirected: boolean
-  event: CompatibilityEvent
-  req: CompatibilityEvent['req']
-  res: CompatibilityEvent['res']
-  runtimeConfig: RuntimeConfig
-  error?: any
-  nuxt?: any
-  payload?: any
-  teleports?: { body?: string }
-  renderMeta?: () => Promise<any>
-}
+type NuxtSSRContext = NuxtApp['ssrContext']
 
 interface RenderResult {
   html: any
@@ -126,7 +113,6 @@ export default eventHandler(async (event) => {
     runtimeConfig: useRuntimeConfig(),
     noSSR: !!event.req.headers['x-nuxt-no-ssr'],
     error: ssrError,
-    redirected: undefined,
     nuxt: undefined, /* NuxtApp */
     payload: undefined
   }
@@ -140,7 +126,7 @@ export default eventHandler(async (event) => {
   // If we error on rendering error page, we bail out and directly return to the error handler
   if (!rendered) { return }
 
-  if (ssrContext.redirected || event.res.writableEnded) {
+  if (event.res.writableEnded) {
     return
   }
 

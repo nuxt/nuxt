@@ -4,6 +4,8 @@ import type { App, onErrorCaptured, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
 import type { RuntimeConfig } from '@nuxt/schema'
 import { getContext } from 'unctx'
+import type { SSRContext } from 'vue-bundle-renderer'
+import type { CompatibilityEvent } from 'h3'
 import { legacyPlugin, LegacyContext } from './compat/legacy-app'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
@@ -48,11 +50,23 @@ interface _NuxtApp {
   _asyncDataPromises?: Record<string, Promise<any>>
   _legacyContext?: LegacyContext
 
-  ssrContext?: Record<string, any> & {
+  ssrContext?: SSRContext & {
+    url: string
+    event: CompatibilityEvent
+    /** @deprecated Use `event` instead. */
+    req?: CompatibilityEvent['req']
+    /** @deprecated Use `event` instead. */
+    res?: CompatibilityEvent['res']
+    runtimeConfig: RuntimeConfig
+    noSSR: boolean
+    error?: any
+    nuxt: _NuxtApp
+    payload: _NuxtApp['payload']
+    teleports?: Record<string, string>
     renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   }
   payload: {
-    serverRendered?: true
+    serverRendered?: boolean
     data?: Record<string, any>
     state?: Record<string, any>
     rendered?: Function
@@ -115,7 +129,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   if (process.server) {
     // Expose to server renderer to create window.__NUXT__
-    nuxtApp.ssrContext = nuxtApp.ssrContext || {}
+    nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
     nuxtApp.ssrContext.payload = nuxtApp.payload
   }
 
