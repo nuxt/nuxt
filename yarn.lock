@@ -1817,7 +1817,7 @@ __metadata:
     mini-css-extract-plugin: ^2.6.0
     mlly: ^0.5.2
     pathe: ^0.3.0
-    pify: ^5.0.0
+    pify: ^6.0.0
     postcss: ^8.4.14
     postcss-import: ^14.1.0
     postcss-loader: ^7.0.0
@@ -10593,6 +10593,13 @@ __metadata:
   version: 5.0.0
   resolution: "pify@npm:5.0.0"
   checksum: 443e3e198ad6bfa8c0c533764cf75c9d5bc976387a163792fb553ffe6ce923887cf14eebf5aea9b7caa8eab930da8c33612990ae85bd8c2bc18bedb9eae94ecb
+  languageName: node
+  linkType: hard
+
+"pify@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "pify@npm:6.0.0"
+  checksum: f5837e835160d617b4ec6814753c114faed9a847a2be8264b86805b1bbdb84f6b35bad5277257a3e78f0fd210f7eaefc762443b5b74ce96a7c7a81e2fb056934
   languageName: node
   linkType: hard
 
