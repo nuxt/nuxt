@@ -2,7 +2,7 @@ import http from 'http'
 import { resolve } from 'path'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { Builder, Generator, getPort, loadFixture, Nuxt } from '../utils'
+import { Builder, Generator, getPort, loadFixture, Nuxt, waitFor } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -79,6 +79,25 @@ describe('full-static-with-preview', () => {
     expect(html).toContain('<p>page-fetch-called-in-preview</p>')
     expect(html).toContain('<p>component-fetch-called-in-preview</p>')
     expect(html).toContain('<p>sub-component-fetch-called-in-preview</p>')
+  })
+
+  test('/async-data-dependent-fetch', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/async-data-dependent-fetch'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('<p>page-fetch-called</p>')
+    expect(html).toContain('<p>component-1-fetch-called</p>')
+    expect(html).toContain('<p>component-2-fetch-called</p>')
+    expect(html).toContain('<p>component-3-fetch-called</p>')
+  })
+
+  test('preview: /async-data-dependent-fetch', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/async-data-dependent-fetch?preview=true'))
+    await waitFor(100)
+    const html = window.document.body.innerHTML
+    expect(html).toContain('<p>page-fetch-called-in-preview</p>')
+    expect(html).toContain('<p>component-1-fetch-called-in-preview</p>')
+    expect(html).toContain('<p>component-2-fetch-called-in-preview</p>')
+    expect(html).toContain('<p>component-3-fetch-called-in-preview</p>')
   })
 
   // Close server and ask nuxt to stop listening to file changes
