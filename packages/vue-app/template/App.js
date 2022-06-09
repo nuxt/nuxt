@@ -184,11 +184,10 @@ export default {
         }
         if (page.$fetch) {
           p.push(page.$fetch())
-        } else {
-          // Get all component instance to call $fetch
-          for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
-            p.push(component.$fetch())
-          }
+        }
+        // Get all component instance to call $fetch
+        for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
+          p.push(component.$fetch())
         }
         <% } %>
         <% if (features.asyncData) { %>
