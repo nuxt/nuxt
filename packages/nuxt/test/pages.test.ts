@@ -96,18 +96,32 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct dynamic routes',
       files: [
+          `${pagesDir}/index.vue`,
           `${pagesDir}/[slug].vue`,
           `${pagesDir}/[[foo]]`,
           `${pagesDir}/[[foo]]/index.vue`,
           `${pagesDir}/[bar]/index.vue`,
-          `${pagesDir}/sub/[slug].vue`,
+          `${pagesDir}/nonopt/[slug].vue`,
+          `${pagesDir}/opt/[[slug]].vue`,
           `${pagesDir}/[[sub]]/route-[slug].vue`
       ],
       output: [
         {
-          name: 'sub-slug',
-          path: '/sub/:slug',
-          file: `${pagesDir}/sub/[slug].vue`,
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: []
+        },
+        {
+          name: 'nonopt-slug',
+          path: '/nonopt/:slug',
+          file: `${pagesDir}/nonopt/[slug].vue`,
+          children: []
+        },
+        {
+          name: 'opt-slug',
+          path: '/opt/:slug?',
+          file: `${pagesDir}/opt/[[slug]].vue`,
           children: []
         },
         {

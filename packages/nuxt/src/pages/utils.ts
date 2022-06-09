@@ -211,14 +211,6 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage) {
       route.name = route.name.replace(/-index$/, '')
     }
 
-    if (route.path === '/') {
-      // Remove ? suffix when index page at same level
-      routes.forEach((siblingRoute) => {
-        if (siblingRoute.path.endsWith('?')) {
-          siblingRoute.path = siblingRoute.path.slice(0, -1)
-        }
-      })
-    }
     // Remove leading / if children route
     if (parent && route.path.startsWith('/')) {
       route.path = route.path.slice(1)
