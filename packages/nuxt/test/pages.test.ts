@@ -105,10 +105,16 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
       output: [
         {
-          name: 'slug',
-          path: '/:slug',
-          file: `${pagesDir}/[slug].vue`,
+          name: 'sub-slug',
+          path: '/sub/:slug',
+          file: `${pagesDir}/sub/[slug].vue`,
           children: []
+        },
+        {
+          children: [],
+          name: 'bar',
+          file: 'pages/[bar]/index.vue',
+          path: '/:bar'
         },
         {
           children: [
@@ -124,15 +130,9 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/:foo?'
         },
         {
-          children: [],
-          name: 'bar',
-          file: 'pages/[bar]/index.vue',
-          path: '/:bar'
-        },
-        {
-          name: 'sub-slug',
-          path: '/sub/:slug',
-          file: `${pagesDir}/sub/[slug].vue`,
+          name: 'slug',
+          path: '/:slug',
+          file: `${pagesDir}/[slug].vue`,
           children: []
         },
         {
@@ -145,8 +145,14 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [`${pagesDir}/[...slug].vue`],
+      files: [`${pagesDir}/[...slug].vue`, `${pagesDir}/index.vue`],
       output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: []
+        },
         {
           name: 'slug',
           path: '/:slug(.*)*',
