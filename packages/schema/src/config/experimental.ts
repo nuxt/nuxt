@@ -17,6 +17,12 @@ export default {
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
      */
-    reactivityTransform: false
+    reactivityTransform: false,
+
+    /**
+     * Externalize `vue`, `@vue/*` and `vue-router` when build
+     * @see https://github.com/nuxt/framework/issues/4084
+     */
+    externalVue: false
   }
 }
