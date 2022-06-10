@@ -14,7 +14,8 @@ export function base (ctx: WebpackConfigContext) {
     baseAlias,
     baseConfig,
     basePlugins,
-    baseResolve
+    baseResolve,
+    baseTranspile
   ])
 }
 
@@ -157,9 +158,7 @@ export function baseTranspile (ctx: WebpackConfigContext) {
       pattern = pattern(ctx)
     }
     if (typeof pattern === 'string') {
-      const posixModule = pattern.replace(/\\/g, '/')
-      // TODO: should only do for clientside? (hint: pathNormalize)
-      transpile.push(new RegExp(escapeRegExp(normalize(posixModule))))
+      transpile.push(new RegExp(escapeRegExp(normalize(pattern))))
     } else if (pattern instanceof RegExp) {
       transpile.push(pattern)
     }
