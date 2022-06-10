@@ -67,7 +67,7 @@
     "untyped": "^0.4.4",
     "vue": "^3.2.37",
     "vue-bundle-renderer": "^0.3.8",
-    "vue-router": "^4.0.15"
+    "vue-router": "^4.0.16"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
