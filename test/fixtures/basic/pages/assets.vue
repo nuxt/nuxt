@@ -13,8 +13,14 @@ import logo from '~/assets/logo.svg'
 <style>
 #__nuxt {
   background-image: url('~/assets/logo.svg');
+  @font-face {
+    src: url("/public.svg") format("woff2");
+  }
 }
 body {
   background-image: url('/public.svg');
+  @font-face {
+    src: url('/public.svg') format('woff2');
+  }
 }
 </style>
