@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
   extends: [
     './extends/bar',
-    './extends/foo'
+    './extends/node_modules/foo'
   ],
   nitro: {
     output: { dir: process.env.NITRO_OUTPUT_DIR }

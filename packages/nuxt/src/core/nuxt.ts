@@ -4,6 +4,7 @@ import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule } from '@nuxt/kit'
 // Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
+import escapeRE from 'escape-string-regexp'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -65,6 +66,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Add unctx transform
   addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap }))
   addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap }))
+
+  // Transpile layers within node_modules
+  nuxt.options.build.transpile.push(
+    ...nuxt.options._layers.filter(i => i.cwd && i.cwd.includes('node_modules')).map(i => i.cwd)
+  )
 
   // Init user modules
   await nuxt.callHook('modules:before', { nuxt } as ModuleContainer)
@@ -133,7 +139,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
-  options._modules.push(pagesModule, metaModule, componentsModule, autoImportsModule)
+  options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push([autoImportsModule, {
+    transform: {
+      include: options._layers
+        .filter(i => i.cwd)
+        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd.split('node_modules/').pop())}(\\/|$)(?!node_modules\\/)`))
+    }
+  }])
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push('@nuxt/ui-templates')
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')

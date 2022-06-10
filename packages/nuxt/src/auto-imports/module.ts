@@ -16,6 +16,7 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
     imports: [],
     dirs: [],
     transform: {
+      include: [],
       exclude: undefined
     }
   },
