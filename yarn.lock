@@ -13341,7 +13341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.11, vite@npm:^2.9.9":
+"vite@npm:^2.9.10":
   version: 2.9.11
   resolution: "vite@npm:2.9.11"
   dependencies:
