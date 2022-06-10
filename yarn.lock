@@ -1765,7 +1765,7 @@ __metadata:
     externality: ^0.2.2
     fs-extra: ^10.1.0
     get-port-please: ^2.5.0
-    h3: ^0.7.8
+    h3: ^0.7.9
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
@@ -7297,6 +7297,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"h3@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "h3@npm:0.7.9"
+  dependencies:
+    cookie-es: ^0.5.0
+    destr: ^1.1.1
+    radix3: ^0.1.2
+    ufo: ^0.8.4
+  checksum: 0b73231e23f95583c17cfb3ef5e66ca451c1eda903cfaf5b2f7ab0c3ec0a69d2fe209a8bd97e85f2df38a663550f489d4de3debf0f43d197517fb0a23a50c481
+  languageName: node
+  linkType: hard
+
 "handlebars@npm:^4.7.7":
   version: 4.7.7
   resolution: "handlebars@npm:4.7.7"
@@ -9977,7 +9989,7 @@ __metadata:
     escape-string-regexp: ^5.0.0
     fs-extra: ^10.1.0
     globby: ^13.1.1
-    h3: ^0.7.8
+    h3: ^0.7.9
     hash-sum: ^2.0.0
     hookable: ^5.1.1
     knitwork: ^0.1.2
@@ -13341,7 +13353,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.10":
+"vite@npm:^2.9.11":
   version: 2.9.11
   resolution: "vite@npm:2.9.11"
   dependencies:
