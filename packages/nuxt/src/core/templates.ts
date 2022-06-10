@@ -1,6 +1,6 @@
 import { templateUtils } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
-import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString } from 'knitwork'
+import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
 
 import { isAbsolute, join, relative } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
@@ -50,7 +50,7 @@ export const clientPluginTemplate = {
     const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
     return [
       templateUtils.importSources(clientPlugins.map(p => p.src)),
-      `export default ${genArrayFromRaw(clientPlugins.map(p => templateUtils.importName(p.src)))}`
+      `export default ${genArrayFromRaw(clientPlugins.map(p => genSafeVariableName(p.src)))}`
     ].join('\n')
   }
 }
@@ -64,7 +64,7 @@ export const serverPluginTemplate = {
       templateUtils.importSources(serverPlugins.map(p => p.src)),
       `export default ${genArrayFromRaw([
         'preload',
-        ...serverPlugins.map(p => templateUtils.importName(p.src))
+        ...serverPlugins.map(p => genSafeVariableName(p.src))
       ])}`
     ].join('\n')
   }

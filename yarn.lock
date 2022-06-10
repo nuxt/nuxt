@@ -1627,7 +1627,7 @@ __metadata:
     hash-sum: ^2.0.0
     ignore: ^5.2.0
     jiti: ^1.13.0
-    knitwork: ^0.1.1
+    knitwork: ^0.1.2
     lodash.template: ^4.5.0
     mlly: ^0.5.2
     pathe: ^0.3.0
@@ -1766,7 +1766,7 @@ __metadata:
     fs-extra: ^10.1.0
     get-port-please: ^2.5.0
     h3: ^0.7.8
-    knitwork: ^0.1.1
+    knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
     pathe: ^0.3.0
@@ -8333,10 +8333,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knitwork@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "knitwork@npm:0.1.1"
-  checksum: 63b6dbb858d220ee288465f9702bf58e01588fb1469e3664158ab63b32bbe439d9c089165c4cc00d5773416eb5682ca219c34e258e81e91cacc20f940496ed97
+"knitwork@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "knitwork@npm:0.1.2"
+  checksum: aadc6f150ff2b93c509553bf9e7a5884e67fd193eda12b265ea7f90742d6d461cc90b14059310f91f009dacd03103cea7ef4f5afaaf895a85007e3983b307ea7
   languageName: node
   linkType: hard
 
@@ -9980,7 +9980,7 @@ __metadata:
     h3: ^0.7.8
     hash-sum: ^2.0.0
     hookable: ^5.1.1
-    knitwork: ^0.1.1
+    knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
     nitropack: ^0.4.4

@@ -2,8 +2,8 @@ import { basename, extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import { NuxtMiddleware, NuxtPage } from '@nuxt/schema'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
-import { kebabCase, pascalCase } from 'scule'
-import { genImport, genDynamicImport, genArrayFromRaw } from 'knitwork'
+import { kebabCase } from 'scule'
+import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 
 enum SegmentParserState {
@@ -233,7 +233,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((route) => {
       const file = normalize(route.file)
-      const metaImportName = getImportName(file) + 'Meta'
+      const metaImportName = genSafeVariableName(file) + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'meta', as: metaImportName }]))
       return {
         ...Object.fromEntries(Object.entries(route).map(([key, value]) => [key, JSON.stringify(value)])),
@@ -269,10 +269,6 @@ function getNameFromPath (path: string) {
 
 function hasSuffix (path: string, suffix: string) {
   return basename(path).replace(extname(path), '').endsWith(suffix)
-}
-
-export function getImportName (name: string) {
-  return pascalCase(name).replace(/[^\w]/g, r => '_' + r.charCodeAt(0))
 }
 
 function uniqueBy <T, K extends keyof T> (arr: T[], key: K) {
