@@ -46,7 +46,10 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
       // with workaround for vue-loader bug: https://github.com/vuejs/vue-loader/pull/1911
       const scriptImport = findStaticImports(code).find(i => parseQuery(i.specifier.replace('?macro=true', '')).type === 'script')
       if (scriptImport) {
-        const specifier = withQuery(scriptImport.specifier.replace('?macro=true', ''), { macro: 'true' })
+        // https://github.com/vuejs/vue-loader/pull/1911
+        // https://github.com/vitejs/vite/issues/8473
+        const parsed = parseURL(scriptImport.specifier.replace('?macro=true', ''))
+        const specifier = withQuery(parsed.pathname, { macro: 'true', ...parseQuery(parsed.search) })
         s.overwrite(0, code.length, `export { meta } from "${specifier}"`)
         return result()
       }
