@@ -51,7 +51,7 @@
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.38.2",
     "case-police": "^0.5.3",
-    "changelogen": "^0.0.6",
+    "changelogen": "^0.1.1",
     "eslint": "^8.17.0",
     "eslint-plugin-jsdoc": "^39.3.2",
     "execa": "^6.1.0",
@@ -65,7 +65,7 @@
     "typescript": "^4.7.3",
     "unbuild": "^0.7.4",
     "vitest": "^0.14.2",
-    "vue-tsc": "^0.37.3"
+    "vue-tsc": "^0.37.5"
   },
   "packageManager": "yarn@3.2.1",
   "engines": {

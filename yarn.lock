@@ -2832,9 +2832,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.18.2":
-  version: 0.18.2
-  resolution: "@vercel/nft@npm:0.18.2"
+"@vercel/nft@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "@vercel/nft@npm:0.20.0"
   dependencies:
     "@mapbox/node-pre-gyp": ^1.0.5
     acorn: ^8.6.0
@@ -2849,7 +2849,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: 8a06ae6ab8e9a6bd9b20ffc8511c8dcea7a172fefc102301b10720100afd46e37fb373094ff3014e5f12ad4607796cf710418bfb4cc8262bee0d8940604d8437
+  checksum: 9bf74305981c9aa45b3f561b65e802c1abf70b091db6e8e75868937238597a0ac0d9a1011873385e0af5ddf3868f3a3e136fbc939040c0dcfda5d23d8b6bd3eb
   languageName: node
   linkType: hard
 
@@ -2877,55 +2877,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volar/code-gen@npm:0.37.3":
-  version: 0.37.3
-  resolution: "@volar/code-gen@npm:0.37.3"
+"@volar/code-gen@npm:0.37.5":
+  version: 0.37.5
+  resolution: "@volar/code-gen@npm:0.37.5"
   dependencies:
-    "@volar/source-map": 0.37.3
-  checksum: 21e477af39f02e8d450e5d5910b357e977e78981068c62d892e15c5f509287dd4ee7222e8c3f8569e373f948b486cc030ec92132fb55ec44880d7a4fd89a6410
+    "@volar/source-map": 0.37.5
+  checksum: 4978825d1885942d50da2b5d2cbf7e0b0377bff133c991aecd2271eb2fb3270ded72b2e296e789cc9bacb72841bf1c86bff9450bc795e0f2675b57c5e438bfe0
   languageName: node
   linkType: hard
 
-"@volar/source-map@npm:0.37.3":
-  version: 0.37.3
-  resolution: "@volar/source-map@npm:0.37.3"
-  checksum: 749d0de1590afdd4ae0dfd0003fd7b32129d541c27dd49dd9ec329f736fba1293a9499a2e8bb74aae8686d08a81b156168db28eb0f48c0b2f16c6cbe64ff82be
+"@volar/source-map@npm:0.37.5":
+  version: 0.37.5
+  resolution: "@volar/source-map@npm:0.37.5"
+  checksum: ebce4972e4e0544447c02622dfd6fb25649bde53c9a9ef138ff218d63aed9dff2b16e84fb72ae811018de2314b1f818bf1db0365ec38a58f2bd9e176da6d618d
   languageName: node
   linkType: hard
 
-"@volar/typescript-faster@npm:0.37.3":
-  version: 0.37.3
-  resolution: "@volar/typescript-faster@npm:0.37.3"
+"@volar/vue-code-gen@npm:0.37.5":
+  version: 0.37.5
+  resolution: "@volar/vue-code-gen@npm:0.37.5"
   dependencies:
-    semver: ^7.3.7
-  checksum: eca86e65aee1032b19be8f2f9a1c85d41db3db9669ee2d9bf6ae7d3d60acd85d5641eb07e03e254d07ca3bf1a3c255e069d2364f8b0ed06864e43608a33dcf0f
-  languageName: node
-  linkType: hard
-
-"@volar/vue-code-gen@npm:0.37.3":
-  version: 0.37.3
-  resolution: "@volar/vue-code-gen@npm:0.37.3"
-  dependencies:
-    "@volar/code-gen": 0.37.3
-    "@volar/source-map": 0.37.3
+    "@volar/code-gen": 0.37.5
+    "@volar/source-map": 0.37.5
     "@vue/compiler-core": ^3.2.37
     "@vue/compiler-dom": ^3.2.37
     "@vue/shared": ^3.2.37
-  checksum: 98d7c66aa5669ed29baafb256917110316ca83af886728a8dedac9d4f367293eaac666f2b265c18e812b8d5a930d0989fcb8da64ad53cd13a32f93f1fabe3954
+  checksum: 5fb21b6bc97175408594da18ebe12c5d3c71769d21dceb262e8839c89c63519a85ead5cc8c7aac4b2c7efaefb58142989f15cb42c9b083d0080682b5a3d419ff
   languageName: node
   linkType: hard
 
-"@volar/vue-typescript@npm:0.37.3":
-  version: 0.37.3
-  resolution: "@volar/vue-typescript@npm:0.37.3"
+"@volar/vue-typescript@npm:0.37.5":
+  version: 0.37.5
+  resolution: "@volar/vue-typescript@npm:0.37.5"
   dependencies:
-    "@volar/code-gen": 0.37.3
-    "@volar/source-map": 0.37.3
-    "@volar/typescript-faster": 0.37.3
-    "@volar/vue-code-gen": 0.37.3
+    "@volar/code-gen": 0.37.5
+    "@volar/source-map": 0.37.5
+    "@volar/vue-code-gen": 0.37.5
     "@vue/compiler-sfc": ^3.2.37
     "@vue/reactivity": ^3.2.37
-  checksum: 9eec530fb770dc280a2b6cd762dedb85eed628663875363b88762ee34262e4544429725b31b16482a2f2d0e08da9bf4f0f010b4cdfe8bbeb77a5aee655f073d3
+  checksum: 702c42644b9655da20cff7d0df544d9c3453e6b06e2a5b535a70d1849b7f76c8ea69167af67aa0f169c6f6ef8a841db8532519139087faac7ee88aa173b7b711
   languageName: node
   linkType: hard
 
@@ -4142,9 +4132,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"changelogen@npm:^0.0.6":
-  version: 0.0.6
-  resolution: "changelogen@npm:0.0.6"
+"changelogen@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "changelogen@npm:0.1.1"
   dependencies:
     c12: ^0.2.7
     consola: ^2.15.3
@@ -4153,7 +4143,7 @@ __metadata:
     scule: ^0.2.1
   bin:
     changelogen: dist/cli.mjs
-  checksum: 9eb5bb0875133c1b3c932112e689e455b608cf98b534b0214188851143232e66e74866a18c04dde3205834c06d2c68d851bf5603ce3cb29bcaec221884b8147f
+  checksum: d5e04d7ccf51ac12cb12807bcfec055a839496e8f23faad337ee5c58511c65cebc74b355963c3217fd8d3a122023c048036ed9a35330cda84f6dfda4ba724a31
   languageName: node
   linkType: hard
 
@@ -5794,7 +5784,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.27, esbuild@npm:^0.14.36, esbuild@npm:^0.14.38, esbuild@npm:^0.14.39, esbuild@npm:^0.14.43":
+"esbuild@npm:^0.14.27, esbuild@npm:^0.14.36, esbuild@npm:^0.14.39, esbuild@npm:^0.14.43":
   version: 0.14.43
   resolution: "esbuild@npm:0.14.43"
   dependencies:
@@ -7240,19 +7230,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:^13.1.1":
-  version: 13.1.1
-  resolution: "globby@npm:13.1.1"
-  dependencies:
-    dir-glob: ^3.0.1
-    fast-glob: ^3.2.11
-    ignore: ^5.2.0
-    merge2: ^1.4.1
-    slash: ^4.0.0
-  checksum: e6c43409c6c31b374fbd1c01a8c1811de52336928be9c697e472d2a89a156c9cbf1fb33863755c0447b4db16485858aa57f16628d66a6b7c7131669c9fbe76cd
-  languageName: node
-  linkType: hard
-
 "globby@npm:^13.1.2":
   version: 13.1.2
   resolution: "globby@npm:13.1.2"
@@ -7298,7 +7275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.7.6, h3@npm:^0.7.8":
+"h3@npm:^0.7.6":
   version: 0.7.8
   resolution: "h3@npm:0.7.8"
   dependencies:
@@ -9407,9 +9384,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.4":
-  version: 0.4.4
-  resolution: "nitropack@npm:0.4.4"
+"nitropack@npm:^0.4.5":
+  version: 0.4.5
+  resolution: "nitropack@npm:0.4.5"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9422,7 +9399,7 @@ __metadata:
     "@rollup/plugin-wasm": ^5.2.0
     "@rollup/pluginutils": ^4.2.1
     "@types/jsdom": ^16.2.14
-    "@vercel/nft": ^0.18.2
+    "@vercel/nft": ^0.20.0
     archiver: ^5.3.1
     c12: ^0.2.7
     chalk: ^5.0.1
@@ -9432,12 +9409,13 @@ __metadata:
     defu: ^6.0.0
     destr: ^1.1.1
     dot-prop: ^7.2.0
-    esbuild: ^0.14.38
+    esbuild: ^0.14.43
+    escape-string-regexp: ^5.0.0
     etag: ^1.8.1
     fs-extra: ^10.1.0
-    globby: ^13.1.1
+    globby: ^13.1.2
     gzip-size: ^7.0.0
-    h3: ^0.7.8
+    h3: ^0.7.9
     hookable: ^5.1.1
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
@@ -9447,15 +9425,15 @@ __metadata:
     mime: ^3.0.0
     mlly: ^0.5.2
     mri: ^1.2.0
-    node-fetch-native: ^0.1.2
+    node-fetch-native: ^0.1.3
     ohash: ^0.1.0
-    ohmyfetch: ^0.4.16
+    ohmyfetch: ^0.4.18
     pathe: ^0.3.0
     perfect-debounce: ^0.1.3
     pkg-types: ^0.3.2
     pretty-bytes: ^6.0.0
     radix3: ^0.1.2
-    rollup: ^2.72.1
+    rollup: ^2.75.6
     rollup-plugin-terser: ^7.0.2
     rollup-plugin-visualizer: ^5.6.0
     scule: ^0.2.1
@@ -9467,12 +9445,12 @@ __metadata:
     table: ^6.8.0
     ufo: ^0.8.4
     unenv: ^0.5.2
-    unimport: ^0.2.1
+    unimport: ^0.2.7
     unstorage: ^0.4.1
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 5dd9ece9707b775bf87f1f6625ce96bfc29813507157dbd84178220cd0f1216964b474498f51b934ddfcd5f6ea120a4f1071415ac37eed28ea9a406e6c283882
+  checksum: 3af5039c6cd4b0dd5b1675a9d33db6b8802a62166a9b1062f5d51d036f4191e1beadb89eb8dab72cb7dea89c3020d91936f3b87b1ad731546c22c77d2a943a5f
   languageName: node
   linkType: hard
 
@@ -9948,7 +9926,7 @@ __metadata:
     "@types/rimraf": ^3
     "@unocss/reset": ^0.38.2
     case-police: ^0.5.3
-    changelogen: ^0.0.6
+    changelogen: ^0.1.1
     eslint: ^8.17.0
     eslint-plugin-jsdoc: ^39.3.2
     execa: ^6.1.0
@@ -9962,7 +9940,7 @@ __metadata:
     typescript: ^4.7.3
     unbuild: ^0.7.4
     vitest: ^0.14.2
-    vue-tsc: ^0.37.3
+    vue-tsc: ^0.37.5
   languageName: unknown
   linkType: soft
 
@@ -10008,7 +9986,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
-    nitropack: ^0.4.4
+    nitropack: ^0.4.5
     nuxi: ^3.0.0-rc.3
     ohash: ^0.1.0
     ohmyfetch: ^0.4.18
@@ -11680,7 +11658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.59.0, rollup@npm:^2.70.1, rollup@npm:^2.72.1, rollup@npm:^2.75.6":
+"rollup@npm:^2.59.0, rollup@npm:^2.70.1, rollup@npm:^2.75.6":
   version: 2.75.6
   resolution: "rollup@npm:2.75.6"
   dependencies:
@@ -13072,24 +13050,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.2.1":
-  version: 0.2.6
-  resolution: "unimport@npm:0.2.6"
-  dependencies:
-    "@rollup/pluginutils": ^4.2.1
-    escape-string-regexp: ^5.0.0
-    fast-glob: ^3.2.11
-    local-pkg: ^0.4.1
-    magic-string: ^0.26.2
-    mlly: ^0.5.2
-    pathe: ^0.3.0
-    scule: ^0.2.1
-    strip-literal: ^0.3.0
-    unplugin: ^0.6.3
-  checksum: 54589515e85f7f2e4c55875a4e09024c07a9e17627faca28bdf970a271bcaeaa6d2592532d37cf349113f8a97a1933e0fb5322dcf58406b0cfd715413c5156a6
-  languageName: node
-  linkType: hard
-
 "unimport@npm:^0.2.7":
   version: 0.2.7
   resolution: "unimport@npm:0.2.7"
@@ -13177,7 +13137,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.6.1, unplugin@npm:^0.6.2, unplugin@npm:^0.6.3":
+"unplugin@npm:^0.6.1, unplugin@npm:^0.6.2":
   version: 0.6.3
   resolution: "unplugin@npm:0.6.3"
   dependencies:
@@ -13591,16 +13551,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-tsc@npm:^0.37.3":
-  version: 0.37.3
-  resolution: "vue-tsc@npm:0.37.3"
+"vue-tsc@npm:^0.37.5":
+  version: 0.37.5
+  resolution: "vue-tsc@npm:0.37.5"
   dependencies:
-    "@volar/vue-typescript": 0.37.3
+    "@volar/vue-typescript": 0.37.5
   peerDependencies:
     typescript: "*"
   bin:
     vue-tsc: bin/vue-tsc.js
-  checksum: 91c43c1db11aaea863bb4ce0b41f5555fef94668e6d44d9806dedc95e80af31c251c5f9c212c301d1eb6e34572e39ad56f9b2f7fc76012d22be788aea05285e1
+  checksum: f45fb59cf99efc605c967484cc95ccd2fcb07661177ac11309281389f7afb53867c3c5df7a750319ca981e6be621c86f58a432e0d45b4c1e797bcc6c4f7d6e89
   languageName: node
   linkType: hard
 
