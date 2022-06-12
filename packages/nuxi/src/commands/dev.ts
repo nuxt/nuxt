@@ -8,6 +8,7 @@ import { showBanner } from '../utils/banner'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/cjs'
+import { overrideEnv } from '../utils/env'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -17,7 +18,7 @@ export default defineNuxtCommand({
     description: 'Run nuxt development server'
   },
   async invoke (args) {
-    process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+    overrideEnv('development')
 
     const { listen } = await import('listhen')
     let currentHandler

@@ -5,6 +5,7 @@ import { listen } from 'listhen'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
+import { overrideEnv } from '../utils/env'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -14,7 +15,7 @@ export default defineNuxtCommand({
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
   async invoke (args) {
-    process.env.NODE_ENV = process.env.NODE_ENV || 'production'
+    overrideEnv('production')
 
     const rootDir = resolve(args._[0] || '.')
     const statsDir = join(rootDir, '.nuxt/stats')
