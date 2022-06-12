@@ -42,7 +42,7 @@
     "nuxi": "link:./packages/nuxi",
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
-    "vite": "^2.9.11",
+    "vite": "^2.9.12",
     "unbuild": "^0.7.4"
   },
   "devDependencies": {
@@ -56,7 +56,7 @@
     "eslint-plugin-jsdoc": "^39.3.2",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
-    "globby": "^13.1.1",
+    "globby": "^13.1.2",
     "jiti": "^1.13.0",
     "lerna": "^5.1.1",
     "markdownlint-cli": "^0.31.1",
