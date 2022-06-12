@@ -43,7 +43,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
 
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(["'](lazy-|Lazy)?([^'"]*?)["']\)/g, (full, lazy, name) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*?)["'][\s,]*\)/g, (full, lazy, name) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           const identifier = map.get(component) || `__nuxt_component_${num++}`
