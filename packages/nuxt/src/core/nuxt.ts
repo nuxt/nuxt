@@ -143,7 +143,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push([autoImportsModule, {
     transform: {
       include: options._layers
-        .filter(i => i.cwd)
+        .filter(i => i.cwd && i.cwd.includes('node_modules'))
         .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd.split('node_modules/').pop())}(\\/|$)(?!node_modules\\/)`))
     }
   }])
