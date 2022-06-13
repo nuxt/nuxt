@@ -9352,7 +9352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.5":
+"nitropack@npm:^0.4.6":
   version: 0.4.6
   resolution: "nitropack@npm:0.4.6"
   dependencies:
@@ -9908,7 +9908,7 @@ __metadata:
     typescript: ^4.7.3
     unbuild: ^0.7.4
     vitest: ^0.14.2
-    vue-tsc: ^0.37.5
+    vue-tsc: ^0.37.7
   languageName: unknown
   linkType: soft
 
@@ -9954,7 +9954,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
-    nitropack: ^0.4.5
+    nitropack: ^0.4.6
     nuxi: ^3.0.0-rc.4
     ohash: ^0.1.0
     ohmyfetch: ^0.4.18
@@ -13509,7 +13509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-tsc@npm:^0.37.5":
+"vue-tsc@npm:^0.37.7":
   version: 0.37.7
   resolution: "vue-tsc@npm:0.37.7"
   dependencies:
