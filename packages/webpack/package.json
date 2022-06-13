@@ -46,7 +46,6 @@
     "unplugin": "^0.7.0",
     "url-loader": "^4.1.1",
     "vue-loader": "^17.0.0",
-    "vue-style-loader": "^4.1.3",
     "webpack": "^5.73.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-dev-middleware": "^5.3.3",

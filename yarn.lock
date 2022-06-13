@@ -1830,7 +1830,6 @@ __metadata:
     url-loader: ^4.1.1
     vue: 3.2.37
     vue-loader: ^17.0.0
-    vue-style-loader: ^4.1.3
     webpack: ^5.73.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.3.3
@@ -7386,13 +7385,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hash-sum@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "hash-sum@npm:1.0.2"
-  checksum: 268553ba6c84333f502481d101a7d65cd39f61963544f12fc3ce60264718f471796dbc37348cee08c5529f04fafeba041886a4d35721e34d6440a48a42629283
-  languageName: node
-  linkType: hard
-
 "hash-sum@npm:^2.0.0":
   version: 2.0.0
   resolution: "hash-sum@npm:2.0.0"
@@ -8486,17 +8478,6 @@ __metadata:
   version: 4.3.0
   resolution: "loader-runner@npm:4.3.0"
   checksum: a90e00dee9a16be118ea43fec3192d0b491fe03a32ed48a4132eb61d498f5536a03a1315531c19d284392a8726a4ecad71d82044c28d7f22ef62e029bf761569
-  languageName: node
-  linkType: hard
-
-"loader-utils@npm:^1.0.2":
-  version: 1.4.0
-  resolution: "loader-utils@npm:1.4.0"
-  dependencies:
-    big.js: ^5.2.2
-    emojis-list: ^3.0.0
-    json5: ^1.0.1
-  checksum: d150b15e7a42ac47d935c8b484b79e44ff6ab4c75df7cc4cb9093350cf014ec0b17bdb60c5d6f91a37b8b218bd63b973e263c65944f58ca2573e402b9a27e717
   languageName: node
   linkType: hard
 
@@ -13538,16 +13519,6 @@ __metadata:
   peerDependencies:
     vue: ^3.2.0
   checksum: 4b8e417c96404d4f4c69539112dfafc52f3b2427db3663d5129413a9b65aafdb95889d756af4c6d08a84d7f9e80cc0ae4667383f2c090f27c27ea4b5d83c4cec
-  languageName: node
-  linkType: hard
-
-"vue-style-loader@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "vue-style-loader@npm:4.1.3"
-  dependencies:
-    hash-sum: ^1.0.2
-    loader-utils: ^1.0.2
-  checksum: ef79d0c6329303d69c87f128f67e486bd37e9a8d416aa662edafae62fab727117b7452f50be8b11fe0c4cb43992344d5ef6a46b206f375fca4d37ae5a5b99185
   languageName: node
   linkType: hard
 

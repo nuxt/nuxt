@@ -29,7 +29,7 @@ function extractCSS (ctx: WebpackConfigContext) {
     config.plugins.push(new MiniCssExtractPlugin({
       filename: fileName(ctx, 'css'),
       chunkFilename: fileName(ctx, 'css'),
-      ...options.webpack.extractCSS
+      ...options.webpack.extractCSS === true ? {} : options.webpack.extractCSS
     }))
   }
 }
@@ -113,10 +113,11 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions) {
   }
 
   return [
-    {
-      loader: 'vue-style-loader',
-      options: options.webpack.loaders.vueStyle
-    },
+    // https://github.com/vuejs/vue-style-loader/issues/56
+    // {
+    //   loader: 'vue-style-loader',
+    //   options: options.webpack.loaders.vueStyle
+    // },
     cssLoader
   ]
 }

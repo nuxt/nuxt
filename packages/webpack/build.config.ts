@@ -16,7 +16,6 @@ export default defineBuildConfig({
     'file-loader',
     'style-resources-loader',
     'url-loader',
-    'vue-style-loader',
     'vue'
   ],
   externals: [
