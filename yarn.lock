@@ -1710,7 +1710,7 @@ __metadata:
     ohmyfetch: ^0.4.18
     playwright: ^1.22.2
     unbuild: latest
-    vitest: ^0.15.0
+    vitest: ^0.15.1
   peerDependencies:
     vue: ^3.2.37
   languageName: unknown
@@ -1780,7 +1780,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.7.0
     vite: ^2.9.12
-    vite-node: ^0.15.0
+    vite-node: ^0.15.1
     vite-plugin-checker: ^0.4.6
     vue: 3.2.37
   peerDependencies:
@@ -9375,9 +9375,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.7":
-  version: 0.4.7
-  resolution: "nitropack@npm:0.4.7"
+"nitropack@npm:^0.4.8":
+  version: 0.4.8
+  resolution: "nitropack@npm:0.4.8"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9441,7 +9441,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: f697b206a8983e0264bd044d820a542185d820570a51c293d07da02ad9ad6a38d41c02368407a418eb377093b6db8ca9883fcb1a64a83ee3e14092b2b820d877
+  checksum: f24a9fe0ea042b91775ba73e05b906a090c666204a6a36b0752a38b295d90c9ff3818c8e27396cd4081f497dfa659321db198313cc2a20763f87816488ebaeb2
   languageName: node
   linkType: hard
 
@@ -9930,7 +9930,7 @@ __metadata:
     rimraf: ^3.0.2
     typescript: ^4.7.3
     unbuild: ^0.7.4
-    vitest: ^0.15.0
+    vitest: ^0.15.1
     vue-tsc: ^0.37.8
   languageName: unknown
   linkType: soft
@@ -9977,7 +9977,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.2
-    nitropack: ^0.4.7
+    nitropack: ^0.4.8
     nuxi: ^3.0.0-rc.4
     ohash: ^0.1.0
     ohmyfetch: ^0.4.18
@@ -13293,9 +13293,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "vite-node@npm:0.15.0"
+"vite-node@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "vite-node@npm:0.15.1"
   dependencies:
     debug: ^4.3.4
     kolorist: ^1.5.1
@@ -13304,7 +13304,7 @@ __metadata:
     vite: ^2.9.12
   bin:
     vite-node: vite-node.mjs
-  checksum: 4a4fcea7df5fbc7cba7a54d88d7030a7d714ff7134c332ebd5c16660d535e448b7a20838b9e6918cf9bc66412e7d5160bc0f734bbbfea49dbe014d5f7f4c5d05
+  checksum: cce342099e068582c31cc87752719f1e3cbf609846f1ac9a93589c74841941b04ffacc81ff974a702e05f427c912da2c4fa7e0a699f5b7f147fbad6d7036f83b
   languageName: node
   linkType: hard
 
@@ -13364,9 +13364,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "vitest@npm:0.15.0"
+"vitest@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "vitest@npm:0.15.1"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13393,7 +13393,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 51ec1819869a4cd3ca47169a94c399200dc9080821b3ca438958008c110f9a8c34c19083091c04dac93c4a4c98272b1d32ba649479fd0597df7dacf4639ec569
+  checksum: a39959815977eb0d19807c629b6eff4aff51c30ded41335f03d405a4585da47b2d0e6a121ab912615b44876ed9a19e73d900b37382819091a4efcc9c1060784e
   languageName: node
   linkType: hard
 
