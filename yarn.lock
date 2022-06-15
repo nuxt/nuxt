@@ -1663,6 +1663,7 @@ __metadata:
     ufo: ^0.8.4
     unbuild: latest
     unimport: ^0.2.9
+    vite: ^2.9.12
   languageName: unknown
   linkType: soft
 

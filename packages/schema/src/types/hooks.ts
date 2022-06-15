@@ -2,6 +2,7 @@ import type { Server as HttpServer, IncomingMessage, ServerResponse } from 'node
 import type { Server as HttpsServer } from 'node:https'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
+import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
 import type { ModuleContainer } from './module'
 import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
 import type { Preset as ImportPreset, Import } from 'unimport'
@@ -183,9 +184,9 @@ export interface NuxtHooks {
   'export:done': (generator: Generator, { errors }: { errors: any[] }) => HookResult
 
   // vite
-  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: any }) => HookResult
-  'vite:extendConfig': (viteInlineConfig: any, env: { isClient: boolean, isServer: boolean }) => HookResult
-  'vite:serverCreated': (viteServer: any, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteInlineConfig }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: ViteInlineConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:serverCreated': (viteServer: ViteDevServer, env: { isClient: boolean, isServer: boolean }) => HookResult
 }
 
 export type NuxtHookName = keyof NuxtHooks
