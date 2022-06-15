@@ -10,6 +10,19 @@ export interface LegacyServerMiddleware {
 }
 
 /**
+ * normalize handler object
+ *
+ */
+function normalizeHandlerMethod (handler: NitroEventHandler) {
+  // retrieve method from handler file name
+  const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
+  return {
+    method,
+    ...handler
+  }
+}
+
+/**
  * Adds a new server middleware to the end of the server middleware array.
  *
  * @deprecated Use addServerHandler instead
@@ -23,7 +36,7 @@ export function addServerMiddleware (middleware: LegacyServerMiddleware) {
  *
  */
 export function addServerHandler (handler: NitroEventHandler) {
-  useNuxt().options.serverHandlers.push(handler)
+  useNuxt().options.serverHandlers.push(normalizeHandlerMethod(handler))
 }
 
 /**
