@@ -35,7 +35,7 @@
     "h3": "^0.7.9",
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
-    "mlly": "^0.5.2",
+    "mlly": "^0.5.3",
     "pathe": "^0.3.0",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8.4.14",
