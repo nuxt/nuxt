@@ -1625,12 +1625,12 @@ __metadata:
     globby: ^13.1.2
     hash-sum: ^2.0.0
     ignore: ^5.2.0
-    jiti: ^1.13.0
+    jiti: ^1.14.0
     knitwork: ^0.1.2
     lodash.template: ^4.5.0
     mlly: ^0.5.3
     pathe: ^0.3.0
-    pkg-types: ^0.3.2
+    pkg-types: ^0.3.3
     scule: ^0.2.1
     semver: ^7.3.7
     unbuild: latest
@@ -1655,7 +1655,7 @@ __metadata:
     c12: ^0.2.7
     create-require: ^1.1.1
     defu: ^6.0.0
-    jiti: ^1.13.0
+    jiti: ^1.14.0
     pathe: ^0.3.0
     postcss-import-resolver: ^2.0.0
     scule: ^0.2.1
@@ -1706,7 +1706,7 @@ __metadata:
     defu: ^6.0.0
     execa: ^6.1.0
     get-port-please: ^2.5.0
-    jiti: ^1.13.0
+    jiti: ^1.14.0
     ohmyfetch: ^0.4.18
     playwright: ^1.22.2
     unbuild: latest
@@ -8432,6 +8432,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jiti@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "jiti@npm:1.14.0"
+  bin:
+    jiti: bin/jiti.js
+  checksum: 61e7123caa397b8a53068120b7496b95048b96feba3cc1a263265e9b0bcfb375e90a182e07643a29e5380d92c485918d5e7db3805cc9511404e7e9c93234725b
+  languageName: node
+  linkType: hard
+
 "joycon@npm:^3.0.1":
   version: 3.1.1
   resolution: "joycon@npm:3.1.1"
@@ -10197,13 +10206,13 @@ __metadata:
     execa: ^6.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    jiti: ^1.13.0
+    jiti: ^1.14.0
     listhen: ^0.2.13
     mlly: ^0.5.3
     mri: ^1.2.0
     pathe: ^0.3.0
     perfect-debounce: ^0.1.3
-    pkg-types: ^0.3.2
+    pkg-types: ^0.3.3
     scule: ^0.2.1
     semver: ^7.3.7
     superb: ^4.0.0
@@ -10232,7 +10241,7 @@ __metadata:
     execa: ^6.1.0
     expect-type: ^0.13.0
     globby: ^13.1.2
-    jiti: ^1.13.0
+    jiti: ^1.14.0
     lerna: ^5.1.4
     markdownlint-cli: ^0.31.1
     pathe: ^0.3.0
@@ -10883,6 +10892,17 @@ __metadata:
     mlly: ^0.3.6
     pathe: ^0.2.0
   checksum: 55942a816772137fda954ea1ad86cb972e63da42e445a0532cd6bfc31def6ed22f28bf5746fcea39cedd128494079212ee1ab51edcf206280b9e4eb8c3468bd4
+  languageName: node
+  linkType: hard
+
+"pkg-types@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "pkg-types@npm:0.3.3"
+  dependencies:
+    jsonc-parser: ^3.0.0
+    mlly: ^0.5.3
+    pathe: ^0.3.0
+  checksum: 1c74b65e12274c157bbbadfad50e68a17e4091f1e352d30c600de5da18200dbea35f349516e02a1fec6992a9b5531074bf0b3bcee9da160fe0754135127ede24
   languageName: node
   linkType: hard
 
