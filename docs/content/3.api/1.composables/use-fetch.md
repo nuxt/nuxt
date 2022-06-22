@@ -22,6 +22,7 @@ type UseFetchOptions = {
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
+  watch?: WatchSource[]
 }
 
 type DataT = {
@@ -47,6 +48,7 @@ type DataT = {
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.
+  * `watch`: watch reactive sources to auto-refresh
   * `transform`: A function that can be used to alter `handler` function result after resolving.
 
 ## Return values
