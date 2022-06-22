@@ -15,9 +15,6 @@ export interface ExtendConfigOptions {
     * @default true
     */
    build?: boolean
-}
-
-export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
   /**
    * Install plugin on server side
    *
@@ -30,6 +27,9 @@ export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
    * @default true
    */
   client?: boolean
+}
+
+export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
   /**
    * Install plugin on modern build
    *
@@ -99,7 +99,14 @@ export function extendViteConfig (
     return
   }
 
-  nuxt.hook('vite:extend', ({ config }) => fn(config))
+  nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
+    if (options.server !== false && isServer) {
+      return fn(config)
+    }
+    if (options.client !== false && isClient) {
+      return fn(config)
+    }
+  })
 }
 
 /**
