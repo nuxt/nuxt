@@ -21,28 +21,28 @@ jobs:
         node: [14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: cache node_modules
         id: node_modules_cache_id
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path:  |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}-2
 
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             node_modules
@@ -64,7 +64,7 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             node_modules
@@ -98,7 +98,7 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -106,7 +106,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             node_modules
@@ -119,7 +119,7 @@ jobs:
         run: yarn test:fixtures
 
       - name: Save fixtures
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -137,7 +137,7 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -145,7 +145,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             node_modules
@@ -155,7 +155,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
