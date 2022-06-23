@@ -59,7 +59,7 @@ describe('error', () => {
 
   test('/info should display an error', async () => {
     await expect(nuxt.server.renderRoute('/info')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'title\' of undefined')
+      message: expect.stringContaining("Cannot read properties of undefined (reading 'title')")
     })
   })
 
@@ -71,7 +71,7 @@ describe('error', () => {
 
   test('/error-square should display an error', async () => {
     await expect(nuxt.server.renderRoute('/squared')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'data\' of undefined')
+      message: expect.stringContaining("Cannot read properties of undefined (reading 'data')")
     })
   })
 
