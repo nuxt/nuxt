@@ -224,7 +224,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -261,7 +261,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -298,7 +298,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
