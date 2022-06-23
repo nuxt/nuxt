@@ -22,7 +22,7 @@ jobs:
         node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -66,7 +66,7 @@ jobs:
         node: [14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -99,7 +99,7 @@ jobs:
         node: [14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -130,7 +130,7 @@ jobs:
         node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -170,7 +170,7 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -206,7 +206,7 @@ jobs:
         node: [14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -243,7 +243,7 @@ jobs:
         node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -280,7 +280,7 @@ jobs:
         node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -335,7 +335,7 @@ jobs:
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           registry-url: 'https://registry.npmjs.org'
