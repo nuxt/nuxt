@@ -433,8 +433,10 @@ export interface LoaderOptions {
     warnRuleAsWarning ?: boolean | undefined;
 }
 
+// eslint-disable-next-line no-redeclare
 export namespace LoaderOptions {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type Callback<T> = (loaderContext: Webpack.loader.LoaderContext) => T;
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type SassOptions = Sass.Options<'sync'>;
 }

@@ -8,6 +8,7 @@ import { LoaderOptions } from './interfaces'
 
 declare function loader(content: string): void;
 
+// eslint-disable-next-line no-redeclare
 declare namespace loader {
     type Options = LoaderOptions;
 }
