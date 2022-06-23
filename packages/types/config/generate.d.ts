@@ -1,4 +1,4 @@
-import { GlobbyOptions } from 'globby'
+import type { GlobbyOptions } from 'globby'
 
 /**
  * NuxtOptionsGenerate

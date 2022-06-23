@@ -1,4 +1,4 @@
-import fetch from 'node-fetch'
+import fetch from 'node-fetch-native'
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port

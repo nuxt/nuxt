@@ -30,6 +30,10 @@ jest.mock('../src/middleware/nuxt')
 jest.mock('../src/middleware/error')
 jest.mock('../src/middleware/timing')
 
+jest.mock('path', () => ({
+  ...jest.requireActual('path')
+}))
+
 describe('server: server', () => {
   const createNuxt = () => ({
     options: {
@@ -71,6 +75,7 @@ describe('server: server', () => {
   beforeAll(() => {
     jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
     jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
+
     connect.mockReturnValue({ use: jest.fn() })
     serveStatic.mockImplementation(dir => ({ id: 'test-serve-static', dir }))
     nuxtMiddleware.mockImplementation(options => ({
