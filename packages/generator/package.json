@@ -11,12 +11,12 @@
     "@nuxt/utils": "2.15.6",
     "chalk": "^4.1.2",
     "consola": "^2.15.3",
-    "defu": "^5.0.0",
+    "defu": "^5.0.1",
     "devalue": "^2.0.1",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^10.1.0",
     "html-minifier": "^4.0.0",
-    "node-html-parser": "^5.1.0",
-    "ufo": "^0.7.9"
+    "node-html-parser": "^5.3.3",
+    "ufo": "^0.8.4"
   },
   "publishConfig": {
     "access": "public"
