@@ -4,6 +4,7 @@
     "moduleResolution": "Node",
     "strict": true,
     "noEmit": true,
+    "skipLibCheck": true,
     "lib": [
       "ESNext",
       "ESNext.AsyncIterable",
