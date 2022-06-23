@@ -36,7 +36,7 @@ jobs:
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}-2
 
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
