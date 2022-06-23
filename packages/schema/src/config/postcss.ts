@@ -41,7 +41,7 @@ export default {
       autoprefixer: {},
 
       cssnano: {
-        $resolve: (val, get) => val ?? (get('dev') && {
+        $resolve: (val, get) => val ?? (!get('dev') && {
           preset: ['default', {
             // Keep quotes in font values to prevent from HEX conversion
             // https://github.com/nuxt/nuxt.js/issues/6306
