@@ -1,15 +1,15 @@
 import consola from 'consola'
-import env from 'std-env'
+import { isTest, isMinimal } from 'std-env'
 import chalk from 'chalk'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
 export function showBanner (nuxt, showMemoryUsage = true) {
-  if (env.test) {
+  if (isTest) {
     return
   }
 
-  if (env.minimalCLI) {
+  if (isMinimal) {
     for (const listener of nuxt.server.listeners) {
       consola.info('Listening on: ' + listener.url)
     }

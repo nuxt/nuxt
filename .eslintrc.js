@@ -1,18 +1,17 @@
 module.exports = {
   root: true,
-  parserOptions: {
-    parser: 'babel-eslint',
-    sourceType: 'module',
-    ecmaFeatures: {
-      legacyDecorators: true
-    }
-  },
   extends: [
     '@nuxtjs'
   ],
   globals: {
     BigInt: true
   },
+  env: {
+    'jest/globals': true
+  },
+  plugins: [
+    'jest'
+  ],
   rules: {
     'no-console': 'error',
     'no-debugger': 'error',
@@ -20,7 +19,8 @@ module.exports = {
     quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     // https://github.com/babel/babel-eslint/issues/799
     'template-curly-spacing': 0,
-    indent: ['error', 2, { SwitchCase: 1, ignoredNodes: ['TemplateLiteral'] }]
+    indent: ['error', 2, { SwitchCase: 1, ignoredNodes: ['TemplateLiteral'] }],
+    'vue/multi-word-component-names': 0
   },
   overrides: [{
     files: ['test/fixtures/*/.nuxt*/**'],

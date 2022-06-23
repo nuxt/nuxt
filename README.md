@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="./.github/logo.svg"/></p><br/>
+<p align="center"><img alt="Nuxt" align="center" src="./.github/logo.svg"/></p><br/>
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/windows/badge.svg?branch=dev&event=push" alt="Windows Status"></a>
@@ -13,7 +13,13 @@
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 </p>
 
-> Build your next Vue.js application with confidence using Nuxt: a framework making web development simple and powerful.
+> Build your next Vue(2) application with confidence using Nuxt: a framework making web development simple and powerful.
+
+## Nuxt 3
+
+The evolution of Nuxt powered by Vite and Vue 3 is currently in beta and available on:
+- GitHub: [nuxt/framework](https://github.com/nuxt/framework)
+- Documentation: [v3.nuxtjs.org](https://v3.nuxtjs.org)
 
 ## Links
 
@@ -105,15 +111,11 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/contribution-guide/)
 
 ## Cross-browser testing
 
-Thanks to [BrowserStack](http://browserstack.com)!
-
-<a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+<a href="https://browserstack.com"><img height="30" align="center" src=".github/icons/browserstack.svg" alt="BrowserStack"></a> Thanks to [BrowserStack](http://browserstack.com)!
 
 ## Automated testing
 
-Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
-
-<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
+<a href="https://saucelabs.com"><img height="30" align="center" src=".github/icons/saucelabs.svg" alt="SauceLabs"></a> Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
 
 ## Security
 

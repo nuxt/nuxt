@@ -5,6 +5,6 @@
 <script>
 /* eslint no-undef: 0 */
 export default {
-  not_defined
+  notDefined
 }
 </script>
