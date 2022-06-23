@@ -175,7 +175,7 @@ export default {
       <% if (loading) { %>this.$loading.start()<% } %>
 
       const promises = pages.map(async (page) => {
-        const p = []
+        let p = []
 
         <% if (features.fetch) { %>
         // Old fetch
@@ -200,6 +200,8 @@ export default {
         <% if (features.fetch) { %>
         // Wait for asyncData & old fetch to finish
         await Promise.all(p)
+        // Cleanup refs
+        p = [] 
 
         if (page.$fetch) {
           p.push(page.$fetch())
