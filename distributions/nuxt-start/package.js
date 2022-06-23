@@ -26,7 +26,7 @@ export default {
     // discovered by config
     '@nuxt/telemetry',
     // vue-app externals for ssr
-    'node-fetch',
+    'node-fetch-native',
     'vue',
     'vue-client-only',
     'vue-meta',

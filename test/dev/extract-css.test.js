@@ -23,7 +23,7 @@ describe('extract css', () => {
     const scopeCss = /^h1\[data-v-[a-zA-Z0-9]{8}\]\{color:red\}\.container\[data-v-[a-zA-Z0-9]{8}\]/
     expect(content).toMatch(scopeCss)
 
-    const containerStyle = '{display:-ms-grid;display:grid;-ms-grid-columns:60px 60px 60px 60px 60px;grid-template-columns:60px 60px 60px 60px 60px;-ms-grid-rows:30px 30px;grid-template-rows:30px 30px;grid-auto-flow:row}'
+    const containerStyle = '{display:grid;grid-template-columns:60px 60px 60px 60px 60px;grid-template-rows:30px 30px;grid-auto-flow:row}'
     expect(content).toContain(containerStyle)
   })
 
