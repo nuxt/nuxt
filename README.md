@@ -1,31 +1,30 @@
-<p align="center"><img align="center" style="width:320px" src="./.github/nuxt.png"/></p><br/>
+<p align="center"><img alt="Nuxt" align="center" src="./.github/logo.svg"/></p><br/>
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/windows/badge.svg?branch=dev&event=push" alt="Windows Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#platinum-sponsors" alt="Platinum Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/platinum-sponsors/badge.svg" /></a>
-  <a href="#gold-sponsors" alt="Gold Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/gold-sponsors/badge.svg" /></a>
-  <a href="#silver-sponsors" alt="Silver Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/silver-sponsors/badge.svg" /></a>
-  <a href="#bronze-sponsors" alt="Bronze Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/bronze-sponsors/badge.svg" /></a>
-  <a href="#nuxters" alt="Nuxters on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/nuxters/badge.svg" /></a>
+  <a href="https://github.com/sponsors/nuxt"><img src="https://img.shields.io/badge/Support%20us-GitHub%20Sponsors-DB61A2.svg" alt="Support us"></a>
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 </p>
-<p align="center">
-  <a href="https://otechie.com/nuxt?ref=badge"><img src="https://api.otechie.com/consultancy/nuxt/badge.svg" alt="Hire Nuxt"></a>
-</p>
 
-> Build your next Vue.js application with confidence using Nuxt: a framework making web development simple and powerful.
+> Build your next Vue(2) application with confidence using Nuxt: a framework making web development simple and powerful.
+
+## Nuxt 3
+
+The evolution of Nuxt powered by Vite and Vue 3 is currently in beta and available on:
+- GitHub: [nuxt/framework](https://github.com/nuxt/framework)
+- Documentation: [v3.nuxtjs.org](https://v3.nuxtjs.org)
 
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
+- 👥 Community: [GitHub discussions](https://github.com/nuxt/nuxt.js/discussions)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
 - 💬 Chat: [Discord](https://discord.nuxtjs.org/)
@@ -73,15 +72,7 @@ Learn more at https://nuxtjs.org/guide/commands#production-deployment
 
 ## Consulting from the Nuxt team
 
-Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice, code reviews, and development from the Nuxt core team: [Hire Nuxt on Otechie](https://otechie.com/nuxt?ref=readme)
-
-## Professional support with TideLift
-
-Professionally supported Nuxt is now available!
-
-Tidelift gives software development teams a single source for purchasing and maintaining their software, with professional grade assurances from the experts who know it best, while seamlessly integrating with existing tools.
-
-[Get supported Nuxt with the Tidelift Subscription](https://tidelift.com/subscription/pkg/npm-nuxt?utm_source=npm-nuxt&utm_medium=readme).
+Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice and code reviews from the Nuxt core team: support@nuxtlabs.com
 
 ## Supporting Nuxt
 
@@ -116,19 +107,15 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/nuxt/nuxt.js)
 
-Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-guide#codefund_ad)
+Please refer to our [Contribution Guide](https://nuxtjs.org/contribution-guide/)
 
 ## Cross-browser testing
 
-Thanks to [BrowserStack](http://browserstack.com)!
-
-<a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+<a href="https://browserstack.com"><img height="30" align="center" src=".github/icons/browserstack.svg" alt="BrowserStack"></a> Thanks to [BrowserStack](http://browserstack.com)!
 
 ## Automated testing
 
-Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
-
-<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
+<a href="https://saucelabs.com"><img height="30" align="center" src=".github/icons/saucelabs.svg" alt="SauceLabs"></a> Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
 
 ## Security
 
