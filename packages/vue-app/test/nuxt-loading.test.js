@@ -7,7 +7,7 @@ import { compileTemplate, importComponent, vmTick } from './__utils__'
 
 jest.useFakeTimers()
 
-describe('nuxt-loading', () => {
+describe.skip('nuxt-loading', () => {
   let localVue
   let Component
 
