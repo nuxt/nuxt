@@ -22,7 +22,9 @@
     "wrap-ansi",
     "jest",
     "babel-jest",
-    "globby"
+    "globby",
+    "execa",
+    "chalk"
   ],
   "lockFileMaintenance": {
     "enabled": true
