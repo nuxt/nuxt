@@ -1,9 +1,5 @@
 module.exports = {
   root: true,
-  parserOptions: {
-    parser: 'babel-eslint',
-    sourceType: 'module'
-  },
   env: {
     browser: true,
     node: true,
@@ -36,7 +32,8 @@ module.exports = {
     }],
     'vue/max-attributes-per-line': [2, {
       singleline: 5
-    }]
+    }],
+    'vue/multi-word-component-names': 0
   },
   globals: {}
 }

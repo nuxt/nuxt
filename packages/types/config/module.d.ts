@@ -4,11 +4,11 @@
  *                https://nuxtjs.org/guide/modules
  */
 
-import { Configuration as WebpackConfiguration } from 'webpack'
-import { NuxtOptionsLoaders } from './build'
-import { NuxtRouteConfig } from './router'
-import { NuxtOptionsServerMiddleware } from './server-middleware'
-import { NuxtOptions } from '.'
+import type { Configuration as WebpackConfiguration } from 'webpack'
+import type { NuxtOptionsLoaders } from './build'
+import type { NuxtRouteConfig } from './router'
+import type { NuxtOptionsServerMiddleware } from './server-middleware'
+import type { NuxtOptions } from '.'
 
 interface ExtendFunctionContext {
   isClient: boolean
