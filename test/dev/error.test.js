@@ -22,7 +22,7 @@ describe('error', () => {
 
   test('/ should display an error', async () => {
     await expect(nuxt.server.renderRoute('/error')).rejects.toMatchObject({
-      message: expect.stringContaining('not_defined is not defined')
+      message: expect.stringContaining('notDefined is not defined')
     })
   })
 
