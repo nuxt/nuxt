@@ -65,6 +65,7 @@
     "got": "^11.8.5",
     "improved-yarn-audit": "^3.0.0",
     "jest": "^28.1.1",
+    "jest-environment-jsdom": "^28.1.1",
     "jiti": "^1.14.0",
     "jsdom": "^20.0.0",
     "jsonfile": "^6.1.0",
