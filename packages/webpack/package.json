@@ -28,7 +28,7 @@
     "lodash": "^4.17.21",
     "memory-fs": "^0.5.0",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
-    "pify": "^5.0.0",
+    "pify": "^6.0.0",
     "pnp-webpack-plugin": "^1.7.0",
     "postcss": "^7.0.32",
     "postcss-import": "^12.0.1",
