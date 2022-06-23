@@ -1,7 +1,7 @@
 import path, { relative } from 'path'
 import upath from 'upath'
 import fs from 'fs-extra'
-import crc32 from 'crc/cjs/crc32'
+import crc32 from 'crc/crc32'
 import consola from 'consola'
 import globby from 'globby'
 import destr from 'destr'
