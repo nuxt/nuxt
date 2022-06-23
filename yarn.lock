@@ -1635,7 +1635,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.2.9
+    unimport: ^0.3.0
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1662,7 +1662,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.4
     unbuild: latest
-    unimport: ^0.2.9
+    unimport: ^0.3.0
     vite: ^2.9.12
   languageName: unknown
   linkType: soft
@@ -10306,7 +10306,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.2
-    unimport: ^0.2.9
+    unimport: ^0.3.0
     unplugin: ^0.7.0
     untyped: ^0.4.4
     vue: ^3.2.37
@@ -13450,7 +13450,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.2.8, unimport@npm:^0.2.9":
+"unimport@npm:^0.2.8":
   version: 0.2.9
   resolution: "unimport@npm:0.2.9"
   dependencies:
@@ -13465,6 +13465,24 @@ __metadata:
     strip-literal: ^0.4.0
     unplugin: ^0.7.0
   checksum: 41def0b03c98e2864d0e809defa9c36e9eee26694fa40185a73e2fb0834113fd42d9172d01a81b15ed796cff720584e858c538b7dd3e06c03c8f65123b315da5
+  languageName: node
+  linkType: hard
+
+"unimport@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "unimport@npm:0.3.0"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    escape-string-regexp: ^5.0.0
+    fast-glob: ^3.2.11
+    local-pkg: ^0.4.1
+    magic-string: ^0.26.2
+    mlly: ^0.5.3
+    pathe: ^0.3.0
+    scule: ^0.2.1
+    strip-literal: ^0.4.0
+    unplugin: ^0.7.0
+  checksum: 7a612f00739d8f4b16c0c6ef0d7ad02106925af04a342101f69714679a02681a7e89c16476a0ac04ce86e5ba2d9b6a807e55413a9f2c9acdf79ffcbb72645af3
   languageName: node
   linkType: hard
 
