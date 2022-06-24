@@ -21,7 +21,7 @@ export async function serve (cmd) {
     options.target = buildConfig.target
   } catch (err) { }
 
-  const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line node/handle-callback-err
+  const distStat = await fs.stat(options.generate.dir).catch(() => {})
   const distPath = join(options.generate.dir.replace(process.cwd() + sep, ''), sep)
   if (!distStat || !distStat.isDirectory()) {
     throw new Error('Output directory `' + distPath + '` does not exist, please use `nuxt generate` before `nuxt start` for static target.')
