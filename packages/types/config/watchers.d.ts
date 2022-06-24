@@ -5,8 +5,8 @@
  *                https://webpack.js.org/configuration/watch/#watchoptions
  */
 
-import { WatchOptions as ChokidarWatchOptions } from 'chokidar'
-import { WatchOptions as WebpackWatchOptions } from 'webpack'
+import type { WatchOptions as ChokidarWatchOptions } from 'chokidar'
+import type { WatchOptions as WebpackWatchOptions } from 'webpack'
 
 export type NuxtOptionsWatchers = {
   chokidar?: ChokidarWatchOptions
