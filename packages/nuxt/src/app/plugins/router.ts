@@ -4,6 +4,8 @@ import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
 import { clearError, navigateTo, throwError, useRuntimeConfig } from '#app'
+// @ts-ignore
+import { globalMiddleware } from '#build/middleware'
 
 interface Route {
     /** Percentage encoded pathname section of the URL. */
@@ -201,7 +203,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
       to.meta = reactive(to.meta || {})
       nuxtApp._processingMiddleware = true
 
-      const middlewareEntries = new Set<RouteGuard>(nuxtApp._middleware.global)
+      const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
       for (const middleware of middlewareEntries) {
         const result = await callWithNuxt(nuxtApp, middleware, [to, from])

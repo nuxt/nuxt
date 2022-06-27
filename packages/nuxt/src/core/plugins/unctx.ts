@@ -1,4 +1,4 @@
-import { Nuxt, NuxtApp, NuxtMiddleware } from '@nuxt/schema'
+import { Nuxt, NuxtApp } from '@nuxt/schema'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
@@ -8,15 +8,13 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
   })
 
   let app: NuxtApp | undefined
-  let middleware: NuxtMiddleware[] = []
   nuxt.hook('app:resolve', (_app) => { app = _app })
-  nuxt.hook('pages:middleware:extend', (_middlewares) => { middleware = _middlewares })
 
   return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
     name: 'unctx:transfrom',
     enforce: 'post',
     transformInclude (id) {
-      return Boolean(app?.plugins.find(i => i.src === id) || middleware.find(m => m.path === id))
+      return Boolean(app?.plugins.find(i => i.src === id) || app.middleware.find(m => m.path === id))
     },
     transform (code, id) {
       const result = transformer.transform(code)

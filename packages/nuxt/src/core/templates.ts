@@ -159,13 +159,28 @@ export const schemaTemplate = {
 // Add layouts template
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
-  getContents ({ app }) {
+  getContents ({ app }: TemplateContext) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
       return [name, `defineAsyncComponent(${genDynamicImport(file)})`]
     }))
     return [
       'import { defineAsyncComponent } from \'vue\'',
           `export default ${layoutsObject}`
+    ].join('\n')
+  }
+}
+
+// Add middleware template
+export const middlewareTemplate: NuxtTemplate = {
+  filename: 'middleware.mjs',
+  getContents ({ app }: TemplateContext) {
+    const globalMiddleware = app.middleware.filter(mw => mw.global)
+    const namedMiddleware = app.middleware.filter(mw => !mw.global)
+    const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
+    return [
+      ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
+      `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
+      `export const namedMiddleware = ${namedMiddlewareObject}`
     ].join('\n')
   }
 }

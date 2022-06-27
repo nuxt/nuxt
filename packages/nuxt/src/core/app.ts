@@ -1,11 +1,11 @@
 import { promises as fsp } from 'node:fs'
-import { dirname, resolve, basename, extname } from 'pathe'
+import { dirname, resolve } from 'pathe'
 import defu from 'defu'
-import { kebabCase } from 'scule'
 import type { Nuxt, NuxtApp, NuxtPlugin } from '@nuxt/schema'
 import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule } from '@nuxt/kit'
 
 import * as defaultTemplates from './templates'
+import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -83,6 +83,17 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
+  // Resolve middleware/ from all config layers
+  app.middleware = []
+  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+    const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
+    app.middleware.push(...middlewareFiles.map((file) => {
+      const name = getNameFromPath(file)
+      return { name, path: file, global: hasSuffix(file, '.global') }
+    }))
+  }
+  app.middleware = uniqueBy(app.middleware, 'name')
+
   // Resolve plugins
   app.plugins = [
     ...nuxt.options.plugins.map(normalizePlugin)
@@ -100,19 +111,4 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
-}
-
-function getNameFromPath (path: string) {
-  return kebabCase(basename(path).replace(extname(path), '')).replace(/["']/g, '')
-}
-
-function uniqueBy <T, K extends keyof T> (arr: T[], key: K) {
-  const res: T[] = []
-  const seen = new Set<T[K]>()
-  for (const item of arr) {
-    if (seen.has(item[key])) { continue }
-    seen.add(item[key])
-    res.push(item)
-  }
-  return res
 }

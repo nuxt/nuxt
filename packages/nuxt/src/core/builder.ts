@@ -13,7 +13,7 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, path) => {
-      if (event !== 'change' && /^(app\.|error\.|plugins\/|layouts\/)/i.test(path)) {
+      if (event !== 'change' && /^(app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(path)) {
         if (path.startsWith('app')) {
           app.mainComponent = null
         }

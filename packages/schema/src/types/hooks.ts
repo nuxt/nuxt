@@ -72,7 +72,6 @@ export interface NuxtHooks {
   'app:templatesGenerated': (app: NuxtApp) => HookResult
   'builder:generateApp': () => HookResult
   'pages:extend': (pages: NuxtPage[]) => HookResult
-  'pages:middleware:extend': (middleware: NuxtMiddleware[]) => HookResult
 
   // Auto imports
   'autoImports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
