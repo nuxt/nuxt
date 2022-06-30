@@ -21,14 +21,15 @@ export default defineComponent({
 export function createClientOnly (component) {
   return defineComponent({
     name: 'ClientOnlyWrapper',
-    setup (props, { attrs, slots }) {
+    inheritAttrs: false,
+    setup (_props, { attrs, slots }) {
       const mounted = ref(false)
       onMounted(() => { mounted.value = true })
       return () => {
         if (mounted.value) {
-          return h(component, { props, attrs }, slots)
+          return h(component, attrs, slots)
         }
-        return h('div')
+        return h('div', { class: attrs.class, style: attrs.style })
       }
     }
   })
