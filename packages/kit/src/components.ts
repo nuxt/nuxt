@@ -52,7 +52,7 @@ export async function addComponent (opts: AddComponentOptions) {
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {
-    const existingComponent = components.find(c => c.pascalName === component.pascalName || c.kebabName === component.kebabName)
+    const existingComponent = components.find(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
     if (existingComponent) {
       const name = existingComponent.pascalName || existingComponent.kebabName
       console.warn(`Overriding ${name} component.`)
