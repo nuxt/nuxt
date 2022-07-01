@@ -20,7 +20,7 @@ describe('nuxt basic resources size limit', () => {
   it('should stay within the size limit range in legacy mode', async () => {
     const legacyResourcesSize = await getResourcesSize(distDir, 'client', { gzip: true, brotli: true })
 
-    const LEGACY_JS_RESOURCES_KB_SIZE = 240
+    const LEGACY_JS_RESOURCES_KB_SIZE = 253
     expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
 
     const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 83
