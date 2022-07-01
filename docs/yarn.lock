@@ -8330,10 +8330,10 @@ pathe@^0.2.0:
   resolved "https://registry.yarnpkg.com/pathe/-/pathe-0.2.0.tgz#30fd7bbe0a0d91f0e60bae621f5d19e9e225c339"
   integrity sha512-sTitTPYnn23esFR3RlqYBWn4c45WGeLcsKzQiUpXJAyfcWkolvlYpV8FLo7JishK946oQwMFUCHXQ9AjGPKExw==
 
-pathe@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/pathe/-/pathe-0.3.1.tgz#e0e47bc0e8a1775fd001e2fdbf67d7f649a4a4f4"
-  integrity sha512-cKMVe/pikPpreoODbjoliSk0cIT66JjEOWN30akc9WTo8kUjxFPYqmXvMBVPMSAJGJlx6v/nYzqSSHkp1cfezQ==
+pathe@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/pathe/-/pathe-0.3.2.tgz#016345ed643027404d7a9ed8d1454ad997a1483a"
+  integrity sha512-qhnmX0TOqlCvdWWTkoM83wh5J8fZ2yhbDEc9MlsnAEtEc+JCwxUKEwmd6pkY9hRe6JR1Uecbc14VcAKX2yFSTA==
 
 pbkdf2@^3.0.3:
   version "3.1.2"

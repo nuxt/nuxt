@@ -27,7 +27,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.12",
     "defu": "^6.0.0",
-    "esbuild": "^0.14.47",
+    "esbuild": "^0.14.48",
     "escape-string-regexp": "^5.0.0",
     "externality": "^0.2.2",
     "fs-extra": "^10.1.0",
@@ -36,7 +36,7 @@
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
     "mlly": "^0.5.4",
-    "pathe": "^0.3.1",
+    "pathe": "^0.3.2",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8.4.14",
     "postcss-import": "^14.1.0",
@@ -44,10 +44,10 @@
     "rollup": "^2.75.7",
     "rollup-plugin-visualizer": "^5.6.0",
     "ufo": "^0.8.4",
-    "unplugin": "^0.7.0",
+    "unplugin": "^0.7.1",
     "vite": "^2.9.13",
     "vite-node": "^0.16.0",
-    "vite-plugin-checker": "^0.4.6"
+    "vite-plugin-checker": "^0.4.7"
   },
   "peerDependencies": {
     "vue": "^3.2.37"
