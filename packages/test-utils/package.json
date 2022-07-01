@@ -22,9 +22,9 @@
     "ohmyfetch": "^0.4.18"
   },
   "devDependencies": {
-    "playwright": "^1.22.2",
+    "playwright": "^1.23.0",
     "unbuild": "latest",
-    "vitest": "^0.15.2"
+    "vitest": "^0.16.0"
   },
   "peerDependencies": {
     "vue": "^3.2.37"

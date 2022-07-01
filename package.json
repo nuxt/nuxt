@@ -42,14 +42,14 @@
     "nuxi": "link:./packages/nuxi",
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
-    "vite": "^2.9.12",
+    "vite": "^2.9.13",
     "unbuild": "^0.7.4"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.41",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.39.3",
+    "@unocss/reset": "^0.41.2",
     "case-police": "^0.5.3",
     "changelogen": "^0.1.1",
     "eslint": "^8.18.0",
@@ -58,14 +58,14 @@
     "expect-type": "^0.13.0",
     "globby": "^13.1.2",
     "jiti": "^1.14.0",
-    "lerna": "^5.1.4",
+    "lerna": "^5.1.6",
     "markdownlint-cli": "^0.31.1",
-    "pathe": "^0.3.0",
+    "pathe": "^0.3.1",
     "rimraf": "^3.0.2",
     "typescript": "^4.7.4",
     "unbuild": "^0.7.4",
-    "vitest": "^0.15.2",
-    "vue-tsc": "^0.38.1"
+    "vitest": "^0.16.0",
+    "vue-tsc": "^0.38.2"
   },
   "packageManager": "yarn@3.2.1",
   "engines": {

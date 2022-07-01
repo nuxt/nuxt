@@ -16,7 +16,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.18.5",
+    "@babel/core": "^7.18.6",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "^3.0.0-rc.4",
     "autoprefixer": "^10.4.7",
@@ -31,10 +31,10 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.26.2",
-    "memfs": "^3.4.6",
+    "memfs": "^3.4.7",
     "mini-css-extract-plugin": "^2.6.1",
-    "mlly": "^0.5.3",
-    "pathe": "^0.3.0",
+    "mlly": "^0.5.4",
+    "pathe": "^0.3.1",
     "pify": "^6.0.0",
     "postcss": "^8.4.14",
     "postcss-import": "^14.1.0",
@@ -50,7 +50,7 @@
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-dev-middleware": "^5.3.3",
     "webpack-hot-middleware": "^2.25.1",
-    "webpack-virtual-modules": "^0.4.3",
+    "webpack-virtual-modules": "^0.4.4",
     "webpackbar": "^5.0.2"
   },
   "devDependencies": {

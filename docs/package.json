@@ -17,7 +17,7 @@
     "@nuxt/typescript-build": "^2.1.0",
     "fs-extra": "^10.1.0",
     "jiti": "^1.14.0",
-    "pathe": "^0.3.0",
+    "pathe": "^0.3.1",
     "rimraf": "^3.0.2",
     "scule": "^0.2.1",
     "untyped": "^0.4.4",
@@ -25,6 +25,6 @@
     "vue-plausible": "^1.3.1"
   },
   "dependencies": {
-    "three": "^0.141.0"
+    "three": "^0.142.0"
   }
 }

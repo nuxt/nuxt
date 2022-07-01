@@ -35,8 +35,8 @@
     "h3": "^0.7.10",
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
-    "mlly": "^0.5.3",
-    "pathe": "^0.3.0",
+    "mlly": "^0.5.4",
+    "pathe": "^0.3.1",
     "perfect-debounce": "^0.1.3",
     "postcss": "^8.4.14",
     "postcss-import": "^14.1.0",
@@ -45,8 +45,8 @@
     "rollup-plugin-visualizer": "^5.6.0",
     "ufo": "^0.8.4",
     "unplugin": "^0.7.0",
-    "vite": "^2.9.12",
-    "vite-node": "^0.15.2",
+    "vite": "^2.9.13",
+    "vite-node": "^0.16.0",
     "vite-plugin-checker": "^0.4.6"
   },
   "peerDependencies": {
