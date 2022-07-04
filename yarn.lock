@@ -1723,7 +1723,7 @@ __metadata:
     ohmyfetch: ^0.4.18
     playwright: ^1.23.1
     unbuild: latest
-    vitest: ^0.16.0
+    vitest: ^0.17.0
   peerDependencies:
     vue: ^3.2.37
   languageName: unknown
@@ -1793,7 +1793,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.7.1
     vite: ^2.9.13
-    vite-node: ^0.16.0
+    vite-node: ^0.17.0
     vite-plugin-checker: ^0.4.7
     vue: 3.2.37
   peerDependencies:
@@ -2369,10 +2369,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.42":
-  version: 16.11.42
-  resolution: "@types/node@npm:16.11.42"
-  checksum: a1746910cf27c9e8597805556c943bde5e630c5c4e03bdd2513ccd7fe5fce1ed912f51f5d0ce5dcda0583e5539177f76ad35a19caa9525307d7a722aa9962631
+"@types/node@npm:^16.11.43":
+  version: 16.11.43
+  resolution: "@types/node@npm:16.11.43"
+  checksum: 96d09e68347c49ebf84fe1443360edc3f98336f0794256abc8e4f29ef3070546357cae17083d6fd9767b631239367c4f245fe64accff4af057d17bd6694f0b2b
   languageName: node
   linkType: hard
 
@@ -2793,10 +2793,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.42.0":
-  version: 0.42.0
-  resolution: "@unocss/reset@npm:0.42.0"
-  checksum: 9dfbffbd10500b34d6e4a9fcc82b8ae72cb60f10914a7f7d0f1aa3330e31c0ed19d79b913b8cdb787bc082e28ce73f1af005a563179925a40d91cd3dfb415197
+"@unocss/reset@npm:^0.43.0":
+  version: 0.43.0
+  resolution: "@unocss/reset@npm:0.43.0"
+  checksum: c5e615750851defb750e6e5ebf8f96e951f2bf429b4f737a5fb9fb5e85917f051f4b2cb82eb2eb838d277de025400545ab4089bdcdb1fa788baf5623a19b4079
   languageName: node
   linkType: hard
 
@@ -6169,9 +6169,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.18.0":
-  version: 8.18.0
-  resolution: "eslint@npm:8.18.0"
+"eslint@npm:^8.19.0":
+  version: 8.19.0
+  resolution: "eslint@npm:8.19.0"
   dependencies:
     "@eslint/eslintrc": ^1.3.0
     "@humanwhocodes/config-array": ^0.9.2
@@ -6210,7 +6210,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: d9b4b7488a9cee97608343cbb5ac652d3f316436f95ef0800cd9497c1c6f877b655a3275817989c02f1ff0d5dfd1959c5092af9251c7e3fcf60659da37752a10
+  checksum: 0bc9df1a3a09dcd5a781ec728f280aa8af3ab19c2d1f14e2668b5ee5b8b1fb0e72dde5c3acf738e7f4281685fb24ec149b6154255470b06cf41de76350bca7a4
   languageName: node
   linkType: hard
 
@@ -9810,12 +9810,12 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.42
+    "@types/node": ^16.11.43
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.42.0
+    "@unocss/reset": ^0.43.0
     case-police: ^0.5.4
     changelogen: ^0.1.1
-    eslint: ^8.18.0
+    eslint: ^8.19.0
     eslint-plugin-jsdoc: ^39.3.3
     execa: ^6.1.0
     expect-type: ^0.13.0
@@ -9827,7 +9827,7 @@ __metadata:
     rimraf: ^3.0.2
     typescript: ^4.7.4
     unbuild: ^0.7.4
-    vitest: ^0.16.0
+    vitest: ^0.17.0
     vue-tsc: ^0.38.2
   languageName: unknown
   linkType: soft
@@ -13197,18 +13197,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "vite-node@npm:0.16.0"
+"vite-node@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "vite-node@npm:0.17.0"
   dependencies:
     debug: ^4.3.4
     kolorist: ^1.5.1
     mlly: ^0.5.3
     pathe: ^0.2.0
-    vite: ^2.9.12
+    vite: ^2.9.12 || ^3.0.0-0
   bin:
     vite-node: vite-node.mjs
-  checksum: cdd3ed188431578112a56d4392a715316a430562a2eb821d36ce59445cd0a184ce296a6da5099270f8d0eecc3ae9a34111044f2417acaaa933e6d3f666144aba
+  checksum: 10d3ad0fdd2422869c3ef07c0aa2e770fdde71f7feaf8ed9d5e68bbf5fb36ba625bde7c413bdcb1a7268e5fa3d3a6947d38afa1cff87831045d1b9c97db71d09
   languageName: node
   linkType: hard
 
@@ -13268,9 +13268,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "vitest@npm:0.16.0"
+"vitest@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "vitest@npm:0.17.0"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13280,13 +13280,16 @@ __metadata:
     local-pkg: ^0.4.1
     tinypool: ^0.2.1
     tinyspy: ^0.3.3
-    vite: ^2.9.12
+    vite: ^2.9.12 || ^3.0.0-0
   peerDependencies:
+    "@edge-runtime/vm": "*"
     "@vitest/ui": "*"
     c8: "*"
     happy-dom: "*"
     jsdom: "*"
   peerDependenciesMeta:
+    "@edge-runtime/vm":
+      optional: true
     "@vitest/ui":
       optional: true
     c8:
@@ -13297,7 +13300,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 501424cd65b8090306f8758600bed367da3a28dfbd693f17ad36d700b6c90065264d50740c545d86682981d150c805f08cbeab7ea31ca2fa847cdebdc544ec24
+  checksum: 1f664f82551f876a2b2b30deba0f9d6d8f7e4d70cbe96debca1a810d1c8a5b68b8a446495d37c14e5e9e21d7bde13e96a6eef7c8e7c77c502e0058f59be192b4
   languageName: node
   linkType: hard
 
