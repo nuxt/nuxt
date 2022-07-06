@@ -6,7 +6,6 @@ import type { RuntimeConfig } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer'
 import type { CompatibilityEvent } from 'h3'
-import { legacyPlugin, LegacyContext } from './compat/legacy-app'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
@@ -48,7 +47,6 @@ interface _NuxtApp {
   [key: string]: any
 
   _asyncDataPromises?: Record<string, Promise<any>>
-  _legacyContext?: LegacyContext
 
   ssrContext?: SSRContext & {
     url: string
@@ -82,9 +80,6 @@ export const NuxtPluginIndicator = '__nuxt_plugin'
 export interface Plugin<Injections extends Record<string, any> = Record<string, any>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
-}
-export interface LegacyPlugin {
-  (context: LegacyContext, provide: NuxtApp['provide']): Promise<void> | void
 }
 
 export interface CreateOptions {
@@ -185,23 +180,13 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   }
 }
 
-export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
-  let needsLegacyContext = false
-
+export function normalizePlugins (_plugins: Plugin[]) {
   const plugins = _plugins.map((plugin) => {
     if (typeof plugin !== 'function') {
       return () => {}
     }
-    if (isLegacyPlugin(plugin)) {
-      needsLegacyContext = true
-      return (nuxtApp: NuxtApp) => plugin(nuxtApp._legacyContext!, nuxtApp.provide)
-    }
     return plugin
   })
-
-  if (needsLegacyContext) {
-    plugins.unshift(legacyPlugin)
-  }
 
   return plugins as Plugin[]
 }
@@ -209,10 +194,6 @@ export function normalizePlugins (_plugins: Array<Plugin | LegacyPlugin>) {
 export function defineNuxtPlugin<T> (plugin: Plugin<T>) {
   plugin[NuxtPluginIndicator] = true
   return plugin
-}
-
-export function isLegacyPlugin (plugin: unknown): plugin is LegacyPlugin {
-  return !plugin[NuxtPluginIndicator]
 }
 
 /**

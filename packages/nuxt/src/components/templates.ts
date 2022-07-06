@@ -27,6 +27,7 @@ export const componentsPluginTemplate = {
   filename: 'components.plugin.mjs',
   getContents ({ options }: { options: ComponentsTemplateOptions }) {
     return `import { defineAsyncComponent } from 'vue'
+import { defineNuxtPlugin } from '#app'
 
 const components = ${genObjectFromRawEntries(options.components.filter(c => c.global === true).map((c) => {
   const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -35,12 +36,12 @@ const components = ${genObjectFromRawEntries(options.components.filter(c => c.gl
   return [c.pascalName, `defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`]
 }))}
 
-export default function (nuxtApp) {
+export default defineNuxtPlugin(nuxtApp => {
   for (const name in components) {
     nuxtApp.vueApp.component(name, components[name])
     nuxtApp.vueApp.component('Lazy' + name, components[name])
   }
-}
+})
 `
   }
 }
