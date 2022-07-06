@@ -38,16 +38,32 @@ export function useFetch<
     return (isRef(r) ? r.value : r) as NitroFetchRequest
   })
 
+  const {
+    server,
+    lazy,
+    default: defaultFn,
+    transform,
+    pick,
+    watch,
+    initialCache,
+    ...fetchOptions
+  } = opts
+
   const _fetchOptions = {
-    ...opts,
+    ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   }
 
   const _asyncDataOptions: AsyncDataOptions<_ResT, Transform, PickKeys> = {
-    ...opts,
+    server,
+    lazy,
+    default: defaultFn,
+    transform,
+    pick,
+    initialCache,
     watch: [
       _request,
-      ...(opts.watch || [])
+      ...(watch || [])
     ]
   }
 
