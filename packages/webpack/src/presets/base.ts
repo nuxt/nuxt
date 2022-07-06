@@ -150,7 +150,8 @@ export function baseTranspile (ctx: WebpackConfigContext) {
 
   const transpile = [
     /\.vue\.js/i, // include SFCs in node_modules
-    /consola\/src/
+    /consola\/src/,
+    /vue-demi/
   ]
 
   for (let pattern of options.build.transpile) {
