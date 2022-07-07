@@ -23,6 +23,13 @@ const timer = useState('timer', () => 0)
         <NuxtLink to="/redirect" class="n-link-base">
           Redirect
         </NuxtLink>
+        <NuxtLink custom to="/redirect">
+          <template #default="{ href, navigate }">
+            <button @click="navigate">
+              Custom: {{ href }}
+            </button>
+          </template>
+        </NuxtLink>
       </nav>
     </template>
 

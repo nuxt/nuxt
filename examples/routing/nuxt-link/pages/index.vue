@@ -3,8 +3,16 @@
     <NuxtLink to="/about">
       About page
     </NuxtLink>
+    <NuxtLink v-slot="{ navigate }" to="/about" custom>
+      <button @click="navigate">
+        Custom about page
+      </button>
+    </NuxtLink>
     <NuxtLink to="https://nuxtjs.org">
       Nuxt website
+    </NuxtLink>
+    <NuxtLink v-slot="{ href, target }" to="https://nuxtjs.org" custom>
+      <a :href="href" :target="target">Go to {{ href }}</a>
     </NuxtLink>
     <NuxtLink to="https://twitter.com/nuxt_js" target="_blank">
       Nuxt Twitter with a blank target

@@ -2,37 +2,38 @@ import { defineComponent, h, resolveComponent, PropType, computed, DefineCompone
 import { RouteLocationRaw, Router } from 'vue-router'
 import { hasProtocol } from 'ufo'
 
-import { useRouter } from '#app'
+import { navigateTo, useRouter } from '#app'
 
 const firstNonUndefined = <T>(...args: T[]): T => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
 
 export type NuxtLinkOptions = {
-  componentName?: string;
-  externalRelAttribute?: string | null;
-  activeClass?: string;
-  exactActiveClass?: string;
+  componentName?: string
+  externalRelAttribute?: string | null
+  activeClass?: string
+  exactActiveClass?: string
 }
 
 export type NuxtLinkProps = {
   // Routing
-  to?: string | RouteLocationRaw;
-  href?: string | RouteLocationRaw;
-  external?: boolean;
+  to?: string | RouteLocationRaw
+  href?: string | RouteLocationRaw
+  external?: boolean
+  replace?: boolean
+  custom?: boolean
 
   // Attributes
-  target?: string;
-  rel?: string;
-  noRel?: boolean;
+  target?: string
+  rel?: string
+  noRel?: boolean
 
   // Styling
-  activeClass?: string;
-  exactActiveClass?: string;
+  activeClass?: string
+  exactActiveClass?: string
 
   // Vue Router's `<RouterLink>` additional props
-  replace?: boolean;
-  ariaCurrentValue?: string;
+  ariaCurrentValue?: string
 };
 
 export function defineNuxtLink (options: NuxtLinkOptions) {
@@ -154,9 +155,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               activeClass: props.activeClass || options.activeClass,
               exactActiveClass: props.exactActiveClass || options.exactActiveClass,
               replace: props.replace,
-              ariaCurrentValue: props.ariaCurrentValue
+              ariaCurrentValue: props.ariaCurrentValue,
+              custom: props.custom
             },
-            // TODO: Slot API
             slots.default
           )
         }
@@ -174,6 +175,22 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           ? null
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
           : firstNonUndefined<string | null>(props.rel, options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : '') || null
+
+        const navigate = () => navigateTo(href, { replace: props.replace })
+
+        // https://router.vuejs.org/api/#custom
+        if (props.custom) {
+          if (!slots.default) { return null }
+          return slots.default({
+            href,
+            navigate,
+            route: router.resolve(href),
+            rel,
+            target,
+            isActive: false,
+            isExactActive: false
+          })
+        }
 
         return h('a', { href, rel, target }, slots.default?.())
       }
