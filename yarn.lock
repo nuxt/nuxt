@@ -9891,7 +9891,7 @@ __metadata:
     vue: ^3.2.37
     vue-bundle-renderer: ^0.3.9
     vue-meta: next
-    vue-router: ^4.0.16
+    vue-router: ~4.0.16
   bin:
     nuxi: ./bin/nuxt.mjs
     nuxt: ./bin/nuxt.mjs
@@ -13429,7 +13429,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.16":
+"vue-router@npm:~4.0.16":
   version: 4.0.16
   resolution: "vue-router@npm:4.0.16"
   dependencies:

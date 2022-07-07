@@ -3,6 +3,7 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
+    "vue-router",
     "docus",
     "@docus/app",
     "@docus/github",
