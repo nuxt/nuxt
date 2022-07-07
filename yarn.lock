@@ -1775,6 +1775,7 @@ __metadata:
     defu: ^6.0.0
     esbuild: ^0.14.48
     escape-string-regexp: ^5.0.0
+    estree-walker: ^3.0.1
     externality: ^0.2.2
     fs-extra: ^10.1.0
     get-port-please: ^2.5.0
@@ -1782,6 +1783,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.4
+    ohash: ^0.1.0
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
     postcss: ^8.4.14
@@ -1820,6 +1822,7 @@ __metadata:
     cssnano: ^5.1.12
     esbuild-loader: ^2.19.0
     escape-string-regexp: ^5.0.0
+    estree-walker: ^3.0.1
     file-loader: ^6.2.0
     fork-ts-checker-webpack-plugin: ^7.2.11
     fs-extra: ^10.1.0
@@ -6275,6 +6278,13 @@ __metadata:
   version: 1.0.1
   resolution: "estree-walker@npm:1.0.1"
   checksum: 7e70da539691f6db03a08e7ce94f394ce2eef4180e136d251af299d41f92fb2d28ebcd9a6e393e3728d7970aeb5358705ddf7209d52fbcb2dd4693f95dcf925f
+  languageName: node
+  linkType: hard
+
+"estree-walker@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "estree-walker@npm:3.0.1"
+  checksum: 674096950819041f1ee471e63f7aa987f2ed3a3a441cc41a5176e9ed01ea5cfd6487822c3b9c2cddd0e2c8f9d7ef52d32d06147a19b5a9ca9f8ab0c094bd43b9
   languageName: node
   linkType: hard
 

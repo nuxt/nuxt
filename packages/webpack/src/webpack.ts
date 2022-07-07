@@ -9,6 +9,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
 import { DynamicBasePlugin } from '../../vite/src/plugins/dynamic-base'
+import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { createMFS } from './utils/mfs'
 import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
@@ -36,6 +37,10 @@ export async function bundle (nuxt: Nuxt) {
     config.plugins.push(DynamicBasePlugin.webpack({
       sourcemap: nuxt.options.sourcemap,
       globalPublicPath: '__webpack_public_path__'
+    }))
+    config.plugins.push(composableKeysPlugin.webpack({
+      sourcemap: nuxt.options.sourcemap,
+      rootDir: nuxt.options.rootDir
     }))
 
     // Create compiler

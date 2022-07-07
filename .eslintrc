@@ -22,6 +22,7 @@
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
     "jsdoc/require-param-type": "off",
+    "no-redeclare": "off",
     "import/no-restricted-paths": [
       "error",
       {

@@ -326,6 +326,14 @@ describe('extends support', () => {
   })
 })
 
+describe('automatically keyed composables', () => {
+  it('should automatically generate keys', async () => {
+    const html = await $fetch('/keyed-composables')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+  })
+})
+
 describe('dynamic paths', () => {
   if (process.env.NUXT_TEST_DEV) {
     // TODO:

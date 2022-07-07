@@ -6,12 +6,16 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```ts [Signature]
 function useAsyncData(
+  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+  options?: AsyncDataOptions<DataT>
+): AsyncData<DataT>
+function useAsyncData(
   key: string,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions
-): Promise<DataT>
+  options?: AsyncDataOptions<DataT>
+): Promise<AsyncData<DataT>>
 
-type AsyncDataOptions = {
+type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   default?: () => DataT | Ref<DataT>
@@ -21,7 +25,7 @@ type AsyncDataOptions = {
   initialCache?: boolean
 }
 
-type DataT = {
+type AsyncData<DataT> = {
   data: Ref<DataT>
   pending: Ref<boolean>
   refresh: () => Promise<void>
@@ -31,7 +35,7 @@ type DataT = {
 
 ## Params
 
-* **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests
+* **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
 * **handler**: an asynchronous function that returns a value
 * **options**:
   * _lazy_: whether to resolve the async function after loading the route, instead of blocking navigation (defaults to `false`)

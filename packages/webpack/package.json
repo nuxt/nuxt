@@ -25,6 +25,7 @@
     "cssnano": "^5.1.12",
     "esbuild-loader": "^2.19.0",
     "escape-string-regexp": "^5.0.0",
+    "estree-walker": "^3.0.1",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^7.2.11",
     "fs-extra": "^10.1.0",

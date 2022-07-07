@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import { promises as fsp, readdirSync, statSync } from 'node:fs'
+import { hash } from 'ohash'
 import { join } from 'pathe'
 
 export function uniq<T> (arr: T[]): T[] {
@@ -26,13 +26,6 @@ export function isCSS (file: string) {
 
 export function hashId (id: string) {
   return '$id_' + hash(id)
-}
-
-export function hash (input: string, length = 8) {
-  return createHash('sha256')
-    .update(input)
-    .digest('hex')
-    .slice(0, length)
 }
 
 export function readDirRecursively (dir: string) {

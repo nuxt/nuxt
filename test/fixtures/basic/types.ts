@@ -134,4 +134,19 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toMatchTypeOf<Ref<number>>()
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toMatchTypeOf<Ref<number>>()
   })
+
+  it('provides proper type support when using overloads', () => {
+    expectTypeOf(useState('test')).toMatchTypeOf(useState())
+    expectTypeOf(useState('test', () => ({ foo: Math.random() }))).toMatchTypeOf(useState(() => ({ foo: Math.random() })))
+
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
+      .toMatchTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toMatchTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+
+    expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
+      .toMatchTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toMatchTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+  })
 })

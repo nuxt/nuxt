@@ -1,6 +1,6 @@
 <script setup>
 const ctr = ref(0)
-const { data, pending, refresh } = await useAsyncData('/api/hello', () => $fetch(`/api/hello/${ctr.value}`), { watch: [ctr] })
+const { data, pending, refresh } = await useAsyncData(() => $fetch(`/api/hello/${ctr.value}`), { watch: [ctr] })
 
 </script>
 

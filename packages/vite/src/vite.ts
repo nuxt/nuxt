@@ -13,6 +13,7 @@ import virtual from './plugins/virtual'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
+import { composableKeysPlugin } from './plugins/composable-keys'
 
 export interface ViteOptions extends InlineConfig {
   vue?: Options
@@ -65,6 +66,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         plugins: [
+          composableKeysPlugin.vite({ sourcemap: nuxt.options.sourcemap, rootDir: nuxt.options.rootDir }),
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
             preventAssignment: true
