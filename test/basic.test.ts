@@ -244,6 +244,14 @@ describe('reactivity transform', () => {
   })
 })
 
+describe('server tree shaking', () => {
+  it('should work', async () => {
+    const html = await $fetch('/client')
+
+    expect(html).toContain('This page should not crash when rendered')
+  })
+})
+
 describe('extends support', () => {
   describe('layouts & pages', () => {
     it('extends foo/layouts/default & foo/pages/index', async () => {
