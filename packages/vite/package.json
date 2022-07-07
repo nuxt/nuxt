@@ -47,7 +47,7 @@
     "unplugin": "^0.7.1",
     "vite": "^2.9.13",
     "vite-node": "^0.17.1",
-    "vite-plugin-checker": "^0.4.7"
+    "vite-plugin-checker": "^0.4.8"
   },
   "peerDependencies": {
     "vue": "^3.2.37"
