@@ -3,7 +3,8 @@ import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlug
 import { resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import { NuxtApp } from '@nuxt/schema'
+import type { NuxtApp, NuxtPage } from '@nuxt/schema'
+import { joinURL } from 'ufo'
 import { distDir } from '../dirs'
 import { resolvePagesRoutes, normalizeRoutes } from './utils'
 import { TransformMacroPlugin, TransformMacroPluginOptions } from './macros'
@@ -50,6 +51,34 @@ export default defineNuxtModule({
         app.mainComponent = resolve(runtimeDir, 'app.vue')
       }
     })
+
+    // Prerender all non-dynamic page routes when generating app
+    if (!nuxt.options.dev && nuxt.options._generate) {
+      const routes = new Set<string>()
+      nuxt.hook('modules:done', () => {
+        nuxt.hook('pages:extend', (pages) => {
+          routes.clear()
+          for (const path of nuxt.options.nitro.prerender?.routes || []) {
+            routes.add(path)
+          }
+          const processPages = (pages: NuxtPage[], currentPath = '/') => {
+            for (const page of pages) {
+              // Skip dynamic paths
+              if (page.path.includes(':')) { continue }
+
+              const path = joinURL(currentPath, page.path)
+              routes.add(path)
+              if (page.children) { processPages(page.children, path) }
+            }
+          }
+          processPages(pages)
+        })
+      })
+
+      nuxt.hook('nitro:build:before', (nitro) => {
+        nitro.options.prerender.routes = [...routes]
+      })
+    }
 
     nuxt.hook('autoImports:extend', (autoImports) => {
       autoImports.push({ name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') })
