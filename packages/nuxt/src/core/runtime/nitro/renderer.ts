@@ -35,7 +35,7 @@ const getClientManifest = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => typeof r === 'function' ? r() : r)
 
 // @ts-ignore
-const getServerEntry = () => process.env.NUXT_NO_SSR ? Promise.resolve(null) : import('#build/dist/server/server.mjs').then(r => r.default || r)
+const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {

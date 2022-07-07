@@ -29,6 +29,7 @@ export async function initNitro (nuxt: Nuxt) {
     handlers,
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
+    virtual: {},
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
       nitro: {
@@ -99,6 +100,11 @@ export async function initNitro (nuxt: Nuxt) {
       plugins: []
     }
   })
+
+  // Add fallback server for `ssr: false`
+  if (!nuxt.options.ssr) {
+    nitroConfig.virtual['#build/dist/server/server.mjs'] = 'export default () => {}'
+  }
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
