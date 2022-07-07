@@ -127,6 +127,12 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-link')
   })
 
+  // Add <NuxtLoadingIndicator>
+  addComponent({
+    name: 'NuxtLoadingIndicator',
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
+  })
+
   for (const m of modulesToInstall) {
     if (Array.isArray(m)) {
       await installModule(m[0], m[1])

@@ -4,6 +4,7 @@ const route = useRoute()
 
 <template>
   <NuxtExampleLayout example="routing/pages">
+    <NuxtLoadingIndicator />
     <NuxtPage />
 
     <template #nav>
