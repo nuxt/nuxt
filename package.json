@@ -42,7 +42,7 @@
     "nuxi": "link:./packages/nuxi",
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
-    "vite": "^2.9.13",
+    "vite": "^2.9.14",
     "unbuild": "^0.7.4"
   },
   "devDependencies": {
@@ -50,7 +50,7 @@
     "@types/node": "^16.11.43",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.43.2",
-    "case-police": "^0.5.4",
+    "case-police": "^0.5.6",
     "changelogen": "^0.1.1",
     "eslint": "^8.19.0",
     "eslint-plugin-jsdoc": "^39.3.3",

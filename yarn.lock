@@ -1648,7 +1648,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.4.3
+    unimport: ^0.4.4
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1675,8 +1675,8 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.5
     unbuild: latest
-    unimport: ^0.4.3
-    vite: ^2.9.13
+    unimport: ^0.4.4
+    vite: ^2.9.14
   languageName: unknown
   linkType: soft
 
@@ -1789,12 +1789,12 @@ __metadata:
     postcss: ^8.4.14
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
-    rollup: ^2.75.7
+    rollup: ^2.76.0
     rollup-plugin-visualizer: ^5.6.0
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.7.1
-    vite: ^2.9.13
+    vite: ^2.9.14
     vite-node: ^0.17.1
     vite-plugin-checker: ^0.4.8
     vue: 3.2.37
@@ -4099,12 +4099,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"case-police@npm:^0.5.4":
-  version: 0.5.4
-  resolution: "case-police@npm:0.5.4"
+"case-police@npm:^0.5.6":
+  version: 0.5.6
+  resolution: "case-police@npm:0.5.6"
   bin:
     case-police: bin/case-police.mjs
-  checksum: 6a3a5aa21e8406a3388eb52833e27968b505991345afc658af09c1e43073f76e6293efcc4f5f9dfc0ca18d391c227c674d01197ba6411cfae7ed82bfbc5eff8e
+  checksum: 019fdcfcb18c7ff83739093e818d571ddaa18fd9ba72ff53479726b147551a837ae53820dce39135bbd05304ad4760462837f91138f22d11c6cd74ef81da7a9e
   languageName: node
   linkType: hard
 
@@ -9842,7 +9842,7 @@ __metadata:
     "@types/node": ^16.11.43
     "@types/rimraf": ^3
     "@unocss/reset": ^0.43.2
-    case-police: ^0.5.4
+    case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.19.0
     eslint-plugin-jsdoc: ^39.3.3
@@ -9915,7 +9915,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.2
-    unimport: ^0.4.3
+    unimport: ^0.4.4
     unplugin: ^0.7.1
     untyped: ^0.4.4
     vue: ^3.2.37
@@ -11594,6 +11594,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup@npm:^2.76.0":
+  version: 2.76.0
+  resolution: "rollup@npm:2.76.0"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 58293e1c63c11d4afcfcf619601d5c5136dd3d0c9d3bd6a0b6141fede32027edc1eb53873bbb9a9c1e95e86c67f6ad66185720031b6eadf325972174d1d8fbcb
+  languageName: node
+  linkType: hard
+
 "run-async@npm:^2.4.0":
   version: 2.4.1
   resolution: "run-async@npm:2.4.1"
@@ -12963,9 +12977,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.4.3":
-  version: 0.4.3
-  resolution: "unimport@npm:0.4.3"
+"unimport@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "unimport@npm:0.4.4"
   dependencies:
     "@rollup/pluginutils": ^4.2.1
     escape-string-regexp: ^5.0.0
@@ -12977,7 +12991,7 @@ __metadata:
     scule: ^0.2.1
     strip-literal: ^0.4.0
     unplugin: ^0.7.1
-  checksum: f4215eb7d5c9b6ef09f7a239780da904b5908a0f05bfd71f540d39440ef72b53f8cdde4a6c6267844dcc028fbf28afd74142abd8c005590134400bd4c85f4f15
+  checksum: d8a7421001a9781cd1244b8bf040b084e6085a9df3f0d4ff9bc8db543e4a898e1bea6870108ff4e65813eb65c42b877b0730a380f8dc51c3db92b422d79d2657
   languageName: node
   linkType: hard
 
@@ -13297,9 +13311,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.13":
-  version: 2.9.13
-  resolution: "vite@npm:2.9.13"
+"vite@npm:^2.9.14":
+  version: 2.9.14
+  resolution: "vite@npm:2.9.14"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -13322,7 +13336,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: a5e501b920a448c352e9b3836019dea56c523535f8e8540160708c2e164d84da6655ae39abbba1e2888092f5c6cd03dd06279852422359b51be601914645f49f
+  checksum: f78b54f58482ea97d385e36873ae1aa4744c5e467c1d6d4e0835bd55494d2d8f6ce763f17c241c66104be687d5ee535b8e1e96c14210c9ba0c343fe78c58f694
   languageName: node
   linkType: hard
 
