@@ -10,7 +10,7 @@ interface TreeShakePluginOptions {
 }
 
 export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
-  const COMPOSABLE_RE = new RegExp(`($|\\s*)(${options.treeShake.join('|')})(?=\\()`, 'g')
+  const COMPOSABLE_RE = new RegExp(`($|\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
 
   return {
     name: 'nuxt:server-treeshake:transfrom',
@@ -35,7 +35,7 @@ export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
       for (const match of strippedCode.matchAll(COMPOSABLE_RE) || []) {
-        s.overwrite(match.index, match.index + match[0].length, `(() => {}) || /*#__PURE__*/ false && ${match[0]}`)
+        s.overwrite(match.index, match.index + match[0].length, `${match[1]} /*#__PURE__*/ false && ${match[2]}`)
       }
 
       if (s.hasChanged()) {
