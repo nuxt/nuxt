@@ -7,7 +7,7 @@ template: Example
 This example shows different ways to use `<NuxtLink>`.
 
 ::alert{type=info icon=💡}
-`components/myNuxtLink.ts` defines a custom `<NuxtLink>`.
+`components/MyNuxtLink.ts` defines a custom `<NuxtLink>`.
 ::
 
 ::ReadMore{link="/api/components/nuxt-link"}
