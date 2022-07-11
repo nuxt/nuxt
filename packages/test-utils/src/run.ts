@@ -21,7 +21,7 @@ export async function runTests (opts: RunTestOptions) {
     process.env.NUXT_TEST_DEV = 'true'
   }
 
-  const { startVitest } = await import('vitest/dist/node.js')
+  const { startVitest } = await import('vitest/dist/node.mjs')
   const succeeded = await startVitest(
     [] /* argv */,
     // Vitest options
