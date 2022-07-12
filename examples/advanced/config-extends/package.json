@@ -2,7 +2,7 @@
   "name": "example-config-extends",
   "private": true,
   "devDependencies": {
-    "@nuxt/ui": "^0.1.0",
+    "@nuxt/ui": "^0.2.0",
     "nuxt": "npm:nuxt3@latest"
   },
   "scripts": {
