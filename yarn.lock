@@ -1836,7 +1836,7 @@ __metadata:
     pify: ^6.0.0
     postcss: ^8.4.14
     postcss-import: ^14.1.0
-    postcss-loader: ^7.0.0
+    postcss-loader: ^7.0.1
     postcss-url: ^10.1.3
     style-resources-loader: ^1.5.0
     time-fix-plugin: ^2.0.7
@@ -2796,10 +2796,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.44.0":
-  version: 0.44.0
-  resolution: "@unocss/reset@npm:0.44.0"
-  checksum: ce84a2a88223692f8958301a3baa0106bd6716b73ce1cf842a0de16411e5ec49596fd960db27a701777d276f524656112c0d26a2b10a6e8faeb1d75bfcffda28
+"@unocss/reset@npm:^0.44.1":
+  version: 0.44.1
+  resolution: "@unocss/reset@npm:0.44.1"
+  checksum: ffb7c55059382e515aaa59da574dd97b03d2d0beb33f909a9768d10098064dcf144a2b24c1eb402ed2c00747884a75e2b511989c00adf5b58d466f5f51740b03
   languageName: node
   linkType: hard
 
@@ -9841,7 +9841,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.43
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.44.0
+    "@unocss/reset": ^0.44.1
     case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.19.0
@@ -10638,9 +10638,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "postcss-loader@npm:7.0.0"
+"postcss-loader@npm:^7.0.1":
+  version: 7.0.1
+  resolution: "postcss-loader@npm:7.0.1"
   dependencies:
     cosmiconfig: ^7.0.0
     klona: ^2.0.5
@@ -10648,7 +10648,7 @@ __metadata:
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: b8e51e99898cae8400de8690752b64af2ca1e3eed7c0d696c9e1ec6fc45dd334c958748247632c48109a519fb59f7545d0b8fe4b52479d982ca3ec4eb8e3b0c9
+  checksum: 2a3cbcaaade598d4919824d384ae34ffbfc14a9c8db6cc3b154582356f4f44a1c9af9e731b81cf1947b089accf7d0ab7a0c51c717946985f89aa1708d2b4304d
   languageName: node
   linkType: hard
 
