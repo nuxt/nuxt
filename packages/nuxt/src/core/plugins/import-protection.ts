@@ -10,6 +10,7 @@ const _require = createRequire(import.meta.url)
 interface ImportProtectionOptions {
   rootDir: string
   patterns: [importPattern: string | RegExp, warning?: string][]
+  exclude?: Array<RegExp | string>
 }
 
 export const vueAppPatterns = (nuxt: Nuxt) => [
@@ -25,10 +26,13 @@ export const vueAppPatterns = (nuxt: Nuxt) => [
 
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
   const cache: Record<string, Map<string | RegExp, boolean>> = {}
+  const importersToExclude = options?.exclude || []
   return {
     name: 'nuxt:import-protection',
     enforce: 'pre',
     resolveId (id, importer) {
+      if (importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))) { return }
+
       const invalidImports = options.patterns.filter(([pattern]) => pattern instanceof RegExp ? pattern.test(id) : pattern === id)
       let matched: boolean
       for (const match of invalidImports) {
