@@ -19,7 +19,7 @@
         width: 100%;
         background-size: 200% auto;
         background-position: 0 0;
-        animation: gradient 2s infinite;
+        animation: gradient 2s infinite, width 8s infinite ease-in-out;
         animation-fill-mode: forwards;
         animation-timing-function: linear;
       }
@@ -36,6 +36,17 @@
           background-position: -200% 0;
         }
       }
+      @keyframes width {
+        0% {
+          width: 100%;
+        }
+        50% {
+          width: 0%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body class="relative min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center text-center">
@@ -49,7 +60,7 @@
     <div class="spotlight-wrapper">
       <div class="fixed left-0 right-0 spotlight spotlight-bottom z-q0"></div>
     </div>
-    <div class="nuxt-loader-bar h-[4px] w-80 inline rounded"/>
+    <div class="nuxt-loader-bar h-[4px] inline rounded"/>
     <script>
       const nuxtImg = window.document.getElementById('nuxtImg')
       const body = window.document.body
