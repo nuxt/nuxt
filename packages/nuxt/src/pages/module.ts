@@ -54,29 +54,27 @@ export default defineNuxtModule({
 
     // Prerender all non-dynamic page routes when generating app
     if (!nuxt.options.dev && nuxt.options._generate) {
-      const routes = new Set<string>()
+      const prerenderRoutes = new Set<string>()
       nuxt.hook('modules:done', () => {
         nuxt.hook('pages:extend', (pages) => {
-          routes.clear()
-          for (const path of nuxt.options.nitro.prerender?.routes || []) {
-            routes.add(path)
-          }
+          prerenderRoutes.clear()
           const processPages = (pages: NuxtPage[], currentPath = '/') => {
             for (const page of pages) {
               // Skip dynamic paths
               if (page.path.includes(':')) { continue }
-
-              const path = joinURL(currentPath, page.path)
-              routes.add(path)
-              if (page.children) { processPages(page.children, path) }
+              const route = joinURL(currentPath, page.path)
+              prerenderRoutes.add(route)
+              if (page.children) { processPages(page.children, route) }
             }
           }
           processPages(pages)
         })
       })
-
       nuxt.hook('nitro:build:before', (nitro) => {
-        nitro.options.prerender.routes = [...routes]
+        for (const route of nitro.options.prerender.routes || []) {
+          prerenderRoutes.add(route)
+        }
+        nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
     }
 
