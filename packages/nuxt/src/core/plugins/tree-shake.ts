@@ -10,17 +10,17 @@ interface TreeShakePluginOptions {
 }
 
 export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
-  const COMPOSABLE_RE = new RegExp(`($|\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
+  const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
 
   return {
     name: 'nuxt:server-treeshake:transfrom',
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      const { type, macro } = parseQuery(search)
+      const { type } = parseQuery(search)
 
       // vue files
-      if (pathname.endsWith('.vue') && (type === 'script' || macro || !search)) {
+      if (pathname.endsWith('.vue') && (type === 'script' || !search)) {
         return true
       }
 
