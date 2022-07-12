@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.1.1...@nuxt/ui-templates@0.2.0) (2022-07-12)
+
+
+### Bug Fixes
+
+* **templates:** align twitter text in welcome template ([#120](https://github.com/nuxt/ui/issues/120)) ([52eaf32](https://github.com/nuxt/ui/commit/52eaf322b996f318a52a05d1f58ce5a879bf7187))
+
+
+### Features
+
+* **loading-template:** mouse blurred light effect ([#138](https://github.com/nuxt/ui/issues/138)) ([4c28b3f](https://github.com/nuxt/ui/commit/4c28b3f27903969416d4292051e18eef70897f0c))
+
+
+
+
+
 ## [0.1.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.1.0...@nuxt/ui-templates@0.1.1) (2022-05-07)
 
 
