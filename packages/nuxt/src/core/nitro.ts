@@ -94,7 +94,8 @@ export async function initNitro (nuxt: Nuxt) {
       ...nuxt.options.alias
     },
     replace: {
-      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false
+      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
+      'process.dev': nuxt.options.dev
     },
     rollupConfig: {
       plugins: []
