@@ -1586,15 +1586,15 @@ __metadata:
   linkType: hard
 
 "@npmcli/run-script@npm:^4.1.0":
-  version: 4.1.5
-  resolution: "@npmcli/run-script@npm:4.1.5"
+  version: 4.1.7
+  resolution: "@npmcli/run-script@npm:4.1.7"
   dependencies:
     "@npmcli/node-gyp": ^2.0.0
     "@npmcli/promise-spawn": ^3.0.0
     node-gyp: ^9.0.0
     read-package-json-fast: ^2.0.3
     which: ^2.0.2
-  checksum: a71736c628c747edd3275861a60bf8d76f8e954d0ab9561f0364d07f7a24ebf81159d0826a2c85705eae6391ffae6328bae6ca581264b5b3f3ca029510201387
+  checksum: 87c32b12fed981fe8a48de985dd1ae0350bcda2830ca4a35efe4b2b96932905cccd04e6e2de5bfea8ed4e2bf3b6f8315630ff9a09c72f80ff3c49f19a9fc80ff
   languageName: node
   linkType: hard
 
@@ -2257,9 +2257,9 @@ __metadata:
   linkType: hard
 
 "@types/estree@npm:*":
-  version: 0.0.52
-  resolution: "@types/estree@npm:0.0.52"
-  checksum: d1cba22160e7aebf865ea0dbc30807bee272fdafdb57d8dd25749f4b312cd9a99e9e933340b7b26284d7a47c8805aba43bb46cf5f1df00cdaaec67bbdc894d4a
+  version: 1.0.0
+  resolution: "@types/estree@npm:1.0.0"
+  checksum: 910d97fb7092c6738d30a7430ae4786a38542023c6302b95d46f49420b797f21619cdde11fa92b338366268795884111c2eb10356e4bd2c8ad5b92941e9e6443
   languageName: node
   linkType: hard
 
@@ -4082,9 +4082,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001335, caniuse-lite@npm:^1.0.30001359":
-  version: 1.0.30001365
-  resolution: "caniuse-lite@npm:1.0.30001365"
-  checksum: 5d043006e9bd9de1ae06c0e12c31997f0ed26f889f47ea6403dc2d08f46a5bd4bf0fe1a5b1099561fc447201ddf13083f277de68829e77fd238ff2af8c05e0a6
+  version: 1.0.30001366
+  resolution: "caniuse-lite@npm:1.0.30001366"
+  checksum: eeb878e0be4090a4247dd3de5392ff1a864d086e5401790c7c81697918ce6ce3dac75956a21f9404b5ac770bfdabdb18619d0f920dc2295f3211ee893355f697
   languageName: node
   linkType: hard
 
@@ -5233,9 +5233,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.172":
-  version: 1.4.186
-  resolution: "electron-to-chromium@npm:1.4.186"
-  checksum: 9f87db963070473702c0a999dc4066fdd12abff0b2b98dfae1c7492b62fe3feb42bae64ff7fd837e4e347dab043a411e82cab64ada902726b782c60bf9fc40de
+  version: 1.4.188
+  resolution: "electron-to-chromium@npm:1.4.188"
+  checksum: 7c18659273e51b72dbaba31bb50e160e33dc794907e749e0eb9ba56f954cb9d63c27db5ceebec6c566a3300fdceb2deabd5b528b967de5c1f78382089871ad2f
   languageName: node
   linkType: hard
 
@@ -8489,9 +8489,9 @@ __metadata:
   linkType: hard
 
 "lru-cache@npm:^7.4.4, lru-cache@npm:^7.5.1, lru-cache@npm:^7.7.1":
-  version: 7.12.0
-  resolution: "lru-cache@npm:7.12.0"
-  checksum: fdb62262978393df7a4bd46a072bc5c3808c50ca5a347a82bb9459410efd841b7bae50655c3cf9004c70d12c756cf6d018f6bff155a16cdde9eba9a82899b5eb
+  version: 7.13.0
+  resolution: "lru-cache@npm:7.13.0"
+  checksum: 95a13e0f3691db9be3e78b597e347c2a4911f7303a514076dbc185b472683fa6e06dcaad74b5fc35fa1192c2cfe4b0bbaf3778b5066503eedd1b92bfec864c4c
   languageName: node
   linkType: hard
 
@@ -9147,9 +9147,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.10":
-  version: 0.4.10
-  resolution: "nitropack@npm:0.4.10"
+"nitropack@npm:^0.4.11":
+  version: 0.4.11
+  resolution: "nitropack@npm:0.4.11"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9213,7 +9213,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 3f8538485c3160aec56135f7dbece37431cb4c710a7d3d0a5c4c1963e60507fbcb52fed3338dd6fd6a1ffb06e93fddbb38abadb0e736afe0708a00d31408fc0f
+  checksum: dfb5cf53511527a5cb858d7372dbdee4da3d7a854515de832a2b8d31f944de32c10f707e2a4dbaf36f58d8cbaaed899c1600d56aff675fc62aa9681d539eb6f4
   languageName: node
   linkType: hard
 
@@ -9246,13 +9246,13 @@ __metadata:
   linkType: hard
 
 "node-fetch@npm:^3.2.3":
-  version: 3.2.7
-  resolution: "node-fetch@npm:3.2.7"
+  version: 3.2.8
+  resolution: "node-fetch@npm:3.2.8"
   dependencies:
     data-uri-to-buffer: ^4.0.0
     fetch-blob: ^3.1.4
     formdata-polyfill: ^4.0.10
-  checksum: 834210e704341558b78bb13d71e593ce2a3a6485a1bf357ae27c7fc1be581e388dee5aa1214e05da53e2a4aace7101a46d3298772666ede11ed049f782788e6c
+  checksum: 2f7fc3e59fbede43a273e988d2f2a3dd68160618114e32ad537477db253808b65221f1dbfd666b8fb33ff07bf1de9d6448035b0f8ada5ef876c5afec93b27318
   languageName: node
   linkType: hard
 
@@ -9492,8 +9492,8 @@ __metadata:
   linkType: hard
 
 "npm-registry-fetch@npm:^13.0.0, npm-registry-fetch@npm:^13.0.1":
-  version: 13.1.1
-  resolution: "npm-registry-fetch@npm:13.1.1"
+  version: 13.2.0
+  resolution: "npm-registry-fetch@npm:13.2.0"
   dependencies:
     make-fetch-happen: ^10.0.6
     minipass: ^3.1.6
@@ -9502,7 +9502,7 @@ __metadata:
     minizlib: ^2.1.2
     npm-package-arg: ^9.0.1
     proc-log: ^2.0.0
-  checksum: e085faf5cdc1cfe9b8f825065a0823531b2a28799d84614b3971e344dde087f9089c0f0220360771a81f110c5444978c6f7309084ff7d7d396252b068148bb44
+  checksum: be5f53dede252d051137897c4efc615102c27fb250671564feaf03394d0532c24d57c7b3e374b943b28988f2e9381c0b10a57146b0f5adb68d93ccfcbfb802ed
   languageName: node
   linkType: hard
 
@@ -9688,7 +9688,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.4
-    nitropack: ^0.4.10
+    nitropack: ^0.4.11
     nuxi: ^3.0.0-rc.4
     ohash: ^0.1.0
     ohmyfetch: ^0.4.18
@@ -10293,23 +10293,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.23.2":
-  version: 1.23.2
-  resolution: "playwright-core@npm:1.23.2"
+"playwright-core@npm:1.23.3":
+  version: 1.23.3
+  resolution: "playwright-core@npm:1.23.3"
   bin:
     playwright: cli.js
-  checksum: 7e5c7adbc436c68e5de8535508746c2734393f77948c08ff1df7d21eaa518cd00d82f49c936b2776be6958dc2d7f18985582d72690ffeee7a59006267e22a391
+  checksum: e83cf0b05d791ded54e155fc8cb5689dcb57e02f315f23f5955d769fbb40685ce085218debbc6e617280b0d432e857631762c010586dfd19a6f14a5149384ecd
   languageName: node
   linkType: hard
 
 "playwright@npm:^1.23.2":
-  version: 1.23.2
-  resolution: "playwright@npm:1.23.2"
+  version: 1.23.3
+  resolution: "playwright@npm:1.23.3"
   dependencies:
-    playwright-core: 1.23.2
+    playwright-core: 1.23.3
   bin:
     playwright: cli.js
-  checksum: 19b32fcc77375366643ac45009dd5a6d25a6a64258aa11da6030fd7bc6bf54366f3740fd7886ed5b03860ac48c4278b7cbd1483e924e3367ad2d3434efe57358
+  checksum: 4562fbc3e5027b84cac2dcbc3119593bf61012548adfb4bafb6b8c8b6e7ae605c2c45c494b4ef82d82651487fd3cdc6767ca56af0092bc8d5cc7177489ed473d
   languageName: node
   linkType: hard
 
