@@ -1796,7 +1796,7 @@ __metadata:
     unplugin: ^0.7.2
     vite: ^2.9.14
     vite-node: ^0.18.0
-    vite-plugin-checker: ^0.4.8
+    vite-plugin-checker: ^0.4.9
     vue: 3.2.37
   peerDependencies:
     vue: ^3.2.37
@@ -13004,9 +13004,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-checker@npm:^0.4.8":
-  version: 0.4.8
-  resolution: "vite-plugin-checker@npm:0.4.8"
+"vite-plugin-checker@npm:^0.4.9":
+  version: 0.4.9
+  resolution: "vite-plugin-checker@npm:0.4.9"
   dependencies:
     "@babel/code-frame": ^7.12.13
     ansi-escapes: ^4.3.0
@@ -13024,10 +13024,10 @@ __metadata:
     vscode-languageserver-textdocument: ^1.0.1
     vscode-uri: ^3.0.2
   peerDependencies:
-    vite: ">=2"
+    vite: ^2.0.0 || ^3.0.0-0
   bin:
     vite-plugin-checker-vls: bin/vls
-  checksum: f7c89eee9a56f7cd4bc8be72cc990ecd9463a3e57e45f675e30cba8b40b7193a2c9478a054ff73bd8dc264e2eb7c72fd912f72aa594db846b1b6c73184a0c730
+  checksum: b3bff686c3a48335869376d01ceb98ec4a5fa961dcdb4968ab2e629ab989a7760f2ea29c3660cf3fa54f3354968c93415fc918f2bebea2ec8a6bb93692eec41a
   languageName: node
   linkType: hard
 
