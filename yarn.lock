@@ -1648,7 +1648,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.4.4
+    unimport: ^0.4.5
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1675,7 +1675,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.5
     unbuild: latest
-    unimport: ^0.4.4
+    unimport: ^0.4.5
     vite: ^2.9.14
   languageName: unknown
   linkType: soft
@@ -1783,14 +1783,14 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.4
-    ohash: ^0.1.0
+    ohash: ^0.1.2
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
     postcss: ^8.4.14
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
     rollup: ^2.76.0
-    rollup-plugin-visualizer: ^5.6.0
+    rollup-plugin-visualizer: ^5.7.0
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.7.2
@@ -1832,7 +1832,7 @@ __metadata:
     memfs: ^3.4.7
     mini-css-extract-plugin: ^2.6.1
     mlly: ^0.5.4
-    ohash: ^0.1.0
+    ohash: ^0.1.2
     pathe: ^0.3.2
     pify: ^6.0.0
     postcss: ^8.4.14
@@ -2373,10 +2373,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.43":
-  version: 16.11.43
-  resolution: "@types/node@npm:16.11.43"
-  checksum: 96d09e68347c49ebf84fe1443360edc3f98336f0794256abc8e4f29ef3070546357cae17083d6fd9767b631239367c4f245fe64accff4af057d17bd6694f0b2b
+"@types/node@npm:^16.11.44":
+  version: 16.11.44
+  resolution: "@types/node@npm:16.11.44"
+  checksum: 6fc2214bab40bbab1d76e02bd2fbcc1b5ed0ae383b4c892bcde6c231734582fca8a45185eb1b0283bae434600d3e44bdacbbdc05725661910e6372778e1881c1
   languageName: node
   linkType: hard
 
@@ -2805,6 +2805,13 @@ __metadata:
   version: 0.44.1
   resolution: "@unocss/reset@npm:0.44.1"
   checksum: ffb7c55059382e515aaa59da574dd97b03d2d0beb33f909a9768d10098064dcf144a2b24c1eb402ed2c00747884a75e2b511989c00adf5b58d466f5f51740b03
+  languageName: node
+  linkType: hard
+
+"@unocss/reset@npm:^0.44.2":
+  version: 0.44.2
+  resolution: "@unocss/reset@npm:0.44.2"
+  checksum: 0d2b9c5ce45cc10b1dc8240ad41ac118f40e02704e287c160be57bc77caea94b9621db12f2194cae0a68c1a5a1d5b613ff9121e13e9f9f195f9217dca0197937
   languageName: node
   linkType: hard
 
@@ -8295,7 +8302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"local-pkg@npm:^0.4.1":
+"local-pkg@npm:^0.4.1, local-pkg@npm:^0.4.2":
   version: 0.4.2
   resolution: "local-pkg@npm:0.4.2"
   checksum: 22be451353c25c4411b552bf01880ebc9e995b93574b2facc7757968d888356df59199cacada14162ab53bbc9da055bb692c907b4171f008dbce45a2afc777c1
@@ -9148,9 +9155,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.11":
-  version: 0.4.11
-  resolution: "nitropack@npm:0.4.11"
+"nitropack@npm:^0.4.12":
+  version: 0.4.12
+  resolution: "nitropack@npm:0.4.12"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9214,7 +9221,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: dfb5cf53511527a5cb858d7372dbdee4da3d7a854515de832a2b8d31f944de32c10f707e2a4dbaf36f58d8cbaaed899c1600d56aff675fc62aa9681d539eb6f4
+  checksum: 4f402457b558188253a3fde9bb130901e30b393854ca9f870e9a62940075c67f9a218efa4cad8cded5d1526f7fc24ca1ae091ee784a6da62d3dcbdf11fb95b7b
   languageName: node
   linkType: hard
 
@@ -9625,9 +9632,9 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.43
+    "@types/node": ^16.11.44
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.44.1
+    "@unocss/reset": ^0.44.2
     case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.19.0
@@ -9689,9 +9696,9 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.4
-    nitropack: ^0.4.11
+    nitropack: ^0.4.12
     nuxi: ^3.0.0-rc.5
-    ohash: ^0.1.0
+    ohash: ^0.1.2
     ohmyfetch: ^0.4.18
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
@@ -9701,7 +9708,7 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.2
-    unimport: ^0.4.4
+    unimport: ^0.4.5
     unplugin: ^0.7.2
     untyped: ^0.4.4
     vue: ^3.2.37
@@ -9762,6 +9769,13 @@ __metadata:
   version: 0.1.0
   resolution: "ohash@npm:0.1.0"
   checksum: b2bfde97c96bb4e71f3e0b7718239c7e49435394f1f562e0d21a069b84302bea0a235c65e2615009f6a4e2008963914917bfcd576d65ff56016f174d0b1e206b
+  languageName: node
+  linkType: hard
+
+"ohash@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "ohash@npm:0.1.2"
+  checksum: 33d822177f1a4d5ce217f2f2a1250fd1e297b8b6be6ad32d0da396d26a6ca24e0ac2bc4aab41b139e505cde6bf24fa5b3c8ed408eaa0b6e62d54cf41c856bd55
   languageName: node
   linkType: hard
 
@@ -11350,6 +11364,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup-plugin-visualizer@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "rollup-plugin-visualizer@npm:5.7.0"
+  dependencies:
+    nanoid: ^3.3.4
+    open: ^8.4.0
+    source-map: ^0.7.3
+    yargs: ^17.5.1
+  peerDependencies:
+    rollup: ^2.0.0
+  bin:
+    rollup-plugin-visualizer: dist/bin/cli.js
+  checksum: 7d0863087735a52e4002cf939d8b6beb7e9b29ebd84d2adb574df0f96a8e2d1980cc329115ecebf6f544896847614b655bc698f339e1ae656870336037ce4ed6
+  languageName: node
+  linkType: hard
+
 "rollup-pluginutils@npm:^2.8.2":
   version: 2.8.2
   resolution: "rollup-pluginutils@npm:2.8.2"
@@ -12735,6 +12765,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unimport@npm:^0.4.5":
+  version: 0.4.5
+  resolution: "unimport@npm:0.4.5"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    escape-string-regexp: ^5.0.0
+    fast-glob: ^3.2.11
+    local-pkg: ^0.4.2
+    magic-string: ^0.26.2
+    mlly: ^0.5.4
+    pathe: ^0.3.2
+    scule: ^0.2.1
+    strip-literal: ^0.4.0
+    unplugin: ^0.7.2
+  checksum: 76ad6061025e2c1c521a932b288c69ef25561db03530a847631a743a253a4c31a75f774ebee08e1a215d38ede890cb4a9498d26690856cbc2bb080cc385bd22a
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^1.1.1":
   version: 1.1.1
   resolution: "unique-filename@npm:1.1.1"
@@ -13695,7 +13743,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:^17.3.1":
+"yargs@npm:^17.3.1, yargs@npm:^17.5.1":
   version: 17.5.1
   resolution: "yargs@npm:17.5.1"
   dependencies:
