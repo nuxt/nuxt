@@ -63,6 +63,10 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
           /^#/,
           ...ctx.nuxt.options.build.transpile as string[]
         ]
+      },
+      transformMode: {
+        ssr: [/.*/],
+        web: []
       }
     })
     return async (event) => {
