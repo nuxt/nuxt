@@ -5,6 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
+import { TreeShakeTemplatePlugin } from './tree-shake'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
@@ -136,6 +137,7 @@ export default defineNuxtModule<ComponentsOptions>({
         getComponents,
         mode: isClient ? 'client' : 'server'
       }))
+      config.plugins.push(TreeShakeTemplatePlugin.vite({ sourcemap: nuxt.options.sourcemap, getComponents }))
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -145,6 +147,7 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents,
           mode: config.name === 'client' ? 'client' : 'server'
         }))
+        config.plugins.push(TreeShakeTemplatePlugin.webpack({ sourcemap: nuxt.options.sourcemap, getComponents }))
       })
     })
   }
