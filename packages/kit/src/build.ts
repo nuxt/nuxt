@@ -99,6 +99,11 @@ export function extendViteConfig (
     return
   }
 
+  if (options.server !== false && options.client !== false) {
+    // Call fn() only once
+    return nuxt.hook('vite:extend', ({ config }) => fn(config))
+  }
+
   nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
     if (options.server !== false && isServer) {
       return fn(config)
