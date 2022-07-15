@@ -1783,7 +1783,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.4
-    ohash: ^0.1.3
+    ohash: ^0.1.4
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
     postcss: ^8.4.14
@@ -1832,7 +1832,7 @@ __metadata:
     memfs: ^3.4.7
     mini-css-extract-plugin: ^2.6.1
     mlly: ^0.5.4
-    ohash: ^0.1.3
+    ohash: ^0.1.4
     pathe: ^0.3.2
     pify: ^6.0.0
     postcss: ^8.4.14
@@ -9698,7 +9698,7 @@ __metadata:
     mlly: ^0.5.4
     nitropack: ^0.4.12
     nuxi: ^3.0.0-rc.5
-    ohash: ^0.1.3
+    ohash: ^0.1.4
     ohmyfetch: ^0.4.18
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
@@ -9772,10 +9772,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohash@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "ohash@npm:0.1.3"
-  checksum: 19be6d69adede00617acfa03739ed3f175669f0434ea22eefe85f1b786946918e0665e24d2ae4ff5b11336c366c9bb4d6360e084bbf79815c3fd7c8dad0f01d3
+"ohash@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "ohash@npm:0.1.4"
+  checksum: 859ac69ea02201f7aef4c5ee6d3b9ef009c9e58c24fb4fa67477e7bc431fa7a2bf74d8b814472da55a8e87c318f0c36081dddc729b71aa09a7e336381d4be636
   languageName: node
   linkType: hard
 
