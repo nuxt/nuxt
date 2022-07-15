@@ -13,8 +13,8 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.0.0-rc.5",
-    "@nuxt/schema": "^3.0.0-rc.5",
+    "@nuxt/kit": "3.0.0-rc.5",
+    "@nuxt/schema": "3.0.0-rc.5",
     "defu": "^6.0.0",
     "execa": "^6.1.0",
     "get-port-please": "^2.5.0",

@@ -17,8 +17,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/kit": "^3.0.0-rc.5",
-    "@nuxt/schema": "^3.0.0-rc.5",
+    "@nuxt/kit": "3.0.0-rc.5",
+    "@nuxt/schema": "3.0.0-rc.5",
     "@types/clear": "^0",
     "@types/mri": "^1.1.1",
     "@types/semver": "^7",
