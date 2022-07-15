@@ -6,10 +6,10 @@
 </template>
 
 <script setup>
-import { onErrorCaptured } from 'vue'
+import { defineAsyncComponent, onErrorCaptured } from 'vue'
 import { callWithNuxt, throwError, useError, useNuxtApp } from '#app'
-// @ts-ignore
-import ErrorComponent from '#build/error-component.mjs'
+
+const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs'))
 
 const nuxtApp = useNuxtApp()
 const onResolve = () => nuxtApp.callHook('app:suspense:resolve')
