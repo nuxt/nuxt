@@ -1789,8 +1789,8 @@ __metadata:
     postcss: ^8.4.14
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
-    rollup: ^2.76.0
-    rollup-plugin-visualizer: ^5.7.0
+    rollup: ^2.77.0
+    rollup-plugin-visualizer: ^5.7.1
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.7.2
@@ -11364,9 +11364,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-visualizer@npm:^5.7.0":
-  version: 5.7.0
-  resolution: "rollup-plugin-visualizer@npm:5.7.0"
+"rollup-plugin-visualizer@npm:^5.7.1":
+  version: 5.7.1
+  resolution: "rollup-plugin-visualizer@npm:5.7.1"
   dependencies:
     nanoid: ^3.3.4
     open: ^8.4.0
@@ -11376,7 +11376,7 @@ __metadata:
     rollup: ^2.0.0
   bin:
     rollup-plugin-visualizer: dist/bin/cli.js
-  checksum: 7d0863087735a52e4002cf939d8b6beb7e9b29ebd84d2adb574df0f96a8e2d1980cc329115ecebf6f544896847614b655bc698f339e1ae656870336037ce4ed6
+  checksum: 8bc4ff80a149f3ac775af1307f5b1936d3d6bd31ec6969e34e7e7489105b54fe12fda05d0c9a1b682fe7a1f535468e94dd11d98ba048ca78ac733a459bdd400b
   languageName: node
   linkType: hard
 
@@ -11400,6 +11400,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 58293e1c63c11d4afcfcf619601d5c5136dd3d0c9d3bd6a0b6141fede32027edc1eb53873bbb9a9c1e95e86c67f6ad66185720031b6eadf325972174d1d8fbcb
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.77.0":
+  version: 2.77.0
+  resolution: "rollup@npm:2.77.0"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 74ccc98429709984a89af636250833e7502d87f1d9c6d96ebfe4b52030ebf94b9f6b84b8ab476670329a61d54b681d35eecdc601bac5b5396b099b1ea69970ef
   languageName: node
   linkType: hard
 
