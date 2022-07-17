@@ -65,7 +65,7 @@
     "typescript": "^4.7.4",
     "unbuild": "^0.7.4",
     "vitest": "^0.18.1",
-    "vue-tsc": "^0.38.7"
+    "vue-tsc": "^0.38.8"
   },
   "packageManager": "yarn@3.2.1",
   "engines": {
