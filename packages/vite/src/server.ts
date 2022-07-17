@@ -73,9 +73,6 @@ export async function buildServer (ctx: ViteBuildContext) {
             rollupWarn(warning)
           }
         }
-      },
-      watch: {
-        exclude: ctx.nuxt.options.ignore
       }
     },
     server: {

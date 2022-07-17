@@ -63,6 +63,9 @@ export async function bundle (nuxt: Nuxt) {
           rollupOptions: {
             output: { sanitizeFileName: sanitizeFilePath },
             input: resolve(nuxt.options.appDir, 'entry')
+          },
+          watch: {
+            exclude: nuxt.options.ignore
           }
         },
         plugins: [
@@ -101,6 +104,7 @@ export async function bundle (nuxt: Nuxt) {
   if (!nuxt.options.dev) {
     ctx.config.server.hmr = false
     ctx.config.server.watch = undefined
+    ctx.config.build.watch = undefined
   }
 
   await nuxt.callHook('vite:extend', ctx)
