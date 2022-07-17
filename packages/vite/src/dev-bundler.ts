@@ -63,7 +63,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
     if (id.match(/^\/\w:/)) {
       id = id.slice(1)
     }
-  } else if (!id.includes('entry') && id.startsWith('/')) {
+  } else if (id.startsWith('/') && !(/\/app\/entry(|.mjs)$/.test(id))) {
     // Relative to the root directory
     const resolvedPath = resolve(opts.viteServer.config.root, '.' + id)
     if (existsSync(resolvedPath)) {
