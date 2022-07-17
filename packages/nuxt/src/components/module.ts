@@ -137,7 +137,9 @@ export default defineNuxtModule<ComponentsOptions>({
         getComponents,
         mode: isClient ? 'client' : 'server'
       }))
-      config.plugins.push(TreeShakeTemplatePlugin.vite({ sourcemap: nuxt.options.sourcemap, getComponents }))
+      if (nuxt.options.experimental.treeshakeClientOnly) {
+        config.plugins.push(TreeShakeTemplatePlugin.vite({ sourcemap: nuxt.options.sourcemap, getComponents }))
+      }
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -147,7 +149,9 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents,
           mode: config.name === 'client' ? 'client' : 'server'
         }))
-        config.plugins.push(TreeShakeTemplatePlugin.webpack({ sourcemap: nuxt.options.sourcemap, getComponents }))
+        if (nuxt.options.experimental.treeshakeClientOnly) {
+          config.plugins.push(TreeShakeTemplatePlugin.webpack({ sourcemap: nuxt.options.sourcemap, getComponents }))
+        }
       })
     })
   }
