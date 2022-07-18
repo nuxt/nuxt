@@ -16,7 +16,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.18.6",
+    "@babel/core": "^7.18.9",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0-rc.5",
     "autoprefixer": "^10.4.7",
@@ -27,7 +27,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "file-loader": "^6.2.0",
-    "fork-ts-checker-webpack-plugin": "^7.2.12",
+    "fork-ts-checker-webpack-plugin": "^7.2.13",
     "fs-extra": "^10.1.0",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
