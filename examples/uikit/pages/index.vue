@@ -20,3 +20,11 @@
     </NuxtLink>
   </div>
 </template>
+
+<script>
+export default {
+  created() {
+    this.$uikit.notification('Nuxt + UIKIT')
+  }
+}
+</script>
