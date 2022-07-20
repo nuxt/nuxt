@@ -1770,7 +1770,7 @@ __metadata:
     jiti: ^1.14.0
     knitwork: ^0.1.2
     lodash.template: ^4.5.0
-    mlly: ^0.5.4
+    mlly: ^0.5.5
     pathe: ^0.3.2
     pkg-types: ^0.3.3
     scule: ^0.2.1
@@ -1911,7 +1911,7 @@ __metadata:
     h3: ^0.7.10
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.4
+    mlly: ^0.5.5
     ohash: ^0.1.4
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
@@ -1960,7 +1960,7 @@ __metadata:
     magic-string: ^0.26.2
     memfs: ^3.4.7
     mini-css-extract-plugin: ^2.6.1
-    mlly: ^0.5.4
+    mlly: ^0.5.5
     ohash: ^0.1.4
     pathe: ^0.3.2
     pify: ^6.0.0
@@ -2186,23 +2186,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^21.0.3":
-  version: 21.1.0
-  resolution: "@rollup/plugin-commonjs@npm:21.1.0"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    commondir: ^1.0.1
-    estree-walker: ^2.0.1
-    glob: ^7.1.6
-    is-reference: ^1.2.1
-    magic-string: ^0.25.7
-    resolve: ^1.17.0
-  peerDependencies:
-    rollup: ^2.38.3
-  checksum: e8280f4b6192729f2bdf878c48c451dc441075f2a12f22c688393f48a6b95e8ff83caaacc3df4eb1d81516e08a0e3a669213632879910d85dd630b37bb284df7
-  languageName: node
-  linkType: hard
-
 "@rollup/plugin-commonjs@npm:^22.0.1":
   version: 22.0.1
   resolution: "@rollup/plugin-commonjs@npm:22.0.1"
@@ -2244,7 +2227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.2.0, @rollup/plugin-node-resolve@npm:^13.3.0":
+"@rollup/plugin-node-resolve@npm:^13.3.0":
   version: 13.3.0
   resolution: "@rollup/plugin-node-resolve@npm:13.3.0"
   dependencies:
@@ -2937,10 +2920,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.44.3":
-  version: 0.44.3
-  resolution: "@unocss/reset@npm:0.44.3"
-  checksum: 84f3c88d2d2d5333207553095c8477bbfdeba6bd7e9ae6627496d46b5fc9cc972f2bcc18fc4c67c788811c3bef3d8777d0e63b4a3ba0681b11c669c49c1f638b
+"@unocss/reset@npm:^0.44.5":
+  version: 0.44.5
+  resolution: "@unocss/reset@npm:0.44.5"
+  checksum: 1da7b35eaf30b27bf6925e2ea83b124f8f2fa7a780f135456e63681e921c15d000e87d8744fc3db566baa3f0829723c2917d0848b45d81af6ca2515426ae237e
   languageName: node
   linkType: hard
 
@@ -3055,45 +3038,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volar/code-gen@npm:0.38.8":
-  version: 0.38.8
-  resolution: "@volar/code-gen@npm:0.38.8"
+"@volar/code-gen@npm:0.38.9":
+  version: 0.38.9
+  resolution: "@volar/code-gen@npm:0.38.9"
   dependencies:
-    "@volar/source-map": 0.38.8
-  checksum: f7b9a0d55638443a56b8f72e24e7bade59f2d256081ad30e98e7b3ba8edf9cadd4e8b3ec217da66d2543403ab89c973ba6bffa358afa432ae1715302783697e2
+    "@volar/source-map": 0.38.9
+  checksum: da085a1f269867497f736ddf7e81249f08f8566548759be28eb4cd31a379556203c61497379db550a05404d7978a35083beb7d03b84b09d4a0ced4c7b9710932
   languageName: node
   linkType: hard
 
-"@volar/source-map@npm:0.38.8":
-  version: 0.38.8
-  resolution: "@volar/source-map@npm:0.38.8"
-  checksum: 63a283ba507e5208a42aa2cea2e3395dda94e88bb24ac951dd7bf1564482e549de5e4b6102ee6e9634349d4744fe656e30f258522f648e39f014fa79c927f5c8
+"@volar/source-map@npm:0.38.9":
+  version: 0.38.9
+  resolution: "@volar/source-map@npm:0.38.9"
+  checksum: 381e1d629944907bfe02173a34d79b6f99cea196126ca8edcc0898cc40c10fac9a7c97781384f3dcfc3a635663625a5325839a8c184e9f4411b0963d7006b0aa
   languageName: node
   linkType: hard
 
-"@volar/vue-code-gen@npm:0.38.8":
-  version: 0.38.8
-  resolution: "@volar/vue-code-gen@npm:0.38.8"
+"@volar/vue-code-gen@npm:0.38.9":
+  version: 0.38.9
+  resolution: "@volar/vue-code-gen@npm:0.38.9"
   dependencies:
-    "@volar/code-gen": 0.38.8
-    "@volar/source-map": 0.38.8
+    "@volar/code-gen": 0.38.9
+    "@volar/source-map": 0.38.9
     "@vue/compiler-core": ^3.2.37
     "@vue/compiler-dom": ^3.2.37
     "@vue/shared": ^3.2.37
-  checksum: 7e24211e1f5d5e1525b29a035438542dfbea8b2d19aba5324f2def178f6fb4d195abf2905661a9c3bf7f0e6e324b41c014ee60e57e693f1f2e697699ab2fe012
+  checksum: 8a1d07cff052217b25e390f3c204835ea5c245cbe80f51c728a41998aa4ad0e0c0f0e58aab6e1ae8f3716738c1bb64ada1c953e7b99e558de81d325c549a2f79
   languageName: node
   linkType: hard
 
-"@volar/vue-typescript@npm:0.38.8":
-  version: 0.38.8
-  resolution: "@volar/vue-typescript@npm:0.38.8"
+"@volar/vue-typescript@npm:0.38.9":
+  version: 0.38.9
+  resolution: "@volar/vue-typescript@npm:0.38.9"
   dependencies:
-    "@volar/code-gen": 0.38.8
-    "@volar/source-map": 0.38.8
-    "@volar/vue-code-gen": 0.38.8
+    "@volar/code-gen": 0.38.9
+    "@volar/source-map": 0.38.9
+    "@volar/vue-code-gen": 0.38.9
     "@vue/compiler-sfc": ^3.2.37
     "@vue/reactivity": ^3.2.37
-  checksum: 306d0721440125445c2a4649e040959cd61930a00c61fec785288a5635724d251b940ce51421f971b2f58b06dfb2fa0f96def41fe9648f6d1123f988432e8819
+  checksum: 095503b57b05242f5b7d33091e362617e9a95e45456bffafa6574c9bd62f50229afdb933430686737bccaf5838c78963f528e6adcd0a7f235bdf0fb92fcfa0f5
   languageName: node
   linkType: hard
 
@@ -5725,7 +5708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.27, esbuild@npm:^0.14.36, esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.49":
+"esbuild@npm:^0.14.27, esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.49":
   version: 0.14.49
   resolution: "esbuild@npm:0.14.49"
   dependencies:
@@ -9147,7 +9130,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdist@npm:^0.3.10":
+"mkdist@npm:^0.3.13":
   version: 0.3.13
   resolution: "mkdist@npm:0.3.13"
   dependencies:
@@ -9176,6 +9159,16 @@ __metadata:
     pathe: ^0.3.1
     pkg-types: ^0.3.3
   checksum: fb756e817aaf5edb94f3cd238bf608c59bb1e0f505fa4b9bd38d13a151e4120c561e8689bff4265602b0fea37cc43902b0d8e6754301b36c4ca5167926e75709
+  languageName: node
+  linkType: hard
+
+"mlly@npm:^0.5.5":
+  version: 0.5.5
+  resolution: "mlly@npm:0.5.5"
+  dependencies:
+    pathe: ^0.3.2
+    pkg-types: ^0.3.3
+  checksum: f7141ac6a1934c5930acef94eff25f06a42798bb58e5b20c029a14b92e345726533bc413e4ebf316022f28fb68d198cc9c1de5860d90343bac508f76e6d74194
   languageName: node
   linkType: hard
 
@@ -9739,7 +9732,7 @@ __metadata:
     fsevents: ~2.3.2
     jiti: ^1.14.0
     listhen: ^0.2.13
-    mlly: ^0.5.4
+    mlly: ^0.5.5
     mri: ^1.2.0
     pathe: ^0.3.2
     perfect-debounce: ^0.1.3
@@ -9764,7 +9757,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.45
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.44.3
+    "@unocss/reset": ^0.44.5
     case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.20.0
@@ -9778,9 +9771,9 @@ __metadata:
     pathe: ^0.3.2
     rimraf: ^3.0.2
     typescript: ^4.7.4
-    unbuild: ^0.7.4
+    unbuild: ^0.7.6
     vitest: ^0.18.1
-    vue-tsc: ^0.38.8
+    vue-tsc: ^0.38.9
   languageName: unknown
   linkType: soft
 
@@ -9825,7 +9818,7 @@ __metadata:
     hookable: ^5.1.1
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.4
+    mlly: ^0.5.5
     nitropack: ^0.4.12
     nuxi: ^3.0.0-rc.6
     ohash: ^0.1.4
@@ -10427,7 +10420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pkg-types@npm:^0.3.2, pkg-types@npm:^0.3.3":
+"pkg-types@npm:^0.3.3":
   version: 0.3.3
   resolution: "pkg-types@npm:0.3.3"
   dependencies:
@@ -11432,7 +11425,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-dts@npm:^4.2.1":
+"rollup-plugin-dts@npm:^4.2.2":
   version: 4.2.2
   resolution: "rollup-plugin-dts@npm:4.2.2"
   dependencies:
@@ -11519,7 +11512,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.59.0, rollup@npm:^2.70.1, rollup@npm:^2.76.0":
+"rollup@npm:^2.59.0, rollup@npm:^2.76.0":
   version: 2.76.0
   resolution: "rollup@npm:2.76.0"
   dependencies:
@@ -12757,7 +12750,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.6.3, typescript@npm:^4.7.4":
+"typescript@npm:^4.7.4":
   version: 4.7.4
   resolution: "typescript@npm:4.7.4"
   bin:
@@ -12767,7 +12760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.6.3#~builtin<compat/typescript>, typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
   version: 4.7.4
   resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"
   bin:
@@ -12812,40 +12805,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.7.4":
-  version: 0.7.4
-  resolution: "unbuild@npm:0.7.4"
+"unbuild@npm:^0.7.6":
+  version: 0.7.6
+  resolution: "unbuild@npm:0.7.6"
   dependencies:
     "@rollup/plugin-alias": ^3.1.9
-    "@rollup/plugin-commonjs": ^21.0.3
+    "@rollup/plugin-commonjs": ^22.0.1
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.2.0
+    "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-replace": ^4.0.0
-    "@rollup/pluginutils": ^4.2.0
+    "@rollup/pluginutils": ^4.2.1
     chalk: ^5.0.1
     consola: ^2.15.3
     defu: ^6.0.0
-    esbuild: ^0.14.36
+    esbuild: ^0.14.49
     hookable: ^5.1.1
-    jiti: ^1.13.0
-    magic-string: ^0.26.1
+    jiti: ^1.14.0
+    magic-string: ^0.26.2
     mkdirp: ^1.0.4
-    mkdist: ^0.3.10
-    mlly: ^0.5.2
+    mkdist: ^0.3.13
+    mlly: ^0.5.4
     mri: ^1.2.0
-    pathe: ^0.2.0
-    pkg-types: ^0.3.2
+    pathe: ^0.3.2
+    pkg-types: ^0.3.3
     pretty-bytes: ^6.0.0
     rimraf: ^3.0.2
-    rollup: ^2.70.1
-    rollup-plugin-dts: ^4.2.1
+    rollup: ^2.77.0
+    rollup-plugin-dts: ^4.2.2
     rollup-plugin-esbuild: ^4.9.1
     scule: ^0.2.1
-    typescript: ^4.6.3
+    typescript: ^4.7.4
     untyped: ^0.4.4
   bin:
     unbuild: dist/cli.mjs
-  checksum: 883dc0e129ed042c5055fd8acfb56f0bea0da15f6a44b7e207e8861943f2f7aba6fe7c66e82bd5a397a45c1dfb18a50c19369ea9eb440f15bd1a3afaee9e130b
+  checksum: 105e3d26afaf200c80b2e668ef2704aafae4be97627418f85a5eed515094aba1d6f95e54d2e1eb437c4d7d2d97d1e73a4d8dff280efd1867b476469ff52db3fe
   languageName: node
   linkType: hard
 
@@ -13425,16 +13418,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-tsc@npm:^0.38.8":
-  version: 0.38.8
-  resolution: "vue-tsc@npm:0.38.8"
+"vue-tsc@npm:^0.38.9":
+  version: 0.38.9
+  resolution: "vue-tsc@npm:0.38.9"
   dependencies:
-    "@volar/vue-typescript": 0.38.8
+    "@volar/vue-typescript": 0.38.9
   peerDependencies:
     typescript: "*"
   bin:
     vue-tsc: bin/vue-tsc.js
-  checksum: 681b60ddfe0e3deb50f758656ac579e1db8f14636f370a3273b00eaa61bc6c13bb66c72608fef630fef211a7dc3296c877f60919811cb41726361407101389de
+  checksum: ec42c9961d19fc8eace019203b397e99115a3dffbcb9914afe4d1a5da521471cf13b6d3945e98497ffeaabcfd813988256a5305e3ccc42bd273dd94fd2b2aa29
   languageName: node
   linkType: hard
 
