@@ -29,8 +29,8 @@ const stacktrace = (error.stack || '')
   }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
 
 // Error page props
-const statusCode = String(error.statusCode || 500)
-const is404 = statusCode === '404'
+const statusCode = Number(error.statusCode || 500)
+const is404 = statusCode === 404
 
 const statusMessage = error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = error.message || error.toString()
