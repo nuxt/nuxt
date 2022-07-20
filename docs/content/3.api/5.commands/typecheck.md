@@ -13,5 +13,5 @@ Option        | Default          | Description
 This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as a command-line argument.
 
 ::alert
-You can also enable type-checking at build or development time with [the `typescript.typeCheck` option in your `nuxt.config` file](/api/configuration/nuxt.config#typescript).
+You can also enable type-checking at build or development time by installing `vue-tsc` and `typescript` as devDependencies and enabling [the `typescript.typeCheck` option in your `nuxt.config` file](/api/configuration/nuxt.config#typescript).
 ::
