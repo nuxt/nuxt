@@ -24,8 +24,8 @@ export default <NitroErrorHandler> async function errorhandler (_error, event) {
   event.res.statusMessage = errorObject.statusMessage
 
   // Console output
-  if (errorObject.statusCode !== 404) {
-    console.error('[nuxt] [request error]', errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+  if ((_error as any).unhandled) {
+    console.error('[nuxt] [unhandled request error]', errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   // JSON response

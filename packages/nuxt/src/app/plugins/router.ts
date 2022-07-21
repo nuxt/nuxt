@@ -3,7 +3,7 @@ import { parseURL, parseQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin } from '..'
 import { callWithNuxt } from '../nuxt'
-import { clearError, navigateTo, throwError, useRuntimeConfig } from '#app'
+import { clearError, navigateTo, showError, useRuntimeConfig } from '#app'
 // @ts-ignore
 import { globalMiddleware } from '#build/middleware'
 
@@ -228,7 +228,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
             const error = result || createError({
               statusMessage: `Route navigation aborted: ${initialURL}`
             })
-            return callWithNuxt(nuxtApp, throwError, [error])
+            return callWithNuxt(nuxtApp, showError, [error])
           }
         }
         if (result || result === false) { return result }

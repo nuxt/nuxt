@@ -9,7 +9,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 import NuxtPage from './page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, throwError, clearError, navigateTo, useError } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -117,7 +117,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     await router.isReady()
   } catch (error) {
     // We'll catch 404s here
-    callWithNuxt(nuxtApp, throwError, [error])
+    callWithNuxt(nuxtApp, showError, [error])
   }
 
   router.beforeEach(async (to, from) => {
@@ -154,7 +154,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
           const error = result || createError({
             statusMessage: `Route navigation aborted: ${initialURL}`
           })
-          return callWithNuxt(nuxtApp, throwError, [error])
+          return callWithNuxt(nuxtApp, showError, [error])
         }
       }
       if (result || result === false) { return result }
@@ -169,7 +169,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       await callWithNuxt(nuxtApp, clearError)
     }
     if (to.matched.length === 0) {
-      callWithNuxt(nuxtApp, throwError, [createError({
+      callWithNuxt(nuxtApp, showError, [createError({
         statusCode: 404,
         statusMessage: `Page not found: ${to.fullPath}`
       })])
@@ -192,7 +192,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })
     } catch (error) {
       // We'll catch middleware errors or deliberate exceptions here
-      callWithNuxt(nuxtApp, throwError, [error])
+      callWithNuxt(nuxtApp, showError, [error])
     }
   })
 
