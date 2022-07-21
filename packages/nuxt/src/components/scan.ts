@@ -27,7 +27,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
-    for (const _file of await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })) {
+    const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+    for (const _file of files) {
       const filePath = join(dir.path, _file)
 
       if (scannedPaths.find(d => filePath.startsWith(d)) || isIgnored(filePath)) {

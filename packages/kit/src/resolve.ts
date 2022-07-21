@@ -148,5 +148,5 @@ async function existsSensitive (path: string) {
 
 export async function resolveFiles (path: string, pattern: string | string[]) {
   const files = await globby(pattern, { cwd: path, followSymbolicLinks: true })
-  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p))
+  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p)).sort()
 }
