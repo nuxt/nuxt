@@ -141,7 +141,7 @@ export async function initNitro (nuxt: Nuxt) {
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
-    if (nuxt.options._prepare) {
+    if (!nuxt.options.dev) {
       await scanHandlers(nitro)
       await writeTypes(nitro)
     }
