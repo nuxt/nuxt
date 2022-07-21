@@ -2,6 +2,7 @@ import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { addTemplate } from './template'
+import { resolveAlias } from './resolve'
 
 /**
  * Normalize a nuxt plugin object
@@ -19,7 +20,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   // Normalize full path to plugin
-  plugin.src = normalize(plugin.src)
+  plugin.src = normalize(resolveAlias(plugin.src))
 
   // Normalize mode
   if (plugin.ssr) {
