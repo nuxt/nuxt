@@ -18,6 +18,8 @@
 </template>
 
 <script setup>
+import { useRuntimeConfig } from '#imports'
+
 const config = useRuntimeConfig()
 
 const foo = useFoo()

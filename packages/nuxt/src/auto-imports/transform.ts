@@ -3,6 +3,7 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import { Unimport } from 'unimport'
 import { AutoImportsOptions } from '@nuxt/schema'
+import { normalize } from 'pathe'
 
 export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx: Unimport, options: Partial<AutoImportsOptions>, sourcemap?: boolean }) => {
   return {
@@ -12,15 +13,16 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const { type, macro } = parseQuery(search)
 
-      const exclude = options.transform?.exclude || [/[\\/]node_modules[\\/]/]
-      const include = options.transform?.include || []
-
-      // Custom includes - exclude node_modules by default
-      if (exclude.some(pattern => id.match(pattern)) && !include.some(pattern => id.match(pattern))) {
+      // Included
+      if (options.transform?.include?.some(pattern => id.match(pattern))) {
+        return true
+      }
+      // Excluded
+      if (options.transform?.exclude?.some(pattern => id.match(pattern))) {
         return false
       }
 
-      // vue files
+      // Vue files
       if (
         pathname.endsWith('.vue') &&
         (type === 'template' || type === 'script' || macro || !search)
@@ -28,19 +30,25 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx
         return true
       }
 
-      // js files
+      // JavaScript files
       if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
         return true
       }
     },
-    async transform (_code, id) {
-      const { code, s } = await ctx.injectImports(_code, id)
-      if (code === _code) {
+    async transform (code, id) {
+      id = normalize(id)
+      const isNodeModule = id.match(/[\\/]node_modules[\\/]/) && !options.transform?.include?.some(pattern => id.match(pattern))
+      // For modules in node_modules, we only transform `#imports` but not doing auto-imports
+      if (isNodeModule && !code.match(/(['"])#imports\1/)) {
         return
       }
-      return {
-        code,
-        map: sourcemap && s.generateMap({ source: id, includeContent: true })
+
+      const { s } = await ctx.injectImports(code, id, { autoImport: !isNodeModule })
+      if (s.hasChanged()) {
+        return {
+          code: s.toString(),
+          map: sourcemap && s.generateMap({ source: id, includeContent: true })
+        }
       }
     }
   }

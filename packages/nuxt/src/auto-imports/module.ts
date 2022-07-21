@@ -38,6 +38,7 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
     const ctx = createUnimport({
       presets: options.presets,
       imports: options.imports,
+      virtualImports: ['#imports'],
       addons: {
         vueTemplate: true
       }
@@ -58,7 +59,7 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
-      getContents: () => ctx.toExports()
+      getContents: () => ctx.toExports() + '\nif (process.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the auto-imports plugin.") }'
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
