@@ -42,7 +42,7 @@
     "nuxi": "link:./packages/nuxi",
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
-    "vite": "~3.0.0",
+    "vite": "~3.0.2",
     "unbuild": "^0.7.6"
   },
   "devDependencies": {
@@ -67,7 +67,7 @@
     "vitest": "^0.18.1",
     "vue-tsc": "^0.38.9"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@3.2.2",
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"
   }
