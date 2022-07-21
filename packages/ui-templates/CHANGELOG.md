@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.2](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.2.1...@nuxt/ui-templates@0.2.2) (2022-07-21)
+
+
+### Bug Fixes
+
+* inline global css that's not at beginning of line ([#141](https://github.com/nuxt/ui/issues/141)) ([adb0eb6](https://github.com/nuxt/ui/commit/adb0eb65ac33c2429e1122a4e24b39e1f83cb849))
+* **templates:** prevent scrollbars from appearing on loading screen ([#144](https://github.com/nuxt/ui/issues/144)) ([fbab1cb](https://github.com/nuxt/ui/commit/fbab1cb5b31dd9658d47f3c91c0fc45861b782fd))
+
+
+
+
+
 ## [0.2.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.2.0...@nuxt/ui-templates@0.2.1) (2022-07-12)
 
 **Note:** Version bump only for package @nuxt/ui-templates
