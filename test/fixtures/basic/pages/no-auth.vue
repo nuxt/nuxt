@@ -1,5 +1,6 @@
 <script setup>
 definePageMeta({
+  title: "l'equipe"
   // middleware: 'inject-auth'
 })
 </script>

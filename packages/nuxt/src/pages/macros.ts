@@ -98,6 +98,8 @@ const starts = {
   "'": "'"
 }
 
+const QUOTE_RE = /["']/
+
 function extractObject (code: string) {
   // Strip comments
   code = code.replace(/^\s*\/\/.*$/gm, '')
@@ -107,7 +109,7 @@ function extractObject (code: string) {
   do {
     if (stack[0] === code[0] && result.slice(-1) !== '\\') {
       stack.shift()
-    } else if (code[0] in starts) {
+    } else if (code[0] in starts && !QUOTE_RE.test(stack[0])) {
       stack.unshift(starts[code[0]])
     }
     result += code[0]
