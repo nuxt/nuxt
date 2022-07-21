@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/ui-templates",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "repository": "nuxt/ui",
   "license": "CC-BY-ND-4.0",
   "exports": {
