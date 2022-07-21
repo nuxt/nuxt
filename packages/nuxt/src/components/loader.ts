@@ -31,8 +31,8 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
       // we only transform render functions
-      // from `type=template` (in Webpack) and bare `.vue` file (in Vite)
-      return pathname.endsWith('.vue') && (query.type === 'template' || !!query.macro || !search)
+      // from `type=template` (in Webpack), bare `.vue` file and setup=true (Vite 2/3)
+      return pathname.endsWith('.vue') && (query.type === 'template' || !!query.macro || !!query.setup || !search)
     },
     transform (code, id) {
       const components = options.getComponents()

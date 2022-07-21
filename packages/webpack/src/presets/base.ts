@@ -196,7 +196,7 @@ function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] 
   const { options } = ctx
 
   return {
-    path: resolve(options.buildDir, 'dist', ctx.isServer ? 'server' : 'client'),
+    path: resolve(options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', options.app.buildAssetsDir)),
     filename: fileName(ctx, 'app'),
     chunkFilename: fileName(ctx, 'chunk'),
     publicPath: joinURL(options.app.baseURL, options.app.buildAssetsDir)

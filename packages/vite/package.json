@@ -21,8 +21,8 @@
   "dependencies": {
     "@nuxt/kit": "^3.0.0-rc.6",
     "@rollup/plugin-replace": "^4.0.0",
-    "@vitejs/plugin-vue": "^2.3.3",
-    "@vitejs/plugin-vue-jsx": "^1.3.10",
+    "@vitejs/plugin-vue": "^3.0.0",
+    "@vitejs/plugin-vue-jsx": "^2.0.0",
     "autoprefixer": "^10.4.7",
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.12",
@@ -47,7 +47,7 @@
     "rollup-plugin-visualizer": "^5.7.1",
     "ufo": "^0.8.5",
     "unplugin": "^0.7.2",
-    "vite": "^2.9.14",
+    "vite": "~3.0.0",
     "vite-node": "^0.18.1",
     "vite-plugin-checker": "^0.4.9"
   },

@@ -48,7 +48,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.17.7, @babel/core@npm:^7.17.9":
+"@babel/core@npm:^7.17.7, @babel/core@npm:^7.18.6":
   version: 7.18.6
   resolution: "@babel/core@npm:7.18.6"
   dependencies:
@@ -408,7 +408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-typescript@npm:^7.16.8":
+"@babel/plugin-transform-typescript@npm:^7.18.8":
   version: 7.18.8
   resolution: "@babel/plugin-transform-typescript@npm:7.18.8"
   dependencies:
@@ -1805,7 +1805,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.4.5
-    vite: ^2.9.14
+    vite: ~3.0.0
   languageName: unknown
   linkType: soft
 
@@ -1896,8 +1896,8 @@ __metadata:
     "@nuxt/schema": ^3.0.0-rc.6
     "@rollup/plugin-replace": ^4.0.0
     "@types/cssnano": ^5
-    "@vitejs/plugin-vue": ^2.3.3
-    "@vitejs/plugin-vue-jsx": ^1.3.10
+    "@vitejs/plugin-vue": ^3.0.0
+    "@vitejs/plugin-vue-jsx": ^2.0.0
     autoprefixer: ^10.4.7
     chokidar: ^3.5.3
     cssnano: ^5.1.12
@@ -1923,7 +1923,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.7.2
-    vite: ^2.9.14
+    vite: ~3.0.0
     vite-node: ^0.18.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
@@ -2277,7 +2277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^4.1.1, @rollup/pluginutils@npm:^4.2.0, @rollup/pluginutils@npm:^4.2.1":
+"@rollup/pluginutils@npm:^4.1.1, @rollup/pluginutils@npm:^4.2.1":
   version: 4.2.1
   resolution: "@rollup/pluginutils@npm:4.2.1"
   dependencies:
@@ -3014,27 +3014,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue-jsx@npm:^1.3.10":
-  version: 1.3.10
-  resolution: "@vitejs/plugin-vue-jsx@npm:1.3.10"
+"@vitejs/plugin-vue-jsx@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@vitejs/plugin-vue-jsx@npm:2.0.0"
   dependencies:
-    "@babel/core": ^7.17.9
+    "@babel/core": ^7.18.6
     "@babel/plugin-syntax-import-meta": ^7.10.4
-    "@babel/plugin-transform-typescript": ^7.16.8
-    "@rollup/pluginutils": ^4.2.0
+    "@babel/plugin-transform-typescript": ^7.18.8
     "@vue/babel-plugin-jsx": ^1.1.1
-    hash-sum: ^2.0.0
-  checksum: 868e90363e1234be43c3ced5097c8da430b9feed526c1f6c2dcc8a0546182e942018e6b5e1a0c16c66810b82cd17fa3a8e04ba969db6f253c6f7c490dce83a0b
+  peerDependencies:
+    vite: ^3.0.0
+    vue: ^3.0.0
+  checksum: 197b0dd0263b5b7df22a055155da6d9b7f21098f7de43e94589ce8daa494c12c9850157bc4e228a766fbe602aafa5935e4bef0edec9158a0507cee5581f0a067
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^2.3.3":
-  version: 2.3.3
-  resolution: "@vitejs/plugin-vue@npm:2.3.3"
+"@vitejs/plugin-vue@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@vitejs/plugin-vue@npm:3.0.0"
   peerDependencies:
-    vite: ^2.5.10
+    vite: ^3.0.0
     vue: ^3.2.25
-  checksum: 9303dcb9c8580d0ee9b33542639ac1a36ad9cc0e773a1f9b9b05623d74574f6a901ce781918b53f5a58eb3c6218ba96c27ef6efbf3e7ef6be16864fc1cae1626
+  checksum: e2c3e31afc39f83b16174ef4742e88e07b5516688f02dcbe9814afd62c859925173ec2d6a9f088c6098eb45cdae926122308596a8ece90028ffea169f15c685f
   languageName: node
   linkType: hard
 
@@ -5708,7 +5709,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.27, esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.49":
+"esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.49":
   version: 0.14.49
   resolution: "esbuild@npm:0.14.49"
   dependencies:
@@ -11353,7 +11354,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@npm:^1.1.7, resolve@npm:^1.10.0, resolve@npm:^1.10.1, resolve@npm:^1.17.0, resolve@npm:^1.19.0, resolve@npm:^1.20.0, resolve@npm:^1.22.0":
+"resolve@npm:^1.1.7, resolve@npm:^1.10.0, resolve@npm:^1.10.1, resolve@npm:^1.17.0, resolve@npm:^1.19.0, resolve@npm:^1.20.0, resolve@npm:^1.22.0, resolve@npm:^1.22.1":
   version: 1.22.1
   resolution: "resolve@npm:1.22.1"
   dependencies:
@@ -11366,7 +11367,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@^1.1.7#~builtin<compat/resolve>, resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.10.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.17.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.19.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.0#~builtin<compat/resolve>":
+"resolve@patch:resolve@^1.1.7#~builtin<compat/resolve>, resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.10.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.17.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.19.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.1#~builtin<compat/resolve>":
   version: 1.22.1
   resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=07638b"
   dependencies:
@@ -11512,7 +11513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.59.0, rollup@npm:^2.76.0":
+"rollup@npm:^2.75.6, rollup@npm:^2.76.0":
   version: 2.76.0
   resolution: "rollup@npm:2.76.0"
   dependencies:
@@ -13217,19 +13218,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.14":
-  version: 2.9.14
-  resolution: "vite@npm:2.9.14"
+"vite@npm:~3.0.0":
+  version: 3.0.0
+  resolution: "vite@npm:3.0.0"
   dependencies:
-    esbuild: ^0.14.27
+    esbuild: ^0.14.47
     fsevents: ~2.3.2
-    postcss: ^8.4.13
-    resolve: ^1.22.0
-    rollup: ^2.59.0
+    postcss: ^8.4.14
+    resolve: ^1.22.1
+    rollup: ^2.75.6
   peerDependencies:
     less: "*"
     sass: "*"
     stylus: "*"
+    terser: ^5.4.0
   dependenciesMeta:
     fsevents:
       optional: true
@@ -13240,9 +13242,11 @@ __metadata:
       optional: true
     stylus:
       optional: true
+    terser:
+      optional: true
   bin:
     vite: bin/vite.js
-  checksum: f78b54f58482ea97d385e36873ae1aa4744c5e467c1d6d4e0835bd55494d2d8f6ce763f17c241c66104be687d5ee535b8e1e96c14210c9ba0c343fe78c58f694
+  checksum: 4920b5b0a4d4bd4a003121b2eb6ed41ac2ab69e6ab055db645e678c14e68d6eef780362d4d482cf439b576c37fb65dc9a7ebbbf90354e7ae362034a28eac9130
   languageName: node
   linkType: hard
 

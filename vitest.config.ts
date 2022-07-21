@@ -3,9 +3,11 @@ import { defineConfig } from 'vite'
 import { isWindows } from 'std-env'
 
 export default defineConfig({
-  alias: {
-    '#app': resolve('./packages/nuxt/src/app/index.ts'),
-    '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
+  resolve: {
+    alias: {
+      '#app': resolve('./packages/nuxt/src/app/index.ts'),
+      '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
+    }
   },
   esbuild: {
     tsconfigRaw: '{}'

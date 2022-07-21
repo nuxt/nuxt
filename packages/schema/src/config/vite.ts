@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { joinURL, withoutLeadingSlash } from 'ufo'
+import { withoutLeadingSlash } from 'ufo'
 
 export default {
   /**
@@ -27,11 +27,6 @@ export default {
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
-    },
-    base: {
-      $resolve: (val, get) => val ?? get('dev')
-      ? joinURL(get('app').baseURL, get('app').buildAssetsDir)
-      : '/__NUXT_BASE__/',
     },
     publicDir: {
       $resolve: (val, get) => val ?? resolve(get('srcDir'), get('dir').public),
@@ -61,7 +56,7 @@ export default {
     clearScreen: false,
     build: {
       assetsDir: {
-        $resolve: (val, get) => val ?? get('dev') ? withoutLeadingSlash(get('app').buildAssetsDir) : '.',
+        $resolve: (val, get) => val ?? withoutLeadingSlash(get('app').buildAssetsDir),
       },
       emptyOutDir: false,
     },

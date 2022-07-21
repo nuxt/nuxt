@@ -3,6 +3,7 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL, withQuery } from 'ufo'
 import { findStaticImports, findExports } from 'mlly'
 import MagicString from 'magic-string'
+import { isAbsolute } from 'pathe'
 
 export interface TransformMacroPluginOptions {
   macros: Record<string, string>
@@ -48,7 +49,8 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
       if (scriptImport) {
         // https://github.com/vuejs/vue-loader/pull/1911
         // https://github.com/vitejs/vite/issues/8473
-        const parsed = parseURL(scriptImport.specifier.replace('?macro=true', ''))
+        const url = isAbsolute(scriptImport.specifier) ? pathToFileURL(scriptImport.specifier).href : scriptImport.specifier
+        const parsed = parseURL(decodeURIComponent(url).replace('?macro=true', ''))
         const specifier = withQuery(parsed.pathname, { macro: 'true', ...parseQuery(parsed.search) })
         s.overwrite(0, code.length, `export { meta } from "${specifier}"`)
         return result()

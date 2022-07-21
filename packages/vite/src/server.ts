@@ -1,23 +1,40 @@
-import { resolve, join, normalize } from 'pathe'
+import { resolve, normalize } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule, isIgnored } from '@nuxt/kit'
 import fse from 'fs-extra'
 import { debounce } from 'perfect-debounce'
-import { withoutTrailingSlash } from 'ufo'
+import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { prepareDevServerEntry } from './vite-node'
-import { isCSS, isDirectory, readDirRecursively } from './utils'
+import { isCSS } from './utils'
 import { bundleRequest } from './dev-bundler'
 import { writeManifest } from './manifest'
-import { RelativeAssetPlugin } from './plugins/dynamic-base'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const _resolve = id => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
+    base: ctx.nuxt.options.dev
+      ? joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
+      : undefined,
+    experimental: {
+      renderBuiltUrl: (filename, { type, hostType }) => {
+        if (hostType !== 'js') {
+          // In CSS we only use relative paths until we craft a clever runtime CSS hack
+          return { relative: true }
+        }
+        if (type === 'public') {
+          return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
+        }
+        if (type === 'asset') {
+          const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir)), '')
+          return { runtime: `globalThis.__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
+        }
+      }
+    },
     define: {
       'process.server': true,
       'process.client': false,
@@ -30,21 +47,22 @@ export async function buildServer (ctx: ViteBuildContext) {
     resolve: {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
-        // Alias vue to ensure we're using the same context in development
-        'vue/server-renderer': _resolve('vue/server-renderer'),
-        'vue/compiler-sfc': _resolve('vue/compiler-sfc'),
-        ...ctx.nuxt.options.experimental.externalVue
+        ...ctx.nuxt.options.experimental.externalVue || ctx.nuxt.options.dev
           ? {}
           : {
               '@vue/reactivity': _resolve(`@vue/reactivity/dist/reactivity.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
               '@vue/shared': _resolve(`@vue/shared/dist/shared.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
-              'vue-router': _resolve(`vue-router/dist/vue-router.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`)
-            },
-        vue: _resolve(`vue/dist/vue.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`)
+              'vue-router': _resolve(`vue-router/dist/vue-router.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`),
+              'vue/server-renderer': _resolve('vue/server-renderer'),
+              'vue/compiler-sfc': _resolve('vue/compiler-sfc'),
+              vue: _resolve(`vue/dist/vue.cjs${ctx.nuxt.options.dev ? '' : '.prod'}.js`)
+            }
       }
     },
     ssr: {
-      external: ctx.nuxt.options.experimental.externalVue ? ['#internal/nitro', 'vue', 'vue-router'] : ['#internal/nitro'],
+      external: ctx.nuxt.options.experimental.externalVue
+        ? ['#internal/nitro', '#internal/nitro/utils', 'vue', 'vue-router']
+        : ['#internal/nitro', '#internal/nitro/utils'],
       noExternal: [
         ...ctx.nuxt.options.build.transpile,
         // TODO: Use externality for production (rollup) build
@@ -81,7 +99,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      RelativeAssetPlugin(),
       vuePlugin(ctx.config.vue),
       viteJsxPlugin()
     ]
@@ -94,37 +111,6 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
-
-  ctx.nuxt.hook('nitro:build:before', async () => {
-    if (ctx.nuxt.options.dev) {
-      return
-    }
-    const clientDist = resolve(ctx.nuxt.options.buildDir, 'dist/client')
-
-    // Remove public files that have been duplicated into buildAssetsDir
-    // TODO: Add option to configure this behavior in vite
-    const publicDir = join(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.public)
-    let publicFiles: string[] = []
-    if (await isDirectory(publicDir)) {
-      publicFiles = readDirRecursively(publicDir).map(r => r.replace(publicDir, ''))
-      for (const file of publicFiles) {
-        try {
-          fse.rmSync(join(clientDist, file))
-        } catch {}
-      }
-    }
-
-    // Copy doubly-nested /_nuxt/_nuxt files into buildAssetsDir
-    // TODO: Workaround vite issue
-    if (await isDirectory(clientDist)) {
-      const nestedAssetsPath = withoutTrailingSlash(join(clientDist, ctx.nuxt.options.app.buildAssetsDir))
-
-      if (await isDirectory(nestedAssetsPath)) {
-        await fse.copy(nestedAssetsPath, clientDist, { recursive: true })
-        await fse.remove(nestedAssetsPath)
-      }
-    }
-  })
 
   const onBuild = () => ctx.nuxt.callHook('build:resources', wpfs)
 

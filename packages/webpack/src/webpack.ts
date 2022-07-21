@@ -8,8 +8,8 @@ import type { Compiler, Watching } from 'webpack'
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
-import { DynamicBasePlugin } from '../../vite/src/plugins/dynamic-base'
 import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
+import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { createMFS } from './utils/mfs'
 import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
@@ -35,8 +35,7 @@ export async function bundle (nuxt: Nuxt) {
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
     config.plugins.push(DynamicBasePlugin.webpack({
-      sourcemap: nuxt.options.sourcemap,
-      globalPublicPath: '__webpack_public_path__'
+      sourcemap: nuxt.options.sourcemap
     }))
     config.plugins.push(composableKeysPlugin.webpack({
       sourcemap: nuxt.options.sourcemap,
