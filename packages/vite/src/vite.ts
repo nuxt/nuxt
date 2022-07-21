@@ -97,7 +97,7 @@ export async function bundle (nuxt: Nuxt) {
     // Invalidate virtual modules when templates are re-generated
     ctx.nuxt.hook('app:templatesGenerated', () => {
       for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-        if (id.startsWith('\x00virtual:')) {
+        if (id.startsWith('virtual:')) {
           server.moduleGraph.invalidateModule(mod)
         }
       }
