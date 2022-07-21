@@ -48,9 +48,11 @@ export const clientPluginTemplate = {
   filename: 'plugins/client.mjs',
   getContents (ctx: TemplateContext) {
     const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
+    const rootDir = ctx.nuxt.options.rootDir
+    const { imports, exports } = templateUtils.importSources(clientPlugins.map(p => p.src), rootDir)
     return [
-      templateUtils.importSources(clientPlugins.map(p => p.src)),
-      `export default ${genArrayFromRaw(clientPlugins.map(p => genSafeVariableName(p.src)))}`
+      ...imports,
+      `export default ${genArrayFromRaw(exports)}`
     ].join('\n')
   }
 }
@@ -59,12 +61,14 @@ export const serverPluginTemplate = {
   filename: 'plugins/server.mjs',
   getContents (ctx: TemplateContext) {
     const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
+    const rootDir = ctx.nuxt.options.rootDir
+    const { imports, exports } = templateUtils.importSources(serverPlugins.map(p => p.src), rootDir)
     return [
       "import preload from '#app/plugins/preload.server'",
-      templateUtils.importSources(serverPlugins.map(p => p.src)),
+      ...imports,
       `export default ${genArrayFromRaw([
         'preload',
-        ...serverPlugins.map(p => genSafeVariableName(p.src))
+        ...exports
       ])}`
     ].join('\n')
   }
