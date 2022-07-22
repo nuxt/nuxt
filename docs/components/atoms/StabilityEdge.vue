@@ -1,8 +1,10 @@
 <template>
   <Alert icon="🧪">
-    {{ title }} is available on edge channel. Check out the <Link to="/guide/going-further/edge-channel">
-      Edge Channel Documentation
+    {{ title }} is available on edge channel. Check out the
+    <Link to="/guide/going-further/edge-channel">
+    Edge Channel Documentation
     </Link> to beta test.
+    <slot />
   </Alert>
 </template>
 
