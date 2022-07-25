@@ -49,7 +49,7 @@
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.45",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.44.5",
+    "@unocss/reset": "^0.44.7",
     "case-police": "^0.5.6",
     "changelogen": "^0.1.1",
     "eslint": "^8.20.0",
@@ -58,14 +58,14 @@
     "expect-type": "^0.13.0",
     "globby": "^13.1.2",
     "jiti": "^1.14.0",
-    "lerna": "^5.1.8",
+    "lerna": "^5.2.0",
     "markdownlint-cli": "^0.32.0",
     "pathe": "^0.3.2",
     "rimraf": "^3.0.2",
     "typescript": "^4.7.4",
     "unbuild": "^0.7.6",
-    "vitest": "^0.18.1",
-    "vue-tsc": "^0.38.9"
+    "vitest": "^0.19.0",
+    "vue-tsc": "^0.39.0"
   },
   "packageManager": "yarn@3.2.2",
   "engines": {
