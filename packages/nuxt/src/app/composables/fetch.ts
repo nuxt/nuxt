@@ -1,4 +1,4 @@
-import type { FetchOptions, FetchRequest } from 'ohmyfetch'
+import type { FetchOptions } from 'ohmyfetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
 import { computed, isRef, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
@@ -48,11 +48,11 @@ export function useFetch<
   const key = '$f' + _key
 
   const _request = computed(() => {
-    let r = request as Ref<FetchRequest> | FetchRequest | (() => FetchRequest)
+    let r = request
     if (typeof r === 'function') {
       r = r()
     }
-    return (isRef(r) ? r.value : r) as NitroFetchRequest
+    return (isRef(r) ? r.value : r)
   })
 
   const {
@@ -85,7 +85,7 @@ export function useFetch<
   }
 
   const asyncData = useAsyncData<_ResT, ErrorT, Transform, PickKeys>(key, () => {
-    return $fetch(_request.value, _fetchOptions)
+    return $fetch(_request.value, _fetchOptions) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
