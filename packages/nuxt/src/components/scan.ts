@@ -4,6 +4,7 @@ import { pascalCase, splitByCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { isIgnored } from '@nuxt/kit'
 import { hyphenate } from '@vue/shared'
+import { withTrailingSlash } from 'ufo'
 
 /**
  * Scan the components inside different components folders
@@ -31,7 +32,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     for (const _file of files) {
       const filePath = join(dir.path, _file)
 
-      if (scannedPaths.find(d => filePath.startsWith(d)) || isIgnored(filePath)) {
+      if (scannedPaths.find(d => filePath.startsWith(withTrailingSlash(d))) || isIgnored(filePath)) {
         continue
       }
 
