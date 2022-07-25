@@ -1,9 +1,10 @@
 import { execSync } from 'node:child_process'
-import { promises as fsp, existsSync } from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import consola from 'consola'
 import { resolve } from 'pathe'
 import { resolveModule } from '../utils/cjs'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
+import { cleanupNuxtDirs, rmRecursive } from '../utils/fs'
 import { defineNuxtCommand } from './index'
 
 async function getNuxtVersion (paths: string | string[]) {
@@ -37,16 +38,16 @@ export default defineNuxtCommand({
 
     if (args.force || args.f) {
       consola.info('Removing lock-file and node_modules...')
-      await Promise.all([
-        fsp.rm(packageManagerLocks[packageManager]),
+      await rmRecursive([
+        packageManagerLocks[packageManager],
         fsp.rm('node_modules', { recursive: true })
       ])
+      await cleanupNuxtDirs(rootDir)
+      consola.info('Installing nuxt...')
       execSync(`${packageManager} install`, { stdio: 'inherit' })
     } else {
+      await cleanupNuxtDirs(rootDir)
       consola.info('Upgrading nuxt...')
-      await Promise.all(['node_modules/.cache', resolve(rootDir, '.nuxt'), 'node_modules/.vite'].map((path) => {
-        return existsSync(path) ? fsp.rm(path, { recursive: true }) : undefined
-      }))
       execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit' })
     }
 
