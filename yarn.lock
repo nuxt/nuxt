@@ -1697,7 +1697,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.3
-    vite: ~3.0.2
+    vite: ~3.0.3
   languageName: unknown
   linkType: soft
 
@@ -1815,7 +1815,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.7.2
-    vite: ~3.0.2
+    vite: ~3.0.3
     vite-node: ^0.19.0
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
@@ -1868,7 +1868,7 @@ __metadata:
     url-loader: ^4.1.1
     vue: 3.2.37
     vue-loader: ^17.0.0
-    webpack: ^5.73.0
+    webpack: ^5.74.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-dev-middleware: ^5.3.3
     webpack-hot-middleware: ^2.25.1
@@ -13182,7 +13182,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~3.0.2":
+"vite@npm:~3.0.3":
   version: 3.0.3
   resolution: "vite@npm:3.0.3"
   dependencies:
@@ -13533,7 +13533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.73.0":
+"webpack@npm:^5, webpack@npm:^5.38.1, webpack@npm:^5.74.0":
   version: 5.74.0
   resolution: "webpack@npm:5.74.0"
   dependencies:
