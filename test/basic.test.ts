@@ -145,6 +145,12 @@ describe('head tags', () => {
     // should render <Head> components
     expect(index).toContain('<title>Basic fixture - Fixture</title>')
   })
+
+  // TODO: Doesn't adds header in test environment
+  // it.todo('should render stylesheet link tag (SPA mode)', async () => {
+  //   const html = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+  //   expect(html).toMatch(/<link rel="stylesheet" href="\/_nuxt\/[^>]*.css"/)
+  // })
 })
 
 describe('navigate', () => {
