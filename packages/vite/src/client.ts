@@ -94,7 +94,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
     await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
-    const BASE_RE = new RegExp(`^${escapeRE(withTrailingSlash(withLeadingSlash(joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir))))}`)
+    const baseURL = joinURL(ctx.nuxt.options.app.baseURL.replace(/^\./, '') || '/', ctx.nuxt.options.app.buildAssetsDir)
+    const BASE_RE = new RegExp(`^${escapeRE(withTrailingSlash(withLeadingSlash(baseURL)))}`)
     const viteMiddleware: Connect.NextHandleFunction = (req, res, next) => {
       // Workaround: vite devmiddleware modifies req.url
       const originalURL = req.url

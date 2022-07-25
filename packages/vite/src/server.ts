@@ -18,7 +18,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const _resolve = id => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     base: ctx.nuxt.options.dev
-      ? joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
+      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : undefined,
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {

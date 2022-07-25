@@ -28,7 +28,9 @@ export async function writeManifest (ctx: ViteBuildContext, extraEntries: string
     ? devClientManifest
     : await fse.readJSON(resolve(clientDist, 'manifest.json'))
 
-  const BASE_RE = new RegExp(`^${escapeRE(withTrailingSlash(withoutLeadingSlash(joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir))))}`)
+  const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir))
+  const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
+
   for (const key in clientManifest) {
     if (clientManifest[key].file) {
       clientManifest[key].file = clientManifest[key].file.replace(BASE_RE, '')
