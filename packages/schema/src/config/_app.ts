@@ -111,7 +111,8 @@ export default {
           meta: [],
           link: [],
           style: [],
-          script: []
+          script: [],
+          noscript: []
         })
       }
     },
