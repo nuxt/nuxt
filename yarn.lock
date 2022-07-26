@@ -1742,9 +1742,9 @@ __metadata:
     get-port-please: ^2.5.0
     jiti: ^1.14.0
     ohmyfetch: ^0.4.18
-    playwright: ^1.24.0
+    playwright: ^1.24.1
     unbuild: latest
-    vitest: ^0.19.0
+    vitest: ^0.19.1
   peerDependencies:
     vue: ^3.2.37
   languageName: unknown
@@ -1811,13 +1811,13 @@ __metadata:
     postcss: ^8.4.14
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
-    rollup: ^2.77.0
+    rollup: ^2.77.1
     rollup-plugin-visualizer: ^5.7.1
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.7.2
+    unplugin: ^0.8.0
     vite: ~3.0.3
-    vite-node: ^0.19.0
+    vite-node: ^0.19.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
   peerDependencies:
@@ -1865,7 +1865,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.7.2
+    unplugin: ^0.8.0
     url-loader: ^4.1.1
     vue: 3.2.37
     vue-loader: ^17.0.0
@@ -3462,7 +3462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.0.4, acorn@npm:^8.5.0, acorn@npm:^8.6.0, acorn@npm:^8.7.0, acorn@npm:^8.7.1":
+"acorn@npm:^8.0.4, acorn@npm:^8.5.0, acorn@npm:^8.6.0, acorn@npm:^8.7.0, acorn@npm:^8.7.1, acorn@npm:^8.8.0":
   version: 8.8.0
   resolution: "acorn@npm:8.8.0"
   bin:
@@ -8696,9 +8696,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdownlint-cli@npm:^0.32.0":
-  version: 0.32.0
-  resolution: "markdownlint-cli@npm:0.32.0"
+"markdownlint-cli@npm:^0.32.1":
+  version: 0.32.1
+  resolution: "markdownlint-cli@npm:0.32.1"
   dependencies:
     commander: ~9.4.0
     get-stdin: ~9.0.0
@@ -8706,24 +8706,24 @@ __metadata:
     ignore: ~5.2.0
     js-yaml: ^4.1.0
     jsonc-parser: ~3.1.0
-    markdownlint: ~0.26.0
-    markdownlint-rule-helpers: ~0.17.0
+    markdownlint: ~0.26.1
+    markdownlint-rule-helpers: ~0.17.1
     minimatch: ~5.1.0
     run-con: ~1.2.11
   bin:
     markdownlint: markdownlint.js
-  checksum: 63a22ea0b0db4bfcb11830514b921d19d58c3a7763a1ed4652cef744a791af3384ac79198be29720ee3a7a9ed4b334a9543bab52e990f3a821644155a3f9c3af
+  checksum: 094b559ef0dd2b05ba8da7fc6ceec5ba116af04049c25ab947585d009439ba289b62d6ebbb7f0f8065c0ac30a9d4f9430ee0fdbc1560624052662e3ee0b4b79a
   languageName: node
   linkType: hard
 
-"markdownlint-rule-helpers@npm:~0.17.0":
+"markdownlint-rule-helpers@npm:~0.17.1":
   version: 0.17.1
   resolution: "markdownlint-rule-helpers@npm:0.17.1"
   checksum: 0d6db4f5a20abcdc7ee8bd23311a726b573da056ae2d9063c4364a80f992ff0aaaad06cc01ab126a53c269e3e5971984f30f90fce82d1ccd351cbe1284608487
   languageName: node
   linkType: hard
 
-"markdownlint@npm:~0.26.0":
+"markdownlint@npm:~0.26.1":
   version: 0.26.1
   resolution: "markdownlint@npm:0.26.1"
   dependencies:
@@ -9711,12 +9711,12 @@ __metadata:
     globby: ^13.1.2
     jiti: ^1.14.0
     lerna: ^5.2.0
-    markdownlint-cli: ^0.32.0
+    markdownlint-cli: ^0.32.1
     pathe: ^0.3.2
     rimraf: ^3.0.2
     typescript: ^4.7.4
     unbuild: ^0.7.6
-    vitest: ^0.19.0
+    vitest: ^0.19.1
     vue-tsc: ^0.39.0
   languageName: unknown
   linkType: soft
@@ -9776,7 +9776,7 @@ __metadata:
     unctx: ^1.1.4
     unenv: ^0.5.2
     unimport: ^0.6.3
-    unplugin: ^0.7.2
+    unplugin: ^0.8.0
     untyped: ^0.4.4
     vue: ^3.2.37
     vue-bundle-renderer: ^0.3.9
@@ -10416,23 +10416,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.24.0":
-  version: 1.24.0
-  resolution: "playwright-core@npm:1.24.0"
+"playwright-core@npm:1.24.1":
+  version: 1.24.1
+  resolution: "playwright-core@npm:1.24.1"
   bin:
     playwright: cli.js
-  checksum: 3744ec66e09b007f066efa9deb75f71627e302561ddb9ab42dbcd7140dad18079690dd97030423df7f6a1c03a8c20f3aac7c2a4bf28810bafd58d51e695d8aa7
+  checksum: cad6a43ebb12c99e13c8f5a105ba558cfdd8e5e72e36e2afe47e9f834abd42eab04beb0a73ffcbff28bf0d0ae95e59dc005bc123f6eb562c6f1866cc90f3ed76
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.24.0":
-  version: 1.24.0
-  resolution: "playwright@npm:1.24.0"
+"playwright@npm:^1.24.1":
+  version: 1.24.1
+  resolution: "playwright@npm:1.24.1"
   dependencies:
-    playwright-core: 1.24.0
+    playwright-core: 1.24.1
   bin:
     playwright: cli.js
-  checksum: 5ae6ae7b6a72ca975a1d0114d307e6b211ec6aebd9f59fd4802605871bde61649f49814acc9eadc666bfa92decd7e72344650383f5638121b7bd2e3baf109d15
+  checksum: b8931abb7fc39845a3be6ba118abb36f0e294275c62e50d65f67695c2b8ef8b9f6d9a94fad30c76fb9025f13c6fd44a7acfca8e957f35fd574b93bc26dfc3024
   languageName: node
   linkType: hard
 
@@ -11492,6 +11492,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 74ccc98429709984a89af636250833e7502d87f1d9c6d96ebfe4b52030ebf94b9f6b84b8ab476670329a61d54b681d35eecdc601bac5b5396b099b1ea69970ef
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.77.1":
+  version: 2.77.1
+  resolution: "rollup@npm:2.77.1"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 57a03a2490cd12008ab96d8ed98f6551bf2c4e328f0bceffdaa8a67a98acaa6221bc9294fc459c800324d8459c0837716c1f428ac2680beddd6bc20e1d8cb98a
   languageName: node
   linkType: hard
 
@@ -13013,6 +13027,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unplugin@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "unplugin@npm:0.8.0"
+  dependencies:
+    acorn: ^8.8.0
+    chokidar: ^3.5.3
+    webpack-sources: ^3.2.3
+    webpack-virtual-modules: ^0.4.4
+  peerDependencies:
+    esbuild: ">=0.13"
+    rollup: ^2.50.0
+    vite: ^2.3.0 || ^3.0.0-0
+    webpack: 4 || 5
+  peerDependenciesMeta:
+    esbuild:
+      optional: true
+    rollup:
+      optional: true
+    vite:
+      optional: true
+    webpack:
+      optional: true
+  checksum: 116052627de4b015ce6b856bfb589647390591cd4bd49120475ea591e14706d8ce3992f522192b222c6956a08afe361abd76d8139d028323fecc9821a5d8e5e5
+  languageName: node
+  linkType: hard
+
 "unstorage@npm:^0.5.4":
   version: 0.5.5
   resolution: "unstorage@npm:0.5.5"
@@ -13141,9 +13181,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "vite-node@npm:0.19.0"
+"vite-node@npm:^0.19.1":
+  version: 0.19.1
+  resolution: "vite-node@npm:0.19.1"
   dependencies:
     debug: ^4.3.4
     kolorist: ^1.5.1
@@ -13152,7 +13192,7 @@ __metadata:
     vite: ^2.9.12 || ^3.0.0-0
   bin:
     vite-node: vite-node.mjs
-  checksum: 5866372c5ec8d53a14559fbab464216a502aa6f7496d22972658ca74fb66e3c6967a876e7fe238f8eacf67696a2d349e92d8e4f58bc980104d82a6221bb7cc5b
+  checksum: 7a38f956321136ed9061504009ad39b59b3341224c25337714eb8de2f5e4ef04336b9095b95786b0e5fa220da9212429174dec2362709df24e5c075afe28bfff
   languageName: node
   linkType: hard
 
@@ -13215,9 +13255,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "vitest@npm:0.19.0"
+"vitest@npm:^0.19.1":
+  version: 0.19.1
+  resolution: "vitest@npm:0.19.1"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13250,7 +13290,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 95be09926e8379a704fe2ffe4a3a9958c0b0cbd2b61f4fafe9c12b5e5ed7a27300e62dc820031f70288b8cfd3d49d7c98eaa42448efd7627f8f857d70d04ecf8
+  checksum: f5f6bd69f2c196c072d9729805323d31dce06240cd18218e1b4387502d8c0f9cc4d2fad1e1f99a0fcbfe187d5c5e04d4ea2dd352cb99d3f06227b343e5cb4c6d
   languageName: node
   linkType: hard
 
