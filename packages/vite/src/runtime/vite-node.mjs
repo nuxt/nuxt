@@ -22,6 +22,11 @@ export default async (ssrContext) => {
   process.server = true
   render = render || (await runner.executeFile(viteNodeOptions.entryPath)).default
   const result = await render(ssrContext)
-  runner.moduleCache.clear()
+  // reset cache for non-node-modules
+  for (const key of runner.moduleCache.keys()) {
+    if (!key.includes('/node_modules/')) {
+      runner.moduleCache.delete(key)
+    }
+  }
   return result
 }
