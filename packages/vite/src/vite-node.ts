@@ -5,6 +5,8 @@ import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
 import type { Plugin as VitePlugin, ViteDevServer } from 'vite'
+import { ExternalsOptions, isExternal, ExternalsDefaults } from 'externality'
+import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
@@ -56,7 +58,8 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
   }))
 
   app.use('/module', defineLazyEventHandler(() => {
-    const node: ViteNodeServer = new ViteNodeServer(ctx.ssrServer, {
+    const viteServer = ctx.ssrServer
+    const node: ViteNodeServer = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
           /\/(nuxt|nuxt3)\//,
@@ -69,6 +72,31 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
         web: []
       }
     })
+    const externalOpts: ExternalsOptions = {
+      inline: [
+        /virtual:/,
+        /\.ts$/,
+        ...ExternalsDefaults.inline,
+        ...viteServer.config.ssr.noExternal as string[]
+      ],
+      external: [
+        ...viteServer.config.ssr.external,
+        /node_modules/
+      ],
+      resolve: {
+        type: 'module',
+        extensions: ['.ts', '.js', '.json', '.vue', '.mjs', '.jsx', '.tsx', '.wasm']
+      }
+    }
+    const rootDir = ctx.nuxt.options.rootDir
+    node.shouldExternalize = async (id: string) => {
+      const result = await isExternal(id, rootDir, externalOpts)
+      if (result?.external) {
+        return resolveModule(result.id, { url: rootDir })
+      }
+      return false
+    }
+
     return async (event) => {
       const moduleId = decodeURI(event.req.url).substring(1)
       if (moduleId === '/') {
