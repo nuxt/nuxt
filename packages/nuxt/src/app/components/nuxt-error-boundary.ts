@@ -2,6 +2,11 @@ import { defineComponent, ref, onErrorCaptured } from 'vue'
 import { useNuxtApp } from '#app'
 
 export default defineComponent({
+  emits: {
+    error (_error: unknown) {
+      return true
+    }
+  },
   setup (_props, { slots, emit }) {
     const error = ref(null)
     const nuxtApp = useNuxtApp()
