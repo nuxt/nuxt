@@ -21,10 +21,12 @@ export interface MetaObject extends Record<string, any> {
   style?: Array<Record<string, any>>
   /** Each item in the array maps to a newly-created `<script>` element, where object properties map to attributes. */
   script?: Array<Record<string, any>>
+  /** Each item in the array maps to a newly-created `<noscript>` element, where object properties map to attributes. */
+  noscript?: Array<Record<string, any>>
 
   titleTemplate?: string | ((title: string) => string)
   title?: string
-  
+
   bodyAttrs?: Record<string, any>
   htmlAttrs?: Record<string, any>
 }

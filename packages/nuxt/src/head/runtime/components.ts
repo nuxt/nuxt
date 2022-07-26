@@ -86,6 +86,29 @@ export const Script = defineComponent({
   }))
 })
 
+// <noscript>
+export const NoScript = defineComponent({
+  name: 'NoScript',
+  inheritAttrs: false,
+  props: {
+    ...globalProps,
+    title: String
+  },
+  setup: setupForUseMeta((props, { slots }) => {
+    const noscript = { ...props }
+    const textContent = (slots.default?.() || [])
+      .filter(({ children }) => children)
+      .map(({ children }) => children)
+      .join('')
+    if (textContent) {
+      noscript.children = textContent
+    }
+    return {
+      noscript: [noscript]
+    }
+  })
+})
+
 // <link>
 export const Link = defineComponent({
   name: 'Link',

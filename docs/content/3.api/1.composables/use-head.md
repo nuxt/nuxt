@@ -4,7 +4,7 @@
 
 Nuxt provides a composable to update the head properties of your page with an [`MetaObject`](/api/composables/use-head/#metaobject) of meta properties with keys corresponding to meta tags:
 
-`title`, `base`, `script`, `style`, `meta` and `link`, as well as `htmlAttrs` and `bodyAttrs`. Alternatively, you can pass a function returning the object for reactive metadata.
+`title`, `base`, `script`, `noscript`, `style`, `meta` and `link`, as well as `htmlAttrs` and `bodyAttrs`. Alternatively, you can pass a function returning the object for reactive metadata.
 
 ```js
 useHead(options: MetaObject)
@@ -43,5 +43,6 @@ export default {
 * **link**: array, each item maps to a newly-created `<link>` element, where object properties map to attributes.
 * **style**: array, each item maps to a newly-created `<style>` element, where object properties map to attributes.
 * **script**: array, each item maps to a newly-created `<script>` element, where object properties map to attributes.
+* **noscript**: array, each item maps to a newly-created `<noscript>` element, where object properties map to attributes.
 
 All elements in the meta object are optional. You can also pass only single values.
