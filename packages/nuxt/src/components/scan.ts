@@ -62,8 +62,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
-      const mode = fileName.match(/(?<=\.)(client|server)$/)?.[0] as 'client' | 'server' || 'all'
-      fileName = fileName.replace(/\.(client|server)$/, '')
+      const global = /\.(global)$/.test(fileName) || dir.global
+      const mode = fileName.match(/(?<=\.)(client|server)(\.global)?$/)?.[1] as 'client' | 'server' || 'all'
+      fileName = fileName.replace(/(\.(client|server))?(\.global)?$/, '')
 
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
@@ -103,16 +104,18 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const chunkName = 'components/' + kebabName + suffix
 
       let component: Component = {
+        // inheritable from directory configuration
+        mode,
+        global,
+        prefetch: Boolean(dir.prefetch),
+        preload: Boolean(dir.preload),
+        // specific to the file
         filePath,
         pascalName,
         kebabName,
         chunkName,
         shortPath,
-        export: 'default',
-        global: dir.global,
-        prefetch: Boolean(dir.prefetch),
-        preload: Boolean(dir.preload),
-        mode
+        export: 'default'
       }
 
       if (typeof dir.extendComponent === 'function') {

@@ -14,6 +14,8 @@
     </NuxtLink>
     <SugarCounter :count="12" />
     <CustomComponent />
+    <component :is="`test${'-'.toString()}global`" />
+    <component :is="`with${'-'.toString()}suffix`" />
   </div>
 </template>
 

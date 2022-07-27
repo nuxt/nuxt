@@ -18,7 +18,7 @@ export default {
         return { dirs: val }
       }
       if (val === undefined || val === true) {
-        return { dirs: ['~/components'] }
+        return { dirs: [{ path: '~/components/global', global: true }, '~/components'] }
       }
       return val
     }
