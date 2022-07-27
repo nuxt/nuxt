@@ -13,7 +13,7 @@ export default {
      * Properties that will be set directly on `Vue.config` for vue@2.
      *
      * @see [vue@2 Documentation](https://v2.vuejs.org/v2/api/#Global-Config)
-     * @type {import('vue/types/vue').VueConfiguration}
+     * @type {typeof import('vue/types/vue').VueConfiguration}
      * @version 2
      */
     config: {
@@ -23,7 +23,7 @@ export default {
     /**
      * Options for the Vue compiler that will be passed at build time
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
-     * @type {import('@vue/compiler-core').CompilerOptions}
+     * @type {typeof import('@vue/compiler-core').CompilerOptions}
      * @version 3
      */
     compilerOptions: {}
@@ -164,7 +164,7 @@ export default {
    * Options to pass directly to `vue-meta`.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#plugin-options).
-   * @type {import('vue-meta').VueMetaOptions}
+   * @type {typeof import('vue-meta').VueMetaOptions}
    * @version 2
    */
   vueMeta: null,
@@ -173,7 +173,7 @@ export default {
    * Set default configuration for `<head>` on every page.
    *
    * @see [documentation](https://vue-meta.nuxtjs.org/api/#metainfo-properties) for specifics.
-   * @type {import('vue-meta').MetaInfo}
+   * @type {typeof import('vue-meta').MetaInfo}
    * @version 2
    */
   head: {
