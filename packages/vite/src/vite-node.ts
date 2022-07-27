@@ -5,11 +5,11 @@ import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
 import type { Plugin as VitePlugin, ViteDevServer } from 'vite'
-import { ExternalsOptions, isExternal, ExternalsDefaults } from 'externality'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
+import { createIsExternal } from './utils/external'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 fixed for adding middlewares after setup
@@ -72,27 +72,11 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
         web: []
       }
     })
-    const externalOpts: ExternalsOptions = {
-      inline: [
-        /virtual:/,
-        /\.ts$/,
-        ...ExternalsDefaults.inline,
-        ...viteServer.config.ssr.noExternal as string[]
-      ],
-      external: [
-        ...viteServer.config.ssr.external,
-        /node_modules/
-      ],
-      resolve: {
-        type: 'module',
-        extensions: ['.ts', '.js', '.json', '.vue', '.mjs', '.jsx', '.tsx', '.wasm']
-      }
-    }
-    const rootDir = ctx.nuxt.options.rootDir
+    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir)
     node.shouldExternalize = async (id: string) => {
-      const result = await isExternal(id, rootDir, externalOpts)
+      const result = await isExternal(id)
       if (result?.external) {
-        return resolveModule(result.id, { url: rootDir })
+        return resolveModule(result.id, { url: ctx.nuxt.options.rootDir })
       }
       return false
     }
@@ -110,7 +94,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext) {
   return app.nodeHandler
 }
 
-export async function prepareDevServerEntry (ctx: ViteBuildContext) {
+export async function initViteNodeServer (ctx: ViteBuildContext) {
   let entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async.mjs')
   if (!fse.existsSync(entryPath)) {
     entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async')

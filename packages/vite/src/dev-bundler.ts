@@ -1,11 +1,17 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync } from 'node:fs'
 import { builtinModules } from 'node:module'
-import { isAbsolute, resolve } from 'pathe'
+import { isAbsolute, normalize, resolve } from 'pathe'
 import * as vite from 'vite'
-import { ExternalsOptions, isExternal as _isExternal, ExternalsDefaults } from 'externality'
+import { isExternal } from 'externality'
 import { genDynamicImport, genObjectFromRawEntries } from 'knitwork'
-import { hashId, uniq } from './utils'
+import fse from 'fs-extra'
+import { debounce } from 'perfect-debounce'
+import { isIgnored, logger } from '@nuxt/kit'
+import { hashId, isCSS, uniq } from './utils'
+import { createIsExternal } from './utils/external'
+import { writeManifest } from './manifest'
+import { ViteBuildContext } from './vite'
 
 export interface TransformChunk {
   id: string,
@@ -23,29 +29,7 @@ export interface SSRTransformResult {
 
 export interface TransformOptions {
   viteServer: vite.ViteDevServer
-}
-
-function isExternal (opts: TransformOptions, id: string) {
-  // Externals
-  const ssrConfig = (opts.viteServer.config as any).ssr
-
-  const externalOpts: ExternalsOptions = {
-    inline: [
-      /virtual:/,
-      /\.ts$/,
-      ...ExternalsDefaults.inline,
-      ...ssrConfig.noExternal
-    ],
-    external: [
-      ...ssrConfig.external,
-      /node_modules/
-    ],
-    resolve: {
-      type: 'module',
-      extensions: ['.ts', '.js', '.json', '.vue', '.mjs', '.jsx', '.tsx', '.wasm']
-    }
-  }
-  return _isExternal(id, opts.viteServer.config.root, externalOpts)
+  isExternal(id: string): ReturnType<typeof isExternal>
 }
 
 async function transformRequest (opts: TransformOptions, id: string) {
@@ -74,7 +58,7 @@ async function transformRequest (opts: TransformOptions, id: string) {
   // Vite will add ?v=123 to bypass browser cache
   // Remove for externals
   const withoutVersionQuery = id.replace(/\?v=\w+$/, '')
-  if (await isExternal(opts, withoutVersionQuery)) {
+  if (await opts.isExternal(withoutVersionQuery)) {
     const path = builtinModules.includes(withoutVersionQuery.split('node:').pop())
       ? withoutVersionQuery
       : isAbsolute(withoutVersionQuery) ? pathToFileURL(withoutVersionQuery).href : withoutVersionQuery
@@ -244,4 +228,37 @@ async function __instantiateModule__(url, urlStack) {
     code,
     ids: chunks.map(i => i.id)
   }
+}
+
+export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => Promise<any>) {
+  const viteServer = ctx.ssrServer
+  const options: TransformOptions = {
+    viteServer,
+    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir)
+  }
+
+  // Build and watch
+  const _doBuild = async () => {
+    const start = Date.now()
+    const { code, ids } = await bundleRequest(options, resolve(ctx.nuxt.options.appDir, 'entry'))
+    await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
+    // Have CSS in the manifest to prevent FOUC on dev SSR
+    await writeManifest(ctx, ids.filter(isCSS).map(i => i.slice(1)))
+    const time = (Date.now() - start)
+    logger.success(`Vite server built in ${time}ms`)
+    await onBuild()
+  }
+  const doBuild = debounce(_doBuild)
+
+  // Initial build
+  await _doBuild()
+
+  // Watch
+  viteServer.watcher.on('all', (_event, file) => {
+    file = normalize(file) // Fix windows paths
+    if (file.indexOf(ctx.nuxt.options.buildDir) === 0 || isIgnored(file)) { return }
+    doBuild()
+  })
+  // ctx.nuxt.hook('builder:watch', () => doBuild())
+  ctx.nuxt.hook('app:templatesGenerated', () => doBuild())
 }

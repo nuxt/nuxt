@@ -1,22 +1,16 @@
 import { resolveTSConfig } from 'pkg-types'
-import { resolve, normalize } from 'pathe'
+import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolveModule, isIgnored } from '@nuxt/kit'
-import fse from 'fs-extra'
-import { debounce } from 'perfect-debounce'
+import { logger, resolveModule } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
 import { cacheDirPlugin } from './plugins/cache-dir'
-import { prepareDevServerEntry } from './vite-node'
-import { isCSS } from './utils'
-import { bundleRequest } from './dev-bundler'
-import { writeManifest } from './manifest'
 
 export async function buildServer (ctx: ViteBuildContext) {
-  const _resolve = id => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
+  const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
@@ -149,31 +143,8 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   if (ctx.nuxt.options.experimental.viteNode) {
     logger.info('Vite server using experimental `vite-node`...')
-    await prepareDevServerEntry(ctx)
+    await import('./vite-node').then(r => r.initViteNodeServer(ctx))
   } else {
-    // Build and watch
-    const _doBuild = async () => {
-      const start = Date.now()
-      const { code, ids } = await bundleRequest({ viteServer }, resolve(ctx.nuxt.options.appDir, 'entry'))
-      await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
-      // Have CSS in the manifest to prevent FOUC on dev SSR
-      await writeManifest(ctx, ids.filter(isCSS).map(i => i.slice(1)))
-      const time = (Date.now() - start)
-      logger.success(`Vite server built in ${time}ms`)
-      await onBuild()
-    }
-    const doBuild = debounce(_doBuild)
-
-    // Initial build
-    await _doBuild()
-
-    // Watch
-    viteServer.watcher.on('all', (_event, file) => {
-      file = normalize(file) // Fix windows paths
-      if (file.indexOf(ctx.nuxt.options.buildDir) === 0 || isIgnored(file)) { return }
-      doBuild()
-    })
-    // ctx.nuxt.hook('builder:watch', () => doBuild())
-    ctx.nuxt.hook('app:templatesGenerated', () => doBuild())
+    await import('./dev-bundler').then(r => r.initViteDevBundler(ctx, onBuild))
   }
 }
