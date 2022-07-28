@@ -71,7 +71,7 @@ export function $fetch (path: string, options?: FetchOptions) {
 export function url (path: string) {
   const ctx = useTestContext()
   if (!ctx.url) {
-    throw new Error('url is not availabe (is server option enabled?)')
+    throw new Error('url is not available (is server option enabled?)')
   }
   return ctx.url + path
 }
