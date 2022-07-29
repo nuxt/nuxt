@@ -29,6 +29,7 @@ export default defineBuildConfig({
     'webpack-bundle-analyzer',
     'rollup-plugin-visualizer',
     'vite',
+    '@vitejs/plugin-vue',
     'mini-css-extract-plugin',
     'terser-webpack-plugin',
     'css-minimizer-webpack-plugin',

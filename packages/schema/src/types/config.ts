@@ -1,5 +1,7 @@
 import { ConfigSchema } from '../../schema/config'
 import type { ResolvedConfig } from 'c12'
+import { UserConfig } from 'vite'
+import { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
@@ -24,4 +26,12 @@ export interface PrivateRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends PrivateRuntimeConfig, RuntimeConfigNamespace {
   public: PublicRuntimeConfig
+}
+
+export interface ViteConfig extends UserConfig {
+  /**
+   * Options passed to @vitejs/plugin-vue
+   * @see https://github.com/vitejs/vite/tree/main/packages/plugin-vue
+   */
+  vue?: VuePluginOptions
 }
