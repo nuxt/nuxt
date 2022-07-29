@@ -1660,7 +1660,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.4
-    vite: ~3.0.3
+    vite: ~3.0.4
   languageName: unknown
   linkType: soft
 
@@ -1779,7 +1779,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.8.0
-    vite: ~3.0.3
+    vite: ~3.0.4
     vite-node: ^0.19.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
@@ -3120,12 +3120,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/head@npm:^0.7.7":
-  version: 0.7.7
-  resolution: "@vueuse/head@npm:0.7.7"
+"@vueuse/head@npm:^0.7.8":
+  version: 0.7.8
+  resolution: "@vueuse/head@npm:0.7.8"
   peerDependencies:
     vue: ">=3"
-  checksum: aa1df0955b5b71fb7c485773d7b7116f068553acefd5c19c2b9c4b29d1e3a37b2fced81f426dbcd688bebc29d68fff1b30be2850b190f6326c094024361f2e14
+  checksum: 524996626e799dda718da1076d227940e3f4ddd63d8b410d8807b02b3870e6e682cae3e4491b94fe4e3ea6bcb8d08defdb27a5e400f6c4146036bc51eb61c211
   languageName: node
   linkType: hard
 
@@ -9767,7 +9767,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.37
     "@vue/shared": ^3.2.37
-    "@vueuse/head": ^0.7.7
+    "@vueuse/head": ^0.7.8
     chokidar: ^3.5.3
     cookie-es: ^0.5.0
     defu: ^6.0.0
@@ -13186,9 +13186,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~3.0.3":
-  version: 3.0.3
-  resolution: "vite@npm:3.0.3"
+"vite@npm:~3.0.4":
+  version: 3.0.4
+  resolution: "vite@npm:3.0.4"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
@@ -13214,7 +13214,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 0b15d6bb062ab56dd8a0d47262344dcb48423d658c153c88a8a41f9301a70f32dd0fa2c037fa39a0a7888be1005cb763aad94235f82439441a13cef5103c29c4
+  checksum: f13eceb94f7b399942ce5e7c10df73314f7b073171d6594228b078cc1203042c4cdb9e8356fe64ad444c3533c31437abb3c64ac56478f0865fab598e924cf68b
   languageName: node
   linkType: hard
 

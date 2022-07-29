@@ -42,7 +42,7 @@
     "nuxi": "link:./packages/nuxi",
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
-    "vite": "~3.0.3",
+    "vite": "~3.0.4",
     "unbuild": "^0.7.6"
   },
   "devDependencies": {
