@@ -27,10 +27,10 @@
     "ohash": "^0.1.4",
     "pathe": "^0.3.2",
     "pkg-types": "^0.3.3",
-    "scule": "^0.2.1",
+    "scule": "^0.3.2",
     "semver": "^7.3.7",
     "unctx": "^1.1.4",
-    "unimport": "^0.6.3",
+    "unimport": "^0.6.4",
     "untyped": "^0.4.4"
   },
   "devDependencies": {
