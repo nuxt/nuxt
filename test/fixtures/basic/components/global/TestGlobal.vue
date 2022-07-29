@@ -1,3 +1,5 @@
 <template>
-  global component registered automatically
+  <div>
+    global component registered automatically
+  </div>
 </template>

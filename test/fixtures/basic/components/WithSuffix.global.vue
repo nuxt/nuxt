@@ -1,3 +1,5 @@
 <template>
-  global component via suffix
+  <div>
+    global component via suffix
+  </div>
 </template>
