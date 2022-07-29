@@ -122,8 +122,8 @@ export default {
      * ```
      */
     filenames: {
-      app: ({ isDev }) => isDev ? `[name].js` : `[contenthash:7].js`,
-      chunk: ({ isDev }) => isDev ? `[name].js` : `[contenthash:7].js`,
+      app: ({ isDev }) => isDev ? `[name].mjs` : `[contenthash:7].mjs`,
+      chunk: ({ isDev }) => isDev ? `[name].mjs` : `[contenthash:7].mjs`,
       css: ({ isDev }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',

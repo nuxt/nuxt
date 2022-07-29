@@ -42,7 +42,7 @@ export async function expectNoClientErrors (path: string) {
   const { pageErrors, consoleLogs } = await renderPage(path)
 
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warn')
+  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
 
   expect(pageErrors).toEqual([])
   expect(consoleLogErrors).toEqual([])
