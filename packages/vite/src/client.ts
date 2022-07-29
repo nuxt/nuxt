@@ -9,12 +9,10 @@ import { joinURL, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } fro
 import escapeRE from 'escape-string-regexp'
 import defu from 'defu'
 import { cacheDirPlugin } from './plugins/cache-dir'
-import { analyzePlugin } from './plugins/analyze'
 import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { writeManifest } from './manifest'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
-import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
@@ -58,7 +56,9 @@ export async function buildClient (ctx: ViteBuildContext) {
         rootDir: ctx.nuxt.options.rootDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
       }),
-      viteNodePlugin(ctx)
+      ctx.nuxt.options.experimental.viteNode
+        ? await import('./vite-node').then(r => r.viteNodePlugin(ctx))
+        : undefined
     ],
     appType: 'custom',
     server: {
@@ -87,7 +87,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add analyze plugin if needed
   if (ctx.nuxt.options.build.analyze) {
-    clientConfig.plugins.push(...analyzePlugin(ctx))
+    clientConfig.plugins.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
