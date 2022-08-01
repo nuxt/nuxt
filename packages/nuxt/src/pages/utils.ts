@@ -74,7 +74,8 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       route.name += (route.name && '-') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const child = parent.find(parentRoute => parentRoute.name === route.name)
+      const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
+
       if (child) {
         parent = child.children
         route.path = ''

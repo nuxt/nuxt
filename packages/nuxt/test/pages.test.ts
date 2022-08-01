@@ -68,6 +68,48 @@ describe('pages:generateRoutesFromFiles', () => {
       ]
     },
     {
+      description: 'should generate correct id for catchall (order 1)',
+      files: [
+          `${pagesDir}/[...stories].vue`,
+          `${pagesDir}/stories/[id].vue`
+      ],
+      output: [
+        {
+          name: 'stories',
+          path: '/:stories(.*)*',
+          file: `${pagesDir}/[...stories].vue`,
+          children: []
+        },
+        {
+          name: 'stories-id',
+          path: '/stories/:id',
+          file: `${pagesDir}/stories/[id].vue`,
+          children: []
+        }
+      ]
+    },
+    {
+      description: 'should generate correct id for catchall (order 2)',
+      files: [
+        `${pagesDir}/stories/[id].vue`,
+        `${pagesDir}/[...stories].vue`
+      ],
+      output: [
+        {
+          name: 'stories-id',
+          path: '/stories/:id',
+          file: `${pagesDir}/stories/[id].vue`,
+          children: []
+        },
+        {
+          name: 'stories',
+          path: '/:stories(.*)*',
+          file: `${pagesDir}/[...stories].vue`,
+          children: []
+        }
+      ]
+    },
+    {
       description: 'should generate correct route for snake_case file',
       files: [
           `${pagesDir}/snake_case.vue`
