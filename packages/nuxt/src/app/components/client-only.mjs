@@ -1,4 +1,4 @@
-import { ref, onMounted, defineComponent, createElementBlock, h } from 'vue'
+import { ref, onMounted, defineComponent, createElementBlock, h, Fragment } from 'vue'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -19,18 +19,38 @@ export default defineComponent({
 })
 
 export function createClientOnly (component) {
+  const { setup, render: _render, template: _template } = component
+  if (_render) {
+    // override the component render (non <script setup> component)
+    component.render = (ctx, ...args) => {
+      return ctx.mounted$
+        ? h(Fragment, null, [h(_render(ctx, ...args), ctx.$attrs ?? ctx._.attrs)])
+        : h('div', ctx.$attrs ?? ctx._.attrs)
+    }
+  } else if (_template) {
+    // handle runtime-compiler template
+    component.template = `
+      <template v-if="mounted$">${_template}</template>
+      <template v-else><div></div></template>
+    `
+  }
   return defineComponent({
-    name: 'ClientOnlyWrapper',
-    inheritAttrs: false,
-    setup (_props, { attrs, slots }) {
-      const mounted = ref(false)
-      onMounted(() => { mounted.value = true })
-      return () => {
-        if (mounted.value) {
-          return h(component, attrs, slots)
-        }
-        return h('div', { class: attrs.class, style: attrs.style })
-      }
+    ...component,
+    setup (props, ctx) {
+      const mounted$ = ref(false)
+      onMounted(() => { mounted$.value = true })
+
+      return Promise.resolve(setup?.(props, ctx) || {})
+        .then((setupState) => {
+          return typeof setupState !== 'function'
+            ? { ...setupState, mounted$ }
+            : () => {
+                return mounted$.value
+                // use Fragment to avoid oldChildren is null issue
+                  ? h(Fragment, null, [h(setupState(props, ctx), ctx.attrs)])
+                  : h('div', ctx.attrs)
+              }
+        })
     }
   })
 }

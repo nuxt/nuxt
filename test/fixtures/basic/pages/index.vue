@@ -16,6 +16,7 @@
     <CustomComponent />
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />
+    <ClientWrapped ref="clientRef" style="color: red;" class="client-only" />
   </div>
 </template>
 
@@ -31,4 +32,9 @@ useHead({
 
 const foo = useFoo()
 const bar = useBar()
+const clientRef = ref()
+
+onMounted(() => {
+  clientRef.value.exposedFunc()
+})
 </script>
