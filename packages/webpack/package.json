@@ -16,7 +16,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.18.9",
+    "@babel/core": "^7.18.10",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "^3.0.0-rc.6",
     "autoprefixer": "^10.4.8",
@@ -36,7 +36,7 @@
     "mini-css-extract-plugin": "^2.6.1",
     "mlly": "^0.5.5",
     "ohash": "^0.1.4",
-    "pathe": "^0.3.2",
+    "pathe": "^0.3.3",
     "pify": "^6.0.0",
     "postcss": "^8.4.14",
     "postcss-import": "^14.1.0",
