@@ -3120,12 +3120,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/head@npm:^0.7.8":
-  version: 0.7.8
-  resolution: "@vueuse/head@npm:0.7.8"
+"@vueuse/head@npm:^0.7.9":
+  version: 0.7.9
+  resolution: "@vueuse/head@npm:0.7.9"
   peerDependencies:
     vue: ">=3"
-  checksum: 524996626e799dda718da1076d227940e3f4ddd63d8b410d8807b02b3870e6e682cae3e4491b94fe4e3ea6bcb8d08defdb27a5e400f6c4146036bc51eb61c211
+  checksum: 2b8078a4e7c1f797d74ff5ea9b80bffad8f24f6738aacfb2466d8f042814fbe6579f6afdca7071f3e24eba984391240e481adb3757d715b537737a8840d09859
   languageName: node
   linkType: hard
 
@@ -9795,7 +9795,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.37
     "@vue/shared": ^3.2.37
-    "@vueuse/head": ^0.7.8
+    "@vueuse/head": ^0.7.9
     chokidar: ^3.5.3
     cookie-es: ^0.5.0
     defu: ^6.0.0

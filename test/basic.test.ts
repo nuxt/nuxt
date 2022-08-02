@@ -131,21 +131,21 @@ describe('pages', () => {
 
 describe('head tags', () => {
   it('should render tags', async () => {
-    const html = await $fetch('/head')
-    expect(html).toContain('<title>Using a dynamic component - Fixture</title>')
-    expect(html).not.toContain('<meta name="description" content="first">')
-    expect(html).toContain('<meta charset="utf-16">')
-    expect(html).not.toContain('<meta charset="utf-8">')
-    expect(html).toContain('<meta name="description" content="overriding with an inline useHead call">')
-    expect(html).toMatch(/<html[^>]*class="html-attrs-test"/)
-    expect(html).toMatch(/<body[^>]*class="body-attrs-test"/)
-    expect(html).toContain('script>console.log("works with useMeta too")</script>')
+    const headHtml = await $fetch('/head')
+    expect(headHtml).toContain('<title>Using a dynamic component - Title Template Fn Change</title>')
+    expect(headHtml).not.toContain('<meta name="description" content="first">')
+    expect(headHtml).toContain('<meta charset="utf-16">')
+    expect(headHtml).not.toContain('<meta charset="utf-8">')
+    expect(headHtml).toContain('<meta name="description" content="overriding with an inline useHead call">')
+    expect(headHtml).toMatch(/<html[^>]*class="html-attrs-test"/)
+    expect(headHtml).toMatch(/<body[^>]*class="body-attrs-test"/)
+    expect(headHtml).toContain('script>console.log("works with useMeta too")</script>')
 
-    const index = await $fetch('/')
+    const indexHtml = await $fetch('/')
     // should render charset by default
-    expect(index).toContain('<meta charset="utf-8">')
+    expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
-    expect(index).toContain('<title>Basic fixture - Fixture</title>')
+    expect(indexHtml).toContain('<title>Basic fixture</title>')
   })
 
   // TODO: Doesn't adds header in test environment

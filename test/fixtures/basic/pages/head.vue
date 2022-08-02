@@ -1,6 +1,8 @@
 <script setup>
 const a = ref('')
 useHead({
+  // title template function example
+  titleTemplate: title => `${title} - Title Template Fn Change`,
   bodyAttrs: {
     class: 'body-attrs-test'
   },

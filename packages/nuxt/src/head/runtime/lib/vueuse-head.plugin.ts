@@ -25,8 +25,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     const headObj = computed(() => {
       const overrides: MetaObject = { meta: [] }
-      if (titleTemplate.value && 'title' in meta.value) {
-        overrides.title = typeof titleTemplate.value === 'function' ? titleTemplate.value(meta.value.title) : titleTemplate.value.replace(/%s/g, meta.value.title)
+      // cast a null titleTemplate to an empty string so @vueuse/head ignores it
+      if (titleTemplate.value === null) {
+        overrides.titleTemplate = ''
       }
       if (meta.value.charset) {
         overrides.meta!.push({ key: 'charset', charset: meta.value.charset })
