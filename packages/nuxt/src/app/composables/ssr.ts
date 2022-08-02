@@ -15,3 +15,13 @@ export function useRequestHeaders (include?) {
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): CompatibilityEvent {
   return nuxtApp.ssrContext?.event as CompatibilityEvent
 }
+
+export function setResponseStatus (code: number, message?: string) {
+  const event = process.server && useRequestEvent()
+  if (event) {
+    event.res.statusCode = code
+    if (message) {
+      event.res.statusMessage = message
+    }
+  }
+}
