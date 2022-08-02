@@ -1,8 +1,15 @@
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import type { SetupContext } from 'vue'
 import { useHead } from './composables'
-
-type Props = Readonly<Record<string, any>>
+import type {
+  Props,
+  FetchPriority,
+  CrossOrigin,
+  HTTPEquiv,
+  ReferrerPolicy,
+  LinkRelationship,
+  Target
+} from './types'
 
 const removeUndefinedProps = (props: Props) =>
   Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined))
@@ -66,14 +73,15 @@ export const Script = defineComponent({
     ...globalProps,
     async: Boolean,
     crossorigin: {
-      type: [Boolean, String],
+      type: [Boolean, String as () => CrossOrigin],
       default: undefined
     },
     defer: Boolean,
+    fetchpriority: String as PropType<FetchPriority>,
     integrity: String,
     nomodule: Boolean,
     nonce: String,
-    referrerpolicy: String,
+    referrerpolicy: String as PropType<ReferrerPolicy>,
     src: String,
     type: String,
     /** @deprecated **/
@@ -116,8 +124,9 @@ export const Link = defineComponent({
   props: {
     ...globalProps,
     as: String,
-    crossorigin: String,
+    crossorigin: String as PropType<CrossOrigin>,
     disabled: Boolean,
+    fetchpriority: String as PropType<FetchPriority>,
     href: String,
     hreflang: String,
     imagesizes: String,
@@ -128,15 +137,15 @@ export const Link = defineComponent({
       type: Boolean,
       default: undefined
     },
-    referrerpolicy: String,
-    rel: String,
+    referrerpolicy: String as PropType<ReferrerPolicy>,
+    rel: String as PropType<LinkRelationship>,
     sizes: String,
     title: String,
     type: String,
     /** @deprecated **/
     methods: String,
     /** @deprecated **/
-    target: String
+    target: String as PropType<Target>
   },
   setup: setupForUseMeta(link => ({
     link: [link]
@@ -150,7 +159,7 @@ export const Base = defineComponent({
   props: {
     ...globalProps,
     href: String,
-    target: String
+    target: String as PropType<Target>
   },
   setup: setupForUseMeta(base => ({
     base
@@ -180,7 +189,7 @@ export const Meta = defineComponent({
     ...globalProps,
     charset: String,
     content: String,
-    httpEquiv: String,
+    httpEquiv: String as PropType<HTTPEquiv>,
     name: String
   },
   setup: setupForUseMeta(meta => ({
