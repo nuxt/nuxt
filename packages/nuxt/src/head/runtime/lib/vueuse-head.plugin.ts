@@ -55,6 +55,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   if (process.server) {
-    nuxtApp.ssrContext.renderMeta = () => renderHeadToString(head)
+    nuxtApp.ssrContext.renderMeta = () => {
+      const meta = renderHeadToString(head)
+      return {
+        ...meta,
+        // resolves naming difference with NuxtMeta and @vueuse/head
+        bodyScripts: meta.bodyTags
+      }
+    }
   }
 })

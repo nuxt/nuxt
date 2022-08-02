@@ -171,6 +171,7 @@ export default eventHandler(async (event) => {
       bodyAppend: normalizeChunks([
       `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`,
       _rendered.renderScripts(),
+      // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
       ])
     }
