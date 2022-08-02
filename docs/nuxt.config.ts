@@ -50,9 +50,9 @@ export default withDocus({
         content: 'https://res.cloudinary.com/nuxt/video/upload/v1634114611/nuxt3-beta_sznsf8.mp4'
       },
       {
-        hid: "nuxt_doc_theme_color",
-        name: "theme-color",
-        content: "#00db80"
+        hid: 'nuxt_doc_theme_color',
+        name: 'theme-color',
+        content: '#00db80'
       }
     ],
     bodyAttrs: {
