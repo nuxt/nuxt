@@ -27,7 +27,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.12",
     "defu": "^6.0.0",
-    "esbuild": "^0.14.51",
+    "esbuild": "^0.14.53",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "externality": "^0.2.2",
@@ -49,7 +49,7 @@
     "ufo": "^0.8.5",
     "unplugin": "^0.8.0",
     "vite": "~3.0.4",
-    "vite-node": "^0.20.2",
+    "vite-node": "^0.20.3",
     "vite-plugin-checker": "^0.4.9"
   },
   "peerDependencies": {
