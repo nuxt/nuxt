@@ -34,7 +34,7 @@
     "magic-string": "^0.26.2",
     "memfs": "^3.4.7",
     "mini-css-extract-plugin": "^2.6.1",
-    "mlly": "^0.5.5",
+    "mlly": "^0.5.6",
     "ohash": "^0.1.4",
     "pathe": "^0.3.3",
     "pify": "^6.0.0",

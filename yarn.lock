@@ -1728,7 +1728,7 @@ __metadata:
     jiti: ^1.14.0
     knitwork: ^0.1.2
     lodash.template: ^4.5.0
-    mlly: ^0.5.5
+    mlly: ^0.5.6
     ohash: ^0.1.4
     pathe: ^0.3.3
     pkg-types: ^0.3.3
@@ -1870,7 +1870,7 @@ __metadata:
     h3: ^0.7.13
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.5
+    mlly: ^0.5.6
     ohash: ^0.1.4
     pathe: ^0.3.3
     perfect-debounce: ^0.1.3
@@ -1920,7 +1920,7 @@ __metadata:
     magic-string: ^0.26.2
     memfs: ^3.4.7
     mini-css-extract-plugin: ^2.6.1
-    mlly: ^0.5.5
+    mlly: ^0.5.6
     ohash: ^0.1.4
     pathe: ^0.3.3
     pify: ^6.0.0
@@ -9365,6 +9365,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mlly@npm:^0.5.6":
+  version: 0.5.6
+  resolution: "mlly@npm:0.5.6"
+  dependencies:
+    acorn: ^8.8.0
+    pathe: ^0.3.3
+    pkg-types: ^0.3.3
+  checksum: 2f2361329436252fa76d173874c5f2f8b2b3e13822257e1bbaee58ff999beb5bcfa45291ae2ddcb36dabbba164324a756438b1ba601493c632255c778325ba2b
+  languageName: node
+  linkType: hard
+
 "modify-values@npm:^1.0.0":
   version: 1.0.1
   resolution: "modify-values@npm:1.0.1"
@@ -9870,7 +9881,7 @@ __metadata:
     fsevents: ~2.3.2
     jiti: ^1.14.0
     listhen: ^0.2.13
-    mlly: ^0.5.5
+    mlly: ^0.5.6
     mri: ^1.2.0
     pathe: ^0.3.3
     perfect-debounce: ^0.1.3
@@ -9956,7 +9967,7 @@ __metadata:
     hookable: ^5.1.1
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.5
+    mlly: ^0.5.6
     nitropack: ^0.4.12
     nuxi: ^3.0.0-rc.6
     ohash: ^0.1.4
