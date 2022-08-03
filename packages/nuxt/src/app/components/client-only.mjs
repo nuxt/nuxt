@@ -21,7 +21,7 @@ export default defineComponent({
 export function createClientOnly (component) {
   const { setup, render: _render, template: _template } = component
   if (_render) {
-    // override the component render (non <script setup> component)
+    // override the component render (non script setup component)
     component.render = (ctx, ...args) => {
       return ctx.mounted$
         ? h(Fragment, null, [h(_render(ctx, ...args), ctx.$attrs ?? ctx._.attrs)])
