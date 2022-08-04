@@ -154,7 +154,7 @@ export default {
       val = process.env.NUXT_CREATE_REQUIRE || val ||
         (typeof globalThis.jest !== 'undefined' ? 'native' : 'jiti')
       if (val === 'jiti') {
-        return p => jiti(typeof p === 'string' ? p : p.filename)
+        return p => jiti(typeof p === 'string' ? p : p.filename, { esmResolve: true })
       }
       if (val === 'native') {
         return p => createRequire(typeof p === 'string' ? p : p.filename)

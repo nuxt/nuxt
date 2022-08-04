@@ -115,7 +115,7 @@ function normalizeConfigModule (module, rootDir) {
 
 function getNuxtConfig (rootDir) {
   try {
-    return jiti(rootDir, { interopDefault: true })('./nuxt.config')
+    return jiti(rootDir, { interopDefault: true, esmResolve: true })('./nuxt.config')
   } catch (err) {
     // TODO: Show error as warning if it is not 404
     return {}

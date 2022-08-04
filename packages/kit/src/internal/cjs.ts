@@ -4,7 +4,7 @@ import { interopDefault } from 'mlly'
 import jiti from 'jiti'
 
 // TODO: use create-require for jest environment
-const _require = jiti(process.cwd(), { interopDefault: true })
+const _require = jiti(process.cwd(), { interopDefault: true, esmResolve: true })
 
 export interface ResolveModuleOptions {
   paths?: string | string[]
