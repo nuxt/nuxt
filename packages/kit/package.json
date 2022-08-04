@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@nuxt/schema": "^3.0.0-rc.6",
-    "c12": "^0.2.8",
+    "c12": "^0.2.9",
     "consola": "^2.15.3",
     "defu": "^6.0.0",
     "globby": "^13.1.2",
@@ -29,9 +29,9 @@
     "pkg-types": "^0.3.3",
     "scule": "^0.3.2",
     "semver": "^7.3.7",
-    "unctx": "^2.0.0",
+    "unctx": "^2.0.1",
     "unimport": "^0.6.5",
-    "untyped": "^0.4.4"
+    "untyped": "^0.4.5"
   },
   "devDependencies": {
     "@types/lodash.template": "^4",

@@ -377,6 +377,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/standalone@npm:^7.18.11":
+  version: 7.18.11
+  resolution: "@babel/standalone@npm:7.18.11"
+  checksum: 8a1c8e527c41ba7e2b6c80f7eb4e84cf82fd8697c38416fac548cb5442a83bae9eaf3c2bbcdc398d4149df54d4f1020f31337d784ede634fa1f3de1a6b5fad7c
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.0.0, @babel/template@npm:^7.18.6":
   version: 7.18.6
   resolution: "@babel/template@npm:7.18.6"
@@ -1719,7 +1726,7 @@ __metadata:
     "@nuxt/schema": ^3.0.0-rc.6
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.8
+    c12: ^0.2.9
     consola: ^2.15.3
     defu: ^6.0.0
     globby: ^13.1.2
@@ -1735,9 +1742,9 @@ __metadata:
     scule: ^0.3.2
     semver: ^7.3.7
     unbuild: latest
-    unctx: ^2.0.0
+    unctx: ^2.0.1
     unimport: ^0.6.5
-    untyped: ^0.4.4
+    untyped: ^0.4.5
   languageName: unknown
   linkType: soft
 
@@ -1753,7 +1760,7 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.8
+    c12: ^0.2.9
     create-require: ^1.1.1
     defu: ^6.0.0
     jiti: ^1.14.0
@@ -2884,10 +2891,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.45.3":
-  version: 0.45.3
-  resolution: "@unocss/reset@npm:0.45.3"
-  checksum: 119217f2bffb6f1e0f906ac37600531c496c2a3927d74da0c649fbdfb27f0c6a80c43e7766a8b7ce23c07642cf118ac47a8e13400aa13471c8e53a91146d1302
+"@unocss/reset@npm:^0.45.4":
+  version: 0.45.4
+  resolution: "@unocss/reset@npm:0.45.4"
+  checksum: e095c53781b9c7fa05186dd2aa5b1df5a257a7bb48d13a8f70d40b2587b56a85f911b724aaf342c7b12b6bc76d9ad1b635decf1dedd329d68a663a6dce4c3223
   languageName: node
   linkType: hard
 
@@ -4087,6 +4094,21 @@ __metadata:
     pathe: ^0.3.2
     rc9: ^1.2.2
   checksum: d0bca1dc012a717833f4a10da2d4610b9d43ca1f5172a46f98cbd852fc713150a62615bb0f93f041143c37ef34942b9b0dc196fe8ed4afa0ee9f07d581089c85
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "c12@npm:0.2.9"
+  dependencies:
+    defu: ^6.0.0
+    dotenv: ^16.0.1
+    gittar: ^0.1.1
+    jiti: ^1.14.0
+    mlly: ^0.5.7
+    pathe: ^0.3.3
+    rc9: ^1.2.2
+  checksum: c58caa19638ba2f539ef6004cb83a3bc6ef947b4857ffc2d0a318b82d377c12a39feceb63acbf6809fe50c4948a5b9a08904856f5e742b8496fe8c94cf1fa8a6
   languageName: node
   linkType: hard
 
@@ -9868,7 +9890,7 @@ __metadata:
     "@types/clear": ^0
     "@types/mri": ^1.1.1
     "@types/semver": ^7
-    c12: ^0.2.8
+    c12: ^0.2.9
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
@@ -9906,7 +9928,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.47
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.45.3
+    "@unocss/reset": ^0.45.4
     case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.21.0
@@ -9978,11 +10000,11 @@ __metadata:
     strip-literal: ^0.4.0
     ufo: ^0.8.5
     unbuild: latest
-    unctx: ^2.0.0
+    unctx: ^2.0.1
     unenv: ^0.5.2
     unimport: ^0.6.5
     unplugin: ^0.8.1
-    untyped: ^0.4.4
+    untyped: ^0.4.5
     vue: ^3.2.37
     vue-bundle-renderer: ^0.3.9
     vue-meta: next
@@ -12997,15 +13019,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unctx@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "unctx@npm:2.0.0"
+"unctx@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "unctx@npm:2.0.1"
   dependencies:
     acorn: ^8.8.0
     estree-walker: ^3.0.1
     magic-string: ^0.26.2
     unplugin: ^0.8.0
-  checksum: 4b5d76b8ddd0f480a91a812feacdc3f8a2b0d41409258af6c26ab66177a76c0f6df4840dece1fede4bed097217736847bb9771c9c1b53327753537462d2f2caa
+  checksum: 59394795be05752066e7e64f582ebcadeb4cfbb38e1a72dde91aa6eca91f45d33237640c4a8a95df1207b6d9434945e69548fafb0cf277d6ac15d2a4c6b18cd7
   languageName: node
   linkType: hard
 
@@ -13219,6 +13241,18 @@ __metadata:
     "@babel/types": ^7.17.0
     scule: ^0.2.1
   checksum: 674506884b49d8648a96ac54791f7f29b1d14c28e3efc5fdd973c4a44ae6d3ad38a0b8ad0198e70fa223760491309822fb403e7a0bc6b28aa43eca31b717305e
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^0.4.5":
+  version: 0.4.5
+  resolution: "untyped@npm:0.4.5"
+  dependencies:
+    "@babel/core": ^7.18.10
+    "@babel/standalone": ^7.18.11
+    "@babel/types": ^7.18.10
+    scule: ^0.3.2
+  checksum: fd09347048145a3f87dbbd03174a3053e5a01b0e174c49bca23e6acddb2dd234a024795033d2c0d72fe8dbded3f8c56fb54580fcee893703f380e15095ddd3e2
   languageName: node
   linkType: hard
 

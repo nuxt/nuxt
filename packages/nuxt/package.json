@@ -61,11 +61,11 @@
     "scule": "^0.3.2",
     "strip-literal": "^0.4.0",
     "ufo": "^0.8.5",
-    "unctx": "^2.0.0",
+    "unctx": "^2.0.1",
     "unenv": "^0.5.2",
     "unimport": "^0.6.5",
     "unplugin": "^0.8.1",
-    "untyped": "^0.4.4",
+    "untyped": "^0.4.5",
     "vue": "^3.2.37",
     "vue-bundle-renderer": "^0.3.9",
     "vue-router": "^4.1.3"
