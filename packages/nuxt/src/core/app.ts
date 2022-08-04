@@ -2,7 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { dirname, resolve } from 'pathe'
 import defu from 'defu'
 import type { Nuxt, NuxtApp, NuxtPlugin } from '@nuxt/schema'
-import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule, resolvePath, resolveAlias } from '@nuxt/kit'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
@@ -94,7 +94,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       return { name, path: file, global: hasSuffix(file, '.global') }
     }))
   }
-  app.middleware = uniqueBy(app.middleware, 'name')
 
   // Resolve plugins
   app.plugins = [
@@ -109,8 +108,25 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ])
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
-  app.plugins = uniqueBy(app.plugins, 'src')
+
+  // Normalize and de-duplicate plugins and middleware
+  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
+
+  // Normalize and de-duplicate plugins and middleware
+  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+}
+
+function resolvePaths <Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
+  return Promise.all(items.map(async (item) => {
+    if (!item[key]) { return item }
+    return {
+      ...item,
+      [key]: await resolvePath(resolveAlias(item[key]))
+    }
+  }))
 }
