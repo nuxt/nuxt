@@ -4,7 +4,7 @@ import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
-import type { ModuleNode, Plugin as VitePlugin, ViteDevServer } from 'vite'
+import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
@@ -47,13 +47,13 @@ export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
   })
 }
 
-function getManifest (server: ViteDevServer) {
-  const ids = Array.from(server.moduleGraph.urlToModuleMap.keys())
+function getManifest (ctx: ViteBuildContext) {
+  const ids = Array.from(ctx.ssrServer.moduleGraph.urlToModuleMap.keys())
     .filter(i => isCSS(i))
 
   const entries = [
     '@vite/client',
-    'entry.mjs',
+    ctx.entry,
     ...ids.map(i => i.slice(1))
   ]
 
@@ -70,7 +70,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
   const app = createApp()
 
   app.use('/manifest', defineEventHandler(() => {
-    const manifest = getManifest(ctx.ssrServer)
+    const manifest = getManifest(ctx)
     return manifest
   }))
 

@@ -11,7 +11,7 @@ export async function writeManifest (ctx: ViteBuildContext, extraEntries: string
 
   const entries = [
     '@vite/client',
-    'entry.mjs',
+    ctx.entry,
     ...extraEntries
   ]
 

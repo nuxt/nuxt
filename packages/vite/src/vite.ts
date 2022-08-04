@@ -1,5 +1,5 @@
 import * as vite from 'vite'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
 import { logger, isIgnored } from '@nuxt/kit'
@@ -21,13 +21,16 @@ export interface ViteOptions extends InlineConfig {
 export interface ViteBuildContext {
   nuxt: Nuxt
   config: ViteOptions
+  entry: string
   clientServer?: vite.ViteDevServer
   ssrServer?: vite.ViteDevServer
 }
 
 export async function bundle (nuxt: Nuxt) {
+  const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const ctx: ViteBuildContext = {
     nuxt,
+    entry,
     config: vite.mergeConfig(
       {
         resolve: {
@@ -38,16 +41,13 @@ export async function bundle (nuxt: Nuxt) {
             // will be filled in client/server configs
             '#build/plugins': '',
             '#build': nuxt.options.buildDir,
-            '/entry.mjs': resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry'),
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
             // Cannot destructure property 'AbortController' of ..
             'abort-controller': 'unenv/runtime/mock/empty'
           }
         },
         optimizeDeps: {
-          entries: [
-            resolve(nuxt.options.appDir, 'entry.ts')
-          ],
+          entries: [entry],
           include: ['vue']
         },
         css: resolveCSSOptions(nuxt),
@@ -104,7 +104,7 @@ export async function bundle (nuxt: Nuxt) {
     })
 
     const start = Date.now()
-    warmupViteServer(server, ['/entry.mjs'])
+    warmupViteServer(server, [join('/@fs/', ctx.entry)])
       .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
       .catch(logger.error)
   })

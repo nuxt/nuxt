@@ -40,20 +40,16 @@ async function transformRequest (opts: TransformOptions, id: string) {
   if (id && id.startsWith('/@id/')) {
     id = id.slice('/@id/'.length)
   }
-  if (id && id.startsWith('/@fs/')) {
-    // Absolute path
-    id = id.slice('/@fs'.length)
-    // On Windows, this may be `/C:/my/path` at this point, in which case we want to remove the `/`
-    if (id.match(/^\/\w:/)) {
-      id = id.slice(1)
-    }
-  } else if (id.startsWith('/') && !(/\/app\/entry(|.mjs)$/.test(id))) {
+  if (id && !id.startsWith('/@fs/') && id.startsWith('/')) {
     // Relative to the root directory
     const resolvedPath = resolve(opts.viteServer.config.root, '.' + id)
     if (existsSync(resolvedPath)) {
       id = resolvedPath
     }
   }
+
+  // On Windows, we prefix absolute paths with `/@fs/` to skip node resolution algorithm
+  id = id.replace(/^\/?(?=\w:)/, '/@fs/')
 
   // Vite will add ?v=123 to bypass browser cache
   // Remove for externals
@@ -240,7 +236,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   // Build and watch
   const _doBuild = async () => {
     const start = Date.now()
-    const { code, ids } = await bundleRequest(options, resolve(ctx.nuxt.options.appDir, 'entry'))
+    const { code, ids } = await bundleRequest(options, ctx.entry)
     await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     // Have CSS in the manifest to prevent FOUC on dev SSR
     await writeManifest(ctx, ids.filter(isCSS).map(i => i.slice(1)))
