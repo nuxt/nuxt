@@ -4,7 +4,7 @@ import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
-import type { Plugin as VitePlugin, ViteDevServer } from 'vite'
+import type { ModuleNode, Plugin as VitePlugin, ViteDevServer } from 'vite'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
@@ -14,11 +14,28 @@ import { createIsExternal } from './utils/external'
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 fixed for adding middlewares after setup
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
+  // Store the invalidates for the next rendering
+  const invalidates = new Set<string>()
   return {
     name: 'nuxt:vite-node-server',
-    enforce: 'pre',
+    enforce: 'post',
     configureServer (server) {
-      server.middlewares.use('/__nuxt_vite_node__', createViteNodeMiddleware(ctx))
+      server.middlewares.use('/__nuxt_vite_node__', createViteNodeMiddleware(ctx, invalidates))
+    },
+    handleHotUpdate ({ file, server }) {
+      function markInvalidate (mod: ModuleNode) {
+        if (invalidates.has(mod.id)) {
+          return
+        }
+        invalidates.add(mod.id)
+        for (const importer of mod.importers) {
+          markInvalidate(importer)
+        }
+      }
+      const mods = server.moduleGraph.getModulesByFile(file) || []
+      for (const mod of mods) {
+        markInvalidate(mod)
+      }
     }
   }
 }
@@ -49,12 +66,26 @@ function getManifest (server: ViteDevServer) {
   }
 }
 
-function createViteNodeMiddleware (ctx: ViteBuildContext) {
+function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
   const app = createApp()
 
   app.use('/manifest', defineEventHandler(() => {
     const manifest = getManifest(ctx.ssrServer)
     return manifest
+  }))
+
+  app.use('/invalidates', defineEventHandler(() => {
+    // When a file has been invalidated, we also invalidate the entry module
+    if (invalidates.size) {
+      for (const key of ctx.ssrServer.moduleGraph.fileToModulesMap.keys()) {
+        if (key.startsWith(ctx.nuxt.options.appDir + '/entry')) {
+          invalidates.add(key)
+        }
+      }
+    }
+    const ids = Array.from(invalidates)
+    invalidates.clear()
+    return ids
   }))
 
   app.use('/module', defineLazyEventHandler(() => {

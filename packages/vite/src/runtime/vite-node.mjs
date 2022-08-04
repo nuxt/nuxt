@@ -20,13 +20,17 @@ export default async (ssrContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   process.server = true
+
+  // Invalidate cache for files changed since last rendering
+  const invalidates = await $fetch('/invalidates', {
+    baseURL: viteNodeOptions.baseURL
+  })
+  for (const key of invalidates) {
+    runner.moduleCache.delete(key)
+  }
+
+  // Execute SSR bundle on demand
   render = render || (await runner.executeFile(viteNodeOptions.entryPath)).default
   const result = await render(ssrContext)
-  // reset cache for non-node-modules
-  for (const key of runner.moduleCache.keys()) {
-    if (!key.includes('/node_modules/')) {
-      runner.moduleCache.delete(key)
-    }
-  }
   return result
 }
