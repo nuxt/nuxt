@@ -61,7 +61,7 @@
     "scule": "^0.3.2",
     "strip-literal": "^0.4.0",
     "ufo": "^0.8.5",
-    "unctx": "^1.1.4",
+    "unctx": "^2.0.0",
     "unenv": "^0.5.2",
     "unimport": "^0.6.5",
     "unplugin": "^0.8.1",

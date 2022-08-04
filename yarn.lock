@@ -1735,7 +1735,7 @@ __metadata:
     scule: ^0.3.2
     semver: ^7.3.7
     unbuild: latest
-    unctx: ^1.1.4
+    unctx: ^2.0.0
     unimport: ^0.6.5
     untyped: ^0.4.4
   languageName: unknown
@@ -3529,7 +3529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.0.4, acorn@npm:^8.5.0, acorn@npm:^8.6.0, acorn@npm:^8.7.0, acorn@npm:^8.7.1, acorn@npm:^8.8.0":
+"acorn@npm:^8.0.4, acorn@npm:^8.5.0, acorn@npm:^8.6.0, acorn@npm:^8.7.1, acorn@npm:^8.8.0":
   version: 8.8.0
   resolution: "acorn@npm:8.8.0"
   bin:
@@ -9978,7 +9978,7 @@ __metadata:
     strip-literal: ^0.4.0
     ufo: ^0.8.5
     unbuild: latest
-    unctx: ^1.1.4
+    unctx: ^2.0.0
     unenv: ^0.5.2
     unimport: ^0.6.5
     unplugin: ^0.8.1
@@ -12997,15 +12997,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unctx@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "unctx@npm:1.1.4"
+"unctx@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "unctx@npm:2.0.0"
   dependencies:
-    acorn: ^8.7.0
-    estree-walker: ^2.0.2
-    magic-string: ^0.26.1
-    unplugin: ^0.6.1
-  checksum: 5b42fae7af0ab02279a313d14ac9df6026a758e44692c384781b1a4e198396bb7f3f31b9291f6fb9669cc485e81716ac228c245d5d3a40a43f6d917818137257
+    acorn: ^8.8.0
+    estree-walker: ^3.0.1
+    magic-string: ^0.26.2
+    unplugin: ^0.8.0
+  checksum: 4b5d76b8ddd0f480a91a812feacdc3f8a2b0d41409258af6c26ab66177a76c0f6df4840dece1fede4bed097217736847bb9771c9c1b53327753537462d2f2caa
   languageName: node
   linkType: hard
 
@@ -13140,31 +13140,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.6.1":
-  version: 0.6.3
-  resolution: "unplugin@npm:0.6.3"
-  dependencies:
-    chokidar: ^3.5.3
-    webpack-sources: ^3.2.3
-    webpack-virtual-modules: ^0.4.3
-  peerDependencies:
-    esbuild: ">=0.13"
-    rollup: ^2.50.0
-    vite: ^2.3.0
-    webpack: 4 || 5
-  peerDependenciesMeta:
-    esbuild:
-      optional: true
-    rollup:
-      optional: true
-    vite:
-      optional: true
-    webpack:
-      optional: true
-  checksum: 14e1f9c941e87e97fdda3efc745183e027de7d8b88eed8be5fa0708c2ec5dd114cc10e569c4b9dd2dafc89ba84d8bf90935d01e02cef510b7faedaa8af2b081f
-  languageName: node
-  linkType: hard
-
 "unplugin@npm:^0.7.0, unplugin@npm:^0.7.2":
   version: 0.7.2
   resolution: "unplugin@npm:0.7.2"
@@ -13191,7 +13166,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.8.1":
+"unplugin@npm:^0.8.0, unplugin@npm:^0.8.1":
   version: 0.8.1
   resolution: "unplugin@npm:0.8.1"
   dependencies:
@@ -13730,7 +13705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-virtual-modules@npm:^0.4.3, webpack-virtual-modules@npm:^0.4.4":
+"webpack-virtual-modules@npm:^0.4.4":
   version: 0.4.4
   resolution: "webpack-virtual-modules@npm:0.4.4"
   checksum: 6720b4c47d76dc9cbaff557562506c192da7560a90395e9918a418e257a0c0cda9f5e3ac92107ec0789f8f23ad942313bd8cdebc95031d0adef1032bf6142bc7

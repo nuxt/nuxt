@@ -100,7 +100,7 @@ function nuxt2Shims (nuxt: Nuxt) {
   nuxt.hooks = nuxt
 
   // Allow using useNuxt()
-  if (!nuxtCtx.use()) {
+  if (!nuxtCtx.tryUse()) {
     nuxtCtx.set(nuxt)
     nuxt.hook('close', () => nuxtCtx.unset())
   }

@@ -17,7 +17,7 @@ export const nuxtCtx = getContext<Nuxt>('nuxt')
  * ```
  */
 export function useNuxt (): Nuxt {
-  const instance = nuxtCtx.use()
+  const instance = nuxtCtx.tryUse()
   if (!instance) {
     throw new Error('Nuxt instance is unavailable!')
   }
@@ -38,5 +38,5 @@ export function useNuxt (): Nuxt {
  * ```
  */
 export function tryUseNuxt (): Nuxt | null {
-  return nuxtCtx.use()
+  return nuxtCtx.tryUse()
 }
