@@ -1736,7 +1736,7 @@ __metadata:
     semver: ^7.3.7
     unbuild: latest
     unctx: ^1.1.4
-    unimport: ^0.6.4
+    unimport: ^0.6.5
     untyped: ^0.4.4
   languageName: unknown
   linkType: soft
@@ -1763,7 +1763,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.5
     unbuild: latest
-    unimport: ^0.6.4
+    unimport: ^0.6.5
     vite: ~3.0.4
   languageName: unknown
   linkType: soft
@@ -1882,7 +1882,7 @@ __metadata:
     rollup-plugin-visualizer: ^5.7.1
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.8.0
+    unplugin: ^0.8.1
     vite: ~3.0.4
     vite-node: ^0.20.3
     vite-plugin-checker: ^0.4.9
@@ -1932,7 +1932,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.8.0
+    unplugin: ^0.8.1
     url-loader: ^4.1.1
     vue: 3.2.37
     vue-loader: ^17.0.0
@@ -2884,10 +2884,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.45.1":
-  version: 0.45.1
-  resolution: "@unocss/reset@npm:0.45.1"
-  checksum: 647f28f006f26ce516ddb98f4f6e43f4f668dc477dfce47c4a8ac1b3b772f53e54fe35fe409ea0d49423dfdbf1236ec685a3d2bfd4fca4265f9eb2906b5c372b
+"@unocss/reset@npm:^0.45.3":
+  version: 0.45.3
+  resolution: "@unocss/reset@npm:0.45.3"
+  checksum: 119217f2bffb6f1e0f906ac37600531c496c2a3927d74da0c649fbdfb27f0c6a80c43e7766a8b7ce23c07642cf118ac47a8e13400aa13471c8e53a91146d1302
   languageName: node
   linkType: hard
 
@@ -9906,7 +9906,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.47
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.45.1
+    "@unocss/reset": ^0.45.3
     case-police: ^0.5.6
     changelogen: ^0.1.1
     eslint: ^8.21.0
@@ -9980,8 +9980,8 @@ __metadata:
     unbuild: latest
     unctx: ^1.1.4
     unenv: ^0.5.2
-    unimport: ^0.6.4
-    unplugin: ^0.8.0
+    unimport: ^0.6.5
+    unplugin: ^0.8.1
     untyped: ^0.4.4
     vue: ^3.2.37
     vue-bundle-renderer: ^0.3.9
@@ -13039,21 +13039,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unimport@npm:^0.6.4":
-  version: 0.6.4
-  resolution: "unimport@npm:0.6.4"
+"unimport@npm:^0.6.5":
+  version: 0.6.5
+  resolution: "unimport@npm:0.6.5"
   dependencies:
     "@rollup/pluginutils": ^4.2.1
     escape-string-regexp: ^5.0.0
     fast-glob: ^3.2.11
     local-pkg: ^0.4.2
     magic-string: ^0.26.2
-    mlly: ^0.5.5
-    pathe: ^0.3.2
+    mlly: ^0.5.7
+    pathe: ^0.3.3
     scule: ^0.3.2
     strip-literal: ^0.4.0
-    unplugin: ^0.8.0
-  checksum: 2ce55190e74965fc161d3a0cddde0fd71bb6eb98b952c85f9163046959c0cf6f157ee2005a966ec422701bcd81362372bb034b815804fc71a484d636aa7e62c0
+    unplugin: ^0.8.1
+  checksum: 9f50e3b3ad70c360691958d3001115f284d8f993c07ae1fbec0b321af24fb654636ed25a9f4860364cf855946e2b73e415a57ffcdf6531594755127d74df67e8
   languageName: node
   linkType: hard
 
@@ -13184,9 +13184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "unplugin@npm:0.8.0"
+"unplugin@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "unplugin@npm:0.8.1"
   dependencies:
     acorn: ^8.8.0
     chokidar: ^3.5.3
@@ -13206,7 +13206,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 116052627de4b015ce6b856bfb589647390591cd4bd49120475ea591e14706d8ce3992f522192b222c6956a08afe361abd76d8139d028323fecc9821a5d8e5e5
+  checksum: 95bbed0425c42add3718f203d2cd2d8e97ae33bc0403b88cd800a12fb3f4cc5f681d108f4e64cd6cdf00b6715e538c913fd408b86c22a226b7e179c8d560e314
   languageName: node
   linkType: hard
 
