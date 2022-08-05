@@ -92,7 +92,7 @@ export default {
      *     style: [
      *       // <style type="text/css">:root { color: red }</style>
      *       { children: ':root { color: red }', type: 'text/css' }
-     *     ]
+     *     ],
      *     noscript: [
      *       // <noscript>Javascript is required</noscript>
      *       { children: 'Javascript is required' }
