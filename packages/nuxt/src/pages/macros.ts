@@ -43,9 +43,18 @@ export const TransformMacroPlugin = createUnplugin((options: TransformMacroPlugi
         return result()
       }
 
+      const imports = findStaticImports(code)
+
+      // Purge all imports bringing side effects, such as CSS imports
+      for (const entry of imports) {
+        if (!entry.imports) {
+          s.remove(entry.start, entry.end)
+        }
+      }
+
       // [webpack] Re-export any imports from script blocks in the components
       // with workaround for vue-loader bug: https://github.com/vuejs/vue-loader/pull/1911
-      const scriptImport = findStaticImports(code).find(i => parseQuery(i.specifier.replace('?macro=true', '')).type === 'script')
+      const scriptImport = imports.find(i => parseQuery(i.specifier.replace('?macro=true', '')).type === 'script')
       if (scriptImport) {
         // https://github.com/vuejs/vue-loader/pull/1911
         // https://github.com/vitejs/vite/issues/8473

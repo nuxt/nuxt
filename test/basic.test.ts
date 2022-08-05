@@ -372,7 +372,7 @@ describe('dynamic paths', () => {
 
     const html = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"/g)).map(m => m[2])
-    const cssURL = urls.find(u => /_nuxt\/entry.*\.css$/.test(u))
+    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
     expect(cssURL).toBeDefined()
     const css = await $fetch(cssURL)
     const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
