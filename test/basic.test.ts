@@ -344,6 +344,9 @@ describe('automatically keyed composables', () => {
     expect(html).toContain('true')
     expect(html).not.toContain('false')
   })
+  it('should match server-generated keys', async () => {
+    await expectNoClientErrors('/keyed-composables')
+  })
 })
 
 describe('dynamic paths', () => {
