@@ -55,9 +55,6 @@ export async function stopServer () {
   if (ctx.serverProcess) {
     await ctx.serverProcess.kill()
   }
-  if (ctx.listener) {
-    await ctx.listener.close()
-  }
 }
 
 export function fetch (path: string, options?: any) {
