@@ -2,9 +2,11 @@ import { resolveTSConfig } from 'pkg-types'
 import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
+import { provider } from 'std-env'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
+import type { OutputOptions } from 'rollup'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
 import { cacheDirPlugin } from './plugins/cache-dir'
@@ -108,6 +110,11 @@ export async function buildServer (ctx: ViteBuildContext) {
         tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
       }
     }))
+  }
+
+  // Hotfix for https://github.com/nuxt/framework/issues/6204
+  if (provider === 'netlify') {
+    (serverConfig.build.rollupOptions.output as OutputOptions).inlineDynamicImports = true
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
