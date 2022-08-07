@@ -1894,6 +1894,7 @@ __metadata:
     vite-node: ^0.20.3
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
+    vue-bundle-renderer: ^0.4.0
   peerDependencies:
     vue: ^3.2.37
   languageName: unknown
@@ -1942,6 +1943,7 @@ __metadata:
     unplugin: ^0.8.1
     url-loader: ^4.1.1
     vue: 3.2.37
+    vue-bundle-renderer: ^0.4.0
     vue-loader: ^17.0.0
     webpack: ^5.74.0
     webpack-bundle-analyzer: ^4.5.0
@@ -4063,15 +4065,6 @@ __metadata:
   dependencies:
     semver: ^7.0.0
   checksum: 66d204657fe36522822a95b288943ad11b58f5eaede235b11d8c4edaa28ce4800087d44a2681524c340494aadb120a0068011acabe99d30e8f11a7d826d83515
-  languageName: node
-  linkType: hard
-
-"bundle-runner@npm:^0.0.1":
-  version: 0.0.1
-  resolution: "bundle-runner@npm:0.0.1"
-  dependencies:
-    source-map: ^0.7.3
-  checksum: 26a2f681a82e57b27e788fbce71096d9417af078c09b06d0038fade878417809732ea5a785b0e4dfbe69f2b4980f8523710fae9a59e883e2680fc92e90bfc2d3
   languageName: node
   linkType: hard
 
@@ -10006,7 +9999,7 @@ __metadata:
     unplugin: ^0.8.1
     untyped: ^0.4.5
     vue: ^3.2.37
-    vue-bundle-renderer: ^0.3.9
+    vue-bundle-renderer: ^0.4.0
     vue-meta: next
     vue-router: ^4.1.3
   bin:
@@ -13526,12 +13519,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-bundle-renderer@npm:^0.3.9":
-  version: 0.3.9
-  resolution: "vue-bundle-renderer@npm:0.3.9"
+"vue-bundle-renderer@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "vue-bundle-renderer@npm:0.4.0"
   dependencies:
-    bundle-runner: ^0.0.1
-  checksum: 647ade1068533bd11c791608da9571f6125de9cd2c31cc26c6d7eb579b695558e7574979057d2a9ebbbcd600686516b6f9d222a99afc604936202d87bc4dbaa6
+    ufo: ^0.8.3
+  checksum: d27698c9b774dd8dac27861939d19935e3f2f5523f5f78f87290278bbee0f61a3c2516feaec88d59164257af96348b7bda67354e693fea71627c84a6141edb2b
   languageName: node
   linkType: hard
 

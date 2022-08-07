@@ -5,6 +5,7 @@ import fse from 'fs-extra'
 import { resolve } from 'pathe'
 import { addServerMiddleware } from '@nuxt/kit'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
+import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
@@ -48,22 +49,24 @@ export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
 }
 
 function getManifest (ctx: ViteBuildContext) {
-  const ids = Array.from(ctx.ssrServer.moduleGraph.urlToModuleMap.keys())
+  const css = Array.from(ctx.ssrServer.moduleGraph.urlToModuleMap.keys())
     .filter(i => isCSS(i))
 
-  const entries = [
-    '@vite/client',
-    ctx.entry,
-    ...ids.map(i => i.slice(1))
-  ]
+  const manifest = normalizeViteManifest({
+    '@vite/client': {
+      file: '@vite/client',
+      css,
+      isEntry: true
+    },
+    [ctx.entry]: {
+      file: ctx.entry,
+      isEntry: true,
+      module: true,
+      resourceType: 'script'
+    }
+  })
 
-  return {
-    publicPath: '',
-    all: entries,
-    initial: entries,
-    async: [],
-    modules: {}
-  }
+  return manifest
 }
 
 function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
