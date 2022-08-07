@@ -8,16 +8,16 @@ export const useRouter = () => {
   return useNuxtApp()?.$router as Router
 }
 
-export const useRoute = () => {
+export const useRoute = (): RouteLocationNormalizedLoaded => {
   if (getCurrentInstance()) {
-    return inject<RouteLocationNormalizedLoaded>('_route', useNuxtApp()._route)
+    return inject('_route', useNuxtApp()._route)
   }
   return useNuxtApp()._route
 }
 
 /** @deprecated Use `useRoute` instead. */
-export const useActiveRoute = () => {
-  return useNuxtApp()._route as RouteLocationNormalizedLoaded
+export const useActiveRoute = (): RouteLocationNormalizedLoaded => {
+  return useNuxtApp()._route
 }
 
 export interface RouteMiddleware {
