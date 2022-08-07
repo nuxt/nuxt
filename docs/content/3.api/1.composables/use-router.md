@@ -12,7 +12,7 @@ If you have a `pages/` folder, `useRouter` is identical in behavior to the one p
 - **addRoute:** Add a new route to the router instance. `parentName` can be provided to add new route as the child of an existing route.
 - **removeRoute:** Remove an existing route by its name.
 - **getRoutes:** Get a full list of all the route records.
-- **hasRoute:** Checks if a route with a given name exists
+- **hasRoute:** Checks if a route with a given name exists.
 
 ## Based on history API
 

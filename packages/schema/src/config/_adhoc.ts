@@ -46,7 +46,7 @@ export default {
   pages: undefined,
 
   /**
-   * Manually disable nuxt telemetry
+   * Manually disable nuxt telemetry.
    *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    *
