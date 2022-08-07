@@ -11,12 +11,12 @@ function useFetch(
 ): Promise<AsyncData<DataT>>
 
 type UseFetchOptions = {
-  key?: string,
-  method?: string,
-  params?: SearchParams,
+  key?: string
+  method?: string
+  params?: SearchParams
   body?: RequestInit['body'] | Record<string, any>
-  headers?: {key: string, value: string}[],
-  baseURL?: string,
+  headers?: { key: string, value: string }[]
+  baseURL?: string
   server?: boolean
   lazy?: boolean
   default?: () => DataT
@@ -36,21 +36,21 @@ type AsyncData<DataT> = {
 
 ## Params
 
-* **Url**: The URL to fetch
+* **Url**: The URL to fetch.
 * **Options (extends [unjs/ohmyfetch](https://github.com/unjs/ohmyfetch) options & [AsyncDataOptions](/api/composables/use-async-data#params))**:
-  * `method`: Request method
-  * `params`: Query params
+  * `method`: Request method.
+  * `params`: Query params.
   * `body`: Request body - automatically stringified (if an object is passed).
-  * `headers`: Request headers
-  * `baseURL`: Base URL for the request
+  * `headers`: Request headers.
+  * `baseURL`: Base URL for the request.
 * **Options (from `useAsyncData`)**:
-  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the `url` and fetch options
+  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the `url` and fetch options.
   * `lazy`: Whether to resolve the async function after loading the route, instead of blocking navigation (defaults to `false`).
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.
-  * `watch`: watch reactive sources to auto-refresh
-  * `initialCache`: When set to `false`, will skip payload cache for initial fetch. (defaults to `true`)
+  * `watch`: watch reactive sources to auto-refresh.
+  * `initialCache`: When set to `false`, will skip payload cache for initial fetch (defaults to `true`).
   * `transform`: A function that can be used to alter `handler` function result after resolving.
 
 ::alert{type=warning}
@@ -59,10 +59,10 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 
 ## Return values
 
-* **data**: the result of the asynchronous function that is passed in
-* **pending**: a boolean indicating whether the data is still being fetched
-* **refresh**: a function that can be used to refresh the data returned by the `handler` function
-* **error**: an error object if the data fetching failed
+* **data**: the result of the asynchronous function that is passed in.
+* **pending**: a boolean indicating whether the data is still being fetched.
+* **refresh**: a function that can be used to refresh the data returned by the `handler` function.
+* **error**: an error object if the data fetching failed.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again. Passing `true` as parameter skips that wait.
 
