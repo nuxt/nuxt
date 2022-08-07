@@ -2,6 +2,13 @@ import { defineNuxtConfig } from 'nuxt'
 import { addComponent } from '@nuxt/kit'
 
 export default defineNuxtConfig({
+  app: {
+    head: {
+      charset: 'utf-8',
+      link: [undefined],
+      meta: [{ name: 'viewport', content: 'width=1024, initial-scale=1' }, { charset: 'utf-8' }]
+    }
+  },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
   extends: [
