@@ -10122,7 +10122,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unctx: ^2.0.1
-    unenv: ^0.5.2
+    unenv: ^0.5.3
     unimport: ^0.6.5
     unplugin: ^0.9.0
     untyped: ^0.4.5
@@ -13145,6 +13145,18 @@ __metadata:
     node-fetch-native: ^0.1.2
     pathe: ^0.3.0
   checksum: 07efccc473e419cad22e86aac504bb49f9fc9c22c85fa8b830d6fbdf2aea39f82278bd70306a5c42dc26c6bc5f5034b23ea4f14bfd73ba9db7370a9e9b34fc6e
+  languageName: node
+  linkType: hard
+
+"unenv@npm:^0.5.3":
+  version: 0.5.3
+  resolution: "unenv@npm:0.5.3"
+  dependencies:
+    defu: ^6.0.0
+    mime: ^3.0.0
+    node-fetch-native: ^0.1.4
+    pathe: ^0.3.3
+  checksum: 03db301698aeba3921c5f62e32fac68448680b1fa9abc3d212291745e0dac73f1cf7670f6e8ef0d00b13e26b9f2070b1d78bbcdf66f8749e56f2934aaa6cfa76
   languageName: node
   linkType: hard
 
