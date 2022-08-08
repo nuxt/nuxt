@@ -9,6 +9,7 @@
     "@docus/social-image",
     "@docus/theme",
     "@docus/twitter",
-    "vitest"
+    "vitest",
+    "unplugin"
   ]
 }
