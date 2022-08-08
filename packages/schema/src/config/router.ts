@@ -8,7 +8,7 @@ export default {
    *
    * For more control, you can use `app/router.optionts.ts` file.
    *
-   * @see [documentation](https://router.vuejs.org/api/#routeroptions)
+   * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html)
    * @type {import('../src/types/router').RouterConfigSerializable}
    *
    * @version 3
