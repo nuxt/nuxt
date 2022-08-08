@@ -46,7 +46,6 @@
     "postcss-url": "^10.1.3",
     "rollup": "^2.77.2",
     "rollup-plugin-visualizer": "^5.7.1",
-    "std-env": "^3.1.1",
     "ufo": "^0.8.5",
     "unplugin": "^0.8.1",
     "vite": "~3.0.4",
