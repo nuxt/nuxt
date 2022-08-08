@@ -100,7 +100,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
 export default eventHandler(async (event) => {
   // Whether we're rendering an error page
-  const ssrError = event.req.url?.startsWith('/__nuxt_error') ? useQuery(event) : null
+  const ssrError = event.req.url?.startsWith('/__nuxt_error') ? useQuery(event) as Exclude<NuxtApp['payload']['error'], Error> : null
   const url = ssrError?.url as string || event.req.url!
 
   // Initialize ssr context
@@ -111,9 +111,9 @@ export default eventHandler(async (event) => {
     res: event.res,
     runtimeConfig: useRuntimeConfig(),
     noSSR: !!event.req.headers['x-nuxt-no-ssr'],
-    error: ssrError,
+    error: !!ssrError,
     nuxt: undefined, /* NuxtApp */
-    payload: undefined
+    payload: ssrError ? { error: ssrError } : undefined
   }
 
   // Render app
@@ -126,8 +126,8 @@ export default eventHandler(async (event) => {
   if (!_rendered) {
     return
   }
-  if (ssrContext.error && !ssrError) {
-    throw ssrContext.error
+  if (ssrContext.payload?.error && !ssrError) {
+    throw ssrContext.payload.error
   }
 
   // Render meta

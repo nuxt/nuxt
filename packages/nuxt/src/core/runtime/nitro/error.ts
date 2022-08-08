@@ -2,13 +2,14 @@ import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 // @ts-ignore TODO
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
+import { NuxtApp } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (_error, event) {
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(_error)
 
   // Create an error object
-  const errorObject = {
+  const errorObject: Exclude<NuxtApp['payload']['error'], Error> = {
     url: event.req.url,
     statusCode,
     statusMessage,
@@ -20,7 +21,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event) {
   }
 
   // Set response code and message
-  event.res.statusCode = errorObject.statusCode
+  event.res.statusCode = errorObject.statusCode as any as number
   event.res.statusMessage = errorObject.statusMessage
 
   // Console output
@@ -36,7 +37,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event) {
   }
 
   // HTML response
-  const url = withQuery('/__nuxt_error', errorObject as any)
+  const url = withQuery('/__nuxt_error', errorObject)
   const html = await $fetch(url).catch((error) => {
     console.error('[nitro] Error while generating error response', error)
     return errorObject.statusMessage

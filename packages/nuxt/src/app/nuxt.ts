@@ -59,7 +59,8 @@ interface _NuxtApp {
     res?: CompatibilityEvent['res']
     runtimeConfig: RuntimeConfig
     noSSR: boolean
-    error?: any
+    /** whether we are rendering an SSR error */
+    error?: boolean
     nuxt: _NuxtApp
     payload: _NuxtApp['payload']
     teleports?: Record<string, string>
@@ -70,6 +71,14 @@ interface _NuxtApp {
     data?: Record<string, any>
     state?: Record<string, any>
     rendered?: Function
+    error?: Error | {
+      url: string
+      statusCode: string
+      statusMessage: string
+      message: string
+      description: string
+      data?: any
+    }
     [key: string]: any
   }
 
@@ -119,19 +128,19 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
-  // Expose nuxt to the renderContext
-  if (nuxtApp.ssrContext) {
-    nuxtApp.ssrContext.nuxt = nuxtApp
-  }
-
   if (process.server) {
+    // Expose nuxt to the renderContext
+    if (nuxtApp.ssrContext) {
+      nuxtApp.ssrContext.nuxt = nuxtApp
+    }
     // Expose to server renderer to create window.__NUXT__
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
+    if (nuxtApp.ssrContext.payload) {
+      Object.assign(nuxtApp.payload, nuxtApp.ssrContext.payload)
+    }
     nuxtApp.ssrContext.payload = nuxtApp.payload
-  }
 
-  // Expose client runtime-config to the payload
-  if (process.server) {
+    // Expose client runtime-config to the payload
     nuxtApp.payload.config = {
       public: options.ssrContext.runtimeConfig.public,
       app: options.ssrContext.runtimeConfig.app
