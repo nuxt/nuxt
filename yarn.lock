@@ -1890,7 +1890,7 @@ __metadata:
     std-env: ^3.1.1
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.9.0
+    unplugin: ^0.8.1
     vite: ~3.0.4
     vite-node: ^0.21.0
     vite-plugin-checker: ^0.4.9
@@ -1941,7 +1941,7 @@ __metadata:
     time-fix-plugin: ^2.0.7
     ufo: ^0.8.5
     unbuild: latest
-    unplugin: ^0.9.0
+    unplugin: ^0.8.1
     url-loader: ^4.1.1
     vue: 3.2.37
     vue-bundle-renderer: ^0.4.0
@@ -10104,7 +10104,7 @@ __metadata:
     unctx: ^2.0.1
     unenv: ^0.5.2
     unimport: ^0.6.5
-    unplugin: ^0.9.0
+    unplugin: ^0.8.1
     untyped: ^0.4.5
     vue: ^3.2.37
     vue-bundle-renderer: ^0.4.0
@@ -13311,32 +13311,6 @@ __metadata:
     webpack:
       optional: true
   checksum: 95bbed0425c42add3718f203d2cd2d8e97ae33bc0403b88cd800a12fb3f4cc5f681d108f4e64cd6cdf00b6715e538c913fd408b86c22a226b7e179c8d560e314
-  languageName: node
-  linkType: hard
-
-"unplugin@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "unplugin@npm:0.9.0"
-  dependencies:
-    acorn: ^8.8.0
-    chokidar: ^3.5.3
-    webpack-sources: ^3.2.3
-    webpack-virtual-modules: ^0.4.4
-  peerDependencies:
-    esbuild: ">=0.13"
-    rollup: ^2.50.0
-    vite: ^2.3.0 || ^3.0.0-0
-    webpack: 4 || 5
-  peerDependenciesMeta:
-    esbuild:
-      optional: true
-    rollup:
-      optional: true
-    vite:
-      optional: true
-    webpack:
-      optional: true
-  checksum: 94fd5fa597e1607831134dd34d18ddcb20d24f473a88ca34dc89b4cd0d4c17ca5eb5987b0152dab52c9ae146fc9a768556a2b89dd8725947c97c95cd6640ca86
   languageName: node
   linkType: hard
 
