@@ -10,7 +10,6 @@ export interface NuxtError extends H3Error {}
 
 export const showError = (_err: string | Error | Partial<NuxtError>) => {
   const err = createError(_err)
-  err.fatal = true
 
   try {
     const nuxtApp = useNuxtApp()

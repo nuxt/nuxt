@@ -165,6 +165,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     if (to.matched.length === 0) {
       callWithNuxt(nuxtApp, showError, [createError({
         statusCode: 404,
+        fatal: false,
         statusMessage: `Page not found: ${to.fullPath}`
       })])
     } else if (process.server && to.matched[0].name === '404' && nuxtApp.ssrContext) {
