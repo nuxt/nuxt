@@ -8734,6 +8734,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"listhen@npm:^0.2.14":
+  version: 0.2.14
+  resolution: "listhen@npm:0.2.14"
+  dependencies:
+    clipboardy: ^3.0.0
+    colorette: ^2.0.19
+    defu: ^6.0.0
+    get-port-please: ^2.6.0
+    http-shutdown: ^1.2.2
+    selfsigned: ^2.0.1
+    ufo: ^0.8.5
+  checksum: 5527b02b39b7bfe15d6b560726ce7489950d6027a87c208709b73c6223cd751fbf18461479c17b21fff30b9a45572527cd09a0fe901e3569ed6f36df00a921fe
+  languageName: node
+  linkType: hard
+
 "load-json-file@npm:^4.0.0":
   version: 4.0.0
   resolution: "load-json-file@npm:4.0.0"
@@ -10011,7 +10026,7 @@ __metadata:
     flat: ^5.0.2
     fsevents: ~2.3.2
     jiti: ^1.14.0
-    listhen: ^0.2.13
+    listhen: ^0.2.14
     mlly: ^0.5.7
     mri: ^1.2.0
     pathe: ^0.3.3
