@@ -32,7 +32,7 @@
     "estree-walker": "^3.0.1",
     "externality": "^0.2.2",
     "fs-extra": "^10.1.0",
-    "get-port-please": "^2.5.0",
+    "get-port-please": "^2.6.0",
     "h3": "^0.7.13",
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
@@ -52,7 +52,7 @@
     "vite": "~3.0.4",
     "vite-node": "^0.21.0",
     "vite-plugin-checker": "^0.4.9",
-    "vue-bundle-renderer": "^0.4.0"
+    "vue-bundle-renderer": "^0.4.1"
   },
   "peerDependencies": {
     "vue": "^3.2.37"

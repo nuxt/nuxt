@@ -17,7 +17,7 @@
     "@nuxt/schema": "^3.0.0-rc.6",
     "defu": "^6.0.0",
     "execa": "^6.1.0",
-    "get-port-please": "^2.5.0",
+    "get-port-please": "^2.6.0",
     "jiti": "^1.14.0",
     "ohmyfetch": "^0.4.18"
   },
