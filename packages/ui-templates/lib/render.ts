@@ -87,13 +87,13 @@ export const RenderPlugin = () => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
-        const globalStyles = styleContent.replace(/(\.[^{]*\{[^}]*\})+.?/g, (r) => {
+        const globalStyles = styleContent.replace(/(\.[^{\d][^{]*?\{[^}]*?\})+.?/g, (r) => {
           const lastChar = r[r.length - 1]
           if (lastChar && !['}', '.', '@', '*', ':'].includes(lastChar)) {
             return ';' + lastChar
           }
           return lastChar
-        }).replace(/@media[^{]*\{\}/g, '')
+        }).replace(/@media[^{]*?\{\}/g, '')
         const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
           .map(block => block[1])
           .filter(i => !i.includes('const t=document.createElement("link")'))
