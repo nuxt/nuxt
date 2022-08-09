@@ -34,10 +34,9 @@ export default {
     /**
      * Split server bundle into multiple chunks and dynamically import them
      *
-     * Note: Enabling this flag can cause hydration issues in some platform.
      *
      * @see https://github.com/nuxt/framework/issues/6432
      */
-     viteServerDynamicImports: false,
+     viteServerDynamicImports: true,
   }
 }
