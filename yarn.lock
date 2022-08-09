@@ -1770,7 +1770,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.5
-    vite: ~3.0.4
+    vite: ~3.0.5
   languageName: unknown
   linkType: soft
 
@@ -1889,8 +1889,8 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.9.0
-    vite: ~3.0.4
-    vite-node: ^0.21.0
+    vite: ~3.0.5
+    vite-node: ^0.21.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
     vue-bundle-renderer: ^0.4.1
@@ -9490,7 +9490,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.5.2, mlly@npm:^0.5.3, mlly@npm:^0.5.4, mlly@npm:^0.5.5":
+"mlly@npm:^0.5.2, mlly@npm:^0.5.3, mlly@npm:^0.5.4":
   version: 0.5.5
   resolution: "mlly@npm:0.5.5"
   dependencies:
@@ -11216,7 +11216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.4.13, postcss@npm:^8.4.14, postcss@npm:^8.4.7":
+"postcss@npm:^8, postcss@npm:^8.1.10, postcss@npm:^8.4.13, postcss@npm:^8.4.7":
   version: 8.4.14
   resolution: "postcss@npm:8.4.14"
   dependencies:
@@ -13472,17 +13472,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.21.0":
-  version: 0.21.0
-  resolution: "vite-node@npm:0.21.0"
+"vite-node@npm:^0.21.1":
+  version: 0.21.1
+  resolution: "vite-node@npm:0.21.1"
   dependencies:
     debug: ^4.3.4
-    mlly: ^0.5.5
+    mlly: ^0.5.7
     pathe: ^0.2.0
     vite: ^2.9.12 || ^3.0.0-0
   bin:
     vite-node: vite-node.mjs
-  checksum: ba22e9a61f26e64d9c6d12f88f14afe2cb2caa13884288573d18781df7f8e0faef9c7b937ee52871175d8c352a68dcd0e98c0c3b73b6743efb058ef3071a95c5
+  checksum: c586e02ea024769bbc5febf97574b222b6729aef665bf3e0f4c0075434186d74810638322f31def2cde3502d4108e82fc826bd7c0a42ed48c5bae6ef0a05c2c4
   languageName: node
   linkType: hard
 
@@ -13513,13 +13513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~3.0.4":
-  version: 3.0.4
-  resolution: "vite@npm:3.0.4"
+"vite@npm:~3.0.5":
+  version: 3.0.5
+  resolution: "vite@npm:3.0.5"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
-    postcss: ^8.4.14
+    postcss: ^8.4.16
     resolve: ^1.22.1
     rollup: ^2.75.6
   peerDependencies:
@@ -13541,7 +13541,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: f13eceb94f7b399942ce5e7c10df73314f7b073171d6594228b078cc1203042c4cdb9e8356fe64ad444c3533c31437abb3c64ac56478f0865fab598e924cf68b
+  checksum: c00ec43356469032fa261872b028740526d5a5726132cb306741e2d9dca241dcb7b0b5d39181d5ebc39c5e82396511080640fa302c66e713a622e8bfa1f14a8d
   languageName: node
   linkType: hard
 
