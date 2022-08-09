@@ -56,6 +56,7 @@ function getManifest (ctx: ViteBuildContext) {
     '@vite/client': {
       file: '@vite/client',
       css,
+      module: true,
       isEntry: true
     },
     [ctx.entry]: {
