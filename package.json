@@ -53,7 +53,7 @@
     "case-police": "^0.5.6",
     "changelogen": "^0.1.1",
     "eslint": "^8.21.0",
-    "eslint-plugin-jsdoc": "^39.3.4",
+    "eslint-plugin-jsdoc": "^39.3.6",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
     "globby": "^13.1.2",
