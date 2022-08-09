@@ -131,8 +131,14 @@ export function useAsyncData<
     }
     asyncData.pending.value = true
     // TODO: Cancel previous promise
-    nuxt._asyncDataPromises[key] = Promise.resolve()
-      .then(() => handler(nuxt))
+    nuxt._asyncDataPromises[key] = new Promise<DataT>(
+      (resolve, reject) => {
+        try {
+          resolve(handler(nuxt))
+        } catch (err) {
+          reject(err)
+        }
+      })
       .then((result) => {
         if (options.transform) {
           result = options.transform(result)
