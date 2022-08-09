@@ -9619,9 +9619,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.4.14":
-  version: 0.4.14
-  resolution: "nitropack@npm:0.4.14"
+"nitropack@npm:^0.4.16":
+  version: 0.4.16
+  resolution: "nitropack@npm:0.4.16"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.0.0
@@ -9678,13 +9678,13 @@ __metadata:
     source-map-support: ^0.5.21
     std-env: ^3.1.1
     ufo: ^0.8.5
-    unenv: ^0.5.2
+    unenv: ^0.5.3
     unimport: ^0.6.5
     unstorage: ^0.5.6
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 86d4163a6d4dfa3919b7dd48156abbc3af9f6ad8d87aa296e490828d7bc90101546fdadd5ec2f79c31949ad2d1832ae99a39eb0094f9d7334d5c9daa9ede2925
+  checksum: 7964b5dfe83521ddea37117a03642b6cae185d60bb8e4771526c3ba54a8accee9a41bfdeb2e5ede5e13aba0b72b41490dc3ec03477b35e836e485927c116f42b
   languageName: node
   linkType: hard
 
@@ -9711,7 +9711,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch-native@npm:^0.1.2, node-fetch-native@npm:^0.1.3, node-fetch-native@npm:^0.1.4":
+"node-fetch-native@npm:^0.1.3, node-fetch-native@npm:^0.1.4":
   version: 0.1.4
   resolution: "node-fetch-native@npm:0.1.4"
   checksum: f7c5feb80159e95ac2165cfa650c8446158e3b1549f6046d83f75bd89cc32ef4673a57b9a19fc0335ad77a08527aed4cf53d83dc3d41ef628672fe97369f7f87
@@ -10111,7 +10111,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.2
     mlly: ^0.5.7
-    nitropack: ^0.4.14
+    nitropack: ^0.4.16
     nuxi: ^3.0.0-rc.6
     ohash: ^0.1.5
     ohmyfetch: ^0.4.18
@@ -13133,18 +13133,6 @@ __metadata:
   version: 5.8.0
   resolution: "undici@npm:5.8.0"
   checksum: 7b486ad064da00628d3906e140b86223023cd3494c811da8d7aa1375c2392fe6a6ac421af236c056fd3d3136bba3a91b99e0505dde071dd946070946eb0718b8
-  languageName: node
-  linkType: hard
-
-"unenv@npm:^0.5.2":
-  version: 0.5.2
-  resolution: "unenv@npm:0.5.2"
-  dependencies:
-    defu: ^6.0.0
-    mime: ^3.0.0
-    node-fetch-native: ^0.1.2
-    pathe: ^0.3.0
-  checksum: 07efccc473e419cad22e86aac504bb49f9fc9c22c85fa8b830d6fbdf2aea39f82278bd70306a5c42dc26c6bc5f5034b23ea4f14bfd73ba9db7370a9e9b34fc6e
   languageName: node
   linkType: hard
 
