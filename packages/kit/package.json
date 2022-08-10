@@ -29,7 +29,7 @@
     "scule": "^0.3.2",
     "semver": "^7.3.7",
     "unctx": "^2.0.1",
-    "unimport": "^0.6.5",
+    "unimport": "^0.6.7",
     "untyped": "^0.4.5"
   },
   "devDependencies": {
