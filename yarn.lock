@@ -2083,7 +2083,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^22.0.1, @rollup/plugin-commonjs@npm:^22.0.2":
+"@rollup/plugin-commonjs@npm:^22.0.2":
   version: 22.0.2
   resolution: "@rollup/plugin-commonjs@npm:22.0.2"
   dependencies:
@@ -5810,7 +5810,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.49, esbuild@npm:^0.14.54":
+"esbuild@npm:^0.14.39, esbuild@npm:^0.14.47, esbuild@npm:^0.14.54":
   version: 0.14.54
   resolution: "esbuild@npm:0.14.54"
   dependencies:
@@ -9316,7 +9316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.5.2, mlly@npm:^0.5.3, mlly@npm:^0.5.4, mlly@npm:^0.5.7":
+"mlly@npm:^0.5.2, mlly@npm:^0.5.3, mlly@npm:^0.5.7, mlly@npm:^0.5.9":
   version: 0.5.9
   resolution: "mlly@npm:0.5.9"
   dependencies:
@@ -9880,7 +9880,7 @@ __metadata:
     pathe: ^0.3.3
     rimraf: ^3.0.2
     typescript: ^4.7.4
-    unbuild: ^0.7.6
+    unbuild: ^0.8.4
     vitest: ~0.19.1
     vue-tsc: ^0.39.5
   languageName: unknown
@@ -10493,7 +10493,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pathe@npm:^0.3.0, pathe@npm:^0.3.2, pathe@npm:^0.3.3":
+"pathe@npm:^0.3.0, pathe@npm:^0.3.3":
   version: 0.3.3
   resolution: "pathe@npm:0.3.3"
   checksum: 4d30221a4354b929bcb41a0f572ec47999d4540c9bf951d7e5725bfea8d3761dce40cc42291d078b0d9a838f166d7e22407ffaa9c01c637ab251cd9371f7d38d
@@ -11599,7 +11599,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.75.6, rollup@npm:^2.77.0, rollup@npm:^2.77.2":
+"rollup@npm:^2.75.6, rollup@npm:^2.77.2":
   version: 2.77.2
   resolution: "rollup@npm:2.77.2"
   dependencies:
@@ -12854,12 +12854,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.7.6":
-  version: 0.7.6
-  resolution: "unbuild@npm:0.7.6"
+"unbuild@npm:^0.8.4":
+  version: 0.8.4
+  resolution: "unbuild@npm:0.8.4"
   dependencies:
     "@rollup/plugin-alias": ^3.1.9
-    "@rollup/plugin-commonjs": ^22.0.1
+    "@rollup/plugin-commonjs": ^22.0.2
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-replace": ^4.0.0
@@ -12867,27 +12867,27 @@ __metadata:
     chalk: ^5.0.1
     consola: ^2.15.3
     defu: ^6.0.0
-    esbuild: ^0.14.49
+    esbuild: ^0.15.0
     hookable: ^5.1.1
     jiti: ^1.14.0
     magic-string: ^0.26.2
     mkdirp: ^1.0.4
     mkdist: ^0.3.13
-    mlly: ^0.5.4
+    mlly: ^0.5.9
     mri: ^1.2.0
-    pathe: ^0.3.2
+    pathe: ^0.3.3
     pkg-types: ^0.3.3
     pretty-bytes: ^6.0.0
     rimraf: ^3.0.2
-    rollup: ^2.77.0
+    rollup: ^2.77.2
     rollup-plugin-dts: ^4.2.2
     rollup-plugin-esbuild: ^4.9.1
-    scule: ^0.2.1
+    scule: ^0.3.2
     typescript: ^4.7.4
-    untyped: ^0.4.4
+    untyped: ^0.4.5
   bin:
     unbuild: dist/cli.mjs
-  checksum: 105e3d26afaf200c80b2e668ef2704aafae4be97627418f85a5eed515094aba1d6f95e54d2e1eb437c4d7d2d97d1e73a4d8dff280efd1867b476469ff52db3fe
+  checksum: 42a840c17f679b71f6678272e5963fc2a0c1f6368da1bb835eabcc785d44ca971446e98a650bc7756ffd3dfa34f5048f426c4b08edb6192ebdd4d8ff240b6e15
   languageName: node
   linkType: hard
 
@@ -13123,7 +13123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"untyped@npm:^0.4.4, untyped@npm:^0.4.5":
+"untyped@npm:^0.4.5":
   version: 0.4.5
   resolution: "untyped@npm:0.4.5"
   dependencies:
