@@ -15,20 +15,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     headReady = true
   })
 
-  const titleTemplate = ref<MetaObject['titleTemplate']>()
-
   nuxtApp._useHead = (_meta: MetaObject | ComputedGetter<MetaObject>) => {
     const meta = ref<MetaObject>(_meta)
-    if ('titleTemplate' in meta.value) {
-      titleTemplate.value = meta.value.titleTemplate
-    }
-
     const headObj = computed(() => {
       const overrides: MetaObject = { meta: [] }
-      // cast a null titleTemplate to an empty string so @vueuse/head ignores it
-      if (titleTemplate.value === null) {
-        overrides.titleTemplate = ''
-      }
       if (meta.value.charset) {
         overrides.meta!.push({ key: 'charset', charset: meta.value.charset })
       }

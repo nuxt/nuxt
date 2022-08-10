@@ -27,7 +27,7 @@ const config = useRuntimeConfig()
 
 // reset title template example
 useHead({
-  titleTemplate: null
+  titleTemplate: ''
 })
 
 const foo = useFoo()
