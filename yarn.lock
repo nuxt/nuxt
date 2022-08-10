@@ -1653,7 +1653,7 @@ __metadata:
     jiti: ^1.14.0
     knitwork: ^0.1.2
     lodash.template: ^4.5.0
-    mlly: ^0.5.7
+    mlly: ^0.5.9
     pathe: ^0.3.3
     pkg-types: ^0.3.3
     scule: ^0.3.2
@@ -1794,7 +1794,7 @@ __metadata:
     h3: ^0.7.14
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.7
+    mlly: ^0.5.9
     ohash: ^0.1.5
     pathe: ^0.3.3
     perfect-debounce: ^0.1.3
@@ -1845,7 +1845,7 @@ __metadata:
     magic-string: ^0.26.2
     memfs: ^3.4.7
     mini-css-extract-plugin: ^2.6.1
-    mlly: ^0.5.7
+    mlly: ^0.5.9
     ohash: ^0.1.5
     pathe: ^0.3.3
     pify: ^6.0.0
@@ -9841,7 +9841,7 @@ __metadata:
     fsevents: ~2.3.2
     jiti: ^1.14.0
     listhen: ^0.2.15
-    mlly: ^0.5.7
+    mlly: ^0.5.9
     mri: ^1.2.0
     pathe: ^0.3.3
     perfect-debounce: ^0.1.3
@@ -9927,7 +9927,7 @@ __metadata:
     hookable: ^5.1.1
     knitwork: ^0.1.2
     magic-string: ^0.26.2
-    mlly: ^0.5.7
+    mlly: ^0.5.9
     nitropack: ^0.4.18
     nuxi: ^3.0.0-rc.6
     ohash: ^0.1.5
