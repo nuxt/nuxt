@@ -10,6 +10,7 @@
     "@docus/theme",
     "@docus/twitter",
     "vitest",
-    "unplugin"
+    "unplugin",
+    "vue-tsc"
   ]
 }
