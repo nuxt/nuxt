@@ -13,10 +13,10 @@ export default {
    */
   vite: {
     root: {
-      $resolve: (val, get) => val ?? get('srcDir'),
+      $resolve: (val, get) => val ?? get('srcDir')
     },
     mode: {
-      $resolve: (val, get) => val ?? (get('dev') ? 'development' : 'production'),
+      $resolve: (val, get) => val ?? (get('dev') ? 'development' : 'production')
     },
     logLevel: 'warn',
     define: {
@@ -26,27 +26,29 @@ export default {
       })
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: (val, get) => val ?? resolve(get('srcDir'), get('dir').public),
+      $resolve: (val, get) => val ?? resolve(get('srcDir'), get('dir').public)
     },
     vue: {
       isProduction: {
-        $resolve: (val, get) => val ?? !get('dev'),
+        $resolve: (val, get) => val ?? !get('dev')
       },
-      template: { compilerOptions: {
-        $resolve: (val, get) => val ?? get('vue').compilerOptions }
-      },
+      template: {
+        compilerOptions: {
+          $resolve: (val, get) => val ?? get('vue').compilerOptions
+        }
+      }
     },
     optimizeDeps: {
       exclude: {
         $resolve: (val, get) => [
           ...val || [],
-        ...get('build.transpile').filter(i => typeof i === 'string'),
-        'vue-demi'
-      ],
-      },
+          ...get('build.transpile').filter((i) => typeof i === 'string'),
+          'vue-demi'
+        ]
+      }
     },
     esbuild: {
       jsxFactory: 'h',
@@ -56,9 +58,9 @@ export default {
     clearScreen: false,
     build: {
       assetsDir: {
-        $resolve: (val, get) => val ?? withoutLeadingSlash(get('app').buildAssetsDir),
+        $resolve: (val, get) => val ?? withoutLeadingSlash(get('app').buildAssetsDir)
       },
-      emptyOutDir: false,
+      emptyOutDir: false
     },
     server: {
       fs: {

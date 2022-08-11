@@ -23,7 +23,7 @@ export interface Component {
 export interface ScanDir {
   /**
    * Path (absolute or relative) to the directory containing your components.
-   * You can use Nuxt aliases (~ or @) to refer to directories inside project or directly use a npm package path similar to require.
+   * You can use Nuxt aliases (~ or @) to refer to directories inside project or directly use an npm package path similar to require.
    */
   path: string
   /**
@@ -39,7 +39,7 @@ export interface ScanDir {
    */
   prefix?: string
   /**
-   * Prefix component name by it's path.
+   * Prefix component name by its path.
    */
   pathPrefix?: boolean
   /**
@@ -62,7 +62,7 @@ export interface ScanDir {
    */
   preload?: boolean
   /**
-   * This flag indicates, component should be loaded async (with a seperate chunk) regardless of using Lazy prefix or not.
+   * This flag indicates, component should be loaded async (with a separate chunk) regardless of using Lazy prefix or not.
    */
   isAsync?: boolean
 

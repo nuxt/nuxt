@@ -20,7 +20,7 @@ export default {
         webpack: '@nuxt/webpack-builder',
       }
       return map[val] || (get('vite') === false ? map.webpack : map.vite)
-    },
+    }
   },
   /**
    * Whether to generate sourcemaps.
@@ -159,7 +159,7 @@ export default {
 
     /**
      * Enable caching for [`terser-webpack-plugin`](https://github.com/webpack-contrib/terser-webpack-plugin#options)
-     * and [`cache-loader`](https://github.com/webpack-contrib/cache-loader#cache-loader)
+     * and [`cache-loader`](https://github.com/webpack-contrib/cache-loader#cache-loader).
      *
      * @warning This is an unstable feature.
      * @version 2
@@ -167,7 +167,7 @@ export default {
     cache: false,
 
     /**
-     * Inline server bundle dependencies
+     * Inline server bundle dependencies.
      *
      * This mode bundles `node_modules` that are normally preserved as externals in the server build.
      *
@@ -618,7 +618,7 @@ export default {
       ]
     },
     /**
-     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin)
+     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin).
      * @version 2
      */
     friendlyErrors: true,

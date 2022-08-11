@@ -8,7 +8,7 @@ import { RuntimeConfig } from '../types/config'
 
 export default {
   /**
-   * Extend nested configurations from multiple local or remote sources
+   * Extend nested configurations from multiple local or remote sources.
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
@@ -38,7 +38,7 @@ export default {
   /**
    * Define the source directory of your Nuxt application.
    *
-   * If a relative path is specified it will be relative to the `rootDir`.
+   * If a relative path is specified, it will be relative to the `rootDir`.
    *
    * @example
    * ```js
@@ -91,22 +91,22 @@ export default {
   /**
    * Whether Nuxt is running in development mode.
    *
-   * Normally you should not need to set this.
+   * Normally, you should not need to set this.
    * @version 2
    * @version 3
    */
   dev: Boolean(isDevelopment),
 
   /**
-   * Whether your app is being unit tested
+   * Whether your app is being unit tested.
    * @version 2
    */
   test: Boolean(isDevelopment),
 
   /**
-   * Set to true to enable debug mode.
+   * Set to `true` to enable debug mode.
    *
-   * By default it's only enabled in development mode.
+   * By default, it's only enabled in development mode.
    * @version 2
    */
   debug: {
@@ -114,9 +114,9 @@ export default {
   },
 
   /**
-   * The env property defines environment variables that should be available
+   * The `env` property defines environment variables that should be available
    * throughout your app (server- and client-side). They can be assigned using
-   * server side environment variables.
+   * server-side environment variables.
    *
    * @note Nuxt uses webpack's `definePlugin` to define these environment variables.
    * This means that the actual `process` or `process.env` from Node.js is neither
@@ -185,7 +185,7 @@ export default {
   ssr: true,
 
   /**
-   * @deprecated use ssr option
+   * @deprecated use `ssr` option
    */
   mode: {
     $resolve: (val, get) => val || (get('ssr') ? 'spa' : 'universal'),
@@ -216,7 +216,7 @@ export default {
   modern: undefined,
 
   /**
-   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations
+   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
    *
    * Each module is either a string (which can refer to a package, or be a path to a file), a
    * tuple with the module as first string and the options as a second object, or an inline module function.
@@ -248,7 +248,7 @@ export default {
   /**
    * Modules that are only required during development and build time.
    *
-   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations
+   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
    *
    * Each module is either a string (which can refer to a package, or be a path to a file), a
    * tuple with the module as first string and the options as a second object, or an inline module function.
@@ -283,18 +283,18 @@ export default {
   buildModules: [],
 
   /**
-   * Built-in ad-hoc modules
+   * Built-in ad-hoc modules.
    *
    *  @private
    */
   _modules: [],
 
   /**
-   * Installed module metadata
+   * Installed module metadata.
    *
    * @version 3
    * @private
-  */
+   */
   _installedModules: [],
 
   /**
@@ -333,8 +333,8 @@ export default {
    * for an external server.
    *
    * You can pass a string, which can be the name of a node dependency or a path to a file. You
-   * can also pass an object with `path` and `handler` keys. (`handler` can be a path or a
-   * function.)
+   * can also pass an object with `path` and `handler` keys (`handler` can be a path or a
+   * function).
    *
    * @note If you pass a function directly, it will only run in development mode.
    *
@@ -434,7 +434,7 @@ export default {
   },
 
   /**
-   * Customize default directory structure used by nuxt.
+   * Customize default directory structure used by Nuxt.
    *
    * It is better to stick with defaults unless needed.
    * @version 2
@@ -442,7 +442,7 @@ export default {
    */
   dir: {
     /**
-     * The assets directory (aliased as `~assets` in your build)
+     * The assets directory (aliased as `~assets` in your build).
      * @version 2
      */
     assets: 'assets',
@@ -737,7 +737,7 @@ export default {
    * @type {typeof import('../src/types/config').PrivateRuntimeConfig}
    * @version 2
    * @version 3
-   * @deprecated Use `runtimeConfig` option
+   * @deprecated Use `runtimeConfig` option.
    */
   privateRuntimeConfig: {},
 
@@ -745,7 +745,7 @@ export default {
    * @type {typeof import('../src/types/config').PublicRuntimeConfig}
    * @version 2
    * @version 3
-   * @deprecated Use `runtimeConfig` option with `public` key (`runtimeConfig.public.*`)
+   * @deprecated Use `runtimeConfig` option with `public` key (`runtimeConfig.public.*`).
    */
   publicRuntimeConfig: {}
 }

@@ -30,24 +30,24 @@ export default {
   /**
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
    *
-   * This option is automatically set based on global ssr value if not provided.
-   * This can be useful to dynamically enable/disable SSR on runtime after image builds
-   * (with docker for example).
+   * This option is automatically set based on global SSR value if not provided.
+   * This can be useful to dynamically enable/disable SSR at runtime after image builds
+   * (with docker, for example).
    */
   ssr: undefined,
 
   /**
-   * Forward server-side logs to the browser for better debugging (only available in development)
+   * Forward server-side logs to the browser for better debugging (only available in development).
    *
-   * Set to `collapsed` to collapse the logs, or false to disable.
+   * Set to `collapsed` to collapse the logs, or `false` to disable.
    */
   ssrLog: { $resolve: (val, get) => get('dev') ? Boolean(val) : false },
 
   /**
-   * Configuration for HTTP2 push headers
+   * Configuration for HTTP2 push headers.
    */
   http2: {
-    /** Set to true to enable HTTP2 push headers */
+    /** Set to true to enable HTTP2 push headers. */
     push: false,
     /** @deprecated */
     shouldPush: null,
@@ -142,7 +142,7 @@ export default {
    * to serve your SSR application.
    *
    * **Updating settings**:
-   * These settings are read by the Nuxt server directly from `nuxt.config.js`.
+   * These settings are read by the Nuxt server directly from `nuxt.config`.
    * This means changes to these settings take effect when the server is restarted.
    * There is no need to rebuild the application to update CSP settings.
    *
@@ -169,7 +169,7 @@ export default {
    * for logging and analytic tracking.
    *
    * Review [this blog on Sentry.io](https://blog.sentry.io/2018/09/04/how-sentry-captures-csp-violations)
-   * To learn what tracking link you should use.
+   * to learn what tracking link you should use.
    * @example
    * ```js
    * // PRIMARY_HOSTS = `loc.example-website.com`
@@ -226,7 +226,7 @@ export default {
          */
         addMeta: Boolean(get('target') === 'static'),
         /**
-         * Set option `unsafeInlineCompatibility` to true if you want both hashes and
+         * Set option `unsafeInlineCompatibility` to `true` if you want both hashes and
          * 'unsafe-inline' for CSPv1 compatibility. In that case the `<meta>` tag will
          * still only contain the hashes of the inline `<script>` tags, and the policies
          * defined under `csp.policies` will be used in the `Content-Security-Policy`
@@ -272,14 +272,14 @@ export default {
    */
   fallback: {
     /**
-     * For routes matching the publicPath (`/_nuxt/*`)
-     * Disable by setting to false.
+     * For routes matching the publicPath (`/_nuxt/*`).
+     * Disable by setting to `false`.
      */
     dist: {},
 
     /**
-     * For all other routes (`/*`)
-     * Disable by setting to false.
+     * For all other routes (`/*`).
+     * Disable by setting to `false`.
      */
     static: {
       skipUnknown: true,

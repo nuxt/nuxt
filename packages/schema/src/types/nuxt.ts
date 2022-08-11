@@ -4,7 +4,7 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
 import type { NuxtOptions } from './config'
 
 export interface Nuxt {
-  // Private fields
+  // Private fields.
   _version: string
   _ignore?: Ignore
 
@@ -18,7 +18,7 @@ export interface Nuxt {
   ready: () => Promise<void>
   close: () => Promise<void>
 
-  /** The production or development server */
+  /** The production or development server. */
   server?: any
 
   vfs: Record<string, string>
@@ -37,7 +37,7 @@ export interface NuxtTemplate {
   options?: Record<string, any>
   /** The resolved path to the source file to be template */
   src?: string
-  /** Provided compile option intead of src */
+  /** Provided compile option instead of src */
   getContents?: (data: Record<string, any>) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean

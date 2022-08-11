@@ -23,7 +23,7 @@ export default {
     typeCheck: false,
 
     /**
-     * You can extend generated `.nuxt/tsconfig.json` using this option
+     * You can extend generated `.nuxt/tsconfig.json` using this option.
      * @type {typeof import('pkg-types')['readPackageJSON']}
      */
     tsConfig: {},

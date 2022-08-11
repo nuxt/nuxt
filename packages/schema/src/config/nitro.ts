@@ -1,17 +1,17 @@
 export default {
   /**
-   * Configuration for Nitro
+   * Configuration for Nitro.
    *
    * @see https://nitro.unjs.io/config/
    *
    * @type {typeof import('nitropack')['NitroConfig']}
    * @version 2
    * @version 3
-  */
+   */
   nitro: {},
 
   /**
-   * Nitro server handlers
+   * Nitro server handlers.
    *
    * @see https://nitro.unjs.io/guide/routing.html
    *
@@ -23,12 +23,12 @@ export default {
   serverHandlers: [],
 
   /**
-   * Nitro devevelopment-only server handlers
+   * Nitro development-only server handlers.
    *
    * @see https://nitro.unjs.io/guide/routing.html
    *
    * @type {typeof import('nitropack')['NitroDevEventHandler'][]}
    * @version 3
    */
-   devServerHandlers: []
+  devServerHandlers: []
 }

@@ -2,31 +2,30 @@ import { normalizeURL, withTrailingSlash } from 'ufo'
 
 export default {
   /**
-   * Additional options passed to vue-router
+   * Additional options passed to `vue-router`.
    *
    * Note: Only JSON serializable options should be passed by nuxt config.
    *
    * For more control, you can use `app/router.optionts.ts` file.
    *
-   * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html)
+   * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
    * @type {import('../src/types/router').RouterConfigSerializable}
    *
    * @version 3
    */
   options: {},
 
-
   /**
    * Configure the router mode.
    *
-   * For server-side rendering it is not recommended to change it./**
+   * For server-side rendering it is not recommended to change it.
    * @version 2
    */
   mode: 'history',
 
   /**
    * The base URL of the app. For example, if the entire single page application is
-   * served under /app/, then base should use the value '/app/'.
+   * served under `/app/`, then base should use the value `'/app/'`.
    *
    * This can be useful if you need to serve Nuxt as a different context root, from
    * within a bigger web site.
@@ -75,7 +74,7 @@ export default {
   linkExactActiveClass: 'nuxt-link-exact-active',
 
   /**
-   * Globally configure `<nuxt-link>` default prefetch class (feature disabled by default)
+   * Globally configure `<nuxt-link>` default prefetch class (feature disabled by default).
    * @version 2
    */
   linkPrefetchedClass: false,
@@ -105,9 +104,9 @@ export default {
   /**
    * The `scrollBehavior` option lets you define a custom behavior for the scroll
    * position between the routes. This method is called every time a page is
-   * rendered. To learn more about it.
+   * rendered. To learn more about it, see the `vue-router` documentation.
    *
-   * @see [vue-router `scrollBehavior` documentation](https://router.vuejs.org/guide/advanced/scroll-behavior.html)
+   * @see [vue-router `scrollBehavior` documentation](https://router.vuejs.org/guide/advanced/scroll-behavior.html).
    * @version 2
    */
   scrollBehavior: {
@@ -130,9 +129,9 @@ export default {
 
   /**
    * Controls whether the router should fall back to hash mode when the browser
-   * does not support history.pushState but mode is set to history.
+   * does not support history.pushState, but mode is set to history.
    *
-   * Setting this to false essentially makes every router-link navigation a full
+   * Setting this to `false` essentially makes every router-link navigation a full
    * page refresh in IE9. This is useful when the app is server-rendered and needs
    * to work in IE9, because a hash mode URL does not work with SSR.
    * @version 2
@@ -147,7 +146,7 @@ export default {
   prefetchLinks: true,
 
   /**
-   * When using nuxt generate with target: 'static', Nuxt will generate a
+   * When using `nuxt generate` with target: 'static', Nuxt will generate a
    * payload.js for each page.
    *
    * With this option enabled, Nuxt will automatically prefetch the payload of the
@@ -157,15 +156,15 @@ export default {
   prefetchPayloads: true,
 
   /**
-   * If this option is set to true, trailing slashes will be appended to every
-   * route. If set to false, they'll be removed.
+   * If this option is set to `true`, trailing slashes will be appended to every
+   * route. If set to `false`, they'll be removed.
    *
    * @warning This option should not be set without preparation and has to
    * be tested thoroughly. When setting `trailingSlash` to something else than
-   * undefined, the opposite route will stop working. Thus 301 redirects should
+   * `undefined`, the opposite route will stop working. Thus, 301 redirects should
    * be in place and your internal linking has to be adapted correctly. If you set
-   * `trailingSlash` to true, then only example.com/abc/ will work but not
-   * example.com/abc. On false, it's vice-versa
+   * `trailingSlash` to `true`, then only `example.com/abc/` will work, but not
+   * `example.com/abc`. On `false`, it's vice-versa.
    * @version 2
    */
   trailingSlash: undefined

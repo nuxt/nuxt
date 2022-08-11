@@ -2,7 +2,7 @@ import { UnimportOptions } from 'unimport'
 
 export interface AutoImportsOptions extends UnimportOptions {
   dirs?: string[]
-  global?: boolean,
+  global?: boolean
   transform?: {
     exclude?: RegExp[]
     include?: RegExp[]

@@ -9,34 +9,34 @@ export default {
     },
 
     /**
-     * Use vite-node for on-demand server chunk loading
+     * Use `vite-node` for on-demand server chunk loading.
      */
     viteNode: process.env.EXPERIMENTAL_VITE_NODE ? true : false,
 
     /**
-     * Enable Vue's reactivity transform
+     * Enable Vue's reactivity transform.
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
      */
     reactivityTransform: false,
 
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when build
+     * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/framework/issues/4084
      */
     externalVue: false,
 
     /**
-     * Tree shakes contents of client-only components from server bundle
+     * Tree shakes contents of client-only components from server bundle.
      * @see https://github.com/nuxt/framework/pull/5750
      */
     treeshakeClientOnly: false,
 
     /**
-     * Split server bundle into multiple chunks and dynamically import them
+     * Split server bundle into multiple chunks and dynamically import them.
      *
      *
      * @see https://github.com/nuxt/framework/issues/6432
      */
-     viteServerDynamicImports: true,
+     viteServerDynamicImports: true
   }
 }

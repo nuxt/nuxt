@@ -10,8 +10,8 @@ export interface NuxtCompatibility {
   /**
    * Bridge constraint for Nuxt 2 support.
    *
-   * - `true`:  When using Nuxt 2, using bridge module is required
-   * - `false`: When using Nuxt 2, using bridge module is not supported
+   * - `true`:  When using Nuxt 2, using bridge module is required.
+   * - `false`: When using Nuxt 2, using bridge module is not supported.
   */
   bridge?: boolean
 }
@@ -23,7 +23,7 @@ export interface NuxtCompatibilityIssue {
 
 export interface NuxtCompatibilityIssues extends Array<NuxtCompatibilityIssue> {
   /**
-   * Return formatted error message
+   * Return formatted error message.
    */
   toString(): string
 }

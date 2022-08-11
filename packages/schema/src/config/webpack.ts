@@ -35,7 +35,7 @@ export default {
      *
      * It is normally enabled by CLI argument `--profile`.
      *
-     * @see [webpackbar](https://github.com/unjs/webpackbar#profile)
+     * @see [webpackbar](https://github.com/unjs/webpackbar#profile).
      */
     profile: process.argv.includes('--profile'),
 
@@ -91,7 +91,7 @@ export default {
     extractCSS: true,
 
     /**
-     * Enables CSS source map support (defaults to true in development)
+     * Enables CSS source map support (defaults to `true` in development).
      */
     cssSourceMap: {
       $resolve: (val, get) => val ?? get('dev')
@@ -211,7 +211,7 @@ export default {
      *
      * Set to false to disable this plugin, or pass an object of options.
      *
-     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin)
+     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin).
      *
      * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
      * the end of each output file if webpack `config.devtool` is set to `source-map`.
@@ -246,7 +246,7 @@ export default {
      */
     optimization: {
       runtimeChunk: 'single',
-      /** Set minimize to false to disable all minimizers. (It is disabled in development by default) */
+      /** Set minimize to `false` to disable all minimizers. (It is disabled in development by default). */
       minimize: { $resolve: (val, get) => val ?? !get('dev') },
       /** You can set minimizer to a customized array of plugins. */
       minimizer: undefined,
@@ -288,7 +288,7 @@ export default {
      */
     hotMiddleware: {},
     /**
-     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin)
+     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin).
      */
     friendlyErrors: true,
     /**
