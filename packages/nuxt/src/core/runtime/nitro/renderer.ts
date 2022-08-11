@@ -15,16 +15,13 @@ export type NuxtSSRContext = NuxtApp['ssrContext']
 
 const defineRenderHandler = _defineRenderHandler as (h: RenderHandler) => CompatibilityEvent
 
-export interface NuxtRenderContext {
-  ssrContext: NuxtSSRContext
-  html: {
-    htmlAttrs: string[]
-    head: string[]
-    bodyAttrs: string[]
-    bodyPreprend: string[]
-    body: string[]
-    bodyAppend: string[]
-  }
+export interface NuxtRenderHTMLContext {
+  htmlAttrs: string[]
+  head: string[]
+  bodyAttrs: string[]
+  bodyPreprend: string[]
+  body: string[]
+  bodyAppend: string[]
 }
 
 export interface NuxtRenderResponse {
@@ -124,6 +121,7 @@ export default defineRenderHandler(async (event) => {
   const _rendered = await renderer.renderToString(ssrContext).catch((err) => {
     if (!ssrError) { throw err }
   })
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
   // Handle errors
   if (!_rendered) {
@@ -137,42 +135,38 @@ export default defineRenderHandler(async (event) => {
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   // Create render context
-  const rendered: NuxtRenderContext = {
-    ssrContext,
-    html: {
-      htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
-      head: normalizeChunks([
-        renderedMeta.headTags,
-        _rendered.renderResourceHints(),
-        _rendered.renderStyles(),
-        ssrContext.styles
-      ]),
-      bodyAttrs: normalizeChunks([renderedMeta.bodyAttrs]),
-      bodyPreprend: normalizeChunks([
-        renderedMeta.bodyScriptsPrepend,
-        ssrContext.teleports?.body
-      ]),
-      body: [
+  const htmlContext: NuxtRenderHTMLContext = {
+    htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
+    head: normalizeChunks([
+      renderedMeta.headTags,
+      _rendered.renderResourceHints(),
+      _rendered.renderStyles(),
+      ssrContext.styles
+    ]),
+    bodyAttrs: normalizeChunks([renderedMeta.bodyAttrs]),
+    bodyPreprend: normalizeChunks([
+      renderedMeta.bodyScriptsPrepend,
+      ssrContext.teleports?.body
+    ]),
+    body: [
       // TODO: Rename to _rendered.body in next vue-bundle-renderer
-        _rendered.html
-      ],
-      bodyAppend: normalizeChunks([
+      _rendered.html
+    ],
+    bodyAppend: normalizeChunks([
       `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`,
       _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
-      ])
-    }
+    ])
   }
 
   // Allow hooking into the rendered result
   const nitroApp = useNitroApp()
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', rendered)
-  await nitroApp.hooks.callHook('nuxt:app:rendered', rendered)
+  await nitroApp.hooks.callHook('render:html', htmlContext, { event })
 
   // Construct HTML response
   const response: RenderResponse = {
-    body: renderHTMLDocument(rendered),
+    body: renderHTMLDocument(htmlContext),
     statusCode: event.res.statusCode,
     statusMessage: event.res.statusMessage,
     headers: {
@@ -206,10 +200,10 @@ function joinAttrs (chunks: string[]) {
   return chunks.join(' ')
 }
 
-function renderHTMLDocument (rendered: NuxtRenderContext) {
+function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   return `<!DOCTYPE html>
-<html ${joinAttrs(rendered.html.htmlAttrs)}>
-<head>${joinTags(rendered.html.head)}</head>
-<body ${joinAttrs(rendered.html.bodyAttrs)}>${joinTags(rendered.html.bodyPreprend)}${joinTags(rendered.html.body)}${joinTags(rendered.html.bodyAppend)}</body>
+<html ${joinAttrs(html.htmlAttrs)}>
+<head>${joinTags(html.head)}</head>
+<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPreprend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
 </html>`
 }
