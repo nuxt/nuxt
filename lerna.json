@@ -1,5 +1,5 @@
 {
-  "version": "independent",
+  "version": "3.0.0-rc.7",
   "npmClient": "yarn",
   "useWorkspaces": true,
   "conventionalCommits": true,

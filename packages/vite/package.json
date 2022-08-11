@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.0.0-rc.6",
+  "version": "3.0.0-rc.7",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -13,13 +13,13 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/schema": "^3.0.0-rc.6",
+    "@nuxt/schema": "3.0.0-rc.7",
     "@types/cssnano": "^5",
     "unbuild": "latest",
     "vue": "3.2.37"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.0.0-rc.6",
+    "@nuxt/kit": "3.0.0-rc.7",
     "@rollup/plugin-replace": "^4.0.0",
     "@vitejs/plugin-vue": "^3.0.1",
     "@vitejs/plugin-vue-jsx": "^2.0.0",
@@ -36,7 +36,7 @@
     "h3": "^0.7.15",
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
-    "mlly": "^0.5.9",
+    "mlly": "^0.5.10",
     "ohash": "^0.1.5",
     "pathe": "^0.3.4",
     "perfect-debounce": "^0.1.3",
