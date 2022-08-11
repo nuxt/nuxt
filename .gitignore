@@ -23,7 +23,6 @@ dist
 .nuxt-*
 .output
 .gen
-nuxt.d.ts
 
 # Junit reports
 reports
