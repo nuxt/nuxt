@@ -17,7 +17,7 @@
     "@types/lodash.template": "^4",
     "@types/semver": "^7",
     "unbuild": "latest",
-    "vite": "~3.0.5"
+    "vite": "~3.0.6"
   },
   "dependencies": {
     "c12": "^0.2.9",

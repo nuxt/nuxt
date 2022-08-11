@@ -1688,7 +1688,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.7
-    vite: ~3.0.5
+    vite: ~3.0.6
   languageName: unknown
   linkType: soft
 
@@ -1741,10 +1741,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/ui-templates@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@nuxt/ui-templates@npm:0.3.0"
-  checksum: 075ccb9aa6c781b752a81c1866673623e9f8509b587701352b53620e092a54c943e853d984bf6951295f0c9a999098f5fc2f25fc3df72c7f2b17dcc9eb619bc9
+"@nuxt/ui-templates@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@nuxt/ui-templates@npm:0.3.1"
+  checksum: 06ab410f675bbd3c6aeae9202879007712176cdde1f3975296ff25f25851d751c2966edcdcbfa7ef12f03099791a95e84779fec81bafdcf6c1ecc466524c5e40
   languageName: node
   linkType: hard
 
@@ -1779,7 +1779,7 @@ __metadata:
     "@nuxt/schema": 3.0.0-rc.7
     "@rollup/plugin-replace": ^4.0.0
     "@types/cssnano": ^5
-    "@vitejs/plugin-vue": ^3.0.1
+    "@vitejs/plugin-vue": ^3.0.2
     "@vitejs/plugin-vue-jsx": ^2.0.0
     autoprefixer: ^10.4.8
     chokidar: ^3.5.3
@@ -1807,7 +1807,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.9.0
-    vite: ~3.0.5
+    vite: ~3.0.6
     vite-node: ^0.21.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
@@ -2916,13 +2916,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "@vitejs/plugin-vue@npm:3.0.1"
+"@vitejs/plugin-vue@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@vitejs/plugin-vue@npm:3.0.2"
   peerDependencies:
     vite: ^3.0.0
     vue: ^3.2.25
-  checksum: 8a48888f0e97bb9f0a7c59ca55546f4fcc316609850630ae27e9702ca7030b19d3c023e8a52de8631c243bc32825bf1a88b7ddd2b0f802916d47171465959159
+  checksum: cc48a91b5070c0455ce8f40e71c18dab56b3bfbef0519c4245eea6301142fa02eb225128e134fcab1a6e52e2e97bce88119156e31c6c3dacdc6bf537e7e7c6a4
   languageName: node
   linkType: hard
 
@@ -9920,7 +9920,7 @@ __metadata:
     "@nuxt/kit": 3.0.0-rc.7
     "@nuxt/schema": 3.0.0-rc.7
     "@nuxt/telemetry": ^2.1.4
-    "@nuxt/ui-templates": ^0.3.0
+    "@nuxt/ui-templates": ^0.3.1
     "@nuxt/vite-builder": 3.0.0-rc.7
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
@@ -11604,7 +11604,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.75.6, rollup@npm:^2.77.2, rollup@npm:^2.77.3":
+"rollup@npm:>=2.75.6 <2.77.0 || ~2.77.0, rollup@npm:^2.77.2, rollup@npm:^2.77.3":
   version: 2.77.3
   resolution: "rollup@npm:2.77.3"
   dependencies:
@@ -13280,15 +13280,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~3.0.5":
-  version: 3.0.5
-  resolution: "vite@npm:3.0.5"
+"vite@npm:~3.0.6":
+  version: 3.0.6
+  resolution: "vite@npm:3.0.6"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
     postcss: ^8.4.16
     resolve: ^1.22.1
-    rollup: ^2.75.6
+    rollup: ">=2.75.6 <2.77.0 || ~2.77.0"
   peerDependencies:
     less: "*"
     sass: "*"
@@ -13308,7 +13308,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: c00ec43356469032fa261872b028740526d5a5726132cb306741e2d9dca241dcb7b0b5d39181d5ebc39c5e82396511080640fa302c66e713a622e8bfa1f14a8d
+  checksum: 73e9015e9432b81093da1d00a4086afc5e8f1da415e4b15277c4c6a6997990983b94a5021f7e39e3204731ee1f526e4b71bd7cd0476d0d38f7da63e116cd6448
   languageName: node
   linkType: hard
 
