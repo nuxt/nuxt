@@ -4,16 +4,20 @@ import consola from 'consola'
 import { resolve } from 'pathe'
 import { resolveModule } from '../utils/cjs'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
-import { cleanupNuxtDirs, rmRecursive } from '../utils/fs'
+import { cleanupNuxtDirs, rmRecursive, touchFile } from '../utils/fs'
 import { defineNuxtCommand } from './index'
 
-async function getNuxtVersion (paths: string | string[]) {
-  const pkgJson = resolveModule('nuxt/package.json', paths)
-  const pkg = pkgJson && JSON.parse(await fsp.readFile(pkgJson, 'utf8'))
-  if (!pkg.version) {
-    consola.warn('Cannot find any installed nuxt versions in ', paths)
+async function getNuxtVersion (paths: string | string[]): Promise<string|null> {
+  try {
+    const pkgJson = resolveModule('nuxt/package.json', paths)
+    const pkg = pkgJson && JSON.parse(await fsp.readFile(pkgJson, 'utf8'))
+    if (!pkg.version) {
+      consola.warn('Cannot find any installed nuxt versions in ', paths)
+    }
+    return pkg.version || null
+  } catch {
+    return null
   }
-  return pkg.version || '0.0.0'
 }
 
 export default defineNuxtCommand({
@@ -25,6 +29,7 @@ export default defineNuxtCommand({
   async invoke (args) {
     const rootDir = resolve(args._[0] || '.')
 
+    // Check package manager
     const packageManager = getPackageManager(rootDir)
     if (!packageManager) {
       console.error('Cannot detect Package Manager in', rootDir)
@@ -33,25 +38,27 @@ export default defineNuxtCommand({
     const packageManagerVersion = execSync(`${packageManager} --version`).toString('utf8').trim()
     consola.info('Package Manager:', packageManager, packageManagerVersion)
 
-    const currentVersion = await getNuxtVersion(rootDir)
+    // Check currently installed nuxt version
+    const currentVersion = await getNuxtVersion(rootDir) || '[unknown]'
     consola.info('Current nuxt version:', currentVersion)
 
+    // Force install
     if (args.force || args.f) {
       consola.info('Removing lock-file and node_modules...')
-      await rmRecursive([
-        packageManagerLocks[packageManager],
-        fsp.rm('node_modules', { recursive: true })
-      ])
-      await cleanupNuxtDirs(rootDir)
-      consola.info('Installing nuxt...')
-      execSync(`${packageManager} install`, { stdio: 'inherit' })
-    } else {
-      await cleanupNuxtDirs(rootDir)
-      consola.info('Upgrading nuxt...')
-      execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit' })
+      const pmLockFile = resolve(rootDir, packageManagerLocks[packageManager])
+      await rmRecursive([pmLockFile, resolve(rootDir, 'node_modules')])
+      await touchFile(pmLockFile)
     }
 
-    const upgradedVersion = await getNuxtVersion(rootDir)
+    // Install latest rc
+    consola.info('Installing latest Nuxt 3 RC...')
+    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit' })
+
+    // Cleanup after upgrade
+    await cleanupNuxtDirs(rootDir)
+
+    // Check installed nuxt version again
+    const upgradedVersion = await getNuxtVersion(rootDir) || '[unknown]'
     consola.info('Upgraded nuxt version:', upgradedVersion)
 
     if (upgradedVersion === currentVersion) {
