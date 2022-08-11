@@ -51,13 +51,13 @@ async function transformRequest (opts: TransformOptions, id: string) {
   // On Windows, we prefix absolute paths with `/@fs/` to skip node resolution algorithm
   id = id.replace(/^\/?(?=\w:)/, '/@fs/')
 
-  // Vite will add ?v=123 to bypass browser cache
-  // Remove for externals
-  const withoutVersionQuery = id.replace(/\?v=\w+$/, '')
-  if (await opts.isExternal(withoutVersionQuery)) {
-    const path = builtinModules.includes(withoutVersionQuery.split('node:').pop())
-      ? withoutVersionQuery
-      : isAbsolute(withoutVersionQuery) ? pathToFileURL(withoutVersionQuery).href : withoutVersionQuery
+  // Remove query and @fs/ for external modules
+  const externalId = id.replace(/\?v=\w+$|^\/@fs/, '')
+
+  if (await opts.isExternal(externalId)) {
+    const path = builtinModules.includes(externalId.split('node:').pop())
+      ? externalId
+      : isAbsolute(externalId) ? pathToFileURL(externalId).href : externalId
     return {
       code: `(global, module, _, exports, importMeta, ssrImport, ssrDynamicImport, ssrExportAll) =>
 ${genDynamicImport(path, { wrapper: false })}
