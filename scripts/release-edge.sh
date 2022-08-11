@@ -24,6 +24,6 @@ fi
 for p in packages/* ; do
   pushd $p
   echo "Publishing $p"
-  npx npm@8.10.0 publish --access public --tolerate-republish
+  npx npm@8.17.0 publish --access public --tolerate-republish
   popd
 done
