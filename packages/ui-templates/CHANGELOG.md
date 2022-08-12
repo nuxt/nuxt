@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.1...@nuxt/ui-templates@0.3.2) (2022-08-12)
+
+
+### Features
+
+* **templates:** improve welcome screen luminance effect ([#142](https://github.com/nuxt/ui/issues/142)) ([7f8e554](https://github.com/nuxt/ui/commit/7f8e554c6682be8e11ad4965787dcb5ca92849e0))
+
+
+
+
+
 ## [0.3.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.0...@nuxt/ui-templates@0.3.1) (2022-08-11)
 
 
