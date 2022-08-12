@@ -16,12 +16,17 @@
       }
       .nuxt-loader-bar {
         background: repeating-linear-gradient(to right, #0047E1 0%, #34CDFE 25%, #00DC82 50%, #36E4DA 75%, #0047E1 100%);
-        width: 100%;
+        height: 100px;
         background-size: 200% auto;
         background-position: 0 0;
-        animation: gradient 2s infinite, width 8s infinite ease-in-out;
+        animation: gradient 2s infinite;
         animation-fill-mode: forwards;
         animation-timing-function: linear;
+        filter: blur(100px);
+        position: fixed;
+        bottom: -50px;
+        left: -50px;
+        right: -50px;
       }
       .mouse-gradient {
         background: repeating-linear-gradient(to right, #0047E1 0%, #34CDFE 50%, #00DC82 100%);
@@ -47,12 +52,37 @@
           width: 100%;
         }
       }
+      @media (prefers-color-scheme: dark) {
+        #nuxtImageDigit3 {
+          fill: #00DC82 !important;
+        }
+        .nuxt-loader-bar {
+          opacity: 0.5;
+        }
+      }
     </style>
   </head>
   <body class="relative overflow-hidden min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center text-center">
-    <div id="mouseLight" class="absolute top-0 rounded-full mouse-gradient h-[200px] w-[200px]"></div>
+    <div id="mouseLight" class="absolute top-0 rounded-full mouse-gradient transition-opacity h-[200px] w-[200px]"></div>
     <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="nuxt-logo z-20">
-      <svg id="nuxtImg" viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-40 h-16 dark:text-black text-white"><g clip-path="url(#a)"><path fill="currentColor" d="M82.5623 18.5705h7.3017l15.474 24.7415V18.5705h6.741v35.0576h-7.252L89.3025 28.938v24.6901h-6.7402V18.5705ZM142.207 53.628h-6.282v-3.916c-1.429 2.7559-4.339 4.3076-8.015 4.3076-5.822 0-9.603-4.1069-9.603-10.0175V28.3847h6.282v14.3251c0 3.4558 2.146 5.8592 5.362 5.8592 3.524 0 5.974-2.7044 5.974-6.4099V28.3847h6.282V53.628ZM164.064 53.2289l-6.026-8.4144-6.027 8.4144h-6.69l9.296-13.1723-8.58-12.0709h6.843l5.158 7.2641 5.106-7.2641h6.895l-8.632 12.0709 9.295 13.1723h-6.638ZM183.469 20.7726v7.6116h7.149v5.1593h-7.149v12.5311c0 .4208.17.8245.473 1.1223.303.2978.715.4654 1.144.4661h5.532v5.9547h-4.137c-5.617 0-9.293-3.2062-9.293-8.8109V33.5484h-5.056v-5.1642h3.172c1.479 0 2.34-.8639 2.34-2.2932v-5.3184h5.825Z"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1185 11.5456c-1.8853-3.24168-6.5987-3.24169-8.484 0L1.08737 46.8747c-1.885324 3.2417.47133 7.2938 4.24199 7.2938H21.3695c-1.6112-1.4081-2.2079-3.8441-.9886-5.9341l15.5615-26.675-5.8239-10.0138Z" fill="currentColor"></path> <path d="M43.1374 19.2952c1.5603-2.6523 5.461-2.6523 7.0212 0l17.0045 28.9057c1.5603 2.6522-.39 5.9676-3.5106 5.9676h-34.009c-3.1206 0-5.0709-3.3154-3.5106-5.9676l17.0045-28.9057ZM209.174 53.8005H198.483c0-1.8514.067-3.4526 0-6.0213h10.641c1.868 0 3.353.1001 4.354-.934 1-1.0341 1.501-2.3351 1.501-3.9029 0-1.8347-.667-3.2191-2.002-4.1532-1.301-.9674-2.985-1.4511-5.054-1.4511h-2.601v-5.2539h2.652c1.701 0 3.119-.4003 4.253-1.2009 1.134-.8006 1.701-1.9849 1.701-3.5527 0-1.301-.434-2.3351-1.301-3.1023-.834-.8007-2.001-1.201-3.503-1.201-1.634 0-2.918.4837-3.853 1.4511-.9.9674-1.401 2.1517-1.501 3.5527h-6.254c.133-3.2358 1.251-5.7877 3.352-7.6558 2.135-1.868 4.887-2.8021 8.256-2.8021 2.402 0 4.42.4337 6.055 1.301 1.668.834 2.919 1.9515 3.753 3.3525.867 1.4011 1.301 2.9523 1.301 4.6536 0 1.9681-.551 3.636-1.651 5.0037-1.068 1.3344-2.402 2.235-4.004 2.7021 1.969.4003 3.57 1.3677 4.804 2.9022 1.234 1.5011 1.852 3.4025 1.852 5.7043 0 1.9347-.468 3.7028-1.402 5.304-.934 1.6012-2.301 2.8855-4.103 3.8529-1.768.9674-3.953 1.4511-6.555 1.4511Z" fill="currentColor"></path></g> <defs><clipPath id="a"><path fill="#fff" d="M0 0h221v65H0z"></path></clipPath></defs></svg>
+    <svg id="nuxtImg" viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg"
+      class="w-40 h-16 mb-4 text-black dark:text-white transition-opacity">
+      <g>
+        <path
+          d="M82.5623 18.5705H89.864L105.338 43.312V18.5705H112.079V53.6281H104.827L89.3025 28.938V53.6281H82.5623V18.5705ZM142.207 53.628H135.925V49.712C134.496 52.4679 131.586 54.0196 127.91 54.0196C122.088 54.0196 118.307 49.9127 118.307 44.0021V28.3847H124.589V42.7098C124.589 46.1656 126.735 48.569 129.951 48.569C133.475 48.569 135.925 45.8646 135.925 42.1591V28.3847H142.207V53.628ZM164.064 53.2289L158.038 44.8145L152.011 53.2289H145.321L154.617 40.0566L146.037 27.9857H152.88L158.038 35.2498L163.144 27.9857H170.039L161.407 40.0566L170.702 53.2289H164.064V53.2289ZM183.469 20.7726V28.3842H190.618V33.5435H183.469V46.0746C183.469 46.4954 183.639 46.8991 183.942 47.1969C184.245 47.4947 184.657 47.6623 185.086 47.663H190.618V53.6177H186.481C180.864 53.6177 177.188 50.4115 177.188 44.8068V33.5484H172.132V28.3842H175.304C176.783 28.3842 177.644 27.5203 177.644 26.091V20.7726H183.469Z"
+          fill="currentColor" />
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M30.1185 11.5456C28.2332 8.30393 23.5198 8.30392 21.6345 11.5456L1.08737 46.8747C-0.797952 50.1164 1.5587 54.1685 5.32936 54.1685H21.3695C19.7583 52.7604 19.1616 50.3244 20.3809 48.2344L35.9424 21.5594L30.1185 11.5456V11.5456Z"
+          fill="#80EEC0" />
+        <path
+          d="M43.1374 19.2952C44.6977 16.6429 48.5984 16.6429 50.1586 19.2952L67.1631 48.2009C68.7234 50.8531 66.7731 54.1685 63.6525 54.1685H29.6435C26.5229 54.1685 24.5726 50.8531 26.1329 48.2009L43.1374 19.2952Z"
+          fill="#00DC82" />
+        <path id="nuxtImageDigit3"
+          d="M198.483 53.8005H209.174C211.776 53.8005 213.961 53.3168 215.729 52.3494C217.531 51.382 218.898 50.0977 219.832 48.4965C220.766 46.8953 221.234 45.1272 221.234 43.1925C221.234 40.8907 220.616 38.9893 219.382 37.4882C218.148 35.9537 216.547 34.9863 214.578 34.586C216.18 34.1189 217.514 33.2183 218.582 31.8839C219.682 30.5162 220.233 28.8483 220.233 26.8802C220.233 25.1789 219.799 23.6277 218.932 22.2266C218.098 20.8256 216.847 19.7081 215.179 18.8741C213.544 18.0068 211.526 17.5731 209.124 17.5731C205.755 17.5731 203.003 18.5072 200.868 20.3752C198.767 22.2433 197.649 24.7952 197.516 28.031H203.77C203.87 26.63 204.371 25.4457 205.271 24.4783C206.206 23.5109 207.49 23.0272 209.124 23.0272C210.626 23.0272 211.793 23.4275 212.627 24.2282C213.494 24.9954 213.928 26.0295 213.928 27.3305C213.928 28.8983 213.361 30.0826 212.227 30.8832C211.093 31.6838 209.675 32.0841 207.974 32.0841H205.322V37.338H207.923C209.992 37.338 211.676 37.8217 212.977 38.7891C214.312 39.7232 214.979 41.1076 214.979 42.9423C214.979 44.5101 214.478 45.8111 213.478 46.8452C212.477 47.8793 210.992 47.7792 209.124 47.7792H198.483C198.55 50.3479 198.483 51.9491 198.483 53.8005Z"
+          fill="currentColor" />
+      </g>
+    </svg>
+
     </a>
     <div class="spotlight-wrapper">
       <div class="fixed left-0 right-0 spotlight spotlight-top z-10"></div>
@@ -60,7 +90,7 @@
     <div class="spotlight-wrapper">
       <div class="fixed left-0 right-0 spotlight spotlight-bottom z-q0"></div>
     </div>
-    <div class="nuxt-loader-bar h-[4px] inline rounded"/>
+    <div class="nuxt-loader-bar"/>
     <script>
       const nuxtImg = window.document.getElementById('nuxtImg')
       const body = window.document.body
@@ -69,6 +99,10 @@
 
       function calculateDistance(elem, mouseX, mouseY) {
         return Math.floor(Math.sqrt(Math.pow(mouseX - (elem.x+(elem.width/2)), 2) + Math.pow(mouseY - (elem.top+(elem.height/2)), 2)));
+      }
+      const hide = () => {
+        mouseLight.style.opacity = 0
+        nuxtImg.style.opacity = 0
       }
       const mouseMove = (e) => {
         const pointerRect = nuxtImg.getBoundingClientRect()
@@ -83,12 +117,23 @@
         mouseLight.style.width = mouseLight.style.height = `${Math.max(Math.round(size * 100), 300)}px`
         mouseLight.style.filter = `blur(${Math.min(Math.max(size * 50, 100), 160)}px)`
         mouseLight.style.opacity = Math.min(Math.max(size / 4, 0.6), 1)
+
+        const dx = e.pageX - pointerRect.left
+        const dy = e.pageY - pointerRect.top
+        const logoGradient = `radial-gradient(circle at ${dx}px ${dy}px, black 50%, transparent 100%)`
+        nuxtImg.style['-webkit-mask-image'] = logoGradient
+        nuxtImg.style['mask-image'] = logoGradient
+        nuxtImg.style.opacity = Math.min(Math.max(size / 4, 0.6), 1)
       }
 
+      hide()
+
       body.addEventListener('mousemove', mouseMove)
+      body.addEventListener('mouseleave', hide)
 
       window.onunload = function() {
         body.removeEventListener('mousemove', mouseMove);
+        body.removeEventListener('mouseleave', hide);
       }
 
       if (typeof window.fetch === 'undefined') {
