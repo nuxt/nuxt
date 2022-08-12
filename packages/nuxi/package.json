@@ -1,6 +1,6 @@
 {
   "name": "nuxi",
-  "version": "3.0.0-rc.7",
+  "version": "3.0.0-rc.8",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -18,8 +18,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/kit": "3.0.0-rc.7",
-    "@nuxt/schema": "3.0.0-rc.7",
+    "@nuxt/kit": "3.0.0-rc.8",
+    "@nuxt/schema": "3.0.0-rc.8",
     "@types/clear": "^0",
     "@types/mri": "^1.1.1",
     "@types/semver": "^7",
