@@ -8,6 +8,7 @@
     "moduleResolution": "Node",
     "strict": false,
     "allowJs": true,
+    "noEmit": true,
     "noUnusedLocals": true,
     "resolveJsonModule": true,
     "types": [
@@ -23,6 +24,12 @@
       "#head": [
         "./packages/nuxt/src/head/runtime/index"
       ],
+      "#internal/nitro": [
+        "./node_modules/nitropack/dist/runtime"
+      ],
+      "#internal/nitro/utils": [
+        "./node_modules/nitropack/dist/runtime/utils"
+      ]
     }
   },
   "exclude": [

@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { dirname, resolve } from 'pathe'
 import defu from 'defu'
-import type { Nuxt, NuxtApp, NuxtPlugin } from '@nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate } from '@nuxt/schema'
 import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule, resolvePath, resolveAlias } from '@nuxt/kit'
 
 import * as defaultTemplates from './templates'
@@ -13,7 +13,7 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
     extensions: nuxt.options.extensions,
     plugins: [],
     templates: []
-  } as NuxtApp)
+  } as unknown as NuxtApp) as NuxtApp
 }
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
@@ -21,7 +21,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
   await resolveApp(nuxt, app)
 
   // User templates from options.build.templates
-  app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates)
+  app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates) as NuxtTemplate[]
 
   // Extend templates with hook
   await nuxt.callHook('app:templates', app)
@@ -34,10 +34,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp) {
   await Promise.all(app.templates.map(async (template) => {
     const contents = await compileTemplate(template, templateContext)
 
-    const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename)
+    const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     nuxt.vfs[fullPath] = contents
 
-    const aliasPath = '#build/' + template.filename.replace(/\.\w+$/, '')
+    const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
     nuxt.vfs[aliasPath] = contents
 
     // In case a non-normalized absolute path is called for on Windows
@@ -102,10 +102,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
     app.plugins.push(...[
       ...(config.plugins || []),
-      ...await resolveFiles(config.srcDir, [
-        'plugins/*.{ts,js,mjs,cjs,mts,cts}',
-        'plugins/*/index.*{ts,js,mjs,cjs,mts,cts}'
-      ])
+      ...config.srcDir
+        ? await resolveFiles(config.srcDir, [
+          'plugins/*.{ts,js,mjs,cjs,mts,cts}',
+          'plugins/*/index.*{ts,js,mjs,cjs,mts,cts}'
+        ])
+        : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
 

@@ -12,8 +12,8 @@ const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocat
 }
 
 export const generateRouteKey = (override: string | ((route: RouteLocationNormalizedLoaded) => string), routeProps: RouterViewSlotProps) => {
-  const matchedRoute = routeProps.route.matched.find(m => m.components.default === routeProps.Component.type)
-  const source = override ?? matchedRoute?.meta.key ?? interpolatePath(routeProps.route, matchedRoute)
+  const matchedRoute = routeProps.route.matched.find(m => m.components?.default === routeProps.Component.type)
+  const source = override ?? matchedRoute?.meta.key ?? (matchedRoute && interpolatePath(routeProps.route, matchedRoute))
   return typeof source === 'function' ? source(routeProps.route) : source
 }
 

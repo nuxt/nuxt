@@ -11,7 +11,7 @@ export interface TemplateContext {
   app: NuxtApp
 }
 
-export const vueShim = {
+export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
   getContents: () =>
     [
@@ -24,29 +24,29 @@ export const vueShim = {
 }
 
 // TODO: Use an alias
-export const appComponentTemplate = {
+export const appComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'app-component.mjs',
-  getContents: (ctx: TemplateContext) => genExport(ctx.app.mainComponent, ['default'])
+  getContents: ctx => genExport(ctx.app.mainComponent!, ['default'])
 }
 // TODO: Use an alias
-export const rootComponentTemplate = {
+export const rootComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'root-component.mjs',
-  getContents: (ctx: TemplateContext) => genExport(ctx.app.rootComponent, ['default'])
+  getContents: ctx => genExport(ctx.app.rootComponent!, ['default'])
 }
 // TODO: Use an alias
-export const errorComponentTemplate = {
+export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'error-component.mjs',
-  getContents: (ctx: TemplateContext) => genExport(ctx.app.errorComponent, ['default'])
+  getContents: ctx => genExport(ctx.app.errorComponent!, ['default'])
 }
 
-export const cssTemplate = {
+export const cssTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'css.mjs',
-  getContents: (ctx: TemplateContext) => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
+  getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
 }
 
-export const clientPluginTemplate = {
+export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/client.mjs',
-  getContents (ctx: TemplateContext) {
+  getContents (ctx) {
     const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
     const exports: string[] = []
     const imports: string[] = []
@@ -63,9 +63,9 @@ export const clientPluginTemplate = {
   }
 }
 
-export const serverPluginTemplate = {
+export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
-  getContents (ctx: TemplateContext) {
+  getContents (ctx) {
     const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
     const exports: string[] = ['preload']
     const imports: string[] = ["import preload from '#app/plugins/preload.server'"]
@@ -82,9 +82,9 @@ export const serverPluginTemplate = {
   }
 }
 
-export const pluginsDeclaration = {
+export const pluginsDeclaration: NuxtTemplate<TemplateContext> = {
   filename: 'types/plugins.d.ts',
-  getContents: (ctx: TemplateContext) => {
+  getContents: (ctx) => {
     const EXTENSION_RE = new RegExp(`(?<=\\w)(${ctx.nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
     const tsImports = ctx.app.plugins.map(p => (isAbsolute(p.src) ? relative(join(ctx.nuxt.options.buildDir, 'types'), p.src) : p.src).replace(EXTENSION_RE, ''))
 
@@ -111,9 +111,9 @@ export { }
 }
 
 const adHocModules = ['router', 'pages', 'auto-imports', 'meta', 'components']
-export const schemaTemplate = {
+export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
-  getContents: ({ nuxt }: TemplateContext) => {
+  getContents: ({ nuxt }) => {
     const moduleInfo = nuxt.options._installedModules.map(m => ({
       ...m.meta || {},
       importName: m.entryPath || m.meta?.name
@@ -149,9 +149,9 @@ export const schemaTemplate = {
 }
 
 // Add layouts template
-export const layoutTemplate: NuxtTemplate = {
+export const layoutTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'layouts.mjs',
-  getContents ({ app }: TemplateContext) {
+  getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
       return [name, `defineAsyncComponent(${genDynamicImport(file)})`]
     }))
@@ -163,9 +163,9 @@ export const layoutTemplate: NuxtTemplate = {
 }
 
 // Add middleware template
-export const middlewareTemplate: NuxtTemplate = {
+export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'middleware.mjs',
-  getContents ({ app }: TemplateContext) {
+  getContents ({ app }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
@@ -184,7 +184,7 @@ export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
 `
 }
 
-export const publicPathTemplate: NuxtTemplate = {
+export const publicPathTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'paths.mjs',
   getContents ({ nuxt }) {
     return [

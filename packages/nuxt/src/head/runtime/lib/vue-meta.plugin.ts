@@ -20,20 +20,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   if (process.server) {
-    nuxtApp.ssrContext.renderMeta = async () => {
+    nuxtApp.ssrContext!.renderMeta = async () => {
       // @ts-ignore
       const { renderMetaToString } = await import('vue-meta/ssr')
-      nuxtApp.ssrContext.teleports = nuxtApp.ssrContext.teleports || {}
+      nuxtApp.ssrContext!.teleports = nuxtApp.ssrContext!.teleports || {}
 
       await renderMetaToString(nuxtApp.app, nuxtApp.ssrContext)
 
       return {
-        htmlAttrs: nuxtApp.ssrContext.teleports.htmlAttrs || '',
-        headAttrs: nuxtApp.ssrContext.teleports.headAttrs || '',
-        bodyAttrs: nuxtApp.ssrContext.teleports.bodyAttrs || '',
-        headTags: nuxtApp.ssrContext.teleports.head || '',
-        bodyScriptsPrepend: nuxtApp.ssrContext.teleports['body-prepend'] || '',
-        bodyScripts: nuxtApp.ssrContext.teleports.body || ''
+        htmlAttrs: nuxtApp.ssrContext!.teleports.htmlAttrs || '',
+        headAttrs: nuxtApp.ssrContext!.teleports.headAttrs || '',
+        bodyAttrs: nuxtApp.ssrContext!.teleports.bodyAttrs || '',
+        headTags: nuxtApp.ssrContext!.teleports.head || '',
+        bodyScriptsPrepend: nuxtApp.ssrContext!.teleports['body-prepend'] || '',
+        bodyScripts: nuxtApp.ssrContext!.teleports.body || ''
       }
     }
   }

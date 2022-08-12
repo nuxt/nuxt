@@ -38,6 +38,23 @@ export interface RuntimeNuxtHooks {
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
 
+export interface NuxtSSRContext extends SSRContext {
+  url: string
+  event: CompatibilityEvent
+  /** @deprecated Use `event` instead. */
+  req?: CompatibilityEvent['req']
+  /** @deprecated Use `event` instead. */
+  res?: CompatibilityEvent['res']
+  runtimeConfig: RuntimeConfig
+  noSSR: boolean
+  /** whether we are rendering an SSR error */
+  error?: boolean
+  nuxt: _NuxtApp
+  payload: _NuxtApp['payload']
+  teleports?: Record<string, string>
+  renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
+}
+
 interface _NuxtApp {
   vueApp: App<Element>
   globalName: string
@@ -48,28 +65,13 @@ interface _NuxtApp {
 
   [key: string]: any
 
-  _asyncDataPromises?: Record<string, Promise<any>>
+  _asyncDataPromises: Record<string, Promise<any> | undefined>
 
-  ssrContext?: SSRContext & {
-    url: string
-    event: CompatibilityEvent
-    /** @deprecated Use `event` instead. */
-    req?: CompatibilityEvent['req']
-    /** @deprecated Use `event` instead. */
-    res?: CompatibilityEvent['res']
-    runtimeConfig: RuntimeConfig
-    noSSR: boolean
-    /** whether we are rendering an SSR error */
-    error?: boolean
-    nuxt: _NuxtApp
-    payload: _NuxtApp['payload']
-    teleports?: Record<string, string>
-    renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
-  }
+  ssrContext?: NuxtSSRContext
   payload: {
     serverRendered?: boolean
-    data?: Record<string, any>
-    state?: Record<string, any>
+    data: Record<string, any>
+    state: Record<string, any>
     rendered?: Function
     error?: Error | {
       url: string
@@ -135,24 +137,24 @@ export function createNuxtApp (options: CreateOptions) {
     }
     // Expose to server renderer to create window.__NUXT__
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
-    if (nuxtApp.ssrContext.payload) {
-      Object.assign(nuxtApp.payload, nuxtApp.ssrContext.payload)
+    if (nuxtApp.ssrContext!.payload) {
+      Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
     }
-    nuxtApp.ssrContext.payload = nuxtApp.payload
+    nuxtApp.ssrContext!.payload = nuxtApp.payload
 
     // Expose client runtime-config to the payload
     nuxtApp.payload.config = {
-      public: options.ssrContext.runtimeConfig.public,
-      app: options.ssrContext.runtimeConfig.app
+      public: options.ssrContext!.runtimeConfig.public,
+      app: options.ssrContext!.runtimeConfig.app
     }
   }
 
   // Expose runtime config
   const runtimeConfig = process.server
-    ? options.ssrContext.runtimeConfig
+    ? options.ssrContext!.runtimeConfig
     : reactive(nuxtApp.payload.config)
 
-  // Backward compatibilty following #4254
+  // Backward compatibility following #4254
   const compatibilityConfig = new Proxy(runtimeConfig, {
     get (target, prop) {
       if (prop === 'public') {
@@ -192,9 +194,9 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
 }
 
 export function normalizePlugins (_plugins: Plugin[]) {
-  const unwrappedPlugins = []
-  const legacyInjectPlugins = []
-  const invalidPlugins = []
+  const unwrappedPlugins: Plugin[] = []
+  const legacyInjectPlugins: Plugin[] = []
+  const invalidPlugins: Plugin[] = []
 
   const plugins = _plugins.map((plugin) => {
     if (typeof plugin !== 'function') {

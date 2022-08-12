@@ -1,16 +1,14 @@
 import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-// @ts-ignore TODO
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
-import { NuxtApp } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
   // Create an error object
-  const errorObject: Exclude<NuxtApp['payload']['error'], Error> = {
+  const errorObject = {
     url: event.req.url,
     statusCode,
     statusMessage,

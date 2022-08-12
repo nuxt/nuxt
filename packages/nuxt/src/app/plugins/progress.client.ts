@@ -13,8 +13,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     el.style.transition = 'width 0.1s, opacity 0.4s'
     const duration = 3000
     const progress = 10000 / Math.floor(duration)
-    let timeout
-    let interval
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    let interval: ReturnType<typeof setInterval> | undefined
     nuxtApp.hook('page:start', () => {
       if (timeout) { return }
       timeout = setTimeout(() => {
@@ -30,9 +30,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     })
     nuxtApp.hook('page:finish', () => {
       timeout && clearTimeout(timeout)
-      timeout = null
+      timeout = undefined
       interval && clearInterval(interval)
-      interval = null
+      interval = undefined
       el.style.width = '100%'
       el.style.opacity = '0%'
       setTimeout(() => {

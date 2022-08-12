@@ -1,19 +1,14 @@
 import { createRenderer } from 'vue-bundle-renderer/runtime'
-import type { RenderHandler, RenderResponse } from 'nitropack'
+import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
-import { CompatibilityEvent, getQuery } from 'h3'
+import { getQuery } from 'h3'
 import devalue from '@nuxt/devalue'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import type { NuxtApp } from '#app'
+import type { NuxtApp, NuxtSSRContext } from '#app'
+import { useRuntimeConfig, useNitroApp, defineRenderHandler } from '#internal/nitro'
 
-// @ts-ignore
-import { useRuntimeConfig, useNitroApp, defineRenderHandler as _defineRenderHandler } from '#internal/nitro'
 // @ts-ignore
 import { buildAssetsURL } from '#paths'
-
-export type NuxtSSRContext = NuxtApp['ssrContext']
-
-const defineRenderHandler = _defineRenderHandler as (h: RenderHandler) => CompatibilityEvent
 
 export interface NuxtRenderHTMLContext {
   htmlAttrs: string[]
@@ -31,10 +26,12 @@ export interface NuxtRenderResponse {
   headers: Record<string, string>
 }
 
+interface ClientManifest {}
+
 // @ts-ignore
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r)
+  .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
 // @ts-ignore
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -57,7 +54,8 @@ const getSSRRenderer = lazyCachedFunction(async () => {
   // Create renderer
   const renderer = createRenderer(createSSRApp, options)
 
-  async function renderToString (input, context) {
+  type RenderToStringParams = Parameters<typeof _renderToString>
+  async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
     const html = await _renderToString(input, context)
     // In development with vite-node, the manifest is on-demand and will be available after rendering
     if (process.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
@@ -84,14 +82,16 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
-    ssrContext.payload = {
+    ssrContext!.payload = {
       serverRendered: false,
       config: {
         public: config.public,
         app: config.app
-      }
+      },
+      data: {},
+      state: {}
     }
-    ssrContext.renderMeta = ssrContext.renderMeta ?? (() => ({}))
+    ssrContext!.renderMeta = ssrContext!.renderMeta ?? (() => ({}))
     return Promise.resolve(result)
   }
 
@@ -109,23 +109,25 @@ export default defineRenderHandler(async (event) => {
     event,
     req: event.req,
     res: event.res,
-    runtimeConfig: useRuntimeConfig(),
+    runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR: !!event.req.headers['x-nuxt-no-ssr'],
     error: !!ssrError,
-    nuxt: undefined, /* NuxtApp */
-    payload: ssrError ? { error: ssrError } : undefined
+    nuxt: undefined!, /* NuxtApp */
+    payload: ssrError ? { error: ssrError } as NuxtSSRContext['payload'] : undefined!
   }
 
   // Render app
   const renderer = (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? await getSPARenderer() : await getSSRRenderer()
   const _rendered = await renderer.renderToString(ssrContext).catch((err) => {
-    if (!ssrError) { throw err }
+    if (!ssrError) {
+      throw err
+    }
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
   // Handle errors
   if (!_rendered) {
-    return
+    return undefined!
   }
   if (ssrContext.payload?.error && !ssrError) {
     throw ssrContext.payload.error
@@ -143,7 +145,7 @@ export default defineRenderHandler(async (event) => {
       _rendered.renderStyles(),
       ssrContext.styles
     ]),
-    bodyAttrs: normalizeChunks([renderedMeta.bodyAttrs]),
+    bodyAttrs: normalizeChunks([renderedMeta.bodyAttrs!]),
     bodyPreprend: normalizeChunks([
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
@@ -188,8 +190,8 @@ function lazyCachedFunction <T> (fn: () => Promise<T>): () => Promise<T> {
   }
 }
 
-function normalizeChunks (chunks: string[]) {
-  return chunks.filter(Boolean).map(i => i.trim())
+function normalizeChunks (chunks: (string | undefined)[]) {
+  return chunks.filter(Boolean).map(i => i!.trim())
 }
 
 function joinTags (tags: string[]) {

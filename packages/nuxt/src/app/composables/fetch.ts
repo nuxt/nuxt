@@ -37,7 +37,7 @@ export function useFetch<
   arg1?: string | UseFetchOptions<_ResT, Transform, PickKeys>,
   arg2?: string
 ) {
-  const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
   const _key = opts.key || autoKey
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)

@@ -1,5 +1,5 @@
 import { computed, DefineComponent, defineComponent, h, inject, provide, reactive, Suspense, Transition } from 'vue'
-import { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
+import { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
 import { generateRouteKey, RouterViewSlotProps, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app'
@@ -58,6 +58,7 @@ export default defineComponent({
 const defaultPageTransition = { name: 'page', mode: 'out-in' }
 
 const Component = defineComponent({
+  // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
   props: ['routeProps', 'pageKey'],
   setup (props) {
@@ -66,9 +67,9 @@ const Component = defineComponent({
     const previousRoute = props.routeProps.route
 
     // Provide a reactive route within the page
-    const route = {}
+    const route = {} as RouteLocation
     for (const key in props.routeProps.route) {
-      route[key] = computed(() => previousKey === props.pageKey ? props.routeProps.route[key] : previousRoute[key])
+      (route as any)[key] = computed(() => previousKey === props.pageKey ? props.routeProps.route[key] : previousRoute[key])
     }
 
     provide('_route', reactive(route))

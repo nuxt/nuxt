@@ -1,10 +1,10 @@
-import { defineComponent, h, resolveComponent, PropType, computed, DefineComponent } from 'vue'
-import { RouteLocationRaw, Router } from 'vue-router'
+import { defineComponent, h, resolveComponent, PropType, computed, DefineComponent, ComputedRef } from 'vue'
+import { RouteLocationRaw } from 'vue-router'
 import { hasProtocol } from 'ufo'
 
 import { navigateTo, useRouter } from '#app'
 
-const firstNonUndefined = <T>(...args: T[]): T => args.find(arg => arg !== undefined)
+const firstNonUndefined = <T>(...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
 
@@ -24,8 +24,8 @@ export type NuxtLinkProps = {
   custom?: boolean
 
   // Attributes
-  target?: string
-  rel?: string
+  target?: string | null
+  rel?: string | null
   noRel?: boolean
 
   // Styling
@@ -39,7 +39,7 @@ export type NuxtLinkProps = {
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
-  const checkPropConflicts = (props: NuxtLinkProps, main: string, sub: string): void => {
+  const checkPropConflicts = (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void => {
     if (process.dev && props[main] !== undefined && props[sub] !== undefined) {
       console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
     }
@@ -116,10 +116,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
     },
     setup (props, { slots }) {
-      const router = useRouter() as Router | undefined
+      const router = useRouter()
 
       // Resolving `to` value from `to` and `href` props
-      const to = computed<string | RouteLocationRaw>(() => {
+      const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
         checkPropConflicts(props, 'to', 'href')
 
         return props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
@@ -127,7 +127,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       // Resolving link type
       const isExternal = computed<boolean>(() => {
-        // External prop is explictly set
+        // External prop is explicitly set
         if (props.external) {
           return true
         }
@@ -180,11 +180,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         // https://router.vuejs.org/api/#custom
         if (props.custom) {
-          if (!slots.default) { return null }
+          if (!slots.default) {
+            return null
+          }
           return slots.default({
             href,
             navigate,
-            route: router.resolve(href),
+            route: router.resolve(href!),
             rel,
             target,
             isActive: false,

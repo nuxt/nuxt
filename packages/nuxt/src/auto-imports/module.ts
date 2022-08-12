@@ -24,7 +24,7 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
     // Allow modules extending sources
     await nuxt.callHook('autoImports:sources', options.presets as ImportPresetWithDeprecation[])
 
-    options.presets.forEach((i: ImportPresetWithDeprecation) => {
+    options.presets?.forEach((i: ImportPresetWithDeprecation | string) => {
       if (typeof i !== 'string' && i.names && !i.imports) {
         i.imports = i.names
         logger.warn('auto-imports: presets.names is deprecated, use presets.imports instead')
@@ -45,10 +45,13 @@ export default defineNuxtModule<Partial<AutoImportsOptions>>({
     })
 
     // composables/ dirs from all layers
-    let composablesDirs = []
+    let composablesDirs: string[] = []
     for (const layer of nuxt.options._layers) {
       composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
       for (const dir of (layer.config.autoImports?.dirs ?? [])) {
+        if (!dir) {
+          continue
+        }
         composablesDirs.push(resolve(layer.config.srcDir, dir))
       }
     }
@@ -123,7 +126,7 @@ function addDeclarationTemplates (ctx: Unimport) {
   // Remove file extension for benefit of TypeScript
   const stripExtension = (path: string) => path.replace(/\.[a-z]+$/, '')
 
-  const resolved = {}
+  const resolved: Record<string, string> = {}
   const r = ({ from }: Import) => {
     if (resolved[from]) {
       return resolved[from]

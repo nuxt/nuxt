@@ -10,7 +10,7 @@ import { useNuxtApp } from '#app'
  */
 export function useState <T> (key?: string, init?: (() => T | Ref<T>)): Ref<T>
 export function useState <T> (init?: (() => T | Ref<T>)): Ref<T>
-export function useState <T> (...args): Ref<T> {
+export function useState <T> (...args: any): Ref<T> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]

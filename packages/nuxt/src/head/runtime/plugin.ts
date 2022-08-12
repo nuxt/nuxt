@@ -34,6 +34,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   for (const name in Components) {
     // eslint-disable-next-line import/namespace
-    nuxtApp.vueApp.component(name, Components[name])
+    nuxtApp.vueApp.component(name, (Components as any)[name])
   }
 })

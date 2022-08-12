@@ -59,7 +59,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     ? createWebHistory(baseURL)
     : createMemoryHistory(baseURL)
 
-  const initialURL = process.server ? nuxtApp.ssrContext.url : createCurrentLocation(baseURL, window.location)
+  const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(baseURL, window.location)
   const router = createRouter({
     ...routerOptions,
     history: routerHistory,
@@ -89,9 +89,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   })
 
   // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
-  const route = {}
+  const route = {} as RouteLocation
   for (const key in _route.value) {
-    route[key] = computed(() => _route.value[key])
+    (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
   }
 
   nuxtApp._route = reactive(route)
@@ -109,7 +109,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
 
     await router.isReady()
-  } catch (error) {
+  } catch (error: any) {
     // We'll catch 404s here
     callWithNuxt(nuxtApp, showError, [error])
   }
@@ -133,7 +133,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
 
     for (const entry of middlewareEntries) {
-      const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then(r => r.default || r) : entry
+      const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
       if (!middleware) {
         if (process.dev) {
@@ -169,7 +169,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         statusMessage: `Page not found: ${to.fullPath}`
       })])
     } else if (process.server && to.matched[0].name === '404' && nuxtApp.ssrContext) {
-      nuxtApp.ssrContext.res.statusCode = 404
+      nuxtApp.ssrContext.event.res.statusCode = 404
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL)) {
@@ -185,7 +185,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         name: undefined, // #4920, #$4982
         force: true
       })
-    } catch (error) {
+    } catch (error: any) {
       // We'll catch middleware errors or deliberate exceptions here
       callWithNuxt(nuxtApp, showError, [error])
     }

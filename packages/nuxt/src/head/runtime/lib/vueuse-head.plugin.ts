@@ -45,7 +45,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   if (process.server) {
-    nuxtApp.ssrContext.renderMeta = () => {
+    nuxtApp.ssrContext!.renderMeta = () => {
       const meta = renderHeadToString(head)
       return {
         ...meta,

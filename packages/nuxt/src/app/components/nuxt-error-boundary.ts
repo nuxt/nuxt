@@ -8,7 +8,7 @@ export default defineComponent({
     }
   },
   setup (_props, { slots, emit }) {
-    const error = ref(null)
+    const error = ref<Error | null>(null)
     const nuxtApp = useNuxtApp()
 
     onErrorCaptured((err) => {

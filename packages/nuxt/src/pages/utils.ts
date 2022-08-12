@@ -76,7 +76,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
 
-      if (child) {
+      if (child && child.children) {
         parent = child.children
         route.path = ''
       } else if (segmentName === '404' && isSingleSegment) {
@@ -213,11 +213,11 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage) {
       route.path = route.path.slice(1)
     }
 
-    if (route.children.length) {
+    if (route.children?.length) {
       route.children = prepareRoutes(route.children, route)
     }
 
-    if (route.children.find(childRoute => childRoute.path === '')) {
+    if (route.children?.find(childRoute => childRoute.path === '')) {
       delete route.name
     }
   }

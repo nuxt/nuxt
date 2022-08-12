@@ -24,7 +24,7 @@ export interface Nuxt {
   vfs: Record<string, string>
 }
 
-export interface NuxtTemplate {
+export interface NuxtTemplate<Options = Record<string, any>> {
   /** @deprecated filename */
   fileName?: string
   /** @deprecated whether template is custom or a nuxt core template */
@@ -51,9 +51,9 @@ export interface NuxtPlugin {
 }
 
 export interface NuxtApp {
-  mainComponent?: string
-  rootComponent?: string
-  errorComponent?: string
+  mainComponent?: string | null
+  rootComponent?: string | null
+  errorComponent?: string | null
   dir: string
   extensions: string[]
   plugins: NuxtPlugin[]

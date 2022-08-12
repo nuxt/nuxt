@@ -9,8 +9,8 @@ export const NuxtComponentIndicator = '__nuxt_component'
 async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, fn: (nuxtApp: NuxtApp) => Promise<Record<string, any>>) {
   const nuxt = useNuxtApp()
   const route = useRoute()
-  const vm = getCurrentInstance()
-  const { fetchKey } = vm.proxy.$options
+  const vm = getCurrentInstance()!
+  const { fetchKey } = vm.proxy!.$options
   const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
   const { data } = await useAsyncData(`options:asyncdata:${key}`, () => fn(nuxt))
   if (data.value && typeof data.value === 'object') {
@@ -38,8 +38,7 @@ export const defineNuxtComponent: typeof defineComponent =
       setup (props, ctx) {
         const res = setup?.(props, ctx) || {}
 
-        let promises: unknown[] | undefined = []
-        promises = promises || []
+        const promises: Promise<any>[] = []
         if (options.asyncData) {
           promises.push(runLegacyAsyncData(res, options.asyncData))
         }
@@ -49,7 +48,6 @@ export const defineNuxtComponent: typeof defineComponent =
           .then(() => res)
           .finally(() => {
             promises.length = 0
-            promises = null
           })
       }
     } as DefineComponent
