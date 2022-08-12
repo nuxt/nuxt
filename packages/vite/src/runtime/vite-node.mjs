@@ -7,7 +7,7 @@ import { getViteNodeOptions } from './vite-node-shared.mjs'
 const viteNodeOptions = getViteNodeOptions()
 
 const runner = new ViteNodeRunner({
-  root: viteNodeOptions.rootDir,
+  root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
   base: viteNodeOptions.base,
   async fetchModule (id) {
     return await $fetch('/module/' + encodeURI(id), {

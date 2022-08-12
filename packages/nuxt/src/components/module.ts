@@ -146,7 +146,7 @@ export default defineNuxtModule<ComponentsOptions>({
       if (!['add', 'unlink'].includes(event)) {
         return
       }
-      const fPath = resolve(nuxt.options.rootDir, path)
+      const fPath = resolve(nuxt.options.srcDir, path)
       if (componentDirs.find(dir => fPath.startsWith(dir.path))) {
         await nuxt.callHook('builder:generateApp')
       }
