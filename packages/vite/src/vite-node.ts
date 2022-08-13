@@ -135,7 +135,6 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
     entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async')
   }
 
-  // TODO: Update me
   const host = ctx.nuxt.options.server.host || 'localhost'
   const port = ctx.nuxt.options.server.port || '3000'
   const protocol = ctx.nuxt.options.server.https ? 'https' : 'http'

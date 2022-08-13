@@ -1,3 +1,4 @@
+import type { AddressInfo } from 'node:net'
 import { resolve, relative, normalize } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
@@ -75,7 +76,12 @@ export default defineNuxtCommand({
         }
 
         await currentNuxt.ready()
+
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
+        const address = listener.server.address() as AddressInfo
+        currentNuxt.options.server.port = address.port
+        currentNuxt.options.server.host = address.address
+
         await Promise.all([
           writeTypes(currentNuxt).catch(console.error),
           buildNuxt(currentNuxt)
