@@ -13,9 +13,14 @@ import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { writeManifest } from './manifest'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
+import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
+  const useAsyncEntry = ctx.nuxt.options.experimental.asyncEntry
+  ctx.entry = resolve(ctx.nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry')
+
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
+    entry: ctx.entry,
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {
         if (hostType !== 'js' || type === 'asset') {
@@ -30,6 +35,9 @@ export async function buildClient (ctx: ViteBuildContext) {
       'process.client': true,
       'module.hot': false
     },
+    optimizeDeps: {
+      entries: [ctx.entry]
+    },
     resolve: {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
@@ -38,7 +46,10 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     build: {
       manifest: true,
-      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client')
+      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
+      rollupOptions: {
+        input: ctx.entry
+      }
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
@@ -48,9 +59,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
       }),
-      ctx.nuxt.options.experimental.viteNode
-        ? await import('./vite-node').then(r => r.viteNodePlugin(ctx))
-        : undefined
+      viteNodePlugin(ctx)
     ],
     appType: 'custom',
     server: {

@@ -1,5 +1,5 @@
 import * as vite from 'vite'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
 import { logger, isIgnored } from '@nuxt/kit'
@@ -16,6 +16,7 @@ import { composableKeysPlugin } from './plugins/composable-keys'
 export interface ViteOptions extends InlineConfig {
   vue?: Options
   ssr?: SSROptions
+  devBundler?: 'vite-node' | 'legacy'
 }
 
 export interface ViteBuildContext {
@@ -27,10 +28,9 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
-  const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const ctx: ViteBuildContext = {
     nuxt,
-    entry,
+    entry: null,
     config: vite.mergeConfig(
       {
         resolve: {
@@ -47,14 +47,12 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          entries: [entry],
           include: ['vue']
         },
         css: resolveCSSOptions(nuxt),
         build: {
           rollupOptions: {
-            output: { sanitizeFileName: sanitizeFilePath },
-            input: resolve(nuxt.options.appDir, 'entry')
+            output: { sanitizeFileName: sanitizeFilePath }
           },
           watch: {
             exclude: nuxt.options.ignore
