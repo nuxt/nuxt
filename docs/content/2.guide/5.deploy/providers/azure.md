@@ -13,6 +13,6 @@ How to deploy to [Azure Static Web Apps](https://azure.microsoft.com/en-us/servi
 - Minimal configuration required
 ::
 
-## Learn more
+## Learn More
 
 :ReadMore{link="https://nitro.unjs.io/deploy/providers/azure.html" title="the Nitro documentation for Azure deployment"}

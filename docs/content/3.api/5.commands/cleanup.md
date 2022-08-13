@@ -4,7 +4,7 @@
 npx nuxi clean|cleanup [rootDir]
 ```
 
-The `cleanup` command, removes common generated nuxt files and caches. Including:
+The `cleanup` command removes common generated Nuxt files and caches, including:
 
 - `.nuxt`
 - `.output`

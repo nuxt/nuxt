@@ -57,7 +57,7 @@ type AsyncData<DataT> = {
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
 ::
 
-## Return values
+## Return Values
 
 * **data**: the result of the asynchronous function that is passed in.
 * **pending**: a boolean indicating whether the data is still being fetched.

@@ -13,6 +13,6 @@ How to deploy Nuxt to [Cloudflare Workers](https://workers.cloudflare.com/).
 - Minimal configuration required
 ::
 
-## Learn more
+## Learn More
 
 :ReadMore{link="https://nitro.unjs.io/deploy/providers/cloudflare.html" title="the Nitro documentation for Cloudflare deployment"}

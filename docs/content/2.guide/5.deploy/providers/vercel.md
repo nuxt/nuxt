@@ -36,6 +36,6 @@ npx nuxi init -t v3-vercel
 vercel
 ```
 
-## Learn more
+## Learn More
 
 :ReadMore{link="https://nitro.unjs.io/deploy/providers/vercel.html" title="the Nitro documentation for Vercel deployment"}

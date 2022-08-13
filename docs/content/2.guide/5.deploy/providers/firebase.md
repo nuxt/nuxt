@@ -10,6 +10,6 @@ Nitro supports [Firebase Hosting](https://firebase.google.com/docs/hosting) with
 
 **Note**: You need to be on the **Blaze plan** to use Nitro with Cloud Functions.
 
-## Learn more
+## Learn More
 
 :ReadMore{link="https://nitro.unjs.io/deploy/providers/firebase.html" title="the Nitro documentation for Firebase deployment"}

@@ -2,7 +2,7 @@
 template: Example
 ---
 
-# Hello world
+# Hello World
 
 A minimal Nuxt 3 application only requires the `app.vue` and `nuxt.config.js` files.
 

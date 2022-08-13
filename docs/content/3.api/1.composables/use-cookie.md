@@ -136,7 +136,7 @@ be returned as the cookie's value.
 
 Specifies a function that returns the cookie's default value. The function can also return a `Ref`.
 
-## Handling cookies in API routes
+## Handling Cookies in API Routes
 
 You can use `useCookie` and `setCookie` from [`h3`](https://github.com/unjs/h3) package to set cookies in server API routes.
 

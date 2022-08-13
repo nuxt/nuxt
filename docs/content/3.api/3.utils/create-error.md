@@ -6,7 +6,7 @@ You can use this function to create an error object with additional metadata. It
 
 * err: { cause, data, message, name, stack, statusCode, statusMessage, fatal }
 
-## Throwing errors in your Vue app
+## Throwing Errors in Your Vue App
 
 If you throw an error created with `createError`:
 
@@ -25,7 +25,7 @@ if (!data.value) {
 </script>
 ```
 
-## Throwing errors in API routes
+## Throwing Errors in API Routes
 
 You can use `createError` to trigger error handling in server API routes.
 

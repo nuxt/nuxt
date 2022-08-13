@@ -48,7 +48,7 @@ type AsyncData<DataT> = {
 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 
-## Return values
+## Return Values
 
 * **data**: the result of the asynchronous function that is passed in
 * **pending**: a boolean indicating whether the data is still being fetched

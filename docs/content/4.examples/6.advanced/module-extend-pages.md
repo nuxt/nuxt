@@ -2,7 +2,7 @@
 template: Example
 ---
 
-# Module Extend pages
+# Module Extend Pages
 
 This example defines a new `test` page using `extendPages` within a module.
 

@@ -18,7 +18,7 @@ Make sure to use always `await` or `return` on result of `navigateTo()` when cal
 
 ## Examples
 
-### Within a Vue component
+### Within a Vue Component
 
 ```vue
 <script setup>
@@ -39,7 +39,7 @@ return navigateTo({
 </script>
 ```
 
-### Within route middleware
+### Within Route Middleware
 
 ```js
 export default defineNuxtRouteMiddleware((to, from) => {
