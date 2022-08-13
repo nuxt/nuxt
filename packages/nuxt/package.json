@@ -34,7 +34,7 @@
     "@nuxt/kit": "3.0.0-rc.8",
     "@nuxt/schema": "3.0.0-rc.8",
     "@nuxt/telemetry": "^2.1.4",
-    "@nuxt/ui-templates": "^0.3.1",
+    "@nuxt/ui-templates": "^0.3.2",
     "@nuxt/vite-builder": "3.0.0-rc.8",
     "@vue/reactivity": "^3.2.37",
     "@vue/shared": "^3.2.37",
@@ -52,7 +52,7 @@
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.2",
     "mlly": "^0.5.12",
-    "nitropack": "^0.4.22",
+    "nitropack": "^0.4.24",
     "nuxi": "3.0.0-rc.8",
     "ohash": "^0.1.5",
     "ohmyfetch": "^0.4.18",
@@ -67,7 +67,7 @@
     "unplugin": "^0.9.0",
     "untyped": "^0.4.5",
     "vue": "^3.2.37",
-    "vue-bundle-renderer": "^0.4.1",
+    "vue-bundle-renderer": "^0.4.2",
     "vue-router": "^4.1.3"
   },
   "devDependencies": {

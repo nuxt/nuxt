@@ -25,9 +25,9 @@
     "@vitejs/plugin-vue-jsx": "^2.0.0",
     "autoprefixer": "^10.4.8",
     "chokidar": "^3.5.3",
-    "cssnano": "^5.1.12",
+    "cssnano": "^5.1.13",
     "defu": "^6.0.0",
-    "esbuild": "^0.15.1",
+    "esbuild": "^0.15.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "externality": "^0.2.2",
@@ -51,7 +51,7 @@
     "vite": "~3.0.7",
     "vite-node": "^0.21.1",
     "vite-plugin-checker": "^0.4.9",
-    "vue-bundle-renderer": "^0.4.1"
+    "vue-bundle-renderer": "^0.4.2"
   },
   "peerDependencies": {
     "vue": "^3.2.37"
