@@ -15,13 +15,13 @@ export type PickFrom<T, K extends Array<string>> = T extends Array<any>
 export type KeysOf<T> = Array<keyof T extends string ? keyof T : string>
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
 
-type MultiWatchSources = (WatchSource<unknown> | object)[];
+type MultiWatchSources = (WatchSource<unknown> | object)[]
 
 export interface AsyncDataOptions<
   DataT,
   Transform extends _Transform<DataT, any> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<_Transform> = KeyOfRes<Transform>
-  > {
+> {
   server?: boolean
   lazy?: boolean
   default?: () => DataT | Ref<DataT> | null
@@ -112,10 +112,10 @@ export function useAsyncData<
     }
   }
 
-  const useInitialCache = () => options.initialCache && nuxt.payload.data[key] !== undefined
+  const useInitialCache = () => (nuxt.isHydrating || options.initialCache) && nuxt.payload.data[key] !== undefined
 
   const asyncData = {
-    data: ref(nuxt.payload.data[key] ?? options.default?.() ?? null),
+    data: ref(useInitialCache() ? nuxt.payload.data[key] : options.default?.() ?? null),
     pending: ref(!useInitialCache()),
     error: ref(nuxt.payload._errors[key] ?? null)
   } as AsyncData<DataT, DataE>
