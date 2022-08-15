@@ -4,7 +4,7 @@ import type { ViteOptions } from './vite'
 import { distDir } from './dirs'
 
 export function resolveCSSOptions (nuxt: Nuxt): ViteOptions['css'] {
-  const css: ViteOptions['css'] & { postcss: Exclude<ViteOptions['css']['postcss'], string> } = {
+  const css: ViteOptions['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteOptions['css']>['postcss'], string>> } = {
     postcss: {
       plugins: []
     }

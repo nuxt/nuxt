@@ -39,7 +39,7 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
     }
     for (const item of ['css', 'assets']) {
       if (clientManifest[key][item]) {
-        clientManifest[key][item] = clientManifest[key][item].map(i => i.replace(BASE_RE, ''))
+        clientManifest[key][item] = clientManifest[key][item].map((i: string) => i.replace(BASE_RE, ''))
       }
     }
   }

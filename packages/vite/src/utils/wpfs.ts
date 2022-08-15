@@ -4,4 +4,4 @@ import fse from 'fs-extra'
 export const wpfs = {
   ...fse,
   join
-} as any
+} as typeof fse & { join: typeof join }

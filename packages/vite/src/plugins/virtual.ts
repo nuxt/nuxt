@@ -5,7 +5,7 @@ const PREFIX = 'virtual:nuxt:'
 
 export default function virtual (vfs: Record<string, string>): Plugin {
   const extensions = ['', '.ts', '.vue', '.mjs', '.cjs', '.js', '.json']
-  const resolveWithExt = (id) => {
+  const resolveWithExt = (id: string) => {
     for (const ext of extensions) {
       const rId = id + ext
       if (rId in vfs) {

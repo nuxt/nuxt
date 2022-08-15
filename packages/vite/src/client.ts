@@ -71,11 +71,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!ctx.nuxt.options.dev) {
-    clientConfig.server.hmr = false
+    clientConfig.server!.hmr = false
   }
 
   // We want to respect users' own rollup output options
-  ctx.config.build.rollupOptions = defu(ctx.config.build.rollupOptions, {
+  ctx.config.build!.rollupOptions = defu(ctx.config.build!.rollupOptions!, {
     output: {
       // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
       assetFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[name].[hash].[ext]')),
@@ -84,7 +84,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     }
   })
 
-  if (clientConfig.server.hmr !== false) {
+  if (clientConfig.server && clientConfig.server.hmr !== false) {
     const hmrPortDefault = 24678 // Vite's default HMR port
     const hmrPort = await getPort({
       port: hmrPortDefault,
@@ -99,7 +99,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add analyze plugin if needed
   if (ctx.nuxt.options.build.analyze) {
-    clientConfig.plugins.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
+    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
@@ -113,9 +113,9 @@ export async function buildClient (ctx: ViteBuildContext) {
     const BASE_RE = new RegExp(`^${escapeRE(withTrailingSlash(withLeadingSlash(baseURL)))}`)
     const viteMiddleware: Connect.NextHandleFunction = (req, res, next) => {
       // Workaround: vite devmiddleware modifies req.url
-      const originalURL = req.url
-      req.url = req.url.replace(BASE_RE, '/')
-      viteServer.middlewares.handle(req, res, (err) => {
+      const originalURL = req.url!
+      req.url = originalURL.replace(BASE_RE, '/')
+      viteServer.middlewares.handle(req, res, (err: unknown) => {
         req.url = originalURL
         next(err)
       })

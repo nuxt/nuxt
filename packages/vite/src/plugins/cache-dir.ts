@@ -6,7 +6,7 @@ export function cacheDirPlugin (rootDir: string, name: string) {
   return <Plugin> {
     name: 'nuxt:cache-dir',
     configResolved (resolvedConfig) {
-      // @ts-ignore
+      // @ts-expect-error
       resolvedConfig.optimizeCacheDir = optimizeCacheDir
     }
   }

@@ -92,9 +92,10 @@ export async function buildServer (ctx: ViteBuildContext) {
           format: 'module'
         },
         onwarn (warning, rollupWarn) {
-          if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
-            rollupWarn(warning)
+          if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
+            return
           }
+          rollupWarn(warning)
         }
       }
     },
@@ -113,7 +114,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
-    serverConfig.plugins.push(checker({
+    serverConfig.plugins!.push(checker({
       vueTsc: {
         tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
       }

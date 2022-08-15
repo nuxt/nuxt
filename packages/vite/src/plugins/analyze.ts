@@ -17,7 +17,6 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
           }))
           bundle.modules = Object.fromEntries(minifiedEntries)
         }
-        return null
       }
     },
     // @ts-ignore

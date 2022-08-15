@@ -8,8 +8,8 @@ import type { CallExpression } from 'estree'
 import { parseURL } from 'ufo'
 
 export interface ComposableKeysOptions {
-  sourcemap?: boolean
-  rootDir?: string
+  sourcemap: boolean
+  rootDir: string
 }
 
 const keyedFunctions = [
@@ -17,7 +17,7 @@ const keyedFunctions = [
 ]
 const KEYED_FUNCTIONS_RE = new RegExp(`(${keyedFunctions.join('|')})`)
 
-export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions = {}) => {
+export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
   return {
     name: 'nuxt:composable-keys',
     enforce: 'post',
@@ -34,9 +34,10 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         sourceType: 'module',
         ecmaVersion: 'latest'
       }), {
-        enter (node: CallExpression) {
-          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
-          if (keyedFunctions.includes(node.callee.name) && node.arguments.length < 4) {
+        enter (_node) {
+          if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
+          const node: CallExpression = _node as CallExpression
+          if (keyedFunctions.includes((node.callee as any).name) && node.arguments.length < 4) {
             const end = (node as any).end
             s.appendLeft(
               codeIndex + end - 1,
@@ -48,7 +49,9 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: options.sourcemap && s.generateMap({ source: id, includeContent: true })
+          map: options.sourcemap
+            ? s.generateMap({ source: id, includeContent: true })
+            : undefined
         }
       }
     }

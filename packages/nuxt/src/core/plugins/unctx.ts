@@ -23,7 +23,9 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
       if (result) {
         return {
           code: result.code,
-          map: options.sourcemap && result.magicString.generateMap({ source: id, includeContent: true })
+          map: options.sourcemap
+            ? result.magicString.generateMap({ source: id, includeContent: true })
+            : undefined
         }
       }
     }
