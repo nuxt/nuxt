@@ -1785,7 +1785,7 @@ __metadata:
     chokidar: ^3.5.3
     cssnano: ^5.1.13
     defu: ^6.0.0
-    esbuild: ^0.15.2
+    esbuild: ^0.15.3
     escape-string-regexp: ^5.0.0
     estree-walker: ^3.0.1
     externality: ^0.2.2
@@ -5900,7 +5900,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.15.0, esbuild@npm:^0.15.1, esbuild@npm:^0.15.2":
+"esbuild@npm:^0.15.0, esbuild@npm:^0.15.1, esbuild@npm:^0.15.3":
   version: 0.15.3
   resolution: "esbuild@npm:0.15.3"
   dependencies:
@@ -8496,7 +8496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:^5.4.1":
+"lerna@npm:^5.4.2":
   version: 5.4.2
   resolution: "lerna@npm:5.4.2"
   dependencies:
@@ -9893,7 +9893,7 @@ __metadata:
     expect-type: ^0.13.0
     globby: ^13.1.2
     jiti: ^1.14.0
-    lerna: ^5.4.1
+    lerna: ^5.4.2
     markdownlint-cli: ^0.32.1
     pathe: ^0.3.4
     rimraf: ^3.0.2
