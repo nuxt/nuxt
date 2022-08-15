@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
@@ -137,7 +137,8 @@ export default defineNuxtModule<ComponentsOptions>({
       context.components = newComponents
     })
 
-    nuxt.hook('prepare:types', ({ references }) => {
+    nuxt.hook('prepare:types', ({ references, tsConfig }) => {
+      tsConfig.compilerOptions!.paths['#components'] = [relative(nuxt.options.rootDir, resolve(nuxt.options.buildDir, 'components'))]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
