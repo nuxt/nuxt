@@ -103,7 +103,7 @@ export async function bundle (nuxt: Nuxt) {
 
     if (nuxt.options.vite.warmupEntry !== false) {
       const start = Date.now()
-      warmupViteServer(server, [join('/@fs/', ctx.entry)])
+      warmupViteServer(server, [join('/@fs/', ctx.entry)], env.isServer)
         .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
         .catch(logger.error)
     }
