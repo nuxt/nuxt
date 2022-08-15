@@ -20,6 +20,7 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
         return null
       }
     },
+    // @ts-ignore
     visualizer({
       ...ctx.nuxt.options.build.analyze as any,
       // @ts-ignore
