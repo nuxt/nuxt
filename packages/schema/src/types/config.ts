@@ -49,5 +49,9 @@ export interface ViteConfig extends ViteUserConfig {
    * Bundler for dev time server-side rendering.
    * @default 'vite-node'
    */
-  devBundler?: 'vite-node' | 'legacy'
+  devBundler?: 'vite-node' | 'legacy',
+  /**
+   * Warmup vite entrypoint caches on dev startup.
+   */
+  warmupEntry?: boolean
 }

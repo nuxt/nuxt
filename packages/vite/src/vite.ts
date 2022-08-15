@@ -101,10 +101,12 @@ export async function bundle (nuxt: Nuxt) {
       }
     })
 
-    const start = Date.now()
-    warmupViteServer(server, [join('/@fs/', ctx.entry)])
-      .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
-      .catch(logger.error)
+    if (nuxt.options.vite.warmupEntry !== false) {
+      const start = Date.now()
+      warmupViteServer(server, [join('/@fs/', ctx.entry)])
+        .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
+        .catch(logger.error)
+    }
   })
 
   await buildClient(ctx)
