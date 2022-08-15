@@ -21,6 +21,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     entry: ctx.entry,
+    base: './',
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {
         if (hostType !== 'js' || type === 'asset') {
