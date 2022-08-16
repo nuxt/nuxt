@@ -13,7 +13,7 @@ export default {
   /**
    * Nitro server handlers.
    *
-   * @see https://nitro.unjs.io/guide/routing.html
+   * @see https://nitro.unjs.io/guide/introduction/routing
    *
    * **Note:** Files from `server/api`, `server/middleware` and `server/routes` will be automatically registred by Nuxt.
    *
@@ -25,7 +25,7 @@ export default {
   /**
    * Nitro development-only server handlers.
    *
-   * @see https://nitro.unjs.io/guide/routing.html
+   * @see https://nitro.unjs.io/guide/introduction/routing
    *
    * @type {typeof import('nitropack')['NitroDevEventHandler'][]}
    * @version 3

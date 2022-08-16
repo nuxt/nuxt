@@ -8,4 +8,4 @@ Nitro supports deploying on the [Digital Ocean App Platform](https://docs.digita
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/digitalocean.html" title="the Nitro documentation for DigitalOcean deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/digitalocean" title="the Nitro documentation for DigitalOcean deployment"}

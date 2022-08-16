@@ -10,4 +10,4 @@ Layer0 extends the capabilities of a traditional CDN by not only hosting your st
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/layer0.html" title="the Nitro documentation for Layer0 deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/layer0" title="the Nitro documentation for Layer0 deployment"}

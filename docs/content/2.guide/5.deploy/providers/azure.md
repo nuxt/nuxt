@@ -15,4 +15,4 @@ How to deploy to [Azure Static Web Apps](https://azure.microsoft.com/en-us/servi
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/azure.html" title="the Nitro documentation for Azure deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/azure" title="the Nitro documentation for Azure deployment"}

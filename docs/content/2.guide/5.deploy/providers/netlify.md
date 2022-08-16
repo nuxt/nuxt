@@ -38,4 +38,4 @@ If you want to add custom redirects, you can do so by adding a [`_redirects`](ht
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/netlify.html" title="the Nitro documentation for Netlify deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/netlify" title="the Nitro documentation for Netlify deployment"}

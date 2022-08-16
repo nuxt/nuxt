@@ -12,4 +12,4 @@ Nitro supports [Firebase Hosting](https://firebase.google.com/docs/hosting) with
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/firebase.html" title="the Nitro documentation for Firebase deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/firebase" title="the Nitro documentation for Firebase deployment"}

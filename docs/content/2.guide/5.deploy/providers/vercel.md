@@ -38,4 +38,4 @@ vercel
 
 ## Learn More
 
-:ReadMore{link="https://nitro.unjs.io/deploy/providers/vercel.html" title="the Nitro documentation for Vercel deployment"}
+:ReadMore{link="https://nitro.unjs.io/deploy/providers/vercel" title="the Nitro documentation for Vercel deployment"}
