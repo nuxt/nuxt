@@ -1808,7 +1808,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.9.2
     vite: ~3.0.7
-    vite-node: ^0.21.1
+    vite-node: ^0.22.0
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
     vue-bundle-renderer: ^0.4.2
@@ -1826,7 +1826,7 @@ __metadata:
     "@nuxt/kit": 3.0.0-rc.8
     "@nuxt/schema": 3.0.0-rc.8
     "@types/pify": ^5.0.1
-    "@types/webpack-bundle-analyzer": ^4.4.1
+    "@types/webpack-bundle-analyzer": ^4.4.2
     "@types/webpack-dev-middleware": ^5.0.2
     "@types/webpack-hot-middleware": ^2.25.6
     "@types/webpack-virtual-modules": ^0
@@ -2391,10 +2391,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.48":
-  version: 16.11.48
-  resolution: "@types/node@npm:16.11.48"
-  checksum: 10cd539cb2cf5a8f51f3c2bd761c093b752e534b1f2dc0d7193debd7986145b68db2a5fd48498af641e8641fb8d24b7c4851ea3e30fb8f56cc13ac719cad1e1f
+"@types/node@npm:^16.11.49":
+  version: 16.11.49
+  resolution: "@types/node@npm:16.11.49"
+  checksum: 05545ee49da3b783ab77cddca45db6f4d47861c2bb148a17b774688e1082f20f27177591d140923724bcd8643b32291203f6f1eadba397e394232d4a1e28e07a
   languageName: node
   linkType: hard
 
@@ -2482,14 +2482,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack-bundle-analyzer@npm:^4.4.1":
-  version: 4.4.1
-  resolution: "@types/webpack-bundle-analyzer@npm:4.4.1"
+"@types/webpack-bundle-analyzer@npm:^4.4.2":
+  version: 4.4.2
+  resolution: "@types/webpack-bundle-analyzer@npm:4.4.2"
   dependencies:
     "@types/node": "*"
     tapable: ^2.2.0
     webpack: ^5
-  checksum: 50afdbd2a40545a8acda4adda09b98772dd646dea894dfa95d9f86d224d3df462405b5d0c04077958e87399cda4c9bac7451bbb7285c99e7220806b439ae7f72
+  checksum: 013260f0122e8d9d7041b16eb71cb25695019d57648d96774ad4a73345a25d9cd1e9667073cc8548110a3c1519321c93a085bbfaa479a983fab72d9eab8143b2
   languageName: node
   linkType: hard
 
@@ -2819,10 +2819,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.45.6":
-  version: 0.45.6
-  resolution: "@unocss/reset@npm:0.45.6"
-  checksum: b462cf6d9aca61e7bee9d252967ebfbd49b650e5ae5d5da6dbd011164cc04097d0596d15dbcbe52f2fbc3a50c160fb4d0f62094118514e6d906fdead09c7090a
+"@unocss/reset@npm:^0.45.7":
+  version: 0.45.7
+  resolution: "@unocss/reset@npm:0.45.7"
+  checksum: 836f63fa9fcd62c734dabc42da3bbe95eb8cfe1970d2ec81aa087f01f099af198d14bd2780efe499349480d255343253cd17b587a9b95844b8bdc3b554c8f067
   languageName: node
   linkType: hard
 
@@ -4141,12 +4141,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"case-police@npm:^0.5.7":
-  version: 0.5.7
-  resolution: "case-police@npm:0.5.7"
+"case-police@npm:^0.5.8":
+  version: 0.5.8
+  resolution: "case-police@npm:0.5.8"
   bin:
     case-police: bin/case-police.mjs
-  checksum: 70ae889926f5011d5112512b38703fbe46a8c1ef19148be2356a96838828e6a4dd5c10d4a6b7920fbc41172f15a49886b732c1652c942b11f862d8127b2eb0c4
+  checksum: 3ae9b35ec5ee8762894dccab41b55bbff05a1ec93acffa341ce366af1ad69d58e1478862cdbb883138124b635e687762425ac0923cc23ea6ac9759bcdaf0b23a
   languageName: node
   linkType: hard
 
@@ -9882,10 +9882,10 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.48
+    "@types/node": ^16.11.49
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.45.6
-    case-police: ^0.5.7
+    "@unocss/reset": ^0.45.7
+    case-police: ^0.5.8
     changelogen: ^0.1.1
     eslint: ^8.22.0
     eslint-plugin-jsdoc: ^39.3.6
@@ -13259,17 +13259,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.21.1":
-  version: 0.21.1
-  resolution: "vite-node@npm:0.21.1"
+"vite-node@npm:^0.22.0":
+  version: 0.22.0
+  resolution: "vite-node@npm:0.22.0"
   dependencies:
     debug: ^4.3.4
-    mlly: ^0.5.7
+    mlly: ^0.5.12
     pathe: ^0.2.0
     vite: ^2.9.12 || ^3.0.0-0
   bin:
     vite-node: vite-node.mjs
-  checksum: c586e02ea024769bbc5febf97574b222b6729aef665bf3e0f4c0075434186d74810638322f31def2cde3502d4108e82fc826bd7c0a42ed48c5bae6ef0a05c2c4
+  checksum: 2b5552b2ae1e20bf139e6b88e2b59910f4cedd01a9355b6bfbf3d10d36cb5979660a83e47e9db4c1523b874441c7a1498074bef6dc47c14cc3ace857eceaec13
   languageName: node
   linkType: hard
 

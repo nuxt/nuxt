@@ -59,7 +59,7 @@
   "devDependencies": {
     "@nuxt/schema": "3.0.0-rc.8",
     "@types/pify": "^5.0.1",
-    "@types/webpack-bundle-analyzer": "^4.4.1",
+    "@types/webpack-bundle-analyzer": "^4.4.2",
     "@types/webpack-dev-middleware": "^5.0.2",
     "@types/webpack-hot-middleware": "^2.25.6",
     "@types/webpack-virtual-modules": "^0",
