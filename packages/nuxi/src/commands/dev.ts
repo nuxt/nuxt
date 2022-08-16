@@ -11,6 +11,7 @@ import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/cjs'
 import { overrideEnv } from '../utils/env'
+import { writeNuxtManifest, loadNuxtManifest, cleanupNuxtDirs } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -73,6 +74,15 @@ export default defineNuxtCommand({
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
         if (!isRestart) {
           showURL()
+        }
+
+        // Write manifest and also check if we need cache invalidation
+        if (!isRestart) {
+          const previousManifest = await loadNuxtManifest(currentNuxt.options.buildDir)
+          const newManifest = await writeNuxtManifest(currentNuxt)
+          if (previousManifest && newManifest && previousManifest._hash !== newManifest._hash) {
+            await cleanupNuxtDirs(currentNuxt.options.rootDir)
+          }
         }
 
         await currentNuxt.ready()

@@ -4,7 +4,8 @@ import consola from 'consola'
 import { resolve } from 'pathe'
 import { resolveModule } from '../utils/cjs'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
-import { cleanupNuxtDirs, rmRecursive, touchFile } from '../utils/fs'
+import { rmRecursive, touchFile } from '../utils/fs'
+import { cleanupNuxtDirs } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
 async function getNuxtVersion (paths: string | string[]): Promise<string|null> {

@@ -1,5 +1,5 @@
 import { promises as fsp } from 'node:fs'
-import { dirname, resolve } from 'pathe'
+import { dirname } from 'pathe'
 import consola from 'consola'
 
 // Check if a file exists
@@ -27,18 +27,6 @@ export async function rmRecursive (paths: string[]) {
 export async function touchFile (path: string) {
   const time = new Date()
   await fsp.utimes(path, time, time).catch(() => {})
-}
-
-export async function cleanupNuxtDirs (rootDir: string) {
-  consola.info('Cleaning up generated nuxt files and caches...')
-
-  await rmRecursive([
-    '.nuxt',
-    '.output',
-    'dist',
-    'node_modules/.vite',
-    'node_modules/.cache'
-  ].map(dir => resolve(rootDir, dir)))
 }
 
 export function findup<T> (rootDir: string, fn: (dir: string) => T | undefined): T | null {

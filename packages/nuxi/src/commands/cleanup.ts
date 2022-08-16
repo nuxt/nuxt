@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { cleanupNuxtDirs } from '../utils/fs'
+import { cleanupNuxtDirs } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
