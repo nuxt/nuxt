@@ -21,6 +21,7 @@ export default defineBuildConfig({
     // Type imports
     'vue-meta',
     'vue-router',
+    'vue-bundle-renderer',
     'vue',
     'hookable',
     'nitropack',

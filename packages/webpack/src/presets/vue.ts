@@ -22,7 +22,8 @@ export function vue (ctx: WebpackConfigContext) {
 
   if (ctx.isClient) {
     config.plugins.push(new VueSSRClientPlugin({
-      filename: resolve(options.buildDir, 'dist/server', `${ctx.name}.manifest.json`)
+      filename: resolve(options.buildDir, 'dist/server', `${ctx.name}.manifest.json`),
+      nuxt: ctx.nuxt
     }))
   } else {
     config.plugins.push(new VueSSRServerPlugin({

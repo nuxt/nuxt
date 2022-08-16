@@ -3,6 +3,7 @@ import type { Server as HttpsServer } from 'node:https'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
+import type { Manifest } from 'vue-bundle-renderer'
 import type { ModuleContainer } from './module'
 import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
 import type { Preset as ImportPreset, Import } from 'unimport'
@@ -72,6 +73,7 @@ export interface NuxtHooks {
   'app:templatesGenerated': (app: NuxtApp) => HookResult
   'builder:generateApp': () => HookResult
   'pages:extend': (pages: NuxtPage[]) => HookResult
+  'build:manifest': (manifest: Manifest) => HookResult
 
   // Auto imports
   'autoImports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult

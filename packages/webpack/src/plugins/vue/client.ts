@@ -9,14 +9,18 @@ import hash from 'hash-sum'
 import { uniq } from 'lodash-es'
 import fse from 'fs-extra'
 
+import type { Nuxt } from '@nuxt/schema'
 import { isJS, isCSS, isHotUpdate } from './util'
 
-export default class VueSSRClientPlugin {
-  options: {
-    filename: string
-  }
+interface PluginOptions {
+  filename: string
+  nuxt: Nuxt
+}
 
-  constructor (options = {}) {
+export default class VueSSRClientPlugin {
+  options: PluginOptions
+
+  constructor (options: PluginOptions) {
     this.options = Object.assign({
       filename: null
     }, options)
@@ -53,7 +57,7 @@ export default class VueSSRClientPlugin {
           assetsMapping[componentHash].push(name)
         })
 
-      const manifest = {
+      const webpackManifest = {
         publicPath: stats.publicPath,
         all: allFiles,
         initial: initialFiles,
@@ -64,7 +68,7 @@ export default class VueSSRClientPlugin {
 
       const { entrypoints, namedChunkGroups } = stats
       const assetModules = stats.modules.filter(m => m.assets.length)
-      const fileToIndex = file => manifest.all.indexOf(file)
+      const fileToIndex = file => webpackManifest.all.indexOf(file)
       stats.modules.forEach((m) => {
         // Ignore modules duplicated in multiple chunks
         if (m.chunks.length === 1) {
@@ -88,15 +92,15 @@ export default class VueSSRClientPlugin {
           }
 
           const files = Array.from(filesSet)
-          manifest.modules[hash(id)] = files
+          webpackManifest.modules[hash(id)] = files
 
           // In production mode, modules may be concatenated by scope hoisting
           // Include ConcatenatedModule for not losing module-component mapping
           if (Array.isArray(m.modules)) {
             for (const concatenatedModule of m.modules) {
               const id = hash(concatenatedModule.identifier.replace(/\s\w+$/, ''))
-              if (!manifest.modules[id]) {
-                manifest.modules[id] = files
+              if (!webpackManifest.modules[id]) {
+                webpackManifest.modules[id] = files
               }
             }
           }
@@ -110,7 +114,10 @@ export default class VueSSRClientPlugin {
         }
       })
 
-      const src = JSON.stringify(normalizeWebpackManifest(manifest), null, 2)
+      const manifest = normalizeWebpackManifest(webpackManifest)
+      await this.options.nuxt.callHook('build:manifest', manifest)
+
+      const src = JSON.stringify(manifest, null, 2)
 
       await fse.mkdirp(dirname(this.options.filename))
       await fse.writeFile(this.options.filename, src)
