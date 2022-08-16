@@ -26,7 +26,7 @@
     "autoprefixer": "^10.4.8",
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.13",
-    "defu": "^6.0.0",
+    "defu": "^6.0.1",
     "esbuild": "^0.15.3",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",

@@ -1646,7 +1646,7 @@ __metadata:
     "@types/semver": ^7
     c12: ^0.2.9
     consola: ^2.15.3
-    defu: ^6.0.0
+    defu: ^6.0.1
     globby: ^13.1.2
     hash-sum: ^2.0.0
     ignore: ^5.2.0
@@ -1679,7 +1679,7 @@ __metadata:
     "@types/semver": ^7
     c12: ^0.2.9
     create-require: ^1.1.1
-    defu: ^6.0.0
+    defu: ^6.0.1
     jiti: ^1.14.0
     pathe: ^0.3.4
     postcss-import-resolver: ^2.0.0
@@ -1728,7 +1728,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": 3.0.0-rc.8
     "@nuxt/schema": 3.0.0-rc.8
-    defu: ^6.0.0
+    defu: ^6.0.1
     execa: ^6.1.0
     get-port-please: ^2.6.1
     jiti: ^1.14.0
@@ -1784,7 +1784,7 @@ __metadata:
     autoprefixer: ^10.4.8
     chokidar: ^3.5.3
     cssnano: ^5.1.13
-    defu: ^6.0.0
+    defu: ^6.0.1
     esbuild: ^0.15.3
     escape-string-regexp: ^5.0.0
     estree-walker: ^3.0.1
@@ -5106,6 +5106,13 @@ __metadata:
   version: 6.0.0
   resolution: "defu@npm:6.0.0"
   checksum: 3c24ef0009b796e32a1655a23fc1f11a79b42012255b6bc88889242da77b7e45bfa4293d9661d28f3f6c12c931309e18f5047efa492670585a3da768887cea74
+  languageName: node
+  linkType: hard
+
+"defu@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "defu@npm:6.0.1"
+  checksum: 69d771557d965ab77b3d1355eb254668ad62547ba209baceb9d5117f05b4edeccdc90fed4873b6074c2afc56677a16001f6d0b81b289ee2965cad928f8971f24
   languageName: node
   linkType: hard
 
@@ -9935,7 +9942,7 @@ __metadata:
     "@vueuse/head": ^0.7.9
     chokidar: ^3.5.3
     cookie-es: ^0.5.0
-    defu: ^6.0.0
+    defu: ^6.0.1
     destr: ^1.1.1
     escape-string-regexp: ^5.0.0
     fs-extra: ^10.1.0

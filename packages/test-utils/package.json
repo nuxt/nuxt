@@ -15,7 +15,7 @@
   "dependencies": {
     "@nuxt/kit": "3.0.0-rc.8",
     "@nuxt/schema": "3.0.0-rc.8",
-    "defu": "^6.0.0",
+    "defu": "^6.0.1",
     "execa": "^6.1.0",
     "get-port-please": "^2.6.1",
     "jiti": "^1.14.0",
