@@ -35,7 +35,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       const s = new MagicString(code)
 
       // Do not render client-only slots on SSR, but preserve attributes
-      s.replace(COMPONENTS_RE, r => r.replace(/<([^ >]*)[ >][\s\S]*$/, '<$1 />'))
+      s.replace(COMPONENTS_RE, r => r.replace(/<([^>]*[^/])\/?>[\s\S]*$/, '<$1 />'))
 
       if (s.hasChanged()) {
         return {
