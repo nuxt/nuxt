@@ -115,6 +115,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
+  // Resolve app.config
+  app.configs = []
+  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+    const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
+    if (appConfigPath) {
+      app.configs.push(appConfigPath)
+    }
+  }
+
   // Extend app
   await nuxt.callHook('app:resolve', app)
 

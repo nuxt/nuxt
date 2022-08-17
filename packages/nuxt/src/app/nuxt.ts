@@ -2,7 +2,7 @@
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
-import type { RuntimeConfig } from '@nuxt/schema'
+import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { CompatibilityEvent } from 'h3'
@@ -280,4 +280,8 @@ export function useRuntimeConfig (): RuntimeConfig {
 
 function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>, key: K, val: V) {
   Object.defineProperty(obj, key, { get: () => val })
+}
+
+export function defineAppConfig<C extends AppConfigInput> (config: C): C {
+  return config
 }

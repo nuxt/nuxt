@@ -747,5 +747,16 @@ export default {
    * @version 3
    * @deprecated Use `runtimeConfig` option with `public` key (`runtimeConfig.public.*`).
    */
-  publicRuntimeConfig: {}
+  publicRuntimeConfig: {},
+
+  /**
+   * Additional app configuration
+   *
+   * For programmatic usage and type support, you can directly provide app config with this option.
+   * It will be merged with `app.config` file as default value.
+   *
+   * @type {typeof import('../src/types/config').AppConfig}
+   * @version 3
+   */
+   appConfig: {},
 }

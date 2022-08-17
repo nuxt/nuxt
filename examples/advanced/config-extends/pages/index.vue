@@ -1,12 +1,15 @@
 <script setup>
 const themeConfig = useRuntimeConfig().theme
+const appConfig = useAppConfig()
 const foo = useFoo()
 const bar = getBar()
 </script>
 
 <template>
   <NuxtExampleLayout example="advanced/config-extends">
-    theme runtimeConfig
+    appConfig:
+    <pre>{{ JSON.stringify(appConfig, null, 2) }}</pre>
+    runtimeConfig:
     <pre>{{ JSON.stringify(themeConfig, null, 2) }}</pre>
     <BaseButton>Base Button</BaseButton>
     <FancyButton>Fancy Button</FancyButton>

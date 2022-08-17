@@ -1,6 +1,7 @@
 import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
+import type { AppConfig } from '@nuxt/schema'
 
 import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/src'
@@ -163,5 +164,19 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+  })
+})
+
+describe('app config', () => {
+  it('merges app config as expected', () => {
+    interface ExpectedMergedAppConfig {
+      fromLayer: boolean,
+      fromNuxtConfig: boolean,
+      nested: {
+        val: number
+      },
+      userConfig: number
+    }
+    expectTypeOf<AppConfig>().toMatchTypeOf<ExpectedMergedAppConfig>()
   })
 })
