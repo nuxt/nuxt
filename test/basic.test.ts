@@ -181,7 +181,6 @@ describe('errors', () => {
     const error = await res.json()
     delete error.stack
     expect(error).toMatchObject({
-      description: process.env.NUXT_TEST_DEV ? expect.stringContaining('<pre>') : '',
       message: 'This is a custom error',
       statusCode: 500,
       statusMessage: 'Internal Server Error',
