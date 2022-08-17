@@ -44,10 +44,10 @@ export function createClientOnly (component) {
         .then((setupState) => {
           return typeof setupState !== 'function'
             ? { ...setupState, mounted$ }
-            : () => {
+            : (...args) => {
                 return mounted$.value
                 // use Fragment to avoid oldChildren is null issue
-                  ? h(Fragment, null, [h(setupState(props, ctx), ctx.attrs)])
+                  ? h(Fragment, null, [h(setupState(...args), ctx.attrs)])
                   : h('div', ctx.attrs)
               }
         })
