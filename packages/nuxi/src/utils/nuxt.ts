@@ -27,6 +27,16 @@ export async function cleanupNuxtDirs (rootDir: string) {
   ].map(dir => resolve(rootDir, dir)))
 }
 
+export function nuxtVersionToGitIdentifier (version: string) {
+  // match the git identifier in the release, for example: 3.0.0-rc.8-27677607.a3a8706
+  const id = /\.([0-9a-f]{7})$/.exec(version)
+  if (id?.[1]) {
+    return id[1]
+  }
+  // match github tag, for example 3.0.0-rc.8
+  return `v${version}`
+}
+
 export function resolveNuxtManifest (nuxt: Nuxt): NuxtProjectManifest {
   const manifest: NuxtProjectManifest = {
     _hash: null,

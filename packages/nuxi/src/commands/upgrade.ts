@@ -4,7 +4,7 @@ import { resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
 import { rmRecursive, touchFile } from '../utils/fs'
-import { cleanupNuxtDirs } from '../utils/nuxt'
+import { cleanupNuxtDirs, nuxtVersionToGitIdentifier } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
 async function getNuxtVersion (path: string): Promise<string|null> {
@@ -64,8 +64,8 @@ export default defineNuxtCommand({
       consola.success('You\'re already using the latest version of nuxt.')
     } else {
       consola.success('Successfully upgraded nuxt from', currentVersion, 'to', upgradedVersion)
-      const commitA = currentVersion.split('.').pop()
-      const commitB = upgradedVersion.split('.').pop()
+      const commitA = nuxtVersionToGitIdentifier(currentVersion)
+      const commitB = nuxtVersionToGitIdentifier(upgradedVersion)
       if (commitA && commitB) {
         consola.info('Changelog:', `https://github.com/nuxt/framework/compare/${commitA}...${commitB}`)
       }
