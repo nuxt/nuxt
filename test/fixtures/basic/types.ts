@@ -4,6 +4,7 @@ import type { Ref } from 'vue'
 
 import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/src'
+import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
 import { isVue3 } from '#app'
 import { useRouter } from '#imports'
 
@@ -11,58 +12,58 @@ interface TestResponse { message: string }
 
 describe('API routes', () => {
   it('generates types for routes', () => {
-    expectTypeOf($fetch('/api/hello')).toMatchTypeOf<Promise<string>>()
-    expectTypeOf($fetch('/api/hey')).toMatchTypeOf<Promise<{ foo:string, baz: string }>>()
-    expectTypeOf($fetch('/api/other')).toMatchTypeOf<Promise<unknown>>()
-    expectTypeOf($fetch<TestResponse>('/test')).toMatchTypeOf<Promise<TestResponse>>()
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
   })
 
   it('works with useAsyncData', () => {
-    expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
-    expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
-    expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toMatchTypeOf<Ref<unknown>>()
-    expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string }>>()
+    expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toMatchTypeOf<Ref<Error | true | null>>()
-    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toMatchTypeOf<Ref<string | true | null>>()
+    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | true | null>>()
+    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | true | null>>()
 
-    expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
-    expectTypeOf(useLazyAsyncData('lazy-api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
-    expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toMatchTypeOf<Ref<unknown>>()
-    expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string }>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toMatchTypeOf<Ref<Error | true | null>>()
-    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toMatchTypeOf<Ref<string | true | null>>()
+    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | true | null>>()
+    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | true | null>>()
   })
 
   it('works with useFetch', () => {
-    expectTypeOf(useFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useFetch('/api/hey').data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
-    expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
-    expectTypeOf(useFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
-    expectTypeOf(useFetch<TestResponse>('/test').data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string }>>()
+    expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useFetch('/error').error).toMatchTypeOf<Ref<Error | null | true>>()
-    expectTypeOf(useFetch<any, string>('/error').error).toMatchTypeOf<Ref<string | null | true>>()
+    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<Error | null | true>>()
+    expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null | true>>()
 
-    expectTypeOf(useLazyFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useLazyFetch('/api/hey').data).toMatchTypeOf<Ref<{ foo:string, baz: string }>>()
-    expectTypeOf(useLazyFetch('/api/hey', { pick: ['baz'] }).data).toMatchTypeOf<Ref<{ baz: string }>>()
-    expectTypeOf(useLazyFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
-    expectTypeOf(useLazyFetch('/api/other').data).toMatchTypeOf<Ref<unknown>>()
-    expectTypeOf(useLazyFetch<TestResponse>('/test').data).toMatchTypeOf<Ref<TestResponse>>()
+    expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string }>>()
+    expectTypeOf(useLazyFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string }>>()
+    expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toMatchTypeOf<Ref<Error | null | true>>()
-    expectTypeOf(useLazyFetch<any, string>('/error').error).toMatchTypeOf<Ref<string | null | true>>()
+    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<Error | null | true>>()
+    expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null | true>>()
   })
 })
 
 describe('aliases', () => {
   it('allows importing from path aliases', () => {
-    expectTypeOf(useRouter).toMatchTypeOf<typeof vueUseRouter>()
-    expectTypeOf(isVue3).toMatchTypeOf<boolean>()
+    expectTypeOf(useRouter).toEqualTypeOf<typeof vueUseRouter>()
+    expectTypeOf(isVue3).toEqualTypeOf<boolean>()
   })
 })
 
@@ -76,9 +77,9 @@ describe('middleware', () => {
   })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
-      expectTypeOf(to).toMatchTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(from).toMatchTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toMatchTypeOf<(to: RouteLocationRaw) => RouteLocationRaw | Promise<void | NavigationFailure>>()
+      expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
+      expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
+      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw, options?: NavigateToOptions) => RouteLocationRaw | Promise<void | NavigationFailure>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
@@ -110,57 +111,57 @@ describe('modules', () => {
 describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
-    expectTypeOf(runtimeConfig.testConfig).toMatchTypeOf<number>()
-    expectTypeOf(runtimeConfig.privateConfig).toMatchTypeOf<string>()
-    expectTypeOf(runtimeConfig.unknown).toMatchTypeOf<any>()
+    expectTypeOf(runtimeConfig.testConfig).toEqualTypeOf<number>()
+    expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
+    expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
   })
 })
 
 describe('composables', () => {
   it('allows providing default refs', () => {
-    expectTypeOf(useState('test', () => ref('hello'))).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useState('test', () => 'hello')).toMatchTypeOf<Ref<string>>()
+    expectTypeOf(useState('test', () => ref('hello'))).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useState('test', () => 'hello')).toEqualTypeOf<Ref<string>>()
 
-    expectTypeOf(useCookie('test', { default: () => ref(500) })).toMatchTypeOf<Ref<number>>()
-    expectTypeOf(useCookie('test', { default: () => 500 })).toMatchTypeOf<Ref<number>>()
+    expectTypeOf(useCookie('test', { default: () => ref(500) })).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useCookie('test', { default: () => 500 })).toEqualTypeOf<Ref<number>>()
 
-    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toMatchTypeOf<Ref<number>>()
-    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toMatchTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number>>()
     // @ts-expect-error
-    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toMatchTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number>>()
     // @ts-expect-error
-    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toMatchTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<number>>()
 
-    expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toMatchTypeOf<Ref<number>>()
-    expectTypeOf(useFetch('/test', { default: () => 500 }).data).toMatchTypeOf<Ref<number>>()
+    expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<number>>()
   })
 
   it('infer request url string literal from server/api routes', () => {
     // request can accept dynamic string type
-    const dynamicStringUrl:string = 'https://example.com/api'
-    expectTypeOf(useFetch(dynamicStringUrl).data).toMatchTypeOf<Ref<Pick<unknown, never>>>()
+    const dynamicStringUrl: string = 'https://example.com/api'
+    expectTypeOf(useFetch(dynamicStringUrl).data).toEqualTypeOf<Ref<Pick<unknown, never>>>()
 
     // request param should infer string literal type / show auto-complete hint base on server routes, ex: '/api/hello'
-    expectTypeOf(useFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
-    expectTypeOf(useLazyFetch('/api/hello').data).toMatchTypeOf<Ref<string>>()
+    expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string>>()
 
     // request can accept string literal and Request object type
-    expectTypeOf(useFetch('https://example.com/api').data).toMatchTypeOf<Ref<Pick<unknown, never>>>()
-    expectTypeOf(useFetch(new Request('test')).data).toMatchTypeOf<Ref<Pick<unknown, never>>>()
+    expectTypeOf(useFetch('https://example.com/api').data).toEqualTypeOf<Ref<Pick<unknown, never>>>()
+    expectTypeOf(useFetch(new Request('test')).data).toEqualTypeOf<Ref<Pick<unknown, never>>>()
   })
 
   it('provides proper type support when using overloads', () => {
-    expectTypeOf(useState('test')).toMatchTypeOf(useState())
-    expectTypeOf(useState('test', () => ({ foo: Math.random() }))).toMatchTypeOf(useState(() => ({ foo: Math.random() })))
+    expectTypeOf(useState('test')).toEqualTypeOf(useState())
+    expectTypeOf(useState('test', () => ({ foo: Math.random() }))).toEqualTypeOf(useState(() => ({ foo: Math.random() })))
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
-      .toMatchTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
-      .toMatchTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
-      .toMatchTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
-      .toMatchTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
   })
 })
