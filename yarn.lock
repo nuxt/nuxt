@@ -10191,6 +10191,7 @@ __metadata:
     untyped: ^0.4.5
     vue: ^3.2.37
     vue-bundle-renderer: ^0.4.2
+    vue-devtools-stub: ^0.1.0
     vue-meta: next
     vue-router: ^4.1.3
   bin:
@@ -13681,6 +13682,13 @@ __metadata:
     vue-demi-fix: bin/vue-demi-fix.js
     vue-demi-switch: bin/vue-demi-switch.js
   checksum: b5e348d2e9e83207a69fe1362fcfbf99dab34db9591202f2a2f394b9693860c506d865440b7ee8f0277d67e5e7a4b0ff5326a1b8b955a4b98261b1e1df13e189
+  languageName: node
+  linkType: hard
+
+"vue-devtools-stub@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "vue-devtools-stub@npm:0.1.0"
+  checksum: 3f19fa2ab6d7f65de459f6c10d8f1d682dcd4ac55934c37617423d4a70efb98aa0a35f290120ec0c429ddcc0bdb7458836f87763ee0b8acfe007e4869f67dbbb
   languageName: node
   linkType: hard
 

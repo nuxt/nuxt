@@ -68,6 +68,7 @@
     "untyped": "^0.4.5",
     "vue": "^3.2.37",
     "vue-bundle-renderer": "^0.4.2",
+    "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.1.3"
   },
   "devDependencies": {
