@@ -1,19 +1,17 @@
 import { execSync } from 'node:child_process'
-import { promises as fsp } from 'node:fs'
 import consola from 'consola'
 import { resolve } from 'pathe'
-import { resolveModule } from '../utils/cjs'
+import { readPackageJSON } from 'pkg-types'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
 import { rmRecursive, touchFile } from '../utils/fs'
 import { cleanupNuxtDirs } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
-async function getNuxtVersion (paths: string | string[]): Promise<string|null> {
+async function getNuxtVersion (path: string): Promise<string|null> {
   try {
-    const pkgJson = resolveModule('nuxt/package.json', paths)
-    const pkg = pkgJson && JSON.parse(await fsp.readFile(pkgJson, 'utf8'))
+    const pkg = await readPackageJSON('nuxt', { url: path })
     if (!pkg.version) {
-      consola.warn('Cannot find any installed nuxt versions in ', paths)
+      consola.warn('Cannot find any installed nuxt versions in ', path)
     }
     return pkg.version || null
   } catch {
@@ -53,7 +51,7 @@ export default defineNuxtCommand({
 
     // Install latest rc
     consola.info('Installing latest Nuxt 3 RC...')
-    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit' })
+    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit', cwd: rootDir })
 
     // Cleanup after upgrade
     await cleanupNuxtDirs(rootDir)
