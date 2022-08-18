@@ -78,14 +78,6 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
   }))
 
   app.use('/invalidates', defineEventHandler(() => {
-    // When a file has been invalidated, we also invalidate the entry module
-    if (invalidates.size) {
-      for (const key of ctx.ssrServer!.moduleGraph.fileToModulesMap.keys()) {
-        if (key.startsWith(ctx.nuxt.options.appDir + '/entry')) {
-          invalidates.add(key)
-        }
-      }
-    }
     const ids = Array.from(invalidates)
     invalidates.clear()
     return ids

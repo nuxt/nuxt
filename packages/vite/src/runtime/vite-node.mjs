@@ -27,12 +27,7 @@ export default async (ssrContext) => {
   const invalidates = await $fetch('/invalidates', {
     baseURL: viteNodeOptions.baseURL
   })
-  const updates = new Set()
-  for (const key of invalidates) {
-    if (runner.moduleCache.delete(key)) {
-      updates.add(key)
-    }
-  }
+  const updates = runner.moduleCache.invalidateDepTree(invalidates)
 
   // Execute SSR bundle on demand
   const start = performance.now()
