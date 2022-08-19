@@ -5641,10 +5641,10 @@ devalue@^2.0.1:
   resolved "https://registry.npmjs.org/devalue/-/devalue-2.0.1.tgz#5d368f9adc0928e47b77eea53ca60d2f346f9762"
   integrity sha512-I2TiqT5iWBEyB8GRfTDP0hiLZ0YeDJZ+upDxjBfOC2lebO5LezQMv7QvIUTzdb64jQyAKLf1AHADtGN+jw6v8Q==
 
-devtools-protocol@0.0.1011705:
-  version "0.0.1011705"
-  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1011705.tgz#2582ed29f84848df83fba488122015540a744539"
-  integrity sha512-OKvTvu9n3swmgYshvsyVHYX0+aPzCoYUnyXUacfQMmFtBtBKewV/gT4I9jkAbpTqtTi2E4S9MXLlvzBDUlqg0Q==
+devtools-protocol@0.0.1019158:
+  version "0.0.1019158"
+  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1019158.tgz#4b08d06108a784a2134313149626ba55f030a86f"
+  integrity sha512-wvq+KscQ7/6spEV7czhnZc9RM/woz1AY+/Vpd8/h2HFMwJSdTliu7f/yr1A6vDdJfKICZsShqsYpEQbdhg8AFQ==
 
 dezalgo@^1.0.0:
   version "1.0.4"
@@ -10685,19 +10685,19 @@ pirates@^4.0.4:
   resolved "https://registry.npmjs.org/pirates/-/pirates-4.0.5.tgz#feec352ea5c3268fb23a37c702ab1699f35a5f3b"
   integrity sha512-8V9+HQPupnaXMA23c5hvl69zXvTwTzyAYasnkb0Tts4XvO4CliqONMOnvlq26rkhLC3nWDFBJf73LU1e1VZLaQ==
 
-pkg-dir@4.2.0, pkg-dir@^4.1.0, pkg-dir@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/pkg-dir/-/pkg-dir-4.2.0.tgz#f099133df7ede422e81d1d8448270eeb3e4261f3"
-  integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
-  dependencies:
-    find-up "^4.0.0"
-
 pkg-dir@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/pkg-dir/-/pkg-dir-3.0.0.tgz#2749020f239ed990881b1f71210d51eb6523bea3"
   integrity sha512-/E57AYkoeQ25qkxMj5PBOVgF8Kiu/h7cYS30Z5+R7WaiCCBfLq58ZI/dSeaEKb9WVJV5n/03QwrN3IeWIFllvw==
   dependencies:
     find-up "^3.0.0"
+
+pkg-dir@^4.1.0, pkg-dir@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.npmjs.org/pkg-dir/-/pkg-dir-4.2.0.tgz#f099133df7ede422e81d1d8448270eeb3e4261f3"
+  integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
+  dependencies:
+    find-up "^4.0.0"
 
 pluralize@^8.0.0:
   version "8.0.0"
@@ -11588,23 +11588,22 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^15.2.0:
-  version "15.2.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-15.2.0.tgz#3dc71256ff76a0b49b34056fe27f17a852d6d3d4"
-  integrity sha512-AEMcInJDHFiBwyjmpLFe8iKHZbjxgU/Y7PRyvCBgig+Odnn4HWtXvZnXab4SANiVLjhVaES3AVbkFhR6MT+P4w==
+puppeteer-core@^16.2.0:
+  version "16.2.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-16.2.0.tgz#ea790cd53f8a0ffeaf03679ff6fd82b0e210b3e3"
+  integrity sha512-f1q7egbAR5IhAVb0LNhiLKD2O/WtAHS/Oeided2+8RFBZx9OjZ26sIDD7QUTrOuUXHY257ShVJNN42fANEiSXQ==
   dependencies:
     cross-fetch "3.1.5"
     debug "4.3.4"
-    devtools-protocol "0.0.1011705"
+    devtools-protocol "0.0.1019158"
     extract-zip "2.0.1"
     https-proxy-agent "5.0.1"
-    pkg-dir "4.2.0"
     progress "2.0.3"
     proxy-from-env "1.1.0"
     rimraf "3.0.2"
     tar-fs "2.1.1"
     unbzip2-stream "1.4.3"
-    ws "8.8.0"
+    ws "8.8.1"
 
 q@^1.1.2, q@^1.5.1:
   version "1.5.1"
@@ -14283,15 +14282,20 @@ write-pkg@^4.0.0:
     type-fest "^0.4.1"
     write-json-file "^3.2.0"
 
-ws@8.8.0, ws@^8.2.3, ws@^8.8.0:
-  version "8.8.0"
-  resolved "https://registry.npmjs.org/ws/-/ws-8.8.0.tgz#8e71c75e2f6348dbf8d78005107297056cb77769"
-  integrity sha512-JDAgSYQ1ksuwqfChJusw1LSJ8BizJ2e/vVu5Lxjq3YvNJNlROv1ui4i+c/kUUrPheBvQl4c5UbERhTwKa6QBJQ==
+ws@8.8.1:
+  version "8.8.1"
+  resolved "https://registry.npmjs.org/ws/-/ws-8.8.1.tgz#5dbad0feb7ade8ecc99b830c1d77c913d4955ff0"
+  integrity sha512-bGy2JzvzkPowEJV++hF07hAD6niYSr0JzBNo/J29WsB57A2r7Wlc1UFcTR9IzrPvuNVO4B8LGqF8qcpsVOhJCA==
 
 ws@^7.3.1:
   version "7.5.8"
   resolved "https://registry.npmjs.org/ws/-/ws-7.5.8.tgz#ac2729881ab9e7cbaf8787fe3469a48c5c7f636a"
   integrity sha512-ri1Id1WinAX5Jqn9HejiGb8crfRio0Qgu8+MtL36rlTA6RLsMdWt1Az/19A2Qij6uSHUMphEFaTKa4WG+UNHNw==
+
+ws@^8.2.3, ws@^8.8.0:
+  version "8.8.0"
+  resolved "https://registry.npmjs.org/ws/-/ws-8.8.0.tgz#8e71c75e2f6348dbf8d78005107297056cb77769"
+  integrity sha512-JDAgSYQ1ksuwqfChJusw1LSJ8BizJ2e/vVu5Lxjq3YvNJNlROv1ui4i+c/kUUrPheBvQl4c5UbERhTwKa6QBJQ==
 
 xml-name-validator@^4.0.0:
   version "4.0.0"
