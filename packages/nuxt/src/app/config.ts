@@ -20,13 +20,22 @@ if (process.dev) {
   function applyHMR (newConfig: AppConfig) {
     const appConfig = useAppConfig()
     if (newConfig && appConfig) {
-      for (const key in newConfig) {
-        (appConfig as any)[key] = (newConfig as any)[key]
-      }
+      deepAssign(appConfig, newConfig)
       for (const key in appConfig) {
         if (!(key in newConfig)) {
           delete (appConfig as any)[key]
         }
+      }
+    }
+  }
+
+  function deepAssign (obj: any, newObj: any) {
+    for (const key in newObj) {
+      const val = newObj[key]
+      if (val !== null && typeof val === 'object') {
+        deepAssign(obj[key], val)
+      } else {
+        obj[key] = val
       }
     }
   }
