@@ -50,7 +50,7 @@
     "vue-bundle-renderer": "^0.4.2",
     "vue-loader": "^17.0.0",
     "webpack": "^5.74.0",
-    "webpack-bundle-analyzer": "^4.6.0",
+    "webpack-bundle-analyzer": "^4.6.1",
     "webpack-dev-middleware": "^5.3.3",
     "webpack-hot-middleware": "^2.25.2",
     "webpack-virtual-modules": "^0.4.4",

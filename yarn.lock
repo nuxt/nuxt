@@ -1870,7 +1870,7 @@ __metadata:
     vue-bundle-renderer: ^0.4.2
     vue-loader: ^17.0.0
     webpack: ^5.74.0
-    webpack-bundle-analyzer: ^4.6.0
+    webpack-bundle-analyzer: ^4.6.1
     webpack-dev-middleware: ^5.3.3
     webpack-hot-middleware: ^2.25.2
     webpack-virtual-modules: ^0.4.4
@@ -13877,9 +13877,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-bundle-analyzer@npm:^4.6.0":
-  version: 4.6.0
-  resolution: "webpack-bundle-analyzer@npm:4.6.0"
+"webpack-bundle-analyzer@npm:^4.6.1":
+  version: 4.6.1
+  resolution: "webpack-bundle-analyzer@npm:4.6.1"
   dependencies:
     acorn: ^8.0.4
     acorn-walk: ^8.0.0
@@ -13892,7 +13892,7 @@ __metadata:
     ws: ^7.3.1
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
-  checksum: f2921b08cb6a7e58e5b94d2324e98039666ef5c4ce46dc29d5c13f122f12b9b5e9036336283196b70f696be793aec900f87b352712f2fc28d1beec4b7080a097
+  checksum: 4bc97ac6a1d9cd1f133444b0fc9d9091c97f4bd8388f97636ce27abd1ebffaa7dd45d29f6693661a666e77bcc08dff43ab7c2f5e2600a3101b956c94c1d038d0
   languageName: node
   linkType: hard
 
