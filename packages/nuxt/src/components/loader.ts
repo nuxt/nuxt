@@ -7,7 +7,7 @@ import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 
 interface LoaderOptions {
-  getComponents(): Component[]
+  getComponents (): Component[]
   mode: 'server' | 'client'
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
@@ -76,11 +76,11 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           }
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-            imports.add(`const ${identifier}_lazy = __defineAsyncComponent(${genDynamicImport(component.filePath)})`)
-            return isClientOnly ? `createClientOnly(${identifier}_lazy)` : `${identifier}_lazy`
+            imports.add(`const ${identifier}_lazy = /*#__PURE__*/ __defineAsyncComponent(${genDynamicImport(component.filePath)})`)
+            return isClientOnly ? `/*#__PURE__*/ createClientOnly(${identifier}_lazy)` : `${identifier}_lazy`
           } else {
             imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
-            return isClientOnly ? `createClientOnly(${identifier})` : identifier
+            return isClientOnly ? `/*#__PURE__*/ createClientOnly(${identifier})` : identifier
           }
         }
         // no matched
