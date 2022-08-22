@@ -138,14 +138,14 @@ Specifies a function that returns the cookie's default value. The function can a
 
 ## Handling Cookies in API Routes
 
-You can use `useCookie` and `setCookie` from [`h3`](https://github.com/unjs/h3) package to set cookies in server API routes.
+You can use `getCookie` and `setCookie` from [`h3`](https://github.com/unjs/h3) package to set cookies in server API routes.
 
 **Example:**
 
 ```js
 export default defineEventHandler(event => {
   // Read counter cookie
-  let counter = useCookie(event, 'counter') || 0
+  let counter = getCookie(event, 'counter') || 0
 
   // Increase counter cookie by 1
   setCookie(event, 'counter', ++counter)
