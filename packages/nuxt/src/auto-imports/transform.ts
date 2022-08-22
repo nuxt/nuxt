@@ -5,7 +5,7 @@ import { Unimport } from 'unimport'
 import { AutoImportsOptions } from '@nuxt/schema'
 import { normalize } from 'pathe'
 
-export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx: Unimport, options: Partial<AutoImportsOptions>, sourcemap?: boolean }) => {
+export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<AutoImportsOptions>, sourcemap?: boolean }) => {
   return {
     name: 'nuxt:auto-imports-transform',
     enforce: 'post',
@@ -48,7 +48,9 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: {ctx
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: sourcemap && s.generateMap({ source: id, includeContent: true })
+          map: sourcemap
+            ? s.generateMap({ source: id, includeContent: true })
+            : undefined
         }
       }
     }

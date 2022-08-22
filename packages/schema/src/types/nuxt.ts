@@ -34,13 +34,18 @@ export interface NuxtTemplate<Options = Record<string, any>> {
   /** The target filename once the template is copied into the Nuxt buildDir */
   filename?: string
   /** An options object that will be accessible within the template via `<% options %>` */
-  options?: Record<string, any>
+  options?: Options
   /** The resolved path to the source file to be template */
   src?: string
   /** Provided compile option instead of src */
-  getContents?: (data: Record<string, any>) => string | Promise<string>
+  getContents?: (data: Options) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
+}
+
+export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends NuxtTemplate<Options> {
+  filename: string
+  dst: string
 }
 
 export interface NuxtPlugin {
@@ -63,5 +68,5 @@ export interface NuxtApp {
   configs: string[]
 }
 
-type _TemplatePlugin = Omit<NuxtPlugin, 'src'> & NuxtTemplate
-export interface NuxtPluginTemplate extends _TemplatePlugin { }
+type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
+export interface NuxtPluginTemplate<Options = Record<string, any>> extends _TemplatePlugin<Options> { }

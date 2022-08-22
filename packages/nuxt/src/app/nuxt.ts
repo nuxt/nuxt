@@ -80,7 +80,7 @@ interface _NuxtApp {
       message: string
       description: string
       data?: any
-    }
+    } | null
     [key: string]: any
   }
 

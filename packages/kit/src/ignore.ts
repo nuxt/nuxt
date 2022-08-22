@@ -11,7 +11,7 @@ export function isIgnored (pathname: string): boolean {
 
   // Happens with CLI reloads
   if (!nuxt) {
-    return null
+    return false
   }
 
   if (!nuxt._ignore) {
@@ -28,5 +28,5 @@ export function isIgnored (pathname: string): boolean {
   if (relativePath.startsWith('..')) {
     return false
   }
-  return relativePath && nuxt._ignore.ignores(relativePath)
+  return !!(relativePath && nuxt._ignore.ignores(relativePath))
 }

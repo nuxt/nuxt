@@ -39,7 +39,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (!vm) { return }
 
     onBeforeUnmount(() => {
-      head.removeHeadObjs(headObj)
+      head.removeHeadObjs(headObj as any)
       head.updateDOM()
     })
   }

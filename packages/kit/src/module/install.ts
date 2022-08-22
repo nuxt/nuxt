@@ -10,7 +10,12 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
 
   // Call module
-  await nuxtModule.call(useModuleContainer(), inlineOptions, nuxt)
+  await nuxtModule.call(
+    // Provide this context for backwards compatibility with Nuxt 2
+    useModuleContainer() as any,
+    inlineOptions,
+    nuxt
+  )
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({

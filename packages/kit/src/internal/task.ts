@@ -15,11 +15,11 @@ export function parallel<T, R> (
   return Promise.all(tasks.map(fn))
 }
 
-export function chainFn (base, fn) {
+export function chainFn<Fn> (base: Fn, fn: Fn): Fn {
   if (typeof fn !== 'function') {
     return base
   }
-  return function (...args) {
+  return function (this: any, ...args: any[]) {
     if (typeof base !== 'function') {
       return fn.apply(this, args)
     }
@@ -38,5 +38,5 @@ export function chainFn (base, fn) {
       return baseResult
     }
     return fnResult
-  }
+  } as unknown as Fn
 }

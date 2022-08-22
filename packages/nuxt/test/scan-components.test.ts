@@ -4,7 +4,7 @@ import { expect, it, vi } from 'vitest'
 import { scanComponents } from '../src/components/scan'
 
 const fixtureDir = resolve(__dirname, 'fixture')
-const rFixture = (...p) => resolve(fixtureDir, ...p)
+const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({
   isIgnored: () => false
@@ -108,6 +108,7 @@ const srcDir = rFixture('.')
 it('components:scanComponents', async () => {
   const scannedComponents = await scanComponents(dirs, srcDir)
   for (const c of scannedComponents) {
+    // @ts-ignore
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)

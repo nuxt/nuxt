@@ -9,7 +9,7 @@ import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
 import type { Preset as ImportPreset, Import } from 'unimport'
 import type { NuxtConfig, NuxtOptions } from './config'
 import type { Nitro, NitroConfig } from 'nitropack'
-import type { Component, ComponentsDir, ScanDir, ComponentsOptions } from './components'
+import type { Component, ComponentsOptions } from './components'
 import { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
 
 
@@ -82,7 +82,7 @@ export interface NuxtHooks {
 
   // Components
   'components:dirs': (dirs: ComponentsOptions['dirs']) => HookResult
-  'components:extend': (components: (Component | ComponentsDir | ScanDir)[]) => HookResult
+  'components:extend': (components: Component[]) => HookResult
 
   // @nuxt/builder
   'build:before':

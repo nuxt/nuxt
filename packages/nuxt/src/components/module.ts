@@ -9,7 +9,7 @@ import { TreeShakeTemplatePlugin } from './tree-shake'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
-function compareDirByPathLength ({ path: pathA }, { path: pathB }) {
+function compareDirByPathLength ({ path: pathA }: { path: string}, { path: pathB }: { path: string}) {
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
 }
 
@@ -26,7 +26,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: []
   },
   setup (componentOptions, nuxt) {
-    let componentDirs = []
+    let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[]
     }
@@ -37,7 +37,7 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
-    const normalizeDirs = (dir: any, cwd: string) => {
+    const normalizeDirs = (dir: any, cwd: string): ComponentsDir[] => {
       if (Array.isArray(dir)) {
         return dir.map(dir => normalizeDirs(dir, cwd)).flat().sort(compareDirByPathLength)
       }
@@ -48,14 +48,14 @@ export default defineNuxtModule<ComponentsOptions>({
         ]
       }
       if (typeof dir === 'string') {
-        return {
-          path: resolve(cwd, resolveAlias(dir))
-        }
+        return [
+          { path: resolve(cwd, resolveAlias(dir)) }
+        ]
       }
       if (!dir) {
         return []
       }
-      const dirs = (dir.dirs || [dir]).map(dir => typeof dir === 'string' ? { path: dir } : dir).filter(_dir => _dir.path)
+      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
         ..._dir,
         path: resolve(cwd, resolveAlias(_dir.path))
@@ -113,7 +113,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // components.d.ts
     addTemplate({ ...componentsTypeTemplate, options: { getComponents } })
     // components.plugin.mjs
-    addPluginTemplate({ ...componentsPluginTemplate, options: { getComponents } })
+    addPluginTemplate({ ...componentsPluginTemplate, options: { getComponents } } as any)
     // components.server.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
     // components.client.mjs
@@ -121,12 +121,12 @@ export default defineNuxtModule<ComponentsOptions>({
 
     nuxt.hook('vite:extendConfig', (config, { isClient }) => {
       const mode = isClient ? 'client' : 'server'
-      config.resolve.alias['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+      ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
     })
     nuxt.hook('webpack:config', (configs) => {
       for (const config of configs) {
         const mode = config.name === 'server' ? 'server' : 'client'
-        config.resolve.alias['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+        ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
       }
     })
 

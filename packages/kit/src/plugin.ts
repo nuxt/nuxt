@@ -73,7 +73,7 @@ export function addPluginTemplate (plugin: NuxtPluginTemplate | string, opts: Ad
   const normalizedPlugin: NuxtPlugin = typeof plugin === 'string'
     ? { src: plugin }
     // Update plugin src to template destination
-    : { ...plugin, src: addTemplate(plugin).dst }
+    : { ...plugin, src: addTemplate(plugin).dst! }
 
   return addPlugin(normalizedPlugin, opts)
 }

@@ -1,5 +1,5 @@
 import { isAbsolute, relative } from 'pathe'
-import type { Component, Nuxt } from '@nuxt/schema'
+import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from '@nuxt/schema'
 import { genDynamicImport, genExport, genObjectFromRawEntries } from 'knitwork'
 
 export interface ComponentsTemplateContext {
@@ -25,9 +25,9 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
   ].filter(Boolean).join(', ')
 }
 
-export const componentsPluginTemplate = {
+export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
-  getContents ({ options }: ComponentsTemplateContext) {
+  getContents ({ options }) {
     const globalComponents = options.getComponents().filter(c => c.global === true)
 
     return `import { defineAsyncComponent } from 'vue'
@@ -50,9 +50,9 @@ export default defineNuxtPlugin(nuxtApp => {
   }
 }
 
-export const componentsTemplate = {
+export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   // components.[server|client].mjs'
-  getContents ({ options }: ComponentsTemplateContext) {
+  getContents ({ options }) {
     return [
       'import { defineAsyncComponent } from \'vue\'',
       ...options.getComponents(options.mode).flatMap((c) => {
@@ -69,9 +69,9 @@ export const componentsTemplate = {
   }
 }
 
-export const componentsTypeTemplate = {
+export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.d.ts',
-  getContents: ({ options, nuxt }: ComponentsTemplateContext) => {
+  getContents: ({ options, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes = options.getComponents().map(c => [
       c.pascalName,

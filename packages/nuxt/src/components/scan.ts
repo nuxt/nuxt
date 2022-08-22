@@ -58,12 +58,12 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        *
        * @example third-components/index.vue -> third-component
        * if not take the filename
-       * @example thid-components/Awesome.vue -> Awesome
+       * @example third-components/Awesome.vue -> Awesome
        */
       let fileName = basename(filePath, extname(filePath))
 
       const global = /\.(global)$/.test(fileName) || dir.global
-      const mode = fileName.match(/(?<=\.)(client|server)(\.global)?$/)?.[1] as 'client' | 'server' || 'all'
+      const mode = (fileName.match(/(?<=\.)(client|server)(\.global)?$/)?.[1] || 'all') as 'client' | 'server' | 'all'
       fileName = fileName.replace(/(\.(client|server))?(\.global)?$/, '')
 
       if (fileName.toLowerCase() === 'index') {

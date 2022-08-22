@@ -31,7 +31,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
         regexpMap.set(components, new RegExp(`(${clientOnlyComponents.join('|')})`, 'g'))
       }
 
-      const COMPONENTS_RE = regexpMap.get(components)
+      const COMPONENTS_RE = regexpMap.get(components)!
       const s = new MagicString(code)
 
       // Do not render client-only slots on SSR, but preserve attributes
@@ -40,7 +40,9 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: options.sourcemap && s.generateMap({ source: id, includeContent: true })
+          map: options.sourcemap
+            ? s.generateMap({ source: id, includeContent: true })
+            : undefined
         }
       }
     }

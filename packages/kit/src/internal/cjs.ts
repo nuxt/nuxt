@@ -85,10 +85,10 @@ export function requireModulePkg (id: string, opts: RequireModuleOptions = {}) {
 /** Resolve the path of a module. */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: [].concat(
+    paths: ([] as string[]).concat(
       // @ts-ignore
       global.__NUXT_PREPATHS__,
-      opts.paths,
+      opts.paths || [],
       process.cwd(),
       // @ts-ignore
       global.__NUXT_PATHS__
@@ -100,8 +100,8 @@ export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
 export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}): string | null {
   try {
     return resolveModule(path, opts)
-  } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') {
+  } catch (error: any) {
+    if (error?.code !== 'MODULE_NOT_FOUND') {
       throw error
     }
   }

@@ -115,7 +115,7 @@ export function resolveAlias (path: string, alias?: Record<string, string>): str
 }
 
 export interface Resolver {
-  resolve(...path): string
+  resolve(...path: string[]): string
   resolvePath(path: string, opts?: ResolvePathOptions): Promise<string>
 }
 

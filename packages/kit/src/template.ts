@@ -1,16 +1,16 @@
 import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { NuxtTemplate } from '@nuxt/schema'
+import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
  */
-export function addTemplate (_template: NuxtTemplate | string) {
+export function addTemplate (_template: NuxtTemplate<any> | string) {
   const nuxt = useNuxt()
 
-  // Noprmalize template
+  // Normalize template
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same filename
@@ -26,7 +26,7 @@ export function addTemplate (_template: NuxtTemplate | string) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplate {
+export function normalizeTemplate (template: NuxtTemplate<any> | string): ResolvedNuxtTemplate<any> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -69,5 +69,5 @@ export function normalizeTemplate (template: NuxtTemplate | string): NuxtTemplat
     template.dst = resolve(nuxt.options.buildDir, template.filename)
   }
 
-  return template
+  return template as ResolvedNuxtTemplate<any>
 }
