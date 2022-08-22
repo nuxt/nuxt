@@ -1695,7 +1695,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.7
-    vite: ~3.0.8
+    vite: ~3.0.9
   languageName: unknown
   linkType: soft
 
@@ -1810,11 +1810,11 @@ __metadata:
     postcss-import: ^14.1.0
     postcss-url: ^10.1.3
     rollup: ^2.78.1
-    rollup-plugin-visualizer: ^5.7.1
+    rollup-plugin-visualizer: ^5.8.0
     ufo: ^0.8.5
     unbuild: latest
     unplugin: ^0.9.2
-    vite: ~3.0.8
+    vite: ~3.0.9
     vite-node: ^0.22.1
     vite-plugin-checker: ^0.4.9
     vue: 3.2.37
@@ -1870,7 +1870,7 @@ __metadata:
     vue-bundle-renderer: ^0.4.2
     vue-loader: ^17.0.0
     webpack: ^5.74.0
-    webpack-bundle-analyzer: ^4.5.0
+    webpack-bundle-analyzer: ^4.6.0
     webpack-dev-middleware: ^5.3.3
     webpack-hot-middleware: ^2.25.2
     webpack-virtual-modules: ^0.4.4
@@ -2398,10 +2398,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.49":
-  version: 16.11.49
-  resolution: "@types/node@npm:16.11.49"
-  checksum: 05545ee49da3b783ab77cddca45db6f4d47861c2bb148a17b774688e1082f20f27177591d140923724bcd8643b32291203f6f1eadba397e394232d4a1e28e07a
+"@types/node@npm:^16.11.52":
+  version: 16.11.52
+  resolution: "@types/node@npm:16.11.52"
+  checksum: eb688bff28015f1399264b7aa347d5f40e165d438306bd5884d78993671c5e43b7849b8ddc74b91bf7c7b73e15ba54fc56ea1db2118b0e3f59f9fabd2adc7fe7
   languageName: node
   linkType: hard
 
@@ -2826,10 +2826,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.45.8":
-  version: 0.45.8
-  resolution: "@unocss/reset@npm:0.45.8"
-  checksum: e928bd7df06e4f1cf051a2ea487cc7c3ea169ac10488174bf2c71c6f95e1d09af16a7b6f2ebfbcad78d54a943d2b1b482c633271d01e4db3edc8be211990b243
+"@unocss/reset@npm:^0.45.9":
+  version: 0.45.9
+  resolution: "@unocss/reset@npm:0.45.9"
+  checksum: 0c0b6d9f5ad0be39f75d466f720ef92709a8d092287e579e8a77b943dceec67ab6ca2f081bc9bdfdacab552fcb55e87bb7a473e6919fb1e54b5a6bd044d4f4bb
   languageName: node
   linkType: hard
 
@@ -9162,9 +9162,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdownlint-cli@npm:^0.32.1":
-  version: 0.32.1
-  resolution: "markdownlint-cli@npm:0.32.1"
+"markdownlint-cli@npm:^0.32.2":
+  version: 0.32.2
+  resolution: "markdownlint-cli@npm:0.32.2"
   dependencies:
     commander: ~9.4.0
     get-stdin: ~9.0.0
@@ -9172,24 +9172,24 @@ __metadata:
     ignore: ~5.2.0
     js-yaml: ^4.1.0
     jsonc-parser: ~3.1.0
-    markdownlint: ~0.26.1
-    markdownlint-rule-helpers: ~0.17.1
+    markdownlint: ~0.26.2
+    markdownlint-rule-helpers: ~0.17.2
     minimatch: ~5.1.0
     run-con: ~1.2.11
   bin:
     markdownlint: markdownlint.js
-  checksum: 094b559ef0dd2b05ba8da7fc6ceec5ba116af04049c25ab947585d009439ba289b62d6ebbb7f0f8065c0ac30a9d4f9430ee0fdbc1560624052662e3ee0b4b79a
+  checksum: 131cb66b0d6da54f0feee4a73edda6337bf81ee5fbf3afcc6417faf4d0ec6f0231b2b471614e43588f6ea19f080b1a2bc5f4312e9dbf87656934fba0edb51231
   languageName: node
   linkType: hard
 
-"markdownlint-rule-helpers@npm:~0.17.1":
+"markdownlint-rule-helpers@npm:~0.17.2":
   version: 0.17.2
   resolution: "markdownlint-rule-helpers@npm:0.17.2"
   checksum: e34c0266ffc0e1102fdd839dd70228b719c3120e8b61d0e21d4e21388a87203b7ec69d5dceb00d7bdc02fe215d2b51b14a7a72d89caa3acc7498edb38877cb40
   languageName: node
   linkType: hard
 
-"markdownlint@npm:~0.26.1":
+"markdownlint@npm:~0.26.2":
   version: 0.26.2
   resolution: "markdownlint@npm:0.26.2"
   dependencies:
@@ -10122,9 +10122,9 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.49
+    "@types/node": ^16.11.52
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.45.8
+    "@unocss/reset": ^0.45.9
     case-police: ^0.5.9
     changelogen: ^0.1.1
     eslint: ^8.22.0
@@ -10134,7 +10134,7 @@ __metadata:
     globby: ^13.1.2
     jiti: ^1.14.0
     lerna: ^5.4.3
-    markdownlint-cli: ^0.32.1
+    markdownlint-cli: ^0.32.2
     pathe: ^0.3.5
     rimraf: ^3.0.2
     typescript: ^4.7.4
@@ -11860,6 +11860,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup-plugin-visualizer@npm:^5.8.0":
+  version: 5.8.0
+  resolution: "rollup-plugin-visualizer@npm:5.8.0"
+  dependencies:
+    nanoid: ^3.3.4
+    open: ^8.4.0
+    source-map: ^0.7.3
+    yargs: ^17.5.1
+  peerDependencies:
+    rollup: ^2.0.0
+  bin:
+    rollup-plugin-visualizer: dist/bin/cli.js
+  checksum: 907e435e2fa4243786c2e99f7062ce94bc7876ba20af42afbeeceed7d3403d5e6784e021328bca103dc7550d570978f46890e9d04ebe1b7ceb5dc934f592a676
+  languageName: node
+  linkType: hard
+
 "rollup-pluginutils@npm:^2.8.2":
   version: 2.8.2
   resolution: "rollup-pluginutils@npm:2.8.2"
@@ -13573,9 +13589,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:~3.0.8":
-  version: 3.0.8
-  resolution: "vite@npm:3.0.8"
+"vite@npm:~3.0.9":
+  version: 3.0.9
+  resolution: "vite@npm:3.0.9"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
@@ -13601,7 +13617,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: ec3f57d52f2bf28f2f89898053c2156f025a108a95e9308ce6580f43d8fdaae866f7988afa8207a8c8509069d3a0b50ee79b9a8050590a825f4b7771646c2755
+  checksum: 6341aa43579ae45f8a383bdc0c5041dea3dff98f14e0a546d6d884a864134b00082246a28d1de8adff0ce0dd92b468c7ade8f972ffe1ed97258671d63e0f16f7
   languageName: node
   linkType: hard
 
@@ -13861,9 +13877,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-bundle-analyzer@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "webpack-bundle-analyzer@npm:4.5.0"
+"webpack-bundle-analyzer@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "webpack-bundle-analyzer@npm:4.6.0"
   dependencies:
     acorn: ^8.0.4
     acorn-walk: ^8.0.0
@@ -13876,7 +13892,7 @@ __metadata:
     ws: ^7.3.1
   bin:
     webpack-bundle-analyzer: lib/bin/analyzer.js
-  checksum: 158e96810ec213d5665ca1c0b257097db44e1f11c4befefab8352b9e5b10890fcb3e3fc1f7bb400dd58762a8edce5621c92afeca86eb4687d2eb64e93186bfcb
+  checksum: f2921b08cb6a7e58e5b94d2324e98039666ef5c4ce46dc29d5c13f122f12b9b5e9036336283196b70f696be793aec900f87b352712f2fc28d1beec4b7080a097
   languageName: node
   linkType: hard
 
