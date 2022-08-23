@@ -34,7 +34,7 @@ export default defineNuxtCommand({
     const config = await kit.loadNuxtConfig({ cwd })
 
     // Resolve template
-    const res = templates[template]({ name })
+    const res = templates[template]({ name, args })
 
     // Resolve full path to generated file
     const path = resolve(config.srcDir, res.path)
