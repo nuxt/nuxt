@@ -11,7 +11,7 @@ export interface ComponentsTemplateContext {
 }
 
 export type ImportMagicCommentsOptions = {
-  chunkName:string
+  chunkName: string
   prefetch?: boolean | number
   preload?: boolean | number
 }

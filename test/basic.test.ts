@@ -360,6 +360,12 @@ describe('automatically keyed composables', () => {
   })
 })
 
+describe('prefetching', () => {
+  it('should prefetch components', async () => {
+    await expectNoClientErrors('/prefetch/components')
+  })
+})
+
 if (process.env.NUXT_TEST_DEV) {
   describe('detecting invalid root nodes', () => {
     it('should detect invalid root nodes in pages', async () => {
