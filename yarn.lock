@@ -1812,7 +1812,7 @@ __metadata:
     get-port-please: ^2.6.1
     jiti: ^1.14.0
     ohmyfetch: ^0.4.18
-    playwright: ^1.25.0
+    playwright: ^1.25.1
     unbuild: latest
     vitest: ~0.19.1
   peerDependencies:
@@ -2470,10 +2470,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.54":
-  version: 16.11.54
-  resolution: "@types/node@npm:16.11.54"
-  checksum: fa4d6a94498cc6ef96932a25557082587a178b5fa1da5e208bdb171b85265110a7ca6a4f296e740dca1b29d2a44b3c1e76e21d255e5eeed8be5f67ea538dcb9c
+"@types/node@npm:^16.11.55":
+  version: 16.11.55
+  resolution: "@types/node@npm:16.11.55"
+  checksum: fec4e9619ee231cb2623ca470a867d8758fc52f4bf6275f4b412378de590d933dcdb411eb75607a85ce85c2fdf0dc969ee4e044c167097d4556890917e8550ef
   languageName: node
   linkType: hard
 
@@ -10234,7 +10234,7 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.54
+    "@types/node": ^16.11.55
     "@types/rimraf": ^3
     "@unocss/reset": ^0.45.12
     case-police: ^0.5.9
@@ -10972,23 +10972,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.25.0":
-  version: 1.25.0
-  resolution: "playwright-core@npm:1.25.0"
+"playwright-core@npm:1.25.1":
+  version: 1.25.1
+  resolution: "playwright-core@npm:1.25.1"
   bin:
     playwright: cli.js
-  checksum: 78a9c8857428c8e9fe3a2061672a2e9ce0106afec473281d3a6389ec29918fd1d29c9d2792edde90bfd92c4477151fbd2d8f9f5061fbddaf8c6995a91c9cf2de
+  checksum: 34d5602816f73d68de3c022423ef64f0214f5e9827c584bffa608ecf66a9058f2f578e037bd7cbe7f98be53d5b01602f1f98aec73db5b475d8ab22417c803db5
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.25.0":
-  version: 1.25.0
-  resolution: "playwright@npm:1.25.0"
+"playwright@npm:^1.25.1":
+  version: 1.25.1
+  resolution: "playwright@npm:1.25.1"
   dependencies:
-    playwright-core: 1.25.0
+    playwright-core: 1.25.1
   bin:
     playwright: cli.js
-  checksum: f2a0c32d463dbc4a36c1c5e56f67a4daa3a9ab7cf4267453b561d677654cc69e6c8e18ae739cd112fd765e51311cf273c8c1d26d90d9880ff21c2b24c1edccae
+  checksum: 39745f159bac378234aa1ec9a3ebbc474876fc5907256f5365a5c844a990164c2ebf8a721bc0e738d74e83a789e5043af6a07e08f8a5be15a7cf905dd0dbc4f0
   languageName: node
   linkType: hard
 
