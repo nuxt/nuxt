@@ -16,11 +16,12 @@ export default defineNuxtCommand({
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt } = await loadKit(rootDir)
+    const { loadNuxt, buildNuxt } = await loadKit(rootDir)
     const nuxt = await loadNuxt({ rootDir, config: { _prepare: true } })
 
-    // Generate types and close nuxt instance
+    // Generate types and build nuxt instance
     await writeTypes(nuxt)
+    await buildNuxt(nuxt)
     await nuxt.close()
 
     // Prefer local install if possible
