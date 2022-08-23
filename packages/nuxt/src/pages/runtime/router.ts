@@ -143,7 +143,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       }
 
       const result = await callWithNuxt(nuxtApp, middleware, [to, from])
-      if (process.server) {
+      if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
         if (result === false || result instanceof Error) {
           const error = result || createError({
             statusMessage: `Route navigation aborted: ${initialURL}`
