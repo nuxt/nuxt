@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
-    "@types/node": "^16.11.52",
+    "@types/node": "^16.11.54",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.45.12",
     "case-police": "^0.5.9",
