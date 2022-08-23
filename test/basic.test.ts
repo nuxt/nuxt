@@ -1,8 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { joinURL } from 'ufo'
 // import { isWindows } from 'std-env'
 import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
-import { expectNoClientErrors } from './utils'
+import { expectNoClientErrors, renderPage } from './utils'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -358,6 +359,28 @@ describe('automatically keyed composables', () => {
     await expectNoClientErrors('/keyed-composables')
   })
 })
+
+if (process.env.NUXT_TEST_DEV) {
+  describe('detecting invalid root nodes', () => {
+    it('should detect invalid root nodes in pages', async () => {
+      for (const path of ['1', '2', '3', '4']) {
+        const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+        const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning').map(w => w.text).join('\n')
+        expect(consoleLogsWarns).toContain('does not have a single root node and will cause errors when navigating between routes')
+      }
+    })
+
+    it('should not complain if there is no transition', async () => {
+      for (const path of ['fine']) {
+        const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+
+        const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
+
+        expect(consoleLogsWarns.length).toEqual(0)
+      }
+    })
+  })
+}
 
 describe('dynamic paths', () => {
   if (process.env.NUXT_TEST_DEV) {
