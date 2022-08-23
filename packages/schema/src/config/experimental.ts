@@ -18,7 +18,7 @@ export default {
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/framework/issues/4084
      */
-    externalVue: false,
+    externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
@@ -49,6 +49,6 @@ export default {
      *
      * @see https://github.com/nuxt/framework/issues/6432
      */
-     viteServerDynamicImports: true
+    viteServerDynamicImports: true
   }
 }
