@@ -1,6 +1,8 @@
+import type { KeepAliveProps, TransitionProps } from 'vue'
 import { ConfigSchema } from '../../schema/config'
 import type { UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
+import type { MetaObject } from './meta'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
@@ -13,8 +15,8 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite'>> {
 
 // TODO: Expose ConfigLayer<T> from c12
 interface ConfigLayer<T> {
-  config: T;
-  cwd: string;
+  config: T
+  cwd: string
   configFile: string
 }
 export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
@@ -69,6 +71,13 @@ export interface AppConfigInput extends Record<string, any> {
   nuxt?: never
   /** @deprecated reserved */
   nitro?: never
+}
+
+export interface NuxtAppConfig {
+  head: MetaObject
+  layoutTransition: boolean | TransitionProps
+  pageTransition: boolean | TransitionProps
+  keepalive: boolean | KeepAliveProps
 }
 
 export interface AppConfig { }

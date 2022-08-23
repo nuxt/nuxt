@@ -5,6 +5,7 @@ import { isAbsolute, join, relative } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
+import { camelCase } from 'scule'
 
 export interface TemplateContext {
   nuxt: Nuxt
@@ -240,5 +241,13 @@ export const publicPathTemplate: NuxtTemplate = {
       'globalThis.__buildAssetsURL = buildAssetsURL',
       'globalThis.__publicAssetsURL = publicAssetsURL'
     ].filter(Boolean).join('\n')
+  }
+}
+
+// Allow direct access to specific exposed nuxt.config
+export const nuxtConfigTemplate = {
+  filename: 'nuxt.config.mjs',
+  getContents: (ctx: TemplateContext) => {
+    return Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`).join('\n\n')
   }
 }

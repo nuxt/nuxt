@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addPlugin, addTemplate, defineNuxtModule } from '@nuxt/kit'
+import { addPlugin, defineNuxtModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
 
 export default defineNuxtModule({
@@ -14,12 +14,6 @@ export default defineNuxtModule({
 
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir
-
-    // Add global meta configuration
-    addTemplate({
-      filename: 'meta.config.mjs',
-      getContents: () => 'export default ' + JSON.stringify({ globalMeta: nuxt.options.app.head })
-    })
 
     // Add generic plugin
     addPlugin({ src: resolve(runtimeDir, 'plugin') })

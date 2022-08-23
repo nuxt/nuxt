@@ -6,6 +6,8 @@ import type { RouteLocation } from 'vue-router'
 import { generateRouteKey, RouterViewSlotProps, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app'
 import { _wrapIf } from '#app/components/utils'
+// @ts-ignore
+import { appPageTransition as defaultPageTransition, appKeepalive as defaultKeepaliveConfig } from '#build/nuxt.config.mjs'
 
 const isNestedKey = Symbol('isNested')
 
@@ -39,8 +41,8 @@ export default defineComponent({
           const transitionProps = routeProps.route.meta.pageTransition ?? defaultPageTransition
 
           return _wrapIf(Transition, transitionProps,
-            wrapInKeepAlive(routeProps.route.meta.keepalive, isNested && nuxtApp.isHydrating
-            // Include route children in parent suspense
+            wrapInKeepAlive(routeProps.route.meta.keepalive ?? defaultKeepaliveConfig, isNested && nuxtApp.isHydrating
+              // Include route children in parent suspense
               ? h(Component, { key, routeProps, pageKey: key, hasTransition: !!transitionProps } as {})
               : h(Suspense, {
                 onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
@@ -57,8 +59,6 @@ export default defineComponent({
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
   [key: string]: any
 }>
-
-const defaultPageTransition = { name: 'page', mode: 'out-in' }
 
 const Component = defineComponent({
   // TODO: Type props

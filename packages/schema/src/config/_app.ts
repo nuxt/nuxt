@@ -100,7 +100,7 @@ export default {
      *   }
      * }
      * ```
-     * @type {typeof import('../src/types/meta').MetaObject}
+     * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      * @version 3
      */
     head: {
@@ -123,7 +123,37 @@ export default {
 
         return resolved
       }
-    }
+    },
+    /**
+     * Default values for layout transitions.
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * Only JSON-serializable values are allowed.
+     *
+     * @see https://vuejs.org/api/built-in-components.html#transition
+     * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
+     */
+    layoutTransition: { name: 'layout', mode: 'out-in' },
+    /**
+     * Default values for page transitions.
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * Only JSON-serializable values are allowed.
+     *
+     * @see https://vuejs.org/api/built-in-components.html#transition
+     * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
+     */
+    pageTransition: { name: 'page', mode: 'out-in' },
+    /**
+     * Default values for KeepAlive configuration between pages.
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * Only JSON-serializable values are allowed.
+     *
+     * @see https://vuejs.org/api/built-in-components.html#keepalive
+     * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
+     */
+    keepalive: false,
   },
   /**
    * The path to an HTML template file for rendering Nuxt responses.

@@ -3,8 +3,8 @@ import { _wrapIf } from './utils'
 import { useRoute } from '#app'
 // @ts-ignore
 import layouts from '#build/layouts'
-
-const defaultLayoutTransition = { name: 'layout', mode: 'out-in' }
+// @ts-ignore
+import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 
 export default defineComponent({
   props: {
