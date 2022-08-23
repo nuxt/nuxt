@@ -30,7 +30,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options = defu(nuxt.options.autoImports, options)
     }
 
-    // @ts-expect-error
     nuxt.hooks.deprecateHooks({
       'autoImports:sources': { to: 'imports:sources' },
       'autoImports:dirs': { to: 'imports:dirs' },
