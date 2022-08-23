@@ -78,8 +78,8 @@ export default defineNuxtModule({
       })
     }
 
-    nuxt.hook('autoImports:extend', (autoImports) => {
-      autoImports.push(
+    nuxt.hook('imports:extend', (imports) => {
+      imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
         { name: 'useLink', as: 'useLink', from: 'vue-router' }
       )

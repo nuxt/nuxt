@@ -1,6 +1,6 @@
 import { UnimportOptions } from 'unimport'
 
-export interface AutoImportsOptions extends UnimportOptions {
+export interface ImportsOptions extends UnimportOptions {
   dirs?: string[]
   global?: boolean
   transform?: {

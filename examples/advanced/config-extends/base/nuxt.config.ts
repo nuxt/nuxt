@@ -1,7 +1,7 @@
 import { defineNuxtConfig } from 'nuxt'
 
 export default defineNuxtConfig({
-  autoImports: {
+  imports: {
     dirs: ['utils']
   },
   publicRuntimeConfig: {

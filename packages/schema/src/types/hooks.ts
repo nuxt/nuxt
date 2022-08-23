@@ -76,8 +76,15 @@ export interface NuxtHooks {
   'build:manifest': (manifest: Manifest) => HookResult
 
   // Auto imports
+  'imports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
+  'imports:extend': (imports: Import[]) => HookResult
+  'imports:dirs': (dirs: string[]) => HookResult
+
+  /** @deprecated Please use `imports:sources` hook */
   'autoImports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
+  /** @deprecated Please use `imports:extend` hook */
   'autoImports:extend': (imports: Import[]) => HookResult
+  /** @deprecated Please use `imports:dirs` hook */
   'autoImports:dirs': (dirs: string[]) => HookResult
 
   // Components

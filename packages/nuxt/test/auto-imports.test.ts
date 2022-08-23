@@ -4,10 +4,10 @@ import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'
 import * as VueFunctions from 'vue'
 import { createUnimport, Import } from 'unimport'
-import { TransformPlugin } from '../src/auto-imports/transform'
-import { defaultPresets } from '../src/auto-imports/presets'
+import { TransformPlugin } from '../src/imports/transform'
+import { defaultPresets } from '../src/imports/presets'
 
-describe('auto-imports:transform', () => {
+describe('imports:transform', () => {
   const imports: Import[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
     { name: 'computed', as: 'computed', from: 'bar' },
@@ -54,7 +54,7 @@ describe('auto-imports:transform', () => {
 
 const excludedNuxtHelpers = ['useHydration']
 
-describe('auto-imports:nuxt', () => {
+describe('imports:nuxt', () => {
   try {
     const { __dirname } = createCommonJS(import.meta.url)
     const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')
@@ -170,7 +170,7 @@ const excludedVueHelpers = [
   'compile'
 ]
 
-describe('auto-imports:vue', () => {
+describe('imports:vue', () => {
   for (const name of Object.keys(VueFunctions)) {
     if (excludedVueHelpers.includes(name)) {
       continue

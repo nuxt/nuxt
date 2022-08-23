@@ -8,7 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
-import autoImportsModule from '../auto-imports/module'
+import importsModule from '../imports/module'
 /* eslint-enable */
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
@@ -162,7 +162,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
   options._modules.push(pagesModule, metaModule, componentsModule)
-  options._modules.push([autoImportsModule, {
+  options._modules.push([importsModule, {
     transform: {
       include: options._layers
         .filter(i => i.cwd && i.cwd.includes('node_modules'))

@@ -110,7 +110,7 @@ export { }
   }
 }
 
-const adHocModules = ['router', 'pages', 'auto-imports', 'meta', 'components']
+const adHocModules = ['router', 'pages', 'imports', 'meta', 'components']
 export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
   getContents: ({ nuxt }) => {
