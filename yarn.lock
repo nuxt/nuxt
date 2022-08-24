@@ -2470,10 +2470,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.55":
-  version: 16.11.55
-  resolution: "@types/node@npm:16.11.55"
-  checksum: fec4e9619ee231cb2623ca470a867d8758fc52f4bf6275f4b412378de590d933dcdb411eb75607a85ce85c2fdf0dc969ee4e044c167097d4556890917e8550ef
+"@types/node@npm:^16.11.56":
+  version: 16.11.56
+  resolution: "@types/node@npm:16.11.56"
+  checksum: b4efade16eb08a39810921c54a1637e69c8f3184a20d87e8fe74d557d9bda73f0829ac318e2a30a32b1903e4b099812defd1dfe438be70b98dbfbea5b0d99a53
   languageName: node
   linkType: hard
 
@@ -10234,7 +10234,7 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
-    "@types/node": ^16.11.55
+    "@types/node": ^16.11.56
     "@types/rimraf": ^3
     "@unocss/reset": ^0.45.12
     case-police: ^0.5.9
