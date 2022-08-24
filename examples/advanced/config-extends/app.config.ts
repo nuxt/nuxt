@@ -1,5 +1,10 @@
 export default defineAppConfig({
   foo: 'user',
   bar: 'user',
-  baz: 'base'
+  baz: 'base',
+  array: [
+    'user',
+    'user',
+    'user'
+  ]
 })
