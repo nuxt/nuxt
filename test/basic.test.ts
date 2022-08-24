@@ -179,6 +179,14 @@ describe('navigate', () => {
   })
 })
 
+describe('navigate external', () => {
+  it('should redirect to example.com', async () => {
+    const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('https://example.com/')
+  })
+})
+
 describe('errors', () => {
   it('should render a JSON error page', async () => {
     const res = await fetch('/error', {
