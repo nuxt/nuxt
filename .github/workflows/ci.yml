@@ -21,6 +21,8 @@ jobs:
         os: [ubuntu-latest]
         node: [16]
 
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -48,6 +50,8 @@ jobs:
         os: [ubuntu-latest]
         node: [16]
 
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -68,6 +72,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [16]
+
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v3
@@ -92,6 +98,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node: [16]
+
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v3
@@ -125,6 +133,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         node: [16]
 
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -150,6 +160,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [16]
+
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v3
@@ -188,6 +200,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node: [16]
+
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v3
