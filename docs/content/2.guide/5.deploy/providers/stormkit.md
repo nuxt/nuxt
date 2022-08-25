@@ -4,7 +4,7 @@ icon: IconCloud
 
 # StormKit
 
-How to deploy Nuxt to [StormKit](https://www.stormkit.io/).
+How to deploy Nuxt to [StormKit](https://app.stormkit.io/?referral=nuxtjs).
 
 ## Learn More
 
