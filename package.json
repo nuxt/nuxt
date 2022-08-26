@@ -15,6 +15,7 @@
     "cleanup": "rimraf 'packages/**/node_modules' 'examples/**/node_modules' 'node_modules'",
     "dev": "yarn run nuxi dev playground",
     "dev:build": "yarn run nuxi build playground",
+    "dev:preview": "yarn run nuxi preview playground",
     "example": "yarn workspace example-$0 dev",
     "example:build": "yarn workspace example-$0 build",
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
