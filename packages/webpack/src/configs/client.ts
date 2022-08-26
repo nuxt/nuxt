@@ -97,7 +97,8 @@ function clientPlugins (ctx: WebpackConfigContext) {
 }
 
 function getCspScriptPolicy (ctx: WebpackConfigContext) {
-  const { csp } = ctx.options.render
+  // TODO
+  const { csp } = ctx.options.render as any
   if (typeof csp === 'object') {
     const { policies = {} } = csp
     return policies['script-src'] || policies['default-src'] || []
