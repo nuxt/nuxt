@@ -1,4 +1,6 @@
-export default {
+import { defineUntypedSchema } from 'untyped'
+
+export default defineUntypedSchema({
   /**
    * Add a message to the CLI banner by adding a string to this array.
    * @type {string[]}
@@ -11,4 +13,4 @@ export default {
    * @version 2
    */
   bannerColor: 'green'
-}
+})

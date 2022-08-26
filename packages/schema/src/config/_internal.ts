@@ -1,4 +1,6 @@
-export default {
+import { defineUntypedSchema } from 'untyped'
+
+export default defineUntypedSchema({
   /** @private */
   _majorVersion: 2,
   /** @private */
@@ -21,4 +23,4 @@ export default {
   _nuxtConfigFiles: [],
   /** @private */
   appDir: ''
-}
+})

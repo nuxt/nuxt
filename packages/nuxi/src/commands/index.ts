@@ -1,6 +1,6 @@
 import type { Argv } from 'mri'
 
-const _rDefault = r => r.default || r
+const _rDefault = (r: any) => r.default || r
 
 export const commands = {
   dev: () => import('./dev').then(_rDefault),

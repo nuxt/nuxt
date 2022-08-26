@@ -9,7 +9,7 @@ export function createMFS () {
   const fs = createFsFromVolume(new Volume())
 
   // Clone to extend
-  const _fs: Partial<IFs> & { join?(...paths: string[]): string } = { ...fs }
+  const _fs: IFs & { join?(...paths: string[]): string } = { ...fs } as any
 
   // fs.join method is (still) expected by webpack-dev-middleware
   // There might be differences with https://github.com/webpack/memory-fs/blob/master/lib/join.js

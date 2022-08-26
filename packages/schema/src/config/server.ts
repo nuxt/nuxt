@@ -1,5 +1,7 @@
+import { SchemaDefinition } from 'untyped'
+
 /** @version 2 */
-export default {
+export default <SchemaDefinition>{
   /**
    * Whether to enable HTTPS.
    *

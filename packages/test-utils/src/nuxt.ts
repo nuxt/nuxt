@@ -64,5 +64,5 @@ export async function loadFixture () {
 
 export async function buildFixture () {
   const ctx = useTestContext()
-  await kit.buildNuxt(ctx.nuxt)
+  await kit.buildNuxt(ctx.nuxt!)
 }

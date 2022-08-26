@@ -1,7 +1,8 @@
 import defu from 'defu'
 import createResolver from 'postcss-import-resolver'
+import { defineUntypedSchema } from 'untyped'
 
-export default {
+export default defineUntypedSchema({
   /** @version 3 */
   postcss: {
     /** Path to postcss config file. */
@@ -51,4 +52,4 @@ export default {
       }
     }
   }
-}
+})

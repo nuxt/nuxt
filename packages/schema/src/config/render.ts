@@ -1,7 +1,9 @@
+import { SchemaDefinition } from 'untyped'
+
 /**
  * @version 2
  */
-export default {
+export default <SchemaDefinition>{
   /**
    * Use this option to customize the Vue SSR bundle renderer.
    * This option is skipped if `ssr: false`.
@@ -10,9 +12,11 @@ export default {
    */
   bundleRenderer: {
     shouldPrefetch: () => false,
-    shouldPreload: (_fileWithoutQuery, asType) => ['script', 'style'].includes(asType),
+    shouldPreload: (_fileWithoutQuery: string, asType: string) => ['script', 'style'].includes(asType),
     /** enabled by default for development */
-    runInNewContext: { $resolve: (val, get) => val ?? get('dev') }
+    runInNewContext: {
+      $resolve: (val, get) => val ?? get('dev')
+    }
   },
 
   /**
@@ -41,7 +45,9 @@ export default {
    *
    * Set to `collapsed` to collapse the logs, or `false` to disable.
    */
-  ssrLog: { $resolve: (val, get) => get('dev') ? Boolean(val) : false },
+  ssrLog: {
+    $resolve: (val, get) => get('dev') ? Boolean(val) : false
+  },
 
   /**
    * Configuration for HTTP2 push headers.

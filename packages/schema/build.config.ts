@@ -41,6 +41,7 @@ export default defineBuildConfig({
     'ignore',
     // Implicit
     '@vue/compiler-core',
-    '@vue/shared'
+    '@vue/shared',
+    'untyped'
   ]
 })

@@ -35,20 +35,20 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
     }
   }
 
-  function sortPlugins ({ plugins, order }) {
+  function sortPlugins ({ plugins, order }: any) {
     const names = Object.keys(plugins)
     if (typeof order === 'string') {
-      order = orderPresets[order]
+      order = orderPresets[order as keyof typeof orderPresets]
     }
     return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
-  function loadPlugins (config) {
+  function loadPlugins (config: any) {
     if (!isPureObject(config.plugins)) { return }
 
     // Map postcss plugins into instances on object mode once
     const cjs = createCommonJS(import.meta.url)
-    config.plugins = sortPlugins(config).map((pluginName) => {
+    config.plugins = sortPlugins(config).map((pluginName: string) => {
       const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
       const pluginOptions = config.plugins[pluginName]
       if (!pluginOptions || typeof pluginFn !== 'function') { return null }
@@ -81,9 +81,11 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       loadPlugins(postcssOptions)
     }
 
+    // @ts-expect-error
     delete nuxt.options.webpack.postcss.order
 
     return {
+      // @ts-expect-error
       sourceMap: nuxt.options.webpack.cssSourceMap,
       ...nuxt.options.webpack.postcss,
       postcssOptions

@@ -68,6 +68,7 @@ function clientHMR (ctx: WebpackConfigContext) {
       `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
+  config.plugins = config.plugins || []
   config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 

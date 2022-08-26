@@ -1,4 +1,5 @@
 import type { AddressInfo } from 'node:net'
+import { RequestListener } from 'node:http'
 import { resolve, relative, normalize } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
@@ -24,15 +25,15 @@ export default defineNuxtCommand({
     overrideEnv('development')
 
     const { listen } = await import('listhen')
-    let currentHandler
+    let currentHandler: RequestListener | undefined
     let loadingMessage = 'Nuxt is starting...'
-    const loadingHandler = async (_req, res) => {
+    const loadingHandler: RequestListener = async (_req, res) => {
       const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates')
       res.setHeader('Content-Type', 'text/html; charset=UTF-8')
       res.statusCode = 503 // Service Unavailable
       res.end(loadingTemplate({ loading: loadingMessage }))
     }
-    const serverHandler = (req, res) => {
+    const serverHandler: RequestListener = (req, res) => {
       return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
     }
 
@@ -64,7 +65,7 @@ export default defineNuxtCommand({
     const load = async (isRestart: boolean, reason?: string) => {
       try {
         loadingMessage = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
-        currentHandler = null
+        currentHandler = undefined
         if (isRestart) {
           consola.info(loadingMessage)
         }
@@ -103,7 +104,7 @@ export default defineNuxtCommand({
         }
       } catch (err) {
         consola.error(`Cannot ${isRestart ? 'restart' : 'start'} nuxt: `, err)
-        currentHandler = null
+        currentHandler = undefined
         loadingMessage = 'Error while loading nuxt. Please check console and fix errors.'
       }
     }

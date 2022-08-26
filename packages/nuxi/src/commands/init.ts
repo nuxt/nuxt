@@ -1,13 +1,14 @@
 import { existsSync, readdirSync } from 'node:fs'
+// @ts-expect-error missing types
 import createTiged from 'tiged'
 import { relative, resolve } from 'pathe'
 import superb from 'superb'
 import consola from 'consola'
 import { defineNuxtCommand } from './index'
 
-const rpath = p => relative(process.cwd(), p)
+const rpath = (p: string) => relative(process.cwd(), p)
 
-const resolveTemplate = (template) => {
+const resolveTemplate = (template: string | boolean) => {
   if (typeof template === 'boolean') {
     consola.error('Please specify a template!')
     process.exit(1)
@@ -39,12 +40,12 @@ export default defineNuxtCommand({
       consola.error(`Directory ${dstDir} is not empty. Please pick another name or remove it first. Aborting.`)
       process.exit(1)
     }
-    const formatArgs = msg => msg.replace('options.', '--')
-    tiged.on('warn', event => consola.warn(formatArgs(event.message)))
-    tiged.on('info', event => consola.info(formatArgs(event.message)))
+    const formatArgs = (msg: string) => msg.replace('options.', '--')
+    tiged.on('warn', (event: any) => consola.warn(formatArgs(event.message)))
+    tiged.on('info', (event: any) => consola.info(formatArgs(event.message)))
     try {
       await tiged.clone(dstDir)
-    } catch (e) {
+    } catch (e: any) {
       if (e.toString().includes('could not find commit hash')) {
         consola.error(`Failed to clone template from \`${src}\`. Please check the repo is valid and that you have installed \`git\` correctly.`)
         process.exit(1)

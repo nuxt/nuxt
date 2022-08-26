@@ -1,6 +1,7 @@
 import { normalizeURL, withTrailingSlash } from 'ufo'
+import { defineUntypedSchema } from 'untyped'
 
-export default {
+export default defineUntypedSchema({
   /**
    * Additional options passed to `vue-router`.
    *
@@ -168,4 +169,4 @@ export default {
    * @version 2
    */
   trailingSlash: undefined
-}
+})

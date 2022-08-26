@@ -1,13 +1,17 @@
 import { cyan, magenta } from 'colorette'
-export function showHelp (meta?) {
+import { NuxtCommandMeta } from '../commands'
+
+export function showHelp (meta?: Partial<NuxtCommandMeta>) {
   const sections: string[] = []
 
-  if (meta.usage) {
-    sections.push(magenta('> ') + 'Usage: ' + cyan(meta.usage))
-  }
+  if (meta) {
+    if (meta.usage) {
+      sections.push(magenta('> ') + 'Usage: ' + cyan(meta.usage))
+    }
 
-  if (meta.description) {
-    sections.push(magenta('⋮ ') + meta.description)
+    if (meta.description) {
+      sections.push(magenta('⋮ ') + meta.description)
+    }
   }
 
   sections.push(`Use ${cyan('npx nuxi [command] --help')} to see help for each command`)

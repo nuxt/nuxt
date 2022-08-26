@@ -21,6 +21,6 @@ export function registerVirtualModules () {
 
   nuxt.hook('webpack:config', configs => configs.forEach((config) => {
     // Support virtual modules (input)
-    config.plugins.push(virtualModules)
+    config.plugins!.push(virtualModules)
   }))
 }

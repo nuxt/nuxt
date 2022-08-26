@@ -4,8 +4,9 @@
  */
 
 import { logger } from '@nuxt/kit'
+import type { Compiler } from 'webpack'
 
-export const validate = (compiler) => {
+export const validate = (compiler: Compiler) => {
   if (compiler.options.target !== 'node') {
     logger.warn('webpack config `target` should be "node".')
   }
@@ -20,10 +21,10 @@ export const validate = (compiler) => {
 
 const isJSRegExp = /\.[cm]?js(\?[^.]+)?$/
 
-export const isJS = file => isJSRegExp.test(file)
+export const isJS = (file: string) => isJSRegExp.test(file)
 
-export const extractQueryPartJS = file => isJSRegExp.exec(file)[1]
+export const extractQueryPartJS = (file: string) => isJSRegExp.exec(file)?.[1]
 
-export const isCSS = file => /\.css(\?[^.]+)?$/.test(file)
+export const isCSS = (file: string) => /\.css(\?[^.]+)?$/.test(file)
 
-export const isHotUpdate = file => file.includes('hot-update')
+export const isHotUpdate = (file: string) => file.includes('hot-update')

@@ -1,4 +1,6 @@
-export default {
+import { defineUntypedSchema } from 'untyped'
+
+export default defineUntypedSchema({
   /**
    * Configuration for Nuxt's TypeScript integration.
    *
@@ -35,4 +37,4 @@ export default {
      */
     shim: true
   }
-}
+})

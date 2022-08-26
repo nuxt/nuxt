@@ -1,4 +1,6 @@
-export default {
+import { defineUntypedSchema } from 'untyped'
+
+export default defineUntypedSchema({
   /**
    * Configure Nuxt component auto-registration.
    *
@@ -57,4 +59,4 @@ export default {
    * @version 3
   */
   telemetry: undefined
-}
+})

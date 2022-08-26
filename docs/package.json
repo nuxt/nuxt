@@ -20,7 +20,7 @@
     "pathe": "^0.3.5",
     "rimraf": "^3.0.2",
     "scule": "^0.3.2",
-    "untyped": "^0.4.5",
+    "untyped": "^0.4.7",
     "vue-mq": "^1.0.1",
     "vue-plausible": "^1.3.2"
   },

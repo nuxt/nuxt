@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "3.0.0-rc.8",
+    "@types/lodash-es": "^4.17.6",
     "@types/pify": "^5.0.1",
     "@types/webpack-bundle-analyzer": "^4.4.2",
     "@types/webpack-dev-middleware": "^5.0.2",

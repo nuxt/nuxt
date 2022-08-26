@@ -24,7 +24,9 @@ export const DynamicBasePlugin = createUnplugin((options: DynamicBasePluginOptio
       s.append(`${options.globalPublicPath} = buildAssetsURL();\n`)
       return {
         code: s.toString(),
-        map: options.sourcemap && s.generateMap({ source: id, includeContent: true })
+        map: options.sourcemap
+          ? s.generateMap({ source: id, includeContent: true })
+          : undefined
       }
     }
   }

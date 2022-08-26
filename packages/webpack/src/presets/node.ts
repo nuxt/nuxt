@@ -6,7 +6,7 @@ export function node (ctx: WebpackConfigContext) {
   config.target = 'node'
   config.node = false
 
-  config.experiments.outputModule = true
+  config.experiments!.outputModule = true
 
   config.output = {
     ...config.output,

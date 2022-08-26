@@ -144,7 +144,7 @@ export function useAsyncData<
           result = options.transform(result)
         }
         if (options.pick) {
-          result = pick(result, options.pick) as DataT
+          result = pick(result as any, options.pick) as DataT
         }
         asyncData.data.value = result
         asyncData.error.value = null

@@ -1,35 +1,36 @@
-
-import webpack from 'webpack'
+import webpack, { Compilation, Compiler } from 'webpack'
 import { validate, isJS, extractQueryPartJS } from './util'
 
-export default class VueSSRServerPlugin {
-  options: {
-    filename?: string
-  }
+export interface VueSSRServerPluginOptions {
+  filename: string
+}
 
-  constructor (options = {}) {
+export default class VueSSRServerPlugin {
+  options: VueSSRServerPluginOptions
+
+  constructor (options: Partial<VueSSRServerPluginOptions> = {}) {
     this.options = Object.assign({
       filename: null
-    }, options)
+    }, options) as VueSSRServerPluginOptions
   }
 
-  apply (compiler) {
+  apply (compiler: Compiler) {
     validate(compiler)
-    compiler.hooks.make.tap('VueSSRServerPlugin', (compilation: any) => {
+    compiler.hooks.make.tap('VueSSRServerPlugin', (compilation: Compilation) => {
       compilation.hooks.processAssets.tapAsync({
         name: 'VueSSRServerPlugin',
         stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-      }, (assets, cb) => {
+      }, (assets: any, cb: any) => {
         const stats = compilation.getStats().toJson()
-        const [entryName] = Object.keys(stats.entrypoints)
-        const entryInfo = stats.entrypoints[entryName]
+        const [entryName] = Object.keys(stats.entrypoints!)
+        const entryInfo = stats.entrypoints![entryName]
 
         if (!entryInfo) {
           // #5553
           return cb()
         }
 
-        const entryAssets = entryInfo.assets.filter(asset => isJS(asset.name))
+        const entryAssets = entryInfo.assets!.filter((asset: { name:string }) => isJS(asset.name))
 
         if (entryAssets.length > 1) {
           throw new Error(
@@ -47,11 +48,11 @@ export default class VueSSRServerPlugin {
 
         const bundle = {
           entry: entry.name,
-          files: {},
-          maps: {}
+          files: {} as Record<string, string>,
+          maps: {} as Record<string, string>
         }
 
-        stats.assets.forEach((asset) => {
+        stats.assets!.forEach((asset: any) => {
           if (isJS(asset.name)) {
             const queryPart = extractQueryPartJS(asset.name)
             if (queryPart !== undefined) {

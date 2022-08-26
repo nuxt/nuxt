@@ -327,7 +327,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/standalone@npm:^7.18.11":
+"@babel/standalone@npm:^7.18.11, @babel/standalone@npm:^7.18.13":
   version: 7.18.13
   resolution: "@babel/standalone@npm:7.18.13"
   checksum: da010b1ef0d53f7888d01b3ef93aac9a17af5711979e7bc048b80bf08ae6dfa6b637bf92fee0c5753b4ff1bc3639a5b82925f9234d4e2150fc6d4d5c2ccc1f89
@@ -1661,7 +1661,7 @@ __metadata:
     unbuild: latest
     unctx: ^2.0.1
     unimport: ^0.6.7
-    untyped: ^0.4.5
+    untyped: ^0.4.7
   languageName: unknown
   linkType: soft
 
@@ -1688,6 +1688,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.7
+    untyped: ^0.4.7
     vite: ~3.0.9
   languageName: unknown
   linkType: soft
@@ -1825,6 +1826,7 @@ __metadata:
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
     "@nuxt/kit": 3.0.0-rc.8
     "@nuxt/schema": 3.0.0-rc.8
+    "@types/lodash-es": ^4.17.6
     "@types/pify": ^5.0.1
     "@types/webpack-bundle-analyzer": ^4.4.2
     "@types/webpack-dev-middleware": ^5.0.2
@@ -2280,6 +2282,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/flat@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "@types/flat@npm:5.0.2"
+  checksum: e21d51d872e788bdb381887c2880f717ba4377beb4055078136127134858efd15044655610f1fce4832d9a103ded468a25335203fc53f36db08edd5ab5a8b3db
+  languageName: node
+  linkType: hard
+
 "@types/fs-extra@npm:^9.0.13":
   version: 9.0.13
   resolution: "@types/fs-extra@npm:9.0.13"
@@ -2328,6 +2337,15 @@ __metadata:
   version: 0.0.29
   resolution: "@types/json5@npm:0.0.29"
   checksum: e60b153664572116dfea673c5bda7778dbff150498f44f998e34b5886d8afc47f16799280e4b6e241c0472aef1bc36add771c569c68fc5125fc2ae519a3eb9ac
+  languageName: node
+  linkType: hard
+
+"@types/lodash-es@npm:^4.17.6":
+  version: 4.17.6
+  resolution: "@types/lodash-es@npm:4.17.6"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: 9bd239dd525086e278821949ce12fbdd4f100a060fed9323fc7ad5661113e1641f28a7ebab617230ed3474680d8f4de705c1928b48252bb684be6ec9eed715db
   languageName: node
   linkType: hard
 
@@ -9860,6 +9878,7 @@ __metadata:
     "@nuxt/kit": 3.0.0-rc.8
     "@nuxt/schema": 3.0.0-rc.8
     "@types/clear": ^0
+    "@types/flat": ^5.0.2
     "@types/mri": ^1.1.1
     "@types/semver": ^7
     c12: ^0.2.9
@@ -9976,7 +9995,7 @@ __metadata:
     unenv: ^0.6.1
     unimport: ^0.6.7
     unplugin: ^0.9.2
-    untyped: ^0.4.5
+    untyped: ^0.4.7
     vue: ^3.2.37
     vue-bundle-renderer: ^0.4.2
     vue-devtools-stub: ^0.1.0
@@ -13187,6 +13206,18 @@ __metadata:
     "@babel/types": ^7.18.10
     scule: ^0.3.2
   checksum: fd09347048145a3f87dbbd03174a3053e5a01b0e174c49bca23e6acddb2dd234a024795033d2c0d72fe8dbded3f8c56fb54580fcee893703f380e15095ddd3e2
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^0.4.7":
+  version: 0.4.7
+  resolution: "untyped@npm:0.4.7"
+  dependencies:
+    "@babel/core": ^7.18.13
+    "@babel/standalone": ^7.18.13
+    "@babel/types": ^7.18.13
+    scule: ^0.3.2
+  checksum: d5b189b19e114c4d60e122da9234c68a93d71b312a64bd8303e3aaa96f7a677befa8519ce003dec8cb587ed3e5503046131532196257ed10e647bc741532b1bc
   languageName: node
   linkType: hard
 

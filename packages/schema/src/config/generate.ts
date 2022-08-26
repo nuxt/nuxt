@@ -1,10 +1,11 @@
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
+import { SchemaDefinition } from 'untyped'
 
 /**
  * @version 2
  */
-export default {
+ export default <SchemaDefinition> {
   /**
    * Directory name that holds all the assets and generated pages for a `static` build.
    */
@@ -160,10 +161,16 @@ export default {
      * The full path to the directory underneath `/_nuxt/` where static assets
      * (payload, state and manifest files) will live.
      */
-    base: { $resolve: (val, get) => val || joinURL(get('app').buildAssetsDir, get('generate.dir')) },
-    /** The full path to the versioned directory where static assets for the current buidl are located. */
-    versionBase: { $resolve: (val, get) => val || joinURL(get('generate.base'), get('generate.version')) },
+    base: {
+      $resolve: (val, get) => val || joinURL(get('app').buildAssetsDir, get('generate.dir'))
+    },
+    /** The full path to the versioned directory where static assets for the current build are located. */
+    versionBase: {
+      $resolve: (val, get) => val || joinURL(get('generate.base'), get('generate.version'))
+    },
     /** A unique string to uniquely identify payload versions (defaults to the current timestamp).  */
-    version: { $resolve: val => val || (String(Math.round(Date.now() / 1000))) }
+    version: {
+      $resolve: val => val || (String(Math.round(Date.now() / 1000)))
+    }
   }
 }

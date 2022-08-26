@@ -350,7 +350,7 @@ describe('extends support', () => {
   describe('app', () => {
     it('extends foo/app/router.options & bar/app/router.options', async () => {
       const html: string = await $fetch('/')
-      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)[1].split(' ')
+      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)?.[1].split(' ')
       expect(routerLinkClasses).toContain('foo-active-class')
       expect(routerLinkClasses).toContain('bar-exact-active-class')
     })
@@ -404,7 +404,7 @@ describe('dynamic paths', () => {
   }
 
   it('should work with no overrides', async () => {
-    const html = await $fetch('/assets')
+    const html: string = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"/g)) {
       const url = match[2]
       expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
@@ -417,11 +417,11 @@ describe('dynamic paths', () => {
       return
     }
 
-    const html = await $fetch('/assets')
+    const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"/g)).map(m => m[2])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
     expect(cssURL).toBeDefined()
-    const css = await $fetch(cssURL)
+    const css: string = await $fetch(cssURL!)
     const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
     expect(imageUrls).toMatchInlineSnapshot(`
         [

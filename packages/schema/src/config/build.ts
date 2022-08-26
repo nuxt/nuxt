@@ -2,8 +2,9 @@ import defu from 'defu'
 import { join } from 'pathe'
 import { isCI, isTest } from 'std-env'
 import { normalizeURL, withTrailingSlash } from 'ufo'
+import { defineUntypedSchema } from 'untyped'
 
-export default {
+export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
    *
@@ -15,7 +16,7 @@ export default {
       if (typeof val === 'object') {
         return val
       }
-      const map = {
+      const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
@@ -225,15 +226,16 @@ export default {
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
+     * @type {Record<string, ((arg: any) => string)>}
      * @version 2
      */
     filenames: {
-      app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
-      chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
-      css: ({ isDev }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
-      img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
-      font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
-      video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
+      app: ({ isDev, isModern }: any) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
+      chunk: ({ isDev, isModern }: any) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
+      css: ({ isDev }: any) => isDev ? '[name].css' : 'css/[contenthash:7].css',
+      img: ({ isDev }: any) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
+      font: ({ isDev }: any) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
+      video: ({ isDev }: any) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
     },
 
     /**
@@ -360,7 +362,9 @@ export default {
     optimization: {
       runtimeChunk: 'single',
       /** Set minimize to false to disable all minimizers. (It is disabled in development by default) */
-      minimize: { $resolve: (val, get) => val ?? !get('dev') },
+      minimize: {
+        $resolve: (val, get) => val ?? !get('dev')
+      },
       /** You can set minimizer to a customized array of plugins. */
       minimizer: undefined,
       splitChunks: {
@@ -639,4 +643,4 @@ export default {
      */
     followSymlinks: false
   }
-}
+})

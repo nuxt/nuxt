@@ -1,7 +1,7 @@
 import { WebpackConfigContext } from '../utils/config'
 
 export function pug (ctx: WebpackConfigContext) {
-  ctx.config.module.rules.push({
+  ctx.config.module!.rules!.push({
     test: /\.pug$/i,
     oneOf: [
       {

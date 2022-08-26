@@ -26,7 +26,7 @@ export function server (ctx: WebpackConfigContext) {
 function serverPreset (ctx: WebpackConfigContext) {
   const { config } = ctx
 
-  config.output.filename = 'server.mjs'
+  config.output!.filename = 'server.mjs'
   config.devtool = 'cheap-module-source-map'
 
   config.optimization = {
@@ -53,8 +53,11 @@ function serverStandalone (ctx: WebpackConfigContext) {
 
   if (!Array.isArray(ctx.config.externals)) { return }
   ctx.config.externals.push(({ request }, cb) => {
+    if (!request) {
+      return cb(undefined, false)
+    }
     if (external.includes(request)) {
-      return cb(null, true)
+      return cb(undefined, true)
     }
     if (
       request[0] === '.' ||
@@ -63,15 +66,17 @@ function serverStandalone (ctx: WebpackConfigContext) {
       assetPattern.test(request)
     ) {
       // console.log('Inline', request)
-      return cb(null, false)
+      return cb(undefined, false)
     }
     // console.log('Ext', request)
-    return cb(null, true)
+    return cb(undefined, true)
   })
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
   const { config, options } = ctx
+
+  config.plugins = config.plugins || []
 
   // Server polyfills
   if (options.webpack.serverURLPolyfill) {
@@ -83,6 +88,6 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-    ctx.config.plugins.push(new ForkTSCheckerWebpackPlugin({ logger }))
+    config.plugins.push(new ForkTSCheckerWebpackPlugin({ logger }))
   }
 }

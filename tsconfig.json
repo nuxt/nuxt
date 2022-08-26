@@ -6,7 +6,8 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "strict": false,
+    "strict": true,
+    "noImplicitAny": true,
     "allowJs": true,
     "noEmit": true,
     "noUnusedLocals": true,
@@ -33,7 +34,7 @@
     }
   },
   "exclude": [
-    "**/*/dist/*",
+    "**/dist/**",
     "**/.nuxt/**",
     "**/nuxt.d.ts",
     "**/examples/**",

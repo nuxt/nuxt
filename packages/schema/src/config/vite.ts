@@ -1,7 +1,8 @@
 import { resolve } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
+import { defineUntypedSchema } from 'untyped'
 
-export default {
+export default defineUntypedSchema({
   /**
    * Configuration that will be passed directly to Vite.
    *
@@ -45,7 +46,7 @@ export default {
       exclude: {
         $resolve: (val, get) => [
           ...val || [],
-          ...get('build.transpile').filter((i) => typeof i === 'string'),
+          ...get('build.transpile').filter((i: string) => typeof i === 'string'),
           'vue-demi'
         ]
       }
@@ -77,4 +78,4 @@ export default {
       }
     }
   }
-}
+})

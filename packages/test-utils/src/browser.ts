@@ -31,7 +31,7 @@ export async function getBrowser (): Promise<Browser> {
   if (!ctx.browser) {
     await createBrowser()
   }
-  return ctx.browser
+  return ctx.browser!
 }
 
 export async function createPage (path?: string, options?: BrowserContextOptions) {

@@ -9,14 +9,17 @@ export const packageManagerLocks = {
   pnpm: 'pnpm-lock.yaml'
 }
 
+type PackageManager = keyof typeof packageManagerLocks
+
 export function getPackageManager (rootDir: string) {
   return findup(rootDir, (dir) => {
     for (const name in packageManagerLocks) {
-      if (existsSync(resolve(dir, packageManagerLocks[name]))) {
+      const path = packageManagerLocks[name as PackageManager]
+      if (path && existsSync(resolve(dir, path))) {
         return name
       }
     }
-  })
+  }) as PackageManager | null
 }
 
 export function getPackageManagerVersion (name: string) {

@@ -1,8 +1,11 @@
 import { resolve, join } from 'pathe'
 import { existsSync, readdirSync } from 'node:fs'
 import defu from 'defu'
+import { defineUntypedSchema } from 'untyped'
 
-export default {
+import { MetaObject } from '../types/meta'
+
+export default defineUntypedSchema({
   /**
    * Vue.js config
    * @version 2
@@ -17,8 +20,12 @@ export default {
      * @version 2
      */
     config: {
-      silent: { $resolve: (val, get) => val ?? !get('dev') },
-      performance: { $resolve: (val, get) => val ?? get('dev') },
+      silent: {
+        $resolve: (val, get) => val ?? !get('dev')
+      },
+      performance: {
+        $resolve: (val, get) => val ?? get('dev')
+      },
     },
     /**
      * Options for the Vue compiler that will be passed at build time.
@@ -105,7 +112,7 @@ export default {
      */
     head: {
       $resolve: (val, get) => {
-        const resolved = defu(val, get('meta'), {
+        const resolved: Required<MetaObject> = defu(val, get('meta'), {
           meta: [],
           link: [],
           style: [],
@@ -306,7 +313,7 @@ export default {
    * @version 3
    */
   css: {
-    $resolve: val => (val ?? []).map(c => c.src || c)
+    $resolve: val => (val ?? []).map((c: any) => c.src || c)
   },
 
   /**
@@ -460,4 +467,4 @@ export default {
     /** Set to false to disable the `<ClientOnly>` component (see [docs](https://github.com/egoist/vue-client-only)) */
     componentClientOnly: true
   }
-}
+})

@@ -231,7 +231,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
   return plugins as Plugin[]
 }
 
-export function defineNuxtPlugin<T> (plugin: Plugin<T>) {
+export function defineNuxtPlugin<T extends Record<string, any>> (plugin: Plugin<T>) {
   plugin[NuxtPluginIndicator] = true
   return plugin
 }

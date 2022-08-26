@@ -1,11 +1,13 @@
-export default {
+import { defineUntypedSchema } from 'untyped'
+
+export default defineUntypedSchema({
   /** @version 3 */
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: (val, get) => val ?? false
+      $resolve: (val) => val ?? false
     },
 
     /**
@@ -51,4 +53,4 @@ export default {
      */
     viteServerDynamicImports: true
   }
-}
+})

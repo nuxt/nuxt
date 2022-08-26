@@ -16,7 +16,7 @@ export async function startServer () {
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
     ctx.serverProcess = execa(nuxiCLI, ['dev'], {
-      cwd: ctx.nuxt.options.rootDir,
+      cwd: ctx.nuxt!.options.rootDir,
       stdio: 'inherit',
       env: {
         ...process.env,
@@ -37,7 +37,7 @@ export async function startServer () {
     throw new Error('Timeout waiting for dev server!')
   } else {
     ctx.serverProcess = execa('node', [
-      resolve(ctx.nuxt.options.nitro.output.dir, 'server/index.mjs')
+      resolve(ctx.nuxt!.options.nitro.output!.dir!, 'server/index.mjs')
     ], {
       stdio: 'inherit',
       env: {

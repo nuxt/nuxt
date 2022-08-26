@@ -6,7 +6,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { rmRecursive } from './fs'
 
 export interface NuxtProjectManifest {
-  _hash: string
+  _hash: string | null
   project: {
     rootDir: string
   },

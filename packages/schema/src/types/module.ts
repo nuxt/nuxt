@@ -71,10 +71,10 @@ export interface ModuleContainer {
   addServerMiddleware(arg1: any): void
 
   /** Allows extending webpack build config by chaining `options.build.extend` function. */
-  extendBuild(fn): void
+  extendBuild(fn: Function): void
 
   /** Allows extending routes by chaining `options.router.extendRoutes` function. */
-  extendRoutes(fn): void
+  extendRoutes(fn: Function): void
 
   /** Registers a module. */
   requireModule(installOptions: any, opts: any): Promise<void>
