@@ -2898,10 +2898,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:^0.45.12":
-  version: 0.45.12
-  resolution: "@unocss/reset@npm:0.45.12"
-  checksum: 7e00b3be17a97336598a3972a4144ccaf7a732db92270b12e46bd44675b30fed19c26cc9b915d0ab1d830813412b489f98aeac169e4ea0a42af0c6af9c7c49bc
+"@unocss/reset@npm:^0.45.13":
+  version: 0.45.13
+  resolution: "@unocss/reset@npm:0.45.13"
+  checksum: 8323f4f1305dc944e36ea4723a2491ff7a3ecd55c649cea65ac9b2d4c7d085b7ec131d351f0eae06748bf239a87b6d5ba6964232b80935921cdc1e17e6c2344b
   languageName: node
   linkType: hard
 
@@ -10236,7 +10236,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^10.0.0
     "@types/node": ^16.11.56
     "@types/rimraf": ^3
-    "@unocss/reset": ^0.45.12
+    "@unocss/reset": ^0.45.13
     case-police: ^0.5.9
     changelogen: ^0.1.1
     eslint: ^8.22.0
@@ -10249,7 +10249,7 @@ __metadata:
     markdownlint-cli: ^0.32.2
     pathe: ^0.3.5
     rimraf: ^3.0.2
-    typescript: ^4.7.4
+    typescript: ^4.8.2
     unbuild: ^0.8.9
     vitest: ~0.19.1
     vue-tsc: ^0.39.5
@@ -10317,7 +10317,7 @@ __metadata:
     vue-bundle-renderer: ^0.4.2
     vue-devtools-stub: ^0.1.0
     vue-meta: next
-    vue-router: ^4.1.4
+    vue-router: ^4.1.5
   bin:
     nuxi: ./bin/nuxt.mjs
     nuxt: ./bin/nuxt.mjs
@@ -13235,6 +13235,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:^4.8.2":
+  version: 4.8.2
+  resolution: "typescript@npm:4.8.2"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 7f5b81d0d558c9067f952c7af52ab7f19c2e70a916817929e4a5b256c93990bf3178eccb1ac8a850bc75df35f6781b6f4cb3370ce20d8b1ded92ed462348f628
+  languageName: node
+  linkType: hard
+
 "typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
   version: 4.7.4
   resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=a1c5e5"
@@ -13242,6 +13252,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@^4.8.2#~builtin<compat/typescript>":
+  version: 4.8.2
+  resolution: "typescript@patch:typescript@npm%3A4.8.2#~builtin<compat/typescript>::version=4.8.2&hash=a1c5e5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 5cb0f02f414f5405f4b0e7ee1fd7fa9177b6a8783c9017b6cad85f56ce4c4f93e0e6f2ce37e863cb597d44227cd009474c9fbd85bf7a50004e5557426cb58079
   languageName: node
   linkType: hard
 
@@ -13916,14 +13936,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.1.4":
-  version: 4.1.4
-  resolution: "vue-router@npm:4.1.4"
+"vue-router@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "vue-router@npm:4.1.5"
   dependencies:
     "@vue/devtools-api": ^6.1.4
   peerDependencies:
     vue: ^3.2.0
-  checksum: 8e98a8d056ec6729f1decbf4c6cfa50744a50a4ef0ef247d41ae0ec00903dd9283a58de2025844894111f613450cb054b86f42158d172d029701c96f393be80d
+  checksum: cafa2f4e14188bca0d4d45e05a901b6ff7bb3933010a6b2c9372bed7fa872bb2e18f1f033b23f540d3a75e1ecd6840b79a5ba5a714de01942d02e1e6cce88dec
   languageName: node
   linkType: hard
 

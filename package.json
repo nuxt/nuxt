@@ -50,7 +50,7 @@
     "@nuxtjs/eslint-config-typescript": "^10.0.0",
     "@types/node": "^16.11.56",
     "@types/rimraf": "^3",
-    "@unocss/reset": "^0.45.12",
+    "@unocss/reset": "^0.45.13",
     "case-police": "^0.5.9",
     "changelogen": "^0.1.1",
     "eslint": "^8.22.0",
@@ -63,7 +63,7 @@
     "markdownlint-cli": "^0.32.2",
     "pathe": "^0.3.5",
     "rimraf": "^3.0.2",
-    "typescript": "^4.7.4",
+    "typescript": "^4.8.2",
     "unbuild": "^0.8.9",
     "vitest": "~0.19.1",
     "vue-tsc": "^0.39.5"
