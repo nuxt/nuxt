@@ -136,8 +136,8 @@ export async function initNitro (nuxt: Nuxt) {
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
 
   // Setup handlers
-  const devMidlewareHandler = dynamicEventHandler()
-  nitro.options.devHandlers.unshift({ handler: devMidlewareHandler })
+  const devMiddlewareHandler = dynamicEventHandler()
+  nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...devHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
@@ -179,7 +179,7 @@ export async function initNitro (nuxt: Nuxt) {
     nuxt.hook('build:compile', ({ compiler }) => {
       compiler.outputFileSystem = { ...fsExtra, join } as any
     })
-    nuxt.hook('server:devMiddleware', (m) => { devMidlewareHandler.set(toEventHandler(m)) })
+    nuxt.hook('server:devMiddleware', (m) => { devMiddlewareHandler.set(toEventHandler(m)) })
     nuxt.server = createDevServer(nitro)
     nuxt.hook('build:resources', () => {
       nuxt.server.reload()
