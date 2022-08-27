@@ -53,7 +53,7 @@
     "@unocss/reset": "^0.45.13",
     "case-police": "^0.5.9",
     "changelogen": "^0.1.1",
-    "eslint": "^8.22.0",
+    "eslint": "^8.23.0",
     "eslint-plugin-jsdoc": "^39.3.6",
     "execa": "^6.1.0",
     "expect-type": "^0.13.0",
