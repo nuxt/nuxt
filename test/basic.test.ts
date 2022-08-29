@@ -171,6 +171,14 @@ describe('head tags', () => {
   // })
 })
 
+describe('legacy async data', () => {
+  it('should work with defineNuxtComponent', async () => {
+    const html = await $fetch('/legacy/async-data')
+    expect(html).toContain('<div>Hello API</div>')
+    expect(html).toContain('{hello:"Hello API"}')
+  })
+})
+
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
     const { headers } = await fetch('/navigate-to/', { redirect: 'manual' })
