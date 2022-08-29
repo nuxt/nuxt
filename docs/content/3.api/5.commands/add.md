@@ -44,7 +44,7 @@ npx nuxi add composable foo
 Example:
 
 ```bash
-# Generates `layouts/custom.ts`
+# Generates `layouts/custom.vue`
 npx nuxi add layout custom
 ```
 
