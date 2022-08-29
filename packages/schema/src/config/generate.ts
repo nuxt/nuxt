@@ -5,7 +5,7 @@ import { SchemaDefinition } from 'untyped'
 /**
  * @version 2
  */
- export default <SchemaDefinition> {
+export default <SchemaDefinition>{
   /**
    * Directory name that holds all the assets and generated pages for a `static` build.
    */

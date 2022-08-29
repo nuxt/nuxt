@@ -762,5 +762,5 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').AppConfig}
    * @version 3
    */
-   appConfig: {},
+  appConfig: {},
 })

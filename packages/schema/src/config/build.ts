@@ -61,7 +61,7 @@ export default defineUntypedSchema({
      */
     analyze: {
       $resolve: (val, get) => {
-        if(val !== true) {
+        if (val !== true) {
           return val ?? false
         }
         const rootDir = get('rootDir')

@@ -19,7 +19,7 @@ export default defineUntypedSchema({
      */
     analyze: {
       $resolve: (val, get) => {
-        if(val !== true) {
+        if (val !== true) {
           return val ?? false
         }
         const rootDir = get('rootDir')
@@ -265,7 +265,7 @@ export default defineUntypedSchema({
       execute: undefined,
       postcssOptions: {
         config: {
-          $resolve:  (val, get) => val ?? get('postcss.config')
+          $resolve: (val, get) => val ?? get('postcss.config')
         },
         plugins: {
           $resolve: (val, get) => val ?? get('postcss.plugins')
