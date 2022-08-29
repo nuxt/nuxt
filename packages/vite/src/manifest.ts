@@ -52,4 +52,8 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
 
   await fse.writeFile(resolve(serverDist, 'client.manifest.json'), JSON.stringify(manifest, null, 2), 'utf8')
   await fse.writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + JSON.stringify(manifest, null, 2), 'utf8')
+
+  if (!ctx.nuxt.options.dev) {
+    await fse.rm(resolve(clientDist, 'manifest.json'), { force: true })
+  }
 }
