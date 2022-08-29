@@ -708,7 +708,7 @@ export default defineUntypedSchema({
    * Anything under `public` and `app` will be exposed to the frontend as well.
    *
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment
-   * variable `API_KEY=my-api-key PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
+   * variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
    *
    * @example
    * ```js
