@@ -39,7 +39,7 @@ body:
     id: additonal
     attributes:
       label: Additional context
-      description: If applicable, add any other context about the problem here`
+      description: If applicable, add any other context about the problem here
   - type: textarea
     id: logs
     attributes:
