@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, reactive, Ref } from 'vue'
 import type { App, onErrorCaptured, VNode } from 'vue'
 import { createHooks, Hookable } from 'hookable'
 import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
@@ -66,6 +66,11 @@ interface _NuxtApp {
   [key: string]: any
 
   _asyncDataPromises: Record<string, Promise<any> | undefined>
+  _asyncData: Record<string, {
+    data: Ref<any>
+    pending: Ref<boolean>
+    error: Ref<any>
+   }>,
 
   ssrContext?: NuxtSSRContext
   payload: {
@@ -113,6 +118,7 @@ export function createNuxtApp (options: CreateOptions) {
     }),
     isHydrating: process.client,
     _asyncDataPromises: {},
+    _asyncData: {},
     ...options
   } as any as NuxtApp
 

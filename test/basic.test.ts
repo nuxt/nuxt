@@ -527,3 +527,21 @@ describe('app config', () => {
     expect(html).toContain(JSON.stringify(expectedAppConfig))
   })
 })
+
+describe('useAsyncData', () => {
+  it('single request resolves', async () => {
+    await expectNoClientErrors('/useAsyncData/single')
+  })
+
+  it('two requests resolve', async () => {
+    await expectNoClientErrors('/useAsyncData/double')
+  })
+
+  it('two requests resolve and sync', async () => {
+    await $fetch('/useAsyncData/refresh')
+  })
+
+  it('two requests made at once resolve and sync', async () => {
+    await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+})

@@ -114,11 +114,16 @@ export function useAsyncData<
 
   const useInitialCache = () => (nuxt.isHydrating || options.initialCache) && nuxt.payload.data[key] !== undefined
 
-  const asyncData = {
-    data: ref(useInitialCache() ? nuxt.payload.data[key] : options.default?.() ?? null),
-    pending: ref(!useInitialCache()),
-    error: ref(nuxt.payload._errors[key] ?? null)
-  } as AsyncData<DataT, DataE>
+  // Create or use a shared asyncData entity
+  if (!nuxt._asyncData[key]) {
+    nuxt._asyncData[key] = {
+      data: ref(useInitialCache() ? nuxt.payload.data[key] : options.default?.() ?? null),
+      pending: ref(!useInitialCache()),
+      error: ref(nuxt.payload._errors[key] ?? null)
+    }
+  }
+  // TODO: Else, Soemhow check for confliciting keys with different defaults or fetcher
+  const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT, DataE>
 
   asyncData.refresh = (opts = {}) => {
     // Avoid fetching same key more than once at a time
