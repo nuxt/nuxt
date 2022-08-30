@@ -98,20 +98,6 @@ export function useAsyncData<
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
-  // Setup hook callbacks once per instance
-  const instance = getCurrentInstance()
-  if (instance && !instance._nuxtOnBeforeMountCbs) {
-    instance._nuxtOnBeforeMountCbs = []
-    const cbs = instance._nuxtOnBeforeMountCbs
-    if (instance && process.client) {
-      onBeforeMount(() => {
-        cbs.forEach((cb) => { cb() })
-        cbs.splice(0, cbs.length)
-      })
-      onUnmounted(() => cbs.splice(0, cbs.length))
-    }
-  }
-
   const useInitialCache = () => (nuxt.isHydrating || options.initialCache) && nuxt.payload.data[key] !== undefined
 
   // Create or use a shared asyncData entity
@@ -181,6 +167,20 @@ export function useAsyncData<
 
   // Client side
   if (process.client) {
+    // Setup hook callbacks once per instance
+    const instance = getCurrentInstance()
+    if (instance && !instance._nuxtOnBeforeMountCbs) {
+      instance._nuxtOnBeforeMountCbs = []
+      const cbs = instance._nuxtOnBeforeMountCbs
+      if (instance) {
+        onBeforeMount(() => {
+          cbs.forEach((cb) => { cb() })
+          cbs.splice(0, cbs.length)
+        })
+        onUnmounted(() => cbs.splice(0, cbs.length))
+      }
+    }
+
     if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
