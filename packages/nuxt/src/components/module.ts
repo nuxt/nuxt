@@ -130,6 +130,18 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
+    // Do not prefetch global components chunks
+    nuxt.hook('build:manifest', (manifest) => {
+      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+
+      for (const key in manifest) {
+        if (manifest[key].isEntry) {
+          manifest[key].dynamicImports =
+            manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+        }
+      }
+    })
+
     // Scan components and add to plugin
     nuxt.hook('app:templates', async () => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)

@@ -380,6 +380,13 @@ describe('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
+  it('should not prefetch certain dynamic imports by default', async () => {
+    const html = await $fetch('/auth')
+    // should not prefetch global components
+    expect(html).not.toMatch(/<link [^>]*\/_nuxt\/TestGlobal[^>]*\.js"/)
+    // should not prefetch all other pages
+    expect(html).not.toMatch(/<link [^>]*\/_nuxt\/navigate-to[^>]*\.js"/)
+  })
 })
 
 if (process.env.NUXT_TEST_DEV) {
