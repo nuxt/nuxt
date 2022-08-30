@@ -62,7 +62,7 @@
     "strip-literal": "^0.4.0",
     "ufo": "^0.8.5",
     "unctx": "^2.0.2",
-    "unenv": "^0.6.1",
+    "unenv": "^0.6.2",
     "unimport": "^0.6.7",
     "unplugin": "^0.9.2",
     "untyped": "^0.4.7",
