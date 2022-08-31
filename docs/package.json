@@ -25,6 +25,6 @@
     "vue-plausible": "^1.3.2"
   },
   "dependencies": {
-    "three": "^0.143.0"
+    "three": "^0.144.0"
   }
 }
