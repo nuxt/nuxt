@@ -9,7 +9,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 import NuxtPage from './page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
 // @ts-ignore
 import routes from '#build/routes'
 // @ts-ignore
@@ -114,8 +114,12 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     callWithNuxt(nuxtApp, showError, [error])
   }
 
+  const initialLayout = useState('_layout')
   router.beforeEach(async (to, from) => {
     to.meta = reactive(to.meta)
+    if (nuxtApp.isHydrating) {
+      to.meta.layout = initialLayout.value ?? to.meta.layout
+    }
     nuxtApp._processingMiddleware = true
 
     type MiddlewareDef = string | NavigationGuard

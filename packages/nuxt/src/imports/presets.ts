@@ -36,6 +36,7 @@ const appPreset = defineUnimportPreset({
     'useRequestHeaders',
     'useRequestEvent',
     'setResponseStatus',
+    'setPageLayout',
     'useRouter',
     'useRoute',
     'useActiveRoute',

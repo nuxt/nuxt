@@ -273,6 +273,16 @@ describe('layouts', () => {
     expect(html).toContain('with-layout.vue')
     expect(html).toContain('Custom Layout:')
   })
+  it('should work with a dynamically set layout', async () => {
+    const html = await $fetch('/with-dynamic-layout')
+
+    // Snapshot
+    // expect(html).toMatchInlineSnapshot()
+
+    expect(html).toContain('with-dynamic-layout')
+    expect(html).toContain('Custom Layout:')
+    await expectNoClientErrors('/with-dynamic-layout')
+  })
 })
 
 describe('reactivity transform', () => {

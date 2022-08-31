@@ -1,7 +1,7 @@
 import { reactive, h } from 'vue'
 import { parseURL, stringifyParsedURL, parseQuery, stringifyQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
-import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig } from '..'
+import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig, useState } from '..'
 import { callWithNuxt } from '../nuxt'
 // @ts-ignore
 import { globalMiddleware } from '#build/middleware'
@@ -218,9 +218,13 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
     named: {}
   }
 
+  const initialLayout = useState('_layout')
   nuxtApp.hooks.hookOnce('app:created', async () => {
     router.beforeEach(async (to, from) => {
       to.meta = reactive(to.meta || {})
+      if (nuxtApp.isHydrating) {
+        to.meta.layout = initialLayout.value ?? to.meta.layout
+      }
       nuxtApp._processingMiddleware = true
 
       const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
