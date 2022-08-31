@@ -1815,7 +1815,7 @@ __metadata:
     perfect-debounce: ^0.1.3
     pkg-types: ^0.3.4
     postcss: ^8.4.16
-    postcss-import: ^14.1.0
+    postcss-import: ^15.0.0
     postcss-url: ^10.1.3
     rollup: ^2.78.1
     rollup-plugin-visualizer: ^5.8.0
@@ -1866,7 +1866,7 @@ __metadata:
     pathe: ^0.3.5
     pify: ^6.0.0
     postcss: ^8.4.16
-    postcss-import: ^14.1.0
+    postcss-import: ^15.0.0
     postcss-loader: ^7.0.1
     postcss-url: ^10.1.3
     style-resources-loader: ^1.5.0
@@ -11086,16 +11086,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-import@npm:^14.1.0":
-  version: 14.1.0
-  resolution: "postcss-import@npm:14.1.0"
+"postcss-import@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "postcss-import@npm:15.0.0"
   dependencies:
     postcss-value-parser: ^4.0.0
     read-cache: ^1.0.0
     resolve: ^1.1.7
   peerDependencies:
     postcss: ^8.0.0
-  checksum: cd45d406e90f67cdab9524352e573cc6b4462b790934a05954e929a6653ebd31288ceebc8ce3c3ed7117ae672d9ebbec57df0bceec0a56e9b259c2e71d47ca86
+  checksum: e5048072514f33520348c0c5aaedb5db92da72188e72a7367c26a8d851b9cf92e56aeda30d9c7b4ed1a34f84a58959da1b4b27b4aa23d41fc0ce36efe00bf1d1
   languageName: node
   linkType: hard
 
