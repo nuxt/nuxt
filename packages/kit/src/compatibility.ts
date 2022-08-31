@@ -11,8 +11,9 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    const nuxtSemanticVersion = nuxtVersion.split('-').shift()
-    if (!satisfies(nuxtSemanticVersion, constraints.nuxt)) {
+    const nuxtSemanticVersion = nuxtVersion
+      .replace(/-[0-9]+\.[0-9a-f]{7}/, '') // Remove edge prefix
+    if (!satisfies(nuxtSemanticVersion, constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``
