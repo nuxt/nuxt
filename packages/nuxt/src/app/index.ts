@@ -9,6 +9,7 @@ export * from './config'
 export type { PageMeta } from '../pages/runtime'
 // eslint-disable-next-line import/no-restricted-paths
 export type { MetaObject } from '../head/runtime'
+// eslint-disable-next-line import/no-restricted-paths
 export { useHead, useMeta } from '#head'
 
 export const isVue2 = false

@@ -66,7 +66,9 @@ const Component = defineComponent({
   props: ['routeProps', 'pageKey', 'hasTransition'],
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
+    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.pageKey
+    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousRoute = props.routeProps.route
 
     // Provide a reactive route within the page

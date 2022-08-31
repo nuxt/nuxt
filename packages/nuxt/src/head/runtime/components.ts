@@ -67,6 +67,7 @@ const globalProps = {
 
 // <script>
 export const Script = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Script',
   inheritAttrs: false,
   props: {
@@ -119,6 +120,7 @@ export const NoScript = defineComponent({
 
 // <link>
 export const Link = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Link',
   inheritAttrs: false,
   props: {
@@ -154,6 +156,7 @@ export const Link = defineComponent({
 
 // <base>
 export const Base = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Base',
   inheritAttrs: false,
   props: {
@@ -168,6 +171,7 @@ export const Base = defineComponent({
 
 // <title>
 export const Title = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Title',
   inheritAttrs: false,
   setup: setupForUseMeta((_, { slots }) => {
@@ -183,6 +187,7 @@ export const Title = defineComponent({
 
 // <meta>
 export const Meta = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Meta',
   inheritAttrs: false,
   props: {
@@ -199,6 +204,7 @@ export const Meta = defineComponent({
 
 // <style>
 export const Style = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Style',
   inheritAttrs: false,
   props: {
@@ -230,6 +236,7 @@ export const Style = defineComponent({
 
 // <head>
 export const Head = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Head',
   inheritAttrs: false,
   setup: (_props, ctx) => () => ctx.slots.default?.()
@@ -237,6 +244,7 @@ export const Head = defineComponent({
 
 // <html>
 export const Html = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Html',
   inheritAttrs: false,
   props: {
@@ -250,6 +258,7 @@ export const Html = defineComponent({
 
 // <body>
 export const Body = defineComponent({
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Body',
   inheritAttrs: false,
   props: globalProps,

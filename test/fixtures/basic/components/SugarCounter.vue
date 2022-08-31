@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const { count } = defineProps<{
+const props = defineProps<{
   count: number,
 }>()
 // eslint-disable-next-line prefer-const
 let multiplier = $ref(2)
-const doubled = $computed(() => count * multiplier)
+const doubled = $computed(() => props.count * multiplier)
 </script>
 
 <template>

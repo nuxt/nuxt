@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { joinURL } from 'ufo'
 // import { isWindows } from 'std-env'
 import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
+// eslint-disable-next-line import/order
 import { expectNoClientErrors, renderPage } from './utils'
 
 await setup({

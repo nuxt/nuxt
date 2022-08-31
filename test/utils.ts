@@ -1,5 +1,5 @@
-import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
 import { expect } from 'vitest'
+import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()

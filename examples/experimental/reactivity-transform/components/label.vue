@@ -1,8 +1,8 @@
 <script setup lang="ts">
-const { count } = defineProps<{
+const props = defineProps<{
   count: number,
 }>()
-const doubled = $computed(() => count * 2)
+const doubled = $computed(() => props.count * 2)
 </script>
 
 <template>

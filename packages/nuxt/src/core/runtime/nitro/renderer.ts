@@ -4,8 +4,9 @@ import type { Manifest } from 'vite'
 import { getQuery } from 'h3'
 import devalue from '@nuxt/devalue'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import type { NuxtApp, NuxtSSRContext } from '#app'
 import { useRuntimeConfig, useNitroApp, defineRenderHandler } from '#internal/nitro'
+// eslint-disable-next-line import/no-restricted-paths
+import type { NuxtApp, NuxtSSRContext } from '#app'
 
 // @ts-ignore
 import { buildAssetsURL } from '#paths'
