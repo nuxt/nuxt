@@ -33,7 +33,6 @@ export interface RuntimeNuxtHooks {
   'app:data:refresh': (keys?: string[]) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
-  'meta:register': (metaRenderers: Array<(nuxt: NuxtApp) => NuxtMeta | Promise<NuxtMeta>>) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
@@ -70,7 +69,7 @@ interface _NuxtApp {
     data: Ref<any>
     pending: Ref<boolean>
     error: Ref<any>
-   }>,
+  }>,
 
   ssrContext?: NuxtSSRContext
   payload: {
@@ -92,7 +91,7 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
-export interface NuxtApp extends _NuxtApp { }
+export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
 export interface Plugin<Injections extends Record<string, any> = Record<string, any>> {
