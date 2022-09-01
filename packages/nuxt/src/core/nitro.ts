@@ -137,6 +137,7 @@ export async function initNitro (nuxt: Nuxt) {
 
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()
+  // @ts-ignore fix handler type in nitro to accept event handler
   nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...devHandlers)
   nitro.options.handlers.unshift({
