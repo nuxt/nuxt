@@ -44,7 +44,7 @@
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
     "vite": "~3.0.9",
-    "unbuild": "^0.8.9"
+    "unbuild": "^0.8.10"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^11.0.0",
@@ -52,7 +52,7 @@
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.45.13",
     "case-police": "^0.5.9",
-    "changelogen": "^0.1.1",
+    "changelogen": "^0.3.0",
     "eslint": "^8.23.0",
     "eslint-plugin-jsdoc": "^39.3.6",
     "execa": "^6.1.0",
@@ -64,7 +64,7 @@
     "pathe": "^0.3.5",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.2",
-    "unbuild": "^0.8.9",
+    "unbuild": "^0.8.10",
     "vitest": "~0.19.1",
     "vue-tsc": "^0.39.5"
   },

@@ -4045,7 +4045,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"c12@npm:^0.2.10, c12@npm:^0.2.7":
+"c12@npm:^0.2.10":
   version: 0.2.10
   resolution: "c12@npm:0.2.10"
   dependencies:
@@ -4216,18 +4216,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"changelogen@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "changelogen@npm:0.1.1"
+"changelogen@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "changelogen@npm:0.3.0"
   dependencies:
-    c12: ^0.2.7
+    c12: ^0.2.10
     consola: ^2.15.3
+    convert-gitmoji: ^0.1.2
     execa: ^6.1.0
     mri: ^1.2.0
-    scule: ^0.2.1
+    scule: ^0.3.2
+    semver: ^7.3.7
   bin:
     changelogen: dist/cli.mjs
-  checksum: d5e04d7ccf51ac12cb12807bcfec055a839496e8f23faad337ee5c58511c65cebc74b355963c3217fd8d3a122023c048036ed9a35330cda84f6dfda4ba724a31
+  checksum: 06a52044e45aecc1305302d7600fc16d69fb5eb6869f0e44ae8d874f923be8eaed7088c345600be3d8e1eb78338b816ad5dfd1ab24be2874ff34dcdde1040628
   languageName: node
   linkType: hard
 
@@ -4709,6 +4711,13 @@ __metadata:
   bin:
     conventional-recommended-bump: cli.js
   checksum: da1d7a5f3b9f7706bede685cdcb3db67997fdaa43c310fd5bf340955c84a4b85dbb9427031522ee06dad290b730a54be987b08629d79c73720dbad3a2531146b
+  languageName: node
+  linkType: hard
+
+"convert-gitmoji@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "convert-gitmoji@npm:0.1.2"
+  checksum: ec10bd5f6c2f0c2bb221d76e51337a12a14f396a78e75ee52076114ba8415586d175a2a2e8148c532a0411c43175659cc4b4039b4d32ae35bc72f4121e14afcb
   languageName: node
   linkType: hard
 
@@ -9936,7 +9945,7 @@ __metadata:
     "@types/rimraf": ^3
     "@unocss/reset": ^0.45.13
     case-police: ^0.5.9
-    changelogen: ^0.1.1
+    changelogen: ^0.3.0
     eslint: ^8.23.0
     eslint-plugin-jsdoc: ^39.3.6
     execa: ^6.1.0
@@ -9948,7 +9957,7 @@ __metadata:
     pathe: ^0.3.5
     rimraf: ^3.0.2
     typescript: ^4.8.2
-    unbuild: ^0.8.9
+    unbuild: ^0.8.10
     vitest: ~0.19.1
     vue-tsc: ^0.39.5
   languageName: unknown
@@ -11794,13 +11803,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scule@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "scule@npm:0.2.1"
-  checksum: d9731b4c3560ce6983d23cc594395b718bc3c08ea3da930a9cd2bd3feb137ad3295521bcbc50baa82dc05d8521a7a41d6b78d2723e5195c053d93359f5808706
-  languageName: node
-  linkType: hard
-
 "scule@npm:^0.3.2":
   version: 0.3.2
   resolution: "scule@npm:0.3.2"
@@ -12932,7 +12934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.8.9":
+"unbuild@npm:^0.8.10":
   version: 0.8.10
   resolution: "unbuild@npm:0.8.10"
   dependencies:
