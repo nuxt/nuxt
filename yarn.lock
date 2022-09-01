@@ -1651,7 +1651,7 @@ __metadata:
     "@nuxt/schema": 3.0.0-rc.8
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.9
+    c12: ^0.2.10
     consola: ^2.15.3
     defu: ^6.1.0
     globby: ^13.1.2
@@ -1684,7 +1684,7 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.9
+    c12: ^0.2.10
     create-require: ^1.1.1
     defu: ^6.1.0
     jiti: ^1.14.0
@@ -4060,6 +4060,21 @@ __metadata:
   version: 7.0.1
   resolution: "byte-size@npm:7.0.1"
   checksum: 6791663a6d53bf950e896f119d3648fe8d7e8ae677e2ccdae84d0e5b78f21126e25f9d73aa19be2a297cb27abd36b6f5c361c0de36ebb2f3eb8a853f2ac99a4a
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.2.10":
+  version: 0.2.10
+  resolution: "c12@npm:0.2.10"
+  dependencies:
+    defu: ^6.0.0
+    dotenv: ^16.0.1
+    gittar: ^0.1.1
+    jiti: ^1.14.0
+    mlly: ^0.5.11
+    pathe: ^0.3.4
+    rc9: ^1.2.2
+  checksum: 5c8f83a2a10717dd428d1c81801b5771694d6f2b381fda955d159d5e7943b7c958953764edab92033c84186c1d8444cbc0db10e771222b58c2ccbcff2a6c1eba
   languageName: node
   linkType: hard
 
@@ -9392,7 +9407,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mlly@npm:^0.5.12, mlly@npm:^0.5.13, mlly@npm:^0.5.14, mlly@npm:^0.5.2, mlly@npm:^0.5.7":
+"mlly@npm:^0.5.11, mlly@npm:^0.5.12, mlly@npm:^0.5.13, mlly@npm:^0.5.14, mlly@npm:^0.5.2, mlly@npm:^0.5.7":
   version: 0.5.14
   resolution: "mlly@npm:0.5.14"
   dependencies:
@@ -9921,7 +9936,7 @@ __metadata:
     "@types/flat": ^5.0.2
     "@types/mri": ^1.1.1
     "@types/semver": ^7
-    c12: ^0.2.9
+    c12: ^0.2.10
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
