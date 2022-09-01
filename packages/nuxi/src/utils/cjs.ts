@@ -29,6 +29,10 @@ export function requireModule (id: string, paths?: string | string[]) {
   return _require(resolveModule(id, paths))
 }
 
+export function tryRequireModule (id: string, paths?: string | string[]) {
+  try { return requireModule(id, paths) } catch { return null }
+}
+
 export function importModule (id: string, paths?: string | string[]) {
   const resolvedPath = resolveModule(id, paths)
   return import(pathToFileURL(resolvedPath).href)
