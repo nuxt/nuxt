@@ -154,7 +154,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
   const router: Router = {
     currentRoute: route,
     isReady: () => Promise.resolve(),
-    //
+    // These options provide a similar API to vue-router but have no effect
     options: {},
     install: () => Promise.resolve(),
     // Navigation
