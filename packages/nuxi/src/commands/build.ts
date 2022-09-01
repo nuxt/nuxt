@@ -4,6 +4,7 @@ import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
+import { showVersions } from '../utils/banner'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -16,6 +17,7 @@ export default defineNuxtCommand({
     overrideEnv('production')
 
     const rootDir = resolve(args._[0] || '.')
+    showVersions(rootDir)
 
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 

@@ -63,6 +63,7 @@ export default defineNuxtCommand({
       OperatingSystem: os.type(),
       NodeVersion: process.version,
       NuxtVersion: nuxtVersion,
+      NitroVersion: getDepVersion('nitropack'),
       PackageManager: packageManager,
       Builder: builder,
       UserConfig: Object.keys(nuxtConfig).map(key => '`' + key + '`').join(', '),
