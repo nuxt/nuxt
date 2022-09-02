@@ -31,12 +31,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options = defu(nuxt.options.autoImports, options)
     }
 
-    nuxt.hooks.deprecateHooks({
-      'autoImports:sources': { to: 'imports:sources' },
-      'autoImports:dirs': { to: 'imports:dirs' },
-      'autoImports:extend': { to: 'imports:extend' }
-    })
-
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', options.presets as ImportPresetWithDeprecation[])
 

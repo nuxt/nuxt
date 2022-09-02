@@ -134,6 +134,22 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
 
+  // Deprecate hooks
+  nuxt.hooks.deprecateHooks({
+    'autoImports:sources': {
+      to: 'imports:sources',
+      message: '`autoImports:sources` hook is deprecated. Use `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+    },
+    'autoImports:dirs': {
+      to: 'imports:dirs',
+      message: '`autoImports:sources` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+    },
+    'autoImports:extend': {
+      to: 'imports:extend',
+      message: '`autoImports:extend` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+    }
+  })
+
   for (const m of modulesToInstall) {
     if (Array.isArray(m)) {
       await installModule(m[0], m[1])
