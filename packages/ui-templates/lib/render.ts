@@ -13,7 +13,7 @@ const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
 const replaceAll = (input, search, replace) => input.split(search).join(replace)
 
 export const RenderPlugin = () => {
-  return <Plugin>{
+  return <Plugin> {
     name: 'render',
     enforce: 'post',
     async writeBundle () {
@@ -79,6 +79,8 @@ export const RenderPlugin = () => {
           .replace(/messages\./g, '')
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
+          // eslint-disable-next-line no-template-curly-in-string
+          .replace(/<([^>]+) ([a-z]+)="([^"]*)({{\s*(\w+?)\s*}})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
           .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-text="$1" />')
           .replace(/>{{{\s*(\w+?)\s*}}}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
