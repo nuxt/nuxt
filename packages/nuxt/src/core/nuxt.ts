@@ -142,11 +142,11 @@ async function initNuxt (nuxt: Nuxt) {
     },
     'autoImports:dirs': {
       to: 'imports:dirs',
-      message: '`autoImports:sources` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+      message: '`autoImports:dirs` hook is deprecated. Use `addImportsDir()` from `@nuxt/kit` or `imports:dirs` with `nuxt>=3.0.0-rc.9`.'
     },
     'autoImports:extend': {
       to: 'imports:extend',
-      message: '`autoImports:extend` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+      message: '`autoImports:extend` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:extend` with `nuxt>=3.0.0-rc.9`.'
     }
   })
 
