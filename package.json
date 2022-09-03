@@ -56,7 +56,7 @@
     "esbuild": "^0.15.6",
     "eslint": "^8.23.0",
     "eslint-multiplexer": "^2.0.0",
-    "eslint-plugin-jest": "^26.9.0",
+    "eslint-plugin-jest": "^27.0.1",
     "execa": "^5.1.1",
     "express": "^4.18.1",
     "finalhandler": "^1.2.0",
