@@ -51,7 +51,7 @@
     "@types/node": "^16.11.56",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.45.14",
-    "case-police": "^0.5.9",
+    "case-police": "^0.5.10",
     "changelogen": "^0.3.0",
     "eslint": "^8.23.0",
     "eslint-plugin-jsdoc": "^39.3.6",
