@@ -1799,7 +1799,7 @@ __metadata:
     externality: ^0.2.2
     fs-extra: ^10.1.0
     get-port-please: ^2.6.1
-    h3: ^0.7.19
+    h3: ^0.7.21
     knitwork: ^0.1.2
     magic-string: ^0.26.3
     mlly: ^0.5.14
@@ -7475,6 +7475,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"h3@npm:^0.7.21":
+  version: 0.7.21
+  resolution: "h3@npm:0.7.21"
+  dependencies:
+    cookie-es: ^0.5.0
+    destr: ^1.1.1
+    radix3: ^0.1.2
+    ufo: ^0.8.5
+  checksum: 4c7f7d450ebe802d07e34717353d0a3861b53cca0fa9ffbaa1be5d0e554bdf9cf00a6e91ba07265380960dbca1b34bf7945fb2d2f76a43e9f55b89c2adbe29e4
+  languageName: node
+  linkType: hard
+
 "handlebars@npm:^4.7.7":
   version: 4.7.7
   resolution: "handlebars@npm:4.7.7"
@@ -9999,7 +10011,7 @@ __metadata:
     escape-string-regexp: ^5.0.0
     fs-extra: ^10.1.0
     globby: ^13.1.2
-    h3: ^0.7.19
+    h3: ^0.7.21
     hash-sum: ^2.0.0
     hookable: ^5.3.0
     knitwork: ^0.1.2
