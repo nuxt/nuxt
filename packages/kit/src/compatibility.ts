@@ -12,7 +12,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
     const nuxtSemanticVersion = nuxtVersion
-      .replace(/-[0-9]+\.[0-9a-f]{7}/, '') // Remove edge prefix
+      .replace(/-[0-9]+\.[0-9a-f]{7,8}/, '') // Remove edge prefix
     if (!satisfies(nuxtSemanticVersion, constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
