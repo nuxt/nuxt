@@ -1700,21 +1700,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/telemetry@npm:^2.1.4":
-  version: 2.1.4
-  resolution: "@nuxt/telemetry@npm:2.1.4"
+"@nuxt/telemetry@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "@nuxt/telemetry@npm:2.1.5"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.6
+    "@nuxt/kit": ^3.0.0-rc.9
     chalk: ^5.0.1
     ci-info: ^3.3.2
     consola: ^2.15.3
     create-require: ^1.1.1
-    defu: ^6.0.0
+    defu: ^6.1.0
     destr: ^1.1.1
-    dotenv: ^16.0.1
+    dotenv: ^16.0.2
     fs-extra: ^10.1.0
-    git-url-parse: ^12.0.0
-    inquirer: ^9.1.0
+    git-url-parse: ^13.0.0
+    inquirer: ^9.1.1
     is-docker: ^3.0.0
     jiti: ^1.14.0
     mri: ^1.2.0
@@ -1723,10 +1723,10 @@ __metadata:
     ohmyfetch: ^0.4.18
     parse-git-config: ^3.0.0
     rc9: ^1.2.2
-    std-env: ^3.1.1
+    std-env: ^3.2.1
   bin:
     nuxt-telemetry: bin/nuxt-telemetry.mjs
-  checksum: 8ed8c4387c50700dcf6b2adc273f024d7952e56cea2e144dd29028bd586cfbe84c03df7b57012a1cb867f5c42649c4e6885dad71b675cf4d2937fce7ce60a9b9
+  checksum: a12d5bddd2767d9fc4f4a3686bfbdeec06c446cc9f127daaff2e2691b69caa87cf8d9e3408066f6ae9a8f3483a34b8a481fc43d61b08ec5abce5a60244f94f0a
   languageName: node
   linkType: hard
 
@@ -5303,7 +5303,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.0.1":
+"dotenv@npm:^16.0.1, dotenv@npm:^16.0.2":
   version: 16.0.2
   resolution: "dotenv@npm:16.0.2"
   checksum: ca8f9ca2d67929c7771069f4c31b4e46b9932621009e658e5afd655dde2d69b77642bf36dbc9e72bc170523dfd908a9ee41c26f034c1fdc605ace3b1b4b10faf
@@ -7280,12 +7280,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"git-up@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "git-up@npm:7.0.0"
+  dependencies:
+    is-ssh: ^1.4.0
+    parse-url: ^8.1.0
+  checksum: 2faadbab51e94d2ffb220e426e950087cc02c15d664e673bd5d1f734cfa8196fed8b19493f7bf28fe216d087d10e22a7fd9b63687e0ba7d24f0ddcfb0a266d6e
+  languageName: node
+  linkType: hard
+
 "git-url-parse@npm:^12.0.0":
   version: 12.0.0
   resolution: "git-url-parse@npm:12.0.0"
   dependencies:
     git-up: ^6.0.0
   checksum: b4c8530b816202ecf9d4dabf755f785a314a096b56145018385b3d7171e862f9d0d9b38cce620c0af354b269750fe7b2d9aa95815c7150922090a11dac4ab1e6
+  languageName: node
+  linkType: hard
+
+"git-url-parse@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "git-url-parse@npm:13.0.0"
+  dependencies:
+    git-up: ^7.0.0
+  checksum: 05a3bf51fc5863d26461a815347929a7432e1ebc6763e6a7ee31f510936266f9a82e0f090d09c2c48cd6dba2f17163fa1d860ba4a3ff157083cca5a5d1961c57
   languageName: node
   linkType: hard
 
@@ -7897,7 +7916,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:^9.1.0":
+"inquirer@npm:^9.1.1":
   version: 9.1.1
   resolution: "inquirer@npm:9.1.1"
   dependencies:
@@ -9996,7 +10015,7 @@ __metadata:
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0-rc.9
     "@nuxt/schema": 3.0.0-rc.9
-    "@nuxt/telemetry": ^2.1.4
+    "@nuxt/telemetry": ^2.1.5
     "@nuxt/ui-templates": ^0.3.2
     "@nuxt/vite-builder": 3.0.0-rc.9
     "@types/fs-extra": ^9.0.13
@@ -10490,6 +10509,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"parse-path@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "parse-path@npm:7.0.0"
+  dependencies:
+    protocols: ^2.0.0
+  checksum: 244b46523a58181d251dda9b888efde35d8afb957436598d948852f416d8c76ddb4f2010f9fc94218b4be3e5c0f716aa0d2026194a781e3b8981924142009302
+  languageName: node
+  linkType: hard
+
 "parse-url@npm:^7.0.2":
   version: 7.0.2
   resolution: "parse-url@npm:7.0.2"
@@ -10499,6 +10527,15 @@ __metadata:
     parse-path: ^5.0.0
     protocols: ^2.0.1
   checksum: 3e26852706bebe9fac409909316716dee52883d2fb5c82d65577effba1507abb7bc42bb59ce0ba6c8659168fb99acf89000bd8fe096ed3ad7124fa85227436d7
+  languageName: node
+  linkType: hard
+
+"parse-url@npm:^8.1.0":
+  version: 8.1.0
+  resolution: "parse-url@npm:8.1.0"
+  dependencies:
+    parse-path: ^7.0.0
+  checksum: b93e21ab4c93c7d7317df23507b41be7697694d4c94f49ed5c8d6288b01cba328fcef5ba388e147948eac20453dee0df9a67ab2012415189fff85973bdffe8d9
   languageName: node
   linkType: hard
 
@@ -12204,7 +12241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"std-env@npm:^3.0.1, std-env@npm:^3.1.1, std-env@npm:^3.2.1":
+"std-env@npm:^3.0.1, std-env@npm:^3.2.1":
   version: 3.2.1
   resolution: "std-env@npm:3.2.1"
   checksum: c046af2573ba6e02c9ffcfd5a2c3f94f160404915941be177b93d6d1695078e487293fed6ab4fa95680e75a331eccf0f6dbe0b86babda15056c594e600a99dc4
