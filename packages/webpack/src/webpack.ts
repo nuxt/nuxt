@@ -80,8 +80,9 @@ async function createDevMiddleware (compiler: Compiler) {
     outputFileSystem: compiler.outputFileSystem as any,
     stats: 'none',
     ...nuxt.options.webpack.devMiddleware
-  })) as API<IncomingMessage, ServerResponse>
+  })) as any as API<IncomingMessage, ServerResponse>
 
+  // @ts-ignore
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
@@ -90,7 +91,7 @@ async function createDevMiddleware (compiler: Compiler) {
     heartbeat: 10000,
     path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
     ...hotMiddlewareOptions
-  }))
+  })) as any as API<IncomingMessage, ServerResponse>
 
   await nuxt.callHook('webpack:devMiddleware', devMiddleware)
   await nuxt.callHook('webpack:hotMiddleware', hotMiddleware)

@@ -22,7 +22,7 @@
     "@nuxt/kit": "3.0.0-rc.8",
     "@rollup/plugin-replace": "^4.0.0",
     "@vitejs/plugin-vue": "^3.0.3",
-    "@vitejs/plugin-vue-jsx": "^2.0.0",
+    "@vitejs/plugin-vue-jsx": "^2.0.1",
     "autoprefixer": "^10.4.8",
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.13",

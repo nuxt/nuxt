@@ -1788,7 +1788,7 @@ __metadata:
     "@rollup/plugin-replace": ^4.0.0
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^3.0.3
-    "@vitejs/plugin-vue-jsx": ^2.0.0
+    "@vitejs/plugin-vue-jsx": ^2.0.1
     autoprefixer: ^10.4.8
     chokidar: ^3.5.3
     cssnano: ^5.1.13
@@ -1857,7 +1857,7 @@ __metadata:
     mlly: ^0.5.14
     ohash: ^0.1.5
     pathe: ^0.3.5
-    pify: ^6.0.0
+    pify: ^6.1.0
     postcss: ^8.4.16
     postcss-import: ^15.0.0
     postcss-loader: ^7.0.1
@@ -1972,9 +1972,9 @@ __metadata:
   linkType: hard
 
 "@octokit/openapi-types@npm:^13.6.0":
-  version: 13.6.0
-  resolution: "@octokit/openapi-types@npm:13.6.0"
-  checksum: 2abf858a24888dcede28fe9a3fe3d24fba468d90daf4e22d1238d2419fe69aa8ee8f4aad163a73870038497b3a1b77b9b16172f649fb2cd767dd11fb3d09d44d
+  version: 13.7.0
+  resolution: "@octokit/openapi-types@npm:13.7.0"
+  checksum: ca872f64eb9967c66dea08c9e60343e1ee7f93839d86f5ef57b9d58ae19af301a49bac548a1e09c4ee53686b34b8b84eb61d5356faf632c8c2fbd89d0e32a954
   languageName: node
   linkType: hard
 
@@ -2006,14 +2006,14 @@ __metadata:
   linkType: hard
 
 "@octokit/plugin-rest-endpoint-methods@npm:^6.0.0":
-  version: 6.4.0
-  resolution: "@octokit/plugin-rest-endpoint-methods@npm:6.4.0"
+  version: 6.4.1
+  resolution: "@octokit/plugin-rest-endpoint-methods@npm:6.4.1"
   dependencies:
     "@octokit/types": ^7.2.0
     deprecation: ^2.3.1
   peerDependencies:
     "@octokit/core": ">=3"
-  checksum: 23274c9d307ec198192bc96fc340e75d29156df338ea8184a20673298d90e435fcc22cf09434943666f0d10ff5b4f2cd2caa778d0fb17906f319ff2373c61dbf
+  checksum: 5c81df3a54f7916d088cfdb2ab71ca4dadcbfa5712d728e52ec1e9d585ed79251872a1b61824fae84759af45a763940867391fa075ef1b2f40a974a058eb87ca
   languageName: node
   linkType: hard
 
@@ -2930,7 +2930,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-vue-jsx@npm:^2.0.0":
+"@vitejs/plugin-vue-jsx@npm:^2.0.1":
   version: 2.0.1
   resolution: "@vitejs/plugin-vue-jsx@npm:2.0.1"
   dependencies:
@@ -4795,11 +4795,11 @@ __metadata:
   linkType: hard
 
 "css-declaration-sorter@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "css-declaration-sorter@npm:6.3.0"
+  version: 6.3.1
+  resolution: "css-declaration-sorter@npm:6.3.1"
   peerDependencies:
     postcss: ^8.0.9
-  checksum: 69ce1c2e0e854c043dccbb613f15e2911e2e12dd656d18cdae831baa6a6a8f9ef0d6560c456e3b41d28835e5e013bfdf9114eeba206564b1513ea968a3633c1f
+  checksum: ff0d9989ee21ec4c42430b9bb86c43f973ed5024d68f30edc1e3fb07a22828ce3c3e5b922019f2ccbff606722e43c407c5c76e3cddac523ac4afcb31e4b2601c
   languageName: node
   linkType: hard
 
@@ -10625,10 +10625,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pify@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "pify@npm:6.0.0"
-  checksum: f5837e835160d617b4ec6814753c114faed9a847a2be8264b86805b1bbdb84f6b35bad5277257a3e78f0fd210f7eaefc762443b5b74ce96a7c7a81e2fb056934
+"pify@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "pify@npm:6.1.0"
+  checksum: cb21ee8794e9e14955669fbc06b964d0dd3d4e6fa3c2ea3cf22f6794de61ec1ea5c1fac02dadfd4aa16c9cf589f6733406e826e64366f70e09f5e95917a0b8ac
   languageName: node
   linkType: hard
 
