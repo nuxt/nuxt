@@ -3,7 +3,7 @@ import { createApp, createError, defineEventHandler, defineLazyEventHandler } fr
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
-import { addServerMiddleware } from '@nuxt/kit'
+import { addDevServerHandler } from '@nuxt/kit'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
@@ -41,7 +41,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
 }
 
 export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
-  addServerMiddleware({
+  addDevServerHandler({
     route: '/__nuxt_vite_node__/',
     handler: createViteNodeMiddleware(ctx)
   })
@@ -112,12 +112,14 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
       }
-      const module = await node.fetchModule(moduleId) as any
+      const module = await node.fetchModule(moduleId).catch((err) => {
+        throw createError({ data: err })
+      })
       return module
     }
   }))
 
-  return app.nodeHandler
+  return app
 }
 
 export async function initViteNodeServer (ctx: ViteBuildContext) {

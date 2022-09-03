@@ -1,21 +1,12 @@
 import { performance } from 'node:perf_hooks'
+import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
 import { $fetch } from 'ohmyfetch'
 import consola from 'consola'
 import { getViteNodeOptions } from './vite-node-shared.mjs'
 
 const viteNodeOptions = getViteNodeOptions()
-
-const runner = new ViteNodeRunner({
-  root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
-  base: viteNodeOptions.base,
-  async fetchModule (id) {
-    return await $fetch('/module/' + encodeURI(id), {
-      baseURL: viteNodeOptions.baseURL
-    })
-  }
-})
-
+const runner = createRunner()
 let render
 
 export default async (ssrContext) => {
@@ -39,4 +30,68 @@ export default async (ssrContext) => {
 
   const result = await render(ssrContext)
   return result
+}
+
+function createRunner () {
+  return new ViteNodeRunner({
+    root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
+    base: viteNodeOptions.base,
+    async fetchModule (id) {
+      return await $fetch('/module/' + encodeURI(id), {
+        baseURL: viteNodeOptions.baseURL
+      }).catch((err) => {
+        const errorData = err?.data?.data
+        if (!errorData) {
+          throw err
+        }
+        try {
+          const { message, stack } = formatViteError(errorData)
+          throw createError({
+            statusMessage: 'Vite Error',
+            message,
+            stack
+          })
+        } catch (err) {
+          // This should not happen unless there is an internal error with formatViteError!
+          consola.error('Error while formatting vite error:', errorData)
+          throw createError({
+            statusMessage: 'Vite Error',
+            message: errorData.message || 'Vite Error',
+            stack: 'Vite Error\nat [check console]'
+          })
+        }
+      })
+    }
+  })
+}
+
+function formatViteError (errorData) {
+  const errorCode = errorData.name || errorData.reasonCode || errorData.code
+  const frame = errorData.frame || errorData.source || errorData.pluginCode
+
+  const getLocId = (locObj = {}) => locObj.file || locObj.id || locObj.url || ''
+  const getLocPos = (locObj = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
+  const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
+  const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
+  const loc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
+
+  const message = [
+    '[vite-node]',
+    errorData.plugin && `[plugin:${errorData.plugin}]`,
+    errorCode && `[${errorCode}]`,
+    loc,
+    errorData.reason && `: ${errorData.reason}`,
+    frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`
+  ].filter(Boolean).join(' ')
+
+  const stack = [
+    message,
+    'at ' + loc,
+    errorData.stack
+  ].filter(Boolean).join('\n')
+
+  return {
+    message,
+    stack
+  }
 }
