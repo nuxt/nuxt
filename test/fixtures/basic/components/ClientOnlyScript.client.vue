@@ -15,3 +15,9 @@ export default defineNuxtComponent({
     <slot name="test" />
   </div>
 </template>
+
+<style>
+  :root {
+    --client-only: 'client-only';
+  }
+</style>

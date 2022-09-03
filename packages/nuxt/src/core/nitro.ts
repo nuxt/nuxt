@@ -97,6 +97,7 @@ export async function initNitro (nuxt: Nuxt) {
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
+      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
     },
@@ -108,6 +109,10 @@ export async function initNitro (nuxt: Nuxt) {
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
     nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
+  }
+
+  if (!nuxt.options.experimental.inlineSSRStyles) {
+    nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
   }
 
   // Register nuxt protection patterns

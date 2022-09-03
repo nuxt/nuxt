@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
   theme: './extends/bar',
+  css: ['~/assets/global.css'],
   extends: [
     './extends/node_modules/foo'
   ],

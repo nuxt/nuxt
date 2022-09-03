@@ -48,9 +48,26 @@ export default defineUntypedSchema({
     /**
      * Split server bundle into multiple chunks and dynamically import them.
      *
-     *
      * @see https://github.com/nuxt/framework/issues/6432
      */
-    viteServerDynamicImports: true
+    viteServerDynamicImports: true,
+
+    /**
+     * Inline styles when rendering HTML (currently vite only).
+     *
+     * You can also pass a function that receives the path of a Vue component
+     * and returns a boolean indicating whether to inline the styles for that component.
+     *
+     * @type {boolean | ((id?: string) => boolean)}
+     */
+    inlineSSRStyles: {
+      $resolve(val, get) {
+        if (val === false || get('dev') || get('ssr') === false || get('builder') === '@nuxt/webpack-builder') {
+          return false
+        }
+        // Enabled by default for vite prod with ssr
+        return val ?? true
+      }
+    },
   }
 })

@@ -9,10 +9,11 @@ import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
+import { ssrStylesPlugin } from './plugins/ssr-styles'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const useAsyncEntry = ctx.nuxt.options.experimental.asyncEntry ||
-   (ctx.nuxt.options.vite.devBundler === 'vite-node' && ctx.nuxt.options.dev)
+    (ctx.nuxt.options.vite.devBundler === 'vite-node' && ctx.nuxt.options.dev)
   ctx.entry = resolve(ctx.nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry')
 
   const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
@@ -110,6 +111,15 @@ export async function buildServer (ctx: ViteBuildContext) {
       viteJsxPlugin()
     ]
   } as ViteOptions)
+
+  if (ctx.nuxt.options.experimental.inlineSSRStyles) {
+    serverConfig.plugins!.push(ssrStylesPlugin({
+      srcDir: ctx.nuxt.options.srcDir,
+      shouldInline: typeof ctx.nuxt.options.experimental.inlineSSRStyles === 'function'
+        ? ctx.nuxt.options.experimental.inlineSSRStyles
+        : undefined
+    }))
+  }
 
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
