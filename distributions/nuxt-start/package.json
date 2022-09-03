@@ -34,11 +34,11 @@
     "@nuxt/utils": "2.15.6",
     "@nuxt/vue-renderer": "2.15.6",
     "node-fetch-native": "^0.1.4",
-    "vue": "^2.7.0",
+    "vue": "^2.7.10",
     "vue-client-only": "^2.1.0",
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.5.4",
+    "vue-router": "^3.6.4",
     "vuex": "^3.6.2"
   }
 }
