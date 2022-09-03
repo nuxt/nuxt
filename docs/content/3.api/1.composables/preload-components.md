@@ -1,8 +1,5 @@
 # `preloadComponents`
 
-::StabilityEdge
-::
-
 Nuxt provides composables and utilities to give you fine-grained control over prefetching and preloading components.
 
 > Preloading components loads components that your page will need very soon, which you want to start loading early in rendering lifecycle. This ensures they are available earlier and are less likely to block the page's render, improving performance.

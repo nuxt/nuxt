@@ -1,8 +1,5 @@
 # `prefetchComponents`
 
-::StabilityEdge
-::
-
 Nuxt provides composables and utilities to give you fine-grained control over prefetching and preloading components.
 
 > Prefetching component downloads the code in the background, this is based on the assumption that the component will likely be used for rendering, enabling the component to load instantly if and when the user requests it. The component is downloaded and cached for anticipated future use without the user making an explicit request for it.
