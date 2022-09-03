@@ -165,6 +165,12 @@ describe('head tags', () => {
     expect(indexHtml).toContain('<title>Basic fixture</title>')
   })
 
+  it('should render http-equiv correctly', async () => {
+    const html = await $fetch('/head')
+    // http-equiv should be rendered kebab case
+    expect(html).toContain('<meta content="default-src https" http-equiv="content-security-policy">')
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })

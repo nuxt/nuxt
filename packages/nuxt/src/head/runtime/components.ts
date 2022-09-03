@@ -197,9 +197,17 @@ export const Meta = defineComponent({
     httpEquiv: String as PropType<HTTPEquiv>,
     name: String
   },
-  setup: setupForUseMeta(meta => ({
-    meta: [meta]
-  }))
+  setup: setupForUseMeta((props) => {
+    const meta = { ...props }
+    // fix casing for http-equiv
+    if (meta.httpEquiv) {
+      meta['http-equiv'] = meta.httpEquiv
+      delete meta.httpEquiv
+    }
+    return {
+      meta: [meta]
+    }
+  })
 })
 
 // <style>
