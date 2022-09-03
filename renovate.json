@@ -24,7 +24,9 @@
     "babel-jest",
     "globby",
     "execa",
-    "chalk"
+    "chalk",
+    "vue",
+    "vuex"
   ],
   "lockFileMaintenance": {
     "enabled": true
