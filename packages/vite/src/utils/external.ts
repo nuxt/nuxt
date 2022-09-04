@@ -19,5 +19,5 @@ export function createIsExternal (viteServer: ViteDevServer, rootDir: string) {
     }
   }
 
-  return (id:string) => isExternal(id, rootDir, externalOpts)
+  return (id: string) => isExternal(id, rootDir, externalOpts)
 }

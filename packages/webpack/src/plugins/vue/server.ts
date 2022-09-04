@@ -30,7 +30,7 @@ export default class VueSSRServerPlugin {
           return cb()
         }
 
-        const entryAssets = entryInfo.assets!.filter((asset: { name:string }) => isJS(asset.name))
+        const entryAssets = entryInfo.assets!.filter((asset: { name: string }) => isJS(asset.name))
 
         if (entryAssets.length > 1) {
           throw new Error(
