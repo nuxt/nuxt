@@ -3,6 +3,7 @@ import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
+  createWebHashHistory,
   NavigationGuard,
   RouteLocation
 } from 'vue-router'
@@ -27,7 +28,7 @@ declare module 'vue' {
   }
 }
 
-// https://github.dev/vuejs/router/blob/main/src/history/html5.ts#L33-L56
+// https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
   base: string,
   location: Location
@@ -54,14 +55,20 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   nuxtApp.vueApp.component('NuxtNestedPage', NuxtPage)
   nuxtApp.vueApp.component('NuxtChild', NuxtPage)
 
-  const baseURL = useRuntimeConfig().app.baseURL
+  let routerBase = useRuntimeConfig().app.baseURL
+  if (routerOptions.hashMode && !routerBase.includes('#')) {
+    // allow the user to provide a `#` in the middle: `/base/#/app`
+    routerBase += '#'
+  }
 
-  const history = routerOptions.history?.(baseURL) ??
-    (process.client ? createWebHistory(baseURL) : createMemoryHistory(baseURL))
+  const history = routerOptions.history?.(routerBase) ?? (process.client
+    ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
+    : createMemoryHistory(routerBase)
+  )
 
   const routes = routerOptions.routes?.(_routes) ?? _routes
 
-  const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(baseURL, window.location)
+  const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
   const router = createRouter({
     ...routerOptions,
     history,
