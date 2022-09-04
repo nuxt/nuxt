@@ -1,10 +1,12 @@
-import type { RouterOptions as _RouterOptions  } from 'vue-router'
+import type { RouterOptions as _RouterOptions, RouterHistory } from 'vue-router'
 
 
-export type RouterConfig = Partial<Omit<_RouterOptions, 'history' | 'routes'>>
+export type RouterOptions = Partial<Omit<_RouterOptions, 'history' | 'routes'>> & {
+  history?: (baseURL?: string) => RouterHistory
+  routes?: (_routes: _RouterOptions['routes']) => _RouterOptions['routes']
+}
 
-/** @deprecated Use RouterConfig instead */
-export type RouterOptions = RouterConfig
+export type RouterConfig = RouterOptions
 
 /**
  * Only JSON serializable router options are configurable from nuxt config
