@@ -23,7 +23,7 @@
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
     "cssnano": "^5.1.13",
-    "esbuild-loader": "^2.19.0",
+    "esbuild-loader": "^2.20.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "file-loader": "^6.2.0",
