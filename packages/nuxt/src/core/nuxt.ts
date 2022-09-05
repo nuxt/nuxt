@@ -5,6 +5,8 @@ import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, 
 // Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
 import escapeRE from 'escape-string-regexp'
+import fse from 'fs-extra'
+import { withoutLeadingSlash } from 'ufo'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -78,6 +80,18 @@ async function initNuxt (nuxt: Nuxt) {
     addVitePlugin(TreeShakePlugin.vite({ sourcemap: nuxt.options.sourcemap, treeShake: removeFromClient }), { server: false })
     addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap, treeShake: removeFromServer }), { client: false })
     addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap, treeShake: removeFromClient }), { server: false })
+  }
+
+  // TODO: [Experimental] Avoid emitting assets when flag is enabled
+  if (nuxt.options.experimental.noScripts) {
+    nuxt.hook('build:manifest', async (manifest) => {
+      for (const file in manifest) {
+        if (manifest[file].resourceType === 'script') {
+          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+          manifest[file].file = ''
+        }
+      }
+    })
   }
 
   // Transpile layers within node_modules

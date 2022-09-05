@@ -61,7 +61,7 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
-      $resolve(val, get) {
+      $resolve (val, get) {
         if (val === false || get('dev') || get('ssr') === false || get('builder') === '@nuxt/webpack-builder') {
           return false
         }
@@ -69,5 +69,10 @@ export default defineUntypedSchema({
         return val ?? true
       }
     },
+
+    /**
+     * Turn off rendering of Nuxt scripts and JS resource hints.
+     */
+    noScripts: false,
   }
 })

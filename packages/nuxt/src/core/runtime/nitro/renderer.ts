@@ -165,8 +165,8 @@ export default defineRenderHandler(async (event) => {
       _rendered.html
     ],
     bodyAppend: normalizeChunks([
-      `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`,
-      _rendered.renderScripts(),
+      process.env.NUXT_NO_SCRIPTS ? '' : `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`,
+      process.env.NUXT_NO_SCRIPTS ? '' : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])
