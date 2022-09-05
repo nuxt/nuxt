@@ -72,12 +72,31 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Example
 
 ```ts
-const { data, pending, error, refresh } = await useFetch(
-  'https://api.nuxtjs.dev/mountains',
-  {
+const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
     pick: ['title']
+})
+```
+
+Using [interceptors](https://github.com/unjs/ohmyfetch#%EF%B8%8F-interceptors):
+
+```ts
+const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
+  onRequest({ request, options }) {
+    // Set the request headers
+    options.headers = options.headers || {}
+    options.headers.authorization = '...'
+  },
+  onRequestError({ request, options, error }) {
+    // Handle the request errors
+  },
+  onResponse({ request, response, options }) {
+    // Process the response data
+    return response._data
+  },
+  onResponseError({ request, response, options }) {
+    // Pandle the response errors
   }
-)
+})
 ```
 
 :ReadMore{link="/guide/features/data-fetching"}
