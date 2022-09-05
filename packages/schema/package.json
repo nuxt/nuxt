@@ -18,7 +18,7 @@
     "@types/semver": "^7",
     "unbuild": "latest",
     "untyped": "^0.4.7",
-    "vite": "~3.0.9"
+    "vite": "~3.1.0"
   },
   "dependencies": {
     "c12": "^0.2.10",
