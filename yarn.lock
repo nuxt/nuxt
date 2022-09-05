@@ -1824,7 +1824,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.9.2
     vite: ~3.0.9
-    vite-node: ^0.23.0
+    vite-node: ^0.23.1
     vite-plugin-checker: ^0.5.1
     vue: 3.2.38
     vue-bundle-renderer: ^0.4.2
@@ -2418,10 +2418,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.56":
-  version: 16.11.56
-  resolution: "@types/node@npm:16.11.56"
-  checksum: b4efade16eb08a39810921c54a1637e69c8f3184a20d87e8fe74d557d9bda73f0829ac318e2a30a32b1903e4b099812defd1dfe438be70b98dbfbea5b0d99a53
+"@types/node@npm:^16.11.57":
+  version: 16.11.57
+  resolution: "@types/node@npm:16.11.57"
+  checksum: 7c34f5e50e38460fd0f18ae939ad62d5ecf992be7b9db7b1b86b9cc76a4d153b55bf3a94c6379da23df0803c11ad1a96be54c45d3ce612206cb8a18ce433028b
   languageName: node
   linkType: hard
 
@@ -10194,7 +10194,7 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@nuxtjs/eslint-config-typescript": ^11.0.0
-    "@types/node": ^16.11.56
+    "@types/node": ^16.11.57
     "@types/rimraf": ^3
     "@unocss/reset": ^0.45.15
     case-police: ^0.5.10
@@ -13578,9 +13578,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.23.0":
-  version: 0.23.0
-  resolution: "vite-node@npm:0.23.0"
+"vite-node@npm:^0.23.1":
+  version: 0.23.1
+  resolution: "vite-node@npm:0.23.1"
   dependencies:
     debug: ^4.3.4
     mlly: ^0.5.14
@@ -13588,7 +13588,7 @@ __metadata:
     vite: ^2.9.12 || ^3.0.0-0
   bin:
     vite-node: vite-node.mjs
-  checksum: 80314c75252dbee71ba8826d69286c9569725ef09f55e639f7c0480a8ab98b98de501d7012f1813a32d47a1c8706126453a44f35eea67bf611a45c9b9c653e96
+  checksum: 6a9324df1d1d567bad59e8b8352ba107ad577cf86545eea48a9d5d46723b129a23021ed432fa7adf49d575b4c063b1c0fd9fcbbe49ebb429daa548bf6c0ab6ba
   languageName: node
   linkType: hard
 
