@@ -7,6 +7,6 @@
     "start": "nuxi preview"
   },
   "devDependencies": {
-    "nuxt": "npm:nuxt3@latest"
+    "nuxt": "^3.0.0-rc.9"
   }
 }

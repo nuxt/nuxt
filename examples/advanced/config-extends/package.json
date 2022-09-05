@@ -2,8 +2,8 @@
   "name": "example-config-extends",
   "private": true,
   "devDependencies": {
-    "@nuxt/ui": "^0.2.0",
-    "nuxt": "npm:nuxt3@latest"
+    "@nuxt/ui": "^0.3.2",
+    "nuxt": "^3.0.0-rc.9"
   },
   "scripts": {
     "dev": "nuxi dev",
