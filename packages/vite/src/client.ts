@@ -24,7 +24,9 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     entry: ctx.entry,
-    base: './',
+    base: ctx.nuxt.options.dev
+      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
+      : './',
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {
         if (hostType !== 'js' || type === 'asset') {
