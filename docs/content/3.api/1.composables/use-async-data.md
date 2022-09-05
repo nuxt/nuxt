@@ -18,19 +18,25 @@ function useAsyncData(
 type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
-  default?: () => DataT | Ref<DataT>
+  default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
   watch?: WatchSource[]
   initialCache?: boolean
 }
 
-type AsyncData<DataT> = {
-  data: Ref<DataT>
-  pending: Ref<boolean>
-  refresh: () => Promise<void>
-  error: Ref<any>
+interface RefreshOptions {
+  _initial?: boolean
 }
+
+type AsyncData<DataT, ErrorT> = {
+  data: Ref<DataT | null>
+  pending: Ref<boolean>
+  refresh: (opts?: RefreshOptions) => Promise<void>
+  error: Ref<ErrorT | null>
+}
+
+
 ```
 
 ## Params
