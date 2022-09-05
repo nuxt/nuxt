@@ -34,7 +34,7 @@
     "@nuxt/kit": "3.0.0-rc.9",
     "@nuxt/schema": "3.0.0-rc.9",
     "@nuxt/telemetry": "^2.1.5",
-    "@nuxt/ui-templates": "^0.3.2",
+    "@nuxt/ui-templates": "^0.3.3",
     "@nuxt/vite-builder": "3.0.0-rc.9",
     "@vue/reactivity": "^3.2.38",
     "@vue/shared": "^3.2.38",

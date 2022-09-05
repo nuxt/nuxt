@@ -1750,7 +1750,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/ui-templates@npm:^0.3.2":
+"@nuxt/ui-templates@npm:^0.3.3":
   version: 0.3.3
   resolution: "@nuxt/ui-templates@npm:0.3.3"
   checksum: 4a2bb83ca3dac965a15a8aebf09167be036a9666e316b812b02c3a4e41ed8fd011feaca3eb402d7a92e0567d548fa826c798df8317bb822b21cccfc0dfe3b8d0
@@ -10000,7 +10000,7 @@ __metadata:
     "@nuxt/kit": 3.0.0-rc.9
     "@nuxt/schema": 3.0.0-rc.9
     "@nuxt/telemetry": ^2.1.5
-    "@nuxt/ui-templates": ^0.3.2
+    "@nuxt/ui-templates": ^0.3.3
     "@nuxt/vite-builder": 3.0.0-rc.9
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
