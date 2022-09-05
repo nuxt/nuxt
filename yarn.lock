@@ -1824,7 +1824,7 @@ __metadata:
     unplugin: ^0.9.2
     vite: ~3.0.9
     vite-node: ^0.23.0
-    vite-plugin-checker: ^0.5.0
+    vite-plugin-checker: ^0.5.1
     vue: 3.2.38
     vue-bundle-renderer: ^0.4.2
   peerDependencies:
@@ -13591,9 +13591,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-checker@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "vite-plugin-checker@npm:0.5.0"
+"vite-plugin-checker@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "vite-plugin-checker@npm:0.5.1"
   dependencies:
     "@babel/code-frame": ^7.12.13
     ansi-escapes: ^4.3.0
@@ -13625,7 +13625,7 @@ __metadata:
       optional: true
     vti:
       optional: true
-  checksum: c66051dbb42b12ed8e9f6ddd93ef244558fd2c5fc80bde0497e48993f2fd9f507ac232a9d2ea6906c41d4e9bd9191261b3d350d763102b516a0b9a404653f2b7
+  checksum: eed0b1a07563ca5b0567bbb39348a46208282f2c10c47d86d5c4d334c04bde30a1ce80566359588bdbae61339a8ee4ca609b9d4d779d50c6233d3efa8eb36220
   languageName: node
   linkType: hard
 
