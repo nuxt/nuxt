@@ -1,0 +1,14 @@
+---
+template: Example
+---
+
+# `app.config`
+
+> Nuxt 3 provides an app.config config file to expose reactive configuration within your application with the ability to update it at runtime within lifecycle or using a nuxt plugin and editing it with HMR (hot-module-replacement).
+
+This example shows how to use `app.config` feature.
+
+::ReadMore{link="/guide/features/app-config"}
+::
+
+::sandbox{repo="nuxt/framework" branch="main" dir="examples/app-config" file="app.vue"}
