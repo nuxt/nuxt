@@ -42,6 +42,7 @@ export type NuxtPage = {
   path: string
   file: string
   meta?: Record<string, any>
+  alias?: string[]
   children?: NuxtPage[]
 }
 

@@ -232,11 +232,17 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const file = normalize(route.file)
       const metaImportName = genSafeVariableName(file) + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'meta', as: metaImportName }]))
+
+      let aliasCode = `${metaImportName}?.alias || []`
+      if (Array.isArray(route.alias) && route.alias.length) {
+        aliasCode = `${JSON.stringify(route.alias)}.concat(${aliasCode})`
+      }
+
       return {
         ...Object.fromEntries(Object.entries(route).map(([key, value]) => [key, JSON.stringify(value)])),
         children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
         meta: route.meta ? `{...(${metaImportName} || {}), ...${JSON.stringify(route.meta)}}` : metaImportName,
-        alias: `${metaImportName}?.alias || []`,
+        alias: aliasCode,
         component: genDynamicImport(file, { interopDefault: true })
       }
     }))
