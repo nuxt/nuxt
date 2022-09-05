@@ -36,12 +36,12 @@ describe('util: lang', () => {
   })
 
   test('should strip white spaces in given argument', () => {
-    expect(stripWhitespace('foo')).toEqual('foo')
-    expect(stripWhitespace('foo\t\r\f\n')).toEqual('foo\n')
-    expect(stripWhitespace('foo{\n\n\n')).toEqual('foo{\n')
-    expect(stripWhitespace('\n\n\n\f\r\f}')).toEqual('\n\f\r\f}')
+    expect(stripWhitespace('foo\t\r \f\nbar')).toEqual('foo\nbar')
+    expect(stripWhitespace('foo{\n\n\nbar')).toEqual('foo{\nbar')
+    expect(stripWhitespace('foo\n\n\n\t \r\f}')).toEqual('foo\n\t \r\f}')
     expect(stripWhitespace('foo\n\n\nbar')).toEqual('foo\n\nbar')
-    expect(stripWhitespace('foo\n\n\n')).toEqual('foo\n')
+    expect(stripWhitespace('\n\nfoo\n')).toEqual('foo\n')
+    expect(stripWhitespace('foo\n\n')).toEqual('foo\n')
   })
 
   test('should encode html', () => {

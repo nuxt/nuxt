@@ -98,6 +98,13 @@ describe('generator: initialize', () => {
     expect(generator.initDist).not.toBeCalled()
   })
 
+  test('should throw error when build is not disabled, but Builder instance is omitted', async () => {
+    const nuxt = createNuxt()
+    const generator = new Generator(nuxt)
+
+    await expect(generator.initiate()).rejects.toThrow('Could not generate')
+  })
+
   test('should init routes with generate.routes and routes.json', async () => {
     const nuxt = createNuxt()
     nuxt.options = {

@@ -92,10 +92,10 @@ function registerModule (path, rawModule, options = {}) {
 <% } %>
 
 async function createApp(ssrContext, config = {}) {
-  const router = await createRouter(ssrContext, config)
+  const store = <%= store ? 'createStore(ssrContext)' : 'null' %>
+  const router = await createRouter(ssrContext, config, { store })
 
   <% if (store) { %>
-  const store = createStore(ssrContext)
   // Add this.$router into store actions/mutations
   store.$router = router
     <% if (mode === 'universal') { %>

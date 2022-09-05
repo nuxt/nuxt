@@ -262,7 +262,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/redirect-external', false)
 
     await page.waitForFunction(
-      () => window.location.href === 'https://nuxtjs.org/docs/2.x/features/data-fetching/'
+      () => window.location.href === 'https://example.com/test/'
     )
     page.close()
   })

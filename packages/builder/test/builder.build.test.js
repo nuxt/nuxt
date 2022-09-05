@@ -13,6 +13,10 @@ jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
 jest.mock('@nuxt/webpack')
 
+jest.mock('path', () => ({
+  ...jest.requireActual('path')
+}))
+
 describe('builder: builder build', () => {
   beforeAll(() => {
     jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
