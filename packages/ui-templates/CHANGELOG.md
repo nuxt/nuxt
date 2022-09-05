@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.3](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.2...@nuxt/ui-templates@0.3.3) (2022-09-05)
+
+
+### Bug Fixes
+
+* **templates:** interpolate props within attrs in rendering vue component ([#157](https://github.com/nuxt/ui/issues/157)) ([c0ea878](https://github.com/nuxt/ui/commit/c0ea87866c026bba4aef12ef108c7fb5992239b4))
+
+
+
+
+
 ## [0.3.2](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.1...@nuxt/ui-templates@0.3.2) (2022-08-12)
 
 
