@@ -1,6 +1,11 @@
 import type { TestHooks } from '../types'
 
-export default function setupJest (hooks: TestHooks) {
+export default async function setupJest (hooks: TestHooks) {
+  // @ts-ignore
+  const jest = await import('jest')
+
+  hooks.ctx.mockFn = jest.fn
+
   // TODO: add globals existing check to provide better error message
   // @ts-expect-error jest types
   test('setup', hooks.setup, 120 * 1000)

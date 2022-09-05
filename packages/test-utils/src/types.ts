@@ -31,6 +31,7 @@ export interface TestContext {
   browser?: Browser
   url?: string
   serverProcess?: ExecaChildProcess
+  mockFn?: Function
 }
 
 export interface TestHooks {

@@ -22,7 +22,9 @@ export function createTestContext (options: Partial<TestOptions>): TestContext {
     }
   })
 
-  return setTestContext({ options: _options as TestOptions })
+  return setTestContext({
+    options: _options as TestOptions
+  })
 }
 
 export function useTestContext (): TestContext {

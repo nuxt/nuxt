@@ -5,10 +5,9 @@ export default defineBuildConfig({
   entries: [
     'src/index'
   ],
-  dependencies: [
-  ],
   externals: [
     'vitest',
+    'jest',
     'playwright',
     'playwright-core',
     'listhen'
