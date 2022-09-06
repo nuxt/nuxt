@@ -202,30 +202,6 @@ describe('navigate external', () => {
   })
 })
 
-describe('errors', () => {
-  it('should render a JSON error page', async () => {
-    const res = await fetch('/error', {
-      headers: {
-        accept: 'application/json'
-      }
-    })
-    expect(res.status).toBe(500)
-    const error = await res.json()
-    delete error.stack
-    expect(error).toMatchObject({
-      message: 'This is a custom error',
-      statusCode: 500,
-      statusMessage: 'Internal Server Error',
-      url: '/error'
-    })
-  })
-
-  it('should render a HTML error page', async () => {
-    const res = await fetch('/error')
-    expect(await res.text()).toContain('This is a custom error')
-  })
-})
-
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
     const html = await $fetch('/redirect/')
@@ -590,5 +566,30 @@ describe('useAsyncData', () => {
 
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+})
+
+// TODO: Move back up after https://github.com/vuejs/core/issues/6110 is resolved
+describe('errors', () => {
+  it('should render a JSON error page', async () => {
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toBe(422)
+    const error = await res.json()
+    delete error.stack
+    expect(error).toMatchObject({
+      message: 'This is a custom error',
+      statusCode: 422,
+      statusMessage: 'This is a custom error',
+      url: '/error'
+    })
+  })
+
+  it('should render a HTML error page', async () => {
+    const res = await fetch('/error')
+    expect(await res.text()).toContain('This is a custom error')
   })
 })
