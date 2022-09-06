@@ -19,38 +19,39 @@ export default defineComponent({
 })
 
 export function createClientOnly (component) {
-  const { setup, render: _render, template: _template } = component
-  if (_render) {
+  const clone = { ...component }
+
+  if (clone.render) {
     // override the component render (non script setup component)
-    component.render = (ctx, ...args) => {
+    clone.render = (ctx, ...args) => {
       return ctx.mounted$
-        ? h(Fragment, null, [h(_render(ctx, ...args), ctx.$attrs ?? ctx._.attrs)])
+        ? h(Fragment, ctx.$attrs ?? ctx._.attrs, component.render(ctx, ...args))
         : h('div', ctx.$attrs ?? ctx._.attrs)
     }
-  } else if (_template) {
+  } else if (clone.template) {
     // handle runtime-compiler template
-    component.template = `
-      <template v-if="mounted$">${_template}</template>
+    clone.template = `
+      <template v-if="mounted$">${component.template}</template>
       <template v-else><div></div></template>
     `
   }
-  return defineComponent({
-    ...component,
-    setup (props, ctx) {
-      const mounted$ = ref(false)
-      onMounted(() => { mounted$.value = true })
 
-      return Promise.resolve(setup?.(props, ctx) || {})
-        .then((setupState) => {
-          return typeof setupState !== 'function'
-            ? { ...setupState, mounted$ }
-            : (...args) => {
-                return mounted$.value
+  clone.setup = (props, ctx) => {
+    const mounted$ = ref(false)
+    onMounted(() => { mounted$.value = true })
+
+    return Promise.resolve(component.setup?.(props, ctx) || {})
+      .then((setupState) => {
+        return typeof setupState !== 'function'
+          ? { ...setupState, mounted$ }
+          : (...args) => {
+              return mounted$.value
                 // use Fragment to avoid oldChildren is null issue
-                  ? h(Fragment, null, [h(setupState(...args), ctx.attrs)])
-                  : h('div', ctx.attrs)
-              }
-        })
-    }
-  })
+                ? h(Fragment, ctx.attrs, setupState(...args))
+                : h('div', ctx.attrs)
+            }
+      })
+  }
+
+  return clone
 }
