@@ -21,3 +21,7 @@ Option        | Default          | Description
 The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.
 
 This command sets `process.env.NODE_ENV` to `development`.
+
+::alert{type="info"}
+If you are using a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
+::
