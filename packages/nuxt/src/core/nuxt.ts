@@ -152,7 +152,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hooks.deprecateHooks({
     'autoImports:sources': {
       to: 'imports:sources',
-      message: '`autoImports:sources` hook is deprecated. Use `imports:sources` with `nuxt>=3.0.0-rc.9`.'
+      message: '`autoImports:sources` hook is deprecated. Use `addImportsSources()` from `@nuxt/kit` or `imports:dirs` with `nuxt>=3.0.0-rc.10`.'
     },
     'autoImports:dirs': {
       to: 'imports:dirs',
