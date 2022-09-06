@@ -123,11 +123,6 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
 }
 
 export async function initViteNodeServer (ctx: ViteBuildContext) {
-  let entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async.mjs')
-  if (!fse.existsSync(entryPath)) {
-    entryPath = resolve(ctx.nuxt.options.appDir, 'entry.async')
-  }
-
   const host = ctx.nuxt.options.server.host || 'localhost'
   const port = ctx.nuxt.options.server.port || '3000'
   const protocol = ctx.nuxt.options.server.https ? 'https' : 'http'
@@ -136,7 +131,7 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   const viteNodeServerOptions = {
     baseURL: `${protocol}://${host}:${port}/__nuxt_vite_node__`,
     root: ctx.nuxt.options.srcDir,
-    entryPath,
+    entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/'
   }
   process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
