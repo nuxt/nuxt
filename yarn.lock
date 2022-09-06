@@ -1781,18 +1781,18 @@ __metadata:
     "@nuxt/schema": 3.0.0-rc.9
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.10
+    c12: ^0.2.11
     consola: ^2.15.3
     defu: ^6.1.0
     globby: ^13.1.2
     hash-sum: ^2.0.0
     ignore: ^5.2.0
-    jiti: ^1.14.0
+    jiti: ^1.15.0
     knitwork: ^0.1.2
     lodash.template: ^4.5.0
     mlly: ^0.5.14
-    pathe: ^0.3.5
-    pkg-types: ^0.3.4
+    pathe: ^0.3.7
+    pkg-types: ^0.3.5
     scule: ^0.3.2
     semver: ^7.3.7
     unbuild: latest
@@ -1814,11 +1814,11 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.10
+    c12: ^0.2.11
     create-require: ^1.1.1
     defu: ^6.1.0
-    jiti: ^1.14.0
-    pathe: ^0.3.5
+    jiti: ^1.15.0
+    pathe: ^0.3.7
     postcss-import-resolver: ^2.0.0
     scule: ^0.3.2
     std-env: ^3.2.1
@@ -1870,7 +1870,7 @@ __metadata:
     defu: ^6.1.0
     execa: ^6.1.0
     get-port-please: ^2.6.1
-    jiti: ^1.14.0
+    jiti: ^1.15.0
     ohmyfetch: ^0.4.18
     playwright: ^1.25.1
     unbuild: latest
@@ -1935,9 +1935,9 @@ __metadata:
     magic-string: ^0.26.3
     mlly: ^0.5.14
     ohash: ^0.1.5
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     perfect-debounce: ^0.1.3
-    pkg-types: ^0.3.4
+    pkg-types: ^0.3.5
     postcss: ^8.4.16
     postcss-import: ^15.0.0
     postcss-url: ^10.1.3
@@ -1987,7 +1987,7 @@ __metadata:
     mini-css-extract-plugin: ^2.6.1
     mlly: ^0.5.14
     ohash: ^0.1.5
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     pify: ^6.1.0
     postcss: ^8.4.16
     postcss-import: ^15.0.0
@@ -4192,6 +4192,22 @@ __metadata:
     pathe: ^0.3.4
     rc9: ^1.2.2
   checksum: 5c8f83a2a10717dd428d1c81801b5771694d6f2b381fda955d159d5e7943b7c958953764edab92033c84186c1d8444cbc0db10e771222b58c2ccbcff2a6c1eba
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.2.11":
+  version: 0.2.11
+  resolution: "c12@npm:0.2.11"
+  dependencies:
+    defu: ^6.1.0
+    dotenv: ^16.0.2
+    gittar: ^0.1.1
+    jiti: ^1.15.0
+    mlly: ^0.5.14
+    pathe: ^0.3.7
+    pkg-types: ^0.3.5
+    rc9: ^1.2.2
+  checksum: 933f990e5f65d95f428f9f3dadbda39ff6085ef9335dea763cbaff8f2382e437ce9e8ae4ec40d87cf1c4ea4126b2594bc7d88a59cdbbf7a27d043d048d361dbb
   languageName: node
   linkType: hard
 
@@ -6825,10 +6841,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expect-type@npm:^0.13.0":
-  version: 0.13.0
-  resolution: "expect-type@npm:0.13.0"
-  checksum: 484f58fa8b256ee7316c3667874011e100307792d4494cc67b0781a501101af2e3fa6e05310320a6fb678ca5d4f5987751fefc4e5d8733836044edae3695c4dd
+"expect-type@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "expect-type@npm:0.14.0"
+  checksum: 1bf12e7523d978bfd011d7f88965f8a143af9703f63472309fb1bc284edfb540081d9eb61e4497c365fb855efcaa23a7697fa9c1b3c4c592c4999b698b362888
   languageName: node
   linkType: hard
 
@@ -8489,6 +8505,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jiti@npm:^1.15.0":
+  version: 1.15.0
+  resolution: "jiti@npm:1.15.0"
+  bin:
+    jiti: bin/jiti.js
+  checksum: 97de24db35c423a37687cf108170db1402a78088142a3f9307eeb2aa5c63f431f16870b0a934dcad055023d153608e7aa53d1055adda4605f06082b5038f8698
+  languageName: node
+  linkType: hard
+
 "joycon@npm:^3.0.1":
   version: 3.1.1
   resolution: "joycon@npm:3.1.1"
@@ -8606,7 +8631,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonc-parser@npm:^3.0.0, jsonc-parser@npm:^3.1.0":
+"jsonc-parser@npm:^3.0.0, jsonc-parser@npm:^3.1.0, jsonc-parser@npm:^3.2.0":
   version: 3.2.0
   resolution: "jsonc-parser@npm:3.2.0"
   checksum: 946dd9a5f326b745aa326d48a7257e3f4a4b62c5e98ec8e49fa2bdd8d96cef7e6febf1399f5c7016114fd1f68a1c62c6138826d5d90bc650448e3cf0951c53c7
@@ -10059,7 +10084,7 @@ __metadata:
     "@types/flat": ^5.0.2
     "@types/mri": ^1.1.1
     "@types/semver": ^7
-    c12: ^0.2.10
+    c12: ^0.2.11
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
@@ -10070,13 +10095,13 @@ __metadata:
     execa: ^6.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    jiti: ^1.14.0
+    jiti: ^1.15.0
     listhen: ^0.2.15
     mlly: ^0.5.14
     mri: ^1.2.0
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     perfect-debounce: ^0.1.3
-    pkg-types: ^0.3.4
+    pkg-types: ^0.3.5
     scule: ^0.3.2
     semver: ^7.3.7
     superb: ^4.0.0
@@ -10103,12 +10128,12 @@ __metadata:
     eslint: ^8.23.0
     eslint-plugin-jsdoc: ^39.3.6
     execa: ^6.1.0
-    expect-type: ^0.13.0
+    expect-type: ^0.14.0
     globby: ^13.1.2
-    jiti: ^1.14.0
+    jiti: ^1.15.0
     lerna: ^5.5.0
     markdownlint-cli: ^0.32.2
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     rimraf: ^3.0.2
     typescript: ^4.8.2
     unbuild: ^0.8.10
@@ -10161,7 +10186,7 @@ __metadata:
     nuxi: 3.0.0-rc.9
     ohash: ^0.1.5
     ohmyfetch: ^0.4.18
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     perfect-debounce: ^0.1.3
     scule: ^0.3.2
     strip-literal: ^0.4.0
@@ -10739,6 +10764,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pathe@npm:^0.3.7":
+  version: 0.3.7
+  resolution: "pathe@npm:0.3.7"
+  checksum: a270a2cd7fb7e162496c067d6580765ad1b3ef39b4e2a000af4ee002703a5adf536a176ab171ee050bbfbcd3e12de36b4dd75d856ac47d83441194dbd6e215dd
+  languageName: node
+  linkType: hard
+
 "pathval@npm:^1.1.1":
   version: 1.1.1
   resolution: "pathval@npm:1.1.1"
@@ -10819,6 +10851,17 @@ __metadata:
     mlly: ^0.5.13
     pathe: ^0.3.5
   checksum: 0061b6ab260ddb7ceccc99b4cf80306df44929545b2364051115f9556d3a26302e57efbb2322887e3cfe8a3f7977f673bcc8b74cb374d71fc6ede81395692b5a
+  languageName: node
+  linkType: hard
+
+"pkg-types@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "pkg-types@npm:0.3.5"
+  dependencies:
+    jsonc-parser: ^3.2.0
+    mlly: ^0.5.14
+    pathe: ^0.3.7
+  checksum: a0e7bb732333e138597302ced39b93d3d76147e275774fe0f5aad3db0c8191e03af126850d23af639e62791baba393593d0b22e2621c10b9cf432b604f5c9047
   languageName: node
   linkType: hard
 

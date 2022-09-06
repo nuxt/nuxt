@@ -56,7 +56,7 @@
     "nuxi": "3.0.0-rc.9",
     "ohash": "^0.1.5",
     "ohmyfetch": "^0.4.18",
-    "pathe": "^0.3.5",
+    "pathe": "^0.3.7",
     "perfect-debounce": "^0.1.3",
     "scule": "^0.3.2",
     "strip-literal": "^0.4.0",

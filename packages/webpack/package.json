@@ -36,7 +36,7 @@
     "mini-css-extract-plugin": "^2.6.1",
     "mlly": "^0.5.14",
     "ohash": "^0.1.5",
-    "pathe": "^0.3.5",
+    "pathe": "^0.3.7",
     "pify": "^6.1.0",
     "postcss": "^8.4.16",
     "postcss-import": "^15.0.0",

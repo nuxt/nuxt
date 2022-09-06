@@ -19,7 +19,7 @@
     "defu": "^6.1.0",
     "execa": "^6.1.0",
     "get-port-please": "^2.6.1",
-    "jiti": "^1.14.0",
+    "jiti": "^1.15.0",
     "ohmyfetch": "^0.4.18"
   },
   "devDependencies": {
