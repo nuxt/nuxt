@@ -26,9 +26,20 @@ export default defineUntypedSchema({
   /**
    * Whether to generate sourcemaps.
    *
+   * @type {boolean | { server?: boolean, client?: boolean }}
    * @version 3
    */
-  sourcemap: true,
+  sourcemap: {
+    $resolve: (val, get) => {
+      if (typeof val === 'boolean') {
+        return { server: val, client: val }
+      }
+      return defu(val, {
+        server: true,
+        client: get('dev')
+      })
+    },
+  },
   /**
    * Shared build configuration.
    * @version 2

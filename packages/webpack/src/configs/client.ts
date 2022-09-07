@@ -22,8 +22,13 @@ export function client (ctx: WebpackConfigContext) {
 }
 
 function clientDevtool (ctx: WebpackConfigContext) {
-  if (!ctx.isDev) {
+  if (!ctx.nuxt.options.sourcemap.client) {
     ctx.config.devtool = false
+    return
+  }
+
+  if (!ctx.isDev) {
+    ctx.config.devtool = 'source-map'
     return
   }
 

@@ -27,7 +27,8 @@ function serverPreset (ctx: WebpackConfigContext) {
   const { config } = ctx
 
   config.output!.filename = 'server.mjs'
-  config.devtool = 'cheap-module-source-map'
+
+  config.devtool = ctx.nuxt.options.sourcemap.server ? ctx.isDev ? 'cheap-module-source-map' : 'source-map' : false
 
   config.optimization = {
     splitChunks: false,

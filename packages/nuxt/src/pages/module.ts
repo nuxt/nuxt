@@ -88,7 +88,7 @@ export default defineNuxtModule({
     // Extract macros from pages
     const macroOptions: TransformMacroPluginOptions = {
       dev: nuxt.options.dev,
-      sourcemap: nuxt.options.sourcemap,
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
       macros: {
         definePageMeta: 'meta'
       }
