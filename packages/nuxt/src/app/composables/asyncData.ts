@@ -254,9 +254,14 @@ export function refreshNuxtData (keys?: string | string[]): Promise<void> {
   return useNuxtApp().callHook('app:data:refresh', _keys)
 }
 
-export function clearNuxtData (keys?: string | string[]): void {
+export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
-  const _keys = keys ? Array.from(keys).filter(key => key && typeof key === 'string') : Object.keys(nuxtApp.payload.data)
+  const _allKeys = Object.keys(nuxtApp.payload.data)
+  const _keys: string[] = !keys
+    ? _allKeys
+    : typeof keys === 'function'
+      ? _allKeys.filter(keys)
+      : Array.isArray(keys) ? keys : [keys]
 
   for (const key of _keys) {
     if (key in nuxtApp.payload.data) {
