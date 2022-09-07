@@ -18,7 +18,13 @@ export default defineComponent({
   }
 })
 
+const cache = new WeakMap()
+
 export function createClientOnly (component) {
+  if (cache.has(component)) {
+    return cache.get(component)
+  }
+
   const clone = { ...component }
 
   if (clone.render) {
@@ -52,6 +58,8 @@ export function createClientOnly (component) {
             }
       })
   }
+
+  cache.set(component, clone)
 
   return clone
 }
