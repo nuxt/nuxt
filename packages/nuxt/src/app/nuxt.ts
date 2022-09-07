@@ -69,7 +69,7 @@ interface _NuxtApp {
     data: Ref<any>
     pending: Ref<boolean>
     error: Ref<any>
-  }>,
+  } | undefined>,
 
   ssrContext?: NuxtSSRContext
   payload: {

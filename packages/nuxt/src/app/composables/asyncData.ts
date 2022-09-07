@@ -254,6 +254,28 @@ export function refreshNuxtData (keys?: string | string[]): Promise<void> {
   return useNuxtApp().callHook('app:data:refresh', _keys)
 }
 
+export function clearNuxtData (keys?: string | string[]): void {
+  const nuxtApp = useNuxtApp()
+  const _keys = keys ? Array.from(keys).filter(key => key && typeof key === 'string') : Object.keys(nuxtApp.payload.data)
+
+  for (const key of _keys) {
+    if (key in nuxtApp.payload.data) {
+      nuxtApp.payload.data[key] = undefined
+    }
+    if (key in nuxtApp.payload._errors) {
+      nuxtApp.payload._errors[key] = undefined
+    }
+    if (nuxtApp._asyncData[key]) {
+      nuxtApp._asyncData[key]!.data.value = undefined
+      nuxtApp._asyncData[key]!.error.value = undefined
+      nuxtApp._asyncData[key]!.pending.value = false
+    }
+    if (key in nuxtApp._asyncDataPromises) {
+      nuxtApp._asyncDataPromises[key] = undefined
+    }
+  }
+}
+
 function pick (obj: Record<string, any>, keys: string[]) {
   const newObj = {}
   for (const key of keys) {
