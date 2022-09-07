@@ -19,6 +19,7 @@ export default defineBuildConfig({
     'vue'
   ],
   externals: [
-    '@nuxt/schema'
+    '@nuxt/schema',
+    'h3'
   ]
 })

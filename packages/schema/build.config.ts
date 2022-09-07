@@ -35,6 +35,7 @@ export default defineBuildConfig({
     'terser-webpack-plugin',
     'css-minimizer-webpack-plugin',
     'webpack-dev-middleware',
+    'h3',
     'webpack-hot-middleware',
     'postcss',
     'consola',

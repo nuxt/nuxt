@@ -4,6 +4,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { TSConfig } from 'pkg-types'
 import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
+import type { Middleware } from 'h3'
 import type { ModuleContainer } from './module'
 import type { NuxtTemplate, Nuxt, NuxtApp } from './nuxt'
 import type { Preset as ImportPreset, Import } from 'unimport'
@@ -159,7 +160,7 @@ export interface NuxtHooks {
   'build:compile': (options: { name: string, compiler: Compiler }) => HookResult
   'build:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
   'build:resources': (mfs?: Compiler['outputFileSystem']) => HookResult
-  'server:devMiddleware': (middleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => any) => any) => HookResult
+  'server:devMiddleware': (middleware: Middleware) => HookResult
   'bundler:change': (shortPath: string) => void
   'bundler:error': () => void
   'bundler:done': () => void

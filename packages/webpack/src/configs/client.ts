@@ -64,8 +64,8 @@ function clientHMR (ctx: WebpackConfigContext) {
   // Add HMR support
   const app = (config.entry as any).app as any
   app.unshift(
-      // https://github.com/glenjamin/webpack-hot-middleware#config
-      `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+    // https://github.com/glenjamin/webpack-hot-middleware#config
+    `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
   config.plugins = config.plugins || []
