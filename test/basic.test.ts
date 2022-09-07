@@ -369,43 +369,41 @@ describe('automatically keyed composables', () => {
   })
 })
 
-if (!process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK) {
-  describe('inlining component styles', () => {
-    it('should inline styles', async () => {
-      const html = await $fetch('/styles')
-      for (const style of [
-        '{--assets:"assets"}', // <script>
-        '{--scoped:"scoped"}', // <style lang=css>
-        '{--postcss:"postcss"}', // <style lang=postcss>
-        '{--global:"global"}', // entryfile dependency
-        '{--plugin:"plugin"}', // plugin dependency
-        '{--functional:"functional"}' // functional component with css import
-      ]) {
-        expect(html).toContain(style)
-      }
-    })
+describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inlining component styles', () => {
+  it('should inline styles', async () => {
+    const html = await $fetch('/styles')
+    for (const style of [
+      '{--assets:"assets"}', // <script>
+      '{--scoped:"scoped"}', // <style lang=css>
+      '{--postcss:"postcss"}', // <style lang=postcss>
+      '{--global:"global"}', // entryfile dependency
+      '{--plugin:"plugin"}', // plugin dependency
+      '{--functional:"functional"}' // functional component with css import
+    ]) {
+      expect(html).toContain(style)
+    }
+  })
 
-    it('only renders prefetch for entry styles', async () => {
-      const html: string = await $fetch('/styles')
-      expect(html.match(/<link [^>]*href="[^"]*\.css">/)?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+  it('only renders prefetch for entry styles', async () => {
+    const html: string = await $fetch('/styles')
+    expect(html.match(/<link [^>]*href="[^"]*\.css">/)?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
         [
           "<link rel=\\"prefetch stylesheet\\" href=\\"/_nuxt/entry.css\\">",
         ]
       `)
-    })
-
-    it('still downloads client-only styles', async () => {
-      const page = await createPage('/styles')
-      await page.waitForLoadState('networkidle')
-      expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
-    })
-
-    it.todo('renders client-only styles only', async () => {
-      const html = await $fetch('/styles')
-      expect(html).toContain('{--client-only:"client-only"}')
-    })
   })
-}
+
+  it('still downloads client-only styles', async () => {
+    const page = await createPage('/styles')
+    await page.waitForLoadState('networkidle')
+    expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+  })
+
+  it.todo('renders client-only styles only', async () => {
+    const html = await $fetch('/styles')
+    expect(html).toContain('{--client-only:"client-only"}')
+  })
+})
 
 describe('prefetching', () => {
   it('should prefetch components', async () => {
@@ -420,34 +418,29 @@ describe('prefetching', () => {
   })
 })
 
-if (process.env.NUXT_TEST_DEV) {
-  describe('detecting invalid root nodes', () => {
-    it('should detect invalid root nodes in pages', async () => {
-      for (const path of ['1', '2', '3', '4']) {
-        const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-        const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning').map(w => w.text).join('\n')
-        expect(consoleLogsWarns).toContain('does not have a single root node and will cause errors when navigating between routes')
-      }
-    })
-
-    it('should not complain if there is no transition', async () => {
-      for (const path of ['fine']) {
-        const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-
-        const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
-
-        expect(consoleLogsWarns.length).toEqual(0)
-      }
-    })
+describe.runIf(process.env.NUXT_TEST_DEV)('detecting invalid root nodes', () => {
+  it('should detect invalid root nodes in pages', async () => {
+    for (const path of ['1', '2', '3', '4']) {
+      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning').map(w => w.text).join('\n')
+      expect(consoleLogsWarns).toContain('does not have a single root node and will cause errors when navigating between routes')
+    }
   })
-}
+
+  it('should not complain if there is no transition', async () => {
+    for (const path of ['fine']) {
+      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+
+      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
+
+      expect(consoleLogsWarns.length).toEqual(0)
+    }
+  })
+})
 
 describe('dynamic paths', () => {
-  if (process.env.NUXT_TEST_DEV) {
-    // TODO:
-    it.todo('dynamic paths in dev')
-    return
-  }
+  // TODO:
+  it.runIf(process.env.NUXT_TEST_DEV).todo('dynamic paths in dev')
 
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
@@ -457,12 +450,8 @@ describe('dynamic paths', () => {
     }
   })
 
-  it('adds relative paths to CSS', async () => {
-    if (process.env.TEST_WITH_WEBPACK) {
-      // Webpack injects CSS differently
-      return
-    }
-
+  // Webpack injects CSS differently
+  it.skipIf(process.env.TEST_WITH_WEBPACK)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
