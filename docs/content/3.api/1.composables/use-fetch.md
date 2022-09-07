@@ -94,7 +94,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
     return response._data
   },
   onResponseError({ request, response, options }) {
-    // Pandle the response errors
+    // Handle the response errors
   }
 })
 ```
