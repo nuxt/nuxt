@@ -19,6 +19,7 @@ type UseFetchOptions = {
   baseURL?: string
   server?: boolean
   lazy?: boolean
+  immediate?: boolean
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -30,6 +31,7 @@ type AsyncData<DataT> = {
   data: Ref<DataT>
   pending: Ref<boolean>
   refresh: () => Promise<void>
+  execute: () => Promise<void>
   error: Ref<Error | boolean>
 }
 ```
@@ -51,6 +53,7 @@ type AsyncData<DataT> = {
   * `watch`: watch reactive sources to auto-refresh.
   * `initialCache`: When set to `false`, will skip payload cache for initial fetch (defaults to `true`).
   * `transform`: A function that can be used to alter `handler` function result after resolving.
+  * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 
 ::alert{type=warning}
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
@@ -60,7 +63,7 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 
 * **data**: the result of the asynchronous function that is passed in.
 * **pending**: a boolean indicating whether the data is still being fetched.
-* **refresh**: a function that can be used to refresh the data returned by the `handler` function.
+* **refresh**/**execute** : a function that can be used to refresh the data returned by the `handler` function.
 * **error**: an error object if the data fetching failed.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.

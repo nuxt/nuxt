@@ -29,16 +29,18 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   initialCache?: boolean
+  immediate?: boolean
 }
 
-export interface RefreshOptions {
+export interface AsyncDataExecuteOptions {
   _initial?: boolean
 }
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT | null>
   pending: Ref<boolean>
-  refresh: (opts?: RefreshOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
 }
 
@@ -94,6 +96,7 @@ export function useAsyncData<
   }
   options.lazy = options.lazy ?? (options as any).defer ?? false
   options.initialCache = options.initialCache ?? true
+  options.immediate = options.immediate ?? true
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
@@ -111,7 +114,7 @@ export function useAsyncData<
   // TODO: Else, Soemhow check for confliciting keys with different defaults or fetcher
   const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT, DataE>
 
-  asyncData.refresh = (opts = {}) => {
+  asyncData.refresh = asyncData.execute = (opts = {}) => {
     // Avoid fetching same key more than once at a time
     if (nuxt._asyncDataPromises[key]) {
       return nuxt._asyncDataPromises[key]
@@ -160,7 +163,7 @@ export function useAsyncData<
   const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
 
   // Server side
-  if (process.server && fetchOnServer) {
+  if (process.server && fetchOnServer && options.immediate) {
     const promise = initialFetch()
     onServerPrefetch(() => promise)
   }
@@ -184,11 +187,11 @@ export function useAsyncData<
     if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
-    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy)) {
+    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
-    } else {
+    } else if (options.immediate) {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
