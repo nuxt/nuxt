@@ -36,6 +36,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    inlineSSRStyles: id => !id.includes('assets.vue'),
     reactivityTransform: true,
     treeshakeClientOnly: true
   },

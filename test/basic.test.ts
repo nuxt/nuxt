@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL } from 'ufo'
 // import { isWindows } from 'std-env'
-import { setup, fetch, $fetch, startServer } from '@nuxt/test-utils'
+import { setup, fetch, $fetch, startServer, createPage } from '@nuxt/test-utils'
 // eslint-disable-next-line import/order
 import { expectNoClientErrors, renderPage } from './utils'
 
@@ -384,8 +384,23 @@ if (!process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK) {
         expect(html).toContain(style)
       }
     })
-    it.todo('does not render style hints for inlined styles')
-    it.todo('renders client-only styles?', async () => {
+
+    it('only renders prefetch for entry styles', async () => {
+      const html: string = await $fetch('/styles')
+      expect(html.match(/<link [^>]*href="[^"]*\.css">/)?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+        [
+          "<link rel=\\"prefetch stylesheet\\" href=\\"/_nuxt/entry.css\\">",
+        ]
+      `)
+    })
+
+    it('still downloads client-only styles', async () => {
+      const page = await createPage('/styles')
+      await page.waitForLoadState('networkidle')
+      expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+    })
+
+    it.todo('renders client-only styles only', async () => {
       const html = await $fetch('/styles')
       expect(html).toContain('{--client-only:"client-only"}')
     })

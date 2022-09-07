@@ -9,11 +9,12 @@ import { isCSS } from '../utils'
 
 interface SSRStylePluginOptions {
   srcDir: string
+  chunksWithInlinedCSS: Set<string>
   shouldInline?: (id?: string) => boolean
 }
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
-  const cssMap: Record<string, string[]> = {}
+  const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
   const idRefMap: Record<string, string> = {}
   const globalStyles = new Set<string>()
 
@@ -24,7 +25,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     generateBundle (outputOptions) {
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {
-        if (!cssMap[file].length) { continue }
+        const { files, inBundle } = cssMap[file]
+        // File has been tree-shaken out of build (or there are no styles to inline)
+        if (!files.length || !inBundle) { continue }
 
         const base = typeof outputOptions.assetFileNames === 'string'
           ? outputOptions.assetFileNames
@@ -38,13 +41,18 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           type: 'asset',
           name: `${filename(file)}-styles.mjs`,
           source: [
-            ...cssMap[file].map((css, i) => `import style_${i} from './${relative(dirname(base), this.getFileName(css))}';`),
-            `export default [${cssMap[file].map((_, i) => `style_${i}`).join(', ')}]`
+            ...files.map((css, i) => `import style_${i} from './${relative(dirname(base), this.getFileName(css))}';`),
+            `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`
           ].join('\n')
         })
       }
 
       const globalStylesArray = Array.from(globalStyles).map(css => idRefMap[css] && this.getFileName(idRefMap[css])).filter(Boolean)
+
+      for (const key in emitted) {
+        // Track the chunks we are inlining CSS for so we can omit including links to the .css files
+        options.chunksWithInlinedCSS.add(key)
+      }
 
       this.emitFile({
         type: 'asset',
@@ -61,11 +69,21 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       })
     },
     renderChunk (_code, chunk) {
-      if (!chunk.isEntry) { return null }
-      // Entry
-      for (const mod in chunk.modules) {
-        if (isCSS(mod) && !mod.includes('&used')) {
-          globalStyles.add(relativeToSrcDir(mod))
+      if (!chunk.facadeModuleId) { return null }
+      const id = relativeToSrcDir(chunk.facadeModuleId)
+      for (const file in chunk.modules) {
+        const relativePath = relativeToSrcDir(file)
+        if (relativePath in cssMap) {
+          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? !!id
+        }
+      }
+
+      if (chunk.isEntry) {
+        // Entry
+        for (const mod in chunk.modules) {
+          if (isCSS(mod) && !mod.includes('&used')) {
+            globalStyles.add(relativeToSrcDir(mod))
+          }
         }
       }
       return null
@@ -77,7 +95,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (options.shouldInline && !options.shouldInline(id)) { return }
 
       const relativeId = relativeToSrcDir(id)
-      cssMap[relativeId] = cssMap[relativeId] || []
+      cssMap[relativeId] = cssMap[relativeId] || { files: [] }
 
       let styleCtr = 0
       for (const i of findStaticImports(code)) {
@@ -94,7 +112,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         })
 
         idRefMap[relativeToSrcDir(resolved.id)] = ref
-        cssMap[relativeId].push(ref)
+        cssMap[relativeId].files.push(ref)
       }
     }
   }
