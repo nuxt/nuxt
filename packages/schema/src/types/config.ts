@@ -45,7 +45,12 @@ export interface ViteConfig extends ViteUserConfig {
   /**
    * Warmup vite entrypoint caches on dev startup.
    */
-  warmupEntry?: boolean
+  warmupEntry?: boolean,
+
+  /**
+   * Use environment variables or top level `server` options to configure Nuxt server.
+   */
+  server: never
 }
 
 
