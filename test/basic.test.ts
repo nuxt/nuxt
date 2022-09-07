@@ -438,10 +438,8 @@ describe.runIf(process.env.NUXT_TEST_DEV)('detecting invalid root nodes', () => 
   })
 })
 
-describe('dynamic paths', () => {
-  // TODO:
-  it.runIf(process.env.NUXT_TEST_DEV).todo('dynamic paths in dev')
-
+// TODO: dynamic paths in dev
+describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
