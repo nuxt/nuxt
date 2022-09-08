@@ -43,3 +43,10 @@ const { data: useLazyFetchTest2 } = await useLocalLazyFetch()
     {{ useLazyFetchTest1 === useLazyFetchTest2 }}
   </div>
 </template>
+
+<style scoped>
+body {
+  background-color: #000;
+  color: #fff;
+}
+</style>

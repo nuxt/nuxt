@@ -5,7 +5,7 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import type { CallExpression } from 'estree'
-import { parseURL } from 'ufo'
+import { parseQuery, parseURL } from 'ufo'
 
 export interface ComposableKeysOptions {
   sourcemap: boolean
@@ -22,8 +22,8 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     name: 'nuxt:composable-keys',
     enforce: 'post',
     transform (code, id) {
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      if (!pathname.match(/\.(m?[jt]sx?|vue)/)) { return }
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      if (!pathname.match(/\.(m?[jt]sx?|vue)/) || parseQuery(search).type === 'style') { return }
       if (!KEYED_FUNCTIONS_RE.test(code)) { return }
       const { 0: script = code, index: codeIndex = 0 } = code.match(/(?<=<script[^>]*>)[\S\s.]*?(?=<\/script>)/) || []
       const s = new MagicString(code)
