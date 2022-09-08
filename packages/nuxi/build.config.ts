@@ -3,7 +3,10 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   declaration: true,
   rollup: {
-    inlineDependencies: true
+    inlineDependencies: true,
+    resolve: {
+      exportConditions: ['production', 'node'] as any
+    }
   },
   entries: [
     'src/cli',
