@@ -34,7 +34,7 @@ export default defineUntypedSchema({
    *
    * @version 3
    */
-   theme: null,
+  theme: null,
 
   /**
    * Define the workspace directory of your application.
@@ -199,7 +199,9 @@ export default defineUntypedSchema({
    * @version 2
    * @version 3
    */
-  ssr: true,
+  ssr: {
+    $resolve: (val) => val ?? true,
+  },
 
   /**
    * @deprecated use `ssr` option
