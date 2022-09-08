@@ -22,7 +22,7 @@ export default async (ssrContext) => {
 
   // Execute SSR bundle on demand
   const start = performance.now()
-  render = render || (await runner.executeFile(viteNodeOptions.entryPath)).default
+  render = (updates.has(viteNodeOptions.entryPath) || !render) ? (await runner.executeFile(viteNodeOptions.entryPath)).default : render
   if (updates.size) {
     const time = Math.round((performance.now() - start) * 1000) / 1000
     consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
