@@ -1,6 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs'
-// @ts-expect-error missing types
-import createTiged from 'tiged'
+import { downloadRepo, startShell } from 'giget'
 import { relative, resolve } from 'pathe'
 import superb from 'superb'
 import consola from 'consola'
@@ -28,30 +26,21 @@ const resolveTemplate = (template: string | boolean) => {
 export default defineNuxtCommand({
   meta: {
     name: 'init',
-    usage: 'npx nuxi init|create [--verbose|-v] [--template,-t] [dir]',
+    usage: 'npx nuxi init|create [--template,-t] [--force] [--offline] [--prefer-offline] [--shell] [dir]',
     description: 'Initialize a fresh project'
   },
   async invoke (args) {
     // Clone template
     const src = resolveTemplate(args.template || args.t)
     const dstDir = resolve(process.cwd(), args._[0] || 'nuxt-app')
-    const tiged = createTiged(src, { cache: false /* TODO: buggy */, verbose: (args.verbose || args.v) })
-    if (existsSync(dstDir) && readdirSync(dstDir).length) {
-      consola.error(`Directory ${dstDir} is not empty. Please pick another name or remove it first. Aborting.`)
-      process.exit(1)
+    if (args.verbose || args.v) {
+      process.env.DEBUG = process.env.DEBUG || 'true'
     }
-    const formatArgs = (msg: string) => msg.replace('options.', '--')
-    tiged.on('warn', (event: any) => consola.warn(formatArgs(event.message)))
-    tiged.on('info', (event: any) => consola.info(formatArgs(event.message)))
-    try {
-      await tiged.clone(dstDir)
-    } catch (e: any) {
-      if (e.toString().includes('could not find commit hash')) {
-        consola.error(`Failed to clone template from \`${src}\`. Please check the repo is valid and that you have installed \`git\` correctly.`)
-        process.exit(1)
-      }
-      throw e
-    }
+    await downloadRepo(src, dstDir, {
+      force: args.force,
+      offline: args.offline,
+      preferOffline: args['prefer-offline']
+    })
 
     // Show next steps
     const relativeDist = rpath(dstDir)
@@ -64,6 +53,10 @@ export default defineNuxtCommand({
     consola.log(`\n ✨ Your ${superb.random()} Nuxt project is just created! Next steps:\n`)
     for (const step of nextSteps) {
       consola.log(` ${step}\n`)
+    }
+
+    if (args.shell) {
+      startShell(dstDir)
     }
   }
 })
