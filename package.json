@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^11.0.0",
-    "@types/node": "^16.11.57",
+    "@types/node": "^16.11.58",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.45.18",
     "case-police": "^0.5.10",
@@ -56,7 +56,7 @@
     "eslint": "^8.23.0",
     "eslint-plugin-jsdoc": "^39.3.6",
     "execa": "^6.1.0",
-    "expect-type": "^0.14.0",
+    "expect-type": "^0.14.2",
     "globby": "^13.1.2",
     "jiti": "^1.15.0",
     "lerna": "^5.5.0",

@@ -16,7 +16,7 @@
     "@nuxt/schema": "3.0.0-rc.9",
     "@types/cssnano": "^5",
     "unbuild": "latest",
-    "vue": "3.2.38"
+    "vue": "3.2.39"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0-rc.9",
@@ -54,7 +54,7 @@
     "vue-bundle-renderer": "^0.4.2"
   },
   "peerDependencies": {
-    "vue": "^3.2.38"
+    "vue": "^3.2.39"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"

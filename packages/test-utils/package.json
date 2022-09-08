@@ -23,12 +23,12 @@
     "ohmyfetch": "^0.4.18"
   },
   "devDependencies": {
-    "playwright": "^1.25.1",
+    "playwright": "^1.25.2",
     "unbuild": "latest",
     "vitest": "~0.19.1"
   },
   "peerDependencies": {
-    "vue": "^3.2.38"
+    "vue": "^3.2.39"
   },
   "engines": {
     "node": "^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0"
