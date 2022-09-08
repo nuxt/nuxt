@@ -2,7 +2,7 @@ import { getCurrentInstance, inject } from 'vue'
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
-import { useNuxtApp, useRuntimeConfig, useState } from '#app'
+import { useNuxtApp, useRuntimeConfig, useState, createError, NuxtError } from '#app'
 
 export const useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -105,12 +105,12 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 }
 
 /** This will abort navigation within a Nuxt route middleware handler. */
-export const abortNavigation = (err?: Error | string) => {
+export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (process.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
   }
   if (err) {
-    throw err instanceof Error ? err : new Error(err)
+    throw createError(err)
   }
   return false
 }

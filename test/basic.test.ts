@@ -236,6 +236,15 @@ describe('middlewares', () => {
     expect(html).toContain('Hello Nuxt 3!')
   })
 
+  it('should allow aborting navigation on server-side', async () => {
+    const res = await fetch('/?abort', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toEqual(401)
+  })
+
   it('should inject auth', async () => {
     const html = await $fetch('/auth')
 
