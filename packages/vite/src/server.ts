@@ -168,13 +168,13 @@ export async function buildServer (ctx: ViteBuildContext) {
     return
   }
 
+  // Write dev client manifest
+  await writeManifest(ctx)
+
   if (!ctx.nuxt.options.ssr) {
     await onBuild()
     return
   }
-
-  // Write dev client manifest
-  await writeManifest(ctx)
 
   // Start development server
   const viteServer = await vite.createServer(serverConfig)
