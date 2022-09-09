@@ -1,8 +1,8 @@
 import * as vite from 'vite'
-import { join } from 'pathe'
+import { join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
-import { logger, isIgnored } from '@nuxt/kit'
+import { logger, isIgnored, resolvePath } from '@nuxt/kit'
 import type { Options } from '@vitejs/plugin-vue'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -28,9 +28,12 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
+  const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
+    (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
+  const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
   const ctx: ViteBuildContext = {
     nuxt,
-    entry: null!,
+    entry,
     config: vite.mergeConfig(
       {
         resolve: {

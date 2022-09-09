@@ -37,6 +37,8 @@ function createRunner () {
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
     async fetchModule (id) {
+      // TODO: fix in vite-node
+      id = id.replace(/\/\//g, '/')
       return await $fetch('/module/' + encodeURI(id), {
         baseURL: viteNodeOptions.baseURL
       }).catch((err) => {

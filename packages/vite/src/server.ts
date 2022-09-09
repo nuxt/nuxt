@@ -3,7 +3,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolveModule, resolvePath } from '@nuxt/kit'
+import { logger, resolveModule } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { ViteBuildContext, ViteOptions } from './vite'
 import { wpfs } from './utils/wpfs'
@@ -13,10 +13,6 @@ import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { writeManifest } from './manifest'
 
 export async function buildServer (ctx: ViteBuildContext) {
-  const useAsyncEntry = ctx.nuxt.options.experimental.asyncEntry ||
-    (ctx.nuxt.options.vite.devBundler === 'vite-node' && ctx.nuxt.options.dev)
-  ctx.entry = await resolvePath(resolve(ctx.nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
-
   const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     entry: ctx.entry,

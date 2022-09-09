@@ -19,8 +19,8 @@ export async function warmupViteServer (
       logger.debug('Warmup for %s failed with: %s', url, e)
     }
     const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
-    const deps = Array.from(mod?.importedModules || [])
-    await Promise.all(deps.map(m => warmup(m.url.replace('/@id/__x00__', '\0'))))
+    const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
+    await Promise.all(deps.map(m => warmup(m.replace('/@id/__x00__', '\0'))))
   }
 
   await Promise.all(entries.map(entry => warmup(entry)))
