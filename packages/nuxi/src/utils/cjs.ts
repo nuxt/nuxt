@@ -3,14 +3,16 @@ import { pathToFileURL } from 'node:url'
 import { normalize, dirname } from 'pathe'
 
 export function getModulePaths (paths?: string | string[]): string[] {
-  return [
-    // @ts-ignore
-    global.__NUXT_PREPATHS__,
-    ...(paths ? [] : Array.isArray(paths) ? paths : [paths]),
-    process.cwd(),
-    // @ts-ignore
-    global.__NUXT_PATHS__
-  ].filter(Boolean)
+  return ([] as Array<string | undefined>)
+    .concat(
+      // @ts-expect-error global object
+      global.__NUXT_PREPATHS__,
+      paths,
+      process.cwd(),
+      // @ts-expect-error global object
+      global.__NUXT_PATHS__
+    )
+    .filter(Boolean) as string[]
 }
 
 const _require = createRequire(process.cwd())
