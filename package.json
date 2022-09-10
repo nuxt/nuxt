@@ -59,7 +59,7 @@
     "expect-type": "^0.14.2",
     "globby": "^13.1.2",
     "jiti": "^1.15.0",
-    "lerna": "^5.5.0",
+    "lerna": "^5.5.1",
     "markdownlint-cli": "^0.32.2",
     "pathe": "^0.3.7",
     "rimraf": "^3.0.2",
