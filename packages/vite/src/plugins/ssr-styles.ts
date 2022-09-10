@@ -60,11 +60,11 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         source:
           [
             ...globalStylesArray.map((css, i) => `import style_${i} from './${css}';`),
-            `const globalStyles = [${globalStylesArray.map((_, i) => `style_${i}`).join(', ')}]`,
-            'const resolveStyles = r => globalStyles.concat(r.default || r || [])',
-            `export default ${genObjectFromRawEntries(
-              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(resolveStyles)`])
-            )}`
+            'const interopDefault = r => r.default || r || []',
+            `export default ${genObjectFromRawEntries([
+              ['entry', `() => [${globalStylesArray.map((_, i) => `style_${i}`).join(', ')}]`],
+              ...Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][]
+            ])}`
           ].join('\n')
       })
     },

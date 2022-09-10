@@ -224,7 +224,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 async function renderInlineStyles (usedModules: Set<string> | string[]) {
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
-  for (const mod of usedModules) {
+  for (const mod of ['entry', ...usedModules]) {
     if (mod in styleMap) {
       for (const style of await styleMap[mod]()) {
         inlinedStyles.add(`<style>${style}</style>`)
