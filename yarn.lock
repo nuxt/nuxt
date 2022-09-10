@@ -7442,9 +7442,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"giget@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "giget@npm:0.0.4"
+"giget@npm:^0.1.5":
+  version: 0.1.5
+  resolution: "giget@npm:0.1.5"
   dependencies:
     colorette: ^2.0.19
     mri: ^1.2.0
@@ -7453,7 +7453,7 @@ __metadata:
     tar: ^6.1.11
   bin:
     giget: dist/cli.mjs
-  checksum: 6e6f86c125c477d47133ddc8768bcb5e4d91d9ada6f372174e2b56d1d854cefdc1e7b5e64884e618126dcc147cfc1448f661698cd6ddc6fce29703fa1a50dea9
+  checksum: 3f9e50f3bd4f9109c7cb511427449daa66c54f466a7e3169bd2475984b60b83e5e840dc35b71373ee137be22458ad1a31564fa2f99e9fc50ec760849d4d30e62
   languageName: node
   linkType: hard
 
@@ -10151,7 +10151,7 @@ __metadata:
     execa: ^6.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    giget: ^0.0.4
+    giget: ^0.1.5
     jiti: ^1.15.0
     listhen: ^0.2.15
     mlly: ^0.5.14
@@ -10161,7 +10161,6 @@ __metadata:
     pkg-types: ^0.3.5
     scule: ^0.3.2
     semver: ^7.3.7
-    superb: ^4.0.0
     unbuild: latest
   dependenciesMeta:
     fsevents:
@@ -12621,15 +12620,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superb@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "superb@npm:4.0.0"
-  dependencies:
-    unique-random-array: ^2.0.0
-  checksum: b80b4d347954ac994863386f6f6ebe176b93ebe8a14258191c118d92ab78296095b8195ae23f4b21e83519ac7eec36cc553fc2672914dd5d3ee98418e93a6bdc
-  languageName: node
-  linkType: hard
-
 "supports-color@npm:^5.3.0":
   version: 5.5.0
   resolution: "supports-color@npm:5.5.0"
@@ -13264,22 +13254,6 @@ __metadata:
   dependencies:
     unique-slug: ^3.0.0
   checksum: 807acf3381aff319086b64dc7125a9a37c09c44af7620bd4f7f3247fcd5565660ac12d8b80534dcbfd067e6fe88a67e621386dd796a8af828d1337a8420a255f
-  languageName: node
-  linkType: hard
-
-"unique-random-array@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "unique-random-array@npm:2.0.0"
-  dependencies:
-    unique-random: ^2.1.0
-  checksum: c983e511fe6f45b9ee9b78d26a78e94ba798a4afaa2ca289948e694bc6ad75efca0dd1944e94a010ab56dd574daf4ebcf72727c6d581693610d3b0a8192ef2e5
-  languageName: node
-  linkType: hard
-
-"unique-random@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "unique-random@npm:2.1.0"
-  checksum: 7bc33f364f288172a948c82c0bbb7393fd175f3a78932aa3a77f070d786d5e86db869dc72f7cb9e0a26e5d3142bfd5c3c9d134a68473a3b1f4e2300d84dbf39d
   languageName: node
   linkType: hard
 

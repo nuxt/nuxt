@@ -1,27 +1,11 @@
-import { downloadRepo, startShell } from 'giget'
-import { relative, resolve } from 'pathe'
-import superb from 'superb'
+import { downloadTemplate, startShell } from 'giget'
+import { relative } from 'pathe'
 import consola from 'consola'
 import { defineNuxtCommand } from './index'
 
 const rpath = (p: string) => relative(process.cwd(), p)
 
-const resolveTemplate = (template: string | boolean) => {
-  if (typeof template === 'boolean') {
-    consola.error('Please specify a template!')
-    process.exit(1)
-  }
-
-  if (!template) {
-    template = 'v3'
-  }
-
-  if (template.includes('/')) {
-    return template
-  }
-
-  return `nuxt/starter#${template}`
-}
+const DEFAULT_REGISTRY = 'https://raw.githubusercontent.com/nuxt/starter/templates/templates'
 
 export default defineNuxtCommand({
   meta: {
@@ -31,32 +15,31 @@ export default defineNuxtCommand({
   },
   async invoke (args) {
     // Clone template
-    const src = resolveTemplate(args.template || args.t)
-    const dstDir = resolve(process.cwd(), args._[0] || 'nuxt-app')
-    if (args.verbose || args.v) {
-      process.env.DEBUG = process.env.DEBUG || 'true'
-    }
-    await downloadRepo(src, dstDir, {
+    const template = args.template || args.t || 'v3'
+
+    const t = await downloadTemplate(template, {
+      dir: args._[0] as string,
       force: args.force,
       offline: args.offline,
-      preferOffline: args['prefer-offline']
+      preferOffline: args['prefer-offline'],
+      registry: process.env.NUXI_INIT_REGISTRY || DEFAULT_REGISTRY
     })
 
     // Show next steps
-    const relativeDist = rpath(dstDir)
+    const relativeDist = rpath(t.dir)
     const nextSteps = [
-      relativeDist.length > 1 && `📁  \`cd ${relativeDist}\``,
-      '💿  Install dependencies with `npm install` or `yarn install` or `pnpm install --shamefully-hoist`',
-      '🚀  Start development server with `npm run dev` or `yarn dev` or `pnpm run dev`'
+      !args.shell && relativeDist.length > 1 && `\`cd ${relativeDist}\``,
+      'Install dependencies with `npm install` or `yarn install` or `pnpm install --shamefully-hoist`',
+      'Start development server with `npm run dev` or `yarn dev` or `pnpm run dev`'
     ].filter(Boolean)
 
-    consola.log(`\n ✨ Your ${superb.random()} Nuxt project is just created! Next steps:\n`)
+    consola.log(`✨ Nuxt project is created with \`${t.name}\` template. Next steps:`)
     for (const step of nextSteps) {
-      consola.log(` ${step}\n`)
+      consola.log(` › ${step}`)
     }
 
     if (args.shell) {
-      startShell(dstDir)
+      startShell(t.dir)
     }
   }
 })

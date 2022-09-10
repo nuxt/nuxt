@@ -34,7 +34,7 @@
     "destr": "^1.1.1",
     "execa": "^6.1.0",
     "flat": "^5.0.2",
-    "giget": "^0.0.4",
+    "giget": "^0.1.5",
     "jiti": "^1.15.0",
     "listhen": "^0.2.15",
     "mlly": "^0.5.14",
@@ -44,7 +44,6 @@
     "pkg-types": "^0.3.5",
     "scule": "^0.3.2",
     "semver": "^7.3.7",
-    "superb": "^4.0.0",
     "unbuild": "latest"
   },
   "optionalDependencies": {
