@@ -37,10 +37,10 @@ const description = error.message || error.toString()
 const stack = process.dev && !is404 ? error.description || `<pre>${stacktrace}</pre>` : undefined
 
 // TODO: Investigate side-effect issue with imports
-const _Error404 = defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-404.vue'))
+const _Error404 = defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-404.vue').then(r => r.default || r))
 const _Error = process.dev
-  ? defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-dev.vue'))
-  : defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-500.vue'))
+  ? defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-dev.vue').then(r => r.default || r))
+  : defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-500.vue').then(r => r.default || r))
 
 const ErrorTemplate = is404 ? _Error404 : _Error
 </script>
