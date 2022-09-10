@@ -55,7 +55,10 @@ const appPreset = defineUnimportPreset({
     'updateAppConfig',
     'defineAppConfig',
     'preloadComponents',
-    'prefetchComponents'
+    'prefetchComponents',
+    'loadPayload',
+    'preloadPayload',
+    'isPrerendered'
   ]
 })
 

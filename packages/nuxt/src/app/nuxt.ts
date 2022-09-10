@@ -74,6 +74,7 @@ interface _NuxtApp {
   ssrContext?: NuxtSSRContext
   payload: {
     serverRendered?: boolean
+    prerenderedAt?: number
     data: Record<string, any>
     state: Record<string, any>
     rendered?: Function

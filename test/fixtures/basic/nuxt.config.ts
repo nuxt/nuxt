@@ -17,7 +17,14 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
-    output: { dir: process.env.NITRO_OUTPUT_DIR }
+    output: { dir: process.env.NITRO_OUTPUT_DIR },
+    prerender: {
+      routes: [
+        '/random/a',
+        '/random/b',
+        '/random/c'
+      ]
+    }
   },
   publicRuntimeConfig: {
     testConfig: 123

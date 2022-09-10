@@ -1,7 +1,7 @@
 import { join, normalize, resolve } from 'pathe'
 import { createHooks } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '@nuxt/schema'
-import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule } from '@nuxt/kit'
+import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 // Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
 import escapeRE from 'escape-string-regexp'
@@ -165,6 +165,9 @@ async function initNuxt (nuxt: Nuxt) {
       message: '`autoImports:extend` hook is deprecated. Use `addImports()` from `@nuxt/kit` or `imports:extend` with `nuxt>=3.0.0-rc.9`.'
     }
   })
+
+  // Add prerender payload support
+  addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
 
   for (const m of modulesToInstall) {
     if (Array.isArray(m)) {
