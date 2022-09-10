@@ -1,4 +1,4 @@
-import { normalize, resolve } from 'pathe'
+import { join, normalize, resolve } from 'pathe'
 import { createHooks } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '@nuxt/schema'
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule } from '@nuxt/kit'
@@ -62,6 +62,8 @@ async function initNuxt (nuxt: Nuxt) {
   // Add import protection
   const config = {
     rootDir: nuxt.options.rootDir,
+    // Exclude top-level resolutions by plugins
+    exclude: [join(nuxt.options.rootDir, 'index.html')],
     patterns: vueAppPatterns(nuxt)
   }
   addVitePlugin(ImportProtectionPlugin.vite(config))

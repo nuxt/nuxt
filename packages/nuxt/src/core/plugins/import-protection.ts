@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { createUnplugin } from 'unplugin'
 import { logger } from '@nuxt/kit'
-import { isAbsolute, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 
@@ -32,6 +32,12 @@ export const ImportProtectionPlugin = createUnplugin(function (options: ImportPr
     enforce: 'pre',
     resolveId (id, importer) {
       if (!importer) { return }
+      if (id.startsWith('.')) {
+        id = join(importer, '..', id)
+      }
+      if (isAbsolute(id)) {
+        id = relative(options.rootDir, id)
+      }
       if (importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))) { return }
 
       const invalidImports = options.patterns.filter(([pattern]) => pattern instanceof RegExp ? pattern.test(id) : pattern === id)
