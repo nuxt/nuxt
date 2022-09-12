@@ -6,6 +6,8 @@ import { logger, isIgnored, resolvePath } from '@nuxt/kit'
 import type { Options } from '@vitejs/plugin-vue'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
+import { withoutLeadingSlash } from 'ufo'
+import { filename } from 'pathe/utils'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -55,7 +57,13 @@ export async function bundle (nuxt: Nuxt) {
         css: resolveCSSOptions(nuxt),
         build: {
           rollupOptions: {
-            output: { sanitizeFileName: sanitizeFilePath }
+            output: {
+              sanitizeFileName: sanitizeFilePath,
+              // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
+              assetFileNames: nuxt.options.dev
+                ? undefined
+                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`))
+            }
           },
           watch: {
             exclude: nuxt.options.ignore
