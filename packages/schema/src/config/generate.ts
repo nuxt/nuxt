@@ -10,7 +10,7 @@ export default <SchemaDefinition>{
    * Directory name that holds all the assets and generated pages for a `static` build.
    */
   dir: {
-    $resolve: (val = 'dist', get) => resolve(get('rootDir'), val)
+    $resolve: async (val = 'dist', get) => resolve((await get('rootDir')), val)
   },
 
   /**
@@ -162,11 +162,11 @@ export default <SchemaDefinition>{
      * (payload, state and manifest files) will live.
      */
     base: {
-      $resolve: (val, get) => val || joinURL(get('app').buildAssetsDir, get('generate.dir'))
+      $resolve: async (val, get) => val || joinURL((await get('app')).buildAssetsDir, (await get('generate.dir')))
     },
     /** The full path to the versioned directory where static assets for the current build are located. */
     versionBase: {
-      $resolve: (val, get) => val || joinURL(get('generate.base'), get('generate.version'))
+      $resolve: async (val, get) => val || joinURL((await get('generate.base')), (await get('generate.version')))
     },
     /** A unique string to uniquely identify payload versions (defaults to the current timestamp).  */
     version: {

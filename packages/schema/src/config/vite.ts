@@ -14,15 +14,15 @@ export default defineUntypedSchema({
    */
   vite: {
     root: {
-      $resolve: (val, get) => val ?? get('srcDir')
+      $resolve: async (val, get) => val ?? (await get('srcDir'))
     },
     mode: {
-      $resolve: (val, get) => val ?? (get('dev') ? 'development' : 'production')
+      $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
     logLevel: 'warn',
     define: {
-      $resolve: (val, get) => ({
-        'process.dev': get('dev'),
+      $resolve: async (val, get) => ({
+        'process.dev': await get('dev'),
         ...val || {}
       })
     },
@@ -30,23 +30,23 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: (val, get) => val ?? resolve(get('srcDir'), get('dir').public)
+      $resolve: async (val, get) => val ?? resolve((await get('srcDir')), (await get('dir')).public)
     },
     vue: {
       isProduction: {
-        $resolve: (val, get) => val ?? !get('dev')
+        $resolve: async (val, get) => val ?? !(await get('dev'))
       },
       template: {
         compilerOptions: {
-          $resolve: (val, get) => val ?? get('vue').compilerOptions
+          $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
         }
       }
     },
     optimizeDeps: {
       exclude: {
-        $resolve: (val, get) => [
+        $resolve: async (val, get) => [
           ...val || [],
-          ...get('build.transpile').filter((i: string) => typeof i === 'string'),
+          ...(await get('build.transpile')).filter((i: string) => typeof i === 'string'),
           'vue-demi'
         ]
       }
@@ -59,7 +59,7 @@ export default defineUntypedSchema({
     clearScreen: false,
     build: {
       assetsDir: {
-        $resolve: (val, get) => val ?? withoutLeadingSlash(get('app').buildAssetsDir)
+        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app')).buildAssetsDir)
       },
       emptyOutDir: false
     },
@@ -67,11 +67,11 @@ export default defineUntypedSchema({
       fs: {
         strict: false,
         allow: {
-          $resolve: (val, get) => [
-            get('buildDir'),
-            get('srcDir'),
-            get('rootDir'),
-            ...get('modulesDir'),
+          $resolve: async (val, get) => [
+            await get('buildDir'),
+            await get('srcDir'),
+            await get('rootDir'),
+            ...(await get('modulesDir')),
             ...val ?? []
           ]
         }

@@ -12,7 +12,7 @@ export default defineUntypedSchema({
    * @version 3
    */
   builder: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       if (typeof val === 'object') {
         return val
       }
@@ -20,7 +20,7 @@ export default defineUntypedSchema({
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
-      return map[val] || (get('vite') === false ? map.webpack : map.vite)
+      return map[val] || (await get('vite') === false ? map.webpack : map.vite)
     }
   },
   /**
@@ -30,13 +30,13 @@ export default defineUntypedSchema({
    * @version 3
    */
   sourcemap: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       if (typeof val === 'boolean') {
         return { server: val, client: val }
       }
       return defu(val, {
         server: true,
-        client: get('dev')
+        client: await get('dev')
       })
     },
   },
@@ -71,11 +71,11 @@ export default defineUntypedSchema({
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
      */
     analyze: {
-      $resolve: (val, get) => {
+      $resolve: async (val, get) => {
         if (val !== true) {
           return val ?? false
         }
-        const rootDir = get('rootDir')
+        const rootDir = await get('rootDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
@@ -150,7 +150,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     cssSourceMap: {
-      $resolve: (val, get) => val ?? get('sourcemap') ?? get('dev')
+      $resolve: async (val, get) => val ?? await get('sourcemap') ?? await get('dev')
     },
 
     /**
@@ -166,7 +166,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     parallel: {
-      $resolve: (val, get) => get('build.extractCSS') ? false : Boolean(val)
+      $resolve: async (val, get) => await get('build.extractCSS') ? false : Boolean(val)
     },
 
     /**
@@ -210,7 +210,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     publicPath: {
-      $resolve: (val, get) => val ? withTrailingSlash(normalizeURL(val)) : get('app').buildAssetsDir
+      $resolve: async (val, get) => val ? withTrailingSlash(normalizeURL(val)) : (await get('app').buildAssetsDir)
     },
 
     /**
@@ -254,7 +254,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     loaders: {
-      $resolve: (val, get) => {
+      $resolve: async (val, get) => {
         const styleLoaders = [
           'css', 'cssModules', 'less',
           'sass', 'scss', 'stylus', 'vueStyle'
@@ -262,7 +262,7 @@ export default defineUntypedSchema({
         for (const name of styleLoaders) {
           const loader = val[name]
           if (loader && loader.sourcemap === undefined) {
-            loader.sourcemap = Boolean(get('build.cssSourceMap'))
+            loader.sourcemap = Boolean(await get('build.cssSourceMap'))
           }
         }
         return val
@@ -272,14 +272,14 @@ export default defineUntypedSchema({
       imgUrl: { esModule: false, limit: 1000 },
       pugPlain: {},
       vue: {
-        productionMode: { $resolve: (val, get) => val ?? !get('dev') },
+        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
           object: 'src',
           embed: 'src'
         },
-        compilerOptions: { $resolve: (val, get) => val ?? get('vue.compilerOptions') },
+        compilerOptions: { $resolve: async (val, get) => val ?? await get('vue.compilerOptions') },
       },
       css: {
         importLoaders: 0,
@@ -363,7 +363,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     optimizeCSS: {
-      $resolve: (val, get) => val ?? (get('build.extractCSS') ? {} : false)
+      $resolve: async (val, get) => val ?? (await get('build.extractCSS') ? {} : false)
     },
 
     /**
@@ -374,7 +374,7 @@ export default defineUntypedSchema({
       runtimeChunk: 'single',
       /** Set minimize to false to disable all minimizers. (It is disabled in development by default) */
       minimize: {
-        $resolve: (val, get) => val ?? !get('dev')
+        $resolve: async (val, get) => val ?? !(await get('dev'))
       },
       /** You can set minimizer to a customized array of plugins. */
       minimizer: undefined,
@@ -475,7 +475,7 @@ export default defineUntypedSchema({
        */
       presets: {},
       cacheDirectory: {
-        $resolve: (val, get) => val ?? get('dev')
+        $resolve: async (val, get) => val ?? (await get('dev'))
       }
     },
 
@@ -506,10 +506,10 @@ export default defineUntypedSchema({
     postcss: {
       execute: undefined,
       postcssOptions: {
-        $resolve: (val, get) => {
+        $resolve: async (val, get) => {
           // Ensure we return the same object in `build.postcss.postcssOptions as `postcss`
           // so modules which modify the configuration continue to work.
-          const postcssOptions = get('postcss')
+          const postcssOptions = await get('postcss')
           Object.assign(postcssOptions, defu(postcssOptions, val))
           return postcssOptions
         }
@@ -625,7 +625,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     stats: {
-      $resolve: (val, get) => (val === 'none' || get('build.quiet')) ? false : val,
+      $resolve: async (val, get) => (val === 'none' || (await get('build.quiet'))) ? false : val,
       excludeAssets: [
         /.map$/,
         /index\..+\.html$/,

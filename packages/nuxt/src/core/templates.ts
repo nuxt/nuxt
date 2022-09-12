@@ -114,7 +114,7 @@ export { }
 const adHocModules = ['router', 'pages', 'imports', 'meta', 'components']
 export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
-  getContents: ({ nuxt }) => {
+  getContents: async ({ nuxt }) => {
     const moduleInfo = nuxt.options._installedModules.map(m => ({
       ...m.meta || {},
       importName: m.entryPath || m.meta?.name
@@ -128,7 +128,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
         `    [${genString(meta.configKey)}]?: typeof ${genDynamicImport(meta.importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       ),
       '  }',
-      generateTypes(resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
+      generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,
@@ -136,7 +136,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
           allowExtraKeys: false,
           indentation: 2
         }),
-      generateTypes(resolveSchema(nuxt.options.runtimeConfig.public),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public),
         {
           interfaceName: 'PublicRuntimeConfig',
           addExport: false,

@@ -21,10 +21,10 @@ export default defineUntypedSchema({
      */
     config: {
       silent: {
-        $resolve: (val, get) => val ?? !get('dev')
+        $resolve: async (val, get) => val ?? !(await get('dev'))
       },
       performance: {
-        $resolve: (val, get) => val ?? get('dev')
+        $resolve: async (val, get) => val ?? await get('dev')
       },
     },
     /**
@@ -62,7 +62,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     assetsPath: {
-      $resolve: (val, get) => val ?? get('buildAssetsDir')
+      $resolve: async (val, get) => val ?? (await get('buildAssetsDir'))
     },
     /**
      * An absolute URL to serve the public folder from (production-only).
@@ -74,7 +74,7 @@ export default defineUntypedSchema({
      * ```
      */
     cdnURL: {
-      $resolve: (val, get) => get('dev') ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || ''
+      $resolve: async (val, get) => (await get('dev')) ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || ''
     },
     /**
      * Set default configuration for `<head>` on every page.
@@ -111,8 +111,8 @@ export default defineUntypedSchema({
      * @version 3
      */
     head: {
-      $resolve: (val, get) => {
-        const resolved: Required<MetaObject> = defu(val, get('meta'), {
+      $resolve: async (val, get) => {
+        const resolved: Required<MetaObject> = defu(val, await get('meta'), {
           meta: [],
           link: [],
           style: [],
@@ -181,14 +181,14 @@ export default defineUntypedSchema({
    * @version 2
    */
   appTemplatePath: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       if (val) {
-        return resolve(get('srcDir'), val)
+        return resolve(await get('srcDir'), val)
       }
-      if (existsSync(join(get('srcDir'), 'app.html'))) {
-        return join(get('srcDir'), 'app.html')
+      if (existsSync(join(await get('srcDir'), 'app.html'))) {
+        return join(await get('srcDir'), 'app.html')
       }
-      return resolve(get('buildDir'), 'views/app.template.html')
+      return resolve(await get('buildDir'), 'views/app.template.html')
     }
   },
 
@@ -199,9 +199,9 @@ export default defineUntypedSchema({
    * @version 2
    */
   store: {
-    $resolve: (val, get) => val !== false &&
-      existsSync(join(get('srcDir'), get('dir.store'))) &&
-      readdirSync(join(get('srcDir'), get('dir.store')))
+    $resolve: async (val, get) => val !== false &&
+      existsSync(join(await get('srcDir'), await get('dir.store'))) &&
+      readdirSync(join(await get('srcDir'), await get('dir.store')))
         .find(filename => filename !== 'README.md' && filename[0] !== '.')
   },
 
@@ -378,15 +378,15 @@ export default defineUntypedSchema({
    * @version 2
    */
   loadingIndicator: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       val = typeof val === 'string' ? { name: val } : val
       return defu(val, {
         name: 'default',
-        color: get('loading.color') || '#D3D3D3',
+        color: await get('loading.color') || '#D3D3D3',
         color2: '#F5F5F5',
-        background: (get('manifest') && get('manifest.theme_color')) || 'white',
-        dev: get('dev'),
-        loading: get('messages.loading')
+        background: (await get('manifest') && await get('manifest.theme_color')) || 'white',
+        dev: await get('dev'),
+        loading: await get('messages.loading')
       })
     }
   },
@@ -402,12 +402,12 @@ export default defineUntypedSchema({
    * @version 2
    */
   pageTransition: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       val = typeof val === 'string' ? { name: val } : val
       return defu(val, {
         name: 'page',
         mode: 'out-in',
-        appear: get('render.ssr') === false || Boolean(val),
+        appear: await get('render.ssr') === false || Boolean(val),
         appearClass: 'appear',
         appearActiveClass: 'appear-active',
         appearToClass: 'appear-to'

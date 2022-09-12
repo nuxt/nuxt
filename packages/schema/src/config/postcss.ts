@@ -19,13 +19,13 @@ export default defineUntypedSchema({
        * https://github.com/postcss/postcss-import
        */
       'postcss-import': {
-        $resolve: (val, get) => val !== false ? defu(val || {}, {
+        $resolve: async (val, get) => val !== false ? defu(val || {}, {
           resolve: createResolver({
-            alias: { ...get('alias') },
+            alias: { ...(await get('alias')) },
             modules: [
-              get('srcDir'),
-              get('rootDir'),
-              ...get('modulesDir')
+              await get('srcDir'),
+              await get('rootDir'),
+              ...(await get('modulesDir'))
             ]
           })
         }) : val,
@@ -42,7 +42,7 @@ export default defineUntypedSchema({
       autoprefixer: {},
 
       cssnano: {
-        $resolve: (val, get) => val ?? (!get('dev') && {
+        $resolve: async (val, get) => val ?? !(await get('dev') && {
           preset: ['default', {
             // Keep quotes in font values to prevent from HEX conversion
             // https://github.com/nuxt/nuxt.js/issues/6306

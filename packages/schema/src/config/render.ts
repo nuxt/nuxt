@@ -15,7 +15,7 @@ export default <SchemaDefinition>{
     shouldPreload: (_fileWithoutQuery: string, asType: string) => ['script', 'style'].includes(asType),
     /** enabled by default for development */
     runInNewContext: {
-      $resolve: (val, get) => val ?? get('dev')
+      $resolve: async (val, get) => val ?? (await get('dev'))
     }
   },
 
@@ -46,7 +46,7 @@ export default <SchemaDefinition>{
    * Set to `collapsed` to collapse the logs, or `false` to disable.
    */
   ssrLog: {
-    $resolve: (val, get) => get('dev') ? Boolean(val) : false
+    $resolve: async (val, get) => (await get('dev')) ? Boolean(val) : false
   },
 
   /**
@@ -213,7 +213,7 @@ export default <SchemaDefinition>{
    * ```
    */
   csp: {
-    $resolve: (val, get) => {
+    $resolve: async (val, get) => {
       if (!val) { return false }
       return {
         hashAlgorithm: 'sha256',
@@ -230,7 +230,7 @@ export default <SchemaDefinition>{
          * if hashes are present. (Set option `unsafeInlineCompatibility` to true to
          * disable this behavior.)
          */
-        addMeta: Boolean(get('target') === 'static'),
+        addMeta: Boolean((await get('target')) === 'static'),
         /**
          * Set option `unsafeInlineCompatibility` to `true` if you want both hashes and
          * 'unsafe-inline' for CSPv1 compatibility. In that case the `<meta>` tag will
@@ -239,7 +239,7 @@ export default <SchemaDefinition>{
          * HTTP response header.
          */
         unsafeInlineCompatibility: false,
-        reportOnly: get('debug'),
+        reportOnly: (await get('debug')),
         ...val
       }
     }

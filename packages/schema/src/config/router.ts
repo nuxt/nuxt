@@ -33,12 +33,12 @@ export default defineUntypedSchema({
    * @version 2
    */
   base: {
-    $resolve: (val, get) => val ? withTrailingSlash(normalizeURL(val)) : get('app').baseURL
+    $resolve: async (val, get) => val ? withTrailingSlash(normalizeURL(val)) : (await get('app')).baseURL
   },
 
   /** @private */
   _routerBaseSpecified: {
-    $resolve: (_val, get) => typeof get('router.base') === 'string'
+    $resolve: async (_val, get) => typeof (await get('router.base')) === 'string'
   },
 
   /** @version 2 */

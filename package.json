@@ -44,7 +44,7 @@
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
     "vite": "~3.1.0",
-    "unbuild": "^0.8.10"
+    "unbuild": "^0.8.11"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^11.0.0",
@@ -64,7 +64,7 @@
     "pathe": "^0.3.7",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.3",
-    "unbuild": "^0.8.10",
+    "unbuild": "^0.8.11",
     "vitest": "~0.19.1",
     "vue-tsc": "^0.39.5"
   },

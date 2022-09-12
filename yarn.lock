@@ -428,10 +428,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/standalone@npm:^7.18.13":
-  version: 7.18.13
-  resolution: "@babel/standalone@npm:7.18.13"
-  checksum: da010b1ef0d53f7888d01b3ef93aac9a17af5711979e7bc048b80bf08ae6dfa6b637bf92fee0c5753b4ff1bc3639a5b82925f9234d4e2150fc6d4d5c2ccc1f89
+"@babel/standalone@npm:^7.19.0":
+  version: 7.19.0
+  resolution: "@babel/standalone@npm:7.19.0"
+  checksum: 02f808a938b8e3978fb203edfdfa0cc9ee567df173f1659de5b41a0480c857070865e45753d3ba8669d0ab26b218ab56d4ffcb05d7c5a75f7671d193331be732
   languageName: node
   linkType: hard
 
@@ -1798,7 +1798,7 @@ __metadata:
     unbuild: latest
     unctx: ^2.0.2
     unimport: ^0.6.7
-    untyped: ^0.4.7
+    untyped: ^0.5.0
   languageName: unknown
   linkType: soft
 
@@ -1825,7 +1825,7 @@ __metadata:
     ufo: ^0.8.5
     unbuild: latest
     unimport: ^0.6.7
-    untyped: ^0.4.7
+    untyped: ^0.5.0
     vite: ~3.1.0
   languageName: unknown
   linkType: soft
@@ -10207,7 +10207,7 @@ __metadata:
     pathe: ^0.3.7
     rimraf: ^3.0.2
     typescript: ^4.8.3
-    unbuild: ^0.8.10
+    unbuild: ^0.8.11
     vitest: ~0.19.1
     vue-tsc: ^0.39.5
   languageName: unknown
@@ -10267,7 +10267,7 @@ __metadata:
     unenv: ^0.6.2
     unimport: ^0.6.7
     unplugin: ^0.9.2
-    untyped: ^0.4.7
+    untyped: ^0.5.0
     vue: ^3.2.39
     vue-bundle-renderer: ^0.4.2
     vue-devtools-stub: ^0.1.0
@@ -13166,9 +13166,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.8.10":
-  version: 0.8.10
-  resolution: "unbuild@npm:0.8.10"
+"unbuild@npm:^0.8.11":
+  version: 0.8.11
+  resolution: "unbuild@npm:0.8.11"
   dependencies:
     "@rollup/plugin-alias": ^3.1.9
     "@rollup/plugin-commonjs": ^22.0.2
@@ -13197,10 +13197,10 @@ __metadata:
     rollup-plugin-esbuild: ^4.10.1
     scule: ^0.3.2
     typescript: ^4.8.2
-    untyped: ^0.4.7
+    untyped: ^0.5.0
   bin:
     unbuild: dist/cli.mjs
-  checksum: 77a4fde0fe1f6f7dae394be473877a5a94bf18aa992a8b79eacd7e0435bac077930f91f5a5693bd8f5d9f544e3df3b2d039d287de5d8735cfcc9191ffbb3a3d8
+  checksum: 40bcdd54d460b6d1e170a62fb71ea0eda32ca557b715d11f51acf8a2afadc4d457aecc45a00fd8ec2fba7906845cd49823720bef90000df343c8c6599ca7a52b
   languageName: node
   linkType: hard
 
@@ -13370,15 +13370,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"untyped@npm:^0.4.7":
-  version: 0.4.7
-  resolution: "untyped@npm:0.4.7"
+"untyped@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "untyped@npm:0.5.0"
   dependencies:
-    "@babel/core": ^7.18.13
-    "@babel/standalone": ^7.18.13
-    "@babel/types": ^7.18.13
+    "@babel/core": ^7.19.0
+    "@babel/standalone": ^7.19.0
+    "@babel/types": ^7.19.0
     scule: ^0.3.2
-  checksum: d5b189b19e114c4d60e122da9234c68a93d71b312a64bd8303e3aaa96f7a677befa8519ce003dec8cb587ed3e5503046131532196257ed10e647bc741532b1bc
+  checksum: db04ec68d7de032c3d6bc063bd4764dc43d0a71a275c6f854c928f589f12214e91d39dbecf119e1de84c4ba09b087e8c483c80302b4308242723d258efaddf80
   languageName: node
   linkType: hard
 

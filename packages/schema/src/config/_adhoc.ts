@@ -15,7 +15,7 @@ export default defineUntypedSchema({
    * @version 3
    */
   components: {
-    $resolve: (val, get) => {
+    $resolve: (val) => {
       if (Array.isArray(val)) {
         return { dirs: val }
       }
