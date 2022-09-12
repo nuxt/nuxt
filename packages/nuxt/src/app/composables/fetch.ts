@@ -1,4 +1,4 @@
-import type { FetchOptions } from 'ohmyfetch'
+import type { FetchError, FetchOptions } from 'ohmyfetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
 import { computed, isRef, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
@@ -16,7 +16,7 @@ export interface UseFetchOptions<
 
 export function useFetch<
   ResT = void,
-  ErrorT = Error,
+  ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
@@ -27,7 +27,7 @@ export function useFetch<
 ): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null | true>
 export function useFetch<
   ResT = void,
-  ErrorT = Error,
+  ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
@@ -93,7 +93,7 @@ export function useFetch<
 
 export function useLazyFetch<
   ResT = void,
-  ErrorT = Error,
+  ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
@@ -104,7 +104,7 @@ export function useLazyFetch<
 ): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null | true>
 export function useLazyFetch<
   ResT = void,
-  ErrorT = Error,
+  ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
   _ResT = ResT extends void ? FetchResult<ReqT> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,

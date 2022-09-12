@@ -3,6 +3,7 @@ import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { AppConfig } from '@nuxt/schema'
 
+import type { FetchError } from 'ohmyfetch'
 import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/src'
 import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
@@ -47,7 +48,7 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<Error | null | true>>()
+    expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | null | true>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null | true>>()
 
     expectTypeOf(useLazyFetch('/api/hello').data).toEqualTypeOf<Ref<string>>()
@@ -57,7 +58,7 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse>>()
 
-    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<Error | null | true>>()
+    expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | null | true>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null | true>>()
   })
 })
