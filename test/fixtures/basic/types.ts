@@ -182,3 +182,9 @@ describe('app config', () => {
     expectTypeOf<AppConfig>().toMatchTypeOf<ExpectedMergedAppConfig>()
   })
 })
+
+describe('extends type declarations', () => {
+  it('correctly adds references to tsconfig', () => {
+    expectTypeOf<import('bing').BingInterface>().toEqualTypeOf<{ foo: 'bar' }>()
+  })
+})

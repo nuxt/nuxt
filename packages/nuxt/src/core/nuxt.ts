@@ -57,6 +57,13 @@ async function initNuxt (nuxt: Nuxt) {
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+
+    for (const layer of nuxt.options._layers) {
+      const declaration = join(layer.cwd, 'index.d.ts')
+      if (fse.existsSync(declaration)) {
+        opts.references.push({ path: declaration })
+      }
+    }
   })
 
   // Add import protection
