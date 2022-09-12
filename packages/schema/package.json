@@ -26,6 +26,7 @@
     "defu": "^6.1.0",
     "jiti": "^1.15.0",
     "pathe": "^0.3.7",
+    "pkg-types": "^0.3.5",
     "postcss-import-resolver": "^2.0.0",
     "scule": "^0.3.2",
     "std-env": "^3.2.1",

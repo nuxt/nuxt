@@ -211,6 +211,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
         .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
     }
   }])
+  options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push('@nuxt/ui-templates')
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')

@@ -26,7 +26,6 @@ export default defineBuildConfig({
     'hookable',
     'nitropack',
     'webpack',
-    'pkg-types',
     'webpack-bundle-analyzer',
     'rollup-plugin-visualizer',
     'vite',
