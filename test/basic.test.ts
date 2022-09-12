@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL } from 'ufo'
-// import { isWindows } from 'std-env'
+import { isWindows } from 'std-env'
 import { setup, fetch, $fetch, startServer, createPage, url } from '@nuxt/test-utils'
 // eslint-disable-next-line import/order
 import { expectNoClientErrors, renderPage } from './utils'
@@ -586,7 +586,7 @@ describe('app config', () => {
   })
 })
 
-describe.skipIf(process.env.NUXT_TEST_DEV)('payload rendering', () => {
+describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
