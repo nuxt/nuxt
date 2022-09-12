@@ -6,8 +6,8 @@ import { defineNuxtPlugin, useNuxtApp } from '#app'
 import { appHead } from '#build/nuxt.config.mjs'
 
 type MetaComponents = typeof Components
-declare module 'vue' {
-  export interface GlobalComponents extends MetaComponents { }
+declare module '@vue/runtime-core' {
+  export interface GlobalComponents extends MetaComponents {}
 }
 
 const metaMixin = {

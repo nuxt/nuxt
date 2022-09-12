@@ -18,7 +18,7 @@ import routerOptions from '#build/router.options'
 // @ts-ignore
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
-declare module 'vue' {
+declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     NuxtPage: typeof NuxtPage
     /** @deprecated */
