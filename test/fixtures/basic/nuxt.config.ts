@@ -1,5 +1,6 @@
 import { defineNuxtConfig } from 'nuxt'
-import { addComponent } from '@nuxt/kit'
+import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { createUnplugin } from 'unplugin'
 
 export default defineNuxtConfig({
   app: {
@@ -32,7 +33,26 @@ export default defineNuxtConfig({
   privateRuntimeConfig: {
     privateConfig: 'secret_key'
   },
-  modules: ['~/modules/example'],
+  modules: [
+    '~/modules/example',
+    function (_, nuxt) {
+      if (process.env.TEST_WITH_WEBPACK) { return }
+
+      nuxt.options.css.push('virtual.css')
+      nuxt.options.build.transpile.push('virtual.css')
+      const plugin = createUnplugin(() => ({
+        name: 'virtual',
+        resolveId (id) {
+          if (id === 'virtual.css') { return 'virtual.css' }
+        },
+        load (id) {
+          if (id === 'virtual.css') { return ':root { --virtual: red }' }
+        }
+      }))
+      addVitePlugin(plugin.vite())
+      addWebpackPlugin(plugin.webpack())
+    }
+  ],
   hooks: {
     'modules:done' () {
       addComponent({
