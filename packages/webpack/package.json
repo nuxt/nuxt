@@ -19,7 +19,7 @@
     "@babel/core": "^7.19.0",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0-rc.9",
-    "autoprefixer": "^10.4.8",
+    "autoprefixer": "^10.4.9",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.1.0",
     "cssnano": "^5.1.13",
