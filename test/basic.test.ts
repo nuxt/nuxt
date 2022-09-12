@@ -586,7 +586,7 @@ describe('app config', () => {
   })
 })
 
-describe('payload rendering', () => {
+describe.skipIf(process.env.NUXT_TEST_DEV)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
