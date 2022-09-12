@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { createUnplugin } from 'unplugin'
 import { logger } from '@nuxt/kit'
-import { isAbsolute, join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 
@@ -21,7 +21,7 @@ export const vueAppPatterns = (nuxt: Nuxt) => [
     [new RegExp(`^${escapeRE(m as string)}$`), 'Importing directly from module entry points is not allowed.']),
   ...[/(^|node_modules\/)@nuxt\/kit/, /^nitropack/]
     .map(i => [i, 'This module cannot be imported in the Vue part of your app.']),
-  [new RegExp(escapeRE(resolve(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'), 'Importing from server is not allowed in the Vue part of your app.']
+  [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'), 'Importing from server is not allowed in the Vue part of your app.']
 ] as ImportProtectionOptions['patterns']
 
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
