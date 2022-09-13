@@ -1,6 +1,6 @@
 # `useHydration`
 
-::ReadMore{link="/guide/features/data-fetching"}
+::ReadMore{link="/getting-started/data-fetching"}
 ::
 
 ::NeedContribution

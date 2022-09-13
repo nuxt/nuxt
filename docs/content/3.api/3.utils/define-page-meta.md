@@ -147,6 +147,3 @@ You can define the layout that matches the layout's file name located (by defaul
   })
 </script>
 ```
-
-::ReadMore{link="/guide/features/routing"}
-::

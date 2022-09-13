@@ -63,6 +63,3 @@ export default defineNuxtRouteMiddleware((to, from) => {
   }
 })
 ```
-
-::ReadMore{link="/guide/features/routing"}
-::

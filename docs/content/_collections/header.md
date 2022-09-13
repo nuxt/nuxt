@@ -2,10 +2,10 @@
 links:
   -
     title: 'Getting Started'
-    to: '/getting-started/quick-start'
+    to: '/getting-started/introduction'
   -
     title: 'Guide'
-    to: '/guide/concepts/introduction'
+    to: '/guide/concepts/auto-imports'
   -
     title: 'API'
     to: '/api/composables/use-async-data'

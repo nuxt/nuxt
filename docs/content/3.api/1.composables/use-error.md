@@ -10,5 +10,5 @@ const error = useError()
 
 `useError` sets an error in the state and creates a reactive and SSR-friendly global Nuxt error across components.
 
-::ReadMore{link="/guide/features/error-handling"}
+::ReadMore{link="/getting-started/error-handling"}
 ::

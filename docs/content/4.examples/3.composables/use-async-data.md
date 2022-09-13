@@ -13,7 +13,7 @@ Nuxt will automatically read files in the `~/server/api` directory to create API
 ::ReadMore{link="/api/composables/use-async-data"}
 ::
 
-::ReadMore{link="/guide/features/data-fetching"}
+::ReadMore{link="/getting-started/data-fetching"}
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/composables/use-async-data" file="app.vue"}

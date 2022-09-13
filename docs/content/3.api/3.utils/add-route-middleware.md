@@ -71,6 +71,3 @@ export default defineNuxtPlugin(() => {
   )
 })
 ```
-
-::ReadMore{link="/guide/features/routing"}
-::

@@ -1,6 +1,6 @@
 # `$fetch`
 
-::ReadMore{link="/guide/features/data-fetching"}
+::ReadMore{link="/getting-started/data-fetching"}
 ::
 
 Nuxt uses [ohmyfetch](https://github.com/unjs/ohmyfetch) to expose globally the `$fetch` helper for making HTTP requests within your Vue app or API routes.

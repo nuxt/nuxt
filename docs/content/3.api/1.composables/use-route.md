@@ -36,6 +36,3 @@ Apart from dynamic parameters and query parameters, `useRoute()` also provides t
 
 ::ReadMore{link="https://router.vuejs.org/api/interfaces/RouteLocationNormalizedLoaded.html"}
 ::
-
-::ReadMore{link="/guide/features/routing"}
-::

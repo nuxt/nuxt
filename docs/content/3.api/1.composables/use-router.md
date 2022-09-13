@@ -57,6 +57,3 @@ However, Nuxt has a concept of **route middleware** that simplifies the implemen
 ## Universal Router Instance
 
 If you do not have a `pages/` folder, then `useRouter` will return a universal router instance with similar helper methods, but be aware that not all features may be supported or behave in exactly the same way as with `vue-router`.
-
-::ReadMore{link="/guide/features/routing"}
-::

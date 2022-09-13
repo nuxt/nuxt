@@ -36,4 +36,4 @@ watch(posts, (newPosts) => {
 </script>
 ```
 
-:ReadMore{link="/guide/features/data-fetching#uselazyfetch"}
+:ReadMore{link="/getting-started/data-fetching#uselazyfetch"}

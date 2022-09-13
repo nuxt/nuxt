@@ -57,6 +57,3 @@ export default defineNuxtRouteMiddleware((to, from) => {
 ```
 
 Both [navigateTo](/api/utils/navigate-to) and [abortNavigation](/api/utils/abort-navigation) are globally available helper functions that you can use inside `defineNuxtRouteMiddleware`.
-
-::ReadMore{link="/guide/features/routing"}
-::

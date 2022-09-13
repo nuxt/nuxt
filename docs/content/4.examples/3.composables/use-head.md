@@ -13,7 +13,7 @@ Learn more about [meta tags](/guide/features/head-management#meta-components).
 ::ReadMore{link="/api/composables/use-head"}
 ::
 
-::ReadMore{link="/guide/features/head-management"}
+::ReadMore{link="/getting-started/head-management"}
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/composables/use-head" file="app.vue"}

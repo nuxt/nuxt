@@ -32,4 +32,4 @@ watch(count, (newCount) => {
 </script>
 ```
 
-:ReadMore{link="/guide/features/data-fetching#uselazyasyncdata"}
+:ReadMore{link="/getting-started/data-fetching#uselazyasyncdata"}

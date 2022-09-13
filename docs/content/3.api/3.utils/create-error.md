@@ -40,5 +40,5 @@ export default eventHandler(() => {
 }
 ```
 
-::ReadMore{link="/guide/features/error-handling"}
+::ReadMore{link="/getting-started/error-handling"}
 ::

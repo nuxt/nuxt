@@ -20,5 +20,5 @@ clearError({ redirect: '/homepage' })
 
 Errors are set in state using [`useError()`](/api/composables/use-error). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
 
-::ReadMore{link="/guide/features/error-handling"}
+::ReadMore{link="/getting-started/error-handling"}
 ::

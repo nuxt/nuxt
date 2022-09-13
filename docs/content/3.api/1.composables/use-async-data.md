@@ -79,5 +79,5 @@ const { data, pending, error, refresh } = await useAsyncData(
 )
 ```
 
-::ReadMore{link="/guide/features/data-fetching"}
+::ReadMore{link="/getting-started/data-fetching"}
 ::

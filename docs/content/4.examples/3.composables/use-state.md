@@ -13,7 +13,7 @@ Learn more about [useState](/api/composables/use-state).
 ::ReadMore{link="/api/composables/use-state"}
 ::
 
-::ReadMore{link="/guide/features/state-management"}
+::ReadMore{link="/getting-started/state-management"}
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/composables/use-state" file="app.vue"}
