@@ -1,0 +1,32 @@
+name: docs-e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        required: false
+        description: The URL to run the test suite against.
+        type: string
+  deployment_status:
+
+jobs:
+  crawl-docs:
+    environment:
+      name: ${{ github.event.deployment.environment || 'Production' }}
+      url: ${{ github.event.inputs.url || github.event.deployment.payload.web_url || github.event.deployment_status.target_url }}
+    if: github.event.deployment_status.state == 'success' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn --immutable
+
+      - run: node ./scripts/crawl.mjs
+        env:
+          BASE_URL: ${{ github.event.inputs.url || github.event.deployment.payload.web_url || github.event.deployment_status.target_url }}

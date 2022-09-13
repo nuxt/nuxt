@@ -47,12 +47,15 @@
     "unbuild": "^0.8.11"
   },
   "devDependencies": {
+    "@actions/core": "^1.9.1",
     "@nuxtjs/eslint-config-typescript": "^11.0.0",
+    "@types/crawler": "^1.2.2",
     "@types/node": "^16.11.58",
     "@types/rimraf": "^3",
     "@unocss/reset": "^0.45.21",
     "case-police": "^0.5.10",
     "changelogen": "^0.3.0",
+    "crawler": "^1.3.0",
     "eslint": "^8.23.1",
     "eslint-plugin-jsdoc": "^39.3.6",
     "execa": "^6.1.0",
