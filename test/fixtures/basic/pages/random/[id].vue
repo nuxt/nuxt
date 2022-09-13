@@ -1,12 +1,15 @@
 <template>
   <div>
-    <NuxtLink to="/random/a">
+    <NuxtLink to="/" prefetched-class="prefetched">
+      Home
+    </NuxtLink>
+    <NuxtLink to="/random/a" prefetched-class="prefetched">
       Random (A)
     </NuxtLink>
-    <NuxtLink to="/random/b">
+    <NuxtLink to="/random/b" prefetched-class="prefetched">
       Random (B)
     </NuxtLink>
-    <NuxtLink to="/random/c">
+    <NuxtLink to="/random/c" prefetched-class="prefetched">
       Random (C)
     </NuxtLink>
     <br>
@@ -39,9 +42,10 @@ const { data: randomNumbers, refresh } = await useFetch('/api/random', { key: pa
 
 const random = useRandomState(100, pageKey)
 const globalRandom = useRandomState(100)
-
-// TODO: NuxtLink should do this automatically on observed
-if (process.client) {
-  preloadPayload('/random/c')
-}
 </script>
+
+<style scoped>
+  .prefetched {
+    color: green;
+  }
+</style>
