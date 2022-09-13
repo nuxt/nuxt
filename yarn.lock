@@ -1940,7 +1940,7 @@ __metadata:
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^3.1.0
     "@vitejs/plugin-vue-jsx": ^2.0.1
-    autoprefixer: ^10.4.9
+    autoprefixer: ^10.4.10
     chokidar: ^3.5.3
     cssnano: ^5.1.13
     defu: ^6.1.0
@@ -1990,7 +1990,7 @@ __metadata:
     "@types/webpack-dev-middleware": ^5.0.2
     "@types/webpack-hot-middleware": ^2.25.6
     "@types/webpack-virtual-modules": ^0
-    autoprefixer: ^10.4.9
+    autoprefixer: ^10.4.10
     css-loader: ^6.7.1
     css-minimizer-webpack-plugin: ^4.1.0
     cssnano: ^5.1.13
@@ -2311,6 +2311,22 @@ __metadata:
   peerDependencies:
     rollup: ^2.42.0
   checksum: ec5418e6b3c23a9e30683056b3010e9d325316dcfae93fbc673ae64dad8e56a2ce761c15c48f5e2dcfe0c822fdc4a4905ee6346e3dcf90603ba2260afef5a5e6
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-node-resolve@npm:^14.1.0":
+  version: 14.1.0
+  resolution: "@rollup/plugin-node-resolve@npm:14.1.0"
+  dependencies:
+    "@rollup/pluginutils": ^3.1.0
+    "@types/resolve": 1.17.1
+    deepmerge: ^4.2.2
+    is-builtin-module: ^3.1.0
+    is-module: ^1.0.0
+    resolve: ^1.19.0
+  peerDependencies:
+    rollup: ^2.78.0
+  checksum: 7c5bed3e5a511ee47172acd91da1a828383f7ef72d54d27d8050598ef9038df0f86a8559db455611e138e07b99d787fd7445b11f81129970d07104644576d80a
   languageName: node
   linkType: hard
 
@@ -4109,12 +4125,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.4.9":
-  version: 10.4.9
-  resolution: "autoprefixer@npm:10.4.9"
+"autoprefixer@npm:^10.4.10":
+  version: 10.4.10
+  resolution: "autoprefixer@npm:10.4.10"
   dependencies:
     browserslist: ^4.21.3
-    caniuse-lite: ^1.0.30001394
+    caniuse-lite: ^1.0.30001399
     fraction.js: ^4.2.0
     normalize-range: ^0.1.2
     picocolors: ^1.0.0
@@ -4123,7 +4139,7 @@ __metadata:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: ea5e2067d36ff170af97c68c286ad29cc56640532100a63ebe1464cff2fcb7d7685a1926774141a78faf8bb09f1746edf4918fa1decfd25761e5ccf9ebc0531d
+  checksum: e48d99b285c397dd0d6386654ddfba1366c23e16aa6b93f1a34c33f778e7da89a572dd04b16d34645071baf942818af09f0ec2f8909c9fee78a121a2a709eb1b
   languageName: node
   linkType: hard
 
@@ -4475,10 +4491,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001394":
-  version: 1.0.30001397
-  resolution: "caniuse-lite@npm:1.0.30001397"
-  checksum: 29b31780397221303b8fadda535e71f20319216df75028c60527f10f1aba1237ec81fa9c1d6b8fb3a0a83c201c01af8090e9cbb292da08c2538f367b1148a7ba
+"caniuse-lite@npm:^1.0.30001399":
+  version: 1.0.30001399
+  resolution: "caniuse-lite@npm:1.0.30001399"
+  checksum: dd105b06fbbdc89867780a2f4debc3ecb184cff82f35b34aaac486628fcc9cf6bacf37573a9cc22dedc661178d460fa8401374a933cb9d2f8ee67316d98b2a8f
   languageName: node
   linkType: hard
 
@@ -10194,9 +10210,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "nitropack@npm:0.5.1"
+"nitropack@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "nitropack@npm:0.5.2"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.2.0
@@ -10204,13 +10220,13 @@ __metadata:
     "@rollup/plugin-commonjs": ^22.0.2
     "@rollup/plugin-inject": ^4.0.4
     "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.3.0
+    "@rollup/plugin-node-resolve": ^14.1.0
     "@rollup/plugin-replace": ^4.0.0
     "@rollup/plugin-wasm": ^5.2.0
     "@rollup/pluginutils": ^4.2.1
     "@vercel/nft": ^0.22.1
     archiver: ^5.3.1
-    c12: ^0.2.10
+    c12: ^0.2.11
     chalk: ^5.0.1
     chokidar: ^3.5.3
     consola: ^2.15.3
@@ -10228,7 +10244,7 @@ __metadata:
     hookable: ^5.3.0
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
-    jiti: ^1.14.0
+    jiti: ^1.15.0
     klona: ^2.0.5
     knitwork: ^0.1.2
     listhen: ^0.2.15
@@ -10238,9 +10254,9 @@ __metadata:
     node-fetch-native: ^0.1.4
     ohash: ^0.1.5
     ohmyfetch: ^0.4.18
-    pathe: ^0.3.5
+    pathe: ^0.3.7
     perfect-debounce: ^0.1.3
-    pkg-types: ^0.3.4
+    pkg-types: ^0.3.5
     pretty-bytes: ^6.0.0
     radix3: ^0.1.2
     rollup: ^2.79.0
@@ -10259,7 +10275,7 @@ __metadata:
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 2d4e765befba9784cb86028964e7a9ed9ecfd3abba450fa715728a01944e45682c59de170298904c548b58059257a77b23bd7c4bf91e0163dcb76fc5aeb88b2f
+  checksum: a27577af6902cbf606c56adcff0c2e88007c0eccfb31b674562fa36f88b91ddf02a2d490b08678aa6912e80ff8fc01502ff19cab4ba9cb488edf2223c89eee2f
   languageName: node
   linkType: hard
 
@@ -10719,7 +10735,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.3
     mlly: ^0.5.14
-    nitropack: ^0.5.1
+    nitropack: ^0.5.2
     nuxi: 3.0.0-rc.9
     ohash: ^0.1.5
     ohmyfetch: ^0.4.18
