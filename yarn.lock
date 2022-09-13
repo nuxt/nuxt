@@ -10261,7 +10261,7 @@ __metadata:
     pathe: ^0.3.7
     perfect-debounce: ^0.1.3
     scule: ^0.3.2
-    strip-literal: ^0.4.0
+    strip-literal: ^0.4.1
     ufo: ^0.8.5
     unbuild: latest
     unctx: ^2.0.2
@@ -12595,6 +12595,15 @@ __metadata:
   dependencies:
     acorn: ^8.7.1
   checksum: f764939203f24bc948dd22319de780e50b6ffa1a20915207090ddc851475a8ed7d99c94c446b75686e2f9f7fcb343dc99bc721a43ae2857f7848e79fc73b8200
+  languageName: node
+  linkType: hard
+
+"strip-literal@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "strip-literal@npm:0.4.1"
+  dependencies:
+    acorn: ^8.8.0
+  checksum: cc12ab62e795f1e8fc1e9dc3fd81a356e23d7001857bb609a1f4849e133fc8eaa21fbcde8b67121dc52aed9ddcc40720648703368994b7ad588e851f5a33193c
   languageName: node
   linkType: hard
 
