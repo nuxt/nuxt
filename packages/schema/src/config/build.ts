@@ -20,7 +20,7 @@ export default defineUntypedSchema({
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
-      return map[val] || (await get('vite') === false ? map.webpack : map.vite)
+      return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
     }
   },
   /**

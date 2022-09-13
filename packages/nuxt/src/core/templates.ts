@@ -68,8 +68,8 @@ export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
   getContents (ctx) {
     const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
-    const exports: string[] = ['preload']
-    const imports: string[] = ["import preload from '#app/plugins/preload.server'"]
+    const exports: string[] = []
+    const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(path).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
