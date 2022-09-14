@@ -1800,7 +1800,7 @@ __metadata:
     "@nuxt/schema": 3.0.0-rc.9
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.11
+    c12: ^0.2.12
     consola: ^2.15.3
     defu: ^6.1.0
     globby: ^13.1.2
@@ -1833,7 +1833,7 @@ __metadata:
   dependencies:
     "@types/lodash.template": ^4
     "@types/semver": ^7
-    c12: ^0.2.11
+    c12: ^0.2.12
     create-require: ^1.1.1
     defu: ^6.1.0
     jiti: ^1.15.0
@@ -4394,6 +4394,22 @@ __metadata:
     pkg-types: ^0.3.5
     rc9: ^1.2.2
   checksum: 933f990e5f65d95f428f9f3dadbda39ff6085ef9335dea763cbaff8f2382e437ce9e8ae4ec40d87cf1c4ea4126b2594bc7d88a59cdbbf7a27d043d048d361dbb
+  languageName: node
+  linkType: hard
+
+"c12@npm:^0.2.12":
+  version: 0.2.12
+  resolution: "c12@npm:0.2.12"
+  dependencies:
+    defu: ^6.1.0
+    dotenv: ^16.0.2
+    gittar: ^0.1.1
+    jiti: ^1.15.0
+    mlly: ^0.5.14
+    pathe: ^0.3.7
+    pkg-types: ^0.3.5
+    rc9: ^1.2.2
+  checksum: 3b2fc182d68aceb940e0ff91b875e79a9027d55b6298b15fb9acc19dee60752dbfc597fb1047044c80a1adf86c45751b7c956537c71a03792e9b2bbe52b9742a
   languageName: node
   linkType: hard
 
@@ -10636,7 +10652,7 @@ __metadata:
     "@types/flat": ^5.0.2
     "@types/mri": ^1.1.1
     "@types/semver": ^7
-    c12: ^0.2.11
+    c12: ^0.2.12
     chokidar: ^3.5.3
     clear: ^0.1.0
     clipboardy: ^3.0.0
