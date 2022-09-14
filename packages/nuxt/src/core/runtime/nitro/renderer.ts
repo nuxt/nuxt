@@ -106,6 +106,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
 const PAYLOAD_CACHE = process.env.prerender ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
+const NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
+
 export default defineRenderHandler(async (event) => {
   // Whether we're rendering an error page
   const ssrError = event.req.url?.startsWith('/__nuxt_error')
@@ -130,7 +132,7 @@ export default defineRenderHandler(async (event) => {
     req: event.req,
     res: event.res,
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
-    noSSR: !!event.req.headers['x-nuxt-no-ssr'],
+    noSSR: !!(event.req.headers['x-nuxt-no-ssr']) || (process.env.prerender ? NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload']
