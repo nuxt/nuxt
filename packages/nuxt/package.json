@@ -12,6 +12,11 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./config": {
+      "import": "./config.mjs",
+      "require": "./config.cjs",
+      "types": "./config.d.ts"
+    },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
   },
@@ -24,7 +29,8 @@
     "app.d.ts",
     "bin",
     "types.d.ts",
-    "dist"
+    "dist",
+    "config.*"
   ],
   "scripts": {
     "prepack": "unbuild"

@@ -234,9 +234,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
+/** @deprecated Use import { defineNuxtConfig } from  'nuxt/config' */
 export function defineNuxtConfig (config: NuxtConfig): NuxtConfig {
   return config
 }
 
-// For a convenience import together with `defineNuxtConfig`
+/** @deprecated Use import type { NuxtConfig } from  'nuxt/config' */
 export type { NuxtConfig }
