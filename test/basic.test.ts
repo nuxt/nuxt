@@ -639,7 +639,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
   })
 })
 
-describe('useAsyncData', () => {
+describe.skipIf(isWindows)('useAsyncData', () => {
   it('single request resolves', async () => {
     await expectNoClientErrors('/useAsyncData/single')
   })
