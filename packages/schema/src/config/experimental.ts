@@ -26,7 +26,7 @@ export default defineUntypedSchema({
      * Tree shakes contents of client-only components from server bundle.
      * @see https://github.com/nuxt/framework/pull/5750
      */
-    treeshakeClientOnly: false,
+    treeshakeClientOnly: true,
 
     /**
      * Use vite-node for on-demand server chunk loading
