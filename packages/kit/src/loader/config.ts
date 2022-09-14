@@ -7,6 +7,7 @@ import { NuxtConfigSchema } from '@nuxt/schema'
 export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
+  (globalThis as any).defineNuxtConfig = (c: any) => c
   const result = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
@@ -16,6 +17,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     globalRc: true,
     ...opts
   })
+  delete (globalThis as any).defineNuxtConfig
   const { configFile, layers = [], cwd } = result
   const nuxtConfig = result.config!
 

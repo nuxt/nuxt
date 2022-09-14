@@ -234,10 +234,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-/** @deprecated Use import { defineNuxtConfig } from  'nuxt/config' */
+/** @deprecated `defineNuxtConfig` is auto imported. Remove import or alternatively use `import { defineNuxtConfig } from  'nuxt/config'`. */
 export function defineNuxtConfig (config: NuxtConfig): NuxtConfig {
   return config
 }
 
-/** @deprecated Use import type { NuxtConfig } from  'nuxt/config' */
-export type { NuxtConfig }
+/** @deprecated Use `import type { NuxtConfig } from  'nuxt/config'`.  */
+type _NuxtConfig = NuxtConfig
+export type { _NuxtConfig as NuxtConfig }
