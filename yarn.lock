@@ -67,7 +67,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.18.13, @babel/core@npm:^7.19.0":
+"@babel/core@npm:^7.18.13, @babel/core@npm:^7.19.0, @babel/core@npm:^7.19.1":
   version: 7.19.1
   resolution: "@babel/core@npm:7.19.1"
   dependencies:
@@ -1857,7 +1857,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
-    "@babel/core": ^7.19.0
+    "@babel/core": ^7.19.1
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
     "@nuxt/kit": 3.0.0-rc.10
     "@nuxt/schema": 3.0.0-rc.10
@@ -3247,12 +3247,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/head@npm:^0.7.10":
-  version: 0.7.10
-  resolution: "@vueuse/head@npm:0.7.10"
+"@vueuse/head@npm:^0.7.11":
+  version: 0.7.11
+  resolution: "@vueuse/head@npm:0.7.11"
+  dependencies:
+    "@zhead/schema-vue": ^0.7.1
   peerDependencies:
     vue: ">=2.7 || >=3"
-  checksum: 109e4def949252bbb21e111fb034f073f8664d8d83284a2ee556aa98c8715f2f53fd9f46500379d0830f65047a01159e3886c3a0f1d7939f57bc2486026995ba
+  checksum: 1344951b6c244180a5d504ca95aa5d4ebd75cc3436918565945a48e6b40c844df4aa402a427ad92da7622af8ff1285754dc947ec7ff1b5f2915371942ca35c84
   languageName: node
   linkType: hard
 
@@ -3492,6 +3494,24 @@ __metadata:
   version: 4.2.2
   resolution: "@xtuc/long@npm:4.2.2"
   checksum: 8ed0d477ce3bc9c6fe2bf6a6a2cc316bb9c4127c5a7827bae947fa8ec34c7092395c5a283cc300c05b5fa01cbbfa1f938f410a7bf75db7c7846fea41949989ec
+  languageName: node
+  linkType: hard
+
+"@zhead/schema-vue@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "@zhead/schema-vue@npm:0.7.1"
+  dependencies:
+    "@zhead/schema": 0.7.1
+  peerDependencies:
+    vue: ">=2.7 || >=3"
+  checksum: 96c00c696bd530a3e946517386bd7863cf9763c3b6f0d4bcbe932c0d0e31ebbaee99986c678b0f52a8c7f189fc9cf6ae64234d3356109c24c9291b764bbbb98f
+  languageName: node
+  linkType: hard
+
+"@zhead/schema@npm:0.7.1":
+  version: 0.7.1
+  resolution: "@zhead/schema@npm:0.7.1"
+  checksum: 7c4f90a84bb3c2254eca53258fc818aef9b18a93cd050580f982c19c4b31ba82c223c9fda1e88901767330e522b26e91c9e492c9191f986d70e310bc9425b5b8
   languageName: node
   linkType: hard
 
@@ -10484,7 +10504,7 @@ __metadata:
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.39
     "@vue/shared": ^3.2.39
-    "@vueuse/head": ^0.7.10
+    "@vueuse/head": ^0.7.11
     chokidar: ^3.5.3
     cookie-es: ^0.5.0
     defu: ^6.1.0

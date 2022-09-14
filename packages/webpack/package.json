@@ -16,7 +16,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.19.0",
+    "@babel/core": "^7.19.1",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.0.0-rc.10",
     "autoprefixer": "^10.4.10",
