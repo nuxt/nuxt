@@ -4381,22 +4381,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"c12@npm:^0.2.11":
-  version: 0.2.11
-  resolution: "c12@npm:0.2.11"
-  dependencies:
-    defu: ^6.1.0
-    dotenv: ^16.0.2
-    gittar: ^0.1.1
-    jiti: ^1.15.0
-    mlly: ^0.5.14
-    pathe: ^0.3.7
-    pkg-types: ^0.3.5
-    rc9: ^1.2.2
-  checksum: 933f990e5f65d95f428f9f3dadbda39ff6085ef9335dea763cbaff8f2382e437ce9e8ae4ec40d87cf1c4ea4126b2594bc7d88a59cdbbf7a27d043d048d361dbb
-  languageName: node
-  linkType: hard
-
 "c12@npm:^0.2.12":
   version: 0.2.12
   resolution: "c12@npm:0.2.12"
