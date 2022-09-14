@@ -2595,10 +2595,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.58":
-  version: 16.11.58
-  resolution: "@types/node@npm:16.11.58"
-  checksum: efdf14c62e6c1a8e758416aaa3ae4b81015ffd4e1f31c05680d1242817ba23f0b4b1345886fe5aeb3c05d818bcaed1a7af4d637e7cca5723a5e4ac8b759d3ace
+"@types/node@npm:^16.11.59":
+  version: 16.11.59
+  resolution: "@types/node@npm:16.11.59"
+  checksum: b3a2986ef8f8216bb7fd1187dcf2e69aca3e6b6b5fdfd6abf4cf11c44e3cdd587fae875a28dc4ef257e2b369e2c5290642aff6a0a9d702f3385a78f561293259
   languageName: node
   linkType: hard
 
@@ -7776,18 +7776,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"giget@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "giget@npm:0.1.5"
+"giget@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "giget@npm:0.1.6"
   dependencies:
     colorette: ^2.0.19
+    defu: ^6.1.0
     mri: ^1.2.0
     node-fetch-native: ^0.1.4
     pathe: ^0.3.7
     tar: ^6.1.11
   bin:
     giget: dist/cli.mjs
-  checksum: 3f9e50f3bd4f9109c7cb511427449daa66c54f466a7e3169bd2475984b60b83e5e840dc35b71373ee137be22458ad1a31564fa2f99e9fc50ec760849d4d30e62
+  checksum: d41a8cb2eb794a1910672663d4319a20a799135149d48e15dc35d3ab18e87910df5344c140fcc1018a4672f14c8312d8068c30577b17cbde7a48fe554c64e96a
   languageName: node
   linkType: hard
 
@@ -10646,7 +10647,7 @@ __metadata:
     execa: ^6.1.0
     flat: ^5.0.2
     fsevents: ~2.3.2
-    giget: ^0.1.5
+    giget: ^0.1.6
     jiti: ^1.15.0
     listhen: ^0.2.15
     mlly: ^0.5.14
@@ -10672,7 +10673,7 @@ __metadata:
     "@actions/core": ^1.9.1
     "@nuxtjs/eslint-config-typescript": ^11.0.0
     "@types/crawler": ^1.2.2
-    "@types/node": ^16.11.58
+    "@types/node": ^16.11.59
     "@types/rimraf": ^3
     "@unocss/reset": ^0.45.21
     case-police: ^0.5.10
