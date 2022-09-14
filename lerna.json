@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0-rc.9",
+  "version": "3.0.0-rc.10",
   "npmClient": "yarn",
   "useWorkspaces": true,
   "conventionalCommits": true,
