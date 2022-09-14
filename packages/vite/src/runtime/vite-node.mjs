@@ -46,9 +46,10 @@ function createRunner () {
         if (!errorData) {
           throw err
         }
+        let _err
         try {
           const { message, stack } = formatViteError(errorData)
-          throw createError({
+          _err = createError({
             statusMessage: 'Vite Error',
             message,
             stack
@@ -62,6 +63,7 @@ function createRunner () {
             stack: 'Vite Error\nat [check console]'
           })
         }
+        throw _err
       })
     }
   })
