@@ -174,7 +174,9 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   // Add prerender payload support
-  addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  if (!nuxt.options.dev) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
 
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {

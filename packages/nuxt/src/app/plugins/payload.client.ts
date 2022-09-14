@@ -2,7 +2,7 @@ import { defineNuxtPlugin, loadPayload, addRouteMiddleware, isPrerendered } from
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Only enable behavior if initial page is prerendered
-  // TOOD: Support hybrid
+  // TOOD: Support hybrid and dev
   if (!isPrerendered()) {
     return
   }
