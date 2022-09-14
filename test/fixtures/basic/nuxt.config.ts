@@ -1,4 +1,3 @@
-import { defineNuxtConfig } from 'nuxt'
 import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import { createUnplugin } from 'unplugin'
 

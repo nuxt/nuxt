@@ -1731,7 +1731,7 @@ __metadata:
   version: 2.1.5
   resolution: "@nuxt/telemetry@npm:2.1.5"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.9
+    "@nuxt/kit": ^3.0.0-rc.10
     chalk: ^5.0.1
     ci-info: ^3.3.2
     consola: ^2.15.3
@@ -1789,7 +1789,7 @@ __metadata:
   resolution: "@nuxt/ui@npm:0.3.2"
   dependencies:
     "@iconify-json/carbon": ^1.1.7
-    "@nuxt/kit": ^3.0.0-rc.9
+    "@nuxt/kit": ^3.0.0-rc.10
     "@nuxtjs/color-mode": ^3.1.4
     "@unocss/core": ^0.45.6
     "@unocss/nuxt": ^0.45.6
@@ -1914,7 +1914,7 @@ __metadata:
   version: 3.1.5
   resolution: "@nuxtjs/color-mode@npm:3.1.5"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.9
+    "@nuxt/kit": ^3.0.0-rc.10
     lodash.template: ^4.5.0
     pathe: ^0.3.5
   checksum: 094fbe13dbaa5df53476caf00f60a033cf77761381b55cd54e0aa57cf0e59d58e0cb41e41d565a604b5c14ec91bc91aa6900e33641082c5a7e6a57031abcea90
@@ -2803,7 +2803,7 @@ __metadata:
   version: 0.45.21
   resolution: "@unocss/nuxt@npm:0.45.21"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.9
+    "@nuxt/kit": ^3.0.0-rc.10
     "@unocss/core": 0.45.21
     "@unocss/preset-attributify": 0.45.21
     "@unocss/preset-icons": 0.45.21
@@ -3310,13 +3310,13 @@ __metadata:
   version: 9.2.0
   resolution: "@vueuse/nuxt@npm:9.2.0"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.9
+    "@nuxt/kit": ^3.0.0-rc.10
     "@vueuse/core": 9.2.0
     "@vueuse/metadata": 9.2.0
     local-pkg: ^0.4.2
     vue-demi: "*"
   peerDependencies:
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   checksum: 3da194dc777a6882ea884a42cde45750ace20e3e386c4b6d34bc4936441c2d8e65350fa382627c9a9186748245a486e9b38b3bbb1717e2d482faf1250edde144
   languageName: node
   linkType: hard
@@ -6718,7 +6718,7 @@ __metadata:
   resolution: "example-components@workspace:examples/auto-imports/components"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6727,7 +6727,7 @@ __metadata:
   resolution: "example-composables@workspace:examples/auto-imports/composables"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6736,7 +6736,7 @@ __metadata:
   resolution: "example-config-extends@workspace:examples/advanced/config-extends"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6745,7 +6745,7 @@ __metadata:
   resolution: "example-error-handling@workspace:examples/app/error-handling"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6753,7 +6753,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-hello-world@workspace:examples/essentials/hello-world"
   dependencies:
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6762,7 +6762,7 @@ __metadata:
   resolution: "example-jsx@workspace:examples/advanced/jsx"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6771,7 +6771,7 @@ __metadata:
   resolution: "example-layouts@workspace:examples/routing/layouts"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6780,7 +6780,7 @@ __metadata:
   resolution: "example-locale@workspace:examples/other/locale"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6789,7 +6789,7 @@ __metadata:
   resolution: "example-middleware@workspace:examples/routing/middleware"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6798,7 +6798,7 @@ __metadata:
   resolution: "example-module-extend-pages@workspace:examples/advanced/module-extend-pages"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6807,7 +6807,7 @@ __metadata:
   resolution: "example-nuxt-link@workspace:examples/routing/nuxt-link"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6816,7 +6816,7 @@ __metadata:
   resolution: "example-pages@workspace:examples/routing/pages"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6825,7 +6825,7 @@ __metadata:
   resolution: "example-plugins@workspace:examples/app/plugins"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6834,7 +6834,7 @@ __metadata:
   resolution: "example-reactivity-transform@workspace:examples/experimental/reactivity-transform"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6843,7 +6843,7 @@ __metadata:
   resolution: "example-server-routes@workspace:examples/server/routes"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6852,7 +6852,7 @@ __metadata:
   resolution: "example-teleport@workspace:examples/app/teleport"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6860,7 +6860,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-testing@workspace:examples/advanced/testing"
   dependencies:
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6869,7 +6869,7 @@ __metadata:
   resolution: "example-universal-router@workspace:examples/routing/universal-router"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6878,7 +6878,7 @@ __metadata:
   resolution: "example-use-async-data@workspace:examples/composables/use-async-data"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6887,7 +6887,7 @@ __metadata:
   resolution: "example-use-cookie@workspace:examples/composables/use-cookie"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6896,7 +6896,7 @@ __metadata:
   resolution: "example-use-fetch@workspace:examples/composables/use-fetch"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6905,7 +6905,7 @@ __metadata:
   resolution: "example-use-head@workspace:examples/composables/use-head"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6914,7 +6914,7 @@ __metadata:
   resolution: "example-use-state@workspace:examples/composables/use-state"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6923,7 +6923,7 @@ __metadata:
   resolution: "example-vite-node@workspace:examples/experimental/vite-node"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
@@ -6932,7 +6932,7 @@ __metadata:
   resolution: "example-wasm@workspace:examples/experimental/wasm"
   dependencies:
     "@nuxt/ui": ^0.3.2
-    nuxt: ^3.0.0-rc.9
+    nuxt: ^3.0.0-rc.10
   languageName: unknown
   linkType: soft
 
