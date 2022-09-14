@@ -1,6 +1,6 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests

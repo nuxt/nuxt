@@ -13,7 +13,7 @@ vi.mock('vue', async () => {
 })
 
 // Mocks Nuxt `useRouter()`
-vi.mock('#app', () => ({
+vi.mock('../src/app/composables/router', () => ({
   useRouter: () => ({ resolve: ({ to }: { to: string }) => ({ href: to }) })
 }))
 

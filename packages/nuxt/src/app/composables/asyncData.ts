@@ -1,6 +1,6 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref } from 'vue'
 import type { Ref, WatchSource } from 'vue'
-import { NuxtApp, useNuxtApp } from '#app'
+import { NuxtApp, useNuxtApp } from '../nuxt'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
 

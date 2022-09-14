@@ -1,4 +1,4 @@
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 
 /**
  * Allows full control of the hydration cycle to set and receive data from the server.

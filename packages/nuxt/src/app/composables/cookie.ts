@@ -4,8 +4,8 @@ import { appendHeader } from 'h3'
 import type { CompatibilityEvent } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
+import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
-import { useNuxtApp } from '#app'
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 

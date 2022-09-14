@@ -2,7 +2,8 @@ import { defineComponent, h, ref, resolveComponent, PropType, computed, DefineCo
 import { RouteLocationRaw, Router } from 'vue-router'
 import { hasProtocol } from 'ufo'
 
-import { navigateTo, useRouter, useNuxtApp } from '#app'
+import { navigateTo, useRouter } from '../composables/router'
+import { useNuxtApp } from '../nuxt'
 
 const firstNonUndefined = <T>(...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 

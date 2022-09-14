@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 
 /**
  * Preload a component or components that have been globally registered.

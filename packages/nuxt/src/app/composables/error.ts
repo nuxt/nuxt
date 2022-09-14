@@ -1,6 +1,6 @@
 import { createError as _createError, H3Error } from 'h3'
 import { toRef } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 
 export const useError = () => toRef(useNuxtApp().payload, 'error')
 
