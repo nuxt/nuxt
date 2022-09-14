@@ -73,7 +73,7 @@ export default defineUntypedSchema({
    * @example
    * ```js
    * export default {
-   *   srcDir: 'client/'
+   *   srcDir: 'src/'
    * }
    * ```
    * This would work with the following folder structure:
@@ -82,7 +82,7 @@ export default defineUntypedSchema({
    * ---| node_modules/
    * ---| nuxt.config.js
    * ---| package.json
-   * ---| client/
+   * ---| src/
    * ------| assets/
    * ------| components/
    * ------| layouts/
@@ -91,6 +91,7 @@ export default defineUntypedSchema({
    * ------| plugins/
    * ------| static/
    * ------| store/
+   * ------| server/
    * ```
    * @version 2
    * @version 3
