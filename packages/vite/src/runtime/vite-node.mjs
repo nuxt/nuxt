@@ -1,11 +1,9 @@
 import { performance } from 'node:perf_hooks'
 import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
-import { $fetch } from 'ohmyfetch'
 import consola from 'consola'
-import { getViteNodeOptions } from './vite-node-shared.mjs'
+import { viteNodeOptions, viteNodeFetch } from './vite-node-shared.mjs'
 
-const viteNodeOptions = getViteNodeOptions()
 const runner = createRunner()
 let render
 
@@ -15,9 +13,7 @@ export default async (ssrContext) => {
   process.server = true
 
   // Invalidate cache for files changed since last rendering
-  const invalidates = await $fetch('/invalidates', {
-    baseURL: viteNodeOptions.baseURL
-  })
+  const invalidates = await viteNodeFetch('/invalidates')
   const updates = runner.moduleCache.invalidateDepTree(invalidates)
 
   // Execute SSR bundle on demand
@@ -39,9 +35,7 @@ function createRunner () {
     async fetchModule (id) {
       // TODO: fix in vite-node
       id = id.replace(/\/\//g, '/')
-      return await $fetch('/module/' + encodeURI(id), {
-        baseURL: viteNodeOptions.baseURL
-      }).catch((err) => {
+      return await viteNodeFetch('/module/' + encodeURI(id)).catch((err) => {
         const errorData = err?.data?.data
         if (!errorData) {
           throw err
