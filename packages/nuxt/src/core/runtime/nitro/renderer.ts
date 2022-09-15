@@ -106,7 +106,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 const PAYLOAD_CACHE = process.env.prerender ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
-const NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
+const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
 export default defineRenderHandler(async (event) => {
   // Whether we're rendering an error page
@@ -132,14 +132,17 @@ export default defineRenderHandler(async (event) => {
     req: event.req,
     res: event.res,
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
-    noSSR: !!(event.req.headers['x-nuxt-no-ssr']) || (process.env.prerender ? NO_SSR_ROUTES.has(url) : false),
+    noSSR:
+      !!(process.env.NUXT_NO_SSR) ||
+      !!(event.req.headers['x-nuxt-no-ssr']) ||
+      (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload']
   }
 
   // Whether we are prerendering route
-  const payloadURL = process.env.prerender ? joinURL(url, '_payload.js') : undefined
+  const payloadURL = (process.env.prerender && !ssrContext.noSSR) ? joinURL(url, '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -209,7 +212,7 @@ export default defineRenderHandler(async (event) => {
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
-        : (process.env.prerender
+        : ((process.env.prerender && !ssrContext.noSSR)
             ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${devalue(splitPayload(ssrContext).initial)})}</script>`
             : `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`
           ),
