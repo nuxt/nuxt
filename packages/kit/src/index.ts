@@ -18,7 +18,7 @@ export * from './layout'
 export * from './pages'
 export * from './plugin'
 export * from './resolve'
-export * from './server'
+export * from './nitro'
 export * from './template'
 export * from './logger'
 
