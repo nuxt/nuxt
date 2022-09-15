@@ -150,7 +150,7 @@ export default defineUntypedSchema({
      * @version 2
      */
     cssSourceMap: {
-      $resolve: async (val, get) => val ?? await get('sourcemap') ?? await get('dev')
+      $resolve: async (val, get) => val ?? (await get('sourcemap.client') || await get('sourcemap.server')) ?? await get('dev')
     },
 
     /**
