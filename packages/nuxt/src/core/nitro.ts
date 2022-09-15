@@ -70,7 +70,8 @@ export async function initNitro (nuxt: Nuxt) {
               nuxt.options.buildDir
             ]),
         'nuxt/dist',
-        'nuxt3/dist'
+        'nuxt3/dist',
+        distDir
       ]
     },
     alias: {
