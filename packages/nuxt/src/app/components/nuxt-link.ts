@@ -226,7 +226,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             {
               ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
               to: to.value,
-              class: prefetched.value && (props.prefetchedClass || options.prefetchedClass),
+              ...((prefetched.value && !props.custom) ? { class: props.prefetchedClass || options.prefetchedClass } : {}),
               activeClass: props.activeClass || options.activeClass,
               exactActiveClass: props.exactActiveClass || options.exactActiveClass,
               replace: props.replace,
