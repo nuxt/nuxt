@@ -51,7 +51,7 @@
     "vite": "~3.1.1",
     "vite-node": "^0.23.2",
     "vite-plugin-checker": "^0.5.1",
-    "vue-bundle-renderer": "^0.4.2"
+    "vue-bundle-renderer": "^0.4.3"
   },
   "peerDependencies": {
     "vue": "^3.2.39"
