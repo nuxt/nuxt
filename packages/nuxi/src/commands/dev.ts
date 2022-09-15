@@ -91,6 +91,7 @@ export default defineNuxtCommand({
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
         const address = listener.server.address() as AddressInfo
+        currentNuxt.options.server.url = listener.url
         currentNuxt.options.server.port = address.port
         currentNuxt.options.server.host = address.address
         currentNuxt.options.server.https = Boolean(args.https)

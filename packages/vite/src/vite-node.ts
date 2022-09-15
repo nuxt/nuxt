@@ -123,13 +123,9 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
 }
 
 export async function initViteNodeServer (ctx: ViteBuildContext) {
-  const host = ctx.nuxt.options.server.host || 'localhost'
-  const port = ctx.nuxt.options.server.port || '3000'
-  const protocol = ctx.nuxt.options.server.https ? 'https' : 'http'
-
   // Serialize and pass vite-node runtime options
   const viteNodeServerOptions = {
-    baseURL: `${protocol}://${host}:${port}/__nuxt_vite_node__`,
+    baseURL: `${ctx.nuxt.options.server.url}__nuxt_vite_node__`,
     root: ctx.nuxt.options.srcDir,
     entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/'

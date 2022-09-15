@@ -39,5 +39,10 @@ export default <SchemaDefinition>{
    * time spent on server-side rendering.
    */
   /** @deprecated This option is ignored with Bridge and Nuxt 3 */
-  timing: (val: any) => val ? ({ total: true, ...val }) : false
+  timing: (val: any) => val ? ({ total: true, ...val }) : false,
+
+  /**
+   * Listening dev server url
+   */
+  url: 'http://localhost:3000',
 }

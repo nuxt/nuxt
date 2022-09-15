@@ -9088,9 +9088,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"listhen@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "listhen@npm:0.3.0"
+"listhen@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "listhen@npm:0.3.1"
   dependencies:
     clipboardy: ^3.0.0
     colorette: ^2.0.19
@@ -9100,7 +9100,7 @@ __metadata:
     ip-regex: ^5.0.0
     node-forge: ^1.3.1
     ufo: ^0.8.5
-  checksum: 4b34a6ef14e2bd91325275df567df6592233419f2bfc34195b565e29fa642ad74ffbeab3bcf524c314f4128ce0129d0d443b460c8bc0d1090f888c08cdf970ce
+  checksum: 2a260fd6edbf8459be04e6f762617b535a3bbbf92d79e219145c3a301b141b93987a2cfee42081a929e9d92b3628dc2cec93cb1fea4ec0539914c5dc3331fca2
   languageName: node
   linkType: hard
 
@@ -10454,7 +10454,7 @@ __metadata:
     fsevents: ~2.3.2
     giget: ^0.1.6
     jiti: ^1.15.0
-    listhen: ^0.3.0
+    listhen: ^0.3.1
     mlly: ^0.5.14
     mri: ^1.2.0
     pathe: ^0.3.7
