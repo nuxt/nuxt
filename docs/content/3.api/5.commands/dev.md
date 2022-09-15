@@ -27,5 +27,5 @@ If you are using a self-signed certificate in development, you will need to set 
 ::
 
 ::stabilityEdge{title="Improved HTTPS Support"}
-With next releases, `NODE_TLS_REJECT_UNAUTHORIZED` is no longer required. You can try this on edge channel using `npx nuxi-edge@latest dev --https`
+With next releases, `NODE_TLS_REJECT_UNAUTHORIZED` is no longer required.
 ::
