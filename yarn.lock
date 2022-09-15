@@ -8337,6 +8337,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ip-regex@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "ip-regex@npm:5.0.0"
+  checksum: 4098b2df89c015f1484a5946e733ec126af8c1828719d90e09f04af23ce487e1a852670e4d3f51b0dc6dfbaf7d8bfab23fd7893ca60e69833da99b7b1ee3623b
+  languageName: node
+  linkType: hard
+
 "ip@npm:^2.0.0":
   version: 2.0.0
   resolution: "ip@npm:2.0.0"
@@ -9078,6 +9085,22 @@ __metadata:
     selfsigned: ^2.0.1
     ufo: ^0.8.5
   checksum: 6190a0dec7b150698c26b08b429888e6d86a4f81121cd0bc59fe0180097a9ed4e9839bc8bfbe10d1bc7d8a176958fb9ade161e50977275ac73fa536d7656075a
+  languageName: node
+  linkType: hard
+
+"listhen@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "listhen@npm:0.3.0"
+  dependencies:
+    clipboardy: ^3.0.0
+    colorette: ^2.0.19
+    defu: ^6.1.0
+    get-port-please: ^2.6.1
+    http-shutdown: ^1.2.2
+    ip-regex: ^5.0.0
+    node-forge: ^1.3.1
+    ufo: ^0.8.5
+  checksum: 4b34a6ef14e2bd91325275df567df6592233419f2bfc34195b565e29fa642ad74ffbeab3bcf524c314f4128ce0129d0d443b460c8bc0d1090f888c08cdf970ce
   languageName: node
   linkType: hard
 
@@ -10117,7 +10140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:^1":
+"node-forge@npm:^1, node-forge@npm:^1.3.1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
   checksum: 08fb072d3d670599c89a1704b3e9c649ff1b998256737f0e06fbd1a5bf41cae4457ccaee32d95052d80bbafd9ffe01284e078c8071f0267dc9744e51c5ed42a9
@@ -10431,7 +10454,7 @@ __metadata:
     fsevents: ~2.3.2
     giget: ^0.1.6
     jiti: ^1.15.0
-    listhen: ^0.2.15
+    listhen: ^0.3.0
     mlly: ^0.5.14
     mri: ^1.2.0
     pathe: ^0.3.7

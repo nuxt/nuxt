@@ -48,8 +48,7 @@ export default defineNuxtCommand({
       open: args.open || args.o,
       port: args.port || args.p || process.env.NUXT_PORT,
       hostname: args.host || args.h || process.env.NUXT_HOST,
-      https: Boolean(args.https),
-      certificate: (args['ssl-cert'] && args['ssl-key']) && {
+      https: args.https && {
         cert: args['ssl-cert'],
         key: args['ssl-key']
       }
