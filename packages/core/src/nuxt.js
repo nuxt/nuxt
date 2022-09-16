@@ -104,9 +104,8 @@ export default class Nuxt extends Hookable {
   }
 
   _initServer () {
-    if (this.server) {
-      return
-    }
+    if (this.server) return
+
     this.server = new Server(this)
     this.renderer = this.server
     this.render = this.server.app
