@@ -28,7 +28,8 @@ export default defineNuxtCommand({
       }
     })
 
-    const nitro = useNitro()
+    // Use ? for backward compatibility for Nuxt <= RC.10
+    const nitro = useNitro?.()
 
     await clearDir(nuxt.options.buildDir)
 
