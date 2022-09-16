@@ -297,9 +297,9 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
 }
 
 function splitPayload (ssrContext: NuxtSSRContext) {
-  const { data, state, prerenderedAt, ...initial } = ssrContext.payload
+  const { data, prerenderedAt, ...initial } = ssrContext.payload
   return {
     initial: { ...initial, prerenderedAt },
-    payload: { data, state, prerenderedAt }
+    payload: { data, prerenderedAt }
   }
 }
