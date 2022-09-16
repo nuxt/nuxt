@@ -1,4 +1,4 @@
-import { defineNuxtPlugin, loadPayload, addRouteMiddleware, isPrerendered } from '#app'
+import { defineNuxtPlugin, loadPayload, isPrerendered, useRouter } from '#app'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Only enable behavior if initial page is prerendered
@@ -6,17 +6,16 @@ export default defineNuxtPlugin((nuxtApp) => {
   if (!isPrerendered()) {
     return
   }
-  const prefetchPayload = async (url: string) => {
-    const payload = await loadPayload(url)
+
+  // Load payload into cache
+  nuxtApp.hooks.hook('link:prefetch', to => loadPayload(to))
+
+  // Load payload after middleware & once final route is resolved
+  useRouter().beforeResolve(async (to, from) => {
+    if (to.path === from.path) { return }
+    const payload = await loadPayload(to.path)
     if (!payload) { return }
     Object.assign(nuxtApp.payload.data, payload.data)
     Object.assign(nuxtApp.payload.state, payload.state)
-  }
-  nuxtApp.hooks.hook('link:prefetch', async (to) => {
-    await prefetchPayload(to)
-  })
-  addRouteMiddleware(async (to, from) => {
-    if (to.path === from.path) { return }
-    await prefetchPayload(to.path)
   })
 })
