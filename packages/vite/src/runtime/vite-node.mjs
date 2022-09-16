@@ -48,13 +48,14 @@ function createRunner () {
             message,
             stack
           })
-        } catch (err) {
-          // This should not happen unless there is an internal error with formatViteError!
-          consola.error('Error while formatting vite error:', errorData)
+        } catch (formatError) {
+          consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
+          const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
+          consola.error(message, errorData)
           throw createError({
             statusMessage: 'Vite Error',
-            message: errorData.message || 'Vite Error',
-            stack: 'Vite Error\nat [check console]'
+            message,
+            stack: `${message}\nat ${id}\n` + (errorData?.stack || '')
           })
         }
         throw _err
