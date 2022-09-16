@@ -102,7 +102,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.rootDir })
+        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir })
       }
       return false
     }
