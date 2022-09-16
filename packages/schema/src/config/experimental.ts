@@ -74,5 +74,10 @@ export default defineUntypedSchema({
      * Turn off rendering of Nuxt scripts and JS resource hints.
      */
     noScripts: false,
+
+    /**
+     * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     */
+    payloadExtraction: true,
   }
 })

@@ -103,7 +103,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   return { renderToString }
 })
 
-const PAYLOAD_CACHE = process.env.prerender ? new Map() : null // TODO: Use LRU cache
+const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
@@ -142,7 +142,8 @@ export default defineRenderHandler(async (event) => {
   }
 
   // Whether we are prerendering route
-  const payloadURL = (process.env.prerender && !ssrContext.noSSR) ? joinURL(url, '_payload.js') : undefined
+  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(url, '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -174,7 +175,7 @@ export default defineRenderHandler(async (event) => {
     return response
   }
 
-  if (process.env.prerender) {
+  if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
     appendHeader(event, 'x-nitro-prerender', payloadURL!)
     // Use same ssr context to generate payload for this route
@@ -194,7 +195,7 @@ export default defineRenderHandler(async (event) => {
     htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
     head: normalizeChunks([
       renderedMeta.headTags,
-      (process.env.prerender && !ssrContext.noSSR) ? `<link rel="modulepreload" href="${payloadURL}">` : null,
+      _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
       _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
@@ -212,7 +213,7 @@ export default defineRenderHandler(async (event) => {
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
-        : ((process.env.prerender && !ssrContext.noSSR)
+        : (_PAYLOAD_EXTRACTION
             ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${devalue(splitPayload(ssrContext).initial)})}</script>`
             : `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`
           ),
