@@ -16,14 +16,17 @@ const keyedFunctions = [
   'useState', 'useFetch', 'useAsyncData', 'useLazyAsyncData', 'useLazyFetch'
 ]
 const KEYED_FUNCTIONS_RE = new RegExp(`(${keyedFunctions.join('|')})`)
+const stringTypes = ['Literal', 'TemplateLiteral']
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
   return {
     name: 'nuxt:composable-keys',
     enforce: 'post',
-    transform (code, id) {
+    transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      if (!pathname.match(/\.(m?[jt]sx?|vue)/) || parseQuery(search).type === 'style') { return }
+      return !pathname.match(/node_modules\/nuxt3?\//) && pathname.match(/\.(m?[jt]sx?|vue)/) && parseQuery(search).type !== 'style'
+    },
+    transform (code, id) {
       if (!KEYED_FUNCTIONS_RE.test(code)) { return }
       const { 0: script = code, index: codeIndex = 0 } = code.match(/(?<=<script[^>]*>)[\S\s.]*?(?=<\/script>)/) || []
       const s = new MagicString(code)
@@ -37,13 +40,29 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         enter (_node) {
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node: CallExpression = _node as CallExpression
-          if (keyedFunctions.includes((node.callee as any).name) && node.arguments.length < 4) {
-            const end = (node as any).end
-            s.appendLeft(
-              codeIndex + end - 1,
-              (node.arguments.length ? ', ' : '') + "'$" + hash(`${relativeID}-${++count}`) + "'"
-            )
+          const name = 'name' in node.callee && node.callee.name
+          if (!name || !keyedFunctions.includes(name) || node.arguments.length >= 4) { return }
+
+          switch (name) {
+            case 'useState':
+              if (node.arguments.length >= 2 || stringTypes.includes(node.arguments[0].type)) { return }
+              break
+
+            case 'useFetch':
+            case 'useLazyFetch':
+              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[1]?.type)) { return }
+              break
+
+            case 'useAsyncData':
+            case 'useLazyAsyncData':
+              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[0].type) || stringTypes.includes(node.arguments[node.arguments.length - 1].type)) { return }
+              break
           }
+
+          s.appendLeft(
+            codeIndex + (node as any).end - 1,
+            (node.arguments.length ? ', ' : '') + "'$" + hash(`${relativeID}-${++count}`) + "'"
+          )
         }
       })
       if (s.hasChanged()) {
