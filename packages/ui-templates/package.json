@@ -30,13 +30,13 @@
     "critters": "^0.0.16",
     "globby": "^13.1.2",
     "html-minifier": "^4.0.0",
-    "jiti": "^1.14.0",
+    "jiti": "^1.15.0",
     "knitwork": "^0.1.2",
     "lodash.template": "^4.5.0",
     "scule": "^0.3.2",
     "upath": "^2.0.1",
-    "vite": "^3.0.5",
-    "vite-plugin-windicss": "^1.8.7",
+    "vite": "^3.1.2",
+    "vite-plugin-windicss": "^1.8.8",
     "windicss": "^3.5.6"
   },
   "publishConfig": {
