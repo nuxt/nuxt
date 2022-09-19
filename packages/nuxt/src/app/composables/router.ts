@@ -79,7 +79,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   // Early redirect on client-side
-  if (!isExternal && isProcessingMiddleware()) {
+  if (process.client && !isExternal && isProcessingMiddleware()) {
     return to
   }
 
