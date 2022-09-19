@@ -29,12 +29,15 @@ export default async (ssrContext) => {
 }
 
 function createRunner () {
+  const _importers = new Map()
   return new ViteNodeRunner({
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
+    resolveId (id, importer) { _importers.set(id, importer) },
     async fetchModule (id) {
-      // TODO: fix in vite-node
-      id = id.replace(/\/\//g, '/')
+      const importer = _importers.get(id)
+      _importers.delete(id)
+      id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
       return await viteNodeFetch('/module/' + encodeURI(id)).catch((err) => {
         const errorData = err?.data?.data
         if (!errorData) {
@@ -42,7 +45,7 @@ function createRunner () {
         }
         let _err
         try {
-          const { message, stack } = formatViteError(errorData)
+          const { message, stack } = formatViteError(errorData, id, importer)
           _err = createError({
             statusMessage: 'Vite Error',
             message,
@@ -64,11 +67,11 @@ function createRunner () {
   })
 }
 
-function formatViteError (errorData) {
+function formatViteError (errorData, id, importer) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
 
-  const getLocId = (locObj = {}) => locObj.file || locObj.id || locObj.url || ''
+  const getLocId = (locObj = {}) => locObj.file || locObj.id || locObj.url || id || ''
   const getLocPos = (locObj = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
   const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
   const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
@@ -85,7 +88,7 @@ function formatViteError (errorData) {
 
   const stack = [
     message,
-    'at ' + loc,
+    `at ${loc} ${importer ? `(imported from ${importer})` : ''}`,
     errorData.stack
   ].filter(Boolean).join('\n')
 
