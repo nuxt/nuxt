@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   nitro: {
-    experiments: {
+    experimental: {
       wasm: true
     }
   },
