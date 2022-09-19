@@ -45,7 +45,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
           switch (name) {
             case 'useState':
-              if (node.arguments.length >= 2 || stringTypes.includes(node.arguments[0].type)) { return }
+              if (node.arguments.length >= 2 || stringTypes.includes(node.arguments[0]?.type)) { return }
               break
 
             case 'useFetch':
@@ -55,7 +55,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
             case 'useAsyncData':
             case 'useLazyAsyncData':
-              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[0].type) || stringTypes.includes(node.arguments[node.arguments.length - 1].type)) { return }
+              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
               break
           }
 
