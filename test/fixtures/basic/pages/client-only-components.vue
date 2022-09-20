@@ -8,5 +8,11 @@
         </div>
       </template>
     </ClientOnlySetupScript>
+    <ClientOnly>
+      Should not be server rendered.
+      <template #fallback>
+        <div>Fallback</div>
+      </template>
+    </ClientOnly>
   </div>
 </template>

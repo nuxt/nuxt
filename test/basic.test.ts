@@ -137,6 +137,8 @@ describe('pages', () => {
     const html = await $fetch('/client-only-components')
     expect(html).toContain('<div class="client-only-script" foo="bar">')
     expect(html).toContain('<div class="client-only-script-setup" foo="hello">')
+    expect(html).toContain('<div>Fallback</div>')
+    expect(html).not.toContain('Should not be server rendered')
 
     await expectNoClientErrors('/client-only-components')
   })
