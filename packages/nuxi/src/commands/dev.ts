@@ -94,7 +94,7 @@ export default defineNuxtCommand({
         currentNuxt.options.server.url = listener.url
         currentNuxt.options.server.port = address.port
         currentNuxt.options.server.host = address.address
-        currentNuxt.options.server.https = Boolean(args.https)
+        currentNuxt.options.server.https = listener.https
 
         await Promise.all([
           writeTypes(currentNuxt).catch(console.error),

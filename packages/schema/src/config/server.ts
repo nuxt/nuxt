@@ -20,6 +20,8 @@ export default <SchemaDefinition>{
    *
    * @version 2
    *
+   * @type {false | { key: string; cert: string }}
+   *
    * @deprecated  This option is ignored with Bridge and Nuxt 3
    */
   https: false,

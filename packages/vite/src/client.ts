@@ -2,7 +2,7 @@ import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { Connect, HmrOptions } from 'vite'
+import type { Connect, ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
@@ -89,10 +89,12 @@ export async function buildClient (ctx: ViteBuildContext) {
       port: hmrPortDefault,
       ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i)
     })
-    clientConfig.server.hmr = defu(clientConfig.server.hmr as HmrOptions, {
-      // https://github.com/nuxt/framework/issues/4191
-      protocol: 'ws',
-      port: hmrPort
+    clientConfig.server = defu(clientConfig.server, <ServerOptions> {
+      https: ctx.nuxt.options.server.https,
+      hmr: {
+        protocol: ctx.nuxt.options.server.https ? 'wss' : 'ws',
+        port: hmrPort
+      }
     })
   }
 
