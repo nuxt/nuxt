@@ -19,9 +19,9 @@
     "dev": "vite",
     "lint": "eslint --ext .ts,.js .",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
-    "prepack": "yarn build",
-    "prerender": "yarn build && jiti ./lib/prerender",
-    "test": "yarn lint && yarn build"
+    "prepack": "pnpm build",
+    "prerender": "pnpm build && jiti ./lib/prerender",
+    "test": "pnpm lint && pnpm build"
   },
   "devDependencies": {
     "@nuxt/ui-assets": "^0.1.0",
