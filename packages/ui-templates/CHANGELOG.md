@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.3...@nuxt/ui-templates@0.4.0) (2022-09-20)
+
+
+### Bug Fixes
+
+* upgrade headers to h1/h2 from h4/h5 ([#165](https://github.com/nuxt/ui/issues/165)) ([a44b945](https://github.com/nuxt/ui/commit/a44b9459e95b0ab2dfcf6b5b0b4493e00f968b3f))
+
+
+### Features
+
+* **templates:** ability to disable animation effect in loading page ([#161](https://github.com/nuxt/ui/issues/161)) ([8771e98](https://github.com/nuxt/ui/commit/8771e98fc160e4040e64c7b3982c4ef6f0fcb0d9))
+
+
+
+
+
 ## [0.3.3](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.2...@nuxt/ui-templates@0.3.3) (2022-09-05)
 
 
