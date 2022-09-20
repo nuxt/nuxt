@@ -1771,7 +1771,7 @@ __metadata:
     get-port-please: ^2.6.1
     jiti: ^1.16.0
     ohmyfetch: ^0.4.19
-    playwright: ^1.25.2
+    playwright: ^1.26.0
     unbuild: latest
     vitest: ~0.19.1
   peerDependencies:
@@ -11232,23 +11232,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.25.2":
-  version: 1.25.2
-  resolution: "playwright-core@npm:1.25.2"
+"playwright-core@npm:1.26.0":
+  version: 1.26.0
+  resolution: "playwright-core@npm:1.26.0"
   bin:
     playwright: cli.js
-  checksum: 24ada61e2132bd7278cf0aa0ef711280e1519c437efa0088a99c47ef994202f4c9880521d8c0c51ab854bef08806f372477d754aac1e790ea64f18cd346b5b2f
+  checksum: bd1da7baad202d48e51eb4810ff75960e5a61d137059031dd71a55856f4387e5b42086ea0d3e37d9a595cb5f65d19e2db19e0e06b873dd30a2f0d7177d5d7b41
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.25.2":
-  version: 1.25.2
-  resolution: "playwright@npm:1.25.2"
+"playwright@npm:^1.26.0":
+  version: 1.26.0
+  resolution: "playwright@npm:1.26.0"
   dependencies:
-    playwright-core: 1.25.2
+    playwright-core: 1.26.0
   bin:
     playwright: cli.js
-  checksum: e500b45c2961140fdae665331d357ecf1cc308041e0fd8e6765b4da2195600a8a358d3e723bac6215bd9135979f7e7a350cdb1347f6cefa3773e85aa262ce879
+  checksum: 86cab6f54b317445e704ffb52c13105a3a83b38610dc5d85bb69be4e3652f7fdbb2cd4f470cc38a5801e0a38ea1fbd6efe8d67ecba6b9771094544e3f3b2515d
   languageName: node
   linkType: hard
 
