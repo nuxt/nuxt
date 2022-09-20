@@ -197,7 +197,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           let unobserve: Function | null = null
           onMounted(() => {
             idleId = requestIdleCallback(() => {
-              if (el?.value) {
+              if (el?.value?.tagName) {
                 unobserve = observer!.observe(el.value, async () => {
                   unobserve?.()
                   unobserve = null
