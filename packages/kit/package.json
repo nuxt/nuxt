@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "3.0.0-rc.10",
+  "version": "3.0.0-rc.11",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -13,7 +13,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/schema": "3.0.0-rc.10",
+    "@nuxt/schema": "3.0.0-rc.11",
     "c12": "^0.2.13",
     "consola": "^2.15.3",
     "defu": "^6.1.0",

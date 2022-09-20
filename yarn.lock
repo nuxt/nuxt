@@ -1676,7 +1676,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/schema": 3.0.0-rc.11
     "@types/lodash.template": ^4
     "@types/semver": ^7
     c12: ^0.2.13
@@ -1763,8 +1763,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@nuxt/test-utils@workspace:packages/test-utils"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.10
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/kit": 3.0.0-rc.11
+    "@nuxt/schema": 3.0.0-rc.11
     consola: ^2.15.3
     defu: ^6.1.0
     execa: ^6.1.0
@@ -1809,12 +1809,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/vite-builder@3.0.0-rc.10, @nuxt/vite-builder@workspace:packages/vite":
+"@nuxt/vite-builder@3.0.0-rc.11, @nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.10
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/kit": 3.0.0-rc.11
+    "@nuxt/schema": 3.0.0-rc.11
     "@rollup/plugin-replace": ^4.0.0
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^3.1.0
@@ -1861,8 +1861,8 @@ __metadata:
   dependencies:
     "@babel/core": ^7.19.1
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.2
-    "@nuxt/kit": 3.0.0-rc.10
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/kit": 3.0.0-rc.11
+    "@nuxt/schema": 3.0.0-rc.11
     "@types/lodash-es": ^4.17.6
     "@types/pify": ^5.0.1
     "@types/webpack-bundle-analyzer": ^4.4.2
@@ -10447,8 +10447,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
-    "@nuxt/kit": 3.0.0-rc.10
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/kit": 3.0.0-rc.11
+    "@nuxt/schema": 3.0.0-rc.11
     "@types/clear": ^0
     "@types/flat": ^5.0.2
     "@types/mri": ^1.1.1
@@ -10530,11 +10530,11 @@ __metadata:
   resolution: "nuxt@workspace:packages/nuxt"
   dependencies:
     "@nuxt/devalue": ^2.0.0
-    "@nuxt/kit": 3.0.0-rc.10
-    "@nuxt/schema": 3.0.0-rc.10
+    "@nuxt/kit": 3.0.0-rc.11
+    "@nuxt/schema": 3.0.0-rc.11
     "@nuxt/telemetry": ^2.1.5
     "@nuxt/ui-templates": ^0.4.0
-    "@nuxt/vite-builder": 3.0.0-rc.10
+    "@nuxt/vite-builder": 3.0.0-rc.11
     "@types/fs-extra": ^9.0.13
     "@types/hash-sum": ^1.0.0
     "@vue/reactivity": ^3.2.39
@@ -10554,7 +10554,7 @@ __metadata:
     magic-string: ^0.26.3
     mlly: ^0.5.16
     nitropack: ^0.5.4
-    nuxi: 3.0.0-rc.10
+    nuxi: 3.0.0-rc.11
     ohash: ^0.1.5
     ohmyfetch: ^0.4.19
     pathe: ^0.3.8
