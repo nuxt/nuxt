@@ -25,6 +25,7 @@ const appPreset = defineUnimportPreset({
     'useAsyncData',
     'useLazyAsyncData',
     'refreshNuxtData',
+    'clearNuxtData',
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',

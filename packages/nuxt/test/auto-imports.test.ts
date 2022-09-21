@@ -69,7 +69,10 @@ describe('imports:nuxt', () => {
       })
     }
   } catch (e) {
-    console.log(e)
+    it('should import composables', () => {
+      console.log(e)
+      expect(false).toBe(true)
+    })
   }
 })
 
