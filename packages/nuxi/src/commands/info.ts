@@ -119,7 +119,10 @@ function normalizeConfigModule (module: NuxtModule | string | null | undefined, 
 
 function getNuxtConfig (rootDir: string) {
   try {
-    return jiti(rootDir, { interopDefault: true, esmResolve: true })('./nuxt.config')
+    (globalThis as any).defineNuxtConfig = (c: any) => c
+    const result = jiti(rootDir, { interopDefault: true, esmResolve: true })('./nuxt.config')
+    delete (globalThis as any).defineNuxtConfig
+    return result
   } catch (err) {
     // TODO: Show error as warning if it is not 404
     return {}
