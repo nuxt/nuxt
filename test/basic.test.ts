@@ -55,6 +55,16 @@ describe('pages', () => {
     await expectNoClientErrors('/')
   })
 
+  it('respects aliases in page metadata', async () => {
+    const html = await $fetch('/some-alias')
+    expect(html).toContain('Hello Nuxt 3!')
+  })
+
+  it('respects redirects in page metadata', async () => {
+    const { headers } = await fetch('/redirect', { redirect: 'manual' })
+    expect(headers.get('location')).toEqual('/')
+  })
+
   it('render 404', async () => {
     const html = await $fetch('/not-found')
 

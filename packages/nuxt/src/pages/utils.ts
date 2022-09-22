@@ -243,6 +243,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
         meta: route.meta ? `{...(${metaImportName} || {}), ...${JSON.stringify(route.meta)}}` : metaImportName,
         alias: aliasCode,
+        redirect: route.redirect ? JSON.stringify(route.redirect) : `${metaImportName}?.redirect || undefined`,
         component: genDynamicImport(file, { interopDefault: true })
       }
     }))

@@ -28,6 +28,10 @@ setupDevtoolsPlugin({}, () => {})
 
 const config = useRuntimeConfig()
 
+definePageMeta({
+  alias: '/some-alias'
+})
+
 // reset title template example
 useHead({
   titleTemplate: ''
