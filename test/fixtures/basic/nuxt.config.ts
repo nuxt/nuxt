@@ -53,6 +53,9 @@ export default defineNuxtConfig({
     }
   ],
   hooks: {
+    'prepare:types' ({ tsConfig }) {
+      tsConfig.include = tsConfig.include.filter(i => i !== '../../../../**/*')
+    },
     'modules:done' () {
       addComponent({
         name: 'CustomComponent',
