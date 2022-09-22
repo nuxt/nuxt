@@ -40,8 +40,9 @@
 /guide/features/state-management  /getting-started/state-management 302!
 /guide/features/error-handling    /getting-started/error-handling 302!
 /guide/going-further/testing      /getting-started/testing 302!
-/getting-started/migration        /getting-started/upgrade-guide/migration 302!
-/guide/going-further/edge-channel /getting-started/upgrade-guide/edge-channel 302!
+/getting-started/migration        /getting-started/upgrade-guide/migration 302
+/getting-started/upgrade-guide/migration /getting-started/upgrade 302!
+/getting-started/upgrade-guide/edge-channel /guide/going-further/edge-channel 302!
 /guide/features/modules           /guide/concepts/modules 302!
 /guide/features/server-routes     /guide/directory-structure/server 302!
 /guide/going-further/esm          /guide/concepts/esm 302!
