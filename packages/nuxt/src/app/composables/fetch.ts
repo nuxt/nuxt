@@ -63,6 +63,7 @@ export function useFetch<
     pick,
     watch,
     initialCache,
+    immediate,
     ...fetchOptions
   } = opts
 
@@ -78,6 +79,7 @@ export function useFetch<
     transform,
     pick,
     initialCache,
+    immediate,
     watch: [
       _request,
       ...(watch || [])
