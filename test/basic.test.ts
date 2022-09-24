@@ -493,7 +493,7 @@ describe.runIf(process.env.NUXT_TEST_DEV)('detecting invalid root nodes', () => 
 describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/<(?!link)[^>]*(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
       const url = match[2] || match[3]
       expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
     }
@@ -523,7 +523,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
     await startServer()
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/<(?!link)[^>]*(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('/foo/_other/') ||
@@ -540,7 +540,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
     await startServer()
 
     const html = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/<(?!link)[^>]*(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('./_nuxt/') ||
@@ -568,7 +568,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
     await startServer()
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/<(?!link)[^>]*(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('https://example.com/_cdn/') ||
