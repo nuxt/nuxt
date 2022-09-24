@@ -55,6 +55,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ],
     prerender: {
       crawlLinks: nuxt.options._generate ? nuxt.options.generate.crawler : false,
+      ignore: ['/manifest.json'],
       routes: ([] as string[])
         .concat(nuxt.options._generate ? ['/', '/200.html', ...nuxt.options.generate.routes] : [])
         .concat(nuxt.options.ssr === false ? ['/index.html', '/200.html', '/404.html'] : [])
@@ -119,6 +120,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
   }
 
+  // Add manifest handler
+  if (nuxt.options.experimental.payloadExtraction) {
+    nitroConfig.handlers!.push({
+      route: '/manifest.json',
+      handler: resolve(distDir, 'core/runtime/nitro/manifest')
+    })
+  }
+
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins!.push(ImportProtectionPlugin.rollup({
     rootDir: nuxt.options.rootDir,
@@ -176,6 +185,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       if (!nuxt.options._generate) {
         await build(nitro)
       } else {
+        await fsp.writeFile(join(nitro.options.output.publicDir, 'manifest.json'), JSON.stringify({
+          routes: nitro._prerenderedRoutes
+            ?.filter(r => r.route.endsWith('_payload.js'))
+            .map(r => r.route.replace(/\/_payload\.js$/, '') || '/')
+        }))
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
           await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})

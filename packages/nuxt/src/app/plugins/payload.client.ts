@@ -1,11 +1,17 @@
-import { defineNuxtPlugin, loadPayload, isPrerendered, useRouter } from '#app'
+import escapeRE from 'escape-string-regexp'
+import { defineNuxtPlugin, loadPayload, useRouter } from '#app'
 
-export default defineNuxtPlugin((nuxtApp) => {
-  // Only enable behavior if initial page is prerendered
-  // TOOD: Support hybrid and dev
-  if (!isPrerendered()) {
-    return
+export default defineNuxtPlugin(async (nuxtApp) => {
+  const manifest = await $fetch<{ static: string[] }>('/manifest.json', {
+    cache: 'no-cache'
+  }).catch(() => ({ static: [] }))
+
+  nuxtApp._manifest = {
+    ...manifest,
+    static: manifest.static.map(r => r.endsWith('/**') ? new RegExp(escapeRE(r.slice(0, -3)) + '.*') : r)
   }
+
+  if (nuxtApp._manifest.static.length === 0) { return }
 
   // Load payload into cache
   nuxtApp.hooks.hook('link:prefetch', to => loadPayload(to))

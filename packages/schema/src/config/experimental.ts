@@ -78,6 +78,8 @@ export default defineUntypedSchema({
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
      */
-    payloadExtraction: true,
+    payloadExtraction: {
+      $resolve: async (val, get) => val ?? !(await get('dev'))
+    },
   }
 })

@@ -55,6 +55,10 @@ export interface NuxtSSRContext extends SSRContext {
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
 }
 
+export interface RouteManifest {
+  static: Array<string | RegExp>
+}
+
 interface _NuxtApp {
   vueApp: App<Element>
   globalName: string
@@ -71,6 +75,8 @@ interface _NuxtApp {
     pending: Ref<boolean>
     error: Ref<any>
   } | undefined>,
+
+  _manifest: RouteManifest
 
   ssrContext?: NuxtSSRContext
   payload: {

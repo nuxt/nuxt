@@ -9,6 +9,8 @@ interface LoadPayloadOptions {
 
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}) {
   if (process.server) { return null }
+  if (!_hasPayload(url)) { return null }
+
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
@@ -26,6 +28,8 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}) {
 }
 
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
+  if (!_hasPayload(url)) { return }
+
   const payloadURL = _getPayloadURL(url, opts)
   useHead({
     link: [
@@ -43,6 +47,11 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
   return joinURL(parsed.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
+}
+
+function _hasPayload (url: string) {
+  const nuxtApp = useNuxtApp()
+  return nuxtApp._manifest.static.some(route => typeof route === 'string' ? route === url : route.test(url))
 }
 
 async function _importPayload (payloadURL: string) {

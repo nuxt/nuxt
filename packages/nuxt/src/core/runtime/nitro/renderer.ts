@@ -196,6 +196,7 @@ export default defineRenderHandler(async (event) => {
     head: normalizeChunks([
       renderedMeta.headTags,
       _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
+      process.env.NUXT_PAYLOAD_EXTRACTION ? '<link rel="preload" href="/manifest.json" as="fetch" crossorigin>' : null,
       _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
