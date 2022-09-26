@@ -143,7 +143,7 @@ export default defineRenderHandler(async (event) => {
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(url, '_payload.js') : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -177,7 +177,7 @@ export default defineRenderHandler(async (event) => {
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendHeader(event, 'x-nitro-prerender', payloadURL!)
+    appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.js'))
     // Use same ssr context to generate payload for this route
     PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
   }
