@@ -1,6 +1,6 @@
 import type { FetchError, FetchOptions } from 'ohmyfetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
-import { computed, isRef, Ref } from 'vue'
+import { computed, unref, Ref } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
@@ -52,7 +52,7 @@ export function useFetch<
     if (typeof r === 'function') {
       r = r()
     }
-    return (isRef(r) ? r.value : r)
+    return unref(r)
   })
 
   const {
