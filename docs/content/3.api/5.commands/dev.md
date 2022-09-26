@@ -1,7 +1,7 @@
 # `nuxi dev`
 
 ```{bash}
-npx nuxi dev [rootDir] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
+npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
 ```
 
 The `dev` command starts a development server with hot module replacement at [http://localhost:3000](https://localhost:3000)
@@ -9,6 +9,7 @@ The `dev` command starts a development server with hot module replacement at [ht
 Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The root directory of the application to serve.
+`--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 `--clipboard` | `false` | Copy URL to clipboard.
 `--open, -o` | `false` | Open URL in browser.
 `--no-clear` | `false` | Does not clear the console after startup.

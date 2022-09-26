@@ -18,7 +18,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'npx nuxi dev [rootDir] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
+    usage: 'npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {
@@ -40,7 +40,7 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
     showVersions(rootDir)
 
-    await setupDotenv({ cwd: rootDir })
+    await setupDotenv({ cwd: rootDir, fileName: args.dotenv })
 
     const listener = await listen(serverHandler, {
       showURL: false,
