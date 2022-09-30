@@ -5,7 +5,7 @@
     <NuxtLayout :name="layout">
       Default slot
       <br>
-      <button class="border p-1 rounded" @click="layout ? layout = null : layout = 'custom'">
+      <button class="border p-1 rounded" @click="layout = layout ? null : 'custom'">
         Switch layout
       </button>
 
