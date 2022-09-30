@@ -49,3 +49,18 @@
 /guide/features/app-config        /guide/directory-structure/app.config 302!
 /guide/features/runtime-config    /guide/going-further/runtime-config 302!
 /guide/features/teleports         /api/components/teleports 302!
+
+/guide/deploy/node-server         /getting-started/deployment 302!
+/guide/deploy/static-hosting      /getting-started/deployment 302!
+/guide/deploy/presets             /getting-started/deployment 302!
+/guide/deploy/providers/aws       https://nitro.unjs.io/deploy/providers/aws 302!
+/guide/deploy/providers/azure     https://nitro.unjs.io/deploy/providers/azure 302!
+/guide/deploy/providers/cloudflare  https://nitro.unjs.io/deploy/providers/cloudflare 302!
+/guide/deploy/providers/digitalocean  https://nitro.unjs.io/deploy/providers/digitalocean 302!
+/guide/deploy/providers/firebase    https://nitro.unjs.io/deploy/providers/firebase 302!
+/guide/deploy/providers/heroku      https://nitro.unjs.io/deploy/providers/heroku 302!
+/guide/deploy/providers/layer0      https://nitro.unjs.io/deploy/providers/layer0 302!
+/guide/deploy/providers/netlify     https://nitro.unjs.io/deploy/providers/netlify 302!
+/guide/deploy/providers/render      https://nitro.unjs.io/deploy/providers/render 302!
+/guide/deploy/providers/stormkit    https://nitro.unjs.io/deploy/providers/stormkit 302!
+/guide/deploy/providers/vercel      https://nitro.unjs.io/deploy/providers/vercel 302!
