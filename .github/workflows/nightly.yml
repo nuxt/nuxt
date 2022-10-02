@@ -4,6 +4,9 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   nightly:
     runs-on: ubuntu-latest

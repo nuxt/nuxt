@@ -10,6 +10,9 @@ on:
       - dev
       - 2.x
 
+permissions:
+  contents: read
+
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
