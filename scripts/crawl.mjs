@@ -32,6 +32,13 @@ const erroredUrls = new Set()
  * @param {string | undefined} referrer The referring page
  */
 function queue (path, referrer) {
+  if (!path) {
+    const message = chalk.red(`${chalk.bold('✗')} ${referrer} linked to empty href`)
+    if (isCI) { actions.error(message) }
+    logger.log(message)
+    return
+  }
+
   if (urlsToOmit.some(url => path.startsWith(url))) { return }
 
   const { pathname, origin } = new URL(path, referrer)
@@ -80,7 +87,11 @@ const crawler = new Crawler({
       return done()
     }
 
-    $('a:not([href*=mailto])').each((_, el) => 'attribs' in el && queue(el.attribs.href, uri))
+    $('a:not([href*=mailto]):not([href*=tel])').each((_, el) => {
+      if ('attribs' in el && 'href' in el.attribs) {
+        queue(el.attribs.href, uri)
+      }
+    })
 
     logger.success(chalk.green(uri))
     logger.debug(uri, `[${crawler.queueSize} / ${urls.size}]`)
