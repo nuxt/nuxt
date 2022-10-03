@@ -145,12 +145,74 @@ describe('pages', () => {
 
   it('/client-only-components', async () => {
     const html = await $fetch('/client-only-components')
+    // ensure fallbacks with classes and arbitrary attributes are rendered
     expect(html).toContain('<div class="client-only-script" foo="bar">')
     expect(html).toContain('<div class="client-only-script-setup" foo="hello">')
     expect(html).toContain('<div>Fallback</div>')
+    // ensure components are not rendered server-side
     expect(html).not.toContain('Should not be server rendered')
 
     await expectNoClientErrors('/client-only-components')
+
+    const page = await createPage('/client-only-components')
+
+    await page.waitForLoadState('networkidle')
+
+    const hiddenSelectors = [
+      '.string-stateful-should-be-hidden',
+      '.client-script-should-be-hidden',
+      '.string-stateful-script-should-be-hidden',
+      '.no-state-hidden'
+    ]
+    const visibleSelectors = [
+      '.string-stateful',
+      '.string-stateful-script',
+      '.client-only-script',
+      '.client-only-script-setup',
+      '.no-state'
+    ]
+    // ensure directives are correctly applied
+    await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isHidden()))
+      .then(results => results.forEach(isHidden => expect(isHidden).toBeTruthy()))
+    // ensure hidden components are still rendered
+    await Promise.all(hiddenSelectors.map(selector => page.locator(selector).innerHTML()))
+      .then(results => results.forEach(innerHTML => expect(innerHTML).not.toBe('')))
+
+    // ensure single root node components are rendered once on client (should not be empty)
+    await Promise.all(visibleSelectors.map(selector => page.locator(selector).innerHTML()))
+      .then(results => results.forEach(innerHTML => expect(innerHTML).not.toBe('')))
+
+    // ensure multi-root-node is correctly rendered
+    expect(await page.locator('.multi-root-node-count').innerHTML()).toContain('0')
+    expect(await page.locator('.multi-root-node-button').innerHTML()).toContain('add 1 to count')
+    expect(await page.locator('.multi-root-node-script-count').innerHTML()).toContain('0')
+    expect(await page.locator('.multi-root-node-script-button').innerHTML()).toContain('add 1 to count')
+
+    // ensure components reactivity
+    await page.locator('.multi-root-node-button').click()
+    await page.locator('.multi-root-node-script-button').click()
+    await page.locator('.client-only-script button').click()
+    await page.locator('.client-only-script-setup button').click()
+
+    expect(await page.locator('.multi-root-node-count').innerHTML()).toContain('1')
+    expect(await page.locator('.multi-root-node-script-count').innerHTML()).toContain('1')
+    expect(await page.locator('.client-only-script-setup button').innerHTML()).toContain('1')
+    expect(await page.locator('.client-only-script button').innerHTML()).toContain('1')
+
+    // ensure components ref is working and reactive
+    await page.locator('button.test-ref-1').click()
+    await page.locator('button.test-ref-2').click()
+    await page.locator('button.test-ref-3').click()
+    await page.locator('button.test-ref-4').click()
+    expect(await page.locator('.client-only-script-setup button').innerHTML()).toContain('2')
+    expect(await page.locator('.client-only-script button').innerHTML()).toContain('2')
+    expect(await page.locator('.string-stateful-script').innerHTML()).toContain('1')
+    expect(await page.locator('.string-stateful').innerHTML()).toContain('1')
+
+    // ensure directives are reactive
+    await page.locator('button#show-all').click()
+    await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isVisible()))
+      .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
   })
 })
 
