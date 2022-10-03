@@ -1665,7 +1665,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@workspace:^, @nuxt/kit@workspace:packages/kit":
+"@nuxt/kit@link:./packages/kit::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/kit@link:./packages/kit::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@nuxt/kit@workspace:packages/kit":
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
@@ -1693,7 +1699,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/schema@workspace:^, @nuxt/schema@workspace:packages/schema":
+"@nuxt/schema@link:./packages/schema::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/schema@link:./packages/schema::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@nuxt/schema@workspace:packages/schema":
   version: 0.0.0-use.local
   resolution: "@nuxt/schema@workspace:packages/schema"
   dependencies:
@@ -1747,7 +1759,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/test-utils@workspace:^, @nuxt/test-utils@workspace:packages/test-utils":
+"@nuxt/test-utils@link:./packages/test-utils::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/test-utils@link:./packages/test-utils::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@nuxt/test-utils@workspace:packages/test-utils":
   version: 0.0.0-use.local
   resolution: "@nuxt/test-utils@workspace:packages/test-utils"
   dependencies:
@@ -1797,7 +1815,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/vite-builder@workspace:^, @nuxt/vite-builder@workspace:packages/vite":
+"@nuxt/vite-builder@link:./packages/vite::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@nuxt/vite-builder@link:./packages/vite::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"@nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
@@ -10418,7 +10442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxi@workspace:^, nuxi@workspace:packages/nuxi":
+"nuxi@link:./packages/nuxi::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "nuxi@link:./packages/nuxi::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"nuxi@workspace:packages/nuxi":
   version: 0.0.0-use.local
   resolution: "nuxi@workspace:packages/nuxi"
   dependencies:
@@ -10463,7 +10493,7 @@ __metadata:
   resolution: "nuxt-framework@workspace:."
   dependencies:
     "@actions/core": ^1.9.1
-    "@nuxt/test-utils": "workspace:^"
+    "@nuxt/test-utils": "link:./packages/test-utils"
     "@nuxtjs/eslint-config-typescript": ^11.0.0
     "@types/crawler": ^1.2.2
     "@types/node": ^16.11.60
@@ -10501,7 +10531,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"nuxt@workspace:^, nuxt@workspace:packages/nuxt":
+"nuxt@link:./packages/nuxt::locator=nuxt-framework%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "nuxt@link:./packages/nuxt::locator=nuxt-framework%40workspace%3A."
+  languageName: node
+  linkType: soft
+
+"nuxt@workspace:packages/nuxt":
   version: 0.0.0-use.local
   resolution: "nuxt@workspace:packages/nuxt"
   dependencies:
