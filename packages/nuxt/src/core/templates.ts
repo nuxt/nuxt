@@ -1,7 +1,7 @@
 import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
 
-import { isAbsolute, join, relative } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
@@ -120,12 +120,14 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
       importName: m.entryPath || m.meta?.name
     })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
 
+    const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
+
     return [
       "import { NuxtModule } from '@nuxt/schema'",
       "declare module '@nuxt/schema' {",
       '  interface NuxtConfig {',
       ...moduleInfo.filter(Boolean).map(meta =>
-        `    [${genString(meta.configKey)}]?: typeof ${genDynamicImport(meta.importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
+        `    [${genString(meta.configKey)}]?: typeof ${genDynamicImport(meta.importName.startsWith('.') ? './' + join(relativeRoot, meta.importName) : meta.importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       ),
       '  }',
       generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
