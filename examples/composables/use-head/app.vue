@@ -12,6 +12,7 @@
         <Title>Luck number: {{ dynamic }}</Title>
         <Meta name="description" :content="`My page's ${dynamic} description`" />
         <Link rel="preload" href="/test.txt" as="script" />
+        <Script>console.log("hello script");</Script>
       </Head>
     </Html>
 

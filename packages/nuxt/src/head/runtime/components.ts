@@ -90,9 +90,19 @@ export const Script = defineComponent({
     /** @deprecated **/
     language: String
   },
-  setup: setupForUseMeta(script => ({
-    script: [script]
-  }))
+  setup: setupForUseMeta((props, { slots }) => {
+    const script = { ...props }
+    const textContent = (slots.default?.() || [])
+      .filter(({ children }) => children)
+      .map(({ children }) => children)
+      .join('')
+    if (textContent) {
+      script.children = textContent
+    }
+    return {
+      script: [script]
+    }
+  })
 })
 
 // <noscript>
