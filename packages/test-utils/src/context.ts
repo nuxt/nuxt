@@ -9,7 +9,7 @@ export function createTestContext (options: Partial<TestOptions>): TestContext {
     testDir: resolve(process.cwd(), 'test'),
     fixture: 'fixture',
     configFile: 'nuxt.config',
-    setupTimeout: 60000,
+    setupTimeout: 120 * 1000,
     dev: !!JSON.parse(process.env.NUXT_TEST_DEV || 'false'),
     logLevel: 1,
     server: true,
