@@ -1,10 +1,8 @@
 ---
-template: Example
+title: "<NuxtLink>"
+description: "This example shows different ways to use <NuxtLink>."
+toc: false
 ---
-
-# `<NuxtLink>`
-
-This example shows different ways to use `<NuxtLink>`.
 
 ::alert{type=info icon=💡}
 `components/MyNuxtLink.ts` defines a custom `<NuxtLink>`.
@@ -14,3 +12,4 @@ This example shows different ways to use `<NuxtLink>`.
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/routing/nuxt-link" file="app.vue"}
+::

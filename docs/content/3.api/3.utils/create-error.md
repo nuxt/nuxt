@@ -1,3 +1,7 @@
+---
+description: You can use this function to create an error object with additional metadata.
+---
+
 # `createError`
 
 You can use this function to create an error object with additional metadata. It is usable in both the Vue and Nitro portions of your app, and is meant to be thrown.
@@ -27,7 +31,7 @@ if (!data.value) {
 
 ## Throwing Errors in API Routes
 
-You can use `createError` to trigger error handling in server API routes.
+Use `createError` to trigger error handling in server API routes.
 
 ### Example
 

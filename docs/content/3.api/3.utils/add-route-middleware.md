@@ -1,3 +1,8 @@
+---
+title: "addRouteMiddleware"
+description: addRouteMiddleware() is a helper function to dynamically add middleware in your application.
+---
+
 # `addRouteMiddleware`
 
 `addRouteMiddleware()` is a helper function to dynamically add route middleware in your Nuxt application.
@@ -60,7 +65,7 @@ export default defineNuxtPlugin(() => {
 
 ### Global Route Middleware
 
-You can set an optional, third argument `{ global: true }` to indicate whether the route middleware is global:
+Set an optional, third argument `{ global: true }` to indicate whether the route middleware is global:
 
 ```ts [plugins/my-plugin.ts]
 export default defineNuxtPlugin(() => {

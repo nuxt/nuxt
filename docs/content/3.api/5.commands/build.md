@@ -1,3 +1,8 @@
+---
+title: "nuxi build"
+description: "Build your Nuxt application."
+---
+
 # `nuxi build`
 
 ```{bash}

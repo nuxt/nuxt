@@ -1,3 +1,8 @@
+---
+title: "nuxi typecheck"
+description: The typecheck command runs vue-tsc to check types throughout your app.
+---
+
 # `nuxi typecheck`
 
 ```{bash}

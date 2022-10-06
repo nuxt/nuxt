@@ -1,5 +1,237 @@
 {
   "github": {
     "silent": true
-  }
+  },
+  "redirects": [
+    {
+      "source": "/getting-started/commands",
+      "destination": "/api/commands/add",
+      "permanent": false
+    },
+    {
+      "source": "/getting-started/bridge",
+      "destination": "/bridge/overview",
+      "permanent": false
+    },
+    {
+      "source": "/getting-started/bridge-composition-api",
+      "destination": "/bridge/bridge-composition-api",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/introduction",
+      "destination": "/getting-started/introduction",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/vuejs-development",
+      "destination": "/guide/concepts/vuejs-development",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/rendering",
+      "destination": "/guide/concepts/rendering",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/auto-imports",
+      "destination": "/guide/concepts/auto-imports",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/server-engine",
+      "destination": "/guide/concepts/server-engine",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/typescript",
+      "destination": "/guide/concepts/typescript",
+      "permanent": false
+    },
+    {
+      "source": "/concepts/esm",
+      "destination": "/guide/concepts/esm",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/data-fetching",
+      "destination": "/getting-started/data-fetching",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/state",
+      "destination": "/getting-started/state-management",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/meta-tags",
+      "destination": "/getting-started/seo-meta",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/nuxt-app",
+      "destination": "/guide/going-further/nuxt-app",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/runtime-config",
+      "destination": "/guide/going-further/runtime-config",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/cookies",
+      "destination": "/api/composables/use-cookie",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/ssr",
+      "destination": "/api/composables/use-request-headers",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/cli",
+      "destination": "/api/commands/add",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/error-handling",
+      "destination": "/getting-started/error-handling",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/nuxt-link",
+      "destination": "/api/components/nuxt-link",
+      "permanent": false
+    },
+    {
+      "source": "/docs/usage/teleports",
+      "destination": "/api/components/teleports",
+      "permanent": false
+    },
+    {
+      "source": "/docs/directory-structure/:path",
+      "destination": "/guide/directory-structure/:path",
+      "permanent": false
+    },
+    {
+      "source": "/docs/deployment/:path",
+      "destination": "/guide/deploy/:path",
+      "permanent": false
+    },
+    {
+      "source": "/docs/advanced/testing",
+      "destination": "/getting-started/testing",
+      "permanent": false
+    },
+    {
+      "source": "/docs/advanced/nuxt",
+      "destination": "/guide/going-further/internals",
+      "permanent": false
+    },
+    {
+      "source": "/docs/advanced/modules",
+      "destination": "/guide/going-further/modules",
+      "permanent": false
+    },
+    {
+      "source": "/docs/advanced/kit",
+      "destination": "/guide/going-further/kit",
+      "permanent": false
+    },
+    {
+      "source": "/docs/advanced/hooks",
+      "destination": "/guide/going-further/hooks",
+      "permanent": false
+    },
+    {
+      "source": "/docs/migration/:path",
+      "destination": "/migration/:path",
+      "permanent": false
+    },
+    {
+      "source": "/getting-started/quick-start",
+      "destination": "/getting-started/installation",
+      "permanent": false
+    },
+    {
+      "source": "/guide/concepts/introduction",
+      "destination": "/getting-started/introduction",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/views",
+      "destination": "/getting-started/views",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/assets",
+      "destination": "/getting-started/assets",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/head-management",
+      "destination": "/getting-started/seo-meta",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/data-fetching",
+      "destination": "/getting-started/data-fetching",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/state-management",
+      "destination": "/getting-started/state-management",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/error-handling",
+      "destination": "/getting-started/error-handling",
+      "permanent": false
+    },
+    {
+      "source": "/guide/going-further/testing",
+      "destination": "/getting-started/testing",
+      "permanent": false
+    },
+    {
+      "source": "/getting-started/migration",
+      "destination": "/getting-started/upgrade-guide/migration",
+      "permanent": false
+    },
+    {
+      "source": "/guide/going-further/edge-channel",
+      "destination": "/getting-started/upgrade-guide/edge-channel",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/modules",
+      "destination": "/guide/concepts/modules",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/server-routes",
+      "destination": "/guide/directory-structure/server",
+      "permanent": false
+    },
+    {
+      "source": "/guide/going-further/esm",
+      "destination": "/guide/concepts/esm",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/app-config",
+      "destination": "/guide/directory-structure/app.config",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/runtime-config",
+      "destination": "/guide/going-further/runtime-config",
+      "permanent": false
+    },
+    {
+      "source": "/guide/features/teleports",
+      "destination": "/api/components/teleports",
+      "permanent": false
+    }
+  ]
 }

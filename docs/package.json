@@ -2,29 +2,17 @@
   "name": "docs",
   "private": true,
   "scripts": {
-    "dev": "yarn gendocs && nuxt dev",
-    "build": "yarn gendocs && nuxt generate --force-build",
+    "dev": "yarn gendocs && nuxi dev",
+    "build": "yarn gendocs && nuxi generate --force-build",
     "build:ci": "./scripts/make-schema.sh && yarn build",
     "lint:docs": "cd .. && yarn lint:docs",
     "lint:docs:fix": "cd .. && yarn lint:docs:fix",
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
-  "devDependencies": {
-    "@docus/app": "1.3.5",
-    "@docus/github": "1.0.4",
-    "@docus/social-image": "1.0.3",
-    "@docus/theme": "1.2.2",
-    "@nuxt/typescript-build": "^2.1.0",
-    "fs-extra": "^10.1.0",
-    "jiti": "^1.16.0",
-    "pathe": "^0.3.8",
-    "rimraf": "^3.0.2",
-    "scule": "^0.3.2",
-    "untyped": "^0.5.0",
-    "vue-mq": "^1.0.1",
-    "vue-plausible": "^1.3.2"
-  },
   "dependencies": {
-    "three": "^0.144.0"
-  }
+    "@nuxt-themes/website": "0.1.4",
+    "jiti": "^1.14.0",
+    "nuxt": "^3.0.0-rc.11"
+  },
+  "packageManager": "yarn@3.2.1"
 }

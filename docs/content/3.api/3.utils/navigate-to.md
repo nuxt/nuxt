@@ -1,3 +1,8 @@
+---
+title: "navigateTo"
+description: navigateTo is a helper function that programmatically navigates users.
+---
+
 # `navigateTo`
 
 `navigateTo` is a router helper function that allows programmatically navigating users through your Nuxt application.

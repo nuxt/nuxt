@@ -1,6 +1,5 @@
 ---
-title: Utils
-layout.aside: true
-layout.asideClass: ''
-navigation.redirect: /api/utils/
+title: "Utils"
+navigation: false
+redirect: /api/utils/
 ---

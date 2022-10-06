@@ -1,3 +1,6 @@
+---
+description: The prepare command creates a .nuxt directory in your application and generates types.
+---
 # `nuxi prepare`
 
 ```{bash}

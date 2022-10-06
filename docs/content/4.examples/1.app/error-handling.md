@@ -1,5 +1,7 @@
 ---
-template: Example
+title: "Error Handling"
+description: "This example shows how to handle errors in different contexts: pages, plugins, components and middleware."
+toc: false
 ---
 
 # Error Handling
@@ -10,3 +12,4 @@ This example shows how to handle errors in different contexts: pages, plugins, c
 ::
 
 ::sandbox{repo="nuxt/framework" branch="main" dir="examples/app/error-handling" file="app.vue"}
+::

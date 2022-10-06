@@ -2,3 +2,4 @@
 
 docs/content/index.md
 docs/content/**/*.nuxt.config.md
+docs/content/changelog.md

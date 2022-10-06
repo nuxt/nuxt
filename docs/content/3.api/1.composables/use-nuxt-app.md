@@ -14,7 +14,7 @@ You can use `useNuxtApp()` within composables, plugins and components.
 
 ### `provide (name, value)`
 
-`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](https://v3.nuxtjs.org/guide/directory-structure/plugins). You can use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
+`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](https://v3.nuxtjs.org/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
 
 `provide` function accepts `name` and `value` parameters.
 
@@ -117,7 +117,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ### `isHydrating`
 
-You can use `nuxtApp.isHydrating` (boolean) to check if the Nuxt app is hydrating on the client side.
+Use `nuxtApp.isHydrating` (boolean) to check if the Nuxt app is hydrating on the client side.
 
 **Example:**
 

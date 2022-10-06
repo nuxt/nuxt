@@ -1,3 +1,6 @@
+---
+description: "Remove common generated Nuxt files and caches."
+---
 # `nuxi cleanup`
 
 ```{bash}

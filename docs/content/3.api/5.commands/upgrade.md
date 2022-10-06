@@ -1,3 +1,8 @@
+---
+title: "nuxi upgrade"
+description: The upgrade command upgrades Nuxt 3 to the latest version.
+---
+
 # `nuxi upgrade`
 
 ```{bash}

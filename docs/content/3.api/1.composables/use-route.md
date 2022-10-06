@@ -1,3 +1,8 @@
+---
+title: "useRoute"
+description: The useRoute composable returns the current route.
+---
+
 # `useRoute`
 
 The `useRoute` composable returns the current route and must be called in a `setup` function, plugin, or route middleware.

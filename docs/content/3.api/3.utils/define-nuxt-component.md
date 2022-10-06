@@ -1,3 +1,8 @@
+---
+title: "defineNuxtComponent"
+description: defineNuxtComponent() is a helper function for defining type safe components with Options API.
+---
+
 # `defineNuxtComponent`
 
 `defineNuxtComponent()` is a helper function for defining type safe Vue components using options API similar to [defineComponent()](https://vuejs.org/api/general.html#definecomponent). `defineNuxtComponent()` wrapper also adds support for `asyncData` component option.

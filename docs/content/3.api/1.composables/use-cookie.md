@@ -1,15 +1,17 @@
+---
+description: useCookie is an SSR-friendly composable to read and write cookies.
+---
+
 # `useCookie`
 
-Nuxt provides an SSR-friendly composable to read and write cookies.
-
-Within your pages, components and plugins you can use `useCookie` to create a reactive reference bound to a specific cookie.
+Within your pages, components and plugins you can use `useCookie`, an SSR-friendly composable to read and write cookies.
 
 ```js
 const cookie = useCookie(name, options)
 ```
 
 ::alert{icon=👉}
-**`useCookie` only works during `setup` or `Lifecycle Hooks`**.
+`useCookie` only works during `setup` or `Lifecycle Hooks`.
 ::
 
 ::alert{icon=😌}

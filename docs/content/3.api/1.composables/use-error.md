@@ -1,7 +1,5 @@
 # `useError`
 
-Nuxt provides a composable to catch global errors.
-
 This function will return the global Nuxt error that is being handled.
 
 ```ts
