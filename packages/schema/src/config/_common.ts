@@ -504,6 +504,11 @@ export default defineUntypedSchema({
      */
     pages: 'pages',
     /**
+     * The plugins directory, each file of which will be auto-registered as a Nuxt plugin.
+     * @version 3
+     */
+    plugins: 'plugins',
+    /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
      * and copied across into your `dist` folder when your app is generated.
      * @version 3
