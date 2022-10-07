@@ -10,8 +10,8 @@
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "dependencies": {
-    "@nuxt-themes/website": "0.1.4",
-    "jiti": "^1.14.0",
+    "@nuxt-themes/website": "0.1.5",
+    "jiti": "^1.16.0",
     "nuxt": "^3.0.0-rc.11"
   },
   "packageManager": "yarn@3.2.1"
