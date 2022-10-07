@@ -10,6 +10,7 @@
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "dependencies": {
+    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-8d94a20",
     "@nuxt-themes/website": "0.1.5",
     "jiti": "^1.16.0",
     "nuxt": "^3.0.0-rc.11"
