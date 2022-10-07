@@ -50,6 +50,8 @@
 /guide/features/app-config        /guide/directory-structure/app.config 302!
 /guide/features/runtime-config    /guide/going-further/runtime-config 302!
 /guide/features/teleports         /api/components/teleports 302!
+# https://github.com/nuxt/framework/pull/8038
+/api/configuration/nuxt.config      /api/configuration/nuxt-config 302!
 
 /guide/deploy/node-server         /getting-started/deployment 302!
 /guide/deploy/static-hosting      /getting-started/deployment 302!
@@ -65,3 +67,4 @@
 /guide/deploy/providers/render      https://nitro.unjs.io/deploy/providers/render 302!
 /guide/deploy/providers/stormkit    https://nitro.unjs.io/deploy/providers/stormkit 302!
 /guide/deploy/providers/vercel      https://nitro.unjs.io/deploy/providers/vercel 302!
+
