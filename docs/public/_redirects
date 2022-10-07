@@ -4,7 +4,7 @@
 /getting-started/bridge-composition-api /bridge/bridge-composition-api 302!
 
 # Concepts
-/concepts/introduction            /guide/getting-started/introduction 302!
+/concepts/introduction            /getting-started/introduction 302!
 /concepts/vuejs-development       /guide/concepts/vuejs-development 302!
 /concepts/rendering               /guide/concepts/rendering 302!
 /concepts/auto-imports            /guide/concepts/auto-imports 302!
@@ -12,20 +12,20 @@
 /concepts/typescript              /guide/concepts/typescript 302!
 /concepts/esm                     /guide/concepts/esm 302!
 # Docs
-/docs/usage/data-fetching         /guide/getting-started/data-fetching 302!
-/docs/usage/state                 /guide/getting-started/state-management 302!
-/docs/usage/meta-tags             /guide/getting-started/seo-meta 302!
+/docs/usage/data-fetching         /getting-started/data-fetching 302!
+/docs/usage/state                 /getting-started/state-management 302!
+/docs/usage/meta-tags             /getting-started/seo-meta 302!
 /docs/usage/nuxt-app              /guide/going-further/nuxt-app 302!
 /docs/usage/runtime-config        /guide/going-further/runtime-config 302!
 /docs/usage/cookies               /api/composables/use-cookie 302!
 /docs/usage/ssr                   /api/composables/use-request-headers 302!
 /docs/usage/cli                   /api/commands/add 302!
-/docs/usage/error-handling        /guide/getting-started/error-handling 302!
+/docs/usage/error-handling        /getting-started/error-handling 302!
 /docs/usage/nuxt-link             /api/components/nuxt-link 302!
 /docs/usage/teleports             /api/components/teleports 302!
 /docs/directory-structure/*       /guide/directory-structure/:splat 302!
 /docs/deployment/*                /guide/deploy/:splat 302!
-/docs/advanced/testing            /guide/getting-started/testing 302!
+/docs/advanced/testing            /getting-started/testing 302!
 /docs/advanced/nuxt               /guide/going-further/internals 302!
 /docs/advanced/modules            /guide/going-further/modules 302!
 /docs/advanced/kit                /guide/going-further/kit 302!
