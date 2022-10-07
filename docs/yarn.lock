@@ -863,9 +863,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt-themes/docus@npm:@nuxt-themes/docus-edge@0.1.0-8d94a20":
-  version: 0.1.0-8d94a20
-  resolution: "@nuxt-themes/docus-edge@npm:0.1.0-8d94a20"
+"@nuxt-themes/docus@npm:@nuxt-themes/docus-edge@0.1.0-e0c1075":
+  version: 0.1.0-e0c1075
+  resolution: "@nuxt-themes/docus-edge@npm:0.1.0-e0c1075"
   dependencies:
     "@docsearch/css": ^3.2.1
     "@docsearch/js": ^3.2.1
@@ -884,7 +884,7 @@ __metadata:
     pinceau: latest
     socket.io-client: ^4.5.2
     vue-plausible: ^1.3.2
-  checksum: 02c4212afd10ebb3acc7c243e0cdaf239f44ba6609524554b1924d72da98d21aeb78a43bf47be6314355e0998a84126976d152248124f020da0177ad56873c9e
+  checksum: 4da5ff920d511c8f877d8d5f7e584e8755b500a5915203c1cc2b7b149c5d441410df0059f275e464cf1da6c190d846d612ab0e00220457bb99abaeafcdad18cc
   languageName: node
   linkType: hard
 
@@ -3494,7 +3494,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:."
   dependencies:
-    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-8d94a20"
+    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-e0c1075"
     "@nuxt-themes/website": 0.1.5
     jiti: ^1.16.0
     nuxt: ^3.0.0-rc.11
