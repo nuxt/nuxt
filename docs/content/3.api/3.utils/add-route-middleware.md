@@ -8,7 +8,7 @@ description: addRouteMiddleware() is a helper function to dynamically add middle
 `addRouteMiddleware()` is a helper function to dynamically add route middleware in your Nuxt application.
 
 ::alert{type=info}
-Route middleware are navigation guards stored in the [`middleware/`](/guide/directory-structure/middleware) directory of your Nuxt application (unless [set otherwise](/api/configuration/nuxt.config#middleware)).
+Route middleware are navigation guards stored in the [`middleware/`](/guide/directory-structure/middleware) directory of your Nuxt application (unless [set otherwise](/api/configuration/nuxt-config#middleware)).
 ::
 
 ## Usage

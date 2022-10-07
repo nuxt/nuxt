@@ -3,6 +3,11 @@
 /getting-started/bridge           /bridge 302!
 /getting-started/bridge-composition-api /bridge/bridge-composition-api 302!
 
+/contribution                     /community/contribution 302!
+/bridge                           /bridge/overview 302!
+/guide                            /guide/concepts/auto-imports 302!
+/guide/concepts                   /guide/concepts/auto-imports 302!
+
 # Concepts
 /concepts/introduction            /getting-started/introduction 302!
 /concepts/vuejs-development       /guide/concepts/vuejs-development 302!
@@ -50,8 +55,10 @@
 /guide/features/app-config        /guide/directory-structure/app.config 302!
 /guide/features/runtime-config    /guide/going-further/runtime-config 302!
 /guide/features/teleports         /api/components/teleports 302!
+/api/utils/$fetch                 /api/utils/dollarfetch 302!
+/api/composables/preload-components /api/utils/preload-components 302
 # https://github.com/nuxt/framework/pull/8038
-/api/configuration/nuxt.config      /api/configuration/nuxt-config 302!
+/api/configuration/nuxt.config    /api/configuration/nuxt-config 302!
 
 /guide/deploy/node-server         /getting-started/deployment 302!
 /guide/deploy/static-hosting      /getting-started/deployment 302!

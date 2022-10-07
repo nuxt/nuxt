@@ -18,7 +18,7 @@ const errorsToIgnore = [
   '/guide/directory-structure/nuxt.config',
   '/guide/directory-structure',
   '/guide/directory-structure/app.config',
-  '/api/configuration/nuxt.config',
+  '/api/configuration/nuxt-config',
   '/guide/deploy',
   '/guide/features/app-config'
 ]

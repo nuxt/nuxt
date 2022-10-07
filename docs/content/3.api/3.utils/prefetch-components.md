@@ -17,7 +17,7 @@ await prefetchComponents(['MyGlobalComponent1', 'MyGlobalComponent2'])
 ```
 
 ::alert{icon=👉}
-Current implementation behaves exactly the same as [`preloadComponents`](/api/composables/preload-components) by preloading components instead of just prefetching we are working to improve this behavior.
+Current implementation behaves exactly the same as [`preloadComponents`](/api/utils/preload-components) by preloading components instead of just prefetching we are working to improve this behavior.
 ::
 
 ::alert{icon=👉}
