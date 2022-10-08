@@ -1,7 +1,7 @@
-import { useQuery, defineMiddleware } from 'h3'
+import { getQuery, defineMiddleware } from 'h3'
 
 export default defineMiddleware((req, res, next) => {
-  if ('api' in useQuery(req)) {
+  if ('api' in getQuery(req)) {
     throw new Error('Server middleware error')
   }
   next()

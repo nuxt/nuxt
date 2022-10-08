@@ -7,7 +7,7 @@ export default defineLazyHandler(async () => {
   )
 
   return (event) => {
-    const { a = 0, b = 0 } = useQuery(event)
+    const { a = 0, b = 0 } = getQuery(event)
     return { sum: sum(a, b) }
   }
 })
