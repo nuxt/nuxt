@@ -4,7 +4,7 @@ import { joinURL } from 'ufo'
 import { isWindows } from 'std-env'
 import { setup, fetch, $fetch, startServer, createPage, url } from '@nuxt/test-utils'
 // eslint-disable-next-line import/order
-import { expectNoClientErrors, renderPage } from './utils'
+import { expectNoClientErrors, renderPage, withLogs } from './utils'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -468,6 +468,93 @@ describe('extends support', () => {
       expect(routerLinkClasses).toContain('foo-active-class')
       expect(routerLinkClasses).toContain('bar-exact-active-class')
     })
+  })
+})
+
+// Bug #7337
+describe('deferred app suspense resolve', () => {
+  async function behaviour (path: string) {
+    await withLogs(async (page, logs) => {
+      await page.goto(url(path))
+      await page.waitForLoadState('networkidle')
+
+      // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+
+      const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
+      expect(hydrationLogs.length).toBe(3)
+      expect(hydrationLogs.every(log => log === 'isHydrating: true'))
+    })
+  }
+  it('should wait for all suspense instance on initial hydration', async () => {
+    await behaviour('/async-parent/child')
+  })
+  it('should wait for all suspense instance on initial hydration', async () => {
+    await behaviour('/internal-layout/async-parent/child')
+  })
+})
+
+// Bug #6592
+describe('page key', () => {
+  it('should not cause run of setup if navigation not change page key and layout', async () => {
+    async function behaviour (path: string) {
+      await withLogs(async (page, logs) => {
+        await page.goto(url(`${path}/0`))
+        await page.waitForLoadState('networkidle')
+
+        await page.click(`[href="${path}/1"]`)
+        await page.waitForSelector('#page-1')
+
+        // Wait for all pending micro ticks to be cleared,
+        // so we are not resolved too early when there are repeated page loading
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+
+        expect(logs.filter(l => l.includes('Child Setup')).length).toBe(1)
+      })
+    }
+    await behaviour('/fixed-keyed-child-parent')
+    await behaviour('/internal-layout/fixed-keyed-child-parent')
+  })
+  it('will cause run of setup if navigation changed page key', async () => {
+    async function behaviour (path: string) {
+      await withLogs(async (page, logs) => {
+        await page.goto(url(`${path}/0`))
+        await page.waitForLoadState('networkidle')
+
+        await page.click(`[href="${path}/1"]`)
+        await page.waitForSelector('#page-1')
+
+        // Wait for all pending micro ticks to be cleared,
+        // so we are not resolved too early when there are repeated page loading
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+
+        expect(logs.filter(l => l.includes('Child Setup')).length).toBe(2)
+      })
+    }
+    await behaviour('/keyed-child-parent')
+    await behaviour('/internal-layout/keyed-child-parent')
+  })
+})
+
+// Bug #6592
+describe('layout change not load page twice', () => {
+  async function behaviour (path1: string, path2: string) {
+    await withLogs(async (page, logs) => {
+      await page.goto(url(path1))
+      await page.waitForLoadState('networkidle')
+      await page.click(`[href="${path2}"]`)
+      await page.waitForSelector('#with-layout2')
+
+      // Wait for all pending micro ticks to be cleared,
+      // so we are not resolved too early when there are repeated page loading
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+
+      expect(logs.filter(l => l.includes('Layout2 Page Setup')).length).toBe(1)
+    })
+  }
+  it('should not cause run of page setup to repeat if layout changed', async () => {
+    await behaviour('/with-layout', '/with-layout2')
+    await behaviour('/internal-layout/with-layout', '/internal-layout/with-layout2')
   })
 })
 

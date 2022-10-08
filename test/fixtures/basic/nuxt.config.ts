@@ -1,5 +1,7 @@
 import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
+import { withoutLeadingSlash } from 'ufo'
 
 export default defineNuxtConfig({
   app: {
@@ -50,6 +52,30 @@ export default defineNuxtConfig({
       }))
       addVitePlugin(plugin.vite())
       addWebpackPlugin(plugin.webpack())
+    },
+    function (_options, nuxt) {
+      const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
+      const stripLayout = (page: NuxtPage) => ({
+        ...page,
+        children: page.children?.map(child => stripLayout(child)),
+        name: 'internal-' + page.name,
+        path: withoutLeadingSlash(page.path),
+        meta: {
+          ...page.meta || {},
+          layout: undefined,
+          _layout: page.meta?.layout
+        }
+      })
+      nuxt.hook('pages:extend', (pages) => {
+        const newPages = []
+        for (const page of pages) {
+          if (routesToDuplicate.includes(page.path)) {
+            newPages.push(stripLayout(page))
+          }
+        }
+        const internalParent = pages.find(page => page.path === '/internal-layout')
+        internalParent!.children = newPages
+      })
     }
   ],
   hooks: {

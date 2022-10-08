@@ -1,5 +1,6 @@
 import { expect } from 'vitest'
-import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
+import type { Page } from 'playwright'
+import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -10,7 +11,7 @@ export async function renderPage (path = '/') {
   const browser = await getBrowser()
   const page = await browser.newPage({})
   const pageErrors: Error[] = []
-  const consoleLogs: { type:string, text:string }[] = []
+  const consoleLogs: { type: string, text: string }[] = []
 
   page.on('console', (message) => {
     consoleLogs.push({
@@ -47,4 +48,23 @@ export async function expectNoClientErrors (path: string) {
   expect(pageErrors).toEqual([])
   expect(consoleLogErrors).toEqual([])
   expect(consoleLogWarnings).toEqual([])
+}
+
+export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {
+  let done = false
+  const page = await createPage()
+  const logs: string[] = []
+  page.on('console', (msg) => {
+    const text = msg.text()
+    if (done) {
+      throw new Error('Test finished prematurely')
+    }
+    logs.push(text)
+  })
+
+  try {
+    await callback(page, logs)
+  } finally {
+    done = true
+  }
 }

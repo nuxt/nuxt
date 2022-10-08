@@ -58,10 +58,6 @@ if (process.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
-    nuxt.hooks.hookOnce('app:suspense:resolve', () => {
-      nuxt.isHydrating = false
-    })
-
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
