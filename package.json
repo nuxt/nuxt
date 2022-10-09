@@ -76,7 +76,7 @@
     "unbuild": "^0.8.11",
     "vite": "^3.1.6",
     "vitest": "~0.19.1",
-    "vue-tsc": "^0.39.5"
+    "vue-tsc": "^1.0.3"
   },
   "packageManager": "yarn@3.2.4",
   "engines": {
