@@ -863,15 +863,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt-themes/docus@npm:@nuxt-themes/docus-edge@0.1.0-e0c1075":
-  version: 0.1.0-e0c1075
-  resolution: "@nuxt-themes/docus-edge@npm:0.1.0-e0c1075"
+"@nuxt-themes/docus@npm:@nuxt-themes/docus-edge@0.1.0-f39f325":
+  version: 0.1.0-f39f325
+  resolution: "@nuxt-themes/docus-edge@npm:0.1.0-f39f325"
   dependencies:
     "@docsearch/css": ^3.2.1
     "@docsearch/js": ^3.2.1
     "@fontsource/inter": ^4.5.12
     "@iconify/vue": ^4.0.0
-    "@nuxt/content": "npm:@nuxt/content-edge@latest"
+    "@nuxt/content": 2.1.1
     "@nuxtjs/algolia": ^1.1.1
     "@nuxtjs/color-mode": ^3.1.5
     "@nuxtjs/tailwindcss": ^5.3.3
@@ -882,9 +882,8 @@ __metadata:
     "@vueuse/core": ^9.2.0
     "@vueuse/nuxt": ^9.2.0
     pinceau: latest
-    socket.io-client: ^4.5.2
     vue-plausible: ^1.3.2
-  checksum: 4da5ff920d511c8f877d8d5f7e584e8755b500a5915203c1cc2b7b149c5d441410df0059f275e464cf1da6c190d846d612ab0e00220457bb99abaeafcdad18cc
+  checksum: 7630f1cc848e9735ec1ebf4e819d773cf2563795b52f31bc1f0d939b28a7b8feeb5653eb5b921a8cf3e9168f4e368aa7389b2a7d74e47e5c941690faa227e1c6
   languageName: node
   linkType: hard
 
@@ -899,6 +898,49 @@ __metadata:
     three: ^0.142.0
     vue-plausible: ^1.3.2
   checksum: 81a533b64fe416c0b6cbdf65c9c2cc4510db4b6fa7dfb56785ab8a3cafc20b0a3be0c383265acff198a3b046eb9d9c2f0592deae3f6cdb68c9f9bd4f53de4159
+  languageName: node
+  linkType: hard
+
+"@nuxt/content@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@nuxt/content@npm:2.1.1"
+  dependencies:
+    "@nuxt/kit": ^3.0.0-rc.10
+    consola: ^2.15.3
+    defu: ^6.1.0
+    destr: ^1.1.1
+    detab: ^3.0.1
+    html-tags: ^3.2.0
+    json5: ^2.2.1
+    knitwork: ^0.1.2
+    listhen: ^0.2.15
+    mdast-util-to-hast: ^12.2.2
+    mdurl: ^1.0.1
+    ohash: ^0.1.5
+    pathe: ^0.3.7
+    property-information: ^6.1.1
+    rehype-external-links: ^2.0.1
+    rehype-raw: ^6.1.1
+    rehype-slug: ^5.0.1
+    rehype-sort-attribute-values: ^4.0.0
+    rehype-sort-attributes: ^4.0.0
+    remark-emoji: ^3.0.2
+    remark-gfm: ^3.0.1
+    remark-mdc: ^1.0.7
+    remark-parse: ^10.0.1
+    remark-rehype: ^10.1.0
+    remark-squeeze-paragraphs: ^5.0.1
+    scule: ^0.3.2
+    shiki-es: ^0.1.2
+    slugify: ^1.6.5
+    ufo: ^0.8.5
+    unified: ^10.1.2
+    unist-builder: ^3.0.0
+    unist-util-position: ^4.0.3
+    unist-util-visit: ^4.1.1
+    unstorage: ^0.5.6
+    ws: ^8.8.1
+  checksum: c1cf817168bb19c63a0a222aae5d77dd1866daa224b21673fffee66ed5382b3429f79340c0a65ea5a2c18ef795983a88ed547203090db1db867807e6bb43d52c
   languageName: node
   linkType: hard
 
@@ -3494,7 +3536,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:."
   dependencies:
-    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-e0c1075"
+    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-f39f325"
     "@nuxt-themes/website": 0.1.6
     jiti: ^1.16.0
     nuxt: ^3.0.0-rc.11
@@ -9604,11 +9646,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.8.2#~builtin<compat/typescript>":
   version: 4.8.4
-  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=701156"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 563a0ef47abae6df27a9a3ab38f75fc681f633ccf1a3502b1108e252e187787893de689220f4544aaf95a371a4eb3141e4a337deb9895de5ac3c1ca76430e5f0
+  checksum: 301459fc3eb3b1a38fe91bf96d98eb55da88a9cb17b4ef80b4d105d620f4d547ba776cc27b44cc2ef58b66eda23fe0a74142feb5e79a6fb99f54fc018a696afa
   languageName: node
   linkType: hard
 
