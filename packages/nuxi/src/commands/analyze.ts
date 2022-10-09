@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { join, resolve } from 'pathe'
-import { createApp, lazyHandle } from 'h3'
+import { createApp, defineLazyHandler } from 'h3'
 import { listen } from 'listhen'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
@@ -37,7 +37,7 @@ export default defineNuxtCommand({
 
     const app = createApp()
 
-    const serveFile = (filePath: string) => lazyHandle(async () => {
+    const serveFile = (filePath: string) => defineLazyHandler(async () => {
       const contents = await fsp.readFile(filePath, 'utf-8')
       return (_req, res) => { res.end(contents) }
     })

@@ -10470,6 +10470,7 @@ __metadata:
     flat: ^5.0.2
     fsevents: ~2.3.2
     giget: ^0.1.7
+    h3: ^0.7.21
     jiti: ^1.16.0
     listhen: ^0.3.4
     mlly: ^0.5.16
