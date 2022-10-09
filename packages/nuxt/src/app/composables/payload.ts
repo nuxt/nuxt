@@ -1,6 +1,6 @@
 import { parseURL, joinURL } from 'ufo'
 import { useNuxtApp } from '../nuxt'
-import { useHead } from '..'
+import { useHead, useRuntimeConfig } from '..'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -12,8 +12,8 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}) {
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
-  if (cache[payloadURL]) {
-    return cache[payloadURL]
+  if (cache[url]) {
+    return cache[url]
   }
   cache[url] = _importPayload(payloadURL).then((payload) => {
     if (!payload) {
@@ -42,7 +42,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL cannot contain search params: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(parsed.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
+  return joinURL(useRuntimeConfig().app.baseURL, parsed.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
 }
 
 async function _importPayload (payloadURL: string) {
