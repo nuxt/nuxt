@@ -3,15 +3,7 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "docus",
-    "@docus/app",
-    "@docus/github",
-    "@docus/social-image",
-    "@docus/theme",
-    "@docus/twitter",
     "@vueuse/head",
-    "vitest",
-    "unplugin",
-    "vue-tsc"
+    "vitest"
   ]
 }
