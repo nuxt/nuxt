@@ -101,6 +101,18 @@ export default defineUntypedSchema({
   },
 
   /**
+   * Define the server directory of your Nuxt application, where Nitro
+   * routes, middleware and plugins are kept.
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   *
+   * @version 3
+   */
+  serverDir: {
+    $resolve: async (val, get) => resolve(await get('rootDir'), val || resolve(await get('srcDir'), 'server'))
+  },
+
+  /**
    * Define the directory where your built Nuxt files will be placed.
    *
    * Many tools assume that `.nuxt` is a hidden directory (because it starts
