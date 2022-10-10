@@ -1852,33 +1852,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/telemetry@npm:^2.1.5":
-  version: 2.1.5
-  resolution: "@nuxt/telemetry@npm:2.1.5"
+"@nuxt/telemetry@npm:^2.1.6":
+  version: 2.1.6
+  resolution: "@nuxt/telemetry@npm:2.1.6"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.9
-    chalk: ^5.0.1
-    ci-info: ^3.3.2
+    "@nuxt/kit": ^3.0.0-rc.11
+    chalk: ^5.1.0
+    ci-info: ^3.5.0
     consola: ^2.15.3
     create-require: ^1.1.1
     defu: ^6.1.0
     destr: ^1.1.1
-    dotenv: ^16.0.2
+    dotenv: ^16.0.3
     fs-extra: ^10.1.0
-    git-url-parse: ^13.0.0
-    inquirer: ^9.1.1
+    git-url-parse: ^13.1.0
+    inquirer: ^9.1.3
     is-docker: ^3.0.0
-    jiti: ^1.14.0
+    jiti: ^1.16.0
     mri: ^1.2.0
     nanoid: ^4.0.0
     node-fetch: ^3.2.10
-    ohmyfetch: ^0.4.18
+    ohmyfetch: ^0.4.19
     parse-git-config: ^3.0.0
     rc9: ^1.2.2
     std-env: ^3.2.1
   bin:
     nuxt-telemetry: bin/nuxt-telemetry.mjs
-  checksum: a12d5bddd2767d9fc4f4a3686bfbdeec06c446cc9f127daaff2e2691b69caa87cf8d9e3408066f6ae9a8f3483a34b8a481fc43d61b08ec5abce5a60244f94f0a
+  checksum: d419d65c4e0496dc96ed13bf365890d94ffe4ac27495f578c9a7aba11b1fac9a903a30bcb49f070d46cf2355283e18a1c8130439736ad469404ed0d747f94daa
   languageName: node
   linkType: hard
 
@@ -4610,6 +4610,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "chalk@npm:5.1.0"
+  checksum: c1aa0bf0064a5a59bc06e3e385685fdcc5bb122159152bb57755fc48f9ef93c30cb3a36c9a2c39ead23e5261d787c87c4c097e1a889e1370478102a0112fe0e0
+  languageName: node
+  linkType: hard
+
 "changelogen@npm:^0.3.2":
   version: 0.3.2
   resolution: "changelogen@npm:0.3.2"
@@ -4712,7 +4719,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ci-info@npm:^3.2.0":
+"ci-info@npm:^3.2.0, ci-info@npm:^3.5.0":
   version: 3.5.0
   resolution: "ci-info@npm:3.5.0"
   checksum: 7def3789706ec18db3dc371dc699bd0df12057d54b796201f50ba87200e0849d3d83c68da00ab2ab8cdd738d91b25ab9e31620588f8d7e64ffaa1f760fd121cf
@@ -5858,6 +5865,13 @@ __metadata:
   version: 16.0.2
   resolution: "dotenv@npm:16.0.2"
   checksum: ca8f9ca2d67929c7771069f4c31b4e46b9932621009e658e5afd655dde2d69b77642bf36dbc9e72bc170523dfd908a9ee41c26f034c1fdc605ace3b1b4b10faf
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.0.3":
+  version: 16.0.3
+  resolution: "dotenv@npm:16.0.3"
+  checksum: afcf03f373d7a6d62c7e9afea6328e62851d627a4e73f2e12d0a8deae1cd375892004f3021883f8aec85932cd2834b091f568ced92b4774625b321db83b827f8
   languageName: node
   linkType: hard
 
@@ -7930,7 +7944,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"git-url-parse@npm:^13.0.0, git-url-parse@npm:^13.1.0":
+"git-url-parse@npm:^13.1.0":
   version: 13.1.0
   resolution: "git-url-parse@npm:13.1.0"
   dependencies:
@@ -8569,9 +8583,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:^9.1.1":
-  version: 9.1.2
-  resolution: "inquirer@npm:9.1.2"
+"inquirer@npm:^9.1.3":
+  version: 9.1.3
+  resolution: "inquirer@npm:9.1.3"
   dependencies:
     ansi-escapes: ^5.0.0
     chalk: ^5.0.1
@@ -8583,12 +8597,12 @@ __metadata:
     mute-stream: 0.0.8
     ora: ^6.1.2
     run-async: ^2.4.0
-    rxjs: ^7.5.6
+    rxjs: ^7.5.7
     string-width: ^5.1.2
     strip-ansi: ^7.0.1
     through: ^2.3.6
     wrap-ansi: ^8.0.1
-  checksum: c1efd2a8a85b351ea6c6dece159c3eef8f499ce4b52b6c1888499edaa585235a92d2f8bad935b6302731234bbe9f4fb4adcebdd8645d8ac442315b5a8227ed2e
+  checksum: 77ff36f5baf2e3191d448a414a2fdb983ff62bdeb19e3b5703d3f243ba72485ec154f1f1942f76b916e2eedf47e8d9c7027644f1aadace73b032f683e85e8bd9
   languageName: node
   linkType: hard
 
@@ -10884,7 +10898,7 @@ __metadata:
     "@nuxt/devalue": ^2.0.0
     "@nuxt/kit": 3.0.0-rc.11
     "@nuxt/schema": 3.0.0-rc.11
-    "@nuxt/telemetry": ^2.1.5
+    "@nuxt/telemetry": ^2.1.6
     "@nuxt/ui-templates": ^0.4.0
     "@nuxt/vite-builder": 3.0.0-rc.11
     "@types/fs-extra": ^9.0.13
@@ -12719,12 +12733,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5, rxjs@npm:^7.5.6":
+"rxjs@npm:^7.5.5":
   version: 7.5.6
   resolution: "rxjs@npm:7.5.6"
   dependencies:
     tslib: ^2.1.0
   checksum: fc05f01364a74dac57490fb3e07ea63b422af04017fae1db641a009073f902ef69f285c5daac31359620dc8d9aee7d81e42b370ca2a8573d1feae0b04329383b
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.5.7":
+  version: 7.5.7
+  resolution: "rxjs@npm:7.5.7"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: edabcdb73b0f7e0f5f6e05c2077aff8c52222ac939069729704357d6406438acca831c24210db320aba269e86dbe1a400f3769c89101791885121a342fb15d9c
   languageName: node
   linkType: hard
 

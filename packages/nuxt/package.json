@@ -39,7 +39,7 @@
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/kit": "3.0.0-rc.11",
     "@nuxt/schema": "3.0.0-rc.11",
-    "@nuxt/telemetry": "^2.1.5",
+    "@nuxt/telemetry": "^2.1.6",
     "@nuxt/ui-templates": "^0.4.0",
     "@nuxt/vite-builder": "3.0.0-rc.11",
     "@vue/reactivity": "^3.2.40",
