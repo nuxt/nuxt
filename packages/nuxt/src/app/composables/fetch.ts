@@ -86,8 +86,12 @@ export function useFetch<
     ]
   }
 
+  let controller: AbortController
+
   const asyncData = useAsyncData<_ResT, ErrorT, Transform, PickKeys>(key, () => {
-    return $fetch(_request.value, _fetchOptions) as Promise<_ResT>
+    controller?.abort?.()
+    controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
+    return $fetch(_request.value, { signal: controller.signal, ..._fetchOptions }) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
