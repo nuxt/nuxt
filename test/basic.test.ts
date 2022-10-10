@@ -65,6 +65,11 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  it('validates routes', async () => {
+    const { status } = await fetch('/forbidden')
+    expect(status).toEqual(404)
+  })
+
   it('render 404', async () => {
     const html = await $fetch('/not-found')
 

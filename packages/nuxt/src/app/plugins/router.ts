@@ -234,7 +234,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
         if (process.server) {
           if (result === false || result instanceof Error) {
             const error = result || createError({
-              statusMessage: `Route navigation aborted: ${initialURL}`
+              statusCode: 404,
+              statusMessage: `Page Not Found: ${initialURL}`
             })
             return callWithNuxt(nuxtApp, showError, [error])
           }

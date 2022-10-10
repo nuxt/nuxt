@@ -159,7 +159,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
         if (result === false || result instanceof Error) {
           const error = result || createError({
-            statusMessage: `Route navigation aborted: ${initialURL}`
+            statusCode: 404,
+            statusMessage: `Page Not Found: ${initialURL}`
           })
           return callWithNuxt(nuxtApp, showError, [error])
         }

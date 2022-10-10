@@ -50,6 +50,11 @@ export default defineNuxtModule({
       if (app.mainComponent!.includes('@nuxt/ui-templates')) {
         app.mainComponent = resolve(runtimeDir, 'app.vue')
       }
+      app.middleware.unshift({
+        name: 'validate',
+        path: resolve(runtimeDir, 'validate'),
+        global: true
+      })
     })
 
     // Prerender all non-dynamic page routes when generating app
