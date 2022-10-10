@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0-rc.11",
-    "@rollup/plugin-replace": "^4.0.0",
+    "@rollup/plugin-replace": "^5.0.0",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitejs/plugin-vue-jsx": "^2.0.1",
     "autoprefixer": "^10.4.12",

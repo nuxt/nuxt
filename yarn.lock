@@ -1950,7 +1950,7 @@ __metadata:
   dependencies:
     "@nuxt/kit": 3.0.0-rc.11
     "@nuxt/schema": 3.0.0-rc.11
-    "@rollup/plugin-replace": ^4.0.0
+    "@rollup/plugin-replace": ^5.0.0
     "@types/cssnano": ^5
     "@vitejs/plugin-vue": ^3.1.2
     "@vitejs/plugin-vue-jsx": ^2.0.1
@@ -2364,6 +2364,21 @@ __metadata:
   peerDependencies:
     rollup: ^1.20.0 || ^2.0.0
   checksum: b61701e612661a46da06ca88f390c3839b586708abc0329a476411b90aa8ac59fe94437ede4c3fe53fea268b3054ea9d7d4ee851d7bd0cb7a5f06906002067cb
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-replace@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@rollup/plugin-replace@npm:5.0.0"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    magic-string: ^0.26.4
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: fdf128d2db100d909ea2635192fe6412272bb953efc991c337914029a9ac554abb6c45e6d623277ed8490049b8b6eaad661034bcc88e81a60ffa8b111a8bb239
   languageName: node
   linkType: hard
 
