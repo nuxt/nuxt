@@ -10928,6 +10928,7 @@ __metadata:
     scule: ^0.3.2
     strip-literal: ^0.4.2
     ufo: ^0.8.5
+    ultrahtml: ^0.1.1
     unbuild: latest
     unctx: ^2.0.2
     unenv: ^0.6.2
@@ -13989,6 +13990,13 @@ __metadata:
   bin:
     uglifyjs: bin/uglifyjs
   checksum: 5e24ad48e096d309e77a462fa0508a9bfe33e2ab00e1bd21dc8bd5d035cf0b58063914bef1c6d6aca78e9e5bbe619714b142ffc646165702e3714f4cfbc7151c
+  languageName: node
+  linkType: hard
+
+"ultrahtml@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "ultrahtml@npm:0.1.1"
+  checksum: a074b6d41e942b0ae3a4ea7372043bee32f5bad08009278adff04a96d784b316e68085d5f44b52c5c03ac0bf1d2a142090e58e555f953d9c69eb9639fd2f70d5
   languageName: node
   linkType: hard
 
