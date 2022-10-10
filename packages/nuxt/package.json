@@ -56,7 +56,7 @@
     "hash-sum": "^2.0.0",
     "hookable": "^5.3.0",
     "knitwork": "^0.1.2",
-    "magic-string": "^0.26.6",
+    "magic-string": "^0.26.7",
     "mlly": "^0.5.16",
     "nitropack": "^0.5.4",
     "nuxi": "3.0.0-rc.11",

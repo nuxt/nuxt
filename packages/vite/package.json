@@ -35,7 +35,7 @@
     "get-port-please": "^2.6.1",
     "h3": "^0.7.21",
     "knitwork": "^0.1.2",
-    "magic-string": "^0.26.6",
+    "magic-string": "^0.26.7",
     "mlly": "^0.5.16",
     "ohash": "^0.1.5",
     "pathe": "^0.3.9",
@@ -48,7 +48,7 @@
     "rollup-plugin-visualizer": "^5.8.2",
     "ufo": "^0.8.5",
     "unplugin": "^0.9.6",
-    "vite": "~3.1.6",
+    "vite": "~3.1.7",
     "vite-node": "^0.24.0",
     "vite-plugin-checker": "^0.5.1",
     "vue-bundle-renderer": "^0.4.3"

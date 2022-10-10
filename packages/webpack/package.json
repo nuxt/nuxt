@@ -31,7 +31,7 @@
     "fs-extra": "^10.1.0",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
-    "magic-string": "^0.26.6",
+    "magic-string": "^0.26.7",
     "memfs": "^3.4.7",
     "mini-css-extract-plugin": "^2.6.1",
     "mlly": "^0.5.16",
