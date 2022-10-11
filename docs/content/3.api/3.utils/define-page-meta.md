@@ -44,23 +44,11 @@ interface PageMeta {
 
   An object accepting the following page metadata:
 
-  **`pageTransition`**
+  **`alias`**
+
+  - **Type**: `string | string[]`
   
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
-  
-    Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
-
-  **`layoutTransition`**
-
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
-
-    Set name of the transition to apply for current layout. You can also set this value to `false` to disable the layout transition.
-
-  **`key`**
-
-  - **Type**: `false` | `string` | `((route: RouteLocationNormalizedLoaded) => string)`
-
-    Set `key` value when you need more control over when the `<NuxtPage>` component is re-rendered.
+    Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
 
   **`keepalive`**
 
@@ -68,17 +56,43 @@ interface PageMeta {
 
     Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive) for a fine-grained control.
 
+  **`key`**
+
+  - **Type**: `false` | `string` | `((route: RouteLocationNormalizedLoaded) => string)`
+
+    Set `key` value when you need more control over when the `<NuxtPage>` component is re-rendered.
+
   **`layout`**
 
   - **Type**: `false` | `LayoutKey` | `Ref<LayoutKey>` | `ComputedRef<LayoutKey>`
 
     Set a static or dynamic name of the layout for each route. This can be set to `false` in case the default layout needs to be disabled.
 
+  **`layoutTransition`**
+
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+
+    Set name of the transition to apply for current layout. You can also set this value to `false` to disable the layout transition.
+
   **`middleware`**
 
   - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
     Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/directory-structure/middleware).
+
+  **`pageTransition`**
+  
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  
+    Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
+
+  **`redirect`**
+
+  - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias.html#redirect-and-alias)
+
+    Where to redirect if the route is directly matched. The redirection happens before any navigation guard and triggers a new navigation with the new target location.
+
+    :StabilityEdge
 
   **`validate`**
 
