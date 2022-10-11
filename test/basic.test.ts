@@ -29,6 +29,12 @@ describe('server api', () => {
   })
 })
 
+describe('route rules', () => {
+  it('should enable spa mode', async () => {
+    expect(await $fetch('/route-rules/spa')).toContain('serverRendered:false')
+  })
+})
+
 describe('pages', () => {
   it('render index', async () => {
     const html = await $fetch('/')
