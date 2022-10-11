@@ -51,7 +51,7 @@
     "@nuxt/test-utils": "link:./packages/test-utils",
     "@nuxtjs/eslint-config-typescript": "^11.0.0",
     "@types/crawler": "^1.2.2",
-    "@types/node": "^16.11.64",
+    "@types/node": "^16.11.65",
     "@types/rimraf": "^3",
     "@types/semver": "^7",
     "@unocss/reset": "^0.45.29",

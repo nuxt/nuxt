@@ -1981,7 +1981,7 @@ __metadata:
     unbuild: latest
     unplugin: ^0.9.6
     vite: ~3.1.7
-    vite-node: ^0.24.0
+    vite-node: ^0.24.1
     vite-plugin-checker: ^0.5.1
     vue: 3.2.40
     vue-bundle-renderer: ^0.4.3
@@ -2667,10 +2667,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.64":
-  version: 16.11.64
-  resolution: "@types/node@npm:16.11.64"
-  checksum: 3634477efbeb586f8cdc1baf7670d8ea89c1eba1beac0354fa9123ca193d794da84ec40d4f8a54f694587ba5469e4124ebbba37542ed88eca95a3980ec45551a
+"@types/node@npm:^16.11.65":
+  version: 16.11.65
+  resolution: "@types/node@npm:16.11.65"
+  checksum: 81d84cb1e7aa305574cd35acf1a5e47f4a7f52783ba096f4bc511314540dee33a27cbd4fddc8bddd4535f1c87a96a76907157bcde093a25c89e8851d6dd63022
   languageName: node
   linkType: hard
 
@@ -10865,7 +10865,7 @@ __metadata:
     "@nuxt/test-utils": "link:./packages/test-utils"
     "@nuxtjs/eslint-config-typescript": ^11.0.0
     "@types/crawler": ^1.2.2
-    "@types/node": ^16.11.64
+    "@types/node": ^16.11.65
     "@types/rimraf": ^3
     "@types/semver": ^7
     "@unocss/reset": ^0.45.29
@@ -10943,7 +10943,7 @@ __metadata:
     scule: ^0.3.2
     strip-literal: ^0.4.2
     ufo: ^0.8.5
-    ultrahtml: ^0.1.1
+    ultrahtml: ^0.2.1
     unbuild: latest
     unctx: ^2.0.2
     unenv: ^0.6.2
@@ -14008,10 +14008,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ultrahtml@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "ultrahtml@npm:0.1.1"
-  checksum: a074b6d41e942b0ae3a4ea7372043bee32f5bad08009278adff04a96d784b316e68085d5f44b52c5c03ac0bf1d2a142090e58e555f953d9c69eb9639fd2f70d5
+"ultrahtml@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "ultrahtml@npm:0.2.1"
+  checksum: 255e64b556489b8aa6002809bb47a72662c45e8a21a7ad78b9ffe38b913b5f0e0e2e221ea4d26ced6bc2331db42e09c84f15e296765d14e86e7a429eba3e599b
   languageName: node
   linkType: hard
 
@@ -14391,17 +14391,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-node@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "vite-node@npm:0.24.0"
+"vite-node@npm:^0.24.1":
+  version: 0.24.1
+  resolution: "vite-node@npm:0.24.1"
   dependencies:
     debug: ^4.3.4
     mlly: ^0.5.16
     pathe: ^0.2.0
-    vite: ^3.0.0
+    vite: ^3.1.7
   bin:
     vite-node: vite-node.mjs
-  checksum: ec94da7601c34abcea4bbcb1f516d0c05ae3d2b804c14beecba77cb0a4678e605c017c992c8d52fe5cacc7686c18b1730dfe609d351d79e07e8a64e9e944aa28
+  checksum: 3e82e6646729fa91806bf0c8721081616da822e47aa543ac0bbcd7c80956de99af01e5f3513009c25190eb5bfd8e09d60f6f93a6ed55b04b90179204b591df74
   languageName: node
   linkType: hard
 
