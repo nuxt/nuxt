@@ -1,12 +1,15 @@
 <script setup lang="ts">
-onMounted(() => import('~/components/BreaksServer'))
-onBeforeMount(() => import('~/components/BreaksServer'))
-onBeforeUpdate(() => import('~/components/BreaksServer'))
-onRenderTracked(() => import('~/components/BreaksServer'))
-onRenderTriggered(() => import('~/components/BreaksServer'))
-onActivated(() => import('~/components/BreaksServer'))
-onDeactivated(() => import('~/components/BreaksServer'))
-onBeforeUnmount(() => import('~/components/BreaksServer'))
+// explicit import to bypass client import protection
+import BreaksServer from '../components/BreaksServer.client'
+
+onMounted(() => import('~/components/BreaksServer.client'))
+onBeforeMount(() => import('~/components/BreaksServer.client'))
+onBeforeUpdate(() => import('~/components/BreaksServer.client'))
+onRenderTracked(() => import('~/components/BreaksServer.client'))
+onRenderTriggered(() => import('~/components/BreaksServer.client'))
+onActivated(() => import('~/components/BreaksServer.client'))
+onDeactivated(() => import('~/components/BreaksServer.client'))
+onBeforeUnmount(() => import('~/components/BreaksServer.client'))
 </script>
 
 <template>

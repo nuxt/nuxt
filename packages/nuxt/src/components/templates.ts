@@ -1,6 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
 import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from '@nuxt/schema'
-import { genDynamicImport, genExport, genObjectFromRawEntries } from 'knitwork'
+import { genDynamicImport, genExport, genImport, genObjectFromRawEntries } from 'knitwork'
 
 export interface ComponentsTemplateContext {
   nuxt: Nuxt
@@ -53,17 +53,31 @@ export default defineNuxtPlugin(nuxtApp => {
 export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   // components.[server|client].mjs'
   getContents ({ options }) {
-    return [
-      'import { defineAsyncComponent } from \'vue\'',
-      ...options.getComponents(options.mode).flatMap((c) => {
-        const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-        const comment = createImportMagicComments(c)
+    const imports = new Set<string>()
+    imports.add('import { defineAsyncComponent } from \'vue\'')
 
-        return [
-          genExport(c.filePath, [{ name: c.export, as: c.pascalName }]),
-          `export const Lazy${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
-        ]
-      }),
+    let num = 0
+    const components = options.getComponents(options.mode).flatMap((c) => {
+      const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+      const comment = createImportMagicComments(c)
+
+      const isClient = c.mode === 'client'
+      const definitions = []
+      if (isClient) {
+        num++
+        const identifier = `__nuxt_component_${num}`
+        imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
+        imports.add(genImport(c.filePath, [{ name: c.export, as: identifier }]))
+        definitions.push(`export const ${c.pascalName} =  /*#__PURE__*/  createClientOnly(${identifier})`)
+      } else {
+        definitions.push(genExport(c.filePath, [{ name: c.export, as: c.pascalName }]))
+      }
+      definitions.push(`export const Lazy${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
+      return definitions
+    })
+    return [
+      ...imports,
+      ...components,
       `export const componentNames = ${JSON.stringify(options.getComponents().map(c => c.pascalName))}`
     ].join('\n')
   }

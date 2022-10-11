@@ -2,6 +2,7 @@ import { statSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
+import { distDir } from '../dirs'
 import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
@@ -146,6 +147,17 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:templates', async () => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
+      // add server placeholder for .client components server side. issue: #7085
+      for (const component of newComponents) {
+        if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
+          newComponents.push({
+            ...component,
+            mode: 'server',
+            filePath: resolve(distDir, 'app/components/server-placeholder'),
+            chunkName: 'components/' + component.kebabName
+          })
+        }
+      }
       context.components = newComponents
     })
 
