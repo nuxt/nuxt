@@ -598,7 +598,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inl
       '{--assets:"assets"}', // <script>
       '{--scoped:"scoped"}', // <style lang=css>
       '{--postcss:"postcss"}', // <style lang=postcss>
-      '{--global:"global"}', // entryfile dependency
+      '{--global:"global"', // entryfile dependency
       '{--plugin:"plugin"}', // plugin dependency
       '{--functional:"functional"}' // functional component with css import
     ]) {
