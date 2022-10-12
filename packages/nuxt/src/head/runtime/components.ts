@@ -1,13 +1,13 @@
-import { defineComponent, PropType } from 'vue'
-import type { SetupContext } from 'vue'
+import { defineComponent } from 'vue'
+import type { PropType, SetupContext } from 'vue'
 import { useHead } from './composables'
 import type {
-  Props,
-  FetchPriority,
   CrossOrigin,
+  FetchPriority,
   HTTPEquiv,
-  ReferrerPolicy,
   LinkRelationship,
+  Props,
+  ReferrerPolicy,
   Target
 } from './types'
 
@@ -88,7 +88,9 @@ export const Script = defineComponent({
     /** @deprecated **/
     charset: String,
     /** @deprecated **/
-    language: String
+    language: String,
+    body: Boolean,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta((props, { slots }) => {
     const script = { ...props }
@@ -111,7 +113,9 @@ export const NoScript = defineComponent({
   inheritAttrs: false,
   props: {
     ...globalProps,
-    title: String
+    title: String,
+    body: Boolean,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta((props, { slots }) => {
     const noscript = { ...props }
@@ -157,7 +161,9 @@ export const Link = defineComponent({
     /** @deprecated **/
     methods: String,
     /** @deprecated **/
-    target: String as PropType<Target>
+    target: String as PropType<Target>,
+    body: Boolean,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta(link => ({
     link: [link]
@@ -205,7 +211,9 @@ export const Meta = defineComponent({
     charset: String,
     content: String,
     httpEquiv: String as PropType<HTTPEquiv>,
-    name: String
+    name: String,
+    body: Boolean,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta((props) => {
     const meta = { ...props }
@@ -235,7 +243,9 @@ export const Style = defineComponent({
     scoped: {
       type: Boolean,
       default: undefined
-    }
+    },
+    body: Boolean,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta((props, { slots }) => {
     const style = { ...props }
@@ -269,7 +279,8 @@ export const Html = defineComponent({
     ...globalProps,
     manifest: String,
     version: String,
-    xmlns: String
+    xmlns: String,
+    renderPriority: [String, Number]
   },
   setup: setupForUseMeta(htmlAttrs => ({ htmlAttrs }), true)
 })
@@ -279,6 +290,9 @@ export const Body = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Body',
   inheritAttrs: false,
-  props: globalProps,
+  props: {
+    ...globalProps,
+    renderPriority: [String, Number]
+  },
   setup: setupForUseMeta(bodyAttrs => ({ bodyAttrs }), true)
 })

@@ -17,6 +17,7 @@
     "@types/lodash.template": "^4",
     "@types/semver": "^7",
     "@vitejs/plugin-vue": "^3.1.2",
+    "@vueuse/head": "~1.0.0-rc.7",
     "unbuild": "latest",
     "vite": "~3.1.7"
   },

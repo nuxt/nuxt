@@ -4,10 +4,6 @@ description: "This example shows how to use useHead and Nuxt built-in components
 title: "useHead"
 ---
 
-::alert{type=info icon=👉}
-Learn more about [meta tags](/guide/features/head-management#meta-components).
-::
-
 ::ReadMore{link="/api/composables/use-head"}
 ::
 

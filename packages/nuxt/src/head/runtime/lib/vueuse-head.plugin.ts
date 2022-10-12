@@ -1,52 +1,58 @@
+import type { HeadEntryOptions, MaybeComputedRef } from '@vueuse/head'
 import { createHead, renderHeadToString } from '@vueuse/head'
-import { computed, ref, watchEffect, onBeforeUnmount, getCurrentInstance, ComputedGetter } from 'vue'
-import defu from 'defu'
-import type { MetaObject } from '..'
-import { defineNuxtPlugin } from '#app'
+import { onBeforeUnmount, getCurrentInstance } from 'vue'
+import type { MetaObject } from '@nuxt/schema'
+import { defineNuxtPlugin, useRouter } from '#app'
+// @ts-expect-error untyped
+import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const head = createHead()
 
+  head.addEntry(appHead, { resolved: true })
+
   nuxtApp.vueApp.use(head)
 
-  let headReady = false
-  nuxtApp.hooks.hookOnce('app:mounted', () => {
-    watchEffect(() => { head.updateDOM() })
-    headReady = true
-  })
+  if (process.client) {
+    // pause dom updates until page is ready and between page transitions
+    let pauseDOMUpdates = true
+    head.hooks['before:dom'].push(() => !pauseDOMUpdates)
+    nuxtApp.hooks.hookOnce('app:mounted', () => {
+      pauseDOMUpdates = false
+      head.updateDOM()
 
-  nuxtApp._useHead = (_meta: MetaObject | ComputedGetter<MetaObject>) => {
-    const meta = ref<MetaObject>(_meta)
-    const headObj = computed(() => {
-      const overrides: MetaObject = { meta: [] }
-      if (meta.value.charset) {
-        overrides.meta!.push({ key: 'charset', charset: meta.value.charset })
-      }
-      if (meta.value.viewport) {
-        overrides.meta!.push({ name: 'viewport', content: meta.value.viewport })
-      }
-      return defu(overrides, meta.value)
+      // start pausing DOM updates when route changes (trigger immediately)
+      useRouter().beforeEach(() => {
+        pauseDOMUpdates = true
+      })
+      // watch for new route before unpausing dom updates (triggered after suspense resolved)
+      useRouter().afterEach(() => {
+        pauseDOMUpdates = false
+        head.updateDOM()
+      })
     })
-    head.addHeadObjs(headObj as any)
+  }
 
-    if (process.server) { return }
-
-    if (headReady) {
-      watchEffect(() => { head.updateDOM() })
+  nuxtApp._useHead = (_meta: MaybeComputedRef<MetaObject>, options: HeadEntryOptions) => {
+    if (process.server) {
+      head.addEntry(_meta, options)
+      return
     }
+
+    const cleanUp = head.addReactiveEntry(_meta, options)
 
     const vm = getCurrentInstance()
     if (!vm) { return }
 
     onBeforeUnmount(() => {
-      head.removeHeadObjs(headObj as any)
+      cleanUp()
       head.updateDOM()
     })
   }
 
   if (process.server) {
-    nuxtApp.ssrContext!.renderMeta = () => {
-      const meta = renderHeadToString(head)
+    nuxtApp.ssrContext!.renderMeta = async () => {
+      const meta = await renderHeadToString(head)
       return {
         ...meta,
         // resolves naming difference with NuxtMeta and @vueuse/head

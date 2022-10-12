@@ -2,10 +2,13 @@ import { createApp } from 'vue'
 import { createMetaManager } from 'vue-meta'
 import type { MetaObject } from '..'
 import { defineNuxtPlugin } from '#app'
+// @ts-expect-error untyped
+import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // @ts-expect-error missing resolver
   const manager = createMetaManager(process.server)
+  manager.addMeta(appHead)
 
   nuxtApp.vueApp.use(manager)
 

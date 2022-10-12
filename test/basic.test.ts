@@ -241,6 +241,7 @@ describe('pages', () => {
 describe('head tags', () => {
   it('should render tags', async () => {
     const headHtml = await $fetch('/head')
+
     expect(headHtml).toContain('<title>Using a dynamic component - Title Template Fn Change</title>')
     expect(headHtml).not.toContain('<meta name="description" content="first">')
     expect(headHtml).toContain('<meta charset="utf-16">')
@@ -252,7 +253,7 @@ describe('head tags', () => {
     expect(headHtml).toMatch(/<html[^>]*class="html-attrs-test"/)
     expect(headHtml).toMatch(/<body[^>]*class="body-attrs-test"/)
     expect(headHtml).toContain('script>console.log("works with useMeta too")</script>')
-    expect(headHtml).toContain('<script src="https://a-body-appended-script.com" data-meta-body="true"></script></body>')
+    expect(headHtml).toContain('<script src="https://a-body-appended-script.com" data-meta-body></script></body>')
 
     const indexHtml = await $fetch('/')
     // should render charset by default

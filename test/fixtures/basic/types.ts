@@ -120,6 +120,34 @@ describe('runtimeConfig', () => {
   })
 })
 
+describe('head', () => {
+  it('correctly types nuxt.config options', () => {
+    // @ts-expect-error
+    defineNuxtConfig({ app: { head: { titleTemplate: () => 'test' } } })
+    defineNuxtConfig({
+      app: {
+        head: {
+          meta: [{ key: 'key', name: 'description', content: 'some description ' }],
+          titleTemplate: 'test %s'
+        }
+      }
+    })
+  })
+  it('types useHead', () => {
+    useHead({
+      base: { href: '/base' },
+      link: computed(() => []),
+      meta: [
+        { key: 'key', name: 'description', content: 'some description ' },
+        () => ({ key: 'key', name: 'description', content: 'some description ' })
+      ],
+      titleTemplate: (titleChunk) => {
+        return titleChunk ? `${titleChunk} - Site Title` : 'Site Title'
+      }
+    })
+  })
+})
+
 describe('composables', () => {
   it('allows providing default refs', () => {
     expectTypeOf(useState('test', () => ref('hello'))).toEqualTypeOf<Ref<string>>()
