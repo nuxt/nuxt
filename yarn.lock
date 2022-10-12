@@ -2048,13 +2048,13 @@ __metadata:
   linkType: soft
 
 "@nuxtjs/color-mode@npm:^3.1.5":
-  version: 3.1.5
-  resolution: "@nuxtjs/color-mode@npm:3.1.5"
+  version: 3.1.8
+  resolution: "@nuxtjs/color-mode@npm:3.1.8"
   dependencies:
     "@nuxt/kit": ^3.0.0-rc.9
     lodash.template: ^4.5.0
     pathe: ^0.3.5
-  checksum: 094fbe13dbaa5df53476caf00f60a033cf77761381b55cd54e0aa57cf0e59d58e0cb41e41d565a604b5c14ec91bc91aa6900e33641082c5a7e6a57031abcea90
+  checksum: 5766b48c449c95c270cdf424313bb9c9b8f3083af4c229dc1b192ceedd18aaac269693148a748d0817af7e24e2c69bf866ad30e77ed567757dbe2216edf777b1
   languageName: node
   linkType: hard
 
