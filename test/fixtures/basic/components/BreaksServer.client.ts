@@ -1,6 +1,6 @@
 // @ts-ignore
 window.test = true
 
-export default () => ({
+export default defineComponent({
   render: () => 'hi'
 })
