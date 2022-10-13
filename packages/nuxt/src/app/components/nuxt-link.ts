@@ -26,7 +26,7 @@ export type NuxtLinkProps = {
   custom?: boolean
 
   // Attributes
-  target?: string | null
+  target?: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
   rel?: string | null
   noRel?: boolean
 
