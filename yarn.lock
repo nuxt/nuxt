@@ -2007,7 +2007,7 @@ __metadata:
     "@types/webpack-virtual-modules": ^0
     autoprefixer: ^10.4.12
     css-loader: ^6.7.1
-    css-minimizer-webpack-plugin: ^4.2.1
+    css-minimizer-webpack-plugin: ^4.2.2
     cssnano: ^5.1.13
     esbuild-loader: ^2.20.0
     escape-string-regexp: ^5.0.0
@@ -5304,9 +5304,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "css-minimizer-webpack-plugin@npm:4.2.1"
+"css-minimizer-webpack-plugin@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "css-minimizer-webpack-plugin@npm:4.2.2"
   dependencies:
     cssnano: ^5.1.8
     jest-worker: ^29.1.2
@@ -5329,7 +5329,7 @@ __metadata:
       optional: true
     lightningcss:
       optional: true
-  checksum: d7de086b6e8a762f554a7e13b0c3154b0b314ae45a831b451e8a10ede39519b2cb16d0dd7b3cb6eadea72d7dee29f2a2fea74cf752e66b791cf873da0f4c22f3
+  checksum: 5417e76a445f35832aa96807c835b8e92834a6cd285b1b788dfe3ca0fa90fec7eb2dd6efa9d3649f9d8244b99b7da2d065951603b94918e8f6a366a5049cacdd
   languageName: node
   linkType: hard
 
