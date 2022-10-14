@@ -1,8 +1,8 @@
 import { defineComponent, getCurrentInstance, reactive, toRefs } from 'vue'
 import type { DefineComponent } from 'vue'
-import { useRoute } from 'vue-router'
 import { NuxtApp, useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
+import { useRoute } from './router'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
