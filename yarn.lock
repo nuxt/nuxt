@@ -2283,6 +2283,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rollup/plugin-alias@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "@rollup/plugin-alias@npm:4.0.0"
+  dependencies:
+    slash: ^4.0.0
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: 87458337d3cbbc444e018651ba8f420d18c9d648e374b09867b2d5d5f832c7dee7ebd38d17990cecfb4afa5bd85b30b946ada7fb59fec8de1f31529eb07c7871
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-commonjs@npm:^22.0.2":
   version: 22.0.2
   resolution: "@rollup/plugin-commonjs@npm:22.0.2"
@@ -2297,6 +2311,25 @@ __metadata:
   peerDependencies:
     rollup: ^2.68.0
   checksum: 70098a4b91afe3f164f5d27cba65edf148c5ed146ee0e07a964b66940681553ac77391083114cdcf9427e7f2706bf0d61eab310b3a2caeab83b7452c0292fcae
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-commonjs@npm:^23.0.0":
+  version: 23.0.0
+  resolution: "@rollup/plugin-commonjs@npm:23.0.0"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    commondir: ^1.0.1
+    estree-walker: ^2.0.2
+    glob: ^8.0.3
+    is-reference: 1.2.1
+    magic-string: ^0.26.4
+  peerDependencies:
+    rollup: ^2.68.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: a8b23ae4c6dc67d13149908444a5eab1375d63b5e5a22f48acd024cd67568cf90524700df76f078e4238e9ffab27ccd29b620625e55cbc50b3780c8f7159b5eb
   languageName: node
   linkType: hard
 
@@ -2324,19 +2357,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^13.3.0":
-  version: 13.3.0
-  resolution: "@rollup/plugin-node-resolve@npm:13.3.0"
+"@rollup/plugin-json@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@rollup/plugin-json@npm:5.0.0"
   dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    "@types/resolve": 1.17.1
-    deepmerge: ^4.2.2
-    is-builtin-module: ^3.1.0
-    is-module: ^1.0.0
-    resolve: ^1.19.0
+    "@rollup/pluginutils": ^4.2.1
   peerDependencies:
-    rollup: ^2.42.0
-  checksum: ec5418e6b3c23a9e30683056b3010e9d325316dcfae93fbc673ae64dad8e56a2ce761c15c48f5e2dcfe0c822fdc4a4905ee6346e3dcf90603ba2260afef5a5e6
+    rollup: ^1.20.0||^2.0.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: e00c8d12f756971a12a489b1593a7020223ffc272378453b83a311e959b3d6b9d78f38d9e5c1c5f3e973a2a98076512bfb5103b4770dbc6b8cf7b565f5267e7f
   languageName: node
   linkType: hard
 
@@ -2353,6 +2384,25 @@ __metadata:
   peerDependencies:
     rollup: ^2.78.0
   checksum: 7c5bed3e5a511ee47172acd91da1a828383f7ef72d54d27d8050598ef9038df0f86a8559db455611e138e07b99d787fd7445b11f81129970d07104644576d80a
+  languageName: node
+  linkType: hard
+
+"@rollup/plugin-node-resolve@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "@rollup/plugin-node-resolve@npm:15.0.0"
+  dependencies:
+    "@rollup/pluginutils": ^4.2.1
+    "@types/resolve": 1.20.2
+    deepmerge: ^4.2.2
+    is-builtin-module: ^3.2.0
+    is-module: ^1.0.0
+    resolve: ^1.22.1
+  peerDependencies:
+    rollup: ^2.78.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: 1be60a90cdb98ffd4cadb9005bc280a768c1eb608ea090e29710052be94118044e85ebccf73c615ef71f6d1201b1d3086f13e314406a3d2e741adf0c808fcaf8
   languageName: node
   linkType: hard
 
@@ -2412,6 +2462,22 @@ __metadata:
     estree-walker: ^2.0.1
     picomatch: ^2.2.2
   checksum: 6bc41f22b1a0f1efec3043899e4d3b6b1497b3dea4d94292d8f83b4cf07a1073ecbaedd562a22d11913ff7659f459677b01b09e9598a98936e746780ecc93a12
+  languageName: node
+  linkType: hard
+
+"@rollup/pluginutils@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "@rollup/pluginutils@npm:5.0.1"
+  dependencies:
+    "@types/estree": ^1.0.0
+    estree-walker: ^2.0.2
+    picomatch: ^2.3.1
+  peerDependencies:
+    rollup: ^1.20.0||^2.0.0||^3.0.0
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+  checksum: c96c8041436842d6a13dfb5ef066625185546b93da2b0a1b135c19b2722d073a5075a842240531a12befb0d05d1856a270f00a655014bd54cfe19c8279ed5322
   languageName: node
   linkType: hard
 
@@ -2515,7 +2581,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/estree@npm:*":
+"@types/estree@npm:*, @types/estree@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/estree@npm:1.0.0"
   checksum: 910d97fb7092c6738d30a7430ae4786a38542023c6302b95d46f49420b797f21619cdde11fa92b338366268795884111c2eb10356e4bd2c8ad5b92941e9e6443
@@ -2702,6 +2768,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: dc6a6df507656004e242dcb02c784479deca516d5f4b58a1707e708022b269ae147e1da0521f3e8ad0d63638869d87e0adc023f0bd5454aa6f72ac66c7525cf5
+  languageName: node
+  linkType: hard
+
+"@types/resolve@npm:1.20.2":
+  version: 1.20.2
+  resolution: "@types/resolve@npm:1.20.2"
+  checksum: 61c2cad2499ffc8eab36e3b773945d337d848d3ac6b7b0a87c805ba814bc838ef2f262fc0f109bfd8d2e0898ff8bd80ad1025f9ff64f1f71d3d4294c9f14e5f6
   languageName: node
   linkType: hard
 
@@ -4641,6 +4714,13 @@ __metadata:
   version: 5.1.0
   resolution: "chalk@npm:5.1.0"
   checksum: c1aa0bf0064a5a59bc06e3e385685fdcc5bb122159152bb57755fc48f9ef93c30cb3a36c9a2c39ead23e5261d787c87c4c097e1a889e1370478102a0112fe0e0
+  languageName: node
+  linkType: hard
+
+"chalk@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "chalk@npm:5.1.2"
+  checksum: 804d7485e33531abe45b14e91026ceb5615974a8c04259ab0806f214a7666f6ea03e39ab124f7d5a0c78a83fda89005f236db3c5f10c2abe9ae875f7aa56bcb5
   languageName: node
   linkType: hard
 
@@ -8052,7 +8132,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^8.0.1, glob@npm:~8.0.3":
+"glob@npm:^8.0.1, glob@npm:^8.0.3, glob@npm:~8.0.3":
   version: 8.0.3
   resolution: "glob@npm:8.0.3"
   dependencies:
@@ -8286,10 +8366,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hookable@npm:^5.2.2, hookable@npm:^5.3.0":
+"hookable@npm:^5.3.0":
   version: 5.3.0
   resolution: "hookable@npm:5.3.0"
   checksum: 5a170b790fc472fae11cc8ebc7a1336e7063c3f0a9697cefb5b18d455fcda4d1eadf21c254a27c0625fbbe31f736fd662797c21e6425e9c8cf073182b2ecae7f
+  languageName: node
+  linkType: hard
+
+"hookable@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "hookable@npm:5.4.0"
+  checksum: 810376b27eab8a8c05684c2c4cb394c7837ac3cf7a91a63f0468cef908a87c982ab2f0320dce0bceaa5fac99006f361a113eb739d0ae3801a9137586b4707f0a
   languageName: node
   linkType: hard
 
@@ -8710,7 +8797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-builtin-module@npm:^3.1.0":
+"is-builtin-module@npm:^3.1.0, is-builtin-module@npm:^3.2.0":
   version: 3.2.0
   resolution: "is-builtin-module@npm:3.2.0"
   dependencies:
@@ -8898,7 +8985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-reference@npm:^1.2.1":
+"is-reference@npm:1.2.1, is-reference@npm:^1.2.1":
   version: 1.2.1
   resolution: "is-reference@npm:1.2.1"
   dependencies:
@@ -9787,7 +9874,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-string@npm:^0.26.1, magic-string@npm:^0.26.2, magic-string@npm:^0.26.3":
+"magic-string@npm:^0.26.2, magic-string@npm:^0.26.3":
   version: 0.26.3
   resolution: "magic-string@npm:0.26.3"
   dependencies:
@@ -9805,7 +9892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-string@npm:^0.26.7":
+"magic-string@npm:^0.26.6, magic-string@npm:^0.26.7":
   version: 0.26.7
   resolution: "magic-string@npm:0.26.7"
   dependencies:
@@ -10899,7 +10986,7 @@ __metadata:
     std-env: ^3.2.1
     typescript: ^4.8.4
     ufo: ^0.8.5
-    unbuild: ^0.8.11
+    unbuild: ^0.9.1
     vite: ^3.1.8
     vitest: ~0.19.1
     vue-tsc: ^1.0.7
@@ -10942,7 +11029,7 @@ __metadata:
     globby: ^13.1.2
     h3: ^0.7.21
     hash-sum: ^2.0.0
-    hookable: ^5.3.0
+    hookable: ^5.4.0
     knitwork: ^0.1.2
     magic-string: ^0.26.7
     mlly: ^0.5.16
@@ -11606,7 +11693,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pkg-types@npm:^0.3.4, pkg-types@npm:^0.3.5":
+"pkg-types@npm:^0.3.5":
   version: 0.3.5
   resolution: "pkg-types@npm:0.3.5"
   dependencies:
@@ -12608,19 +12695,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-dts@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "rollup-plugin-dts@npm:4.2.2"
+"rollup-plugin-dts@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "rollup-plugin-dts@npm:4.2.3"
   dependencies:
-    "@babel/code-frame": ^7.16.7
-    magic-string: ^0.26.1
+    "@babel/code-frame": ^7.18.6
+    magic-string: ^0.26.6
   peerDependencies:
     rollup: ^2.55
     typescript: ^4.1
   dependenciesMeta:
     "@babel/code-frame":
       optional: true
-  checksum: cf4b45f6cca442a5f44af0f0fb567c8fc540ecb792c763571d1bcda9bf495803bcc8d4eaef451a2dd32f7f391eb822e2b96cc6b86b096db54a4d3935236fd8da
+  checksum: b1de94202d0574e7c12105bf0d013e7142c1b9b74d6b83d194d870dcdc281e90cff45ed47a0ab1c62280cc25e75f522e1278ec0ba89c8f75b8bcb56dc98c2c63
   languageName: node
   linkType: hard
 
@@ -12725,6 +12812,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 6a2bf167b3587d4df709b37d149ad0300692cc5deb510f89ac7bdc77c8738c9546ae3de9322b0968e1ed2b0e984571f5f55aae28fa7de4cfcb1bc5402a4e2be6
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "rollup@npm:3.1.0"
+  dependencies:
+    fsevents: ~2.3.2
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 5f0bad2b949225eaaeb40204311b1c9eb9e7f4ed6664334b289c1329bf86f87416716d806f4861f501de6cead6eef7b489a140fd5fa57719fc877c5f280dff1b
   languageName: node
   linkType: hard
 
@@ -13968,7 +14069,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^3 || ^4, typescript@npm:^4.8.2":
+"typescript@npm:^3 || ^4":
   version: 4.8.3
   resolution: "typescript@npm:4.8.3"
   bin:
@@ -13988,7 +14089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^3 || ^4#~builtin<compat/typescript>, typescript@patch:typescript@^4.8.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@^3 || ^4#~builtin<compat/typescript>":
   version: 4.8.3
   resolution: "typescript@patch:typescript@npm%3A4.8.3#~builtin<compat/typescript>::version=4.8.3&hash=701156"
   bin:
@@ -14050,41 +14151,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.8.11":
-  version: 0.8.11
-  resolution: "unbuild@npm:0.8.11"
+"unbuild@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "unbuild@npm:0.9.1"
   dependencies:
-    "@rollup/plugin-alias": ^3.1.9
-    "@rollup/plugin-commonjs": ^22.0.2
-    "@rollup/plugin-json": ^4.1.0
-    "@rollup/plugin-node-resolve": ^13.3.0
-    "@rollup/plugin-replace": ^4.0.0
-    "@rollup/pluginutils": ^4.2.1
-    chalk: ^5.0.1
+    "@rollup/plugin-alias": ^4.0.0
+    "@rollup/plugin-commonjs": ^23.0.0
+    "@rollup/plugin-json": ^5.0.0
+    "@rollup/plugin-node-resolve": ^15.0.0
+    "@rollup/plugin-replace": ^5.0.0
+    "@rollup/pluginutils": ^5.0.1
+    chalk: ^5.1.2
     consola: ^2.15.3
     defu: ^6.1.0
-    esbuild: ^0.15.6
+    esbuild: ^0.15.10
     globby: ^13.1.2
-    hookable: ^5.2.2
-    jiti: ^1.14.0
-    magic-string: ^0.26.3
+    hookable: ^5.4.0
+    jiti: ^1.16.0
+    magic-string: ^0.26.7
     mkdirp: ^1.0.4
     mkdist: ^0.3.13
-    mlly: ^0.5.14
+    mlly: ^0.5.16
     mri: ^1.2.0
-    pathe: ^0.3.5
-    pkg-types: ^0.3.4
+    pathe: ^0.3.9
+    pkg-types: ^0.3.5
     pretty-bytes: ^6.0.0
     rimraf: ^3.0.2
-    rollup: ^2.79.0
-    rollup-plugin-dts: ^4.2.2
+    rollup: ^3.1.0
+    rollup-plugin-dts: ^4.2.3
     rollup-plugin-esbuild: ^4.10.1
     scule: ^0.3.2
-    typescript: ^4.8.2
+    typescript: ^4.8.4
     untyped: ^0.5.0
   bin:
     unbuild: dist/cli.mjs
-  checksum: 40bcdd54d460b6d1e170a62fb71ea0eda32ca557b715d11f51acf8a2afadc4d457aecc45a00fd8ec2fba7906845cd49823720bef90000df343c8c6599ca7a52b
+  checksum: 281d11160f49d70a3b0e2e33d9914e2bedb7f45122447dd55f7e29b1fa8c770679b3bbac4b3fa4d192843c3a922c741e26c64b825f777d4dbf94e75bff6b278b
   languageName: node
   linkType: hard
 
