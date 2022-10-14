@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath } from '@nuxt/kit'
+import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -188,6 +188,12 @@ export default defineNuxtModule({
           '}'
         ].join('\n')
       }
+    })
+
+    // Add <NuxtPage>
+    addComponent({
+      name: 'NuxtPage',
+      filePath: resolve(distDir, 'pages/runtime/page')
     })
 
     // Add declarations for middleware keys
