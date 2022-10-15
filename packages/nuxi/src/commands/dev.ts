@@ -25,6 +25,7 @@ export default defineNuxtCommand({
     overrideEnv('development')
 
     const { listen } = await import('listhen')
+    const { toNodeListener } = await import('h3')
     let currentHandler: RequestListener | undefined
     let loadingMessage = 'Nuxt is starting...'
     const loadingHandler: RequestListener = async (_req, res) => {
@@ -100,7 +101,7 @@ export default defineNuxtCommand({
           writeTypes(currentNuxt).catch(console.error),
           buildNuxt(currentNuxt)
         ])
-        currentHandler = currentNuxt.server.app
+        currentHandler = toNodeListener(currentNuxt.server.app)
         if (isRestart && args.clear !== false) {
           showBanner()
           showURL()

@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { createApp, createError, defineEventHandler, defineLazyEventHandler } from 'h3'
+import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { resolve } from 'pathe'
@@ -21,7 +21,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
-      server.middlewares.use('/__nuxt_vite_node__', createViteNodeMiddleware(ctx, invalidates))
+      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
     },
     handleHotUpdate ({ file, server }) {
       function markInvalidate (mod: ModuleNode) {
@@ -43,7 +43,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
 export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
   addDevServerHandler({
     route: '/__nuxt_vite_node__/',
-    handler: createViteNodeMiddleware(ctx)
+    handler: createViteNodeApp(ctx).handler
   })
 }
 
@@ -69,7 +69,7 @@ function getManifest (ctx: ViteBuildContext) {
   return manifest
 }
 
-function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
+function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
   const app = createApp()
 
   app.use('/manifest', defineEventHandler(() => {
@@ -107,7 +107,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
       return false
     }
 
-    return async (event) => {
+    return eventHandler(async (event) => {
       const moduleId = decodeURI(event.req.url!).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
@@ -122,7 +122,7 @@ function createViteNodeMiddleware (ctx: ViteBuildContext, invalidates: Set<strin
         throw createError({ data: errorData })
       })
       return module
-    }
+    })
   }))
 
   return app

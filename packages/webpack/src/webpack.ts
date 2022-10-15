@@ -1,8 +1,7 @@
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import pify from 'pify'
 import webpack from 'webpack'
-import { promisifyHandler } from 'h3'
-import webpackDevMiddleware, { API, OutputFileSystem } from 'webpack-dev-middleware'
+import { fromNodeMiddleware, defineEventHandler, NodeMiddleware } from 'h3'
+import webpackDevMiddleware, { OutputFileSystem } from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Watching } from 'webpack'
 
@@ -76,35 +75,34 @@ async function createDevMiddleware (compiler: Compiler) {
   logger.debug('Creating webpack middleware...')
 
   // Create webpack dev middleware
-  const devMiddleware = pify(webpackDevMiddleware(compiler, {
+  const devMiddleware = webpackDevMiddleware(compiler, {
     publicPath: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
     outputFileSystem: compiler.outputFileSystem as any,
     stats: 'none',
     ...nuxt.options.webpack.devMiddleware
-  })) as any as API<IncomingMessage, ServerResponse>
+  })
 
   // @ts-ignore
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
-  const hotMiddleware = pify(webpackHotMiddleware(compiler, {
+  const hotMiddleware = webpackHotMiddleware(compiler, {
     log: false,
     heartbeat: 10000,
     path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
     ...hotMiddlewareOptions
-  })) as any as API<IncomingMessage, ServerResponse>
+  })
 
   await nuxt.callHook('webpack:devMiddleware', devMiddleware)
   await nuxt.callHook('webpack:hotMiddleware', hotMiddleware)
 
   // Register devMiddleware on server
-  const handlers = [promisifyHandler(devMiddleware), promisifyHandler(hotMiddleware)]
-  await nuxt.callHook('server:devMiddleware', async (req, res, next) => {
-    for (const mw of handlers) {
-      await mw?.(req, res)
-    }
-    next()
-  })
+  const devHandler = fromNodeMiddleware(devMiddleware as NodeMiddleware)
+  const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
+  await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
+    await devHandler(event)
+    await hotHandler(event)
+  }))
 
   return devMiddleware
 }

@@ -1,12 +1,12 @@
-import type { Middleware } from 'h3'
+import type { NodeMiddleware } from 'h3'
 import type { NitroEventHandler, NitroDevEventHandler, Nitro } from 'nitropack'
 import { useNuxt } from './context'
 
 export interface LegacyServerMiddleware {
   route?: string,
   path?: string,
-  handle?: Middleware | string
-  handler: Middleware | string
+  handle?: NodeMiddleware | string
+  handler: NodeMiddleware | string
 }
 
 /**

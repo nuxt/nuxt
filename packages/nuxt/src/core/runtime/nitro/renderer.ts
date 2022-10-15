@@ -3,10 +3,9 @@ import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import { appendHeader, getQuery } from 'h3'
 import devalue from '@nuxt/devalue'
-import { createRouter as createMatcher } from 'radix3'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler } from '#internal/nitro'
+import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteOptions } from '#internal/nitro'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app'
 
@@ -107,9 +106,6 @@ const getSPARenderer = lazyCachedFunction(async () => {
   }
 })
 
-// Set up route rule matcher
-const routerOptions = createMatcher({ routes: useRuntimeConfig().nitro.routes })
-
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
@@ -132,15 +128,13 @@ export default defineRenderHandler(async (event) => {
     }
   }
 
-  // TODO: share across endpoints on event context
-  const routeOptions = event.context.routeOptions || routerOptions.lookup(url) || {}
+  // Get route options (currently to apply `ssr: false`)
+  const routeOptions = getRouteOptions(event)
 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = {
     url,
     event,
-    req: event.req,
-    res: event.res,
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
