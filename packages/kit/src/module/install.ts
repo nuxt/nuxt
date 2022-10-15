@@ -42,7 +42,13 @@ async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?:
     const _src = resolveModule(resolveAlias(nuxtModule), { paths: nuxt.options.modulesDir })
     // TODO: also check with type: 'module' in closest `package.json`
     const isESM = _src.endsWith('.mjs')
-    nuxtModule = isESM ? await importModule(_src) : requireModule(_src)
+
+    try {
+      nuxtModule = isESM ? await importModule(_src) : requireModule(_src)
+    } catch (error: unknown) {
+      console.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
+      throw error
+    }
   }
 
   // Throw error if input is not a function
