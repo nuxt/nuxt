@@ -39,7 +39,7 @@ export interface AsyncDataExecuteOptions {
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
    */
-  override?: boolean
+  dedupe?: boolean
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -122,7 +122,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
-      if (!opts.override) {
+      if (opts.dedupe === false) {
         // Avoid fetching same key more than once at a time
         return nuxt._asyncDataPromises[key]
       }

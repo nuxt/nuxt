@@ -30,7 +30,7 @@ type AsyncDataOptions<DataT> = {
 }
 
 interface RefreshOptions {
-  override?: boolean
+  dedupe?: boolean
 }
 
 type AsyncData<DataT, ErrorT> = {

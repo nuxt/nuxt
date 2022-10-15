@@ -32,7 +32,7 @@ type UseFetchOptions = {
 type AsyncData<DataT> = {
   data: Ref<DataT>
   pending: Ref<boolean>
-  refresh: (opts?: { override?: boolean }) => Promise<void>
+  refresh: (opts?: { dedupe?: boolean }) => Promise<void>
   execute: () => Promise<void>
   error: Ref<Error | boolean>
 }
