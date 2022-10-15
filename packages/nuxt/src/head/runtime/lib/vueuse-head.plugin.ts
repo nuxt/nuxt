@@ -27,8 +27,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       })
       // watch for new route before unpausing dom updates (triggered after suspense resolved)
       useRouter().afterEach(() => {
-        pauseDOMUpdates = false
-        head.updateDOM()
+        // only if we have paused (clicking on a link to the current route triggers this)
+        if (pauseDOMUpdates) {
+          pauseDOMUpdates = false
+          head.updateDOM()
+        }
       })
     })
   }
