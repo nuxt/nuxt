@@ -8380,6 +8380,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hookable@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "hookable@npm:5.4.1"
+  checksum: 2a48150436bf70b4b756bcf15694809032c490c1747aba363a6de928a96712e808b0918de06c933e082cc2042c3f051b593d400df6af4773cd9ad1e85d677839
+  languageName: node
+  linkType: hard
+
 "hosted-git-info@npm:^2.1.4":
   version: 2.8.9
   resolution: "hosted-git-info@npm:2.8.9"
@@ -11029,7 +11036,7 @@ __metadata:
     globby: ^13.1.2
     h3: ^0.7.21
     hash-sum: ^2.0.0
-    hookable: ^5.4.0
+    hookable: ^5.4.1
     knitwork: ^0.1.2
     magic-string: ^0.26.7
     mlly: ^0.5.16

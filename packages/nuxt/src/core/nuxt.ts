@@ -1,5 +1,5 @@
 import { join, normalize, resolve } from 'pathe'
-import { createHooks } from 'hookable'
+import { createHooks, createDebugger } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '@nuxt/schema'
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 // Temporary until finding better placement
@@ -183,6 +183,11 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
+  // Add nuxt app debugger
+  if (nuxt.options.debug) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
+  }
+
   for (const m of modulesToInstall) {
     if (Array.isArray(m)) {
       await installModule(m[0], m[1])
@@ -228,6 +233,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   const nuxt = createNuxt(options)
+
+  if (nuxt.options.debug) {
+    createDebugger(nuxt.hooks, { tag: 'nuxt' })
+  }
 
   if (opts.ready !== false) {
     await nuxt.ready()

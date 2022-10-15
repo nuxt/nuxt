@@ -1,5 +1,5 @@
 import { join, resolve } from 'pathe'
-import { isDevelopment } from 'std-env'
+import { isDebug, isDevelopment } from 'std-env'
 import createRequire from 'create-require'
 import { pascalCase } from 'scule'
 import jiti from 'jiti'
@@ -149,11 +149,14 @@ export default defineUntypedSchema({
   /**
    * Set to `true` to enable debug mode.
    *
-   * By default, it's only enabled in development mode.
+   * At the moment, it prints out hook names and timings on the server, and
+   * logs hook arguments as well in the browser.
+   *
    * @version 2
+   * @version 3
    */
   debug: {
-    $resolve: async (val, get) => val ?? await get('dev')
+    $resolve: async (val, get) => val ?? isDebug
   },
 
   /**
