@@ -44,7 +44,7 @@
     "nuxt": "link:./packages/nuxt",
     "nuxt3": "link:./packages/nuxt",
     "vite": "^3.1.8",
-    "unbuild": "^0.9.1"
+    "unbuild": "^0.9.2"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
@@ -73,7 +73,7 @@
     "std-env": "^3.2.1",
     "typescript": "^4.8.4",
     "ufo": "^0.8.5",
-    "unbuild": "^0.9.1",
+    "unbuild": "^0.9.2",
     "vite": "^3.1.8",
     "vitest": "~0.19.1",
     "vue-tsc": "^1.0.8"
