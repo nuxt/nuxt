@@ -16,7 +16,7 @@
     "@nuxt/schema": "3.0.0-rc.11",
     "@types/cssnano": "^5",
     "unbuild": "latest",
-    "vue": "3.2.40"
+    "vue": "3.2.41"
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0-rc.11",
@@ -27,7 +27,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.13",
     "defu": "^6.1.0",
-    "esbuild": "^0.15.10",
+    "esbuild": "^0.15.11",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "externality": "^0.2.2",
@@ -49,12 +49,12 @@
     "ufo": "^0.8.5",
     "unplugin": "^0.9.6",
     "vite": "~3.1.8",
-    "vite-node": "^0.24.1",
+    "vite-node": "^0.24.3",
     "vite-plugin-checker": "^0.5.1",
     "vue-bundle-renderer": "^0.4.3"
   },
   "peerDependencies": {
-    "vue": "^3.2.40"
+    "vue": "^3.2.41"
   },
   "engines": {
     "node": "^14.16.0 || ^16.10.0 || ^17.0.0 || ^18.0.0"

@@ -64,7 +64,7 @@
     "expect-type": "^0.14.2",
     "globby": "^13.1.2",
     "jiti": "^1.16.0",
-    "lerna": "^6.0.0",
+    "lerna": "^6.0.1",
     "markdownlint-cli": "^0.32.2",
     "ohmyfetch": "^0.4.19",
     "pathe": "^0.3.9",
@@ -76,7 +76,7 @@
     "unbuild": "^0.9.1",
     "vite": "^3.1.8",
     "vitest": "~0.19.1",
-    "vue-tsc": "^1.0.7"
+    "vue-tsc": "^1.0.8"
   },
   "packageManager": "yarn@3.2.4",
   "engines": {
