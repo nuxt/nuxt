@@ -66,6 +66,10 @@ const globalProps = {
 }
 
 // <script>
+
+let scriptDeprecated = false
+
+/** @deprecated */
 export const Script = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Script',
@@ -93,6 +97,11 @@ export const Script = defineComponent({
     renderPriority: [String, Number]
   },
   setup: setupForUseMeta((props, { slots }) => {
+    if (process.dev && !scriptDeprecated) {
+      console.log('[nuxt] `<Script>` is deprecated and may be removed in a future release. We advise using `useHead()` directly.')
+      scriptDeprecated = true
+    }
+
     const script = { ...props }
     const textContent = (slots.default?.() || [])
       .filter(({ children }) => children)
