@@ -2562,9 +2562,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^16.11.65":
-  version: 16.11.65
-  resolution: "@types/node@npm:16.11.65"
-  checksum: 81d84cb1e7aa305574cd35acf1a5e47f4a7f52783ba096f4bc511314540dee33a27cbd4fddc8bddd4535f1c87a96a76907157bcde093a25c89e8851d6dd63022
+  version: 16.11.66
+  resolution: "@types/node@npm:16.11.66"
+  checksum: bf190db14d1f32ab10588dd1a1e30bb2e9ba9b78281fce7a81fa80d914f9b3203d48cf1c6a8f96ef6b0edbba281478d2c68d6ebb7719c896f2dd62429c64ef09
   languageName: node
   linkType: hard
 
@@ -4442,9 +4442,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001400, caniuse-lite@npm:^1.0.30001407":
-  version: 1.0.30001419
-  resolution: "caniuse-lite@npm:1.0.30001419"
-  checksum: 7a4dc2794a6773574b5aebcd1c9c0d56159654821714152d8a0b04e261e1522bfd3d86589b8406ce81c7bf5b706118b73b2cb85d577ae433e303dd48ac9ff65f
+  version: 1.0.30001420
+  resolution: "caniuse-lite@npm:1.0.30001420"
+  checksum: dfa5027b2aeaba3ab1731735a46aecf62f286cdeec7f8ccb0f8cce0a3d02447e640e944d9bf5d9ea98b53fac6c2b168bb18f4c9ad598d92a2da7b05e2aea06e2
   languageName: node
   linkType: hard
 
@@ -4518,19 +4518,20 @@ __metadata:
   linkType: hard
 
 "changelogen@npm:^0.3.2":
-  version: 0.3.2
-  resolution: "changelogen@npm:0.3.2"
+  version: 0.3.5
+  resolution: "changelogen@npm:0.3.5"
   dependencies:
     c12: ^0.2.13
     consola: ^2.15.3
     convert-gitmoji: ^0.1.2
     execa: ^6.1.0
     mri: ^1.2.0
+    pkg-types: ^0.3.5
     scule: ^0.3.2
-    semver: ^7.3.7
+    semver: ^7.3.8
   bin:
     changelogen: dist/cli.mjs
-  checksum: d09734b44430b69e0d2849fee72fad09d9ea36d0920f5bf617364a04c4126214e42e09edef3543688927a06fc85a04e07053c0ae9cb76923a0dbcfa985214e56
+  checksum: ec0bb8eb0a21c6d1ecd2f7faceb997c7a08ac298a5f26520b995933c2668aedd83f8cc54e375a3dbf94adcea1cf458365f8c0e11040593758503782e0e492da5
   languageName: node
   linkType: hard
 
@@ -8027,19 +8028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.7.12":
-  version: 0.7.21
-  resolution: "h3@npm:0.7.21"
-  dependencies:
-    cookie-es: ^0.5.0
-    destr: ^1.1.1
-    radix3: ^0.1.2
-    ufo: ^0.8.5
-  checksum: 4c7f7d450ebe802d07e34717353d0a3861b53cca0fa9ffbaa1be5d0e554bdf9cf00a6e91ba07265380960dbca1b34bf7945fb2d2f76a43e9f55b89c2adbe29e4
-  languageName: node
-  linkType: hard
-
-"h3@npm:^0.8.0, h3@npm:^0.8.1":
+"h3@npm:^0.8.1":
   version: 0.8.1
   resolution: "h3@npm:0.8.1"
   dependencies:
@@ -8529,7 +8518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:^5.2.2":
+"ioredis@npm:^5.2.3":
   version: 5.2.3
   resolution: "ioredis@npm:5.2.3"
   dependencies:
@@ -9330,21 +9319,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"listhen@npm:^0.2.13":
-  version: 0.2.15
-  resolution: "listhen@npm:0.2.15"
-  dependencies:
-    clipboardy: ^3.0.0
-    colorette: ^2.0.19
-    defu: ^6.0.0
-    get-port-please: ^2.6.1
-    http-shutdown: ^1.2.2
-    selfsigned: ^2.0.1
-    ufo: ^0.8.5
-  checksum: 6190a0dec7b150698c26b08b429888e6d86a4f81121cd0bc59fe0180097a9ed4e9839bc8bfbe10d1bc7d8a176958fb9ade161e50977275ac73fa536d7656075a
-  languageName: node
-  linkType: hard
-
 "listhen@npm:^0.3.4":
   version: 0.3.4
   resolution: "listhen@npm:0.3.4"
@@ -10107,6 +10081,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mkdir@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "mkdir@npm:0.0.2"
+  checksum: 2b004ee8b847d34d6997a7217f82db854ed9503b6bf8c20df71ab1b235e310ad6317a40bc040ed13d962d121e2075635af7f02fba27827b2a558f658aa64f59b
+  languageName: node
+  linkType: hard
+
 "mkdirp-infer-owner@npm:^2.0.0":
   version: 2.0.0
   resolution: "mkdirp-infer-owner@npm:2.0.0"
@@ -10280,9 +10261,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitropack@npm:nitropack-edge@0.5.5-27764245.b884d0c":
-  version: 0.5.5-27764245.b884d0c
-  resolution: "nitropack-edge@npm:0.5.5-27764245.b884d0c"
+"nitropack@npm:nitropack-edge@0.6.0-27765421.6d4b416":
+  version: 0.6.0-27765421.6d4b416
+  resolution: "nitropack-edge@npm:0.6.0-27765421.6d4b416"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.2.0
     "@netlify/functions": ^1.3.0
@@ -10310,7 +10291,7 @@ __metadata:
     fs-extra: ^10.1.0
     globby: ^13.1.2
     gzip-size: ^7.0.0
-    h3: ^0.8.0
+    h3: ^0.8.1
     hookable: ^5.4.1
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
@@ -10321,31 +10302,31 @@ __metadata:
     mime: ^3.0.0
     mlly: ^0.5.16
     mri: ^1.2.0
-    node-fetch-native: ^0.1.7
+    node-fetch-native: ^0.1.8
     ohash: ^0.1.5
     ohmyfetch: ^0.4.19
     pathe: ^0.3.9
     perfect-debounce: ^0.1.3
     pkg-types: ^0.3.5
     pretty-bytes: ^6.0.0
-    radix3: ^0.2.0
+    radix3: ^0.2.1
     rollup: ^2.79.1
     rollup-plugin-terser: ^7.0.2
-    rollup-plugin-visualizer: ^5.8.2
+    rollup-plugin-visualizer: ^5.8.3
     scule: ^0.3.2
     semver: ^7.3.8
     serve-placeholder: ^2.0.1
     serve-static: ^1.15.0
     source-map-support: ^0.5.21
     std-env: ^3.3.0
-    ufo: ^0.8.5
+    ufo: ^0.8.6
     unenv: ^0.6.2
     unimport: ^0.6.8
-    unstorage: ^0.5.6
+    unstorage: ^0.6.0
   bin:
     nitro: dist/cli.mjs
     nitropack: dist/cli.mjs
-  checksum: 4e044a2afafd5d5c597c672c6ee872bb7411609fb3190d69ce688d05624684ce9adee68a49b125292cf96e37a1d8693b233d9f8d746a8705a027b0af76fb894e
+  checksum: 39b2b059a9a5785f90c3bfc134e5eaee3af2685bf3aa9eb9405965fcd4ca868ff5593c3ef76477371075d9772e41742de691da3d41f35c82d085de3cb3a87d40
   languageName: node
   linkType: hard
 
@@ -10372,10 +10353,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch-native@npm:^0.1.4, node-fetch-native@npm:^0.1.5, node-fetch-native@npm:^0.1.7":
-  version: 0.1.7
-  resolution: "node-fetch-native@npm:0.1.7"
-  checksum: 0e342f2e26b1c4970fc0c88469661813ad3f755df8ecd42cfacfc781e5a1a5de363fe50b9e9227d98a43368660e791af7a5f7a6566329caaeb7ea21017410539
+"node-fetch-native@npm:^0.1.4, node-fetch-native@npm:^0.1.5, node-fetch-native@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "node-fetch-native@npm:0.1.8"
+  checksum: 1cea29dc30e9b570b5510656f41050e7d2df70acc41937911d4374c404ac35b4592d6b6959a81f336f00f2d74b321d039b80d8a1b62eaaa395747733bc31c799
   languageName: node
   linkType: hard
 
@@ -10404,7 +10385,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:^1, node-forge@npm:^1.3.1":
+"node-forge@npm:^1.3.1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
   checksum: 08fb072d3d670599c89a1704b3e9c649ff1b998256737f0e06fbd1a5bf41cae4457ccaee32d95052d80bbafd9ffe01284e078c8071f0267dc9744e51c5ed42a9
@@ -10824,7 +10805,7 @@ __metadata:
     knitwork: ^0.1.2
     magic-string: ^0.26.7
     mlly: ^0.5.16
-    nitropack: "npm:nitropack-edge@0.5.5-27764245.b884d0c"
+    nitropack: "npm:nitropack-edge@0.6.0-27765421.6d4b416"
     nuxi: 3.0.0-rc.11
     ohash: ^0.1.5
     ohmyfetch: ^0.4.19
@@ -10962,7 +10943,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohmyfetch@npm:^0.4.18, ohmyfetch@npm:^0.4.19":
+"ohmyfetch@npm:^0.4.19":
   version: 0.4.19
   resolution: "ohmyfetch@npm:0.4.19"
   dependencies:
@@ -12087,14 +12068,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radix3@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "radix3@npm:0.1.2"
-  checksum: 483ecb97ae51e8dbda04e1c393bb001739635799bd1d7a7d1086193458df61d85f9e936c44c7bde81aba370dfd6bce8ccbf0fa691911bb8ba83379c90f96fea4
-  languageName: node
-  linkType: hard
-
-"radix3@npm:^0.2.0, radix3@npm:^0.2.1":
+"radix3@npm:^0.2.1":
   version: 0.2.1
   resolution: "radix3@npm:0.2.1"
   checksum: 4d7b7360000efb96bf542a7327aafe6f23a21b25add40f173ade2fb1a757be5f3dc4fd2caf6fab746b68d1b0f176d56fc9f529e8493307d69cc3cb4ca4fcb57e
@@ -12501,7 +12475,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-visualizer@npm:^5.8.2, rollup-plugin-visualizer@npm:^5.8.3":
+"rollup-plugin-visualizer@npm:^5.8.3":
   version: 5.8.3
   resolution: "rollup-plugin-visualizer@npm:5.8.3"
   dependencies:
@@ -12543,8 +12517,8 @@ __metadata:
   linkType: hard
 
 "rollup@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "rollup@npm:3.2.0"
+  version: 3.2.1
+  resolution: "rollup@npm:3.2.1"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -12552,7 +12526,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: b05761daa6cb339cfef19493c31f16a5a4fb234091113c27c48c168afea23106e9730d8f129edf119e2f579b19cd3dd9a0e177a58b303b77c724fe3734004c0a
+  checksum: 52fa82deb5368c5ad0ef585c6900b782b246834a597b782e648adb3e4b8e458c111b634c358619d6137837fe064e704090d58d84f298d0c508d7a1aef9c0caf3
   languageName: node
   linkType: hard
 
@@ -12697,15 +12671,6 @@ __metadata:
   dependencies:
     node-url-utils: ^0.4.0
   checksum: 6819f2553b4054b1a3f5429f5c52103c1c12c05d6077002198bebc6e6aaa4824a6c0a900619a1f2a38d201e63c7aa428f904138a041141e56e7dc182e534ed23
-  languageName: node
-  linkType: hard
-
-"selfsigned@npm:^2.0.1":
-  version: 2.1.1
-  resolution: "selfsigned@npm:2.1.1"
-  dependencies:
-    node-forge: ^1
-  checksum: aa9ce2150a54838978d5c0aee54d7ebe77649a32e4e690eb91775f71fdff773874a4fbafd0ac73d8ec3b702ff8a395c604df4f8e8868528f36fd6c15076fb43a
   languageName: node
   linkType: hard
 
@@ -14029,21 +13994,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.5.6":
-  version: 0.5.6
-  resolution: "unstorage@npm:0.5.6"
+"unstorage@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "unstorage@npm:0.6.0"
   dependencies:
     anymatch: ^3.1.2
     chokidar: ^3.5.3
     destr: ^1.1.1
-    h3: ^0.7.12
-    ioredis: ^5.2.2
-    listhen: ^0.2.13
+    h3: ^0.8.1
+    ioredis: ^5.2.3
+    listhen: ^0.3.4
+    mkdir: ^0.0.2
     mri: ^1.2.0
-    ohmyfetch: ^0.4.18
-    ufo: ^0.8.5
-    ws: ^8.8.1
-  checksum: 2cb0c9b4e5561fbce1a30d0ff724758fed7887f7db9f5d905a3bebb42c7b77b763bf672e9b11cbb82df6bcc6e37d3e2ed8b9bc7214cbb011541ed81a4779b931
+    ohmyfetch: ^0.4.19
+    ufo: ^0.8.6
+    ws: ^8.9.0
+  checksum: 27acb13208aafe4224cdd7f3057c848021bccc609532810b1df0d6057234b5596d2fd2c54060ec36fa2bb6c1fa5d2ea2cd5d03665610356f9ca25d71d74a0d9d
   languageName: node
   linkType: hard
 
@@ -14813,7 +14779,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.8.1":
+"ws@npm:^8.9.0":
   version: 8.9.0
   resolution: "ws@npm:8.9.0"
   peerDependencies:
