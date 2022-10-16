@@ -234,7 +234,7 @@ describe('pages', () => {
     expect(html).toContain('<div class="lazy-client-only-script-setup" foo="hello">')
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
-    await expectNoClientErrors('/client-only-components')
+    await expectNoClientErrors('/client-only-explicit-import')
   })
 })
 
