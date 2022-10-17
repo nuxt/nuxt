@@ -20,6 +20,6 @@ fi
 for p in packages/* ; do
   pushd $p
   echo "Publishing $p"
-  npx npm@8.19.2 publish --access public --tolerate-republish
+  pnpm publish --access public --no-git-checks
   popd
 done
