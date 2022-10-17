@@ -5,7 +5,7 @@ import { appendHeader, getQuery, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteOptions } from '#internal/nitro'
+import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app'
 
@@ -129,7 +129,7 @@ export default defineRenderHandler(async (event) => {
   }
 
   // Get route options (currently to apply `ssr: false`)
-  const routeOptions = getRouteOptions(event)
+  const routeOptions = getRouteRules(event)
 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = {
