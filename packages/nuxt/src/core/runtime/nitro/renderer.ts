@@ -1,7 +1,7 @@
 import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
-import { appendHeader, getQuery } from 'h3'
+import { appendHeader, getQuery, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -157,10 +157,9 @@ export default defineRenderHandler(async (event) => {
   const renderer = (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? await getSPARenderer() : await getSSRRenderer()
 
   // Render 103 Early Hints
-  if (!isRenderingPayload && !process.env.prerender && event.res.socket) {
+  if (!isRenderingPayload && !process.env.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
-    // TODO: use https://github.com/nodejs/node/pull/44180 when we drop support for node 16
-    event.res.socket!.write(`HTTP/1.1 103 Early Hints\r\nLink: ${link}\r\n\r\n`, 'utf-8')
+    writeEarlyHints(event, link)
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch((err) => {
