@@ -1,7 +1,8 @@
 import { defineComponent, h, ref, resolveComponent, PropType, computed, DefineComponent, ComputedRef, onMounted, onBeforeUnmount } from 'vue'
-import type { RouteLocationRaw, Router } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 import { hasProtocol } from 'ufo'
 
+import { preloadRouteComponents } from '../composables/preload'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 
@@ -189,7 +190,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = process.server ? undefined : ref<HTMLElement | null>(null)
       if (process.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && typeof to.value === 'string' && !isSlowConnection()
+        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && typeof to.value === 'string' && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
           const observer = useObserver()
@@ -269,7 +270,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           })
         }
 
-        return h('a', { href, rel, target }, slots.default?.())
+        return h('a', { ref: el, href, rel, target }, slots.default?.())
       }
     }
   }) as unknown as DefineComponent<NuxtLinkProps>
@@ -327,23 +328,4 @@ function isSlowConnection () {
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
   if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
   return false
-}
-
-async function preloadRouteComponents (to: string, router: Router & { _nuxtLinkPreloaded?: Set<string> } = useRouter()) {
-  if (process.server) { return }
-
-  if (!router._nuxtLinkPreloaded) { router._nuxtLinkPreloaded = new Set() }
-  if (router._nuxtLinkPreloaded.has(to)) { return }
-  router._nuxtLinkPreloaded.add(to)
-
-  const components = router.resolve(to).matched
-    .map(component => component.components?.default)
-    .filter(component => typeof component === 'function')
-
-  const promises: Promise<any>[] = []
-  for (const component of components) {
-    const promise = Promise.resolve((component as Function)()).catch(() => {})
-    promises.push(promise)
-  }
-  await Promise.all(promises)
 }

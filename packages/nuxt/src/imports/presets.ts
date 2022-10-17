@@ -56,6 +56,7 @@ const appPreset = defineUnimportPreset({
     'updateAppConfig',
     'defineAppConfig',
     'preloadComponents',
+    'preloadRouteComponents',
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',

@@ -1,5 +1,7 @@
 import type { Component } from 'vue'
+import type { Router } from 'vue-router'
 import { useNuxtApp } from '../nuxt'
+import { useRouter } from './router'
 
 /**
  * Preload a component or components that have been globally registered.
@@ -30,4 +32,32 @@ function _loadAsyncComponent (component: Component) {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }
+}
+
+export async function preloadRouteComponents (to: string, router: Router & { _routePreloaded?: Set<string>; _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
+  if (process.server) { return }
+
+  if (!router._routePreloaded) { router._routePreloaded = new Set() }
+  if (router._routePreloaded.has(to)) { return }
+  router._routePreloaded.add(to)
+
+  const promises = router._preloadPromises ||= []
+
+  if (promises.length > 4) {
+    // Defer adding new preload requests until the existing ones have resolved
+    return Promise.all(promises).then(() => preloadRouteComponents(to, router))
+  }
+
+  const components = router.resolve(to).matched
+    .map(component => component.components?.default)
+    .filter(component => typeof component === 'function')
+
+  for (const component of components) {
+    const promise = Promise.resolve((component as Function)())
+      .catch(() => {})
+      .finally(() => promises.splice(promises.indexOf(promise)))
+    promises.push(promise)
+  }
+
+  await Promise.all(promises)
 }
