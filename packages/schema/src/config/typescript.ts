@@ -16,6 +16,11 @@ export default defineUntypedSchema({
     strict: false,
 
     /**
+     * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
+     */
+    includeWorkspace: false,
+
+    /**
      * Enable build-time type checking.
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`.
