@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
-    routes: {
+    routeRules: {
       '/route-rules/spa': { ssr: false }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
