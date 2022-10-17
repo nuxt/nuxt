@@ -1,8 +1,8 @@
 tasks:
   - init: |
-      npx yarn install
-      npx yarn stub
-    command: npx yarn play
+      npx pnpm install
+      npx pnpm build:stub
+    command: npx pnpm play
 
 ports:
   - port: 3000

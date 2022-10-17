@@ -3,5 +3,8 @@
   "name": "fixture-bridge",
   "scripts": {
     "build": "nuxi build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
   }
 }

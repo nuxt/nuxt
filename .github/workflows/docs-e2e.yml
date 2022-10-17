@@ -19,13 +19,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: "yarn"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
       - run: node ./scripts/crawl.mjs
         env:

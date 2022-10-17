@@ -6,7 +6,7 @@ set -e
 git restore -s@ -SW  -- packages examples
 
 # Build all once to ensure things are nice
-yarn build
+pnpm build
 
 # Release packages
 for PKG in packages/* ; do

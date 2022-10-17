@@ -3,12 +3,12 @@ name: CI
 on:
   push:
     paths-ignore:
-      - 'docs/**'
+      - "docs/**"
     branches:
       - main
   pull_request:
     paths-ignore:
-      - 'docs/**'
+      - "docs/**"
     branches:
       - main
 
@@ -25,16 +25,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
       - name: Cache dist
         uses: actions/cache@v3
@@ -54,16 +55,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -77,19 +79,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
-      - name: Stub
-        run: yarn stub
+      - name: Build (stub)
+        run: pnpm build:stub
 
       - name: Typecheck
-        run: yarn typecheck
+        run: pnpm typecheck
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
@@ -103,25 +106,47 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
-      - name: Stub
-        run: yarn stub
+      # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml#L62
+      # Install playwright's binary under custom directory to cache
+      - name: Set Playwright path
+        if: runner.os != 'Windows'
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
+      - name: Set Playwright path (windows)
+        if: runner.os == 'Windows'
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
+
+      - name: Cache Playwright's binary
+        uses: actions/cache@v3
+        with:
+          # Playwright removes unused browsers automatically
+          # So does not need to add playwright version to key
+          key: ${{ runner.os }}-playwright-bin-v1
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+
+      - name: Install Playwright
+        # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
+        run: pnpm playwright install chromium
+
+      - name: Build (stub)
+        run: pnpm build:stub
 
       - name: Test (unit)
-        run: yarn test:unit
+        run: pnpm test:unit
 
       - name: Test (fixtures)
-        run: yarn test:fixtures
+        run: pnpm test:fixtures
 
       - name: Test (fixtures with dev)
-        run: yarn test:fixtures:dev
+        run: pnpm test:fixtures:dev
         env:
           NODE_OPTIONS: --max-old-space-size=8192
 
@@ -137,19 +162,41 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
-      - name: Stub
-        run: yarn stub
+      # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml#L62
+      # Install playwright's binary under custom directory to cache
+      - name: Set Playwright path (non-windows)
+        if: runner.os != 'Windows'
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
+      - name: Set Playwright path (windows)
+        if: runner.os == 'Windows'
+        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
+
+      - name: Cache Playwright's binary
+        uses: actions/cache@v3
+        with:
+          # Playwright removes unused browsers automatically
+          # So does not need to add playwright version to key
+          key: ${{ runner.os }}-playwright-bin-v1
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+
+      - name: Install Playwright
+        # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
+        run: pnpm playwright install chromium
+
+      - name: Build (stub)
+        run: pnpm build:stub
 
       - name: Test (fixtures)
-        run: yarn test:fixtures:webpack
+        run: pnpm test:fixtures:webpack
 
   test-types:
     needs:
@@ -165,13 +212,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
       - name: Restore dist cache
         uses: actions/cache@v3
@@ -180,7 +228,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
 
       - name: Test (types)
-        run: yarn test:types
+        run: pnpm test:types
 
   build-release:
     if: |
@@ -205,13 +253,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: pnpm install
 
       - name: Restore dist cache
         uses: actions/cache@v3
