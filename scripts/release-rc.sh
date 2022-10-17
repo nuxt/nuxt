@@ -16,6 +16,6 @@ for PKG in packages/* ; do
     TAG="rc"
   fi
   echo "⚡ Publishing $PKG with tag $TAG"
-  npx npm@8.17.0 publish --tag $TAG --access public --tolerate-republish
+  npx npm@8.19.2 publish --tag $TAG --access public --tolerate-republish
   popd > /dev/null
 done
