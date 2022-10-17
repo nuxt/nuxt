@@ -157,7 +157,7 @@ export default defineRenderHandler(async (event) => {
   const renderer = (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? await getSPARenderer() : await getSSRRenderer()
 
   // Render 103 Early Hints
-  if (!isRenderingPayload && !process.env.prerender) {
+  if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !process.env.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     writeEarlyHints(event, link)
   }

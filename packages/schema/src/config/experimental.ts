@@ -81,6 +81,9 @@ export default defineUntypedSchema({
     payloadExtraction: true,
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
-    crossOriginPrefetch: false
+    crossOriginPrefetch: false,
+
+    /** Write early hints when using node server */
+    writeEarlyHints: true
   }
 })
