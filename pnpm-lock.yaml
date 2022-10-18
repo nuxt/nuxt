@@ -28,7 +28,7 @@ importers:
       '@types/node': ^16.11.66
       '@types/rimraf': ^3
       '@types/semver': ^7
-      '@unocss/reset': ^0.45.29
+      '@unocss/reset': ^0.45.30
       case-police: ^0.5.10
       changelogen: ^0.3.5
       crawler: ^1.3.0
@@ -64,7 +64,7 @@ importers:
       '@types/node': 16.11.66
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.12
-      '@unocss/reset': 0.45.29
+      '@unocss/reset': 0.45.30
       case-police: 0.5.10
       changelogen: 0.3.5
       crawler: 1.3.0
@@ -360,7 +360,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^0.1.7
-      h3: ^0.8.3
+      h3: ^0.8.4
       jiti: ^1.16.0
       listhen: ^0.3.4
       mlly: ^0.5.16
@@ -391,7 +391,7 @@ importers:
       execa: 6.1.0
       flat: 5.0.2
       giget: 0.1.7
-      h3: 0.8.3
+      h3: 0.8.4
       jiti: 1.16.0
       listhen: 0.3.4
       mlly: 0.5.16
@@ -423,13 +423,13 @@ importers:
       escape-string-regexp: ^5.0.0
       fs-extra: ^10.1.0
       globby: ^13.1.2
-      h3: ^0.8.3
+      h3: ^0.8.4
       hash-sum: ^2.0.0
       hookable: ^5.4.1
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
-      nitropack: npm:nitropack-edge@0.6.0-27767213.0be380d
+      nitropack: npm:nitropack-edge@0.6.0-27768225.ba21751
       nuxi: workspace:*
       ohash: ^0.1.5
       ohmyfetch: ^0.4.20
@@ -467,13 +467,13 @@ importers:
       escape-string-regexp: 5.0.0
       fs-extra: 10.1.0
       globby: 13.1.2
-      h3: 0.8.3
+      h3: 0.8.4
       hash-sum: 2.0.0
       hookable: 5.4.1
       knitwork: 0.1.2
       magic-string: 0.26.7
       mlly: 0.5.16
-      nitropack: /nitropack-edge/0.6.0-27767213.0be380d
+      nitropack: /nitropack-edge/0.6.0-27768225.ba21751
       nuxi: link:../nuxi
       ohash: 0.1.5
       ohmyfetch: 0.4.20
@@ -508,7 +508,7 @@ importers:
       create-require: ^1.1.1
       defu: ^6.1.0
       jiti: ^1.16.0
-      nitropack: npm:nitropack-edge@0.6.0-27767213.0be380d
+      nitropack: npm:nitropack-edge@0.6.0-27768225.ba21751
       pathe: ^0.3.9
       pkg-types: ^0.3.5
       postcss-import-resolver: ^2.0.0
@@ -537,7 +537,7 @@ importers:
       '@types/semver': 7.3.12
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8
       '@vueuse/head': 1.0.0-rc.9
-      nitropack: /nitropack-edge/0.6.0-27767213.0be380d
+      nitropack: /nitropack-edge/0.6.0-27768225.ba21751
       unbuild: 0.9.4
       vite: 3.1.8
 
@@ -586,7 +586,7 @@ importers:
       externality: ^0.2.2
       fs-extra: ^10.1.0
       get-port-please: ^2.6.1
-      h3: ^0.8.3
+      h3: ^0.8.4
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
@@ -622,7 +622,7 @@ importers:
       externality: 0.2.2
       fs-extra: 10.1.0
       get-port-please: 2.6.1
-      h3: 0.8.3
+      h3: 0.8.4
       knitwork: 0.1.2
       magic-string: 0.26.7
       mlly: 0.5.16
@@ -2152,6 +2152,10 @@ packages:
 
   /@unocss/reset/0.45.29:
     resolution: {integrity: sha512-ytnKxyJdjvhjHrZ9yQUnQwiuL4hiXvjZUj88F2JkwgFJX6Y8jEz3V2xU1BPZNOv20/F6P1ngzEPRfrWHG8XG6A==}
+    dev: true
+
+  /@unocss/reset/0.45.30:
+    resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
   /@unocss/scope/0.45.25:
@@ -5408,8 +5412,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/0.8.3:
-    resolution: {integrity: sha512-SUTWtkopWX04yzF0YGRwccNpvbRheTkib3PdOsjqx2hBhQcrmljMa28K8dXJd6Kn1LhPia8je093hpRdCObBPg==}
+  /h3/0.8.4:
+    resolution: {integrity: sha512-U7ZD/Te+LBS1IpUvsZRe+E+ZiA3zQS0u43DMrZ+raiVObeYe0G5F4Kr/g6Fn2fH92Np0ROkij/wEhkAMbUsBdQ==}
     dependencies:
       cookie-es: 0.5.0
       destr: 1.1.1
@@ -6449,8 +6453,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge/0.6.0-27767213.0be380d:
-    resolution: {integrity: sha512-LDnqyO8+BtFvoYFJKF88REhXaM3mQF6k3qdvOumNJC0uMFmg7mbirTuNTbGf1TAs1Zn2S90T1r+04ZiCTG2vKQ==}
+  /nitropack-edge/0.6.0-27768225.ba21751:
+    resolution: {integrity: sha512-XDXE1D4oDuiuqGy578WvWlDT9eQEVVFqaQVEygTcmJahdkW2yWHhBM94xWrvQcw7MUWNzIzF716TK4s5QK13Fw==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0}
     hasBin: true
     dependencies:
@@ -6480,7 +6484,7 @@ packages:
       fs-extra: 10.1.0
       globby: 13.1.2
       gzip-size: 7.0.0
-      h3: 0.8.3
+      h3: 0.8.4
       hookable: 5.4.1
       http-proxy: 1.18.1
       is-primitive: 3.0.1
@@ -8429,7 +8433,7 @@ packages:
       anymatch: 3.1.2
       chokidar: 3.5.3
       destr: 1.1.1
-      h3: 0.8.3
+      h3: 0.8.4
       ioredis: 5.2.3
       listhen: 0.3.4
       mkdir: 0.0.2
