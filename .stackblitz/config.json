@@ -1,0 +1,3 @@
+{
+  "startCommand": "pnpm build:stub && pnpm play"
+}
