@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.0.0-rc.11",
+  "version": "3.0.0-rc.12",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -13,13 +13,13 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/schema": "3.0.0-rc.11",
+    "@nuxt/schema": "3.0.0-rc.12",
     "@types/cssnano": "^5",
     "unbuild": "latest",
     "vue": "3.2.41"
   },
   "dependencies": {
-    "@nuxt/kit": "3.0.0-rc.11",
+    "@nuxt/kit": "3.0.0-rc.12",
     "@rollup/plugin-replace": "^5.0.0",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitejs/plugin-vue-jsx": "^2.0.1",
