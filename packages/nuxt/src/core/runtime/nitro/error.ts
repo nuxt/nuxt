@@ -20,9 +20,10 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   // Set response code and message
-  event.res.statusCode = errorObject.statusCode as any as number
-  event.res.statusMessage = errorObject.statusMessage
-
+  event.res.statusCode = (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500
+  if (errorObject.statusMessage) {
+    event.res.statusMessage = errorObject.statusMessage
+  }
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
