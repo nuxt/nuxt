@@ -74,4 +74,5 @@
 /guide/deploy/providers/render      https://nitro.unjs.io/deploy/providers/render 302!
 /guide/deploy/providers/stormkit    https://nitro.unjs.io/deploy/providers/stormkit 302!
 /guide/deploy/providers/vercel      https://nitro.unjs.io/deploy/providers/vercel 302!
+/guide/deploy/providers/cleavr      https://nitro.unjs.io/deploy/providers/cleavr 302!
 
