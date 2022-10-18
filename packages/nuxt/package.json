@@ -58,7 +58,7 @@
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.7",
     "mlly": "^0.5.16",
-    "nitropack": "npm:nitropack-edge@0.6.0-27768582.4603279",
+    "nitropack": "^0.6.0",
     "nuxi": "3.0.0-rc.11",
     "ohash": "^0.1.5",
     "ohmyfetch": "^0.4.20",
