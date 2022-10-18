@@ -129,13 +129,13 @@ export async function buildServer (ctx: ViteBuildContext) {
         }
         // Add entry CSS as prefetch (non-blocking)
         if (entry.isEntry) {
-          manifest[key + '-css'] = {
+          manifest.entryCSS = {
             file: '',
             css: entry.css
           }
           entry.css = []
           entry.dynamicImports = entry.dynamicImports || []
-          entry.dynamicImports.push(key + '-css')
+          entry.dynamicImports.push('entryCSS')
         }
       }
     })

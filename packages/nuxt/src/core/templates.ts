@@ -240,8 +240,11 @@ export const publicPathTemplate: NuxtTemplate = {
       '  return path.length ? joinURL(publicBase, ...path) : publicBase',
       '}',
 
-      'globalThis.__buildAssetsURL = buildAssetsURL',
-      'globalThis.__publicAssetsURL = publicAssetsURL'
+      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
+      'if (process.client) {',
+      '  globalThis.__buildAssetsURL = buildAssetsURL',
+      '  globalThis.__publicAssetsURL = publicAssetsURL',
+      '}'
     ].filter(Boolean).join('\n')
   }
 }

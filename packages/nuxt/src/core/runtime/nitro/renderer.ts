@@ -10,7 +10,12 @@ import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } fro
 import type { NuxtApp, NuxtSSRContext } from '#app'
 
 // @ts-ignore
-import { buildAssetsURL } from '#paths'
+import { buildAssetsURL, publicAssetsURL } from '#paths'
+
+// @ts-ignore
+globalThis.__buildAssetsURL = buildAssetsURL
+// @ts-ignore
+globalThis.__publicAssetsURL = publicAssetsURL
 
 export interface NuxtRenderHTMLContext {
   htmlAttrs: string[]
@@ -198,7 +203,7 @@ export default defineRenderHandler(async (event) => {
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES && !(process.env.NUXT_NO_SSR || ssrContext.noSSR)
+  const inlinedStyles = process.env.NUXT_INLINE_STYLES
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 
@@ -284,6 +289,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]) {
+  const { entryCSS } = await getClientManifest()
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of ['entry', ...usedModules]) {
@@ -292,6 +298,9 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
         inlinedStyles.add(`<style>${style}</style>`)
       }
     }
+  }
+  for (const css of entryCSS?.css || []) {
+    inlinedStyles.add(`<link rel="stylesheet" href=${JSON.stringify(buildAssetsURL(css))} media="print" onload="this.media='all'; this.onload=null;">`)
   }
   return Array.from(inlinedStyles).join('')
 }

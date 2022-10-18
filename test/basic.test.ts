@@ -616,8 +616,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inl
       `)
   })
 
-  // TODO: fix this in style inlining implementation: https://github.com/nuxt/framework/pull/8265#issuecomment-1282148407
-  it.skip('still downloads client-only styles', async () => {
+  it('still downloads client-only styles', async () => {
     const page = await createPage('/styles')
     await page.waitForLoadState('networkidle')
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
