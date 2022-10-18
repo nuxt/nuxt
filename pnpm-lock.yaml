@@ -443,7 +443,7 @@ importers:
       unctx: ^2.0.2
       unenv: ^0.6.2
       unimport: ^0.6.8
-      unplugin: ^0.9.6
+      unplugin: ^0.10.0
       untyped: ^0.5.0
       vue: 3.2.41
       vue-bundle-renderer: ^0.4.3
@@ -486,7 +486,7 @@ importers:
       unctx: 2.0.2
       unenv: 0.6.2
       unimport: 0.6.8
-      unplugin: 0.9.6
+      unplugin: 0.10.0
       untyped: 0.5.0
       vue: 3.2.41
       vue-bundle-renderer: 0.4.3
@@ -601,7 +601,7 @@ importers:
       rollup-plugin-visualizer: ^5.8.3
       ufo: ^0.8.6
       unbuild: ^0.9.4
-      unplugin: ^0.9.6
+      unplugin: ^0.10.0
       vite: ^3.1.8
       vite-node: ^0.24.3
       vite-plugin-checker: ^0.5.1
@@ -636,7 +636,7 @@ importers:
       rollup: 2.79.1
       rollup-plugin-visualizer: 5.8.3_rollup@2.79.1
       ufo: 0.8.6
-      unplugin: 0.9.6
+      unplugin: 0.10.0
       vite: 3.1.8
       vite-node: 0.24.3
       vite-plugin-checker: 0.5.1_vite@3.1.8
@@ -686,7 +686,7 @@ importers:
       time-fix-plugin: ^2.0.7
       ufo: ^0.8.6
       unbuild: ^0.9.4
-      unplugin: ^0.9.6
+      unplugin: ^0.10.0
       url-loader: ^4.1.1
       vue: 3.2.41
       vue-bundle-renderer: ^0.4.3
@@ -727,7 +727,7 @@ importers:
       style-resources-loader: 1.5.0_webpack@5.74.0
       time-fix-plugin: 2.0.7_webpack@5.74.0
       ufo: 0.8.6
-      unplugin: 0.9.6
+      unplugin: 0.10.0
       url-loader: 4.1.1_u4acmn7fe6yqgbrqzialkgh5lu
       vue-bundle-renderer: 0.4.3
       vue-loader: 17.0.0_webpack@5.74.0
@@ -8393,6 +8393,15 @@ packages:
       - supports-color
       - vite
     dev: true
+
+  /unplugin/0.10.0:
+    resolution: {integrity: sha512-QIoQDNxTceO8QneUMQc96qabJnPVijU9SnaWWAH60HqpkCQSFXTcDAcr8qM4Y7Nq8Q3NafyX3lG5S1g62+KD6g==}
+    dependencies:
+      acorn: 8.8.0
+      chokidar: 3.5.3
+      webpack-sources: 3.2.3
+      webpack-virtual-modules: 0.4.5
+    dev: false
 
   /unplugin/0.9.6:
     resolution: {integrity: sha512-YYLtfoNiie/lxswy1GOsKXgnLJTE27la/PeCGznSItk+8METYZErO+zzV9KQ/hXhPwzIJsfJ4s0m1Rl7ZCWZ4Q==}

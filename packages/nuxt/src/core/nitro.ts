@@ -7,6 +7,7 @@ import { resolvePath } from '@nuxt/kit'
 import defu from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
+import type { Plugin } from 'rollup'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
@@ -121,14 +122,16 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   // Register nuxt protection patterns
-  nitroConfig.rollupConfig!.plugins!.push(ImportProtectionPlugin.rollup({
-    rootDir: nuxt.options.rootDir,
-    patterns: [
-      ...['#app', /^#build(\/|$)/]
-        .map(p => [p, 'Vue app aliases are not allowed in server routes.']) as [RegExp | string, string][]
-    ],
-    exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/]
-  }))
+  nitroConfig.rollupConfig!.plugins!.push(
+    ImportProtectionPlugin.rollup({
+      rootDir: nuxt.options.rootDir,
+      patterns: [
+        ...['#app', /^#build(\/|$)/]
+          .map(p => [p, 'Vue app aliases are not allowed in server routes.']) as [RegExp | string, string][]
+      ],
+      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/]
+    }) as Plugin
+  )
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
