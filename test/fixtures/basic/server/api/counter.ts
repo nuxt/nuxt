@@ -1,3 +1,3 @@
 let counter = 0
 
-export default () => ({ count: counter++ })
+export default defineEventHandler(() => ({ count: counter++ }))

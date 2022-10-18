@@ -33,7 +33,7 @@
     "externality": "^0.2.2",
     "fs-extra": "^10.1.0",
     "get-port-please": "^2.6.1",
-    "h3": "^0.8.1",
+    "h3": "^0.8.2",
     "knitwork": "^0.1.2",
     "magic-string": "^0.26.7",
     "mlly": "^0.5.16",
@@ -51,7 +51,7 @@
     "vite": "~3.1.8",
     "vite-node": "^0.24.3",
     "vite-plugin-checker": "^0.5.1",
-    "vue-bundle-renderer": "^0.4.3"
+    "vue-bundle-renderer": "^0.4.4"
   },
   "peerDependencies": {
     "vue": "^3.2.41"

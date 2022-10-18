@@ -33,7 +33,7 @@ importers:
       changelogen: ^0.3.5
       crawler: ^1.3.0
       eslint: ^8.25.0
-      eslint-plugin-jsdoc: ^39.3.6
+      eslint-plugin-jsdoc: ^39.3.13
       execa: ^6.1.0
       expect-type: ^0.14.2
       globby: ^13.1.2
@@ -41,7 +41,7 @@ importers:
       markdownlint-cli: ^0.32.2
       nuxi: workspace:*
       nuxt: workspace:*
-      ohmyfetch: ^0.4.19
+      ohmyfetch: ^0.4.20
       pathe: ^0.3.9
       rimraf: ^3.0.2
       semver: ^7.3.8
@@ -69,7 +69,7 @@ importers:
       changelogen: 0.3.5
       crawler: 1.3.0
       eslint: 8.25.0
-      eslint-plugin-jsdoc: 39.3.6_eslint@8.25.0
+      eslint-plugin-jsdoc: 39.3.13_eslint@8.25.0
       execa: 6.1.0
       expect-type: 0.14.2
       globby: 13.1.2
@@ -77,7 +77,7 @@ importers:
       markdownlint-cli: 0.32.2
       nuxi: link:packages/nuxi
       nuxt: link:packages/nuxt
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       pathe: 0.3.9
       rimraf: 3.0.2
       semver: 7.3.8
@@ -360,7 +360,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^0.1.7
-      h3: ^0.8.1
+      h3: ^0.8.2
       jiti: ^1.16.0
       listhen: ^0.3.4
       mlly: ^0.5.16
@@ -391,7 +391,7 @@ importers:
       execa: 6.1.0
       flat: 5.0.2
       giget: 0.1.7
-      h3: 0.8.1
+      h3: 0.8.3
       jiti: 1.16.0
       listhen: 0.3.4
       mlly: 0.5.16
@@ -423,16 +423,16 @@ importers:
       escape-string-regexp: ^5.0.0
       fs-extra: ^10.1.0
       globby: ^13.1.2
-      h3: ^0.8.1
+      h3: ^0.8.2
       hash-sum: ^2.0.0
       hookable: ^5.4.1
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
-      nitropack: npm:nitropack-edge@0.6.0-27766876.4ff7082
+      nitropack: npm:nitropack-edge@0.6.0-27767213.0be380d
       nuxi: workspace:*
       ohash: ^0.1.5
-      ohmyfetch: ^0.4.19
+      ohmyfetch: ^0.4.20
       pathe: ^0.3.9
       perfect-debounce: ^0.1.3
       scule: ^0.3.2
@@ -446,7 +446,7 @@ importers:
       unplugin: ^0.10.0
       untyped: ^0.5.0
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.3
+      vue-bundle-renderer: ^0.4.4
       vue-devtools-stub: ^0.1.0
       vue-meta: next
       vue-router: ^4.1.5
@@ -467,16 +467,16 @@ importers:
       escape-string-regexp: 5.0.0
       fs-extra: 10.1.0
       globby: 13.1.2
-      h3: 0.8.1
+      h3: 0.8.3
       hash-sum: 2.0.0
       hookable: 5.4.1
       knitwork: 0.1.2
       magic-string: 0.26.7
       mlly: 0.5.16
-      nitropack: /nitropack-edge/0.6.0-27766876.4ff7082
+      nitropack: /nitropack-edge/0.6.0-27767213.0be380d
       nuxi: link:../nuxi
       ohash: 0.1.5
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       pathe: 0.3.9
       perfect-debounce: 0.1.3
       scule: 0.3.2
@@ -489,7 +489,7 @@ importers:
       unplugin: 0.10.0
       untyped: 0.5.0
       vue: 3.2.41
-      vue-bundle-renderer: 0.4.3
+      vue-bundle-renderer: 0.4.4
       vue-devtools-stub: 0.1.0
       vue-router: 4.1.5_vue@3.2.41
     devDependencies:
@@ -508,7 +508,7 @@ importers:
       create-require: ^1.1.1
       defu: ^6.1.0
       jiti: ^1.16.0
-      nitropack: npm:nitropack-edge@0.6.0-27766876.4ff7082
+      nitropack: npm:nitropack-edge@0.6.0-27767213.0be380d
       pathe: ^0.3.9
       pkg-types: ^0.3.5
       postcss-import-resolver: ^2.0.0
@@ -537,7 +537,7 @@ importers:
       '@types/semver': 7.3.12
       '@vitejs/plugin-vue': 3.1.2_vite@3.1.8
       '@vueuse/head': 1.0.0-rc.9
-      nitropack: /nitropack-edge/0.6.0-27766876.4ff7082
+      nitropack: /nitropack-edge/0.6.0-27767213.0be380d
       unbuild: 0.9.4
       vite: 3.1.8
 
@@ -550,7 +550,7 @@ importers:
       execa: ^6.1.0
       get-port-please: ^2.6.1
       jiti: ^1.16.0
-      ohmyfetch: ^0.4.19
+      ohmyfetch: ^0.4.20
       playwright: ^1.27.1
       unbuild: ^0.9.4
       vitest: ~0.19.1
@@ -562,7 +562,7 @@ importers:
       execa: 6.1.0
       get-port-please: 2.6.1
       jiti: 1.16.0
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
     devDependencies:
       playwright: 1.27.1
       unbuild: 0.9.4
@@ -586,7 +586,7 @@ importers:
       externality: ^0.2.2
       fs-extra: ^10.1.0
       get-port-please: ^2.6.1
-      h3: ^0.8.1
+      h3: ^0.8.2
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
@@ -606,7 +606,7 @@ importers:
       vite-node: ^0.24.3
       vite-plugin-checker: ^0.5.1
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.3
+      vue-bundle-renderer: ^0.4.4
     dependencies:
       '@nuxt/kit': link:../kit
       '@rollup/plugin-replace': 5.0.0_rollup@2.79.1
@@ -622,7 +622,7 @@ importers:
       externality: 0.2.2
       fs-extra: 10.1.0
       get-port-please: 2.6.1
-      h3: 0.8.1
+      h3: 0.8.3
       knitwork: 0.1.2
       magic-string: 0.26.7
       mlly: 0.5.16
@@ -640,7 +640,7 @@ importers:
       vite: 3.1.8
       vite-node: 0.24.3
       vite-plugin-checker: 0.5.1_vite@3.1.8
-      vue-bundle-renderer: 0.4.3
+      vue-bundle-renderer: 0.4.4
     devDependencies:
       '@nuxt/schema': link:../schema
       '@types/cssnano': 5.1.0_postcss@8.4.18
@@ -689,7 +689,7 @@ importers:
       unplugin: ^0.10.0
       url-loader: ^4.1.1
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.3
+      vue-bundle-renderer: ^0.4.4
       vue-loader: ^17.0.0
       webpack: ^5.74.0
       webpack-bundle-analyzer: ^4.6.1
@@ -729,7 +729,7 @@ importers:
       ufo: 0.8.6
       unplugin: 0.10.0
       url-loader: 4.1.1_u4acmn7fe6yqgbrqzialkgh5lu
-      vue-bundle-renderer: 0.4.3
+      vue-bundle-renderer: 0.4.4
       vue-loader: 17.0.0_webpack@5.74.0
       webpack: 5.74.0
       webpack-bundle-analyzer: 4.6.1
@@ -1068,8 +1068,8 @@ packages:
     dependencies:
       mime: 3.0.0
 
-  /@es-joy/jsdoccomment/0.31.0:
-    resolution: {integrity: sha512-tc1/iuQcnaiSIUVad72PBierDFpsxdUHtEF/OrfqvM1CBAsIoMP51j52jTMb3dXriwhieTo289InzZj72jL3EQ==}
+  /@es-joy/jsdoccomment/0.32.0:
+    resolution: {integrity: sha512-sbA+4b9VZSf9DJqGrTRS6jxclyA5WpWiKXWxVqEN5HP4LOECJGfZlTS82l9w/byp4pXGPYsf5WQrW2iDG7+cKw==}
     engines: {node: ^14 || ^16 || ^17 || ^18}
     dependencies:
       comment-parser: 1.3.1
@@ -1316,7 +1316,7 @@ packages:
       mri: 1.2.0
       nanoid: 4.0.0
       node-fetch: 3.2.10
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       parse-git-config: 3.0.0
       rc9: 1.2.2
       std-env: 3.3.0
@@ -2098,7 +2098,7 @@ packages:
     dependencies:
       '@iconify/utils': 2.0.0
       '@unocss/core': 0.45.25
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2134,7 +2134,7 @@ packages:
     resolution: {integrity: sha512-8DTYHtYfmapW2i5HVK8zpX9Npq+DGBtXpBqT4K7We3nbaxoMuOZHKwixFfzw0mXqYcr3BjjwJjmDdMi4GhIKWA==}
     dependencies:
       '@unocss/core': 0.45.25
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       pathe: 0.3.9
     dev: true
 
@@ -3053,6 +3053,12 @@ packages:
       semver: 7.3.8
     dev: true
 
+  /busboy/1.6.0:
+    resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
+    engines: {node: '>=10.16.0'}
+    dependencies:
+      streamsearch: 1.1.0
+
   /c12/0.2.13:
     resolution: {integrity: sha512-wJL0/knDbqM/3moLb+8Xd+w3JdkggkIIhiNBkxZ1mWlskKC/vajb85wM3UPg/D9nK6RbI1NgaVTg6AeXBVbknA==}
     dependencies:
@@ -3803,7 +3809,7 @@ packages:
     dev: true
 
   /ee-first/1.1.1:
-    resolution: {integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=}
+    resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
   /electron-to-chromium/1.4.266:
     resolution: {integrity: sha512-saJTYECxUSv7eSpnXw0XIEvUkP9x4s/x2mm3TVX7k4rIFS6f5TjBih1B5h437WzIhHQjid+d8ouQzPQskMervQ==}
@@ -4670,13 +4676,13 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc/39.3.6_eslint@8.25.0:
-    resolution: {integrity: sha512-R6dZ4t83qPdMhIOGr7g2QII2pwCjYyKP+z0tPOfO1bbAbQyKC20Y2Rd6z1te86Lq3T7uM8bNo+VD9YFpE8HU/g==}
+  /eslint-plugin-jsdoc/39.3.13_eslint@8.25.0:
+    resolution: {integrity: sha512-yF16kYmoz8pcEZXxX2kdaBwWFvXrUpxuF+ZgG/0PKLKcT9lGKFi4Mn0Mk/KqJeMgUprFDCzNTjnzYGf8tdNrAA==}
     engines: {node: ^14 || ^16 || ^17 || ^18}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
     dependencies:
-      '@es-joy/jsdoccomment': 0.31.0
+      '@es-joy/jsdoccomment': 0.32.0
       comment-parser: 1.3.1
       debug: 4.3.4
       escape-string-regexp: 4.0.0
@@ -5402,8 +5408,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/0.8.1:
-    resolution: {integrity: sha512-HWTShxx4RKpse3f2h5KOWTEAIZLKq9SHWaVBZkOhBH+fH8uRGYY1iNO7VDwImFwARtR/Pg+bVI8feXX9NIdQRQ==}
+  /h3/0.8.3:
+    resolution: {integrity: sha512-SUTWtkopWX04yzF0YGRwccNpvbRheTkib3PdOsjqx2hBhQcrmljMa28K8dXJd6Kn1LhPia8je093hpRdCObBPg==}
     dependencies:
       cookie-es: 0.5.0
       destr: 1.1.1
@@ -6443,8 +6449,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge/0.6.0-27766876.4ff7082:
-    resolution: {integrity: sha512-tG7CPQ7qj2Z7nAXfHyXXyTxp5Q8hlEALKHQCAIrNP9dZYKrdJJRh2ntlIpsLv72oAGUGZUsNoxxzlyWoq1O1Pg==}
+  /nitropack-edge/0.6.0-27767213.0be380d:
+    resolution: {integrity: sha512-LDnqyO8+BtFvoYFJKF88REhXaM3mQF6k3qdvOumNJC0uMFmg7mbirTuNTbGf1TAs1Zn2S90T1r+04ZiCTG2vKQ==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0}
     hasBin: true
     dependencies:
@@ -6474,7 +6480,7 @@ packages:
       fs-extra: 10.1.0
       globby: 13.1.2
       gzip-size: 7.0.0
-      h3: 0.8.1
+      h3: 0.8.3
       hookable: 5.4.1
       http-proxy: 1.18.1
       is-primitive: 3.0.1
@@ -6487,7 +6493,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 0.1.8
       ohash: 0.1.5
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       pathe: 0.3.9
       perfect-debounce: 0.1.3
       pkg-types: 0.3.5
@@ -6663,13 +6669,13 @@ packages:
   /ohash/0.1.5:
     resolution: {integrity: sha512-qynly1AFIpGWEAW88p6DhMNqok/Swb52/KsiU+Toi7er058Ptvno3tkfTML6wYcEgFgp2GsUziW4Nqn62ciuyw==}
 
-  /ohmyfetch/0.4.19:
-    resolution: {integrity: sha512-OH2xVeRPNsHkx+JFdq1ewe9EwVDfTrv6lsBHpIx8wIWXowP5FyLhhYVaXIVlPsW542rt7gmwK14FwIDWUXEO+Q==}
+  /ohmyfetch/0.4.20:
+    resolution: {integrity: sha512-+c3/l+X91owrT1reTos1R13rb2j8NGZpKi0bRWwrnxIHlr1FZ8NzghIsNBKpUvk9nsnFoNK4phw+nTnXrcALzA==}
     dependencies:
       destr: 1.1.1
-      node-fetch-native: 0.1.7
+      node-fetch-native: 0.1.8
       ufo: 0.8.6
-      undici: 5.10.0
+      undici: 5.11.0
 
   /on-finished/2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -7819,6 +7825,10 @@ packages:
   /std-env/3.3.0:
     resolution: {integrity: sha512-cNNS+VYsXIs5gI6gJipO4qZ8YYT274JHvNnQ1/R/x8Q8mdP0qj0zoMchRXmBNPqp/0eOEhX+3g7g6Fgb7meLIQ==}
 
+  /streamsearch/1.1.0:
+    resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
+    engines: {node: '>=10.0.0'}
+
   /string-width/4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -8301,9 +8311,11 @@ packages:
       unplugin: 0.9.6
     dev: false
 
-  /undici/5.10.0:
-    resolution: {integrity: sha512-c8HsD3IbwmjjbLvoZuRI26TZic+TSEe8FPMLLOkN1AfYRhdjnKBU6yL+IwcSCbdZiX4e5t0lfMDLDCqj4Sq70g==}
+  /undici/5.11.0:
+    resolution: {integrity: sha512-oWjWJHzFet0Ow4YZBkyiJwiK5vWqEYoH7BINzJAJOLedZ++JpAlCbUktW2GQ2DS2FpKmxD/JMtWUUWl1BtghGw==}
     engines: {node: '>=12.18'}
+    dependencies:
+      busboy: 1.6.0
 
   /unenv/0.6.2:
     resolution: {integrity: sha512-IdQfYsHsGKDkiBdeOmtU4MjWvPYfMDOC63cvFqZPodAc5aVezvfD9Bwr7FL/G78cAMMCaDm5Jux3vYo+Z8c/Dg==}
@@ -8417,12 +8429,12 @@ packages:
       anymatch: 3.1.2
       chokidar: 3.5.3
       destr: 1.1.1
-      h3: 0.8.1
+      h3: 0.8.3
       ioredis: 5.2.3
       listhen: 0.3.4
       mkdir: 0.0.2
       mri: 1.2.0
-      ohmyfetch: 0.4.19
+      ohmyfetch: 0.4.20
       ufo: 0.8.6
       ws: 8.9.0
     transitivePeerDependencies:
@@ -8664,8 +8676,8 @@ packages:
     resolution: {integrity: sha512-fmL7V1eiDBFRRnu+gfRWTzyPpNIHJTc4mWnFkwBUmO9U3KPgJAmTx7oxi2bl/Rh6HLdU7+4C9wlj0k2E4AdKFQ==}
     dev: false
 
-  /vue-bundle-renderer/0.4.3:
-    resolution: {integrity: sha512-l4mqMiMSF3wO7h4y9hrdVA97XftD457C+sbbECpZhqjzXf0MzYhdxXJc9JbMjO7fIez1M5s5wFd1YN/d1Em7sg==}
+  /vue-bundle-renderer/0.4.4:
+    resolution: {integrity: sha512-kjJWPayzup8QFynETVpoYD0gDM2nbwN//bpt86hAHpZ+FPdTJFDQqKpouSLQgb2XjkOYM1uB/yc6Zb3iCvS7Gw==}
     dependencies:
       ufo: 0.8.6
     dev: false
