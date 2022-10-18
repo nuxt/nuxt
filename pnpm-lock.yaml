@@ -360,7 +360,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^0.1.7
-      h3: ^0.8.2
+      h3: ^0.8.3
       jiti: ^1.16.0
       listhen: ^0.3.4
       mlly: ^0.5.16
@@ -423,7 +423,7 @@ importers:
       escape-string-regexp: ^5.0.0
       fs-extra: ^10.1.0
       globby: ^13.1.2
-      h3: ^0.8.2
+      h3: ^0.8.3
       hash-sum: ^2.0.0
       hookable: ^5.4.1
       knitwork: ^0.1.2
@@ -586,7 +586,7 @@ importers:
       externality: ^0.2.2
       fs-extra: ^10.1.0
       get-port-please: ^2.6.1
-      h3: ^0.8.2
+      h3: ^0.8.3
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
