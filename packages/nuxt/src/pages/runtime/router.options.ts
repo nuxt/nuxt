@@ -1,5 +1,6 @@
 import type { RouterConfig } from '@nuxt/schema'
-import type { RouterScrollBehavior } from 'vue-router'
+import type { RouterScrollBehavior, RouteLocationNormalized } from 'vue-router'
+import { isEqual } from 'ohash'
 import { nextTick } from 'vue'
 import { useNuxtApp } from '#app'
 
@@ -16,11 +17,7 @@ export default <RouterConfig> {
     let position: ScrollPosition = savedPosition || undefined
 
     // Scroll to top if route is changed by default
-    if (
-      !position &&
-      (from && to && from.matched[0] !== to.matched[0]) &&
-      to.meta.scrollToTop !== false
-    ) {
+    if (!position && from && to && to.meta.scrollToTop !== false && _isDifferentRoute(from, to)) {
       position = { left: 0, top: 0 }
     }
 
@@ -55,4 +52,15 @@ function _getHashElementScrollMarginTop (selector: string): number {
     return parseFloat(getComputedStyle(elem).scrollMarginTop)
   }
   return 0
+}
+
+function _isDifferentRoute (a: RouteLocationNormalized, b: RouteLocationNormalized): boolean {
+  const samePageComponent = a.matched[0] === b.matched[0]
+  if (!samePageComponent) {
+    return true
+  }
+  if (samePageComponent && !isEqual(a.params, b.params)) {
+    return true
+  }
+  return false
 }
