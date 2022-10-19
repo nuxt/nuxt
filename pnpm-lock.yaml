@@ -50,7 +50,7 @@ importers:
       ufo: ^0.8.6
       unbuild: ^0.9.4
       vite: ^3.1.8
-      vitest: ~0.19.1
+      vitest: ^0.24.3
       vue-tsc: ^1.0.8
     devDependencies:
       '@actions/core': 1.10.0
@@ -86,7 +86,7 @@ importers:
       ufo: 0.8.6
       unbuild: 0.9.4
       vite: 3.1.8
-      vitest: 0.19.1
+      vitest: 0.24.3
       vue-tsc: 1.0.8_typescript@4.8.4
 
   examples/advanced/config-extends:
@@ -553,7 +553,7 @@ importers:
       ohmyfetch: ^0.4.20
       playwright: ^1.27.1
       unbuild: ^0.9.4
-      vitest: ~0.19.1
+      vitest: ^0.24.3
     dependencies:
       '@nuxt/kit': link:../kit
       '@nuxt/schema': link:../schema
@@ -566,7 +566,7 @@ importers:
     devDependencies:
       playwright: 1.27.1
       unbuild: 0.9.4
-      vitest: 0.19.1
+      vitest: 0.24.3
 
   packages/vite:
     specifiers:
@@ -8095,8 +8095,12 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: false
 
-  /tinypool/0.2.4:
-    resolution: {integrity: sha512-Vs3rhkUH6Qq1t5bqtb816oT+HeJTXfwt2cbPH17sWHIYKTotQIFPk3tf2fgqRrVyMDVOc1EnPgzIxfIulXVzwQ==}
+  /tinybench/2.3.1:
+    resolution: {integrity: sha512-hGYWYBMPr7p4g5IarQE7XhlyWveh1EKhy4wUBS1LrHXCKYgvz+4/jCqgmJqZxxldesn05vccrtME2RLLZNW7iA==}
+    dev: true
+
+  /tinypool/0.3.0:
+    resolution: {integrity: sha512-NX5KeqHOBZU6Bc0xj9Vr5Szbb1j8tUHIeD18s41aDJaPeC5QTdEhK0SpdpUrZlj2nv5cctNcSjaKNanXlfcVEQ==}
     engines: {node: '>=14.0.0'}
     dev: true
 
@@ -8598,15 +8602,14 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest/0.19.1:
-    resolution: {integrity: sha512-E/ZXpFMUahn731wzhMBNzWRp4mGgiZFT0xdHa32cbNO0CSaHpE9hTfteEU247Gi2Dula8uXo5vvrNB6dtszmQA==}
+  /vitest/0.24.3:
+    resolution: {integrity: sha512-aM0auuPPgMSstWvr851hB74g/LKaKBzSxcG3da7ejfZbx08Y21JpZmbmDYrMTCGhVZKqTGwzcnLMwyfz2WzkhQ==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@vitest/browser': '*'
       '@vitest/ui': '*'
-      c8: '*'
       happy-dom: '*'
       jsdom: '*'
     peerDependenciesMeta:
@@ -8615,8 +8618,6 @@ packages:
       '@vitest/browser':
         optional: true
       '@vitest/ui':
-        optional: true
-      c8:
         optional: true
       happy-dom:
         optional: true
@@ -8629,7 +8630,9 @@ packages:
       chai: 4.3.6
       debug: 4.3.4
       local-pkg: 0.4.2
-      tinypool: 0.2.4
+      strip-literal: 0.4.2
+      tinybench: 2.3.1
+      tinypool: 0.3.0
       tinyspy: 1.0.2
       vite: 3.1.8
     transitivePeerDependencies:
