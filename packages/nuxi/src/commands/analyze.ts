@@ -48,22 +48,23 @@ export default defineNuxtCommand({
 
     app.use('/client', serveFile(join(statsDir, 'client.html')))
     app.use('/nitro', serveFile(join(statsDir, 'nitro.html')))
-    app.use(() => `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Nuxt Bundle Stats (experimental)</title>
-</head>
-  <h1>Nuxt Bundle Stats (experimental)</h1>
-  <ul>
-    <li>
-      <a href="/nitro">Nitro server bundle stats</a>
-    </li>
-    <li>
-      <a href="/client">Client bundle stats</a>
-    </li>
-  </ul>
-</html>`)
+    app.use(eventHandler(() => `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <title>Nuxt Bundle Stats (experimental)</title>
+    </head>
+      <h1>Nuxt Bundle Stats (experimental)</h1>
+      <ul>
+        <li>
+          <a href="/nitro">Nitro server bundle stats</a>
+        </li>
+        <li>
+          <a href="/client">Client bundle stats</a>
+        </li>
+      </ul>
+    </html>
+    `))
 
     await listen(toNodeListener(app))
 
