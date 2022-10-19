@@ -360,7 +360,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^0.1.7
-      h3: ^0.8.4
+      h3: ^0.8.5
       jiti: ^1.16.0
       listhen: ^0.3.4
       mlly: ^0.5.16
@@ -391,7 +391,7 @@ importers:
       execa: 6.1.0
       flat: 5.0.2
       giget: 0.1.7
-      h3: 0.8.4
+      h3: 0.8.5
       jiti: 1.16.0
       listhen: 0.3.4
       mlly: 0.5.16
@@ -423,7 +423,7 @@ importers:
       escape-string-regexp: ^5.0.0
       fs-extra: ^10.1.0
       globby: ^13.1.2
-      h3: ^0.8.4
+      h3: ^0.8.5
       hash-sum: ^2.0.0
       hookable: ^5.4.1
       knitwork: ^0.1.2
@@ -467,7 +467,7 @@ importers:
       escape-string-regexp: 5.0.0
       fs-extra: 10.1.0
       globby: 13.1.2
-      h3: 0.8.4
+      h3: 0.8.5
       hash-sum: 2.0.0
       hookable: 5.4.1
       knitwork: 0.1.2
@@ -586,7 +586,7 @@ importers:
       externality: ^0.2.2
       fs-extra: ^10.1.0
       get-port-please: ^2.6.1
-      h3: ^0.8.4
+      h3: ^0.8.5
       knitwork: ^0.1.2
       magic-string: ^0.26.7
       mlly: ^0.5.16
@@ -622,7 +622,7 @@ importers:
       externality: 0.2.2
       fs-extra: 10.1.0
       get-port-please: 2.6.1
-      h3: 0.8.4
+      h3: 0.8.5
       knitwork: 0.1.2
       magic-string: 0.26.7
       mlly: 0.5.16
@@ -5412,8 +5412,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/0.8.4:
-    resolution: {integrity: sha512-U7ZD/Te+LBS1IpUvsZRe+E+ZiA3zQS0u43DMrZ+raiVObeYe0G5F4Kr/g6Fn2fH92Np0ROkij/wEhkAMbUsBdQ==}
+  /h3/0.8.5:
+    resolution: {integrity: sha512-A+rVzJ+31e67JJzlRf2Ycphu/mvl2qknbpch38xRfrs9HuGSKTtOWuzPnpgaEGIfnzuD/BsDOfhQLJevXEm3ag==}
     dependencies:
       cookie-es: 0.5.0
       destr: 1.2.0
@@ -6484,7 +6484,7 @@ packages:
       fs-extra: 10.1.0
       globby: 13.1.2
       gzip-size: 7.0.0
-      h3: 0.8.4
+      h3: 0.8.5
       hookable: 5.4.1
       http-proxy: 1.18.1
       is-primitive: 3.0.1
@@ -8437,7 +8437,7 @@ packages:
       anymatch: 3.1.2
       chokidar: 3.5.3
       destr: 1.2.0
-      h3: 0.8.4
+      h3: 0.8.5
       ioredis: 5.2.3
       listhen: 0.3.4
       mkdir: 0.0.2
