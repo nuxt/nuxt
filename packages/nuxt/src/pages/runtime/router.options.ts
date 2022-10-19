@@ -1,6 +1,5 @@
 import type { RouterConfig } from '@nuxt/schema'
 import type { RouterScrollBehavior, RouteLocationNormalized } from 'vue-router'
-import { isEqual } from 'ohash'
 import { nextTick } from 'vue'
 import { useNuxtApp } from '#app'
 
@@ -59,7 +58,7 @@ function _isDifferentRoute (a: RouteLocationNormalized, b: RouteLocationNormaliz
   if (!samePageComponent) {
     return true
   }
-  if (samePageComponent && !isEqual(a.params, b.params)) {
+  if (samePageComponent && JSON.stringify(a.params) !== JSON.stringify(b.params)) {
     return true
   }
   return false
