@@ -48,7 +48,7 @@
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
     "defu": "^6.1.0",
-    "destr": "^1.1.1",
+    "destr": "^1.2.0",
     "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.1.0",
     "globby": "^13.1.2",

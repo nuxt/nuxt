@@ -31,7 +31,7 @@
     "colorette": "^2.0.19",
     "consola": "^2.15.3",
     "deep-object-diff": "^1.1.7",
-    "destr": "^1.1.1",
+    "destr": "^1.2.0",
     "execa": "^6.1.0",
     "flat": "^5.0.2",
     "giget": "^0.1.7",

@@ -355,7 +355,7 @@ importers:
       colorette: ^2.0.19
       consola: ^2.15.3
       deep-object-diff: ^1.1.7
-      destr: ^1.1.1
+      destr: ^1.2.0
       execa: ^6.1.0
       flat: ^5.0.2
       fsevents: ~2.3.2
@@ -387,7 +387,7 @@ importers:
       colorette: 2.0.19
       consola: 2.15.3
       deep-object-diff: 1.1.7
-      destr: 1.1.1
+      destr: 1.2.0
       execa: 6.1.0
       flat: 5.0.2
       giget: 0.1.7
@@ -419,7 +419,7 @@ importers:
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
       defu: ^6.1.0
-      destr: ^1.1.1
+      destr: ^1.2.0
       escape-string-regexp: ^5.0.0
       fs-extra: ^10.1.0
       globby: ^13.1.2
@@ -463,7 +463,7 @@ importers:
       chokidar: 3.5.3
       cookie-es: 0.5.0
       defu: 6.1.0
-      destr: 1.1.1
+      destr: 1.2.0
       escape-string-regexp: 5.0.0
       fs-extra: 10.1.0
       globby: 13.1.2
@@ -1306,7 +1306,7 @@ packages:
       consola: 2.15.3
       create-require: 1.1.1
       defu: 6.1.0
-      destr: 1.1.1
+      destr: 1.2.0
       dotenv: 16.0.3
       fs-extra: 10.1.0
       git-url-parse: 13.1.0
@@ -3698,8 +3698,8 @@ packages:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
 
-  /destr/1.1.1:
-    resolution: {integrity: sha512-QqkneF8LrYmwATMdnuD2MLI3GHQIcBnG6qFC2q9bSH430VTCDAVjcspPmUaKhPGtAtPAftIUFqY1obQYQuwmbg==}
+  /destr/1.2.0:
+    resolution: {integrity: sha512-JG+cG4ZPB1L27sl2C2URg8MIOmIUtTbE5wEx02BpmrTCqg/hXxFKXsYsnODl5PdpqNRaS1KQGUQ56V8jk8XpYQ==}
 
   /destroy/1.2.0:
     resolution: {integrity: sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==}
@@ -5416,7 +5416,7 @@ packages:
     resolution: {integrity: sha512-U7ZD/Te+LBS1IpUvsZRe+E+ZiA3zQS0u43DMrZ+raiVObeYe0G5F4Kr/g6Fn2fH92Np0ROkij/wEhkAMbUsBdQ==}
     dependencies:
       cookie-es: 0.5.0
-      destr: 1.1.1
+      destr: 1.2.0
       radix3: 0.2.1
       ufo: 0.8.6
 
@@ -6476,7 +6476,7 @@ packages:
       consola: 2.15.3
       cookie-es: 0.5.0
       defu: 6.1.0
-      destr: 1.1.1
+      destr: 1.2.0
       dot-prop: 7.2.0
       esbuild: 0.15.11
       escape-string-regexp: 5.0.0
@@ -6676,7 +6676,7 @@ packages:
   /ohmyfetch/0.4.20:
     resolution: {integrity: sha512-+c3/l+X91owrT1reTos1R13rb2j8NGZpKi0bRWwrnxIHlr1FZ8NzghIsNBKpUvk9nsnFoNK4phw+nTnXrcALzA==}
     dependencies:
-      destr: 1.1.1
+      destr: 1.2.0
       node-fetch-native: 0.1.8
       ufo: 0.8.6
       undici: 5.11.0
@@ -7322,7 +7322,7 @@ packages:
     resolution: {integrity: sha512-zbe8+HR2X28eZepAwohuKkebbEsA67h0DO9I7g12QrHa2CQopR9gztOLPIPXXGTvcxeUjAN4wZ+b29t3m/u05g==}
     dependencies:
       defu: 6.1.0
-      destr: 1.1.1
+      destr: 1.2.0
       flat: 5.0.2
 
   /read-cache/1.0.0:
@@ -8432,7 +8432,7 @@ packages:
     dependencies:
       anymatch: 3.1.2
       chokidar: 3.5.3
-      destr: 1.1.1
+      destr: 1.2.0
       h3: 0.8.4
       ioredis: 5.2.3
       listhen: 0.3.4
