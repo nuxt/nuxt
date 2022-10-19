@@ -4,6 +4,9 @@
   ],
   "ignoreDeps": [
     "@vueuse/head",
-    "vitest"
+    "vitest",
+    "nuxt",
+    "nuxt3",
+    "@nuxt/kit"
   ]
 }
