@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, KeepAliveProps, TransitionProps } from 'vue'
 import type { DefineComponent, VNode } from 'vue'
 import { RouterView } from 'vue-router'
+import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocation } from 'vue-router'
 
 import { generateRouteKey, RouterViewSlotProps, wrapInKeepAlive } from './utils'
@@ -34,22 +35,27 @@ export default defineComponent({
   },
   setup (props, { attrs }) {
     const nuxtApp = useNuxtApp()
-
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
           if (!routeProps.Component) { return }
 
           const key = generateRouteKey(props.pageKey, routeProps)
-          const transitionProps = props.transition ?? routeProps.route.meta.pageTransition ?? (defaultPageTransition as TransitionProps)
-
           const done = nuxtApp.deferHydration()
 
-          return _wrapIf(Transition, transitionProps,
+          const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+          const transitionProps = hasTransition && _mergeTransitionProps([
+            props.transition,
+            routeProps.route.meta.pageTransition,
+            defaultPageTransition,
+            { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
+          ].filter(Boolean))
+
+          return _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-              onResolve: () => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)
-            }, { default: () => h(Component, { key, routeProps, pageKey: key, hasTransition: !!transitionProps } as {}) })
+              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
+            }, { default: () => h(Component, { key, routeProps, pageKey: key, hasTransition } as {}) })
             )).default()
         }
       })
@@ -61,6 +67,19 @@ export default defineComponent({
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
   [key: string]: any
 }>
+
+function _toArray (val: any) {
+  return Array.isArray(val) ? val : (val ? [val] : [])
+}
+
+function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+  const _props: TransitionProps[] = routeProps.map(prop => ({
+    ...prop,
+    onAfterLeave: _toArray(prop.onAfterLeave)
+  }))
+  // @ts-ignore
+  return defu(..._props)
+}
 
 const Component = defineComponent({
   // TODO: Type props

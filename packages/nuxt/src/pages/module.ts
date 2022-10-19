@@ -139,10 +139,13 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'router.options.mjs',
       getContents: async () => {
-        // Check for router options
+        // Scan and register app/router.options files
         const routerOptionsFiles = (await Promise.all(nuxt.options._layers.map(
           async layer => await findPath(resolve(layer.config.srcDir, 'app/router.options'))
         ))).filter(Boolean) as string[]
+
+        // Add default options
+        routerOptionsFiles.unshift(resolve(runtimeDir, 'router.options'))
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))

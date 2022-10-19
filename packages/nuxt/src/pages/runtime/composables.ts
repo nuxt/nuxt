@@ -29,6 +29,8 @@ export interface PageMeta {
   layoutTransition?: boolean | TransitionProps
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
+  /** Set to `false` to avoid scrolling to top on page navigations */
+  scrollToTop?: boolean
 }
 
 declare module 'vue-router' {
