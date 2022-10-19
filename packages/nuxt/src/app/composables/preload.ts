@@ -41,7 +41,7 @@ export async function preloadRouteComponents (to: string, router: Router & { _ro
   if (router._routePreloaded.has(to)) { return }
   router._routePreloaded.add(to)
 
-  const promises = router._preloadPromises ||= []
+  const promises = router._preloadPromises = router._preloadPromises || []
 
   if (promises.length > 4) {
     // Defer adding new preload requests until the existing ones have resolved
