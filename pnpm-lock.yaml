@@ -25,7 +25,7 @@ importers:
       '@nuxt/webpack-builder': workspace:*
       '@nuxtjs/eslint-config-typescript': ^11.0.0
       '@types/crawler': ^1.2.2
-      '@types/node': ^16.11.66
+      '@types/node': ^16.11.68
       '@types/rimraf': ^3
       '@types/semver': ^7
       '@unocss/reset': ^0.45.30
@@ -33,7 +33,7 @@ importers:
       changelogen: ^0.3.5
       crawler: ^1.3.0
       eslint: ^8.25.0
-      eslint-plugin-jsdoc: ^39.3.13
+      eslint-plugin-jsdoc: ^39.3.14
       execa: ^6.1.0
       expect-type: ^0.14.2
       globby: ^13.1.2
@@ -61,7 +61,7 @@ importers:
       '@nuxt/webpack-builder': link:packages/webpack
       '@nuxtjs/eslint-config-typescript': 11.0.0_z4bbprzjrhnsfa24uvmcbu7f5q
       '@types/crawler': 1.2.2
-      '@types/node': 16.11.66
+      '@types/node': 16.11.68
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.12
       '@unocss/reset': 0.45.30
@@ -69,7 +69,7 @@ importers:
       changelogen: 0.3.5
       crawler: 1.3.0
       eslint: 8.25.0
-      eslint-plugin-jsdoc: 39.3.13_eslint@8.25.0
+      eslint-plugin-jsdoc: 39.3.14_eslint@8.25.0
       execa: 6.1.0
       expect-type: 0.14.2
       globby: 13.1.2
@@ -1068,9 +1068,9 @@ packages:
     dependencies:
       mime: 3.0.0
 
-  /@es-joy/jsdoccomment/0.32.0:
-    resolution: {integrity: sha512-sbA+4b9VZSf9DJqGrTRS6jxclyA5WpWiKXWxVqEN5HP4LOECJGfZlTS82l9w/byp4pXGPYsf5WQrW2iDG7+cKw==}
-    engines: {node: ^14 || ^16 || ^17 || ^18}
+  /@es-joy/jsdoccomment/0.33.0:
+    resolution: {integrity: sha512-bkxMGTlHPE4vfarXt1L1fOm81O18jTRFNgh3Fm4iPKctfWxcpJw4cpth5BhLkGZy4HFzGn/KfD/zGks/J+ZIIw==}
+    engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     dependencies:
       comment-parser: 1.3.1
       esquery: 1.4.0
@@ -1766,8 +1766,8 @@ packages:
     resolution: {integrity: sha512-nJOuiTlsvmClSr3+a/trTSx4DTuY/VURsWGKSf/eeavh0LRMqdsK60ti0TlwM5iHiGOK3/Ibkxsbr7i9rzGreA==}
     dev: true
 
-  /@types/node/16.11.66:
-    resolution: {integrity: sha512-+xvMrGl3eAygKcf5jm+4zA4tbfEgmKM9o6/glTmN0RFVdu2VuFXMYYtRmuv3zTGCgAYMnEZLde3B7BTp+Yxcig==}
+  /@types/node/16.11.68:
+    resolution: {integrity: sha512-JkRpuVz3xCNCWaeQ5EHLR/6woMbHZz/jZ7Kmc63AkU+1HxnoUugzSWMck7dsR4DvNYX8jp9wTi9K7WvnxOIQZQ==}
     dev: true
 
   /@types/node/18.7.23:
@@ -4680,13 +4680,13 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc/39.3.13_eslint@8.25.0:
-    resolution: {integrity: sha512-yF16kYmoz8pcEZXxX2kdaBwWFvXrUpxuF+ZgG/0PKLKcT9lGKFi4Mn0Mk/KqJeMgUprFDCzNTjnzYGf8tdNrAA==}
-    engines: {node: ^14 || ^16 || ^17 || ^18}
+  /eslint-plugin-jsdoc/39.3.14_eslint@8.25.0:
+    resolution: {integrity: sha512-kle7ot5xvzXwWzg7ElzTPM/y1IWUo0kfa5X+ZwOC/7Jw81OJaqIaNEk+2ZH+HcKkbwRUQ3RTdK9qsm4p5vbXAQ==}
+    engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
     dependencies:
-      '@es-joy/jsdoccomment': 0.32.0
+      '@es-joy/jsdoccomment': 0.33.0
       comment-parser: 1.3.1
       debug: 4.3.4
       escape-string-regexp: 4.0.0
