@@ -145,7 +145,7 @@ export default defineNuxtModule({
         ))).filter(Boolean) as string[]
 
         // Add default options
-        routerOptionsFiles.unshift(resolve(runtimeDir, 'router.options'))
+        routerOptionsFiles.push(resolve(runtimeDir, 'router.options'))
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
