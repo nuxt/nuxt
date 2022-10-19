@@ -888,9 +888,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt-themes/website@npm:0.1.6":
-  version: 0.1.6
-  resolution: "@nuxt-themes/website@npm:0.1.6"
+"@nuxt-themes/website@npm:0.1.7":
+  version: 0.1.7
+  resolution: "@nuxt-themes/website@npm:0.1.7"
   dependencies:
     "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-6533b67"
     "@nuxtlabs/github-module": "npm:@nuxtlabs/github-module-edge@latest"
@@ -898,7 +898,7 @@ __metadata:
     scule: ^0.2.1
     three: ^0.142.0
     vue-plausible: ^1.3.2
-  checksum: 81a533b64fe416c0b6cbdf65c9c2cc4510db4b6fa7dfb56785ab8a3cafc20b0a3be0c383265acff198a3b046eb9d9c2f0592deae3f6cdb68c9f9bd4f53de4159
+  checksum: 3f5b8938c7585d4f9a0438d2986b23f2d1cb79ffe8487424c3464193b1142bcb66d6f88bf7132351ea1ab5202f70e340e66f36a1d3f362a9afff64367b484c5a
   languageName: node
   linkType: hard
 
@@ -3495,7 +3495,7 @@ __metadata:
   resolution: "docs@workspace:."
   dependencies:
     "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-2a7c428"
-    "@nuxt-themes/website": 0.1.6
+    "@nuxt-themes/website": 0.1.7
     jiti: ^1.16.0
     nuxt: ^3.0.0-rc.11
     pathe: ^0.3.9
