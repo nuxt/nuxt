@@ -21,7 +21,7 @@ export default <RouterConfig> {
     }
 
     // Hash routes on the same page, no page hook is fired so resolve here
-    if (to.path !== from.path) {
+    if (to.path === from.path) {
       if (from.hash && !to.hash) {
         return { left: 0, top: 0 }
       }
