@@ -47,6 +47,11 @@ type AsyncData<DataT> = {
   * `body`: Request body - automatically stringified (if an object is passed).
   * `headers`: Request headers.
   * `baseURL`: Base URL for the request.
+
+::alert{type=info}
+All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
+::
+
 * **Options (from `useAsyncData`)**:
   * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAyncData` is used.
   * `server`: Whether to fetch the data on the server (defaults to `true`).

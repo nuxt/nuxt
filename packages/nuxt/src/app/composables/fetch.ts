@@ -1,16 +1,22 @@
 import type { FetchError, FetchOptions } from 'ohmyfetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
-import { computed, unref, Ref } from 'vue'
+import { computed, unref, Ref, reactive } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 export type FetchResult<ReqT extends NitroFetchRequest> = TypedInternalResponse<ReqT, unknown>
 
+type ComputedOptions<T extends Record<string, any>> = {
+  [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
+}
+
+type ComputedFetchOptions = ComputedOptions<FetchOptions>
+
 export interface UseFetchOptions<
   DataT,
   Transform extends _Transform<DataT, any> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-> extends AsyncDataOptions<DataT, Transform, PickKeys>, FetchOptions {
+> extends AsyncDataOptions<DataT, Transform, PickKeys>, ComputedFetchOptions {
   key?: string
 }
 
@@ -67,10 +73,10 @@ export function useFetch<
     ...fetchOptions
   } = opts
 
-  const _fetchOptions = {
+  const _fetchOptions = reactive({
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
-  }
+  })
 
   const _asyncDataOptions: AsyncDataOptions<_ResT, Transform, PickKeys> = {
     server,
@@ -81,6 +87,7 @@ export function useFetch<
     initialCache,
     immediate,
     watch: [
+      _fetchOptions,
       _request,
       ...(watch || [])
     ]
