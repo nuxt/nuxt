@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "3.0.0-rc.12",
-    "@rollup/plugin-replace": "^5.0.0",
+    "@rollup/plugin-replace": "^5.0.1",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitejs/plugin-vue-jsx": "^2.0.1",
     "autoprefixer": "^10.4.12",
@@ -47,7 +47,7 @@
     "rollup": "^2.79.1",
     "rollup-plugin-visualizer": "^5.8.3",
     "ufo": "^0.8.6",
-    "unplugin": "^0.10.0",
+    "unplugin": "^0.10.1",
     "vite": "~3.1.8",
     "vite-node": "^0.24.3",
     "vite-plugin-checker": "^0.5.1",
