@@ -1,6 +1,10 @@
 import { join } from 'pathe'
 
 export default defineNuxtConfig({
+  app: {
+    pageTransition: false,
+    layoutTransition: false
+  },
   extends: process.env.WEBSITE_THEME ? join(process.env.WEBSITE_THEME, 'theme') : '@nuxt-themes/website',
   build: {
     transpile: [/content-edge/]
