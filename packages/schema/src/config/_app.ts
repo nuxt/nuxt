@@ -149,7 +149,7 @@ export default defineUntypedSchema({
      * @see https://vuejs.org/api/built-in-components.html#transition
      * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
      */
-    layoutTransition: { name: 'layout', mode: 'out-in' },
+    layoutTransition: false,
     /**
      * Default values for page transitions.
      *
@@ -159,7 +159,7 @@ export default defineUntypedSchema({
      * @see https://vuejs.org/api/built-in-components.html#transition
      * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
      */
-    pageTransition: { name: 'page', mode: 'out-in' },
+    pageTransition: false,
     /**
      * Default values for KeepAlive configuration between pages.
      *

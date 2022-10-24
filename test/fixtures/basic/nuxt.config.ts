@@ -5,6 +5,8 @@ import { withoutLeadingSlash } from 'ufo'
 
 export default defineNuxtConfig({
   app: {
+    pageTransition: true,
+    layoutTransition: true,
     head: {
       charset: 'utf-8',
       link: [undefined],
