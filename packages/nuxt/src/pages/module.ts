@@ -23,6 +23,11 @@ export default defineNuxtModule({
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     if ((nuxt.options.pages === false || (nuxt.options.pages !== true && !pagesDirs.some(dir => existsSync(dir)))) && !isRouterOptionsPresent) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
+      // Add vue-router import for `<NuxtLayout>` integration
+      addTemplate({
+        filename: 'pages.mjs',
+        getContents: () => 'export { useRoute } from \'#app\''
+      })
       return
     }
 
@@ -133,6 +138,12 @@ export default defineNuxtModule({
         const { routes, imports } = normalizeRoutes(pages)
         return [...imports, `export default ${routes}`].join('\n')
       }
+    })
+
+    // Add vue-router import for `<NuxtLayout>` integration
+    addTemplate({
+      filename: 'pages.mjs',
+      getContents: () => 'export { useRoute } from \'vue-router\''
     })
 
     // Add router options template

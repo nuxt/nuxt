@@ -1,7 +1,9 @@
 import { computed, defineComponent, h, inject, nextTick, onMounted, Ref, Transition, unref, VNode } from 'vue'
-import { RouteLocationNormalizedLoaded, useRoute as useVueRouterRoute } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app'
+// @ts-ignore
+import { useRoute as useVueRouterRoute } from '#build/pages'
 // @ts-ignore
 import layouts from '#build/layouts'
 // @ts-ignore
