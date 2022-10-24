@@ -156,11 +156,8 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<webpack.Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
-    // non-quiet mode: errors will be printed by webpack itself
     const error = new Error('Nuxt build error')
-    if (nuxt.options.build.quiet === true) {
-      error.stack = stats.toString('errors-only')
-    }
+    error.stack = stats.toString('errors-only')
     throw error
   }
 
