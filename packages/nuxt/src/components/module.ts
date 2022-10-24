@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
-import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate } from '@nuxt/kit'
+import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
 import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
@@ -122,12 +122,12 @@ export default defineNuxtModule<ComponentsOptions>({
 
     nuxt.hook('vite:extendConfig', (config, { isClient }) => {
       const mode = isClient ? 'client' : 'server'
-      ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+        ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
     })
     nuxt.hook('webpack:config', (configs) => {
       for (const config of configs) {
         const mode = config.name === 'server' ? 'server' : 'client'
-        ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+          ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
       }
     })
 
@@ -173,7 +173,14 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       const fPath = resolve(nuxt.options.srcDir, path)
       if (componentDirs.find(dir => fPath.startsWith(dir.path))) {
-        await nuxt.callHook('builder:generateApp')
+        await updateTemplates({
+          filter: template => [
+            'components.plugin.mjs',
+            'components.d.ts',
+            'components.server.mjs',
+            'components.client.mjs'
+          ].includes(template.filename)
+        })
       }
     })
 

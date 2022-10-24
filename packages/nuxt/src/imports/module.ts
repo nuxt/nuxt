@@ -1,4 +1,4 @@
-import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, logger } from '@nuxt/kit'
+import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, logger, updateTemplates } from '@nuxt/kit'
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import { createUnimport, Import, scanDirExports, toImports, Unimport } from 'unimport'
 import { ImportsOptions, ImportPresetWithDeprecation } from '@nuxt/schema'
@@ -77,7 +77,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transpile and injection
-    // @ts-ignore temporary disabled due to #746
     if (nuxt.options.dev && options.global) {
       // Add all imports to globalThis in development mode
       addPluginTemplate({
@@ -117,10 +116,17 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
 
     // Watch composables/ directory
+    const templates = [
+      'types/imports.d.ts',
+      'imports.d.ts',
+      'imports.mjs'
+    ]
     nuxt.hook('builder:watch', async (_, path) => {
       const _resolved = resolve(nuxt.options.srcDir, path)
       if (composablesDirs.find(dir => _resolved.startsWith(dir))) {
-        await nuxt.callHook('builder:generateApp')
+        await updateTemplates({
+          filter: template => templates.includes(template.filename)
+        })
       }
     })
 

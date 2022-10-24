@@ -71,3 +71,12 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
 
   return template as ResolvedNuxtTemplate<any>
 }
+
+/**
+ * Trigger rebuilding Nuxt templates
+ *
+ * You can pass a filter within the options to selectively regenerate a subset of templates.
+ */
+export function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }) {
+  return useNuxt().hooks.callHook('builder:generateApp', options)
+}
