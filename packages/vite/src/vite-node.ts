@@ -17,21 +17,30 @@ import { createIsExternal } from './utils/external'
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
+  function markInvalidate (mod: ModuleNode) {
+    if (!mod.id) { return }
+    if (invalidates.has(mod.id)) { return }
+    invalidates.add(mod.id)
+    for (const importer of mod.importers) {
+      markInvalidate(importer)
+    }
+  }
+
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
       server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+      // Invalidate all virtual modules when templates are regenerated
+      ctx.nuxt.hook('app:templatesGenerated', () => {
+        for (const [id, mod] of server.moduleGraph.idToModuleMap) {
+          if (id.startsWith('virtual:')) {
+            markInvalidate(mod)
+          }
+        }
+      })
     },
     handleHotUpdate ({ file, server }) {
-      function markInvalidate (mod: ModuleNode) {
-        if (!mod.id) { return }
-        if (invalidates.has(mod.id)) { return }
-        invalidates.add(mod.id)
-        for (const importer of mod.importers) {
-          markInvalidate(importer)
-        }
-      }
       const mods = server.moduleGraph.getModulesByFile(file) || []
       for (const mod of mods) {
         markInvalidate(mod)
