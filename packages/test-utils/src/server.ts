@@ -21,6 +21,7 @@ export async function startServer () {
       env: {
         ...process.env,
         PORT: String(port),
+        NITRO_PORT: String(port),
         NODE_ENV: 'development'
       }
     })
@@ -43,6 +44,7 @@ export async function startServer () {
       env: {
         ...process.env,
         PORT: String(port),
+        NITRO_PORT: String(port),
         NODE_ENV: 'test'
       }
     })
