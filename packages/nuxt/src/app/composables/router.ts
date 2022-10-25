@@ -119,9 +119,15 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 
 export const setPageLayout = (layout: string) => {
   if (process.server) {
+    if (process.dev && getCurrentInstance() && useState('_layout').value !== layout) {
+      console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
+    }
     useState('_layout').value = layout
   }
   const nuxtApp = useNuxtApp()
+  if (process.dev && nuxtApp.isHydrating && useState('_layout').value !== layout) {
+    console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
+  }
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || process.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
