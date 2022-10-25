@@ -264,12 +264,12 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
-export function refreshNuxtData (keys?: string | string[]): Promise<void> {
+export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
   if (process.server) {
     return Promise.resolve()
   }
   const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
-  return useNuxtApp().callHook('app:data:refresh', _keys)
+  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
