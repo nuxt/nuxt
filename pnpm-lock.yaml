@@ -115,9 +115,13 @@ importers:
 
   examples/advanced/testing:
     specifiers:
+      '@nuxt/test-utils': workspace:*
       nuxt: workspace:*
+      vitest: latest
     devDependencies:
+      '@nuxt/test-utils': link:../../../packages/test-utils
       nuxt: link:../../../packages/nuxt
+      vitest: 0.24.3
 
   examples/app-config:
     specifiers:
