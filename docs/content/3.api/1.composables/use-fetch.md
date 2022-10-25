@@ -111,4 +111,5 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 
 :ReadMore{link="/getting-started/data-fetching"}
 
-:LinkExample{link="/examples/composables/use-fetch"}
+::LinkExample{link="/examples/composables/use-fetch"}
+::

@@ -157,4 +157,5 @@ export default defineEventHandler(event => {
 })
 ```
 
-:LinkExample{link="/examples/composables/use-cookie"}
+::LinkExample{link="/examples/composables/use-cookie"}
+::
