@@ -3,7 +3,6 @@
     "@nuxtjs"
   ],
   "ignoreDeps": [
-    "@vueuse/head",
     "nuxt",
     "nuxt3",
     "@nuxt/kit"
