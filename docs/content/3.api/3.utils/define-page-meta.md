@@ -47,7 +47,7 @@ interface PageMeta {
   **`alias`**
 
   - **Type**: `string | string[]`
-  
+
     Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
 
   **`keepalive`**
@@ -81,9 +81,9 @@ interface PageMeta {
     Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/guide/directory-structure/middleware).
 
   **`pageTransition`**
-  
+
   - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
-  
+
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
   **`redirect`**
@@ -92,15 +92,11 @@ interface PageMeta {
 
     Where to redirect if the route is directly matched. The redirection happens before any navigation guard and triggers a new navigation with the new target location.
 
-    :StabilityEdge
-
   **`validate`**
 
   - **Type**: `(route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>`
 
     Validate whether a given route can validly be rendered with this page. Return true if it is valid, or false if not. If another match can't be found, this will mean a 404. You can also directly return an object with `statusCode`/`statusMessage` to respond immediately with an error (other matches will not be checked).
-
-    :StabilityEdge
 
   **`[key: string]`**
 
@@ -143,18 +139,18 @@ The example below shows how the middleware can be defined using a `function` dir
     middleware: [
       function (to, from) {
         const auth = useState('auth')
-        
+
         if (!auth.value.authenticated) {
             return navigateTo('/login')
         }
-        
+
         return navigateTo('/checkout')
       }
     ],
 
     // ... or a string
     middleware: 'auth'
-    
+
     // ... or multiple strings
     middleware: ['auth', 'another-named-middleware']
 })
@@ -170,7 +166,7 @@ You can define the layout that matches the layout's file name located (by defaul
   definePageMeta({
     // set custom layout
     layout: 'admin'
-    
+
     // ... or disable a default layout
     layout: false
   })
