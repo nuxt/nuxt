@@ -47,7 +47,7 @@
     "rollup": "^2.79.1",
     "rollup-plugin-visualizer": "^5.8.3",
     "ufo": "^0.8.6",
-    "unplugin": "^0.10.1",
+    "unplugin": "^0.10.2",
     "vite": "~3.1.8",
     "vite-node": "^0.24.3",
     "vite-plugin-checker": "^0.5.1",
