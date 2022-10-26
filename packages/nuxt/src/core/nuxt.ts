@@ -17,6 +17,7 @@ import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import { TreeShakePlugin } from './plugins/tree-shake'
+import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 
@@ -89,6 +90,10 @@ async function initNuxt (nuxt: Nuxt) {
     addVitePlugin(TreeShakePlugin.vite({ sourcemap: nuxt.options.sourcemap.client, treeShake: removeFromClient }), { server: false })
     addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap.server, treeShake: removeFromServer }), { client: false })
     addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap.client, treeShake: removeFromClient }), { server: false })
+
+    // DevOnly component tree-shaking - build time only
+    addVitePlugin(DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -137,6 +142,12 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'ClientOnly',
     filePath: resolve(nuxt.options.appDir, 'components/client-only')
+  })
+
+  // Add <DevOnly>
+  addComponent({
+    name: 'DevOnly',
+    filePath: resolve(nuxt.options.appDir, 'components/dev-only')
   })
 
   // Add <ServerPlaceholder>
