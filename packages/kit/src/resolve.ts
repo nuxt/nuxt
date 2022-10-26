@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
 import { globby } from 'globby'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
-import { tryUseNuxt, useNuxt } from './context'
+import { tryUseNuxt } from './context'
 import { tryResolveModule } from './internal/cjs'
 import { isIgnored } from './ignore'
 
@@ -34,7 +34,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Use current nuxt options
-  const nuxt = useNuxt()
+  const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
   const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
