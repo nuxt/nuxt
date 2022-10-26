@@ -318,7 +318,7 @@ importers:
       semver: ^7.3.8
       unbuild: ^0.9.4
       unctx: ^2.0.2
-      unimport: ^0.6.8
+      unimport: ^0.7.0
       untyped: ^0.5.0
     dependencies:
       '@nuxt/schema': link:../schema
@@ -337,7 +337,7 @@ importers:
       scule: 0.3.2
       semver: 7.3.8
       unctx: 2.0.2
-      unimport: 0.6.8
+      unimport: 0.7.0
       untyped: 0.5.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -446,7 +446,7 @@ importers:
       unbuild: ^0.9.4
       unctx: ^2.0.2
       unenv: ^0.6.2
-      unimport: ^0.6.8
+      unimport: ^0.7.0
       unplugin: ^0.10.1
       untyped: ^0.5.0
       vue: 3.2.41
@@ -489,7 +489,7 @@ importers:
       ultrahtml: 0.4.0
       unctx: 2.0.2
       unenv: 0.6.2
-      unimport: 0.6.8
+      unimport: 0.7.0
       unplugin: 0.10.1
       untyped: 0.5.0
       vue: 3.2.41
@@ -520,7 +520,7 @@ importers:
       std-env: ^3.3.0
       ufo: ^0.8.6
       unbuild: ^0.9.4
-      unimport: ^0.6.8
+      unimport: ^0.7.0
       untyped: ^0.5.0
       vite: ^3.1.8
     dependencies:
@@ -534,7 +534,7 @@ importers:
       scule: 0.3.2
       std-env: 3.3.0
       ufo: 0.8.6
-      unimport: 0.6.8
+      unimport: 0.7.0
       untyped: 0.5.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -1710,6 +1710,20 @@ packages:
       picomatch: 2.3.1
       rollup: 3.2.1
     dev: true
+
+  /@rollup/pluginutils/5.0.2:
+    resolution: {integrity: sha512-pTd9rIsP92h+B6wWwFbW8RkZv4hiR/xKsqre4SIuAOaOEQRxi0lqLke9k2/7WegC85GgUs9pjmOjCUi3In4vwA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@types/estree': 1.0.0
+      estree-walker: 2.0.2
+      picomatch: 2.3.1
+    dev: false
 
   /@sinclair/typebox/0.24.46:
     resolution: {integrity: sha512-ng4ut1z2MCBhK/NwDVwIQp3pAUOCs/KNaW3cBxdFB2xTDrOuo1xuNmpr/9HHFhxqIvHrs1NTH3KJg6q+JSy1Kw==}
@@ -8587,6 +8601,24 @@ packages:
       strip-literal: 0.4.2
       unplugin: 0.9.6
 
+  /unimport/0.7.0:
+    resolution: {integrity: sha512-Cr0whz4toYVid3JHlni/uThwavDVVCk6Zw0Gxnol1c7DprTA+Isr4T+asO6rDGkhkgV7r3vSdSs5Ym8F15JA+w==}
+    dependencies:
+      '@rollup/pluginutils': 5.0.2
+      escape-string-regexp: 5.0.0
+      fast-glob: 3.2.12
+      local-pkg: 0.4.2
+      magic-string: 0.26.7
+      mlly: 0.5.16
+      pathe: 0.3.9
+      pkg-types: 0.3.5
+      scule: 0.3.2
+      strip-literal: 0.4.2
+      unplugin: 0.10.2
+    transitivePeerDependencies:
+      - rollup
+    dev: false
+
   /universalify/2.0.0:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
@@ -8656,6 +8688,15 @@ packages:
 
   /unplugin/0.10.1:
     resolution: {integrity: sha512-y1hdBitiLOJvCmer0/IGrMGmHplsm2oFRGWleoAJTRQ8aMHxHOe9gLntYlh1WNLKufBuQ2sOTrHF+KWH4xE8Ag==}
+    dependencies:
+      acorn: 8.8.0
+      chokidar: 3.5.3
+      webpack-sources: 3.2.3
+      webpack-virtual-modules: 0.4.5
+    dev: false
+
+  /unplugin/0.10.2:
+    resolution: {integrity: sha512-6rk7GUa4ICYjae5PrAllvcDeuT8pA9+j5J5EkxbMFaV+SalHhxZ7X2dohMzu6C3XzsMT+6jwR/+pwPNR3uK9MA==}
     dependencies:
       acorn: 8.8.0
       chokidar: 3.5.3

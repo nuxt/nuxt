@@ -7,7 +7,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { ModuleContainer } from './module'
 import type { NuxtTemplate, Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
-import type { Preset as ImportPreset, Import } from 'unimport'
+import type { Import, InlinePreset } from 'unimport'
 import type { NuxtConfig, NuxtOptions } from './config'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
@@ -59,7 +59,7 @@ export type NuxtLayout = {
   file: string
 }
 
-export interface ImportPresetWithDeprecation extends ImportPreset {
+export interface ImportPresetWithDeprecation extends InlinePreset {
   /**
    * @deprecated renamed to `imports`
    */
