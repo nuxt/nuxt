@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
@@ -18,15 +18,31 @@ export default defineNuxtModule({
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     )
 
-    const isRouterOptionsPresent = nuxt.options._layers.some(layer => existsSync(resolve(layer.config.srcDir, 'app/router.options.ts')))
-
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
-    if ((nuxt.options.pages === false || (nuxt.options.pages !== true && !pagesDirs.some(dir => existsSync(dir)))) && !isRouterOptionsPresent) {
+    const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
+    const isPagesEnabled = () => {
+      if (typeof nuxt.options.pages === 'boolean') {
+        return nuxt.options.pages
+      }
+      if (nuxt.options._layers.some(layer => existsSync(resolve(layer.config.srcDir, 'app/router.options.ts')))) {
+        return true
+      }
+      if (pagesDirs.some(dir => isNonEmptyDir(dir))) {
+        return true
+      }
+      return false
+    }
+    nuxt.options.pages = isPagesEnabled()
+
+    if (!nuxt.options.pages) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
-      // Add vue-router import for `<NuxtLayout>` integration
       addTemplate({
         filename: 'pages.mjs',
         getContents: () => 'export { useRoute } from \'#app\''
+      })
+      addComponent({
+        name: 'NuxtPage',
+        filePath: resolve(distDir, 'pages/runtime/page-placeholder')
       })
       return
     }
