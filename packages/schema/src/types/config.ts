@@ -11,7 +11,6 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite'>> {
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
-  [key: string]: any
 }
 
 // TODO: Expose ConfigLayer<T> from c12

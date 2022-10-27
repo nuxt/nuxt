@@ -13,13 +13,13 @@ export function addLayout (this: any, template: NuxtTemplate, name?: string) {
 
   if (isNuxt2(nuxt)) {
     // Nuxt 2 adds layouts in options
-    const layout = nuxt.options.layouts[layoutName]
+    const layout = (nuxt.options as any).layouts[layoutName]
     if (layout) {
       return logger.warn(
         `Not overriding \`${layoutName}\` (provided by \`${layout}\`) with \`${src || filename}\`.`
       )
     }
-    nuxt.options.layouts[layoutName] = `./${filename}`
+    (nuxt.options as any).layouts[layoutName] = `./${filename}`
     if (name === 'error') {
       this.addErrorLayout(filename)
     }

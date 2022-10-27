@@ -1,7 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
-  /** @version 3 */
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
@@ -61,7 +60,7 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
-      async $resolve (val, get) {
+      async $resolve(val, get) {
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }

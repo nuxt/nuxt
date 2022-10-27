@@ -10,7 +10,6 @@ import defu from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
 import { cacheDirPlugin } from './plugins/cache-dir'
-import { wpfs } from './utils/wpfs'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { viteNodePlugin } from './vite-node'
@@ -89,10 +88,10 @@ export async function buildClient (ctx: ViteBuildContext) {
       port: hmrPortDefault,
       ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i)
     })
-    clientConfig.server = defu(clientConfig.server, <ServerOptions> {
-      https: ctx.nuxt.options.server.https,
+    clientConfig.server = defu(clientConfig.server, <ServerOptions>{
+      https: ctx.nuxt.options.devServer.https,
       hmr: {
-        protocol: ctx.nuxt.options.server.https ? 'wss' : 'ws',
+        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',
         port: hmrPort
       }
     })
@@ -132,7 +131,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     // Build
     const start = Date.now()
     await vite.build(clientConfig)
-    await ctx.nuxt.callHook('build:resources', wpfs)
+    await ctx.nuxt.callHook('vite:compiled')
     logger.info(`Client built in ${Date.now() - start}ms`)
   }
 }

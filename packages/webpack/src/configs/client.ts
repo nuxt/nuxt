@@ -32,11 +32,7 @@ function clientDevtool (ctx: WebpackConfigContext) {
     return
   }
 
-  const scriptPolicy = getCspScriptPolicy(ctx)
-  const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
-  ctx.config.devtool = noUnsafeEval
-    ? 'cheap-module-source-map'
-    : 'eval-cheap-module-source-map'
+  ctx.config.devtool = 'eval-cheap-module-source-map'
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {
@@ -94,19 +90,10 @@ function clientPlugins (ctx: WebpackConfigContext) {
       analyzerMode: 'static',
       defaultSizes: 'gzip',
       generateStatsFile: true,
-      openAnalyzer: !options.build.quiet,
+      openAnalyzer: true,
       reportFilename: resolve(statsDir, `${ctx.name}.html`),
       statsFilename: resolve(statsDir, `${ctx.name}.json`),
       ...options.webpack.analyze === true ? {} : options.webpack.analyze
     }))
-  }
-}
-
-function getCspScriptPolicy (ctx: WebpackConfigContext) {
-  // TODO
-  const { csp } = ctx.options.render as any
-  if (typeof csp === 'object') {
-    const { policies = {} } = csp
-    return policies['script-src'] || policies['default-src'] || []
   }
 }

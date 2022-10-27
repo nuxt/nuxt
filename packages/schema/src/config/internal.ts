@@ -22,5 +22,9 @@ export default defineUntypedSchema({
   /** @private */
   _nuxtConfigFiles: [],
   /** @private */
-  appDir: ''
+  appDir: '',
+  /** @private */
+  _installedModules: [],
+  /** @private */
+  _modules: []
 })

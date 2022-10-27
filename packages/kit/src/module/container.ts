@@ -3,7 +3,6 @@ import type { Nuxt, ModuleContainer } from '@nuxt/schema'
 import { chainFn } from '../internal/task'
 import { addTemplate } from '../template'
 import { addLayout } from '../layout'
-import { addServerMiddleware } from '../nitro'
 import { isNuxt2 } from '../compatibility'
 import { addPluginTemplate } from '../plugin'
 import { useNuxt } from '../context'
@@ -44,7 +43,8 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
     requireModule,
     addModule: requireModule,
 
-    addServerMiddleware,
+    // TODO
+    addServerMiddleware: () => { },
 
     addTemplate (template) {
       if (typeof template === 'string') {
@@ -66,7 +66,7 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
 
     addErrorLayout (dst) {
       const relativeBuildDir = relative(nuxt.options.rootDir, nuxt.options.buildDir)
-      nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
+      ;(nuxt as any).options.ErrorPage = `~/${relativeBuildDir}/${dst}`
     },
 
     extendBuild (fn) {
@@ -80,7 +80,7 @@ export function useModuleContainer (nuxt: Nuxt = useNuxt()): ModuleContainer {
 
     extendRoutes (fn) {
       if (isNuxt2(nuxt)) {
-        nuxt.options.router.extendRoutes = chainFn(nuxt.options.router.extendRoutes, fn)
+        (nuxt.options.router as any).extendRoutes = chainFn((nuxt.options.router as any).extendRoutes, fn)
       } else {
         nuxt.hook('pages:extend', async (pages, ...args) => {
           const maybeRoutes = await fn(pages, ...args)

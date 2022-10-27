@@ -10,7 +10,6 @@ export default defineUntypedSchema({
    * Please note that not all vite options are supported in Nuxt.
    *
    * @type {typeof import('../src/types/config').ViteConfig}
-   * @version 3
    */
   vite: {
     root: {

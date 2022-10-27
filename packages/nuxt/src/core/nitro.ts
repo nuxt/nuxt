@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender, Nitro } from 'nitropack'
-import type { NitroEventHandler, NitroDevEventHandler, NitroConfig } from 'nitropack'
+import type { NitroConfig } from 'nitropack'
 import type { Nuxt } from '@nuxt/schema'
 import { resolvePath } from '@nuxt/kit'
 import defu from 'defu'
@@ -12,9 +12,6 @@ import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
-  // Resolve handlers
-  const { handlers, devHandlers } = await resolveHandlers(nuxt)
-
   // Resolve config
   const _nitroConfig = ((nuxt.options as any).nitro || {}) as NitroConfig
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
@@ -33,7 +30,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
-    handlers,
+    handlers: nuxt.options.serverHandlers,
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {},
@@ -58,7 +55,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir }))
     ],
     prerender: {
-      crawlLinks: nuxt.options._generate ? nuxt.options.generate.crawler : false,
+      crawlLinks: nuxt.options._generate ?? undefined,
       routes: ([] as string[])
         .concat(nuxt.options.generate.routes)
         .concat(nuxt.options._generate ? [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html'] : [])
@@ -155,7 +152,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()
   nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
-  nitro.options.devHandlers.push(...devHandlers)
+  nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
     lazy: true,
@@ -185,7 +182,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       } else {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
         }
       }
     }
@@ -193,53 +190,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
-    nuxt.hook('build:compile', ({ compiler }) => {
-      compiler.outputFileSystem = { ...fsExtra, join } as any
-    })
+    nuxt.hook('webpack:compile', ({ compiler }) => { compiler.outputFileSystem = { ...fsExtra, join } as any })
+    nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
+    nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
+
     nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
     nuxt.server = createDevServer(nitro)
-    nuxt.hook('build:resources', () => {
-      nuxt.server.reload()
-    })
+
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
-  }
-}
-
-async function resolveHandlers (nuxt: Nuxt) {
-  const handlers: NitroEventHandler[] = [...nuxt.options.serverHandlers]
-  const devHandlers: NitroDevEventHandler[] = [...nuxt.options.devServerHandlers]
-
-  // Map legacy serverMiddleware to handlers
-  for (let m of nuxt.options.serverMiddleware) {
-    if (typeof m === 'string' || typeof m === 'function' /* legacy middleware */) { m = { handler: m } }
-    const route = m.path || m.route || '/'
-    const handler = m.handler || m.handle
-    if (typeof handler !== 'string' || typeof route !== 'string') {
-      devHandlers.push({ route, handler })
-    } else {
-      delete m.handler
-      delete m.path
-      handlers.push({
-        ...m,
-        route,
-        middleware: true,
-        handler: await resolvePath(handler)
-      })
-    }
-  }
-
-  return {
-    handlers,
-    devHandlers
-  }
-}
-
-declare module 'nitropack' {
-  interface NitroRouteConfig {
-    ssr?: boolean
-  }
-  interface NitroRouteOptions {
-    ssr?: boolean
   }
 }

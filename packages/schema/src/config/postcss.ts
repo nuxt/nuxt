@@ -3,11 +3,11 @@ import createResolver from 'postcss-import-resolver'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
-  /** @version 3 */
   postcss: {
     /** Path to postcss config file. */
     /** @type string | false */
     config: false,
+
     /**
      * Options for configuring PostCSS plugins.
      *

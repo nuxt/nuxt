@@ -1,14 +1,9 @@
+import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
-import createRequire from 'create-require'
-import { pascalCase } from 'scule'
-import jiti from 'jiti'
 import defu from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
-
 import { RuntimeConfig } from '../types/config'
-
-import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
   /**
@@ -20,7 +15,6 @@ export default defineUntypedSchema({
    *
    * @type {string|string[]}
    *
-   * @version 3
    */
   extends: null,
 
@@ -33,7 +27,6 @@ export default defineUntypedSchema({
    *
    * @type {string}
    *
-   * @version 3
    */
   theme: null,
 
@@ -45,8 +38,6 @@ export default defineUntypedSchema({
    * current/working directory.
    *
    * It is normally not needed to configure this option.
-   * @version 2
-   * @version 3
    */
   rootDir: {
     $resolve: val => typeof val === 'string' ? resolve(val) : process.cwd()
@@ -59,7 +50,6 @@ export default defineUntypedSchema({
    * your workspace directory automatically, but you can override it here.
    *
    * It is normally not needed to configure this option.
-   * @version 3
    */
   workspaceDir: {
     $resolve: async (val, get) => val ? resolve(await get('rootDir'), val) : await findWorkspaceDir(await get('rootDir')).catch(() => get('rootDir'))
@@ -93,8 +83,6 @@ export default defineUntypedSchema({
    * ------| store/
    * ------| server/
    * ```
-   * @version 2
-   * @version 3
    */
   srcDir: {
     $resolve: async (val, get) => resolve(await get('rootDir'), val || '.')
@@ -106,7 +94,6 @@ export default defineUntypedSchema({
    *
    * If a relative path is specified, it will be relative to your `rootDir`.
    *
-   * @version 3
    */
   serverDir: {
     $resolve: async (val, get) => resolve(await get('rootDir'), val || resolve(await get('srcDir'), 'server'))
@@ -124,356 +111,26 @@ export default defineUntypedSchema({
    *   buildDir: 'nuxt-build'
    * }
    * ```
-   * @version 2
-   * @version 3
    */
   buildDir: {
     $resolve: async (val, get) => resolve(await get('rootDir'), val || '.nuxt')
   },
 
   /**
-   * Whether Nuxt is running in development mode.
-   *
-   * Normally, you should not need to set this.
-   * @version 2
-   * @version 3
-   */
-  dev: Boolean(isDevelopment),
-
-  /**
-   * Whether your app is being unit tested.
-   * @version 2
-   */
-  test: Boolean(isDevelopment),
-
-  /**
-   * Set to `true` to enable debug mode.
-   *
-   * At the moment, it prints out hook names and timings on the server, and
-   * logs hook arguments as well in the browser.
-   *
-   * @version 2
-   * @version 3
-   */
-  debug: {
-    $resolve: async (val, get) => val ?? isDebug
-  },
-
-  /**
-   * The `env` property defines environment variables that should be available
-   * throughout your app (server- and client-side). They can be assigned using
-   * server-side environment variables.
-   *
-   * @note Nuxt uses webpack's `definePlugin` to define these environment variables.
-   * This means that the actual `process` or `process.env` from Node.js is neither
-   * available nor defined. Each of the `env` properties defined here is individually
-   * mapped to `process.env.xxxx` and converted during compilation.
-   *
-   * @note Environment variables starting with `NUXT_ENV_` are automatically injected
-   * into the process environment.
-   *
-   * @version 2
-   */
-  env: {
-    $default: {},
-    $resolve: (val) => {
-      val = { ...val }
-      for (const key in process.env) {
-        if (key.startsWith('NUXT_ENV_')) {
-          val[key] = process.env[key]
-        }
-      }
-      return val
-    }
-  },
-
-  /**
-   * Set the method Nuxt uses to require modules, such as loading `nuxt.config`, server
-   * middleware, and so on - defaulting to `jiti` (which has support for TypeScript and ESM syntax).
-   *
-   * @see [jiti](https://github.com/unjs/jiti)
-   * @type {'jiti' | 'native' | ((p: string | { filename: string }) => NodeRequire)}
-   * @version 2
-   */
-  createRequire: {
-    $resolve: (val: any) => {
-      val = process.env.NUXT_CREATE_REQUIRE || val ||
-        // @ts-expect-error global type
-        (typeof globalThis.jest !== 'undefined' ? 'native' : 'jiti')
-      if (val === 'jiti') {
-        return (p: string | { filename: string }) => jiti(typeof p === 'string' ? p : p.filename, { esmResolve: true })
-      }
-      if (val === 'native') {
-        return (p: string | { filename: string }) => createRequire(typeof p === 'string' ? p : p.filename)
-      }
-      return val
-    }
-  },
-
-  /**
-   * Whether your Nuxt app should be built to be served by the Nuxt server (`server`)
-   * or as static HTML files suitable for a CDN or other static file server (`static`).
-   *
-   * This is unrelated to `ssr`.
-   * @type {'server' | 'static'}
-   * @version 2
-   */
-  target: {
-    $resolve: val => ['server', 'static'].includes(val) ? val : 'server'
-  },
-
-  /**
-   * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
-   * If set to `false` and combined with `static` target, generated pages will simply display
-   * a loading screen with no content.
-   * @version 2
-   * @version 3
-   */
-  ssr: {
-    $resolve: (val) => val ?? true,
-  },
-
-  /**
-   * @deprecated use `ssr` option
-   */
-  mode: {
-    $resolve: async (val, get) => val || ((await get('ssr')) ? 'spa' : 'universal'),
-    $schema: { deprecated: '`mode` option is deprecated' }
-  },
-
-  /**
-   * Whether to produce a separate modern build targeting browsers that support ES modules.
-   *
-   * Set to `'server'` to enable server mode, where the Nuxt server checks
-   * browser version based on the user agent and serves the correct bundle.
-   *
-   * Set to `'client'` to serve both the modern bundle with `<script type="module">`
-   * and the legacy bundle with `<script nomodule>`. It will also provide a
-   * `<link rel="modulepreload">` for the modern bundle. Every browser that understands
-   * the module type will load the modern bundle while older browsers fall back to the
-   * legacy (transpiled) bundle.
-   *
-   * If you have set `modern: true` and are generating your app or have `ssr: false`,
-   * modern will be set to `'client'`.
-   *
-   * If you have set `modern: true` and are serving your app, modern will be set to `'server'`.
-   *
-   * @see [concept of modern mode](https://philipwalton.com/articles/deploying-es2015-code-in-production-today/)
-   * @type {'server' | 'client' | boolean}
-   * @version 2
-   */
-  modern: undefined,
-
-  /**
-   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
-   *
-   * Each module is either a string (which can refer to a package, or be a path to a file), a
-   * tuple with the module as first string and the options as a second object, or an inline module function.
-   *
-   * Nuxt tries to resolve each item in the modules array using node require path
-   * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
-   *
-   * @note Modules are executed sequentially so the order is important.
-   *
-   * @example
-   * ```js
-   * modules: [
-   *   // Using package name
-   *   '@nuxtjs/axios',
-   *   // Relative to your project srcDir
-   *   '~/modules/awesome.js',
-   *   // Providing options
-   *   ['@nuxtjs/google-analytics', { ua: 'X1234567' }],
-   *   // Inline definition
-   *   function () {}
-   * ]
-   * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
-   * @version 2
-   * @version 3
-   */
-  modules: [],
-
-  /**
-   * Modules that are only required during development and build time.
-   *
-   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
-   *
-   * Each module is either a string (which can refer to a package, or be a path to a file), a
-   * tuple with the module as first string and the options as a second object, or an inline module function.
-   *
-   * Nuxt tries to resolve each item in the modules array using node require path
-   * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
-   *
-   * @note Modules are executed sequentially so the order is important.
-   *
-   * @example
-   * ```js
-   * modules: [
-   *   // Using package name
-   *   '@nuxtjs/axios',
-   *   // Relative to your project srcDir
-   *   '~/modules/awesome.js',
-   *   // Providing options
-   *   ['@nuxtjs/google-analytics', { ua: 'X1234567' }],
-   *   // Inline definition
-   *   function () {}
-   * ]
-   * ```
-   *
-   * @note In Nuxt 2, using `buildModules` helps to make production startup faster and also significantly
-   * decreases the size of `node_modules` in production deployments. Please refer to each
-   * module's documentation to see if it is recommended to use `modules` or `buildModules`.
-   *
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
-   * @version 2
-   * @deprecated This is no longer needed in Nuxt 3 and Nuxt Bridge; all modules should be added to `modules` instead.
-   */
-  buildModules: [],
-
-  /**
-   * Built-in ad-hoc modules.
-   *
-   *  @private
-   */
-  _modules: [],
-
-  /**
-   * Installed module metadata.
-   *
-   * @version 3
-   * @private
-   */
-  _installedModules: [],
-
-  /**
-   * Allows customizing the global ID used in the main HTML template as well as the main
-   * Vue instance name and other options.
-   * @version 2
-   */
-  globalName: {
-    $resolve: val => (typeof val === 'string' && /^[a-zA-Z]+$/.test(val)) ? val.toLocaleLowerCase() : 'nuxt'
-  },
-
-  /**
-   * Customizes specific global names (they are based on `globalName` by default).
-   * @version 2
-   */
-  globals: {
-    /** @type {(globalName: string) => string} */
-    id: (globalName: string) => `__${globalName}`,
-    /** @type {(globalName: string) => string} */
-    nuxt: (globalName: string) => `$${globalName}`,
-    /** @type {(globalName: string) => string} */
-    context: (globalName: string) => `__${globalName.toUpperCase()}__`,
-    /** @type {(globalName: string) => string} */
-    pluginPrefix: (globalName: string) => globalName,
-    /** @type {(globalName: string) => string} */
-    readyCallback: (globalName: string) => `on${pascalCase(globalName)}Ready`,
-    /** @type {(globalName: string) => string} */
-    loadedCallback: (globalName: string) => `_on${pascalCase(globalName)}Loaded`
-  },
-
-  /**
-   * Server middleware are connect/express/h3-shaped functions that handle server-side requests. They
-   * run on the server and before the Vue renderer.
-   *
-   * By adding entries to `serverMiddleware` you can register additional routes without the need
-   * for an external server.
-   *
-   * You can pass a string, which can be the name of a node dependency or a path to a file. You
-   * can also pass an object with `path` and `handler` keys (`handler` can be a path or a
-   * function).
-   *
-   * @note If you pass a function directly, it will only run in development mode.
-   *
-   * @example
-   * ```js
-   * serverMiddleware: [
-   *   // Will register redirect-ssl npm package
-   *   'redirect-ssl',
-   *   // Will register file from project server-middleware directory to handle /server-middleware/* requires
-   *   { path: '/server-middleware', handler: '~/server-middleware/index.js' },
-   *   // We can create custom instances too, but only in development mode, they are ignored for the production bundle.
-   *   { path: '/static2', handler: serveStatic(fileURLToPath(new URL('./static2', import.meta.url))) }
-   * ]
-   * ```
-   *
-   * @note If you don't want middleware to run on all routes you should use the object
-   * form with a specific path.
-   *
-   * If you pass a string handler, Nuxt will expect that file to export a default function
-   * that handles `(req, res, next) => void`.
-   *
-   * @example
-   * ```js
-   * export default function (req, res, next) {
-   *   // req is the Node.js http request object
-   *   console.log(req.url)
-   *   // res is the Node.js http response object
-   *   // next is a function to call to invoke the next middleware
-   *   // Don't forget to call next at the end if your middleware is not an endpoint!
-   *   next()
-   * }
-   * ```
-   *
-   * Alternatively, it can export a connect/express/h3-type app instance.
-   * @example
-   * ```js
-   * import bodyParser from 'body-parser'
-   * import createApp from 'express'
-   * const app = createApp()
-   * app.use(bodyParser.json())
-   * app.all('/getJSON', (req, res) => {
-   *   res.json({ data: 'data' })
-   * })
-   * export default app
-   * ```
-   *
-   * Alternatively, instead of passing an array of `serverMiddleware`, you can pass an object
-   * whose keys are the paths and whose values are the handlers (string or function).
-   * @example
-   * ```js
-   * export default {
-   *   serverMiddleware: {
-   *     '/a': '~/server-middleware/a.js',
-   *     '/b': '~/server-middleware/b.js',
-   *     '/c': '~/server-middleware/c.js'
-   *   }
-   * }
-   * ```
-   *
-   * @version 2
-   * @deprecated Use `serverHandlers` instead
-   */
-  serverMiddleware: {
-    $resolve: (val: any) => {
-      if (!val) {
-        return []
-      }
-      if (!Array.isArray(val)) {
-        return Object.entries(val).map(([path, handler]) => ({ path, handler }))
-      }
-      return val
-    }
-  },
-
-  /**
-   * Used to set the modules directories for path resolving (for example, webpack's
-   * `resolveLoading`, `nodeExternals` and `postcss`).
-   *
-   * The configuration path is relative to `options.rootDir` (default is current working directory).
-   *
-   * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
-   *
-   * @example
-   * ```js
-   * export default {
-   *   modulesDir: ['../../node_modules']
-   * }
-   * ```
-   * @version 2
-   */
+ * Used to set the modules directories for path resolving (for example, webpack's
+ * `resolveLoading`, `nodeExternals` and `postcss`).
+ *
+ * The configuration path is relative to `options.rootDir` (default is current working directory).
+ *
+ * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
+ *
+ * @example
+ * ```js
+ * export default {
+ *   modulesDir: ['../../node_modules']
+ * }
+ * ```
+ */
   modulesDir: {
     $default: ['node_modules'],
     $resolve: async (val, get) => [
@@ -483,80 +140,119 @@ export default defineUntypedSchema({
   },
 
   /**
+   * Whether Nuxt is running in development mode.
+   *
+   * Normally, you should not need to set this.
+   */
+  dev: Boolean(isDevelopment),
+
+  /**
+   * Whether your app is being unit tested.
+   */
+  test: Boolean(isDevelopment),
+
+  /**
+   * Set to `true` to enable debug mode.
+   *
+   * At the moment, it prints out hook names and timings on the server, and
+   * logs hook arguments as well in the browser.
+   *
+   */
+  debug: {
+    $resolve: async (val, get) => val ?? isDebug
+  },
+
+  /**
+   * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
+   * If set to `false` and combined with `static` target, generated pages will simply display
+   * a loading screen with no content.
+   */
+  ssr: {
+    $resolve: (val) => val ?? true,
+  },
+
+  /**
+   * Modules are Nuxt extensions which can extend its core functionality and add endless integrations.
+   *
+   * Each module is either a string (which can refer to a package, or be a path to a file), a
+   * tuple with the module as first string and the options as a second object, or an inline module function.
+   *
+   * Nuxt tries to resolve each item in the modules array using node require path
+   * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
+   *
+   * @note Modules are executed sequentially so the order is important.
+   *
+   * @example
+   * ```js
+   * modules: [
+   *   // Using package name
+   *   '@nuxtjs/axios',
+   *   // Relative to your project srcDir
+   *   '~/modules/awesome.js',
+   *   // Providing options
+   *   ['@nuxtjs/google-analytics', { ua: 'X1234567' }],
+   *   // Inline definition
+   *   function () {}
+   * ]
+   * ```
+   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
+   */
+  modules: [],
+
+  /** @deprecated Use `modules` instead */
+  buildModules: [],
+
+  /**
    * Customize default directory structure used by Nuxt.
    *
    * It is better to stick with defaults unless needed.
-   * @version 2
-   * @version 3
    */
   dir: {
     /**
      * The assets directory (aliased as `~assets` in your build).
-     * @version 2
      */
     assets: 'assets',
-    /**
-     * The directory containing app template files like `app.html` and `router.scrollBehavior.js`
-     * @version 2
-     */
-    app: 'app',
+
     /**
      * The layouts directory, each file of which will be auto-registered as a Nuxt layout.
-     * @version 2
-     * @version 3
      */
     layouts: 'layouts',
+
     /**
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
-     * @version 3
-     * @version 2
      */
     middleware: 'middleware',
+
     /**
      * The directory which will be processed to auto-generate your application page routes.
-     * @version 2
-     * @version 3
      */
     pages: 'pages',
+
     /**
      * The plugins directory, each file of which will be auto-registered as a Nuxt plugin.
-     * @version 3
      */
     plugins: 'plugins',
+
     /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
      * and copied across into your `dist` folder when your app is generated.
-     * @version 3
      */
     public: {
       $resolve: async (val, get) => val || await get('dir.static') || 'public',
     },
-    /** @version 2 */
+
     static: {
       $schema: { deprecated: 'use `dir.public` option instead' },
       $resolve: async (val, get) => val || await get('dir.public') || 'public',
-    },
-    /**
-     * The folder which will be used to auto-generate your Vuex store structure.
-     * @version 2
-     */
-    store: 'store'
+    }
   },
 
   /**
    * The extensions that should be resolved by the Nuxt resolver.
-   * @version 2
-   * @version 3
    */
   extensions: {
     $resolve: val => ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue'].concat(val).filter(Boolean)
   },
-
-  /**
-   * The style extensions that should be resolved by the Nuxt resolver (for example, in `css` property).
-   * @version 2
-   */
-  styleExtensions: ['.css', '.pcss', '.postcss', '.styl', '.stylus', '.scss', '.sass', '.less'],
 
   /**
    * You can improve your DX by defining additional aliases to access custom directories
@@ -601,8 +297,6 @@ export default defineUntypedSchema({
    * ```
    *
    * @type {Record<string, string>}
-   * @version 2
-   * @version 3
    */
   alias: {
     $resolve: async (val, get) => ({
@@ -627,24 +321,18 @@ export default defineUntypedSchema({
    *   ignorecase: false
    * }
    * ```
-   * @version 2
-   * @version 3
    */
   ignoreOptions: undefined,
 
   /**
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
-   * @version 2
-   * @version 3
    */
   ignorePrefix: '-',
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
    * inside the `ignore` array will be ignored in building.
-   * @version 2
-   * @version 3
    */
   ignore: {
     $resolve: async (val, get) => [
@@ -656,33 +344,7 @@ export default defineUntypedSchema({
   },
 
   /**
-   * The watch property lets you watch custom files for restarting the server.
-   *
-   * `chokidar` is used to set up the watchers. To learn more about its pattern
-   * options, see chokidar documentation.
-   *
-   * @see [chokidar](https://github.com/paulmillr/chokidar#api)
-   *
-   * @example
-   * ```js
-   * watch: ['~/custom/*.js']
-   * ```
-   * @type {string[]}
-   * @version 2
-   */
-  watch: {
-    $resolve: async (val, get) => {
-      const rootDir = await get('rootDir')
-      return Array.from(new Set([].concat(val, await get('_nuxtConfigFiles'))
-        .filter(Boolean).map(p => resolve(rootDir, p))
-      ))
-    }
-  },
-
-  /**
    * The watchers property lets you overwrite watchers configuration in your `nuxt.config`.
-   * @version 2
-   * @version 3
    */
   watchers: {
     /** An array of event types, which, when received, will cause the watcher to restart. */
@@ -704,15 +366,6 @@ export default defineUntypedSchema({
       ignoreInitial: true
     }
   },
-
-  /**
-   * Your preferred code editor to launch when debugging.
-   *
-   * @see [documentation](https://github.com/yyx990803/launch-editor#supported-editors)
-   * @type {string}
-   * @version 2
-   */
-  editor: undefined,
 
   /**
    * Hooks are listeners to Nuxt events that are typically used in modules,
@@ -741,8 +394,6 @@ export default defineUntypedSchema({
    *   }
    * }
    * ```
-   * @version 2
-   * @version 3
    * @type {typeof import('../src/types/hooks').NuxtHooks}
    */
   hooks: null,
@@ -772,7 +423,6 @@ export default defineUntypedSchema({
    * }
    * ```
    * @type {typeof import('../src/types/config').RuntimeConfig}
-   * @version 3
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get) => defu(val, {
@@ -789,16 +439,12 @@ export default defineUntypedSchema({
 
   /**
    * @type {typeof import('../src/types/config').PrivateRuntimeConfig}
-   * @version 2
-   * @version 3
    * @deprecated Use `runtimeConfig` option.
    */
   privateRuntimeConfig: {},
 
   /**
    * @type {typeof import('../src/types/config').PublicRuntimeConfig}
-   * @version 2
-   * @version 3
    * @deprecated Use `runtimeConfig` option with `public` key (`runtimeConfig.public.*`).
    */
   publicRuntimeConfig: {},
@@ -810,7 +456,6 @@ export default defineUntypedSchema({
    * It will be merged with `app.config` file as default value.
    *
    * @type {typeof import('../src/types/config').AppConfig}
-   * @version 3
    */
   appConfig: {},
 })

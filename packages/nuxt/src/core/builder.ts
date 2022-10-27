@@ -30,10 +30,10 @@ export async function build (nuxt: Nuxt) {
     })
   }
 
-  await nuxt.callHook('build:before', { nuxt }, nuxt.options.build)
+  await nuxt.callHook('build:before')
   if (!nuxt.options._prepare) {
     await bundle(nuxt)
-    await nuxt.callHook('build:done', { nuxt })
+    await nuxt.callHook('build:done')
   }
 
   if (!nuxt.options.dev) {

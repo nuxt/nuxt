@@ -1,13 +1,5 @@
-import type { NodeMiddleware } from 'h3'
 import type { NitroEventHandler, NitroDevEventHandler, Nitro } from 'nitropack'
 import { useNuxt } from './context'
-
-export interface LegacyServerMiddleware {
-  route?: string,
-  path?: string,
-  handle?: NodeMiddleware | string
-  handler: NodeMiddleware | string
-}
 
 /**
  * normalize handler object
@@ -20,15 +12,6 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
     method,
     ...handler
   }
-}
-
-/**
- * Adds a new server middleware to the end of the server middleware array.
- *
- * @deprecated Use addServerHandler instead
- */
-export function addServerMiddleware (middleware: LegacyServerMiddleware) {
-  useNuxt().options.serverMiddleware.push(middleware)
 }
 
 /**

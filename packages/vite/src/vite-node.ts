@@ -140,7 +140,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
 export async function initViteNodeServer (ctx: ViteBuildContext) {
   // Serialize and pass vite-node runtime options
   const viteNodeServerOptions = {
-    baseURL: `${ctx.nuxt.options.server.url}__nuxt_vite_node__`,
+    baseURL: `${ctx.nuxt.options.devServer.url}__nuxt_vite_node__`,
     root: ctx.nuxt.options.srcDir,
     entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/'

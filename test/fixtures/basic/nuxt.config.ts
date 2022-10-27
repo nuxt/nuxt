@@ -3,6 +3,13 @@ import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
+// (defined in nuxt/src/core/nitro.ts)
+declare module 'nitropack' {
+  interface NitroRouteConfig {
+    ssr?: boolean
+  }
+}
+
 export default defineNuxtConfig({
   app: {
     pageTransition: true,

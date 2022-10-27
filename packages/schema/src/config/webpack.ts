@@ -2,7 +2,6 @@ import { join } from 'pathe'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
-  /** @version 3 */
   webpack: {
     /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
@@ -219,9 +218,7 @@ export default defineUntypedSchema({
      *
      * @type {false | typeof import('terser-webpack-plugin').BasePluginOptions & typeof import('terser-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
-    terser: {
-
-    },
+    terser: {},
 
     /**
      * Hard-replaces `typeof process`, `typeof window` and `typeof document` to tree-shake bundle.
@@ -257,6 +254,7 @@ export default defineUntypedSchema({
         cacheGroups: {}
       }
     },
+
     /**
      * Customize PostCSS Loader.
      * Same options as https://github.com/webpack-contrib/postcss-loader#options
@@ -283,15 +281,18 @@ export default defineUntypedSchema({
     devMiddleware: {
       stats: 'none'
     },
+
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
      * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
      */
     hotMiddleware: {},
+
     /**
      * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin).
      */
     friendlyErrors: true,
+
     /**
      * Filters to hide build warnings.
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}

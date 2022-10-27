@@ -92,10 +92,10 @@ export default defineNuxtCommand({
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
         const address = listener.server.address() as AddressInfo
-        currentNuxt.options.server.url = listener.url
-        currentNuxt.options.server.port = address.port
-        currentNuxt.options.server.host = address.address
-        currentNuxt.options.server.https = listener.https
+        currentNuxt.options.devServer.url = listener.url
+        currentNuxt.options.devServer.port = address.port
+        currentNuxt.options.devServer.host = address.address
+        currentNuxt.options.devServer.https = listener.https
 
         await Promise.all([
           writeTypes(currentNuxt).catch(console.error),

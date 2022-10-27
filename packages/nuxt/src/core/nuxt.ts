@@ -1,6 +1,6 @@
 import { join, normalize, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
-import type { Nuxt, NuxtOptions, NuxtConfig, ModuleContainer, NuxtHooks } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions, NuxtConfig, NuxtHooks } from '@nuxt/schema'
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 // Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
@@ -114,7 +114,7 @@ async function initNuxt (nuxt: Nuxt) {
   )
 
   // Init user modules
-  await nuxt.callHook('modules:before', { nuxt } as ModuleContainer)
+  await nuxt.callHook('modules:before')
   const modulesToInstall = [
     ...nuxt.options.buildModules,
     ...nuxt.options.modules,
@@ -212,7 +212,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
-  await nuxt.callHook('modules:done', { nuxt } as ModuleContainer)
+  await nuxt.callHook('modules:done')
 
   // Normalize windows transpile paths added by modules
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)

@@ -109,12 +109,14 @@ function nuxt2Shims (nuxt: Nuxt) {
 
   // Support virtual templates with getContents() by writing them to .nuxt directory
   let virtualTemplates: ResolvedNuxtTemplate[]
+  // @ts-ignore Nuxt 2 hook
   nuxt.hook('builder:prepared', (_builder, buildOptions) => {
-    virtualTemplates = buildOptions.templates.filter(t => t.getContents)
+    virtualTemplates = buildOptions.templates.filter((t: any) => t.getContents)
     for (const template of virtualTemplates) {
       buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
     }
   })
+  // @ts-ignore Nuxt 2 hook
   nuxt.hook('build:templates', async (templates) => {
     const context = {
       nuxt,

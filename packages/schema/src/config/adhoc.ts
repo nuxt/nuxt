@@ -8,11 +8,8 @@ export default defineUntypedSchema({
    * pages, layouts (and other components) without needing to explicitly import them.
    *
    * @default {{ dirs: [`~/components`] }}
-   * @see [Nuxt 3](https://v3.nuxtjs.org/guide/directory-structure/components) and
-   * [Nuxt 2](https://nuxtjs.org/docs/directory-structure/components/) documentation
+   * @see https://v3.nuxtjs.org/guide/directory-structure/components
    * @type {boolean | typeof import('../src/types/components').ComponentsOptions | typeof import('../src/types/components').ComponentsOptions['dirs']}
-   * @version 2
-   * @version 3
    */
   components: {
     $resolve: (val) => {
@@ -34,7 +31,6 @@ export default defineUntypedSchema({
    *
    * @see [Nuxt 3 documentation](https://v3.nuxtjs.org/guide/directory-structure/composables)
    * @type {typeof import('../src/types/imports').ImportsOptions}
-   * @version 3
    */
   imports: {
     global: false,
@@ -46,7 +42,6 @@ export default defineUntypedSchema({
    * enabled if you have a `pages/` directory in your source folder.
    *
    * @type {boolean}
-   * @version 3
    */
   pages: undefined,
 
@@ -56,7 +51,6 @@ export default defineUntypedSchema({
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    *
    * @type {boolean}
-   * @version 3
   */
   telemetry: undefined
 })

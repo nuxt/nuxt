@@ -63,10 +63,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
-  if (
-    ctx.isServer ||
-    (ctx.isDev && !options.build.quiet && options.webpack.friendlyErrors)
-  ) {
+  if (ctx.isServer || (ctx.isDev && options.webpack.friendlyErrors)) {
     config.plugins.push(
       new FriendlyErrorsWebpackPlugin({
         clearConsole: false,
@@ -92,23 +89,23 @@ function basePlugins (ctx: WebpackConfigContext) {
         // @ts-ignore
         change: (_, { shortPath }) => {
           if (!ctx.isServer) {
-            nuxt.callHook('bundler:change', shortPath)
+            nuxt.callHook('webpack:change', shortPath)
           }
         },
         // @ts-ignore
         done: ({ state }) => {
           if (state.hasErrors) {
-            nuxt.callHook('bundler:error')
+            nuxt.callHook('webpack:error')
           } else {
             logger.success(`${state.name} ${state.message}`)
           }
         },
         allDone: () => {
-          nuxt.callHook('bundler:done')
+          nuxt.callHook('webpack:done')
         },
         // @ts-ignore
         progress ({ statesArray }) {
-          nuxt.callHook('bundler:progress', statesArray)
+          nuxt.callHook('webpack:progress', statesArray)
         }
       }
     }))
@@ -230,8 +227,6 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     'process.mode': JSON.stringify(ctx.config.mode),
     'process.dev': options.dev,
-    'process.static': options.target === 'static',
-    'process.target': JSON.stringify(options.target),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
@@ -242,11 +237,6 @@ function getEnv (ctx: WebpackConfigContext) {
     _env['typeof process'] = JSON.stringify(ctx.isServer ? 'object' : 'undefined')
     _env['typeof window'] = _env['typeof document'] = JSON.stringify(!ctx.isServer ? 'object' : 'undefined')
   }
-
-  Object.entries(options.env).forEach(([key, value]) => {
-    const isNative = ['boolean', 'number'].includes(typeof value)
-    _env['process.env.' + key] = isNative ? value as string : JSON.stringify(value)
-  })
 
   return _env
 }

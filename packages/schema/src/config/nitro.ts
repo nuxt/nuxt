@@ -7,8 +7,6 @@ export default defineUntypedSchema({
    * @see https://nitro.unjs.io/config/
    *
    * @type {typeof import('nitropack')['NitroConfig']}
-   * @version 2
-   * @version 3
    */
   nitro: {
     routeRules: {
@@ -27,7 +25,6 @@ export default defineUntypedSchema({
    * @see https://nitro.unjs.io/config/#routes
    *
    * @type {typeof import('nitropack')['NitroConfig']['routeRules']}
-   * @version 3
    */
   routeRules: {},
 
@@ -53,7 +50,6 @@ export default defineUntypedSchema({
    * ```
    *
    * @type {typeof import('nitropack')['NitroEventHandler'][]}
-   * @version 3
    */
   serverHandlers: [],
 
@@ -63,7 +59,6 @@ export default defineUntypedSchema({
    * @see https://nitro.unjs.io/guide/introduction/routing
    *
    * @type {typeof import('nitropack')['NitroDevEventHandler'][]}
-   * @version 3
    */
   devServerHandlers: []
 })

@@ -93,9 +93,6 @@ async function createDevMiddleware (compiler: Compiler) {
     ...hotMiddlewareOptions
   })
 
-  await nuxt.callHook('webpack:devMiddleware', devMiddleware)
-  await nuxt.callHook('webpack:hotMiddleware', hotMiddleware)
-
   // Register devMiddleware on server
   const devHandler = fromNodeMiddleware(devMiddleware as NodeMiddleware)
   const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
@@ -112,13 +109,11 @@ async function compile (compiler: Compiler) {
 
   const { name } = compiler.options
 
-  await nuxt.callHook('build:compile', { name: name!, compiler })
+  await nuxt.callHook('webpack:compile', { name: name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('build:compiled', { name: name!, compiler, stats })
-    // Reload renderer
-    await nuxt.callHook('build:resources', compiler.outputFileSystem)
+    await nuxt.callHook('webpack:compiled', { name: name!, compiler, stats })
   })
 
   // --- Dev Build ---
@@ -160,7 +155,4 @@ async function compile (compiler: Compiler) {
     error.stack = stats.toString('errors-only')
     throw error
   }
-
-  // Await for renderer to load resources (programmatic, tests and generate)
-  await nuxt.callHook('build:resources')
 }

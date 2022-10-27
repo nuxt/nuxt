@@ -5,7 +5,7 @@ import type { AppConfig } from '@nuxt/schema'
 
 import type { FetchError } from 'ohmyfetch'
 import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt/src'
+import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
 import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
 // eslint-disable-next-line import/order
 import { isVue3 } from '#app'
@@ -107,6 +107,7 @@ describe('modules', () => {
     defineNuxtConfig({ sampleModule: { enabled: false } })
     // @ts-expect-error
     defineNuxtConfig({ sampleModule: { other: false } })
+    // @ts-expect-error
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 })
