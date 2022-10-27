@@ -11,21 +11,11 @@ export async function main () {
   await generateDocs({ configFile, configTemplate })
 }
 
-function generateMarkdown (schema: Schema, title: string, level: string, parentVersions: string[] = []) {
+function generateMarkdown (schema: Schema, title: string, level: string) {
   const lines: string[] = []
 
   // Skip private
   if (schema.tags?.includes('@private')) {
-    return []
-  }
-
-  // Versions
-  const versions = (schema.tags || []).map(t => t.match(/@version (\d+)/)?.[1]).filter(Boolean)
-  if (!versions.length) {
-    // Inherit from parent if not specified
-    versions.push(...parentVersions)
-  }
-  if (!versions.includes('3')) {
     return []
   }
 
@@ -72,7 +62,7 @@ function generateMarkdown (schema: Schema, title: string, level: string, parentV
     const keys = Object.keys(schema.properties || {}).sort()
     for (const key of keys) {
       const val = schema.properties[key] as Schema
-      const propLines = generateMarkdown(val, `\`${key}\``, level + '#', versions)
+      const propLines = generateMarkdown(val, `\`${key}\``, level + '#')
       if (propLines.length) {
         lines.push('', ...propLines)
       }
