@@ -162,6 +162,11 @@ export default defineNuxtModule({
       getContents: () => 'export { useRoute } from \'vue-router\''
     })
 
+    // Optimize vue-router to ensure we share the same injection symbol
+    nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
+    nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
+    nuxt.options.vite.optimizeDeps.include.push('vue-router')
+
     // Add router options template
     addTemplate({
       filename: 'router.options.mjs',
