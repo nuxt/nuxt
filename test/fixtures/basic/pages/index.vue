@@ -20,16 +20,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
 
-setupDevtoolsPlugin({}, () => {})
+setupDevtoolsPlugin({}, () => {}) as any
 
 const config = useRuntimeConfig()
 
 definePageMeta({
-  alias: '/some-alias'
+  alias: '/some-alias',
+  other: ref('test')
 })
 
 // reset title template example

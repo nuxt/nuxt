@@ -24,7 +24,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return !pathname.match(/node_modules\/nuxt3?\//) && pathname.match(/\.(m?[jt]sx?|vue)/) && parseQuery(search).type !== 'style'
+      return !pathname.match(/node_modules\/nuxt3?\//) && pathname.match(/\.(m?[jt]sx?|vue)/) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
     },
     transform (code, id) {
       if (!KEYED_FUNCTIONS_RE.test(code)) { return }

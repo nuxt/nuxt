@@ -425,6 +425,7 @@ importers:
       defu: ^6.1.0
       destr: ^1.2.0
       escape-string-regexp: ^5.0.0
+      estree-walker: ^3.0.1
       fs-extra: ^10.1.0
       globby: ^13.1.2
       h3: ^0.8.6
@@ -469,6 +470,7 @@ importers:
       defu: 6.1.0
       destr: 1.2.0
       escape-string-regexp: 5.0.0
+      estree-walker: 3.0.1
       fs-extra: 10.1.0
       globby: 13.1.2
       h3: 0.8.6

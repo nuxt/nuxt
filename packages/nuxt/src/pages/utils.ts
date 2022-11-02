@@ -231,7 +231,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     routes: genArrayFromRaw(routes.map((route) => {
       const file = normalize(route.file)
       const metaImportName = genSafeVariableName(file) + 'Meta'
-      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'meta', as: metaImportName }]))
+      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       let aliasCode = `${metaImportName}?.alias || []`
       if (Array.isArray(route.alias) && route.alias.length) {
