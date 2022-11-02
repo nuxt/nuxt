@@ -1,6 +1,7 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import { NuxtApp, useNuxtApp } from '../nuxt'
+import { createError } from './error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
 
@@ -61,7 +62,7 @@ export function useAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT, Transform, PickKeys>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null>
 export function useAsyncData<
   DataT,
   DataE = Error,
@@ -71,13 +72,13 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT, Transform, PickKeys>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null>
 export function useAsyncData<
   DataT,
   DataE = Error,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-> (...args: any[]): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true> {
+> (...args: any[]): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
@@ -114,7 +115,7 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(useInitialCache() ? nuxt.payload.data[key] : options.default?.() ?? null),
       pending: ref(!useInitialCache()),
-      error: ref(nuxt.payload._errors[key] ?? null)
+      error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
     }
   }
   // TODO: Else, Soemhow check for confliciting keys with different defaults or fetcher
@@ -168,7 +169,8 @@ export function useAsyncData<
         asyncData.pending.value = false
         nuxt.payload.data[key] = asyncData.data.value
         if (asyncData.error.value) {
-          nuxt.payload._errors[key] = true
+          // We use `createError` and its .toJSON() property to normalize the error
+          nuxt.payload._errors[key] = createError(asyncData.error.value)
         }
         delete nuxt._asyncDataPromises[key]
       })
@@ -240,7 +242,7 @@ export function useLazyAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null>
 export function useLazyAsyncData<
   DataT,
   DataE = Error,
@@ -250,13 +252,13 @@ export function useLazyAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
   options?: Omit<AsyncDataOptions<DataT, Transform, PickKeys>, 'lazy'>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null>
 export function useLazyAsyncData<
   DataT,
   DataE = Error,
   Transform extends _Transform<DataT> = _Transform<DataT, DataT>,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-> (...args: any[]): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null | true> {
+> (...args: any[]): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, DataE | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<DataT>, AsyncDataOptions<DataT, Transform, PickKeys>]

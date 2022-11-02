@@ -30,7 +30,7 @@ export function useFetch<
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, Transform, PickKeys>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null>
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -114,7 +114,7 @@ export function useLazyFetch<
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, Transform, PickKeys>, 'lazy'>
-): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null | true>
+): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null>
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
