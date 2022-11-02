@@ -52,7 +52,7 @@
     "escape-string-regexp": "^5.0.0",
     "fs-extra": "^10.1.0",
     "globby": "^13.1.2",
-    "h3": "^0.8.5",
+    "h3": "^0.8.6",
     "hash-sum": "^2.0.0",
     "hookable": "^5.4.1",
     "knitwork": "^0.1.2",

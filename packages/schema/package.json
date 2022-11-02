@@ -20,7 +20,7 @@
     "@vueuse/head": "~1.0.0-rc.14",
     "nitropack": "^0.6.0",
     "unbuild": "latest",
-    "vite": "~3.2.0"
+    "vite": "~3.2.2"
   },
   "dependencies": {
     "c12": "^0.2.13",
