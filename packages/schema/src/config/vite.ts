@@ -64,12 +64,12 @@ export default defineUntypedSchema({
     },
     server: {
       fs: {
-        strict: false,
         allow: {
           $resolve: async (val, get) => [
             await get('buildDir'),
             await get('srcDir'),
             await get('rootDir'),
+            await get('workspaceDir'),
             ...(await get('modulesDir')),
             ...val ?? []
           ]
