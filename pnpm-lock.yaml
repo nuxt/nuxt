@@ -678,7 +678,7 @@ importers:
       hash-sum: ^2.0.0
       lodash-es: ^4.17.21
       magic-string: ^0.26.7
-      memfs: ^3.4.9
+      memfs: ^3.4.10
       mini-css-extract-plugin: ^2.6.1
       mlly: ^0.5.16
       ohash: ^0.1.5
@@ -720,7 +720,7 @@ importers:
       hash-sum: 2.0.0
       lodash-es: 4.17.21
       magic-string: 0.26.7
-      memfs: 3.4.9
+      memfs: 3.4.10
       mini-css-extract-plugin: 2.6.1_webpack@5.74.0
       mlly: 0.5.16
       ohash: 0.1.5
@@ -5376,7 +5376,7 @@ packages:
       cosmiconfig: 7.0.1
       deepmerge: 4.2.2
       fs-extra: 10.1.0
-      memfs: 3.4.9
+      memfs: 3.4.10
       minimatch: 3.1.2
       node-abort-controller: 3.0.1
       schema-utils: 3.1.1
@@ -6503,8 +6503,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /memfs/3.4.9:
-    resolution: {integrity: sha512-3rm8kbrzpUGRyPKSGuk387NZOwQ90O4rI9tsWQkzNW7BLSnKGp23RsEsKK8N8QVCrtJoAMqy3spxHC4os4G6PQ==}
+  /memfs/3.4.10:
+    resolution: {integrity: sha512-0bCUP+L79P4am30yP1msPzApwuMQG23TjwlwdHeEV5MxioDR1a0AgB0T9FfggU52eJuDCq8WVwb5ekznFyWiTQ==}
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
@@ -9132,7 +9132,7 @@ packages:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
       colorette: 2.0.19
-      memfs: 3.4.9
+      memfs: 3.4.10
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.0.0
