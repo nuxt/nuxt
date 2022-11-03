@@ -598,19 +598,18 @@ describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inl
     for (const style of [
       '{--assets:"assets"}', // <script>
       '{--scoped:"scoped"}', // <style lang=css>
-      '{--postcss:"postcss"}', // <style lang=postcss>
-      '{--global:"global"', // entryfile dependency
-      '{--plugin:"plugin"}' // plugin dependency
+      '{--postcss:"postcss"}' // <style lang=postcss>
     ]) {
       expect(html).toContain(style)
     }
   })
 
-  it('only renders prefetch for entry styles', async () => {
+  it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch('/styles')
     expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel=\\"prefetch\\" as=\\"style\\" href=\\"/_nuxt/entry.css\\">",
+        "<link rel=\\"preload\\" as=\\"style\\" href=\\"/_nuxt/entry.css\\">",
+        "<link rel=\\"stylesheet\\" href=\\"/_nuxt/entry.css\\">",
       ]
     `)
   })

@@ -126,16 +126,6 @@ export async function buildServer (ctx: ViteBuildContext) {
         if (shouldRemoveCSS) {
           entry.css = []
         }
-        // Add entry CSS as prefetch (non-blocking)
-        if (entry.isEntry) {
-          manifest.entryCSS = {
-            file: '',
-            css: entry.css
-          }
-          entry.css = []
-          entry.dynamicImports = entry.dynamicImports || []
-          entry.dynamicImports.push('entryCSS')
-        }
       }
     })
   }

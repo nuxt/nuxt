@@ -289,18 +289,14 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]) {
-  const { entryCSS } = await getClientManifest()
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
-  for (const mod of ['entry', ...usedModules]) {
+  for (const mod of usedModules) {
     if (mod in styleMap) {
       for (const style of await styleMap[mod]()) {
         inlinedStyles.add(`<style>${style}</style>`)
       }
     }
-  }
-  for (const css of entryCSS?.css || []) {
-    inlinedStyles.add(`<link rel="stylesheet" href=${JSON.stringify(buildAssetsURL(css))} media="print" onload="this.media='all'; this.onload=null;">`)
   }
   return Array.from(inlinedStyles).join('')
 }
