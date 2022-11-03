@@ -41,7 +41,7 @@ importers:
       markdownlint-cli: ^0.32.2
       nuxi: workspace:*
       nuxt: workspace:*
-      ohmyfetch: ^0.4.20
+      ohmyfetch: ^0.4.21
       pathe: ^0.3.9
       rimraf: ^3.0.2
       semver: ^7.3.8
@@ -77,7 +77,7 @@ importers:
       markdownlint-cli: 0.32.2
       nuxi: link:packages/nuxi
       nuxt: link:packages/nuxt
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       pathe: 0.3.9
       rimraf: 3.0.2
       semver: 7.3.8
@@ -437,7 +437,7 @@ importers:
       nitropack: ^0.6.0
       nuxi: workspace:*
       ohash: ^0.1.5
-      ohmyfetch: ^0.4.20
+      ohmyfetch: ^0.4.21
       pathe: ^0.3.9
       perfect-debounce: ^0.1.3
       scule: ^0.3.2
@@ -451,7 +451,7 @@ importers:
       unplugin: ^0.10.2
       untyped: ^0.5.0
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.4
+      vue-bundle-renderer: ^0.5.0
       vue-devtools-stub: ^0.1.0
       vue-meta: next
       vue-router: ^4.1.6
@@ -482,7 +482,7 @@ importers:
       nitropack: 0.6.0
       nuxi: link:../nuxi
       ohash: 0.1.5
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       pathe: 0.3.9
       perfect-debounce: 0.1.3
       scule: 0.3.2
@@ -495,7 +495,7 @@ importers:
       unplugin: 0.10.2
       untyped: 0.5.0
       vue: 3.2.41
-      vue-bundle-renderer: 0.4.4
+      vue-bundle-renderer: 0.5.0
       vue-devtools-stub: 0.1.0
       vue-router: 4.1.6_vue@3.2.41
     devDependencies:
@@ -556,7 +556,7 @@ importers:
       execa: ^6.1.0
       get-port-please: ^2.6.1
       jiti: ^1.16.0
-      ohmyfetch: ^0.4.20
+      ohmyfetch: ^0.4.21
       playwright: ^1.27.1
       unbuild: ^0.9.4
       vitest: ^0.24.5
@@ -568,7 +568,7 @@ importers:
       execa: 6.1.0
       get-port-please: 2.6.1
       jiti: 1.16.0
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
     devDependencies:
       playwright: 1.27.1
       unbuild: 0.9.4
@@ -612,7 +612,7 @@ importers:
       vite-node: ^0.24.5
       vite-plugin-checker: ^0.5.1
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.4
+      vue-bundle-renderer: ^0.5.0
     dependencies:
       '@nuxt/kit': link:../kit
       '@rollup/plugin-replace': 5.0.1_rollup@2.79.1
@@ -646,7 +646,7 @@ importers:
       vite: 3.2.2
       vite-node: 0.24.5
       vite-plugin-checker: 0.5.1_vite@3.2.2
-      vue-bundle-renderer: 0.4.4
+      vue-bundle-renderer: 0.5.0
     devDependencies:
       '@nuxt/schema': link:../schema
       '@types/cssnano': 5.1.0_postcss@8.4.18
@@ -695,7 +695,7 @@ importers:
       unplugin: ^0.10.2
       url-loader: ^4.1.1
       vue: 3.2.41
-      vue-bundle-renderer: ^0.4.4
+      vue-bundle-renderer: ^0.5.0
       vue-loader: ^17.0.1
       webpack: ^5.74.0
       webpack-bundle-analyzer: ^4.7.0
@@ -735,7 +735,7 @@ importers:
       ufo: 0.8.6
       unplugin: 0.10.2
       url-loader: 4.1.1_u4acmn7fe6yqgbrqzialkgh5lu
-      vue-bundle-renderer: 0.4.4
+      vue-bundle-renderer: 0.5.0
       vue-loader: 17.0.1_vue@3.2.41+webpack@5.74.0
       webpack: 5.74.0
       webpack-bundle-analyzer: 4.7.0
@@ -1375,7 +1375,7 @@ packages:
       mri: 1.2.0
       nanoid: 4.0.0
       node-fetch: 3.2.10
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       parse-git-config: 3.0.0
       rc9: 1.2.2
       std-env: 3.3.0
@@ -2181,7 +2181,7 @@ packages:
     dependencies:
       '@iconify/utils': 2.0.0
       '@unocss/core': 0.45.25
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2217,7 +2217,7 @@ packages:
     resolution: {integrity: sha512-8DTYHtYfmapW2i5HVK8zpX9Npq+DGBtXpBqT4K7We3nbaxoMuOZHKwixFfzw0mXqYcr3BjjwJjmDdMi4GhIKWA==}
     dependencies:
       '@unocss/core': 0.45.25
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       pathe: 0.3.9
     dev: true
 
@@ -6752,7 +6752,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 0.1.8
       ohash: 0.1.5
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       pathe: 0.3.9
       perfect-debounce: 0.1.3
       pkg-types: 0.3.6
@@ -6928,13 +6928,13 @@ packages:
   /ohash/0.1.5:
     resolution: {integrity: sha512-qynly1AFIpGWEAW88p6DhMNqok/Swb52/KsiU+Toi7er058Ptvno3tkfTML6wYcEgFgp2GsUziW4Nqn62ciuyw==}
 
-  /ohmyfetch/0.4.20:
-    resolution: {integrity: sha512-+c3/l+X91owrT1reTos1R13rb2j8NGZpKi0bRWwrnxIHlr1FZ8NzghIsNBKpUvk9nsnFoNK4phw+nTnXrcALzA==}
+  /ohmyfetch/0.4.21:
+    resolution: {integrity: sha512-VG7f/JRvqvBOYvL0tHyEIEG7XHWm7OqIfAs6/HqwWwDfjiJ1g0huIpe5sFEmyb+7hpFa1EGNH2aERWR72tlClw==}
     dependencies:
       destr: 1.2.0
       node-fetch-native: 0.1.8
       ufo: 0.8.6
-      undici: 5.11.0
+      undici: 5.12.0
 
   /on-finished/2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -8575,8 +8575,8 @@ packages:
       unplugin: 0.9.6
     dev: false
 
-  /undici/5.11.0:
-    resolution: {integrity: sha512-oWjWJHzFet0Ow4YZBkyiJwiK5vWqEYoH7BINzJAJOLedZ++JpAlCbUktW2GQ2DS2FpKmxD/JMtWUUWl1BtghGw==}
+  /undici/5.12.0:
+    resolution: {integrity: sha512-zMLamCG62PGjd9HHMpo05bSLvvwWOZgGeiWlN/vlqu3+lRo3elxktVGEyLMX+IO7c2eflLjcW74AlkhEZm15mg==}
     engines: {node: '>=12.18'}
     dependencies:
       busboy: 1.6.0
@@ -8716,7 +8716,7 @@ packages:
       listhen: 0.3.5
       mkdir: 0.0.2
       mri: 1.2.0
-      ohmyfetch: 0.4.20
+      ohmyfetch: 0.4.21
       ufo: 0.8.6
       ws: 8.9.0
     transitivePeerDependencies:
@@ -8962,8 +8962,8 @@ packages:
     resolution: {integrity: sha512-fmL7V1eiDBFRRnu+gfRWTzyPpNIHJTc4mWnFkwBUmO9U3KPgJAmTx7oxi2bl/Rh6HLdU7+4C9wlj0k2E4AdKFQ==}
     dev: false
 
-  /vue-bundle-renderer/0.4.4:
-    resolution: {integrity: sha512-kjJWPayzup8QFynETVpoYD0gDM2nbwN//bpt86hAHpZ+FPdTJFDQqKpouSLQgb2XjkOYM1uB/yc6Zb3iCvS7Gw==}
+  /vue-bundle-renderer/0.5.0:
+    resolution: {integrity: sha512-EZBp4TZ5oamgg+JL7kih5xO/qLCPlC6Dz4BH9ymoNP6xM2urZazql3PCAdztgnzBkOgmoOegEw4kp7Hgp8qaaA==}
     dependencies:
       ufo: 0.8.6
     dev: false

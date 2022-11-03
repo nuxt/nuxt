@@ -64,7 +64,7 @@
     "markdownlint-cli": "^0.32.2",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
-    "ohmyfetch": "^0.4.20",
+    "ohmyfetch": "^0.4.21",
     "pathe": "^0.3.9",
     "rimraf": "^3.0.2",
     "semver": "^7.3.8",
