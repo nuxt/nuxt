@@ -240,6 +240,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       return {
         ...Object.fromEntries(Object.entries(route).map(([key, value]) => [key, JSON.stringify(value)])),
+        name: `${metaImportName}?.name ?? ${route.name ? JSON.stringify(route.name) : 'undefined'}`,
+        path: `${metaImportName}?.path ?? ${JSON.stringify(route.path)}`,
         children: route.children ? normalizeRoutes(route.children, metaImports).routes : [],
         meta: route.meta ? `{...(${metaImportName} || {}), ...${JSON.stringify(route.meta)}}` : metaImportName,
         alias: aliasCode,

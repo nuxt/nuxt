@@ -29,6 +29,10 @@ export interface PageMeta {
   layoutTransition?: boolean | TransitionProps
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
+  /** You may define a name for this page's route. */
+  name?: string
+  /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
+  path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean
 }
