@@ -96,6 +96,7 @@ export interface NuxtHooks {
   'nitro:config': (nitroConfig: NitroConfig) => HookResult
   'nitro:init': (nitro: Nitro) => HookResult
   'nitro:build:before': (nitro: Nitro) => HookResult
+  'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
 
   // Nuxi
   'build:error': (error: Error) => HookResult

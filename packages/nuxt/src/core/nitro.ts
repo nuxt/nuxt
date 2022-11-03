@@ -148,6 +148,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
+  nitro.hooks.hook('prerender:routes', (routes) => {
+    nuxt.callHook('prerender:routes', { routes })
+  })
 
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()

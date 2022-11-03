@@ -42,6 +42,25 @@ export function addServerPlugin (plugin: string) {
 }
 
 /**
+ * Adds routes to be prerendered
+ */
+export function addPrerenderRoutes (routes: string | string[]) {
+  const nuxt = useNuxt()
+  if (!Array.isArray(routes)) {
+    routes = [routes]
+  }
+  routes = routes.filter(Boolean)
+  if (!routes.length) {
+    return
+  }
+  nuxt.hook('prerender:routes', (ctx) => {
+    for (const route of routes) {
+      ctx.routes.add(route)
+    }
+  })
+}
+
+/**
  * Access to the Nitro instance
  *
  * **Note:** You can call `useNitro()` only after `ready` hook.
