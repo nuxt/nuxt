@@ -11,7 +11,7 @@ export default defineUntypedSchema({
      * Once you’ve converted your codebase to TypeScript, you can start enabling these checks for greater safety.
      * [Read More](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html#getting-stricter-checks)
      */
-    strict: false,
+    strict: true,
 
     /**
      * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
