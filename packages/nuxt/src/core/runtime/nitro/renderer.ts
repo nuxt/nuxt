@@ -1,7 +1,7 @@
 import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
-import { appendHeader, getQuery, writeEarlyHints } from 'h3'
+import { appendHeader, createError, getQuery, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -121,6 +121,10 @@ export default defineRenderHandler(async (event) => {
   const ssrError = event.req.url?.startsWith('/__nuxt_error')
     ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
     : null
+  if (ssrError && event.req.socket.readyState !== 'readOnly' /* direct request */) {
+    throw createError('Cannot directly render error page!')
+  }
+
   let url = ssrError?.url as string || event.req.url!
 
   // Whether we are rendering payload route
