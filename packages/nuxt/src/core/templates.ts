@@ -1,11 +1,11 @@
 import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
-
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
+import { resolvePath } from 'mlly'
 
 export interface TemplateContext {
   nuxt: Nuxt
@@ -206,9 +206,9 @@ declare module '@nuxt/schema' {
 export const appConfigTemplate: NuxtTemplate = {
   filename: 'app.config.mjs',
   write: true,
-  getContents: ({ app, nuxt }) => {
+  getContents: async ({ app, nuxt }) => {
     return `
-import { defuFn } from 'defu'
+import { defuFn } from '${await _resolveId('defu')}'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
@@ -221,9 +221,9 @@ export default defuFn(${app.configs.map((_id: string, index: number) => `cfg${in
 
 export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
-  getContents ({ nuxt }) {
+  async getContents ({ nuxt }) {
     return [
-      'import { joinURL } from \'ufo\'',
+      `import { joinURL } from '${await _resolveId('ufo')}'`,
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
 
       nuxt.options.dev
@@ -255,4 +255,18 @@ export const nuxtConfigTemplate = {
   getContents: (ctx: TemplateContext) => {
     return Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`).join('\n\n')
   }
+}
+
+// TODO: Move to kit
+function _resolveId (id: string) {
+  return resolvePath(id, {
+    url: [
+      // @ts-ignore
+      global.__NUXT_PREPATHS__,
+      import.meta.url,
+      process.cwd(),
+      // @ts-ignore
+      global.__NUXT_PATHS__
+    ]
+  })
 }
