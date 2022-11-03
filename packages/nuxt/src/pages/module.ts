@@ -102,6 +102,9 @@ export default defineNuxtModule({
       })
       nuxt.hook('nitro:build:before', (nitro) => {
         for (const route of nitro.options.prerender.routes || []) {
+          // Skip default route value as we only generate it if it is already
+          // in the detected routes from `~/pages`.
+          if (route === '/') { continue }
           prerenderRoutes.add(route)
         }
         nitro.options.prerender.routes = Array.from(prerenderRoutes)
