@@ -58,10 +58,13 @@
 </template>
 
 <script setup lang="ts">
-const stringStatefulComp = ref(null)
-const stringStatefulScriptComp = ref(null)
-const clientScript = ref(null)
-const clientSetupScript = ref(null)
+import { Ref } from 'vue'
+type Comp = Ref<{ add: () => void }>
+
+const stringStatefulComp = ref(null) as any as Comp
+const stringStatefulScriptComp = ref(null) as any as Comp
+const clientScript = ref(null) as any as Comp
+const clientSetupScript = ref(null) as any as Comp
 
 const show = ref(false)
 </script>

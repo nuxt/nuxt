@@ -1,6 +1,9 @@
 <script setup lang="ts">
 defineProps({
-  count: Number
+  count: {
+    type: Number,
+    required: true
+  }
 })
 </script>
 
