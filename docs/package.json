@@ -9,9 +9,9 @@
   },
   "devDependencies": {
     "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-2a7c428",
-    "@nuxt-themes/website": "0.1.7",
+    "@nuxt-themes/website": "0.1.9",
     "jiti": "^1.16.0",
-    "nuxt": "^3.0.0-rc.11",
+    "nuxt": "^3.0.0-rc.12",
     "pathe": "^0.3.9",
     "scule": "^0.3.2",
     "untyped": "^0.5.0"
