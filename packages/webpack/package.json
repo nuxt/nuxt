@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.0.0-rc.12",
+  "version": "3.0.0-rc.13",
   "repository": "nuxt/framework",
   "license": "MIT",
   "type": "module",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@babel/core": "^7.19.6",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
-    "@nuxt/kit": "3.0.0-rc.12",
+    "@nuxt/kit": "3.0.0-rc.13",
     "autoprefixer": "^10.4.13",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.2.2",
@@ -57,7 +57,7 @@
     "webpackbar": "^5.0.2"
   },
   "devDependencies": {
-    "@nuxt/schema": "3.0.0-rc.12",
+    "@nuxt/schema": "3.0.0-rc.13",
     "@types/lodash-es": "^4.17.6",
     "@types/pify": "^5.0.1",
     "@types/webpack-bundle-analyzer": "^4.6.0",
