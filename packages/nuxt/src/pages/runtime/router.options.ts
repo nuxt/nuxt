@@ -2,6 +2,8 @@ import type { RouterConfig } from '@nuxt/schema'
 import type { RouterScrollBehavior, RouteLocationNormalized } from 'vue-router'
 import { nextTick } from 'vue'
 import { useNuxtApp } from '#app'
+// @ts-ignore
+import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
@@ -31,8 +33,8 @@ export default <RouterConfig> {
     }
 
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
-    const hasTransition = to.meta.pageTransition !== false && from.meta.pageTransition !== false
-    const hookToWait = hasTransition ? 'page:transition:finish' : 'page:finish'
+    const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
+    const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
         await nextTick()
