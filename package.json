@@ -36,7 +36,7 @@
     "nuxt": "workspace:*",
     "nuxt3": "workspace:nuxt@*",
     "unbuild": "^0.9.4",
-    "vite": "^3.2.2",
+    "vite": "^3.2.3",
     "vue": "3.2.41"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "case-police": "^0.5.10",
     "changelogen": "^0.3.5",
     "crawler": "^1.3.0",
-    "eslint": "^8.26.0",
+    "eslint": "^8.27.0",
     "eslint-plugin-jsdoc": "^39.6.2",
     "execa": "^6.1.0",
     "expect-type": "^0.15.0",
@@ -72,7 +72,7 @@
     "typescript": "^4.8.4",
     "ufo": "^0.8.6",
     "unbuild": "^0.9.4",
-    "vite": "^3.2.2",
+    "vite": "^3.2.3",
     "vitest": "^0.24.5",
     "vue-tsc": "^1.0.9"
   },
