@@ -21,7 +21,7 @@ export interface NuxtRenderHTMLContext {
   htmlAttrs: string[]
   head: string[]
   bodyAttrs: string[]
-  bodyPreprend: string[]
+  bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
 }
@@ -223,7 +223,7 @@ export default defineRenderHandler(async (event) => {
       ssrContext.styles
     ]),
     bodyAttrs: normalizeChunks([renderedMeta.bodyAttrs!]),
-    bodyPreprend: normalizeChunks([
+    bodyPrepend: normalizeChunks([
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
@@ -288,7 +288,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   return `<!DOCTYPE html>
 <html ${joinAttrs(html.htmlAttrs)}>
 <head>${joinTags(html.head)}</head>
-<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPreprend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
+<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
 </html>`
 }
 
