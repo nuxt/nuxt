@@ -1,8 +1,10 @@
 ---
-title: "Layouts"
-description: "This example shows how to define default and custom layouts."
 toc: false
 ---
+
+# Layouts
+
+This example shows how to define default and custom layouts.
 
 ::ReadMore{link="/guide/directory-structure/layouts"}
 ::

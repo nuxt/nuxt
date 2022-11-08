@@ -1,5 +1,5 @@
 ---
-template: Example
+toc: false
 ---
 
 # JSX / TSX

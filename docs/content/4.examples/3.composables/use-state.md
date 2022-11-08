@@ -1,8 +1,10 @@
 ---
-title: "useState"
-description: "useState is an SSR-friendly ref replacement."
 toc: false
 ---
+
+# useState
+
+This example showcase the `useState` composable, an SSR-friendly ref replacement.
 
 Its value will be preserved after server-side rendering and shared across all components using a unique key.
 

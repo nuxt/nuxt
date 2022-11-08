@@ -1,8 +1,10 @@
 ---
-title: "useFetch"
-description: "This example shows how to use useFetch to fetch data from an API endpoint."
 toc: false
 ---
+
+# useFetch
+
+This example shows how to use useFetch to fetch data from an API endpoint.
 
 ::alert{type=info icon=💡}
 Nuxt will automatically read files in the `~/server/api` directory to create API endpoints.

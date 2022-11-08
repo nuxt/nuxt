@@ -1,10 +1,10 @@
 ---
-title: "Components"
-description: "You can configure other directories to support components auto-imports."
 toc: false
 ---
 
-Components in the `components/` directory are auto-imported and can be used directly in your templates.
+# Components
+
+Components in the `components/` directory are auto-imported and can be used directly in your templates. You can configure other directories to support components auto-imports.
 
 ::ReadMore{link="/guide/directory-structure/components"}
 ::

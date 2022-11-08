@@ -1,8 +1,10 @@
 ---
-title: "Testing"
-description: "This example shows how to test your Nuxt application."
 toc: false
 ---
+
+# Testing
+
+This example shows how to test your Nuxt application.
 
 ::alert{type=info icon=👉}
 Learn more about [testing](/guide/going-further/testing).

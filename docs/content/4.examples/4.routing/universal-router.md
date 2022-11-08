@@ -1,6 +1,4 @@
 ---
-title: "Universal Router"
-description: "This example demonstrates Nuxt universal routing utilities without depending on pages/ and vue-router."
 toc: false
 ---
 
