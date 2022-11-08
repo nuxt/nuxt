@@ -8,8 +8,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@nuxt/test-utils": "^3.0.0-rc.12",
-    "nuxt": "^3.0.0-rc.12",
+    "@nuxt/test-utils": "^3.0.0-rc.13",
+    "nuxt": "^3.0.0-rc.13",
     "vitest": "latest"
   }
 }
