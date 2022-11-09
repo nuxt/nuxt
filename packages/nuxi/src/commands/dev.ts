@@ -131,7 +131,7 @@ export default defineNuxtCommand({
       const isDirChange = ['addDir', 'unlinkDir'].includes(event)
       const isFileChange = ['add', 'unlink'].includes(event)
       const pagesDir = resolve(currentNuxt.options.srcDir, currentNuxt.options.dir.pages)
-      const reloadDirs = ['components', 'composables'].map(d => resolve(currentNuxt.options.srcDir, d))
+      const reloadDirs = ['components', 'composables', 'utils'].map(d => resolve(currentNuxt.options.srcDir, d))
 
       if (isDirChange) {
         if (reloadDirs.includes(file)) {

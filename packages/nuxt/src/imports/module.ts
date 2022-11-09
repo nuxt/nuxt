@@ -59,6 +59,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     let composablesDirs: string[] = []
     for (const layer of nuxt.options._layers) {
       composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
+      composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
       for (const dir of (layer.config.imports?.dirs ?? [])) {
         if (!dir) {
           continue
