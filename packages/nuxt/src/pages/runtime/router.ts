@@ -177,8 +177,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         fatal: false,
         statusMessage: `Page not found: ${to.fullPath}`
       })])
-    } else if (process.server && to.matched[0].name === '404' && nuxtApp.ssrContext) {
-      nuxtApp.ssrContext.event.res.statusCode = 404
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL)) {

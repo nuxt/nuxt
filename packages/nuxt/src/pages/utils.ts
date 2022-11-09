@@ -68,7 +68,6 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
 
       const tokens = parseSegment(segment)
       const segmentName = tokens.map(({ value }) => value).join('')
-      const isSingleSegment = segments.length === 1
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '-') + segmentName
@@ -79,8 +78,6 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       if (child && child.children) {
         parent = child.children
         route.path = ''
-      } else if (segmentName === '404' && isSingleSegment) {
-        route.path += '/:catchAll(.*)*'
       } else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       } else if (segmentName !== 'index') {

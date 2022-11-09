@@ -6,23 +6,11 @@ describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
   const tests = [
     {
-      description: 'should generate correct route for 404',
-      files: [`${pagesDir}/404.vue`],
-      output: [
-        {
-          name: '404',
-          path: '/:catchAll(.*)*',
-          file: `${pagesDir}/404.vue`,
-          children: []
-        }
-      ]
-    },
-    {
       description: 'should generate correct routes for index pages',
       files: [
-          `${pagesDir}/index.vue`,
-          `${pagesDir}/parent/index.vue`,
-          `${pagesDir}/parent/child/index.vue`
+        `${pagesDir}/index.vue`,
+        `${pagesDir}/parent/index.vue`,
+        `${pagesDir}/parent/child/index.vue`
       ],
       output: [
         {
@@ -48,8 +36,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct routes for parent/child',
       files: [
-          `${pagesDir}/parent.vue`,
-          `${pagesDir}/parent/child.vue`
+        `${pagesDir}/parent.vue`,
+        `${pagesDir}/parent/child.vue`
       ],
       output: [
         {
@@ -70,8 +58,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct id for catchall (order 1)',
       files: [
-          `${pagesDir}/[...stories].vue`,
-          `${pagesDir}/stories/[id].vue`
+        `${pagesDir}/[...stories].vue`,
+        `${pagesDir}/stories/[id].vue`
       ],
       output: [
         {
@@ -112,7 +100,7 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct route for snake_case file',
       files: [
-          `${pagesDir}/snake_case.vue`
+        `${pagesDir}/snake_case.vue`
       ],
       output: [
         {
@@ -138,14 +126,14 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct dynamic routes',
       files: [
-          `${pagesDir}/index.vue`,
-          `${pagesDir}/[slug].vue`,
-          `${pagesDir}/[[foo]]`,
-          `${pagesDir}/[[foo]]/index.vue`,
-          `${pagesDir}/[bar]/index.vue`,
-          `${pagesDir}/nonopt/[slug].vue`,
-          `${pagesDir}/opt/[[slug]].vue`,
-          `${pagesDir}/[[sub]]/route-[slug].vue`
+        `${pagesDir}/index.vue`,
+        `${pagesDir}/[slug].vue`,
+        `${pagesDir}/[[foo]]`,
+        `${pagesDir}/[[foo]]/index.vue`,
+        `${pagesDir}/[bar]/index.vue`,
+        `${pagesDir}/nonopt/[slug].vue`,
+        `${pagesDir}/opt/[[slug]].vue`,
+        `${pagesDir}/[[sub]]/route-[slug].vue`
       ],
       output: [
         {
@@ -225,17 +213,17 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should throw empty param error for dynamic route',
       files: [
-          `${pagesDir}/[].vue`
+        `${pagesDir}/[].vue`
       ],
       error: 'Empty param'
     },
     {
       description: 'should only allow "_" & "." as special character for dynamic route',
       files: [
-          `${pagesDir}/[a1_1a].vue`,
-          `${pagesDir}/[b2.2b].vue`,
-          `${pagesDir}/[[c3@3c]].vue`,
-          `${pagesDir}/[[d4-4d]].vue`
+        `${pagesDir}/[a1_1a].vue`,
+        `${pagesDir}/[b2.2b].vue`,
+        `${pagesDir}/[[c3@3c]].vue`,
+        `${pagesDir}/[[d4-4d]].vue`
       ],
       output: [
         {
