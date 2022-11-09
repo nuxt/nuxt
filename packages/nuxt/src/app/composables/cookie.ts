@@ -15,7 +15,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
 }
 
-export interface CookieRef<T> extends Ref<T> {}
+export interface CookieRef<T> extends Ref<T | null> {}
 
 const CookieDefaults: CookieOptions<any> = {
   path: '/',

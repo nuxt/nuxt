@@ -154,8 +154,9 @@ describe('composables', () => {
     expectTypeOf(useState('test', () => ref('hello'))).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useState('test', () => 'hello')).toEqualTypeOf<Ref<string>>()
 
-    expectTypeOf(useCookie('test', { default: () => ref(500) })).toEqualTypeOf<Ref<number>>()
-    expectTypeOf(useCookie('test', { default: () => 500 })).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useCookie('test', { default: () => ref(500) })).toEqualTypeOf<Ref<number | null>>()
+    expectTypeOf(useCookie('test', { default: () => 500 })).toEqualTypeOf<Ref<number | null>>()
+    useCookie('test').value = null
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
