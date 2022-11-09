@@ -90,6 +90,8 @@ export default defineNuxtModule({
           prerenderRoutes.clear()
           const processPages = (pages: NuxtPage[], currentPath = '/') => {
             for (const page of pages) {
+              // Add root of optional dynamic paths and catchalls
+              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { prerenderRoutes.add(currentPath) }
               // Skip dynamic paths
               if (page.path.includes(':')) { continue }
               const route = joinURL(currentPath, page.path)
