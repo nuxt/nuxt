@@ -157,7 +157,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
             statusCode: 404,
             statusMessage: `Page Not Found: ${initialURL}`
           })
-          return callWithNuxt(nuxtApp, showError, [error])
+          await callWithNuxt(nuxtApp, showError, [error])
+          return false
         }
       }
       if (result || result === false) { return result }
