@@ -7,25 +7,25 @@ import { callWithNuxt } from '../nuxt'
 import { globalMiddleware } from '#build/middleware'
 
 interface Route {
-    /** Percentage encoded pathname section of the URL. */
-    path: string;
-    /** The whole location including the `search` and `hash`. */
-    fullPath: string;
-    /** Object representation of the `search` property of the current location. */
-    query: Record<string, any>;
-    /** Hash of the current location. If present, starts with a `#`. */
-    hash: string;
-    /** Name of the matched record */
-    name: string | null | undefined;
-    /** Object of decoded params extracted from the `path`. */
-    params: Record<string, any>;
-    /**
-     * The location we were initially trying to access before ending up
-     * on the current location.
-     */
-    redirectedFrom: Route | undefined;
-    /** Merged `meta` properties from all of the matched route records. */
-    meta: Record<string, any>;
+  /** Percentage encoded pathname section of the URL. */
+  path: string
+  /** The whole location including the `search` and `hash`. */
+  fullPath: string
+  /** Object representation of the `search` property of the current location. */
+  query: Record<string, any>
+  /** Hash of the current location. If present, starts with a `#`. */
+  hash: string
+  /** Name of the matched record */
+  name: string | null | undefined
+  /** Object of decoded params extracted from the `path`. */
+  params: Record<string, any>
+  /**
+   * The location we were initially trying to access before ending up
+   * on the current location.
+   */
+  redirectedFrom: Route | undefined
+  /** Merged `meta` properties from all of the matched route records. */
+  meta: Record<string, any>
 }
 
 function getRouteFromPath (fullPath: string | Partial<Route>) {
