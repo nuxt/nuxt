@@ -48,10 +48,12 @@ export default <RouterConfig> {
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {
-  const elem = document.querySelector(selector)
-  if (elem) {
-    return parseFloat(getComputedStyle(elem).scrollMarginTop)
-  }
+  try {
+    const elem = document.querySelector(selector)
+    if (elem) {
+      return parseFloat(getComputedStyle(elem).scrollMarginTop)
+    }
+  } catch {}
   return 0
 }
 
