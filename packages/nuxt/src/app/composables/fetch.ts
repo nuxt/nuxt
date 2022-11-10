@@ -68,7 +68,6 @@ export function useFetch<
     transform,
     pick,
     watch,
-    initialCache,
     immediate,
     ...fetchOptions
   } = opts
@@ -84,7 +83,6 @@ export function useFetch<
     default: defaultFn,
     transform,
     pick,
-    initialCache,
     immediate,
     watch: [
       _fetchOptions,

@@ -20,6 +20,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (to.path === from.path) { return }
     const payload = await loadPayload(to.path)
     if (!payload) { return }
-    Object.assign(nuxtApp.payload.data, payload.data)
+    Object.assign(nuxtApp.static.data, payload.data)
   })
 })

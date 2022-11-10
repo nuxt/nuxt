@@ -27,7 +27,6 @@ type UseFetchOptions = {
   transform?: (input: DataT) => DataT
   pick?: string[]
   watch?: WatchSource[]
-  initialCache?: boolean
 }
 
 type AsyncData<DataT> = {
@@ -60,7 +59,6 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.
   * `watch`: watch reactive sources to auto-refresh.
-  * `initialCache`: When set to `false`, will skip payload cache for initial fetch (defaults to `true`).
   * `transform`: A function that can be used to alter `handler` function result after resolving.
   * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 

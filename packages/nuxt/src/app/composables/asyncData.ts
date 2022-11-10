@@ -29,7 +29,6 @@ export interface AsyncDataOptions<
   transform?: Transform
   pick?: PickKeys
   watch?: MultiWatchSources
-  initialCache?: boolean
   immediate?: boolean
 }
 
@@ -102,19 +101,19 @@ export function useAsyncData<
     console.warn('[useAsyncData] `defer` has been renamed to `lazy`. Support for `defer` will be removed in RC.')
   }
   options.lazy = options.lazy ?? (options as any).defer ?? false
-  options.initialCache = options.initialCache ?? true
   options.immediate = options.immediate ?? true
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
-  const useInitialCache = () => (nuxt.isHydrating || options.initialCache) && nuxt.payload.data[key] !== undefined
+  const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  const hasCachedData = () => getCachedData() !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key]) {
     nuxt._asyncData[key] = {
-      data: ref(useInitialCache() ? nuxt.payload.data[key] : options.default?.() ?? null),
-      pending: ref(!useInitialCache()),
+      data: ref(getCachedData() ?? options.default?.() ?? null),
+      pending: ref(!hasCachedData()),
       error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
     }
   }
@@ -130,8 +129,8 @@ export function useAsyncData<
       (nuxt._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if (opts._initial && useInitialCache()) {
-      return nuxt.payload.data[key]
+    if (opts._initial && hasCachedData()) {
+      return getCachedData()
     }
     asyncData.pending.value = true
     // TODO: Cancel previous promise
@@ -204,7 +203,7 @@ export function useAsyncData<
       }
     }
 
-    if (fetchOnServer && nuxt.isHydrating && key in nuxt.payload.data) {
+    if (fetchOnServer && nuxt.isHydrating && hasCachedData()) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
     } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy) && options.immediate) {
