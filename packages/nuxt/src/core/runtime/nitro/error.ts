@@ -1,7 +1,7 @@
-import { withQuery } from 'ufo'
+import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import { H3Error, setResponseHeader, getRequestHeaders } from 'h3'
-import { useNitroApp } from '#internal/nitro'
+import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
@@ -47,7 +47,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // HTML response (via SSR)
   const isErrorPage = event.req.url?.startsWith('/__nuxt_error')
   const res = !isErrorPage
-    ? await useNitroApp().localFetch(withQuery('/__nuxt_error', errorObject), {
+    ? await useNitroApp().localFetch(withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject), {
       headers: getRequestHeaders(event) as Record<string, string>,
       redirect: 'manual'
     }).catch(() => null)
