@@ -15,6 +15,7 @@ function useFetch(
 type UseFetchOptions = {
   key?: string
   method?: string
+  query?: SearchParams
   params?: SearchParams
   body?: RequestInit['body'] | Record<string, any>
   headers?: { key: string, value: string }[]
@@ -43,7 +44,8 @@ type AsyncData<DataT> = {
 * **Url**: The URL to fetch.
 * **Options (extends [unjs/ohmyfetch](https://github.com/unjs/ohmyfetch) options & [AsyncDataOptions](/api/composables/use-async-data#params))**:
   * `method`: Request method.
-  * `params`: Query params.
+  * `query`: Adds query search params to URL using [ufo](https://github.com/unjs/ufo)
+  * `params`: Alias for `query`
   * `body`: Request body - automatically stringified (if an object is passed).
   * `headers`: Request headers.
   * `baseURL`: Base URL for the request.
@@ -86,6 +88,17 @@ const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev
     pick: ['title']
 })
 ```
+Adding Query Search Params:
+
+Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ohmyfetch](https://github.com/unjs/ohmyfetch) and is using [ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
+
+```ts
+const param1 = ref('value1')
+const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
+    query: { param1, param2: 'value2' }
+})
+```
+Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
 
 Using [interceptors](https://github.com/unjs/ohmyfetch#%EF%B8%8F-interceptors):
 
