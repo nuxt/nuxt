@@ -443,7 +443,7 @@ importers:
       scule: ^0.3.2
       strip-literal: ^0.4.2
       ufo: ^0.8.6
-      ultrahtml: ^0.4.0
+      ultrahtml: ^1.0.0
       unbuild: ^0.9.4
       unctx: ^2.0.2
       unenv: ^0.6.2
@@ -488,7 +488,7 @@ importers:
       scule: 0.3.2
       strip-literal: 0.4.2
       ufo: 0.8.6
-      ultrahtml: 0.4.0
+      ultrahtml: 1.0.0
       unctx: 2.0.2
       unenv: 0.6.2
       unimport: 0.7.0
@@ -8357,8 +8357,8 @@ packages:
   /ufo/0.8.6:
     resolution: {integrity: sha512-fk6CmUgwKCfX79EzcDQQpSCMxrHstvbLswFChHS0Vump+kFkw7nJBfTZoC1j0bOGoY9I7R3n2DGek5ajbcYnOw==}
 
-  /ultrahtml/0.4.0:
-    resolution: {integrity: sha512-pnJXeIWo9gu7ftQLsMii4Se9kWOzyuH63EDsOsFKwP9XTdLG+QI+JUUxXFSAlCJ/frcdmjfE6kSvvCKiGmiakg==}
+  /ultrahtml/1.0.0:
+    resolution: {integrity: sha512-BOtReLegZ/OlSTVOSt4aH+wrUPwxoXvapUHXjwhDE4k4kMISWdfUR4PH5wvt/vgKjFcAcEUPFEZQiPiB87XO3Q==}
     dev: false
 
   /unbox-primitive/1.0.2:
@@ -8767,6 +8767,51 @@ packages:
       rollup: 2.79.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
+
+  /vitest/0.25.1:
+    resolution: {integrity: sha512-eH74h6MkuEgsqR4mAQZeMK9O0PROiKY+i+1GMz/fBi5A3L2ml5U7JQs7LfPU7+uWUziZyLHagl+rkyfR8SLhlA==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@vitest/browser': '*'
+      '@vitest/ui': '*'
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/chai': 4.3.3
+      '@types/chai-subset': 1.3.3
+      '@types/node': 18.11.9
+      acorn: 8.8.0
+      acorn-walk: 8.2.0
+      chai: 4.3.6
+      debug: 4.3.4
+      local-pkg: 0.4.2
+      source-map: 0.6.1
+      strip-literal: 0.4.2
+      tinybench: 2.3.1
+      tinypool: 0.3.0
+      tinyspy: 1.0.2
+      vite: 3.2.3_@types+node@18.11.9
+    transitivePeerDependencies:
+      - less
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
     dev: true
 
   /vitest/0.25.1:
