@@ -557,7 +557,7 @@ importers:
       get-port-please: ^2.6.1
       jiti: ^1.16.0
       ohmyfetch: ^0.4.21
-      pathe: ^0.3.8
+      pathe: ^0.3.9
       playwright: ^1.27.1
       unbuild: ^0.9.4
       vitest: ^0.25.1
