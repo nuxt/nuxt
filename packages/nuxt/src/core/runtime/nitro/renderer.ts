@@ -8,7 +8,8 @@ import { renderToString as _renderToString } from 'vue/server-renderer'
 import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app'
-
+// @ts-ignore
+import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-ignore
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
@@ -71,7 +72,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     if (process.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
-    return `<div id="__nuxt">${html}</div>`
+    return `<${appRootTag} id="${appRootId}">${html}</${appRootTag}>`
   }
 
   return renderer
@@ -83,7 +84,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   const options = {
     manifest,
-    renderToString: () => '<div id="__nuxt"></div>',
+    renderToString: () => `<${appRootTag} id="${appRootId}"></${appRootTag}>`,
     buildAssetsURL
   }
   // Create SPA renderer and cache the result for all requests

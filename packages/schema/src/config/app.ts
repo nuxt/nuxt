@@ -143,6 +143,17 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
      */
     keepalive: false,
+
+    /**
+     * Customize Nuxt root element id.
+     */
+    rootId: '__nuxt',
+
+    /**
+     * Customize Nuxt root element tag.
+     *
+     */
+    rootTag: 'div',
   },
 
   /**

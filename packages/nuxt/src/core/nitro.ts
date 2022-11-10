@@ -33,7 +33,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     handlers: nuxt.options.serverHandlers,
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
-    virtual: {},
+    virtual: {
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config']
+    },
     routeRules: {
       '/__nuxt_error': { cache: false }
     },

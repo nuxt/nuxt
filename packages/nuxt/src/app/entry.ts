@@ -9,6 +9,8 @@ import '#build/css'
 import _plugins from '#build/plugins'
 // @ts-ignore
 import RootComponent from '#build/root-component.mjs'
+// @ts-ignore
+import { appRootId } from '#build/nuxt.config.mjs'
 
 if (!globalThis.$fetch) {
   // @ts-ignore
@@ -64,7 +66,7 @@ if (process.client) {
     try {
       await nuxt.hooks.callHook('app:created', vueApp)
       await nuxt.hooks.callHook('app:beforeMount', vueApp)
-      vueApp.mount('#__nuxt')
+      vueApp.mount('#' + appRootId)
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {
