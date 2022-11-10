@@ -1,13 +1,7 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { setup, $fetch, isDev } from '@nuxt/test-utils'
+import { $fetch, isDev } from '@nuxt/test-utils'
 
-describe('example', async () => {
-  await setup({
-    rootDir: fileURLToPath(new URL('..', import.meta.url)),
-    server: true
-  })
-
+describe('example', () => {
   it('Renders Hello Nuxt', async () => {
     expect(await $fetch('/')).toMatch('Hello Nuxt!')
   })

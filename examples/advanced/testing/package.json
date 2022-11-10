@@ -5,7 +5,7 @@
     "build": "nuxi build",
     "dev": "nuxi dev",
     "start": "nuxi preview",
-    "test": "vitest run"
+    "test": "nuxi test"
   },
   "devDependencies": {
     "@nuxt/test-utils": "^3.0.0-rc.13",

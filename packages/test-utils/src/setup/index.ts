@@ -67,7 +67,7 @@ export function createTest (options: Partial<TestOptions>): TestHooks {
   }
 }
 
-export async function setup (options: Partial<TestOptions>) {
+export async function setup (options: Partial<TestOptions> = {}) {
   const hooks = createTest(options)
 
   const setupFn = setupMaps[hooks.ctx.options.runner]
