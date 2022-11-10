@@ -51,7 +51,7 @@ export function useFetch<
   if (!request) {
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
-  const key = '$f' + _key
+  const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
     let r = request
