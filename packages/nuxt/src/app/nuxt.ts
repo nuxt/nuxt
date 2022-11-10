@@ -154,6 +154,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Inject $nuxt
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
+  // @ts-expect-error
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   if (process.server) {
