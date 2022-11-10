@@ -23,6 +23,7 @@
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
+import { importedValue, importedRE } from '~/some-exports'
 
 setupDevtoolsPlugin({}, () => {}) as any
 
@@ -30,7 +31,9 @@ const config = useRuntimeConfig()
 
 definePageMeta({
   alias: '/some-alias',
-  other: ref('test')
+  other: ref('test'),
+  imported: importedValue,
+  something: importedRE.test('an imported regex')
 })
 
 // reset title template example
