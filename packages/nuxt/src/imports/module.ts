@@ -31,23 +31,26 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options = defu(nuxt.options.autoImports, options)
     }
 
-    // Allow modules extending sources
-    await nuxt.callHook('imports:sources', options.presets as ImportPresetWithDeprecation[])
+    // TODO: fix sharing of defaults between invocations of modules
+    const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
-    options.presets?.forEach((_i) => {
+    // Allow modules extending sources
+    await nuxt.callHook('imports:sources', presets)
+
+    for (const _i of presets) {
       const i = _i as ImportPresetWithDeprecation | string
       if (typeof i !== 'string' && i.names && !i.imports) {
         i.imports = i.names
         logger.warn('imports: presets.names is deprecated, use presets.imports instead')
       }
-    })
+    }
 
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
     // Create a context to share state between module internals
     const ctx = createUnimport({
-      presets: options.presets,
+      presets,
       imports: options.imports,
       virtualImports: ['#imports'],
       addons: {

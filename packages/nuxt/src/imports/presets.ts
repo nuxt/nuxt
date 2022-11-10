@@ -64,6 +64,15 @@ const appPreset = defineUnimportPreset({
   ]
 })
 
+// vue-router
+const routerPreset = defineUnimportPreset({
+  from: '#app',
+  imports: [
+    'onBeforeRouteLeave',
+    'onBeforeRouteUpdate'
+  ]
+})
+
 // vue
 const vuePreset = defineUnimportPreset({
   from: 'vue',
@@ -140,5 +149,6 @@ const vuePreset = defineUnimportPreset({
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   appPreset,
+  routerPreset,
   vuePreset
 ]

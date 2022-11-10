@@ -1,4 +1,4 @@
-import { getCurrentInstance, inject } from 'vue'
+import { getCurrentInstance, inject, onUnmounted } from 'vue'
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
@@ -15,6 +15,19 @@ export const useRoute = (): RouteLocationNormalizedLoaded => {
     return inject('_route', useNuxtApp()._route)
   }
   return useNuxtApp()._route
+}
+
+export const onBeforeRouteLeave = (guard: NavigationGuard) => {
+  const unsubscribe = useRouter().beforeEach((to, from, next) => {
+    if (to === from) { return }
+    return guard(to, from, next)
+  })
+  onUnmounted(unsubscribe)
+}
+
+export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
+  const unsubscribe = useRouter().beforeEach(guard)
+  onUnmounted(unsubscribe)
 }
 
 /** @deprecated Use `useRoute` instead. */

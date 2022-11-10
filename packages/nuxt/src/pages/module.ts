@@ -54,6 +54,14 @@ export default defineNuxtModule({
       references.push({ types: 'vue-router' })
     })
 
+    // Add vue-router route guard imports
+    nuxt.hook('imports:sources', (sources) => {
+      const routerImports = sources.find(s => s.from === '#app' && s.imports.includes('onBeforeRouteLeave'))
+      if (routerImports) {
+        routerImports.from = 'vue-router'
+      }
+    })
+
     // Regenerate templates when adding or removing pages
     nuxt.hook('builder:watch', async (event, path) => {
       const dirs = [
