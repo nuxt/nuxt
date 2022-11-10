@@ -172,18 +172,13 @@ export default defineRenderHandler(async (event) => {
     writeEarlyHints(event, link)
   }
 
-  const _rendered = await renderer.renderToString(ssrContext).catch((err) => {
-    if (!ssrError) {
-      // Use explicitly thrown error in preference to subsequent rendering errors
-      throw ssrContext.payload?.error || err
-    }
+  const _rendered = await renderer.renderToString(ssrContext).catch((error) => {
+    // Use explicitly thrown error in preference to subsequent rendering errors
+    throw (!ssrError && ssrContext.payload?.error) || error
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
   // Handle errors
-  if (!_rendered) {
-    return undefined!
-  }
   if (ssrContext.payload?.error && !ssrError) {
     throw ssrContext.payload.error
   }
