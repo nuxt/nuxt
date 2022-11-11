@@ -37,7 +37,7 @@
     "nuxt3": "workspace:nuxt@*",
     "unbuild": "^0.9.4",
     "vite": "^3.2.3",
-    "vue": "3.2.44"
+    "vue": "3.2.45"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
