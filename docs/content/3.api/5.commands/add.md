@@ -89,7 +89,7 @@ npx nuxi add middleware auth
 
 ## `nuxi add api`
 
-* Modifier flags: `--method=connect|delete|get|head|options|patch|post|put|trace` or `--get`, `--post`, etc.
+* Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or alternatively you can directly use `--get`, `--post`, etc.
 
 Example:
 
