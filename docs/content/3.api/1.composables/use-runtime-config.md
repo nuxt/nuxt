@@ -43,7 +43,7 @@ Variables that need to be accessible on the server are added directly inside `ru
 ::ReadMore{link="/guide/going-further/runtime-config"}
 ::
 
-## Acess Runtime Config
+## Access Runtime Config
 
 To access runtime config, we can use `useRuntimeConfig()` composable:
 

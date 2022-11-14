@@ -54,7 +54,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 ::
 
 * **Options (from `useAsyncData`)**:
-  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAyncData` is used.
+  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAsyncData` is used.
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.

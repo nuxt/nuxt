@@ -45,7 +45,7 @@ router.replace({ hash: "#bio" });
 
 ## Navigation Guards
 
-`useRouter` composable provides `afterEach`, `beforeEach` and `beforeResolve` helper methods that acts as nagivation guards.
+`useRouter` composable provides `afterEach`, `beforeEach` and `beforeResolve` helper methods that acts as navigation guards.
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
