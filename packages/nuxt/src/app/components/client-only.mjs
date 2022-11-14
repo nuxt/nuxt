@@ -2,9 +2,10 @@ import { ref, onMounted, defineComponent, createElementBlock, h, createElementVN
 
 export default defineComponent({
   name: 'ClientOnly',
+  inheritAttrs: false,
   // eslint-disable-next-line vue/require-prop-types
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup (_, { slots }) {
+  setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
     return (props) => {
@@ -13,7 +14,7 @@ export default defineComponent({
       if (slot) { return slot() }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
-      return createElementBlock(fallbackTag, null, fallbackStr)
+      return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
   }
 })
