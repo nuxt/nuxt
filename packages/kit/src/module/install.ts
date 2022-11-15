@@ -11,6 +11,10 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   // Call module
   await nuxtModule(inlineOptions, nuxt)
 
+  if (typeof moduleToInstall === 'string') {
+    nuxt.options.build.transpile.push(moduleToInstall)
+  }
+
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({
     meta: await nuxtModule.getMeta?.(),
