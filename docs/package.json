@@ -14,7 +14,7 @@
     "nuxt": "^3.0.0-rc.12",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
-    "untyped": "^0.5.0"
+    "untyped": "^1.0.0"
   },
   "packageManager": "yarn@3.2.4"
 }
