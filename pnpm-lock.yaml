@@ -366,7 +366,7 @@ importers:
       giget: ^1.0.0
       h3: ^1.0.1
       jiti: ^1.16.0
-      listhen: ^0.3.5
+      listhen: ^1.0.0
       mlly: ^1.0.0
       mri: ^1.2.0
       pathe: ^1.0.0
@@ -397,7 +397,7 @@ importers:
       giget: 1.0.0
       h3: 1.0.1
       jiti: 1.16.0
-      listhen: 0.3.5
+      listhen: 1.0.0
       mlly: 1.0.0
       mri: 1.2.0
       pathe: 1.0.0
@@ -6283,19 +6283,6 @@ packages:
     resolution: {integrity: sha512-C7bfi1UZmoj8+PQx22XyeXCuBlokoyWQL5pWSP+EI6nzRylyThouddufc2c1NDIcP9k5agmN9fLpA7VNJfIiqw==}
     dependencies:
       uc.micro: 1.0.6
-    dev: true
-
-  /listhen/0.3.5:
-    resolution: {integrity: sha512-suyt79hNmCFeBIyftcLqLPfYiXeB795gSUWOJT7nspl2IvREY0Q9xvchLhekxvQ0KiOPvWoyALnc9Mxoelm0Pw==}
-    dependencies:
-      clipboardy: 3.0.0
-      colorette: 2.0.19
-      defu: 6.1.0
-      get-port-please: 2.6.1
-      http-shutdown: 1.2.2
-      ip-regex: 5.0.0
-      node-forge: 1.3.1
-      ufo: 0.8.6
     dev: true
 
   /listhen/1.0.0:
