@@ -65,6 +65,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "@vue/shared",
         "buffer-from",
         "cookie-es",
+        "defu",
         "destr",
         "estree-walker",
         "h3",

@@ -16,7 +16,7 @@
     "@nuxt/kit": "3.0.0-rc.13",
     "@nuxt/schema": "3.0.0-rc.13",
     "consola": "^2.15.3",
-    "defu": "^6.1.0",
+    "defu": "^6.1.1",
     "execa": "^6.1.0",
     "get-port-please": "^2.6.1",
     "jiti": "^1.16.0",
@@ -26,7 +26,7 @@
   "devDependencies": {
     "playwright": "^1.27.1",
     "unbuild": "latest",
-    "vitest": "^0.25.1"
+    "vitest": "^0.25.2"
   },
   "peerDependencies": {
     "vue": "^3.2.45"
