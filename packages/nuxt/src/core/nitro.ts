@@ -4,6 +4,7 @@ import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTy
 import type { NitroConfig } from 'nitropack'
 import type { Nuxt } from '@nuxt/schema'
 import { resolvePath } from '@nuxt/kit'
+import escapeRE from 'escape-string-regexp'
 import defu from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
@@ -21,6 +22,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     srcDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
+    esbuild: {
+      options: {
+        exclude: [
+          new RegExp(`node_modules\\/(?!${nuxt.options._layers.map(l => l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1]).filter(Boolean).map(dir => escapeRE(dir!)).join('|')})`)
+        ]
+      }
+    },
     analyze: nuxt.options.build.analyze && {
       template: 'treemap',
       projectRoot: nuxt.options.rootDir,
