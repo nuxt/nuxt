@@ -117,7 +117,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     }
 
     return eventHandler(async (event) => {
-      const moduleId = decodeURI(event.req.url!).substring(1)
+      const moduleId = decodeURI(event.node.req.url!).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
       }

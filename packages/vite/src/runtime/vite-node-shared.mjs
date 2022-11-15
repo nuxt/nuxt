@@ -1,5 +1,5 @@
 import { Agent as HTTPSAgent } from 'node:https'
-import { $fetch } from 'ohmyfetch'
+import { $fetch } from 'ofetch'
 
 export const viteNodeOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
 

@@ -1,4 +1,4 @@
-import type { FetchError, FetchOptions } from 'ohmyfetch'
+import type { FetchError, FetchOptions } from 'ofetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
 import { computed, unref, Ref, reactive } from 'vue'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'

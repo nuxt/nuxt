@@ -119,20 +119,20 @@ const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'
 
 export default defineRenderHandler(async (event) => {
   // Whether we're rendering an error page
-  const ssrError = event.req.url?.startsWith('/__nuxt_error')
+  const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
     ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
     : null
-  if (ssrError && event.req.socket.readyState !== 'readOnly' /* direct request */) {
+  if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
     throw createError('Cannot directly render error page!')
   }
 
-  let url = ssrError?.url as string || event.req.url!
+  let url = ssrError?.url as string || event.node.req.url!
 
   // Whether we are rendering payload route
   const isRenderingPayload = PAYLOAD_URL_RE.test(url)
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
-    event.req.url = url
+    event.node.req.url = url
     if (process.env.prerender && PAYLOAD_CACHE!.has(url)) {
       return PAYLOAD_CACHE!.get(url)
     }
@@ -148,7 +148,7 @@ export default defineRenderHandler(async (event) => {
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
-      !!(event.req.headers['x-nuxt-no-ssr']) ||
+      !!(event.node.req.headers['x-nuxt-no-ssr']) ||
       routeOptions.ssr === false ||
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
@@ -247,8 +247,8 @@ export default defineRenderHandler(async (event) => {
   // Construct HTML response
   const response: RenderResponse = {
     body: renderHTMLDocument(htmlContext),
-    statusCode: event.res.statusCode,
-    statusMessage: event.res.statusMessage,
+    statusCode: event.node.res.statusCode,
+    statusMessage: event.node.res.statusMessage,
     headers: {
       'Content-Type': 'text/html;charset=UTF-8',
       'X-Powered-By': 'Nuxt'
@@ -304,8 +304,8 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return <RenderResponse> {
     body: `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: ssrContext.event.res.statusCode,
-    statusMessage: ssrContext.event.res.statusMessage,
+    statusCode: ssrContext.event.node.res.statusCode,
+    statusMessage: ssrContext.event.node.res.statusMessage,
     headers: {
       'content-type': 'text/javascript;charset=UTF-8',
       'x-powered-by': 'Nuxt'

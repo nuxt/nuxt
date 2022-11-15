@@ -1,11 +1,11 @@
 ---
 title: "$fetch"
-description: Nuxt uses ohmyfetch to expose globally the $fetch helper for making HTTP requests.
+description: Nuxt uses ofetch to expose globally the $fetch helper for making HTTP requests.
 ---
 
 # `$fetch`
 
-Nuxt uses [ohmyfetch](https://github.com/unjs/ohmyfetch) to expose globally the `$fetch` helper for making HTTP requests within your Vue app or API routes.
+Nuxt uses [ofetch](https://github.com/unjs/ofetch) to expose globally the `$fetch` helper for making HTTP requests within your Vue app or API routes.
 
 ::ReadMore{link="/getting-started/data-fetching"}
 ::

@@ -39,7 +39,7 @@ export default defineNuxtCommand({
 
     const serveFile = (filePath: string) => lazyEventHandler(async () => {
       const contents = await fsp.readFile(filePath, 'utf-8')
-      return eventHandler((event) => { event.res.end(contents) })
+      return eventHandler((event) => { event.node.res.end(contents) })
     })
 
     console.warn('Do not deploy analyze results! Use `nuxi build` before deploying.')

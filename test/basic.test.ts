@@ -9,7 +9,8 @@ import { expectNoClientErrors, renderPage, withLogs } from './utils'
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   server: true,
-  browser: true
+  browser: true,
+  setupTimeout: (isWindows ? 240 : 120) * 1000
 })
 
 describe('server api', () => {

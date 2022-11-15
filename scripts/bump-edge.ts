@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import { $fetch } from 'ohmyfetch'
+import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { loadWorkspace } from './_utils'
 
