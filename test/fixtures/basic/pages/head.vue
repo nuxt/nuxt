@@ -1,35 +1,32 @@
-<script setup>
-const a = ref('')
-
-useHead({
-  // title template function example
-  titleTemplate: title => `${title} - Title Template Fn Change`,
-  bodyAttrs: {
-    class: 'body-attrs-test'
-  },
-  script: [
-    {
-      src: 'https://a-body-appended-script.com',
-      body: true
-    }
-  ],
-  meta: [{ name: 'description', content: 'first' }]
-})
-useHead({ meta: [{ charset: 'utf-16' }, { name: 'description', content: computed(() => `${a.value} with an inline useHead call`) }] })
-useMeta({ script: [{ children: 'console.log("works with useMeta too")' }] })
-a.value = 'overriding'
-</script>
-
 <script>
-export default {
+export default defineNuxtComponent({
   head () {
     return {
       htmlAttrs: {
         class: 'html-attrs-test'
       }
     }
+  },
+  setup () {
+    const a = ref('')
+    useHead({
+      // title template function example
+      titleTemplate: title => `${title} - Title Template Fn Change`,
+      bodyAttrs: {
+        class: 'body-attrs-test'
+      },
+      script: [
+        {
+          src: 'https://a-body-appended-script.com',
+          body: true
+        }
+      ],
+      meta: [{ name: 'description', content: 'first' }]
+    })
+    useHead({ meta: [{ charset: 'utf-16' }, { name: 'description', content: computed(() => `${a.value} with an inline useHead call`) }] })
+    a.value = 'overriding'
   }
-}
+})
 </script>
 
 <template>

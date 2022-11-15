@@ -29,9 +29,6 @@ export default defineNuxtModule({
       })
     }
 
-    // Add mixin plugin
-    addPlugin({ src: resolve(runtimeDir, 'mixin-plugin') })
-
     // Add library specific plugin
     addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head.plugin') })
   }

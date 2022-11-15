@@ -12,9 +12,3 @@ import { useNuxtApp } from '#app'
 export function useHead (meta: MaybeComputedRef<MetaObject>) {
   useNuxtApp()._useHead(meta)
 }
-
-// TODO: remove useMeta support when Nuxt 3 is stable
-/** @deprecated Please use new `useHead` composable instead */
-export function useMeta (meta: MaybeComputedRef<MetaObject>) {
-  return useHead(meta)
-}
