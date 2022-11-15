@@ -85,7 +85,8 @@ export async function bundle (nuxt: Nuxt) {
           watch: { ignored: isIgnored },
           fs: {
             allow: [
-              nuxt.options.appDir
+              nuxt.options.appDir,
+              ...nuxt.options._layers.map(l => l.config.rootDir)
             ]
           }
         }
