@@ -450,7 +450,7 @@ importers:
       unenv: ^1.0.0
       unhead: ^0.6.7
       unimport: ^1.0.0
-      unplugin: ^0.10.2
+      unplugin: ^1.0.0
       untyped: ^0.5.0
       vue: 3.2.45
       vue-bundle-renderer: ^0.5.0
@@ -496,7 +496,7 @@ importers:
       unenv: 1.0.0
       unhead: 0.6.7
       unimport: 1.0.0
-      unplugin: 0.10.2
+      unplugin: 1.0.0
       untyped: 0.5.0
       vue: 3.2.45
       vue-bundle-renderer: 0.5.0
@@ -613,7 +613,7 @@ importers:
       rollup-plugin-visualizer: ^5.8.3
       ufo: ^1.0.0
       unbuild: ^0.9.4
-      unplugin: ^0.10.2
+      unplugin: ^1.0.0
       vite: ^3.2.3
       vite-node: ^0.25.1
       vite-plugin-checker: ^0.5.1
@@ -648,7 +648,7 @@ importers:
       rollup: 2.79.1
       rollup-plugin-visualizer: 5.8.3_rollup@2.79.1
       ufo: 1.0.0
-      unplugin: 0.10.2
+      unplugin: 1.0.0
       vite: 3.2.3
       vite-node: 0.25.1
       vite-plugin-checker: 0.5.1_vite@3.2.3
@@ -698,7 +698,7 @@ importers:
       time-fix-plugin: ^2.0.7
       ufo: ^1.0.0
       unbuild: ^0.9.4
-      unplugin: ^0.10.2
+      unplugin: ^1.0.0
       url-loader: ^4.1.1
       vue: 3.2.45
       vue-bundle-renderer: ^0.5.0
@@ -739,7 +739,7 @@ importers:
       style-resources-loader: 1.5.0_webpack@5.75.0
       time-fix-plugin: 2.0.7_webpack@5.75.0
       ufo: 1.0.0
-      unplugin: 0.10.2
+      unplugin: 1.0.0
       url-loader: 4.1.1_p5dl6emkcwslbw72e37w4ug7em
       vue-bundle-renderer: 0.5.0
       vue-loader: 17.0.1_vue@3.2.45+webpack@5.75.0
@@ -8818,15 +8818,6 @@ packages:
       - vite
     dev: true
 
-  /unplugin/0.10.2:
-    resolution: {integrity: sha512-6rk7GUa4ICYjae5PrAllvcDeuT8pA9+j5J5EkxbMFaV+SalHhxZ7X2dohMzu6C3XzsMT+6jwR/+pwPNR3uK9MA==}
-    dependencies:
-      acorn: 8.8.0
-      chokidar: 3.5.3
-      webpack-sources: 3.2.3
-      webpack-virtual-modules: 0.4.5
-    dev: false
-
   /unplugin/0.9.6:
     resolution: {integrity: sha512-YYLtfoNiie/lxswy1GOsKXgnLJTE27la/PeCGznSItk+8METYZErO+zzV9KQ/hXhPwzIJsfJ4s0m1Rl7ZCWZ4Q==}
     dependencies:
@@ -9365,10 +9356,6 @@ packages:
   /webpack-sources/3.2.3:
     resolution: {integrity: sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==}
     engines: {node: '>=10.13.0'}
-
-  /webpack-virtual-modules/0.4.5:
-    resolution: {integrity: sha512-8bWq0Iluiv9lVf9YaqWQ9+liNgXSHICm+rg544yRgGYaR8yXZTVBaHZkINZSB2yZSWo4b0F6MIxqJezVfOEAlg==}
-    dev: false
 
   /webpack-virtual-modules/0.4.6:
     resolution: {integrity: sha512-5tyDlKLqPfMqjT3Q9TAqf2YqjwmnUleZwzJi1A5qXnlBCdj2AtOJ6wAWdglTIDOPgOiOrXeBeFcsQ8+aGQ6QbA==}
