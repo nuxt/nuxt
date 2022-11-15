@@ -13,6 +13,25 @@ export interface PageMetaPluginOptions {
   sourcemap?: boolean
 }
 
+const CODE_EMPTY = `
+const __nuxt_page_meta = {}
+export default __nuxt_page_meta
+`
+
+const CODE_HMR = `
+// Vite
+if (import.meta.hot) {
+  import.meta.hot.accept(mod => {
+    Object.assign(__nuxt_page_meta, mod)
+  })
+}
+// Webpack
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept((err) => {
+    if (err) { window.location = window.location.href }
+  })
+}`
+
 export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) => {
   return {
     name: 'nuxt:pages-macros-transform',
@@ -88,7 +107,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       }
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, 'export default {}')
+        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
         return result()
       }
 
@@ -117,7 +136,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
           const meta = node.arguments[0] as Expression & { start: number, end: number }
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || '{}'}\nexport default __nuxt_page_meta`
+          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || '{}'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
           function addImport (name: string | false) {
             if (name && importMap.has(name)) {
@@ -147,10 +166,22 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, 'export default {}')
+        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
       }
 
       return result()
+    },
+    vite: {
+      handleHotUpdate: {
+        order: 'pre',
+        handler: ({ modules }) => {
+          // Remove macro file from modules list to prevent HMR overrides
+          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
+          if (index !== -1) {
+            modules.splice(index, 1)
+          }
+        }
+      }
     }
   }
 })
