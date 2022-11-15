@@ -446,7 +446,7 @@ importers:
       ultrahtml: ^1.0.0
       unbuild: ^0.9.4
       unctx: ^2.0.2
-      unenv: ^0.6.2
+      unenv: ^1.0.0
       unimport: ^1.0.0
       unplugin: ^0.10.2
       untyped: ^0.5.0
@@ -490,7 +490,7 @@ importers:
       ufo: 1.0.0
       ultrahtml: 1.0.0
       unctx: 2.0.2
-      unenv: 0.6.2
+      unenv: 1.0.0
       unimport: 1.0.0
       unplugin: 0.10.2
       untyped: 0.5.0
@@ -6737,7 +6737,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      defu: 6.1.0
+      defu: 6.1.1
       esbuild: 0.14.54
       fs-extra: 10.1.0
       globby: 11.1.0
@@ -6887,6 +6887,7 @@ packages:
 
   /node-fetch-native/0.1.7:
     resolution: {integrity: sha512-hps7dFJM0IEF056JftDSSjWDAwW9v2clwHoUJiHyYgl+ojoqjKyWybljMlpTmlC1O+864qovNlRLyAIjRxu9Ag==}
+    dev: true
 
   /node-fetch-native/0.1.8:
     resolution: {integrity: sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==}
@@ -8720,15 +8721,6 @@ packages:
     engines: {node: '>=12.18'}
     dependencies:
       busboy: 1.6.0
-
-  /unenv/0.6.2:
-    resolution: {integrity: sha512-IdQfYsHsGKDkiBdeOmtU4MjWvPYfMDOC63cvFqZPodAc5aVezvfD9Bwr7FL/G78cAMMCaDm5Jux3vYo+Z8c/Dg==}
-    dependencies:
-      defu: 6.1.0
-      mime: 3.0.0
-      node-fetch-native: 0.1.7
-      pathe: 0.3.9
-    dev: false
 
   /unenv/1.0.0:
     resolution: {integrity: sha512-vlyi2Rzj4CNlA1JsEXufX+ItkGr3Z5DfLzKniYEneMlBVtuxS+57f1LwTPj2eiBPSPaGHMUVzEnjSCGE7l8JQg==}
