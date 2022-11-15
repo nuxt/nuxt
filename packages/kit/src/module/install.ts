@@ -2,7 +2,6 @@ import type { Nuxt, NuxtModule } from '@nuxt/schema'
 import { useNuxt } from '../context'
 import { resolveModule, requireModule, importModule } from '../internal/cjs'
 import { resolveAlias } from '../resolve'
-import { useModuleContainer } from './container'
 
 /** Installs a module on a Nuxt instance. */
 export async function installModule (moduleToInstall: string | NuxtModule, _inlineOptions?: any, _nuxt?: Nuxt) {
@@ -10,12 +9,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
 
   // Call module
-  await nuxtModule.call(
-    // Provide this context for backwards compatibility with Nuxt 2
-    useModuleContainer() as any,
-    inlineOptions,
-    nuxt
-  )
+  await nuxtModule(inlineOptions, nuxt)
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({

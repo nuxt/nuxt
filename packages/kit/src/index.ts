@@ -1,5 +1,4 @@
 // Module
-export * from './module/container'
 export * from './module/define'
 export * from './module/install'
 
