@@ -363,7 +363,7 @@ importers:
       execa: ^6.1.0
       flat: ^5.0.2
       fsevents: ~2.3.2
-      giget: ^0.1.7
+      giget: ^1.0.0
       h3: ^1.0.1
       jiti: ^1.16.0
       listhen: ^0.3.5
@@ -394,7 +394,7 @@ importers:
       destr: 1.2.0
       execa: 6.1.0
       flat: 5.0.2
-      giget: 0.1.7
+      giget: 1.0.0
       h3: 1.0.1
       jiti: 1.16.0
       listhen: 0.3.5
@@ -1271,7 +1271,7 @@ packages:
       npmlog: 5.0.1
       rimraf: 3.0.2
       semver: 7.3.8
-      tar: 6.1.11
+      tar: 6.1.12
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -5537,16 +5537,19 @@ packages:
       assert-plus: 1.0.0
     dev: true
 
-  /giget/0.1.7:
-    resolution: {integrity: sha512-bvIVgRxfiYDTr6MWOdNjTI5o87sDUjbiFdad4P7j5yYrBJN3c3l0vaNICSrVE81X0Z6qFG0GkAoDgTrJ3K63XA==}
+  /giget/1.0.0:
+    resolution: {integrity: sha512-KWELZn3Nxq5+0So485poHrFriK9Bn3V/x9y+wgqrHkbmnGbjfLmZ685/SVA/ovW+ewoqW0gVI47pI4yW/VNobQ==}
     hasBin: true
     dependencies:
       colorette: 2.0.19
-      defu: 6.1.0
+      defu: 6.1.1
+      https-proxy-agent: 5.0.1
       mri: 1.2.0
-      node-fetch-native: 0.1.7
-      pathe: 0.3.9
-      tar: 6.1.11
+      node-fetch-native: 1.0.1
+      pathe: 1.0.0
+      tar: 6.1.12
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /git-config-path/2.0.0:
@@ -6671,7 +6674,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      defu: 6.1.0
+      defu: 6.1.1
       esbuild: 0.14.54
       fs-extra: 10.1.0
       globby: 11.1.0
@@ -6818,10 +6821,6 @@ packages:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
     dev: false
-
-  /node-fetch-native/0.1.7:
-    resolution: {integrity: sha512-hps7dFJM0IEF056JftDSSjWDAwW9v2clwHoUJiHyYgl+ojoqjKyWybljMlpTmlC1O+864qovNlRLyAIjRxu9Ag==}
-    dev: true
 
   /node-fetch-native/0.1.8:
     resolution: {integrity: sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==}
@@ -8353,9 +8352,9 @@ packages:
       safe-buffer: 5.2.1
       yallist: 3.1.1
 
-  /tar/6.1.11:
-    resolution: {integrity: sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==}
-    engines: {node: '>= 10'}
+  /tar/6.1.12:
+    resolution: {integrity: sha512-jU4TdemS31uABHd+Lt5WEYJuzn+TJTCBLljvIAHZOz6M9Os5pJ4dD+vRFLxPa/n3T0iEFzpi+0x1UfuDZYbRMw==}
+    engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
       fs-minipass: 2.1.0
