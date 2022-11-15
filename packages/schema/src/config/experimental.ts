@@ -77,7 +77,15 @@ export default defineUntypedSchema({
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
      */
-    payloadExtraction: true,
+    payloadExtraction: {
+      async $resolve(enabled, get) {
+        enabled = enabled ?? false
+        if (enabled) {
+          console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+        }
+        return enabled
+      }
+    },
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
