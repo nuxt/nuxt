@@ -22,7 +22,7 @@ export default defineBuildConfig({
     'vue-meta',
     'vue-router',
     'vue-bundle-renderer',
-    '@vueuse/head',
+    '@unhead/schema',
     'vue',
     'hookable',
     'nitropack',

@@ -253,7 +253,7 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="description" content="overriding with an inline useHead call">')
     expect(headHtml).toMatch(/<html[^>]*class="html-attrs-test"/)
     expect(headHtml).toMatch(/<body[^>]*class="body-attrs-test"/)
-    expect(headHtml).toContain('<script src="https://a-body-appended-script.com" data-meta-body></script></body>')
+    expect(headHtml).toContain('<script src="https://a-body-appended-script.com"></script></body>')
 
     const indexHtml = await $fetch('/')
     // should render charset by default

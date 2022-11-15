@@ -4,11 +4,9 @@ description: useHead customizes the head properties of individual pages of your 
 
 # `useHead`
 
-Nuxt provides the `useHead` composable to add and customize the head properties of individual pages of your Nuxt app. It uses [@vueuse/head](https://github.com/vueuse/head) under the hood.
+Nuxt provides the `useHead` composable to add and customize the head properties of individual pages of your Nuxt app.
 
-::alert{icon=👉}
-`useHead` only works during `setup` or `Lifecycle Hooks`.
-::
+`useHead` is powered by [@vueuse/head](https://github.com/vueuse/head), you can find more in-depth documentation [here](https://unhead.harlanzw.com/)
 
 ::ReadMore{link="/getting-started/seo-meta"}
 ::
@@ -19,7 +17,7 @@ Nuxt provides the `useHead` composable to add and customize the head properties 
 useHead(meta: MaybeComputedRef<MetaObject>): void
 ```
 
-Below are the non-reactive types for `useMeta`. See [zhead](https://github.com/harlan-zw/zhead/tree/main/packages/schema/src) for more detailed types.
+Below are the non-reactive types for `useHead`. See [zhead](https://github.com/harlan-zw/zhead/tree/main/packages/schema/src) for more detailed types.
 
 ```ts
 interface MetaObject {

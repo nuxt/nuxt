@@ -42,6 +42,9 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
 // @ts-ignore
+const getStaticRenderedHead = () : Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
+
+// @ts-ignore
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
 // @ts-ignore
@@ -102,7 +105,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
       data: {},
       state: {}
     }
-    ssrContext!.renderMeta = ssrContext!.renderMeta ?? (() => ({}))
+    ssrContext!.renderMeta = ssrContext!.renderMeta ?? getStaticRenderedHead
     return Promise.resolve(result)
   }
 

@@ -9,6 +9,8 @@ import defu from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import type { Plugin } from 'rollup'
+import { createHeadCore } from 'unhead'
+import { renderSSRHead } from '@unhead/ssr'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
@@ -121,6 +123,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       plugins: []
     }
   })
+
+  // Add head chunk for SPA renders
+  const head = createHeadCore()
+  head.push(nuxt.options.app.head)
+  const headChunk = await renderSSRHead(head)
+  nitroConfig.virtual!['#head-static'] = `export default ${JSON.stringify(headChunk)}`
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
