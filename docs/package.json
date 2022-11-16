@@ -8,13 +8,15 @@
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
-    "@nuxt-themes/docus": "npm:@nuxt-themes/docus-edge@0.1.0-2a7c428",
-    "@nuxt-themes/website": "0.1.9",
     "jiti": "^1.16.0",
-    "nuxt": "^3.0.0-rc.12",
+    "nuxt": "npm:nuxt3@latest",
+    "nuxt-website-theme": "^0.0.24",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
     "untyped": "^1.0.0"
+  },
+  "resolutions": {
+    "parse5": "6.0.1"
   },
   "packageManager": "yarn@3.2.4"
 }
