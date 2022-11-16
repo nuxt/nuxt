@@ -63,7 +63,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
   }
 
   const references: TSReference[] = [
-    ...nuxt.options.buildModules,
     ...nuxt.options.modules,
     ...nuxt.options._modules
   ]

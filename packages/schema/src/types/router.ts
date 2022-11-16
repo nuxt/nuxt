@@ -13,7 +13,3 @@ export type RouterConfig = RouterOptions
  * Only JSON serializable router options are configurable from nuxt config
  */
 export type RouterConfigSerializable = Pick<RouterConfig, 'linkActiveClass' | 'linkExactActiveClass' | 'end' | 'sensitive' | 'strict' | 'hashMode'>
-
-
-/** @deprecated Use RouterConfigSerializable instead */
-export type RouterConfigOptions = RouterConfigSerializable

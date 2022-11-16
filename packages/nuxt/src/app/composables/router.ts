@@ -30,11 +30,6 @@ export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
   onUnmounted(unsubscribe)
 }
 
-/** @deprecated Use `useRoute` instead. */
-export const useActiveRoute = (): RouteLocationNormalizedLoaded => {
-  return useNuxtApp()._route
-}
-
 export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }

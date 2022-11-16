@@ -27,14 +27,6 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
 async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?: any) {
   const nuxt = useNuxt()
 
-  // Detect if `installModule` used with older signuture (nuxt, nuxtModule)
-  // TODO: Remove in RC
-  // @ts-ignore
-  if (nuxtModule?._version || nuxtModule?.version || nuxtModule?.constructor?.version || '') {
-    [nuxtModule, inlineOptions] = [inlineOptions, {}]
-    console.warn(new Error('`installModule` is being called with old signature!'))
-  }
-
   // Import if input is string
   if (typeof nuxtModule === 'string') {
     const _src = resolveModule(resolveAlias(nuxtModule), { paths: nuxt.options.modulesDir })

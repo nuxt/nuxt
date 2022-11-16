@@ -4,6 +4,7 @@ import { genSafeVariableName, genDynamicImport, genImport } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
 
+/** @deprecated */
 export async function compileTemplate (template: NuxtTemplate, ctx: any) {
   const data = { ...ctx, options: template.options }
   if (template.src) {

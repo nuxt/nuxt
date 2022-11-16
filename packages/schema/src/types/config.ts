@@ -62,11 +62,7 @@ type RuntimeConfigNamespace = Record<string, any>
 
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
-// TODO: remove before release of 3.0.0
-/** @deprecated use RuntimeConfig interface */
-export interface PrivateRuntimeConfig extends RuntimeConfigNamespace { }
-
-export interface RuntimeConfig extends PrivateRuntimeConfig, RuntimeConfigNamespace {
+export interface RuntimeConfig extends RuntimeConfigNamespace {
   public: PublicRuntimeConfig
 }
 
@@ -78,6 +74,8 @@ export interface AppConfigInput extends Record<string, any> {
   nuxt?: never
   /** @deprecated reserved */
   nitro?: never
+  /** @deprecated reserved */
+  server?: never
 }
 
 export interface NuxtAppConfig {

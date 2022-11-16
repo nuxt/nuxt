@@ -45,7 +45,7 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = template.fileName ||
+      template.filename = (template as any).fileName ||
         `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
     }
   }

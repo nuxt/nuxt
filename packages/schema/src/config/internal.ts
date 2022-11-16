@@ -2,7 +2,7 @@ import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
   /** @private */
-  _majorVersion: 2,
+  _majorVersion: 3,
   /** @private */
   _legacyGenerate: false,
   /** @private */

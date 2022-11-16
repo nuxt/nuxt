@@ -115,7 +115,7 @@ describe('modules', () => {
 describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
-    expectTypeOf(runtimeConfig.testConfig).toEqualTypeOf<number>()
+    expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
   })

@@ -21,10 +21,6 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     NuxtPage: typeof NuxtPage
-    /** @deprecated */
-    NuxtNestedPage: typeof NuxtPage
-    /** @deprecated */
-    NuxtChild: typeof NuxtPage
   }
 }
 

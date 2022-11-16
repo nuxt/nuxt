@@ -96,11 +96,7 @@ export function useAsyncData<
   options.server = options.server ?? true
   options.default = options.default ?? getDefault
 
-  // TODO: remove support for `defer` in Nuxt 3 RC
-  if ((options as any).defer) {
-    console.warn('[useAsyncData] `defer` has been renamed to `lazy`. Support for `defer` will be removed in RC.')
-  }
-  options.lazy = options.lazy ?? (options as any).defer ?? false
+  options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
   // Setup nuxt instance payload

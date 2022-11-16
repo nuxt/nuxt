@@ -40,11 +40,11 @@ export default defineNuxtConfig({
       ]
     }
   },
-  publicRuntimeConfig: {
-    testConfig: 123
-  },
-  privateRuntimeConfig: {
-    privateConfig: 'secret_key'
+  runtimeConfig: {
+    privateConfig: 'secret_key',
+    public: {
+      testConfig: 123
+    }
   },
   modules: [
     '~/modules/example',

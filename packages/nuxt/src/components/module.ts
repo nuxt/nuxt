@@ -78,8 +78,6 @@ export default defineNuxtModule<ComponentsOptions>({
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
         const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
 
-        dirOptions.level = Number(dirOptions.level || 0)
-
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           // eslint-disable-next-line no-console

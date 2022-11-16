@@ -1,8 +1,7 @@
-import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, logger, updateTemplates } from '@nuxt/kit'
+import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, updateTemplates } from '@nuxt/kit'
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import { createUnimport, Import, scanDirExports, toImports, Unimport } from 'unimport'
 import { ImportsOptions, ImportPresetWithDeprecation } from '@nuxt/schema'
-import defu from 'defu'
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
 
@@ -23,27 +22,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
   },
   async setup (options, nuxt) {
-    // TODO: remove deprecation warning
-    // @ts-ignore
-    if (nuxt.options.autoImports) {
-      logger.warn('`autoImports` config is deprecated, use `imports` instead.')
-      // @ts-ignore
-      options = defu(nuxt.options.autoImports, options)
-    }
-
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', presets)
-
-    for (const _i of presets) {
-      const i = _i as ImportPresetWithDeprecation | string
-      if (typeof i !== 'string' && i.names && !i.imports) {
-        i.imports = i.names
-        logger.warn('imports: presets.names is deprecated, use presets.imports instead')
-      }
-    }
 
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)

@@ -23,9 +23,6 @@ export default defineUntypedSchema({
     }
   },
 
-  /** @deprecated Please use `imports` config. */
-  autoImports: null,
-
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *

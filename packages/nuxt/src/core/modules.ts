@@ -9,7 +9,6 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
 
   const modules = [
     ...opts.additionalModules || [],
-    ...nuxt.options.buildModules,
     ...nuxt.options.modules,
     ...nuxt.options._modules
   ]

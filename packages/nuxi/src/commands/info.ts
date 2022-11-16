@@ -68,7 +68,7 @@ export default defineNuxtCommand({
       Builder: builder,
       UserConfig: Object.keys(nuxtConfig).map(key => '`' + key + '`').join(', '),
       RuntimeModules: listModules(nuxtConfig.modules),
-      BuildModules: listModules(nuxtConfig.buildModules)
+      BuildModules: listModules(nuxtConfig.buildModules || [])
     }
 
     console.log('RootDir:', rootDir)
