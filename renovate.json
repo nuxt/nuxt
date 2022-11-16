@@ -5,6 +5,7 @@
   "ignoreDeps": [
     "nuxt",
     "nuxt3",
-    "@nuxt/kit"
+    "@nuxt/kit",
+    "parse5"
   ]
 }
