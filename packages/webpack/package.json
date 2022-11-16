@@ -47,7 +47,7 @@
     "ufo": "^1.0.0",
     "unplugin": "^1.0.0",
     "url-loader": "^4.1.1",
-    "vue-bundle-renderer": "^0.5.0",
+    "vue-bundle-renderer": "^1.0.0",
     "vue-loader": "^17.0.1",
     "webpack": "^5.75.0",
     "webpack-bundle-analyzer": "^4.7.0",
