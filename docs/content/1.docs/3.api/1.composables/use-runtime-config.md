@@ -40,7 +40,7 @@ export default defineNuxtConfig({
 Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are defined in `runtimeConfig.public`.
 ::
 
-::ReadMore{link="/guide/going-further/runtime-config"}
+::ReadMore{link="/docs/guide/going-further/runtime-config"}
 ::
 
 ## Access Runtime Config
@@ -69,7 +69,7 @@ In this example, since `apiBase` is defined within the `public` namespace, it is
 
 It is possible to update runtime config values using a matching environment variable name prefixed with `NUXT_`.
 
-::ReadMore{link="/guide/going-further/runtime-config"}
+::ReadMore{link="/docs/guide/going-further/runtime-config"}
 ::
 
 ### Using the `.env` File
@@ -135,5 +135,5 @@ export default defineEventHandler((event) => {
 })
 ```
 
-::ReadMore{link="/guide/going-further/runtime-config"}
+::ReadMore{link="/docs/guide/going-further/runtime-config"}
 ::

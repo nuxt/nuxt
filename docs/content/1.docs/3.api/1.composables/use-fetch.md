@@ -41,7 +41,7 @@ type AsyncData<DataT> = {
 ## Params
 
 * **URL**: The URL to fetch.
-* **Options (extends [unjs/ofetch](https://github.com/unjs/ofetch) options & [AsyncDataOptions](/api/composables/use-async-data#params))**:
+* **Options (extends [unjs/ofetch](https://github.com/unjs/ofetch) options & [AsyncDataOptions](/docs/api/composables/use-async-data#params))**:
   * `method`: Request method.
   * `query`: Adds query search params to URL using [ufo](https://github.com/unjs/ufo)
   * `params`: Alias for `query`
