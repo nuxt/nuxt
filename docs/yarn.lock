@@ -1035,6 +1035,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nuxt/kit@npm:^3.0.0-rc.14":
+  version: 3.0.0-rc.14
+  resolution: "@nuxt/kit@npm:3.0.0-rc.14"
+  dependencies:
+    "@nuxt/schema": 3.0.0-rc.14
+    c12: ^1.0.1
+    consola: ^2.15.3
+    defu: ^6.1.1
+    globby: ^13.1.2
+    hash-sum: ^2.0.0
+    ignore: ^5.2.0
+    jiti: ^1.16.0
+    knitwork: ^1.0.0
+    lodash.template: ^4.5.0
+    mlly: ^1.0.0
+    pathe: ^1.0.0
+    pkg-types: ^1.0.1
+    scule: ^1.0.0
+    semver: ^7.3.8
+    unctx: ^2.1.0
+    unimport: ^1.0.0
+    untyped: ^1.0.0
+  checksum: 129af9745d168b6c057a7fad9df15920830fc003ce3d00ca8d0535de5322dd955759bf5439a30f04bd7c166a4c10dbc451b94c7cfdbfcb5acfe6e55257272011
+  languageName: node
+  linkType: hard
+
 "@nuxt/postcss8@npm:^1.1.3":
   version: 1.1.3
   resolution: "@nuxt/postcss8@npm:1.1.3"
@@ -1087,6 +1113,26 @@ __metadata:
     unimport: ^0.7.0
     untyped: ^0.5.0
   checksum: 7b34fc7f312f541dff53edd7578282e2d3fea2b33248b4f09e9bb8245e6febbed7c60cbbb059fd5d23133da51062121a7e15a24fce2ce4e1ae8d53ed3ea6a5eb
+  languageName: node
+  linkType: hard
+
+"@nuxt/schema@npm:3.0.0-rc.14":
+  version: 3.0.0-rc.14
+  resolution: "@nuxt/schema@npm:3.0.0-rc.14"
+  dependencies:
+    c12: ^1.0.1
+    create-require: ^1.1.1
+    defu: ^6.1.1
+    jiti: ^1.16.0
+    pathe: ^1.0.0
+    pkg-types: ^1.0.1
+    postcss-import-resolver: ^2.0.0
+    scule: ^1.0.0
+    std-env: ^3.3.1
+    ufo: ^1.0.0
+    unimport: ^1.0.0
+    untyped: ^1.0.0
+  checksum: d1479590bb083e7fe1c8765c2bbef0f79049a28450cda734c7628380f94eefcd7fbe2f4249a96c63b3fae6c59c1a8e1053bf12e13d09b42847b59377e0dedcec
   languageName: node
   linkType: hard
 
@@ -1190,9 +1236,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxthq/studio@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "@nuxthq/studio@npm:0.2.2"
+"@nuxthq/studio@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "@nuxthq/studio@npm:0.2.3"
   dependencies:
     "@nuxt/kit": ^3.0.0-rc.13
     "@nuxt/schema": ^3.0.0-rc.13
@@ -1200,17 +1246,17 @@ __metadata:
     nuxt-component-meta: ^0.3.3
     socket.io-client: ^4.5.3
     ufo: ^0.8.6
-  checksum: 67e20afd457313513ee37783d8ba0a996716293d0b4852e38b1a1efa8c52fc0c31ad93a980a8dda050e4a8720d3b6a831f238a8a2fcde48248876001844c877d
+  checksum: 6a8f0990ab2be437e7e5f4f5b242183bf5cd54ed35e5209292c6947e8d65d4b1fde9a29a6cd6ecc9647aa7ef73b07485404d88065442ccec193e0d864916b74b
   languageName: node
   linkType: hard
 
-"@nuxthq/ui@npm:^0.1.6":
-  version: 0.1.6
-  resolution: "@nuxthq/ui@npm:0.1.6"
+"@nuxthq/ui@npm:^0.1.7":
+  version: 0.1.7
+  resolution: "@nuxthq/ui@npm:0.1.7"
   dependencies:
     "@headlessui/vue": ^1.7.4
     "@iconify/vue": ^4.0.0
-    "@nuxt/kit": ^3.0.0-rc.13
+    "@nuxt/kit": ^3.0.0-rc.14
     "@nuxtjs/color-mode": ^3.1.8
     "@nuxtjs/tailwindcss": ^6.1.3
     "@popperjs/core": ^2.11.6
@@ -1218,13 +1264,13 @@ __metadata:
     "@tailwindcss/forms": ^0.5.3
     "@tailwindcss/line-clamp": ^0.4.2
     "@tailwindcss/typography": ^0.5.8
-    "@vueuse/core": ^9.4.0
-    "@vueuse/integrations": ^9.4.0
-    defu: ^6.1.0
+    "@vueuse/core": ^9.5.0
+    "@vueuse/integrations": ^9.5.0
+    defu: ^6.1.1
     fuse.js: ^6.6.2
     lodash-es: ^4.17.21
-    tailwindcss: ^3.2.2
-  checksum: 29e891635134a034e3e56d3f502dce6502e1e9b11904778e55a78ab7a5fa464f0695282dacfb0ba035ec2198903774dc837aa04f3e13d25920ce555605983a83
+    tailwindcss: ^3.2.4
+  checksum: dd6970f77a76aa48f1ca78b1b251bb44c438ef3ea7d1fc2e4d483651b6b925d139fcfa46071385ce8bdbf1fdf13ffffecfd2ad050199da045fedee0845253aae
   languageName: node
   linkType: hard
 
@@ -1301,16 +1347,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxtlabs/github-module@npm:^1.5.2":
-  version: 1.5.2
-  resolution: "@nuxtlabs/github-module@npm:1.5.2"
+"@nuxtlabs/github-module@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "@nuxtlabs/github-module@npm:1.5.3"
   dependencies:
     "@nuxt/kit": ^3.0.0-rc.13
     "@octokit/graphql": ^5.0.1
     "@octokit/rest": ^19.0.4
     remark-gfm: ^3.0.1
     remark-github: ^11.2.4
-  checksum: 5100b6f5542de42ef97c79fee5f4e29e96d6e0b0fcd3051008d948bb28bd2b3d7b15f8f88063aaaadebcff40e7b8c2c91201d6570f8abf87f4eefbec00031815
+  checksum: 6ee01ea72dde8f690fc2f73a3576c9d5609863332d99d082a9bc8ae8cc851ef3d5ff2d080552a4409d580824336c80f0bf8b9919b0e8ed4abb369dd4f431909b
   languageName: node
   linkType: hard
 
@@ -2156,7 +2202,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/integrations@npm:^9.4.0":
+"@vueuse/integrations@npm:^9.5.0":
   version: 9.5.0
   resolution: "@vueuse/integrations@npm:9.5.0"
   dependencies:
@@ -4120,7 +4166,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: "npm:nuxt3@latest"
-    nuxt-website-theme: ^0.1.0
+    nuxt-website-theme: ^0.1.2
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.0.0
@@ -8914,20 +8960,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "nuxt-website-theme@npm:0.1.0"
+"nuxt-website-theme@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "nuxt-website-theme@npm:0.1.2"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
     "@nuxt-themes/typography": ^0.0.12
     "@nuxt/content": ^2.2.2
-    "@nuxthq/studio": ^0.2.2
-    "@nuxthq/ui": ^0.1.6
+    "@nuxthq/studio": ^0.2.3
+    "@nuxthq/ui": ^0.1.7
     "@nuxtjs/algolia": ^1.1.5
     "@nuxtjs/fontaine": ^0.2.2
     "@nuxtjs/html-validator": ^1.1.1
-    "@nuxtlabs/github-module": ^1.5.2
+    "@nuxtlabs/github-module": ^1.5.3
     "@vueuse/core": ^9.5.0
     "@vueuse/motion": ^2.0.0-beta.12
     joi: ^17.7.0
@@ -8939,7 +8985,7 @@ __metadata:
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.146.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: 03294e3240ab4b7a49fd18e51f394ec0df89f221e522909bef36c099e400598dd3f60a6f47d3fcb66729b0174b155777ec97717aa09139734f4db4bc8bb71c2a
+  checksum: 02843250a4fd929b79b104ffe34bf7378fc76e8e8e716a5f0bd9f7f8d838cdf7b3bdf2ea997ba3efd9f9a4e2347d57aa655a07d95836ddff3fbe3d74fadaf0a0
   languageName: node
   linkType: hard
 
@@ -11410,7 +11456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:^3.2.0, tailwindcss@npm:^3.2.2":
+"tailwindcss@npm:^3.2.0, tailwindcss@npm:^3.2.4":
   version: 3.2.4
   resolution: "tailwindcss@npm:3.2.4"
   dependencies:
@@ -11750,7 +11796,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unctx@npm:^2.0.2":
+"unctx@npm:^2.0.2, unctx@npm:^2.1.0":
   version: 2.1.0
   resolution: "unctx@npm:2.1.0"
   dependencies:
