@@ -18,7 +18,7 @@
     "@types/semver": "^7",
     "@vitejs/plugin-vue": "^3.2.0",
     "@unhead/schema": "^0.6.9",
-    "nitropack": "^1.0.0-1",
+    "nitropack": "^1.0.0",
     "unbuild": "latest",
     "vite": "~3.2.4"
   },
