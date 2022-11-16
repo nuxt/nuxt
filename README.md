@@ -8,8 +8,8 @@ Nuxt's goal is to make web development intuitive and performant, with a great de
 
 
  <p>
-  <a href="https://www.npmjs.com/package/nuxt/v/rc"><img src="https://img.shields.io/npm/v/nuxt/rc.svg?style=flat&colorA=002438&colorB=28CF8D" alt="Version"></a>
-  <a href="https://www.npmjs.com/package/nuxt/v/rc"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=002438&colorB=28CF8D" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=002438&colorB=28CF8D" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=002438&colorB=28CF8D" alt="Downloads"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/nuxt/framework.svg?style=flat&colorA=002438&colorB=28CF8D" alt="License"></a>
  </p>
 
