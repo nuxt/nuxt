@@ -318,7 +318,7 @@ importers:
       semver: ^7.3.8
       unbuild: ^1.0.0
       unctx: ^2.1.0
-      unimport: ^1.0.0
+      unimport: ^1.0.1
       untyped: ^1.0.0
     dependencies:
       '@nuxt/schema': link:../schema
@@ -337,7 +337,7 @@ importers:
       scule: 1.0.0
       semver: 7.3.8
       unctx: 2.1.0
-      unimport: 1.0.0
+      unimport: 1.0.1
       untyped: 1.0.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -449,7 +449,7 @@ importers:
       unctx: ^2.1.0
       unenv: ^1.0.0
       unhead: ^1.0.0
-      unimport: ^1.0.0
+      unimport: ^1.0.1
       unplugin: ^1.0.0
       untyped: ^1.0.0
       vue: 3.2.45
@@ -495,7 +495,7 @@ importers:
       unctx: 2.1.0
       unenv: 1.0.0
       unhead: 1.0.0
-      unimport: 1.0.0
+      unimport: 1.0.1
       unplugin: 1.0.0
       untyped: 1.0.0
       vue: 3.2.45
@@ -526,7 +526,7 @@ importers:
       std-env: ^3.3.1
       ufo: ^1.0.0
       unbuild: ^1.0.0
-      unimport: ^1.0.0
+      unimport: ^1.0.1
       untyped: ^1.0.0
       vite: ^3.2.4
     dependencies:
@@ -540,7 +540,7 @@ importers:
       scule: 1.0.0
       std-env: 3.3.1
       ufo: 1.0.0
-      unimport: 1.0.0
+      unimport: 1.0.1
       untyped: 1.0.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -6151,7 +6151,7 @@ packages:
       std-env: 3.3.1
       ufo: 1.0.0
       unenv: 1.0.0
-      unimport: 1.0.0_rollup@2.79.1
+      unimport: 1.0.1_rollup@2.79.1
       unstorage: 1.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -8011,8 +8011,8 @@ packages:
       hookable: 5.4.2
     dev: false
 
-  /unimport/1.0.0:
-    resolution: {integrity: sha512-7M2+6uC6Ik3/imN0VhEBJGnnH5SWLPxhPAPKdMMIt2Bh+YW7F42aZFC9APW3h82r4bvS5qQWaMJko2G9m7SDYA==}
+  /unimport/1.0.1:
+    resolution: {integrity: sha512-SEPKl3uyqUvi6c0MnyCmUF9H07CuC9j9p2p33F03LmegU0sxjpnjL0fLKAhh7BTfcKaJKj+1iOiAFtg7P3m5mQ==}
     dependencies:
       '@rollup/pluginutils': 5.0.2
       escape-string-regexp: 5.0.0
@@ -8029,8 +8029,8 @@ packages:
       - rollup
     dev: false
 
-  /unimport/1.0.0_rollup@2.79.1:
-    resolution: {integrity: sha512-7M2+6uC6Ik3/imN0VhEBJGnnH5SWLPxhPAPKdMMIt2Bh+YW7F42aZFC9APW3h82r4bvS5qQWaMJko2G9m7SDYA==}
+  /unimport/1.0.1_rollup@2.79.1:
+    resolution: {integrity: sha512-SEPKl3uyqUvi6c0MnyCmUF9H07CuC9j9p2p33F03LmegU0sxjpnjL0fLKAhh7BTfcKaJKj+1iOiAFtg7P3m5mQ==}
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       escape-string-regexp: 5.0.0
