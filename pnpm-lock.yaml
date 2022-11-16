@@ -412,8 +412,8 @@ importers:
       '@nuxt/devalue': ^2.0.0
       '@nuxt/kit': workspace:*
       '@nuxt/schema': workspace:*
-      '@nuxt/telemetry': ^2.1.7
-      '@nuxt/ui-templates': ^0.4.0
+      '@nuxt/telemetry': ^2.1.8
+      '@nuxt/ui-templates': ^1.0.0
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^9.0.13
       '@types/hash-sum': ^1.0.0
@@ -461,8 +461,8 @@ importers:
       '@nuxt/devalue': 2.0.0
       '@nuxt/kit': link:../kit
       '@nuxt/schema': link:../schema
-      '@nuxt/telemetry': 2.1.7
-      '@nuxt/ui-templates': 0.4.0
+      '@nuxt/telemetry': 2.1.8
+      '@nuxt/ui-templates': 1.0.0
       '@nuxt/vite-builder': link:../vite
       '@unhead/ssr': 1.0.0
       '@vue/reactivity': 3.2.45
@@ -1274,8 +1274,8 @@ packages:
       webpack: 5.75.0
     dev: false
 
-  /@nuxt/telemetry/2.1.7:
-    resolution: {integrity: sha512-zycxu7A3t2WR2OXOpnYVAyrj2tkv07JpJPDQQCut/PoY/3QLUtusvTr5MhvgctXwP9EW8gNQigcXxm2sD+JAMQ==}
+  /@nuxt/telemetry/2.1.8:
+    resolution: {integrity: sha512-WCHRrcPKRosuHQi8CD5WfjiXGAyjOWVJpK77xS6wlg8zwziBPCqmVIQdr4QpFTGFO1Nrh4z26l1VnivKy22KFQ==}
     hasBin: true
     dependencies:
       '@nuxt/kit': link:packages/kit
@@ -1300,8 +1300,8 @@ packages:
       std-env: 3.3.1
     dev: false
 
-  /@nuxt/ui-templates/0.4.0:
-    resolution: {integrity: sha512-oFjUfn9r9U4vNljd5uU08+6M3mF6OSxZfCrfqJQaN5TtqVTcZmZFzOZ4H866Lq+Eaugv/Vte225kuaZCB3FR/g==}
+  /@nuxt/ui-templates/1.0.0:
+    resolution: {integrity: sha512-jfpVHxi1AHfNO3D6iD1RJE6fx/7cAzekvG90poIzVawp/L+I4DNdy8pCgqBScJW4bfWOpHeLYbtQQlL/hPmkjw==}
     dev: false
 
   /@nuxt/ui/0.3.3_nuxt@packages+nuxt:
