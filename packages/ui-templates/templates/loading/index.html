@@ -2,8 +2,8 @@
 <html>
   <head>
     <title>{{ messages.loading }} | {{ messages.appName }}</title>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
     <script type="module" src="/styles.ts"></script>
     <style>
       .spotlight {
@@ -15,7 +15,7 @@
         transition: opacity 0.4s ease-in;
       }
       .nuxt-loader-bar {
-        background: repeating-linear-gradient(to right, #0047E1 0%, #34CDFE 25%, #00DC82 50%, #36E4DA 75%, #0047E1 100%);
+        background: repeating-linear-gradient(to right, #36E4DA 0%, #1DE0B1 25%, #00DC82 50%, #1DE0B1 75%, #36E4DA 100%);
         height: 100px;
         background-size: 200% auto;
         background-position: 0 0;
@@ -29,7 +29,7 @@
         right: -50px;
       }
       .mouse-gradient {
-        background: repeating-linear-gradient(to right, #0047E1 0%, #34CDFE 50%, #00DC82 100%);
+        background: repeating-linear-gradient(to right, #00DC82 0%, #1DE0B1 50%, #36E4DA 100%);
         filter: blur(100px);
         opacity: 0.5;
       }
@@ -68,9 +68,6 @@
           color: white;
           color-scheme: dark;
         }
-        #nuxtImageDigit3 {
-          fill: #00DC82 !important;
-        }
         .nuxt-loader-bar {
           opacity: 0.5;
         }
@@ -79,23 +76,10 @@
   </head>
   <body class="relative overflow-hidden min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center text-center">
     <div id="mouseLight" class="absolute top-0 rounded-full mouse-gradient transition-opacity h-[200px] w-[200px]"></div>
-    <a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="nuxt-logo z-20">
-      <svg id="nuxtImg" viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg"
-        class="w-40 h-16 mb-4 text-black dark:text-white transition-opacity">
-        <g>
-          <path
-            d="M82.5623 18.5705H89.864L105.338 43.312V18.5705H112.079V53.6281H104.827L89.3025 28.938V53.6281H82.5623V18.5705ZM142.207 53.628H135.925V49.712C134.496 52.4679 131.586 54.0196 127.91 54.0196C122.088 54.0196 118.307 49.9127 118.307 44.0021V28.3847H124.589V42.7098C124.589 46.1656 126.735 48.569 129.951 48.569C133.475 48.569 135.925 45.8646 135.925 42.1591V28.3847H142.207V53.628ZM164.064 53.2289L158.038 44.8145L152.011 53.2289H145.321L154.617 40.0566L146.037 27.9857H152.88L158.038 35.2498L163.144 27.9857H170.039L161.407 40.0566L170.702 53.2289H164.064V53.2289ZM183.469 20.7726V28.3842H190.618V33.5435H183.469V46.0746C183.469 46.4954 183.639 46.8991 183.942 47.1969C184.245 47.4947 184.657 47.6623 185.086 47.663H190.618V53.6177H186.481C180.864 53.6177 177.188 50.4115 177.188 44.8068V33.5484H172.132V28.3842H175.304C176.783 28.3842 177.644 27.5203 177.644 26.091V20.7726H183.469Z"
-            fill="currentColor" />
-          <path fill-rule="evenodd" clip-rule="evenodd"
-            d="M30.1185 11.5456C28.2332 8.30393 23.5198 8.30392 21.6345 11.5456L1.08737 46.8747C-0.797952 50.1164 1.5587 54.1685 5.32936 54.1685H21.3695C19.7583 52.7604 19.1616 50.3244 20.3809 48.2344L35.9424 21.5594L30.1185 11.5456V11.5456Z"
-            fill="#80EEC0" />
-          <path
-            d="M43.1374 19.2952C44.6977 16.6429 48.5984 16.6429 50.1586 19.2952L67.1631 48.2009C68.7234 50.8531 66.7731 54.1685 63.6525 54.1685H29.6435C26.5229 54.1685 24.5726 50.8531 26.1329 48.2009L43.1374 19.2952Z"
-            fill="#00DC82" />
-          <path id="nuxtImageDigit3"
-            d="M198.483 53.8005H209.174C211.776 53.8005 213.961 53.3168 215.729 52.3494C217.531 51.382 218.898 50.0977 219.832 48.4965C220.766 46.8953 221.234 45.1272 221.234 43.1925C221.234 40.8907 220.616 38.9893 219.382 37.4882C218.148 35.9537 216.547 34.9863 214.578 34.586C216.18 34.1189 217.514 33.2183 218.582 31.8839C219.682 30.5162 220.233 28.8483 220.233 26.8802C220.233 25.1789 219.799 23.6277 218.932 22.2266C218.098 20.8256 216.847 19.7081 215.179 18.8741C213.544 18.0068 211.526 17.5731 209.124 17.5731C205.755 17.5731 203.003 18.5072 200.868 20.3752C198.767 22.2433 197.649 24.7952 197.516 28.031H203.77C203.87 26.63 204.371 25.4457 205.271 24.4783C206.206 23.5109 207.49 23.0272 209.124 23.0272C210.626 23.0272 211.793 23.4275 212.627 24.2282C213.494 24.9954 213.928 26.0295 213.928 27.3305C213.928 28.8983 213.361 30.0826 212.227 30.8832C211.093 31.6838 209.675 32.0841 207.974 32.0841H205.322V37.338H207.923C209.992 37.338 211.676 37.8217 212.977 38.7891C214.312 39.7232 214.979 41.1076 214.979 42.9423C214.979 44.5101 214.478 45.8111 213.478 46.8452C212.477 47.8793 210.992 47.7792 209.124 47.7792H198.483C198.55 50.3479 198.483 51.9491 198.483 53.8005Z"
-            fill="currentColor" />
-        </g>
+    <a href="https://nuxt.com" target="_blank" rel="noopener" class="nuxt-logo z-20">
+      <svg id="nuxtImg"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 214 53" width="214" height="53" fill="none">
+        <path fill="#00DC82" d="M42.692 50.378h27.773c.882 0 1.75-.225 2.513-.653a4.951 4.951 0 0 0 1.84-1.784 4.76 4.76 0 0 0 .672-2.437c0-.855-.233-1.696-.675-2.436l-18.652-31.33a4.95 4.95 0 0 0-1.838-1.783 5.144 5.144 0 0 0-2.513-.653c-.881 0-1.748.225-2.512.653a4.95 4.95 0 0 0-1.838 1.784l-4.77 8.016L33.368 4.08a4.953 4.953 0 0 0-1.84-1.784 5.148 5.148 0 0 0-2.512-.652c-.882 0-1.749.225-2.513.652a4.954 4.954 0 0 0-1.84 1.784L1.453 43.068a4.758 4.758 0 0 0-.674 2.436c0 .855.232 1.696.673 2.437a4.95 4.95 0 0 0 1.839 1.784c.764.428 1.63.653 2.512.653h17.434c6.907 0 12.001-2.943 15.506-8.683l8.51-14.292 4.558-7.648 13.68 22.974H47.253l-4.56 7.649Zm-19.74-7.657-12.166-.002 18.238-30.631 9.1 15.315L32.03 37.64c-2.328 3.724-4.972 5.081-9.078 5.081Z" />
+        <path fill="currentColor" d="M86.928 49.32V8.75h9.276l11.942 19.648c1.739 2.859 3.381 5.989 4.927 9.389-.386-3.748-.579-7.284-.579-10.607V8.75h8.753v40.57h-9.333L100.03 29.673c-1.778-2.86-3.44-5.97-4.986-9.331.387 3.709.58 7.225.58 10.548v18.43H86.93ZM155.782 20.11v29.21h-8.116v-4.057c-.811 1.391-2.01 2.492-3.594 3.304-1.546.811-3.304 1.217-5.275 1.217-2.165 0-4.058-.483-5.682-1.449-1.623-1.005-2.898-2.376-3.826-4.115-.889-1.739-1.333-3.71-1.333-5.912V20.11h8.058v16.402c0 1.777.522 3.245 1.565 4.404 1.044 1.121 2.396 1.681 4.058 1.681 1.739 0 3.169-.618 4.29-1.854 1.159-1.237 1.739-2.782 1.739-4.637V20.11h8.116ZM178.224 34.135l10.493 15.185h-8.58l-6.261-8.983-6.319 8.983h-8.637l10.55-15.242-9.797-13.968h8.812l5.333 7.708 5.334-7.708h8.869l-9.797 14.025ZM195.921 11.474h8.058v8.636h7.826v6.723h-7.826v11.533c0 2.782 1.372 4.173 4.116 4.173h3.71v6.781h-4.812c-3.401 0-6.106-.927-8.116-2.782-1.971-1.854-2.956-4.462-2.956-7.824V26.833h-5.623V20.11h5.623v-8.636Z" />
       </svg>
     </a>
     <button id="animation-toggle">Animation Enabled</button>
@@ -133,7 +117,7 @@
           return
         }
         mouseLight.style.opacity = 0
-        nuxtImg.style.opacity = 0
+        nuxtImg.style.opacity = 0.7
       }
       function onMouseMove(e) {
         if (!enableAnimation) {
@@ -154,10 +138,10 @@
 
         const dx = e.pageX - pointerRect.left
         const dy = e.pageY - pointerRect.top
-        const logoGradient = `radial-gradient(circle at ${dx}px ${dy}px, black 50%, transparent 100%)`
+        const logoGradient = `radial-gradient(circle at ${dx}px ${dy}px, black 75%, transparent 100%)`
         nuxtImg.style['-webkit-mask-image'] = logoGradient
         nuxtImg.style['mask-image'] = logoGradient
-        nuxtImg.style.opacity = Math.min(Math.max(size / 4, 0.6), 1)
+        nuxtImg.style.opacity = Math.min(Math.max(size / 4, 0.7), 1)
       }
 
       function toggleAnimation(value = !enableAnimation) {
