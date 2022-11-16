@@ -49,9 +49,9 @@ export default defineNuxtCommand({
       await touchFile(pmLockFile)
     }
 
-    // Install latest rc
-    consola.info('Installing latest Nuxt 3 RC...')
-    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt@rc`, { stdio: 'inherit', cwd: rootDir })
+    // Install latest version
+    consola.info('Installing latest Nuxt 3 release...')
+    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt`, { stdio: 'inherit', cwd: rootDir })
 
     // Cleanup after upgrade
     await cleanupNuxtDirs(rootDir)
