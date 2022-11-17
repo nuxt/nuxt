@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 const colors = require('windicss/colors')
 
 module.exports = {
