@@ -417,10 +417,10 @@ importers:
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^9.0.13
       '@types/hash-sum': ^1.0.0
-      '@unhead/ssr': ^1.0.0
+      '@unhead/ssr': ^1.0.1
       '@vue/reactivity': ^3.2.45
       '@vue/shared': ^3.2.45
-      '@vueuse/head': ^1.0.15
+      '@vueuse/head': ^1.0.16
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
       defu: ^6.1.1
@@ -448,7 +448,7 @@ importers:
       unbuild: ^1.0.0
       unctx: ^2.1.0
       unenv: ^1.0.0
-      unhead: ^1.0.0
+      unhead: ^1.0.1
       unimport: ^1.0.1
       unplugin: ^1.0.0
       untyped: ^1.0.0
@@ -464,10 +464,10 @@ importers:
       '@nuxt/telemetry': 2.1.8
       '@nuxt/ui-templates': 1.0.0
       '@nuxt/vite-builder': link:../vite
-      '@unhead/ssr': 1.0.0
+      '@unhead/ssr': 1.0.1
       '@vue/reactivity': 3.2.45
       '@vue/shared': 3.2.45
-      '@vueuse/head': 1.0.15_vue@3.2.45
+      '@vueuse/head': 1.0.16_vue@3.2.45
       chokidar: 3.5.3
       cookie-es: 0.5.0
       defu: 6.1.1
@@ -494,7 +494,7 @@ importers:
       ultrahtml: 1.0.0
       unctx: 2.1.0
       unenv: 1.0.0
-      unhead: 1.0.0
+      unhead: 1.0.1
       unimport: 1.0.1
       unplugin: 1.0.0
       untyped: 1.0.0
@@ -512,7 +512,7 @@ importers:
     specifiers:
       '@types/lodash.template': ^4
       '@types/semver': ^7
-      '@unhead/schema': ^1.0.0
+      '@unhead/schema': ^1.0.1
       '@vitejs/plugin-vue': ^3.2.0
       c12: ^1.0.1
       create-require: ^1.1.1
@@ -545,7 +545,7 @@ importers:
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.12
-      '@unhead/schema': 1.0.0
+      '@unhead/schema': 1.0.1
       '@vitejs/plugin-vue': 3.2.0_vite@3.2.4
       nitropack: 1.0.0
       unbuild: 1.0.1
@@ -562,7 +562,7 @@ importers:
       jiti: ^1.16.0
       ofetch: ^1.0.0
       pathe: ^1.0.0
-      playwright: ^1.27.1
+      playwright: ^1.28.0
       unbuild: ^1.0.0
       vitest: ^0.25.2
     dependencies:
@@ -576,7 +576,7 @@ importers:
       ofetch: 1.0.0
       pathe: 1.0.0
     devDependencies:
-      playwright: 1.27.1
+      playwright: 1.28.0
       unbuild: 1.0.1
       vitest: 0.25.2
 
@@ -685,7 +685,7 @@ importers:
       lodash-es: ^4.17.21
       magic-string: ^0.26.7
       memfs: ^3.4.11
-      mini-css-extract-plugin: ^2.6.1
+      mini-css-extract-plugin: ^2.7.0
       mlly: ^1.0.0
       ohash: ^1.0.0
       pathe: ^1.0.0
@@ -727,7 +727,7 @@ importers:
       lodash-es: 4.17.21
       magic-string: 0.26.7
       memfs: 3.4.11
-      mini-css-extract-plugin: 2.6.1_webpack@5.75.0
+      mini-css-extract-plugin: 2.7.0_webpack@5.75.0
       mlly: 1.0.0
       ohash: 1.0.0
       pathe: 1.0.0
@@ -2031,30 +2031,30 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unhead/dom/1.0.0:
-    resolution: {integrity: sha512-a22HaQ94S6BfJfqkKiiT8zwxuZp04/LHK0opCSKr9czKFRkMW7yb10zQbwEx5LdUjm/j8AYdpuTW+yHHoQvwNg==}
+  /@unhead/dom/1.0.1:
+    resolution: {integrity: sha512-P4jkzDhQR9tJ+IATV/hfpdxngHglP5KcaaKM+fuRTLy1ilCYNNdp9QhnkHIp5k8C+c8xl7VsfIiGGUe0xBA1UA==}
     dependencies:
-      '@unhead/schema': 1.0.0
+      '@unhead/schema': 1.0.1
     dev: false
 
-  /@unhead/schema/1.0.0:
-    resolution: {integrity: sha512-RDjizmCwEBpY7zzLgwMPFCb1h6P/chopg9uvrZS233HEND1IkzGm/tX7IgbPos/wOmDlebjsnUUBwmYBGoq6pQ==}
+  /@unhead/schema/1.0.1:
+    resolution: {integrity: sha512-aUEC8NwAPRb33J/19tna0u9YDMWW0O6KVi48XKf+OJVTr3UKrk34E8xzuv4G5WZl/oZ6gIjpbPymV34VirV/bQ==}
     dependencies:
       '@zhead/schema': 1.0.1
       hookable: 5.4.2
 
-  /@unhead/ssr/1.0.0:
-    resolution: {integrity: sha512-mOX7b5M3fFC7uPqnl5JWATsGe6CLfLFpf/LySfpTE2UHEL1AzDwqkA9xNyz3BTBwJbccRW76Vn/bcHF/I85CuQ==}
+  /@unhead/ssr/1.0.1:
+    resolution: {integrity: sha512-IBP48cDMfKp6bIMXmSv55chRlQ73jGw79EJ5WBQHl+e4jt5sTjeo2ditPiBjoIgQdpdSlybuiYyvk8+cJHCsVw==}
     dependencies:
-      '@unhead/schema': 1.0.0
+      '@unhead/schema': 1.0.1
     dev: false
 
-  /@unhead/vue/1.0.0_vue@3.2.45:
-    resolution: {integrity: sha512-t1DBboJsYN+Mr8zjbJkgk9EEhKd+bcRTMSuTbK1nDJg4aM0uJ/sq1nEgReSq92MjVVLunljnpHqBbiiek0CXQg==}
+  /@unhead/vue/1.0.1_vue@3.2.45:
+    resolution: {integrity: sha512-MiiKk5R02r+iQeY+Jz2uOxy+QuJFCraDi+U4QSnDFnMkBo9Pix7IuHDQQGJjZoZoZnR/xvJBk/esV3lhKjTk8w==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.0.0
+      '@unhead/schema': 1.0.1
       hookable: 5.4.2
       vue: 3.2.45
     dev: false
@@ -2522,15 +2522,15 @@ packages:
       - vue
     dev: true
 
-  /@vueuse/head/1.0.15_vue@3.2.45:
-    resolution: {integrity: sha512-2wFKdxtGs7Aip6OYEL2NE6gW3J7ux+nvWUgJvPONEnWEU+Fvq6Mm+horkYwMSvQJ2O0KvVkJ5rGoIV+A4lSD/g==}
+  /@vueuse/head/1.0.16_vue@3.2.45:
+    resolution: {integrity: sha512-0nYyrnMh42hE4uL3E0OYY5lFg03BIL26+pE1e6285Oh7pebHgmZlmSCFRmLAlVMSxhp/+6aOrIZLIObm7SKNfg==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/dom': 1.0.0
-      '@unhead/schema': 1.0.0
-      '@unhead/ssr': 1.0.0
-      '@unhead/vue': 1.0.0_vue@3.2.45
+      '@unhead/dom': 1.0.1
+      '@unhead/schema': 1.0.1
+      '@unhead/ssr': 1.0.1
+      '@unhead/vue': 1.0.1_vue@3.2.45
       vue: 3.2.45
     dev: false
 
@@ -5940,8 +5940,8 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /mini-css-extract-plugin/2.6.1_webpack@5.75.0:
-    resolution: {integrity: sha512-wd+SD57/K6DiV7jIR34P+s3uckTRuQvx0tKPcvjFlrEylk6P4mQ2KSWk1hblj1Kxaqok7LogKOieygXqBczNlg==}
+  /mini-css-extract-plugin/2.7.0_webpack@5.75.0:
+    resolution: {integrity: sha512-auqtVo8KhTScMsba7MbijqZTfibbXiBNlPAQbsVt7enQfcDYLdgG57eGxMqwVU3mfeWANY4F1wUg+rMF+ycZgw==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: ^5.0.0
@@ -6541,19 +6541,19 @@ packages:
       mlly: 1.0.0
       pathe: 1.0.0
 
-  /playwright-core/1.27.1:
-    resolution: {integrity: sha512-9EmeXDncC2Pmp/z+teoVYlvmPWUC6ejSSYZUln7YaP89Z6lpAaiaAnqroUt/BoLo8tn7WYShcfaCh+xofZa44Q==}
+  /playwright-core/1.28.0:
+    resolution: {integrity: sha512-nJLknd28kPBiCNTbqpu6Wmkrh63OEqJSFw9xOfL9qxfNwody7h6/L3O2dZoWQ6Oxcm0VOHjWmGiCUGkc0X3VZA==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
 
-  /playwright/1.27.1:
-    resolution: {integrity: sha512-xXYZ7m36yTtC+oFgqH0eTgullGztKSRMb4yuwLPl8IYSmgBM88QiB+3IWb1mRIC9/NNwcgbG0RwtFlg+EAFQHQ==}
+  /playwright/1.28.0:
+    resolution: {integrity: sha512-kyOXGc5y1mgi+hgEcCIyE1P1+JumLrxS09nFHo5sdJNzrucxPRAGwM4A2X3u3SDOfdgJqx61yIoR6Av+5plJPg==}
     engines: {node: '>=14'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.27.1
+      playwright-core: 1.28.0
     dev: true
 
   /pluralize/8.0.0:
@@ -8003,11 +8003,11 @@ packages:
       node-fetch-native: 1.0.1
       pathe: 1.0.0
 
-  /unhead/1.0.0:
-    resolution: {integrity: sha512-izkkjlkUe7cSC5NnvpHzw15sUgIIrVbgGSNdVbj6iYwtLfQLEhwbhzejDjUqQkpneYkmzmIlOBiY7VrcLYpuow==}
+  /unhead/1.0.1:
+    resolution: {integrity: sha512-iOy2fA6cPMLoksrID7Jg/PCH2aaLTUINx+Lje6h9xIlwjOc2eGOtH7CfRNxG+xO4JJP41BKgDbuH98a7Y59kVQ==}
     dependencies:
-      '@unhead/dom': 1.0.0
-      '@unhead/schema': 1.0.0
+      '@unhead/dom': 1.0.1
+      '@unhead/schema': 1.0.1
       hookable: 5.4.2
     dev: false
 
