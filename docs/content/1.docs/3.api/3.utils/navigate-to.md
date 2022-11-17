@@ -101,7 +101,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 ```
 
-::ReadMore{link="/guide/directory-structure/middleware"}
+::ReadMore{link="/docs/guide/directory-structure/middleware"}
 ::
 
 ### Navigating to an External URL

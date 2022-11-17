@@ -49,7 +49,7 @@ router.replace({ hash: "#bio" });
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
-::ReadMore{link="/guide/directory-structure/middleware"}
+::ReadMore{link="/docs/guide/directory-structure/middleware"}
 ::
 
 ## Promise and Error Handling

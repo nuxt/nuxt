@@ -14,7 +14,7 @@ title: "definePageMeta"
 </script>
 ```
 
-::ReadMore{link="/guide/directory-structure/pages/#page-metadata"}
+::ReadMore{link="/docs/guide/directory-structure/pages/#page-metadata"}
 ::
 
 ## Type
