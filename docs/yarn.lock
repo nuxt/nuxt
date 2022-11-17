@@ -894,15 +894,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt-themes/typography@npm:^0.0.12":
-  version: 0.0.12
-  resolution: "@nuxt-themes/typography@npm:0.0.12"
+"@nuxt-themes/typography@npm:^0.0.14":
+  version: 0.0.14
+  resolution: "@nuxt-themes/typography@npm:0.0.14"
   dependencies:
     "@nuxt-themes/tokens": latest
     "@nuxtjs/color-mode": ^3.1.8
     nuxt-icon: ^0.1.7
     pinceau: latest
-  checksum: 6df8822b0162666b1364b06ea526e1e207e1acc46c3327bb27535e09a9573d9cf5880354624412b95341aadcbeaa6b83f81ddd18f07694a9443788393f17d8a6
+  checksum: d3097b0999dff4f2ba8e389444d5d0ae06060c7ebda270c1cb95253fcc9f8bc1278a7cfe7bdc47b1a6a26d7283f13f79ea1fa98ed041351d5dad4c064f94a5ec
   languageName: node
   linkType: hard
 
@@ -1204,13 +1204,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxthq/ui@npm:^0.1.7":
-  version: 0.1.7
-  resolution: "@nuxthq/ui@npm:0.1.7"
+"@nuxthq/ui@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "@nuxthq/ui@npm:0.1.8"
   dependencies:
     "@headlessui/vue": ^1.7.4
     "@iconify/vue": ^4.0.0
-    "@nuxt/kit": ^3.0.0-rc.14
+    "@nuxt/kit": ^3.0.0
     "@nuxtjs/color-mode": ^3.1.8
     "@nuxtjs/tailwindcss": ^6.1.3
     "@popperjs/core": ^2.11.6
@@ -1224,11 +1224,11 @@ __metadata:
     fuse.js: ^6.6.2
     lodash-es: ^4.17.21
     tailwindcss: ^3.2.4
-  checksum: dd6970f77a76aa48f1ca78b1b251bb44c438ef3ea7d1fc2e4d483651b6b925d139fcfa46071385ce8bdbf1fdf13ffffecfd2ad050199da045fedee0845253aae
+  checksum: 9f95c86b1e1834688c4cb9a81b4264953fdb229a2852a999dfc1bb4fa62e176f97f65fdd82c4f868003775320875d75ad5bf03a59f057ec761cafbc3e8f9f16e
   languageName: node
   linkType: hard
 
-"@nuxtjs/algolia@npm:^1.1.5":
+"@nuxtjs/algolia@npm:^1.2.0":
   version: 1.2.0
   resolution: "@nuxtjs/algolia@npm:1.2.0"
   dependencies:
@@ -4120,7 +4120,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: ^3.0.0
-    nuxt-website-theme: ^0.1.5
+    nuxt-website-theme: ^0.1.6
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.0.0
@@ -8896,29 +8896,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-plausible@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "nuxt-plausible@npm:0.1.1"
+"nuxt-plausible@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "nuxt-plausible@npm:0.1.2"
   dependencies:
-    "@nuxt/kit": ^3.0.0-rc.12
-    defu: ^6.1.0
-    pathe: ^0.3.9
+    "@nuxt/kit": ^3.0.0
+    defu: ^6.1.1
+    pathe: ^1.0.0
     plausible-tracker: ^0.3.8
-  checksum: 01bf90486642926356bd30d95db18641d924ed4813f7b3ad6b845c44eaf31f4ca7647a4bea44574890068d7ca932e4c8f82ff1773cef12156b0532d82c6af27d
+  checksum: f560bdf32363006b6028395193f46c056896760a50e6a47169ef4c8e0caaaad511c9a5397f7249353e02a02e9d483d4e56d42920f1f1e8e713c3bd301af03a29
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.1.5":
-  version: 0.1.5
-  resolution: "nuxt-website-theme@npm:0.1.5"
+"nuxt-website-theme@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "nuxt-website-theme@npm:0.1.6"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
-    "@nuxt-themes/typography": ^0.0.12
+    "@nuxt-themes/typography": ^0.0.14
     "@nuxt/content": ^2.2.2
     "@nuxthq/studio": ^0.2.3
-    "@nuxthq/ui": ^0.1.7
-    "@nuxtjs/algolia": ^1.1.5
+    "@nuxthq/ui": ^0.1.8
+    "@nuxtjs/algolia": ^1.2.0
     "@nuxtjs/fontaine": ^0.2.2
     "@nuxtjs/html-validator": ^1.1.1
     "@nuxtlabs/github-module": ^1.5.3
@@ -8929,11 +8929,11 @@ __metadata:
     node-mailjet: ^5.1.1
     nuxt-icon: ^0.1.7
     nuxt-newsletter: ^0.2.0
-    nuxt-plausible: ^0.1.1
+    nuxt-plausible: ^0.1.2
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.146.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: 89d5a23cc438202dec44efe0290fd99fe4fff8bf3e50e9bad10ff9af51849bf9b26acbb1576a095a4bebb3c473e4c8568f1a60b0794bacbee8528d2ee29f3874
+  checksum: ec984266c0e1772476c2b5df3d3c0e93c766738de6cb365ef084669198ae70171fbd7cdddf680b394b5cfeb73cdb78c327958c94089b8850d7f2306c01f89736
   languageName: node
   linkType: hard
 
