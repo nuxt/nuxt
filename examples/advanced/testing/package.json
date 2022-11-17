@@ -8,8 +8,8 @@
     "test": "nuxi test"
   },
   "devDependencies": {
-    "@nuxt/test-utils": "^3.0.0-rc.13",
-    "nuxt": "^3.0.0-rc.13",
+    "@nuxt/test-utils": "^3.0.0",
+    "nuxt": "^3.0.0",
     "vitest": "latest"
   }
 }
