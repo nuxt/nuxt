@@ -60,16 +60,6 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
     return false
   }
 
-  const configFile = nuxt.options.postcss.config
-  if (configFile) {
-    return {
-      postcssOptions: {
-        config: configFile
-      },
-      sourceMap: nuxt.options.webpack.cssSourceMap
-    }
-  }
-
   let postcssOptions = cloneDeep(nuxt.options.postcss)
   // Apply default plugins
   if (isPureObject(postcssOptions)) {

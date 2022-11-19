@@ -4,10 +4,6 @@ import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
   postcss: {
-    /** Path to postcss config file. */
-    /** @type string | false */
-    config: false,
-
     /**
      * Options for configuring PostCSS plugins.
      *
