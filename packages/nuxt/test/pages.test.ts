@@ -362,7 +362,7 @@ describe('pages:generateRouteKey', () => {
 
   for (const test of tests) {
     it(test.description, () => {
-      expect(generateRouteKey(test.override, test.route)).to.deep.equal(test.output)
+      expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
 })
