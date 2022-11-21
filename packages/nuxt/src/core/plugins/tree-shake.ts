@@ -13,7 +13,7 @@ export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) 
   const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
 
   return {
-    name: 'nuxt:server-treeshake:transfrom',
+    name: 'nuxt:server-treeshake:transform',
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))

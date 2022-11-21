@@ -12,7 +12,7 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
   nuxt.hook('app:resolve', (_app) => { app = _app })
 
   return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
-    name: 'unctx:transfrom',
+    name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
       id = normalize(id).replace(/\?.*$/, '')
