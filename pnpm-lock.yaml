@@ -705,7 +705,7 @@ importers:
       vue-loader: ^17.0.1
       webpack: ^5.75.0
       webpack-bundle-analyzer: ^4.7.0
-      webpack-dev-middleware: ^5.3.3
+      webpack-dev-middleware: ^6.0.0
       webpack-hot-middleware: ^2.25.3
       webpack-virtual-modules: ^0.4.6
       webpackbar: ^5.0.2
@@ -745,7 +745,7 @@ importers:
       vue-loader: 17.0.1_vue@3.2.45+webpack@5.75.0
       webpack: 5.75.0
       webpack-bundle-analyzer: 4.7.0
-      webpack-dev-middleware: 5.3.3_webpack@5.75.0
+      webpack-dev-middleware: 6.0.0_webpack@5.75.0
       webpack-hot-middleware: 2.25.3
       webpack-virtual-modules: 0.4.6
       webpackbar: 5.0.2_webpack@5.75.0
@@ -1852,7 +1852,7 @@ packages:
     resolution: {integrity: sha512-SklLlklFBfTyIXo1iWXxzeytjlysWfj5QfIcRJrCc7MgzuCjnZOHXviQwe81iFGq9ZkCUXAg2fpbZdHhj5lSWA==}
     deprecated: This is a stub types definition. webpack-dev-middleware provides its own type definitions, so you do not need this installed.
     dependencies:
-      webpack-dev-middleware: 5.3.3_webpack@5.75.0
+      webpack-dev-middleware: 6.0.0_webpack@5.75.0
     transitivePeerDependencies:
       - webpack
     dev: true
@@ -5878,6 +5878,13 @@ packages:
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
+    dev: false
+
+  /memfs/3.4.12:
+    resolution: {integrity: sha512-BcjuQn6vfqP+k100e0E9m61Hyqa//Brp+I3f0OBmN0ATHlFA8vx3Lt8z57R3u2bPqe3WGDBC+nF72fTH7isyEw==}
+    engines: {node: '>= 4.0.0'}
+    dependencies:
+      fs-monkey: 1.0.3
 
   /memory-fs/0.5.0:
     resolution: {integrity: sha512-jA0rdU5KoQMC0e6ppoNRtpp6vjFq6+NY7r8hywnC7V+1Xj/MtHwGIbB1QaK/dunyjWteJzmkpd7ooeWg10T7GA==}
@@ -8575,14 +8582,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /webpack-dev-middleware/5.3.3_webpack@5.75.0:
-    resolution: {integrity: sha512-hj5CYrY0bZLB+eTO+x/j67Pkrquiy7kWepMHmUMoPsmcUaeEnQJqFzHJOyxgWlq746/wUuA64p9ta34Kyb01pA==}
-    engines: {node: '>= 12.13.0'}
+  /webpack-dev-middleware/6.0.0_webpack@5.75.0:
+    resolution: {integrity: sha512-A7jSXBifCJsJqUCVISlcbx9pkmCuP0KriMRcOJ13pOb6/xMXZvh4/ygeJeSArjRd50IT5IVbBFuejGDA/zWrNQ==}
+    engines: {node: '>= 14.15.0'}
     peerDependencies:
-      webpack: ^4.0.0 || ^5.0.0
+      webpack: ^5.0.0
     dependencies:
       colorette: 2.0.19
-      memfs: 3.4.11
+      memfs: 3.4.12
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.0.0
