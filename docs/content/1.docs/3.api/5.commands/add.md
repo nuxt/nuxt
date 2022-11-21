@@ -18,7 +18,7 @@ Option        | Default          | Description
 
 **Modifiers:**
 
-Some templates support additional modifer flags to add a suffix (like `.client` or `.get`) to their name.
+Some templates support additional modifier flags to add a suffix (like `.client` or `.get`) to their name.
 
 **Example:** `npx nuxi add plugin sockets --client` generates `/plugins/sockets.client.ts`.
 
