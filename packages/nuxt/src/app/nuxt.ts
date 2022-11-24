@@ -6,6 +6,8 @@ import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
+// eslint-disable-next-line import/no-restricted-paths
+import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
@@ -50,6 +52,7 @@ export interface NuxtSSRContext extends SSRContext {
   payload: _NuxtApp['payload']
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
+  islandContext?: NuxtIslandContext
 }
 
 interface _NuxtApp {

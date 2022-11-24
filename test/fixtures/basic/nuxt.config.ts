@@ -104,6 +104,7 @@ export default defineNuxtConfig({
   },
   experimental: {
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
+    componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
     payloadExtraction: true

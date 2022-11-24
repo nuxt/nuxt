@@ -57,7 +57,7 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
     imports.add('import { defineAsyncComponent } from \'vue\'')
 
     let num = 0
-    const components = options.getComponents(options.mode).flatMap((c) => {
+    const components = options.getComponents(options.mode).filter(c => !c.island).flatMap((c) => {
       const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
       const comment = createImportMagicComments(c)
 
@@ -78,8 +78,21 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
     return [
       ...imports,
       ...components,
-      `export const componentNames = ${JSON.stringify(options.getComponents().map(c => c.pascalName))}`
+      `export const componentNames = ${JSON.stringify(options.getComponents().filter(c => !c.island).map(c => c.pascalName))}`
     ].join('\n')
+  }
+}
+
+export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+  // components.islands.mjs'
+  getContents ({ options }) {
+    return options.getComponents().filter(c => c.island).map(
+      (c) => {
+        const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+        const comment = createImportMagicComments(c)
+        return `export const ${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+      }
+    ).join('\n')
   }
 }
 
@@ -87,7 +100,7 @@ export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.d.ts',
   getContents: ({ options, nuxt }) => {
     const buildDir = nuxt.options.buildDir
-    const componentTypes = options.getComponents().map(c => [
+    const componentTypes = options.getComponents().filter(c => !c.island).map(c => [
       c.pascalName,
       `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')

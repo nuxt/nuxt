@@ -1,6 +1,7 @@
 <template>
   <Suspense @resolve="onResolve">
     <ErrorComponent v-if="error" :error="error" />
+    <IslandRendererer v-else-if="islandContext" :context="islandContext" />
     <AppComponent v-else />
   </Suspense>
 </template>
@@ -11,6 +12,9 @@ import { callWithNuxt, isNuxtError, showError, useError, useRoute, useNuxtApp } 
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
+const IslandRendererer = process.server
+  ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
+  : () => null
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
@@ -32,4 +36,7 @@ onErrorCaptured((err, target, info) => {
     callWithNuxt(nuxtApp, showError, [err])
   }
 })
+
+// Component islands context
+const { islandContext } = process.server && nuxtApp.ssrContext
 </script>

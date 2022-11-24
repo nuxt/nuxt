@@ -2,11 +2,11 @@ import { join, normalize, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtHooks } from '@nuxt/schema'
 import { loadNuxtConfig, LoadNuxtOptions, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
-// Temporary until finding better placement
 /* eslint-disable import/no-restricted-paths */
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
+/* eslint-disable import/no-restricted-paths */
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -166,6 +166,14 @@ async function initNuxt (nuxt: Nuxt) {
     name: 'NuxtLoadingIndicator',
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
+
+  // Add <NuxtIsland>
+  if (nuxt.options.experimental.componentIslands) {
+    addComponent({
+      name: 'NuxtIsland',
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
+    })
+  }
 
   // Add prerender payload support
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {

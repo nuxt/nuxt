@@ -1,11 +1,13 @@
 import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
-import { appendHeader, createError, getQuery, writeEarlyHints } from 'h3'
+import { appendHeader, getQuery, H3Event, writeEarlyHints, readBody, createError } from 'h3'
 import devalue from '@nuxt/devalue'
+import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
+import { hash } from 'ohash'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app'
 // @ts-ignore
@@ -19,12 +21,30 @@ globalThis.__buildAssetsURL = buildAssetsURL
 globalThis.__publicAssetsURL = publicAssetsURL
 
 export interface NuxtRenderHTMLContext {
+  island?: boolean
   htmlAttrs: string[]
   head: string[]
   bodyAttrs: string[]
   bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
+}
+
+export interface NuxtIslandContext {
+  id?: string
+  name: string
+  props?: Record<string, any>
+  url?: string
+}
+
+export interface NuxtIslandResponse {
+  id?: string
+  html: string
+  state: Record<string, any>
+  head: {
+    link: (Record<string, string>)[]
+    style: ({ innerHTML: string, key: string })[]
+  }
 }
 
 export interface NuxtRenderResponse {
@@ -115,12 +135,33 @@ const getSPARenderer = lazyCachedFunction(async () => {
   }
 })
 
+async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
+  // TODO: Strict validation for url
+  const url = event.req.url?.substring('/__nuxt_island'.length + 1) || ''
+  const [componentName, hashId] = url.split('?')[0].split(':')
+
+  // TODO: Validate context
+  const context = event.req.method === 'GET' ? getQuery(event) : await readBody(event)
+
+  const ctx: NuxtIslandContext = {
+    url: '/',
+    ...context,
+    id: hashId,
+    name: componentName,
+    props: destr(context.props) || {}
+  }
+
+  return ctx
+}
+
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
 export default defineRenderHandler(async (event) => {
+  const nitroApp = useNitroApp()
+
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
     ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
@@ -129,7 +170,13 @@ export default defineRenderHandler(async (event) => {
     throw createError('Cannot directly render error page!')
   }
 
-  let url = ssrError?.url as string || event.node.req.url!
+  // Check for island component rendering
+  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.req.url?.startsWith('/__nuxt_island'))
+    ? await getIslandContext(event)
+    : undefined
+
+  // Request url
+  let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
 
   // Whether we are rendering payload route
   const isRenderingPayload = PAYLOAD_URL_RE.test(url)
@@ -156,7 +203,8 @@ export default defineRenderHandler(async (event) => {
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
-    payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload']
+    payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload'],
+    islandContext
   }
 
   // Whether we are prerendering route
@@ -212,6 +260,7 @@ export default defineRenderHandler(async (event) => {
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
+    island: Boolean(islandContext),
     htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
     head: normalizeChunks([
       renderedMeta.headTags,
@@ -226,10 +275,7 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: [
-      // TODO: Rename to _rendered.body in next vue-bundle-renderer
-      _rendered.html
-    ],
+    body: (process.env.NUXT_COMPONENT_ISLANDS && islandContext) ? [] : [_rendered.html],
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
@@ -244,8 +290,42 @@ export default defineRenderHandler(async (event) => {
   }
 
   // Allow hooking into the rendered result
-  const nitroApp = useNitroApp()
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
+
+  // Response for component islands
+  if (process.env.NUXT_COMPONENT_ISLANDS && islandContext) {
+    const _tags = htmlContext.head.flatMap(head => extractHTMLTags(head))
+    const head: NuxtIslandResponse['head'] = {
+      link: _tags.filter(tag => tag.tagName === 'link' && tag.attrs.rel === 'stylesheet' && tag.attrs.href.includes('scoped') && !tag.attrs.href.includes('pages/')).map(tag => ({
+        key: 'island-link-' + hash(tag.attrs.href),
+        ...tag.attrs
+      })),
+      style: _tags.filter(tag => tag.tagName === 'style' && tag.innerHTML).map(tag => ({
+        key: 'island-style-' + hash(tag.innerHTML),
+        innerHTML: tag.innerHTML
+      }))
+    }
+
+    const islandResponse: NuxtIslandResponse = {
+      id: islandContext.id,
+      head,
+      html: ssrContext.teleports!['nuxt-island'].replace(/<!--.*-->/g, ''),
+      state: ssrContext.payload.state
+    }
+
+    await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+
+    const response: RenderResponse = {
+      body: JSON.stringify(islandResponse, null, 2),
+      statusCode: event.res.statusCode,
+      statusMessage: event.res.statusMessage,
+      headers: {
+        'content-type': 'application/json;charset=utf-8',
+        'x-powered-by': 'Nuxt'
+      }
+    }
+    return response
+  }
 
   // Construct HTML response
   const response: RenderResponse = {
@@ -253,15 +333,15 @@ export default defineRenderHandler(async (event) => {
     statusCode: event.node.res.statusCode,
     statusMessage: event.node.res.statusMessage,
     headers: {
-      'Content-Type': 'text/html;charset=UTF-8',
-      'X-Powered-By': 'Nuxt'
+      'content-type': 'text/html;charset=utf-8',
+      'x-powered-by': 'Nuxt'
     }
   }
 
   return response
 })
 
-function lazyCachedFunction <T> (fn: () => Promise<T>): () => Promise<T> {
+function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
   let res: Promise<T> | null = null
   return () => {
     if (res === null) {
@@ -289,6 +369,22 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 <head>${joinTags(html.head)}</head>
 <body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
 </html>`
+}
+
+// TOOD: Move to external library
+const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
+const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
+function extractHTMLTags (html: string) {
+  const tags: { tagName: string, attrs: Record<string, string>, innerHTML: string }[] = []
+  for (const tagMatch of html.matchAll(HTML_TAG_RE)) {
+    const attrs: Record<string, string> = {}
+    for (const attrMatch of tagMatch.groups!.rawAttrs?.matchAll(HTML_TAG_ATTR_RE) || []) {
+      attrs[attrMatch.groups!.name] = attrMatch.groups!.value
+    }
+    const innerHTML = tagMatch.groups!.innerHTML || ''
+    tags.push({ tagName: tagMatch.groups!.tag, attrs, innerHTML })
+  }
+  return tags
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]) {

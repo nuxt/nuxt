@@ -12,6 +12,36 @@ vi.mock('@nuxt/kit', () => ({
 
 const dirs: ComponentsDir[] = [
   {
+    path: rFixture('components/islands'),
+    enabled: true,
+    extensions: [
+      'vue'
+    ],
+    pattern: '**/*.{vue,}',
+    ignore: [
+      '**/*.stories.{js,ts,jsx,tsx}',
+      '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
+      '**/*.d.ts'
+    ],
+    transpile: false,
+    island: true
+  },
+  {
+    path: rFixture('components/global'),
+    enabled: true,
+    extensions: [
+      'vue'
+    ],
+    pattern: '**/*.{vue,}',
+    ignore: [
+      '**/*.stories.{js,ts,jsx,tsx}',
+      '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
+      '**/*.d.ts'
+    ],
+    transpile: false,
+    global: true
+  },
+  {
     path: rFixture('components'),
     enabled: true,
     extensions: [
@@ -58,6 +88,30 @@ const dirs: ComponentsDir[] = [
 
 const expectedComponents = [
   {
+    chunkName: 'components/isle-server',
+    export: 'default',
+    global: undefined,
+    island: true,
+    kebabName: 'isle',
+    mode: 'server',
+    pascalName: 'Isle',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/islands/Isle.vue'
+  },
+  {
+    chunkName: 'components/glob',
+    export: 'default',
+    global: true,
+    island: undefined,
+    kebabName: 'glob',
+    mode: 'all',
+    pascalName: 'Glob',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/global/Glob.vue'
+  },
+  {
     mode: 'all',
     pascalName: 'HelloWorld',
     kebabName: 'hello-world',
@@ -65,6 +119,7 @@ const expectedComponents = [
     shortPath: 'components/HelloWorld.vue',
     export: 'default',
     global: undefined,
+    island: undefined,
     prefetch: false,
     preload: false
   },
@@ -76,6 +131,7 @@ const expectedComponents = [
     shortPath: 'components/Nuxt3.client.vue',
     export: 'default',
     global: undefined,
+    island: undefined,
     prefetch: false,
     preload: false
   },
@@ -87,6 +143,7 @@ const expectedComponents = [
     shortPath: 'components/Nuxt3.server.vue',
     export: 'default',
     global: undefined,
+    island: undefined,
     prefetch: false,
     preload: false
   },
@@ -98,8 +155,33 @@ const expectedComponents = [
     shortPath: 'components/parent-folder/index.server.vue',
     export: 'default',
     global: undefined,
+    island: undefined,
     prefetch: false,
     preload: false
+  },
+  {
+    chunkName: 'components/some-glob',
+    export: 'default',
+    global: true,
+    island: undefined,
+    kebabName: 'some-glob',
+    mode: 'all',
+    pascalName: 'SomeGlob',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/some-glob.global.vue'
+  },
+  {
+    chunkName: 'components/some-server',
+    export: 'default',
+    global: undefined,
+    island: true,
+    kebabName: 'some',
+    mode: 'server',
+    pascalName: 'Some',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/some.island.vue'
   }
 ]
 

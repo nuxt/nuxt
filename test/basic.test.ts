@@ -1,9 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { joinURL } from 'ufo'
+import { joinURL, withQuery } from 'ufo'
 import { isWindows } from 'std-env'
-import { setup, fetch, $fetch, startServer, createPage, url } from '@nuxt/test-utils'
 // eslint-disable-next-line import/order
+import { setup, fetch, $fetch, startServer, createPage, url } from '@nuxt/test-utils'
+import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, renderPage, withLogs } from './utils'
 
 await setup({
@@ -771,6 +772,94 @@ describe('app config', () => {
     }
 
     expect(html).toContain(JSON.stringify(expectedAppConfig))
+  })
+})
+
+describe('component islands', () => {
+  it('renders components with route', async () => {
+    const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
+
+    if (process.env.NUXT_TEST_DEV) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<pre>    Route: /foo
+        </pre>",
+        "state": {},
+      }
+    `)
+  })
+
+  it('renders pure components', async () => {
+    const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/PureComponent', {
+      props: JSON.stringify({
+        bool: false,
+        number: 3487,
+        str: 'something',
+        obj: { foo: 42, bar: false, me: 'hi' }
+      })
+    }))
+
+    if (process.env.NUXT_TEST_DEV) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
+    result.head.style = result.head.style.map(s => ({
+      ...s,
+      innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
+      key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
+    }))
+
+    if (!(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)) {
+      expect(result.head).toMatchInlineSnapshot(`
+        {
+          "link": [],
+          "style": [
+            {
+              "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              "key": "island-style",
+            },
+          ],
+        }
+      `)
+    } else if (process.env.NUXT_TEST_DEV) {
+      expect(result.head).toMatchInlineSnapshot(`
+        {
+          "link": [
+            {
+              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+              "key": "island-link-gH9jFOYxRw",
+              "rel": "stylesheet",
+            },
+          ],
+          "style": [],
+        }
+      `)
+    }
+
+    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '')).toMatchInlineSnapshot(`
+    "<div > Was router enabled: true <br > Props: <pre >{
+      number: 3487,
+      str: something,
+      obj: {
+        foo: 42,
+        bar: false,
+        me: hi
+      },
+      bool: false
+    }</pre></div>"
+  `)
+
+    expect(result.state).toMatchInlineSnapshot(`
+      {
+        "$shasRouter": true,
+      }
+    `)
   })
 })
 

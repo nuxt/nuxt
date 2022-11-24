@@ -8,6 +8,7 @@ export interface Component {
   prefetch: boolean
   preload: boolean
   global?: boolean
+  island?: boolean
   mode?: 'client' | 'server' | 'all'
 }
 
@@ -53,12 +54,15 @@ export interface ScanDir {
   isAsync?: boolean
 
   extendComponent?: (component: Component) => Promise<Component | void> | (Component | void)
-
   /**
    * If enabled, registers components to be globally available.
    *
    */
   global?: boolean
+  /**
+   * If enabled, registers components as islands
+   */
+  island?: boolean
 }
 
 export interface ComponentsDir extends ScanDir {

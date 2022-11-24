@@ -3,7 +3,7 @@ import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
-import { componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
+import { componentsPluginTemplate, componentsTemplate, componentsIslandsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -14,7 +14,7 @@ function compareDirByPathLength ({ path: pathA }: { path: string }, { path: path
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
 }
 
-const DEFAULT_COMPONENTS_DIRS_RE = /\/components$|\/components\/global$/
+const DEFAULT_COMPONENTS_DIRS_RE = /\/components(\/global|\/islands)?$/
 
 type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
@@ -44,6 +44,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       if (dir === true || dir === undefined) {
         return [
+          { path: resolve(cwd, 'components/islands'), island: true },
           { path: resolve(cwd, 'components/global'), global: true },
           { path: resolve(cwd, 'components') }
         ]
@@ -117,6 +118,12 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
     // components.client.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.client.mjs', options: { getComponents, mode: 'client' } })
+    // components.islands.mjs
+    if (nuxt.options.experimental.componentIslands) {
+      addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs', options: { getComponents } })
+    } else {
+      addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export default {}' })
+    }
 
     nuxt.hook('vite:extendConfig', (config, { isClient }) => {
       const mode = isClient ? 'client' : 'server'
