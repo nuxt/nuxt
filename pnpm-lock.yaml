@@ -50,7 +50,7 @@ importers:
       ufo: ^1.0.0
       unbuild: ^1.0.0
       vite: ^3.2.4
-      vitest: ^0.25.2
+      vitest: ^0.25.3
       vue-tsc: ^1.0.9
     devDependencies:
       '@actions/core': 1.10.0
@@ -86,7 +86,7 @@ importers:
       ufo: 1.0.0
       unbuild: 1.0.1
       vite: 3.2.4_@types+node@18.11.9
-      vitest: 0.25.2
+      vitest: 0.25.3
       vue-tsc: 1.0.9_typescript@4.9.3
 
   examples/advanced/config-extends:
@@ -121,7 +121,7 @@ importers:
     devDependencies:
       '@nuxt/test-utils': link:../../../packages/test-utils
       nuxt: link:../../../packages/nuxt
-      vitest: 0.25.2
+      vitest: 0.25.3
 
   examples/app-config:
     specifiers:
@@ -562,9 +562,9 @@ importers:
       jiti: ^1.16.0
       ofetch: ^1.0.0
       pathe: ^1.0.0
-      playwright: ^1.28.0
+      playwright: ^1.28.1
       unbuild: ^1.0.0
-      vitest: ^0.25.2
+      vitest: ^0.25.3
     dependencies:
       '@nuxt/kit': link:../kit
       '@nuxt/schema': link:../schema
@@ -576,9 +576,9 @@ importers:
       ofetch: 1.0.0
       pathe: 1.0.0
     devDependencies:
-      playwright: 1.28.0
+      playwright: 1.28.1
       unbuild: 1.0.1
-      vitest: 0.25.2
+      vitest: 0.25.3
 
   packages/vite:
     specifiers:
@@ -615,7 +615,7 @@ importers:
       unbuild: ^1.0.0
       unplugin: ^1.0.0
       vite: ^3.2.4
-      vite-node: ^0.25.2
+      vite-node: ^0.25.3
       vite-plugin-checker: ^0.5.1
       vue: 3.2.45
       vue-bundle-renderer: ^1.0.0
@@ -650,7 +650,7 @@ importers:
       ufo: 1.0.0
       unplugin: 1.0.0
       vite: 3.2.4
-      vite-node: 0.25.2
+      vite-node: 0.25.3
       vite-plugin-checker: 0.5.1_vite@3.2.4
       vue-bundle-renderer: 1.0.0
     devDependencies:
@@ -6243,6 +6243,7 @@ packages:
       pathe: 0.3.9
       pkg-types: 0.3.6
       ufo: 0.8.6
+    dev: true
 
   /mlly/1.0.0:
     resolution: {integrity: sha512-QL108Hwt+u9bXdWgOI0dhzZfACovn5Aen4Xvc8Jasd9ouRH4NjnrXEiyP3nVvJo91zPlYjVRckta0Nt2zfoR6g==}
@@ -6700,6 +6701,7 @@ packages:
 
   /pathe/0.3.9:
     resolution: {integrity: sha512-6Y6s0vT112P3jD8dGfuS6r+lpa0qqNrLyHPOwvXMnyNTQaYiwgau2DP3aNDsR13xqtGj7rrPo+jFUATpU6/s+g==}
+    dev: true
 
   /pathe/1.0.0:
     resolution: {integrity: sha512-nPdMG0Pd09HuSsr7QOKUXO2Jr9eqaDiZvDwdyIhNG5SHYujkQHYKDfGQkulBxvbDHz8oHLsTgKN86LSwYzSHAg==}
@@ -6738,6 +6740,7 @@ packages:
       jsonc-parser: 3.2.0
       mlly: 0.5.16
       pathe: 0.3.9
+    dev: true
 
   /pkg-types/1.0.1:
     resolution: {integrity: sha512-jHv9HB+Ho7dj6ItwppRDDl0iZRYBD0jsakHXtFgoLr+cHSF6xC+QL54sJmWxyGxOLYSHm0afhXhXcQDQqH9z8g==}
@@ -6746,19 +6749,19 @@ packages:
       mlly: 1.0.0
       pathe: 1.0.0
 
-  /playwright-core/1.28.0:
-    resolution: {integrity: sha512-nJLknd28kPBiCNTbqpu6Wmkrh63OEqJSFw9xOfL9qxfNwody7h6/L3O2dZoWQ6Oxcm0VOHjWmGiCUGkc0X3VZA==}
+  /playwright-core/1.28.1:
+    resolution: {integrity: sha512-3PixLnGPno0E8rSBJjtwqTwJe3Yw72QwBBBxNoukIj3lEeBNXwbNiKrNuB1oyQgTBw5QHUhNO3SteEtHaMK6ag==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
 
-  /playwright/1.28.0:
-    resolution: {integrity: sha512-kyOXGc5y1mgi+hgEcCIyE1P1+JumLrxS09nFHo5sdJNzrucxPRAGwM4A2X3u3SDOfdgJqx61yIoR6Av+5plJPg==}
+  /playwright/1.28.1:
+    resolution: {integrity: sha512-92Sz6XBlfHlb9tK5UCDzIFAuIkHHpemA9zwUaqvo+w7sFMSmVMGmvKcbptof/eJObq63PGnMhM75x7qxhTR78Q==}
     engines: {node: '>=14'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.28.0
+      playwright-core: 1.28.1
     dev: true
 
   /pluralize/8.0.0:
@@ -8426,13 +8429,13 @@ packages:
       extsprintf: 1.3.0
     dev: true
 
-  /vite-node/0.25.2:
-    resolution: {integrity: sha512-SKnqkf8HmaCn+iBS3U7rmm8Awe9MNt5KWZwAA2aN6LsbtQRdiQr/CJMyTORYDV+Z6aGt8k806KPwZjTekYR3uQ==}
+  /vite-node/0.25.3:
+    resolution: {integrity: sha512-0TyDFASTLJUOPRE5e5isyXXgM/fbTD6D37NKduk718l+Ih9FSwqaaHT5f0pIkJMXzyYT6zo4b4FA6pnGdoky3A==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     dependencies:
       debug: 4.3.4
-      mlly: 0.5.16
+      mlly: 1.0.0
       pathe: 0.2.0
       source-map: 0.6.1
       source-map-support: 0.5.21
@@ -8550,8 +8553,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.25.2:
-    resolution: {integrity: sha512-qqkzfzglEFbQY7IGkgSJkdOhoqHjwAao/OrphnHboeYHC5JzsVFoLCaB2lnAy8krhj7sbrFTVRApzpkTOeuDWQ==}
+  /vitest/0.25.3:
+    resolution: {integrity: sha512-/UzHfXIKsELZhL7OaM2xFlRF8HRZgAHtPctacvNK8H4vOcbJJAMEgbWNGSAK7Y9b1NBe5SeM7VTuz2RsTHFJJA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:

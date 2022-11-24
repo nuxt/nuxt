@@ -49,7 +49,7 @@
     "ufo": "^1.0.0",
     "unplugin": "^1.0.0",
     "vite": "~3.2.4",
-    "vite-node": "^0.25.2",
+    "vite-node": "^0.25.3",
     "vite-plugin-checker": "^0.5.1",
     "vue-bundle-renderer": "^1.0.0"
   },

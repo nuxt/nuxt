@@ -24,9 +24,9 @@
     "pathe": "^1.0.0"
   },
   "devDependencies": {
-    "playwright": "^1.28.0",
+    "playwright": "^1.28.1",
     "unbuild": "latest",
-    "vitest": "^0.25.2"
+    "vitest": "^0.25.3"
   },
   "peerDependencies": {
     "vue": "^3.2.45"
