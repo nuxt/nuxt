@@ -9,7 +9,7 @@ title: "definePageMeta"
 ```vue [pages/some-page.vue]
 <script setup>
   definePageMeta({
-    title: 'Articles'
+    layout: 'default'
   })
 </script>
 ```
