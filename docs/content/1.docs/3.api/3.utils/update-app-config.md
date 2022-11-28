@@ -1,6 +1,6 @@
 # `updateAppConfig`
 
-Updates [app config](/docs/guide/directory-structure/app.config) using deep assignment. Existing (nested) properties will be preserved.
+Updates [app config](/docs/guide/directory-structure/app-config) using deep assignment. Existing (nested) properties will be preserved.
 
 **Usage:**
 
@@ -14,4 +14,4 @@ updateAppConfig(newAppConfig)
 console.log(appConfig) // { foo: 'baz' }
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/app.config"}
+::ReadMore{link="/docs/guide/directory-structure/app-config"}

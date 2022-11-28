@@ -1,6 +1,6 @@
 # `useAppConfig`
 
-Access the reactive [app config](/docs/guide/directory-structure/app.config) defined in the project.
+Access the reactive [app config](/docs/guide/directory-structure/app-config) defined in the project.
 
 **Usage:**
 
@@ -10,4 +10,4 @@ const appConfig = useAppConfig()
 console.log(appConfig)
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/app.config"}
+::ReadMore{link="/docs/guide/directory-structure/app-config"}
