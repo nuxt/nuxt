@@ -52,6 +52,11 @@
       "source": "/support",
       "destination": "/support/solutions",
       "permanent": false
+    },
+    {
+      "source": "/docs/guide/directory-structure/app.config",
+      "destination": "/docs/guide/directory-structure/app-config",
+      "permanent": false
     }
   ]
 }
