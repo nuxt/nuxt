@@ -31,6 +31,18 @@ export default defineUntypedSchema({
    */
   imports: {
     global: false,
+
+    /**
+     * An array of custom directories that will be auto-imported.
+     * Note that this option will not override the default directories (~/composables, ~/utils).
+     * @example
+     * ```js
+     * imports: {
+     *   // Auto-import pinia stores defined in `~/stores`
+     *   dirs: ['stores']
+     * }
+     * ```
+     */
     dirs: []
   },
 
