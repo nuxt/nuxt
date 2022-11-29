@@ -11,6 +11,7 @@ import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.conf
 
 // TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
 const LayoutLoader = defineComponent({
+  inheritAttrs: false,
   props: {
     name: String,
     ...process.dev ? { hasTransition: Boolean } : {}
@@ -32,14 +33,15 @@ const LayoutLoader = defineComponent({
 
     return () => {
       if (process.dev && process.client && props.hasTransition) {
-        vnode = h(LayoutComponent, {}, context.slots)
+        vnode = h(LayoutComponent, context.attrs, context.slots)
         return vnode
       }
-      return h(LayoutComponent, {}, context.slots)
+      return h(LayoutComponent, context.attrs, context.slots)
     }
   }
 })
 export default defineComponent({
+  inheritAttrs: false,
   props: {
     name: {
       type: [String, Boolean, Object] as unknown as () => string | false | Ref<string | false>,
@@ -74,7 +76,7 @@ export default defineComponent({
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => _wrapIf(LayoutLoader, hasLayout && { key: layout.value, name: layout.value, hasTransition: process.dev ? !!transitionProps : undefined }, context.slots).default()
+        default: () => _wrapIf(LayoutLoader, hasLayout && { key: layout.value, name: layout.value, hasTransition: process.dev ? !!transitionProps : undefined, ...context.attrs }, context.slots).default()
       }).default()
     }
   }

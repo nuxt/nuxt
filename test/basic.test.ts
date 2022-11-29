@@ -403,6 +403,11 @@ describe('layouts', () => {
     expect(html).toContain('Custom Layout:')
     await expectNoClientErrors('/with-dynamic-layout')
   })
+  it('should allow passing custom props to a layout', async () => {
+    const html = await $fetch('/layouts/with-props')
+    expect(html).toContain('some prop was passed')
+    await expectNoClientErrors('/layouts/with-props')
+  })
 })
 
 describe('reactivity transform', () => {
