@@ -28,7 +28,7 @@ importers:
       '@types/node': ^18.11.9
       '@types/rimraf': ^3
       '@types/semver': ^7
-      '@unocss/reset': ^0.46.5
+      '@unocss/reset': ^0.47.0
       case-police: ^0.5.10
       changelogen: ^0.4.0
       crawler: ^1.3.0
@@ -64,7 +64,7 @@ importers:
       '@types/node': 18.11.9
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.12
-      '@unocss/reset': 0.46.5
+      '@unocss/reset': 0.47.0
       case-police: 0.5.10
       changelogen: 0.4.0
       crawler: 1.3.0
@@ -317,7 +317,7 @@ importers:
       scule: ^1.0.0
       semver: ^7.3.8
       unbuild: ^1.0.0
-      unctx: ^2.1.0
+      unctx: ^2.1.1
       unimport: ^1.0.1
       untyped: ^1.0.0
     dependencies:
@@ -336,7 +336,7 @@ importers:
       pkg-types: 1.0.1
       scule: 1.0.0
       semver: 7.3.8
-      unctx: 2.1.0
+      unctx: 2.1.1
       unimport: 1.0.1
       untyped: 1.0.0
     devDependencies:
@@ -366,7 +366,7 @@ importers:
       giget: ^1.0.0
       h3: ^1.0.1
       jiti: ^1.16.0
-      listhen: ^1.0.0
+      listhen: ^1.0.1
       mlly: ^1.0.0
       mri: ^1.2.0
       pathe: ^1.0.0
@@ -397,7 +397,7 @@ importers:
       giget: 1.0.0
       h3: 1.0.1
       jiti: 1.16.0
-      listhen: 1.0.0
+      listhen: 1.0.1
       mlly: 1.0.0
       mri: 1.2.0
       pathe: 1.0.0
@@ -444,9 +444,9 @@ importers:
       scule: ^1.0.0
       strip-literal: ^1.0.0
       ufo: ^1.0.0
-      ultrahtml: ^1.0.3
+      ultrahtml: ^1.0.4
       unbuild: ^1.0.0
-      unctx: ^2.1.0
+      unctx: ^2.1.1
       unenv: ^1.0.0
       unhead: ^1.0.4
       unimport: ^1.0.1
@@ -491,8 +491,8 @@ importers:
       scule: 1.0.0
       strip-literal: 1.0.0
       ufo: 1.0.0
-      ultrahtml: 1.0.3
-      unctx: 2.1.0
+      ultrahtml: 1.0.4
+      unctx: 2.1.1
       unenv: 1.0.0
       unhead: 1.0.4
       unimport: 1.0.1
@@ -705,7 +705,7 @@ importers:
       vue-loader: ^17.0.1
       webpack: ^5.75.0
       webpack-bundle-analyzer: ^4.7.0
-      webpack-dev-middleware: ^6.0.0
+      webpack-dev-middleware: ^6.0.1
       webpack-hot-middleware: ^2.25.3
       webpack-virtual-modules: ^0.4.6
       webpackbar: ^5.0.2
@@ -745,7 +745,7 @@ importers:
       vue-loader: 17.0.1_vue@3.2.45+webpack@5.75.0
       webpack: 5.75.0
       webpack-bundle-analyzer: 4.7.0
-      webpack-dev-middleware: 6.0.0_webpack@5.75.0
+      webpack-dev-middleware: 6.0.1_webpack@5.75.0
       webpack-hot-middleware: 2.25.3
       webpack-virtual-modules: 0.4.6
       webpackbar: 5.0.2_webpack@5.75.0
@@ -1937,7 +1937,7 @@ packages:
     resolution: {integrity: sha512-SklLlklFBfTyIXo1iWXxzeytjlysWfj5QfIcRJrCc7MgzuCjnZOHXviQwe81iFGq9ZkCUXAg2fpbZdHhj5lSWA==}
     deprecated: This is a stub types definition. webpack-dev-middleware provides its own type definitions, so you do not need this installed.
     dependencies:
-      webpack-dev-middleware: 6.0.0_webpack@5.75.0
+      webpack-dev-middleware: 6.0.1_webpack@5.75.0
     transitivePeerDependencies:
       - webpack
     dev: true
@@ -2285,8 +2285,8 @@ packages:
     resolution: {integrity: sha512-ytnKxyJdjvhjHrZ9yQUnQwiuL4hiXvjZUj88F2JkwgFJX6Y8jEz3V2xU1BPZNOv20/F6P1ngzEPRfrWHG8XG6A==}
     dev: true
 
-  /@unocss/reset/0.46.5:
-    resolution: {integrity: sha512-DU1sisNixEaUsnfDdbU+POaedJLKUtalHnOOce2Txxrcakf7M2/I5/9cRIXt5diVbPjIyoDPcx+7Gn8K0cTGqg==}
+  /@unocss/reset/0.47.0:
+    resolution: {integrity: sha512-eFumvNvHROVhBYadGF9GERCpsafRYNk1cg8e32BFmd9EQPsfkRuNIHWrjd4zv5EsMx6Ng6qaHVxpma7dBONURA==}
     dev: true
 
   /@unocss/scope/0.45.25:
@@ -5923,8 +5923,8 @@ packages:
       uc.micro: 1.0.6
     dev: true
 
-  /listhen/1.0.0:
-    resolution: {integrity: sha512-frdf7TVqT/JSHzRjEuo/vWIgbBYzEuY3oeTq8Yv1XkQVTKDPs2M4yotXICqYZYj2QxbkqKssSo8Wa6QCtBnFhg==}
+  /listhen/1.0.1:
+    resolution: {integrity: sha512-RBzBGHMCc5wP8J5Vf8WgF4CAJH8dWHi9LaKB7vfzZt54CiH/0dp01rudy2hFD9wCrTM+UfxFVnn5wTIiY+Qhiw==}
     dependencies:
       clipboardy: 3.0.0
       colorette: 2.0.19
@@ -6403,7 +6403,7 @@ packages:
       jiti: 1.16.0
       klona: 2.0.5
       knitwork: 1.0.0
-      listhen: 1.0.0
+      listhen: 1.0.1
       mime: 3.0.0
       mlly: 1.0.0
       mri: 1.2.0
@@ -8200,8 +8200,8 @@ packages:
   /ufo/1.0.0:
     resolution: {integrity: sha512-DRty0ZBNlJ2R59y4mEupJRKLbkLQsc4qtxjpQv78AwEDuBkaUogMc2LkeqW3HddFlw6NwnXYfdThEZOiNgkmmQ==}
 
-  /ultrahtml/1.0.3:
-    resolution: {integrity: sha512-QpTl78vv2o004UPD6b+Vjfoh2b33PV0LS6UHoI1u3wQ2xVRJAkW8Ip4QBiL6JTlMMtIWOXqli98WnsWx6IFFRg==}
+  /ultrahtml/1.0.4:
+    resolution: {integrity: sha512-sso5lk1F1/Q1crKx0+9/9/rHCykRJFSifYLaShnhgzfJhbEDZdpntClBs7ojhx0lRmQlUtDIxrC/8hBJj5bVPw==}
     dev: false
 
   /unbox-primitive/1.0.2:
@@ -8257,8 +8257,8 @@ packages:
       jiti: 1.16.0
     dev: true
 
-  /unctx/2.1.0:
-    resolution: {integrity: sha512-Q3UdS5IAlVRIWsWDd8Rr9g2zqBAZaecBgQ+XXFiKbZzovDMMTEU+Ki0SAVf/ZgWsoeG0/c1kzO2/k6BVhbkUHw==}
+  /unctx/2.1.1:
+    resolution: {integrity: sha512-RffJlpvLOtolWsn0fxXsuSDfwiWcR6cyuykw2e0+zAggvGW1SesXt9WxIWlWpJhwVCZD/WlxxLqKLS50Q0CkWA==}
     dependencies:
       acorn: 8.8.1
       estree-walker: 3.0.1
@@ -8415,7 +8415,7 @@ packages:
       destr: 1.2.1
       h3: 1.0.1
       ioredis: 5.2.4
-      listhen: 1.0.0
+      listhen: 1.0.1
       mkdir: 0.0.2
       mri: 1.2.0
       ofetch: 1.0.0
@@ -8852,8 +8852,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /webpack-dev-middleware/6.0.0_webpack@5.75.0:
-    resolution: {integrity: sha512-A7jSXBifCJsJqUCVISlcbx9pkmCuP0KriMRcOJ13pOb6/xMXZvh4/ygeJeSArjRd50IT5IVbBFuejGDA/zWrNQ==}
+  /webpack-dev-middleware/6.0.1_webpack@5.75.0:
+    resolution: {integrity: sha512-PZPZ6jFinmqVPJZbisfggDiC+2EeGZ1ZByyMP5sOFJcPPWSexalISz+cvm+j+oYPT7FIJyxT76esjnw9DhE5sw==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
       webpack: ^5.0.0
