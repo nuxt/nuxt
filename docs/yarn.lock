@@ -4120,7 +4120,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: ^3.0.0
-    nuxt-website-theme: ^0.1.12
+    nuxt-website-theme: ^0.1.13
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.0.0
@@ -8908,9 +8908,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.1.12":
-  version: 0.1.12
-  resolution: "nuxt-website-theme@npm:0.1.12"
+"nuxt-website-theme@npm:^0.1.13":
+  version: 0.1.13
+  resolution: "nuxt-website-theme@npm:0.1.13"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
@@ -8933,7 +8933,7 @@ __metadata:
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.146.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: 836cf33340a1b92a3e3d1c06641409f1a6bb48bbd582fbf38f38560fd2961bf7a5258e1dde83b7012ece971cbcf533b05069fbb5410565612fe69fddf4827781
+  checksum: 69af5e0902650ebc97af1b333fa00a72a26ad3edafa6332db36c2413c7604bbde2bf00a0a0c02266d40ac3a3e5c0b9fb0e46ad4c2f9e78aa2ecd4528386b6afa
   languageName: node
   linkType: hard
 
