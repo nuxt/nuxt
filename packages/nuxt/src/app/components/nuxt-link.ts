@@ -193,23 +193,30 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && typeof to.value === 'string' && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
-          const observer = useObserver()
           let idleId: number
           let unobserve: Function | null = null
           onMounted(() => {
-            idleId = requestIdleCallback(() => {
-              if (el?.value?.tagName) {
-                unobserve = observer!.observe(el.value, async () => {
-                  unobserve?.()
-                  unobserve = null
-                  await Promise.all([
-                    nuxtApp.hooks.callHook('link:prefetch', to.value as string).catch(() => {}),
-                    !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
-                  ])
-                  prefetched.value = true
-                })
-              }
-            })
+            const observer = useObserver()
+            function registerCallback () {
+              idleId = requestIdleCallback(() => {
+                if (el?.value?.tagName) {
+                  unobserve = observer!.observe(el.value, async () => {
+                    unobserve?.()
+                    unobserve = null
+                    await Promise.all([
+                      nuxtApp.hooks.callHook('link:prefetch', to.value as string).catch(() => {}),
+                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
+                    ])
+                    prefetched.value = true
+                  })
+                }
+              })
+            }
+            if (nuxtApp.isHydrating) {
+              nuxtApp.hooks.hookOnce('app:suspense:resolve', registerCallback)
+            } else {
+              registerCallback()
+            }
           })
           onBeforeUnmount(() => {
             if (idleId) { cancelIdleCallback(idleId) }
