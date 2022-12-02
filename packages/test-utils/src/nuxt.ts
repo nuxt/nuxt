@@ -59,12 +59,14 @@ export async function loadFixture () {
     configFile: ctx.options.configFile
   })
 
-  kit.logger.level = ctx.options.logLevel
-
   await fsp.mkdir(ctx.nuxt.options.buildDir, { recursive: true })
 }
 
 export async function buildFixture () {
   const ctx = useTestContext()
+  // Hide build info for test
+  const prevLevel = kit.logger.level
+  kit.logger.level = ctx.options.logLevel
   await kit.buildNuxt(ctx.nuxt!)
+  kit.logger.level = prevLevel
 }
