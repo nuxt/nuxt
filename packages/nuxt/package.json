@@ -50,7 +50,7 @@
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
     "defu": "^6.1.1",
-    "destr": "^1.2.1",
+    "destr": "^1.2.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "fs-extra": "^10.1.0",
