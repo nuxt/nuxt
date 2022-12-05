@@ -3,8 +3,10 @@ import type { RouteLocationRaw } from 'vue-router'
 import { hasProtocol } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
+import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -41,23 +43,6 @@ export type NuxtLinkProps = {
   // Vue Router's `<RouterLink>` additional props
   ariaCurrentValue?: string
 }
-
-// Polyfills for Safari support
-// https://caniuse.com/requestidlecallback
-const requestIdleCallback: Window['requestIdleCallback'] = process.server
-  ? undefined as any
-  : (globalThis.requestIdleCallback || ((cb) => {
-      const start = Date.now()
-      const idleDeadline = {
-        didTimeout: false,
-        timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
-      }
-      return setTimeout(() => { cb(idleDeadline) }, 1)
-    }))
-
-const cancelIdleCallback: Window['cancelIdleCallback'] = process.server
-  ? null as any
-  : (globalThis.cancelIdleCallback || ((id) => { clearTimeout(id) }))
 
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
@@ -197,7 +182,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           let unobserve: Function | null = null
           onMounted(() => {
             const observer = useObserver()
-            function registerCallback () {
+            onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
                   unobserve = observer!.observe(el.value, async () => {
@@ -211,12 +196,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                   })
                 }
               })
-            }
-            if (nuxtApp.isHydrating) {
-              nuxtApp.hooks.hookOnce('app:suspense:resolve', registerCallback)
-            } else {
-              registerCallback()
-            }
+            })
           })
           onBeforeUnmount(() => {
             if (idleId) { cancelIdleCallback(idleId) }
