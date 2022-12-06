@@ -894,16 +894,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt-themes/typography@npm:^0.1.3":
-  version: 0.1.3
-  resolution: "@nuxt-themes/typography@npm:0.1.3"
+"@nuxt-themes/typography@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "@nuxt-themes/typography@npm:0.1.4"
   dependencies:
     "@nuxt-themes/tokens": latest
     "@nuxtjs/color-mode": ^3.2.0
     nuxt-config-schema: ^0.3.4
     nuxt-icon: ^0.1.8
     pinceau: latest
-  checksum: 7beff3f57a7a27ea6d7a37942d002187f3c0b71f24f931c4e675dd8b15dae6f10159af2b33385aeee5068d507d1a53c11ca8589fba348bbb5de60acde96d3efb
+  checksum: cebf60201d304ee88f5b4802ba08deb7004618cd1ec9aa2eb3adec6f0cec63ff00e761936a067146938e3c0161c63e15d87e2b458bc9ca219ad03295823d0177
   languageName: node
   linkType: hard
 
@@ -1146,9 +1146,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxthq/studio@npm:^0.3.3":
-  version: 0.3.3
-  resolution: "@nuxthq/studio@npm:0.3.3"
+"@nuxthq/studio@npm:^0.3.4":
+  version: 0.3.4
+  resolution: "@nuxthq/studio@npm:0.3.4"
   dependencies:
     "@nuxt/kit": ^3.0.0
     "@nuxt/schema": ^3.0.0
@@ -1157,13 +1157,13 @@ __metadata:
     nuxt-config-schema: ^0.3.4
     socket.io-client: ^4.5.4
     ufo: ^1.0.1
-  checksum: 6e87474c216a22265403fcb5499c9395be46bbcbbda5e38dff5d911e859634034f320548798c17f7c992d47c26861457143456295e00a1e9e971f2067e40850b
+  checksum: 903c3e52fe5fda89c49b038eff3e1bf2e4bb849e8d0e144d6cf00d22d33d612e8d554b2f4a145d1f351f2eabb8dc3a16cb0db1f6221fafa1e25bbb4c8440d228
   languageName: node
   linkType: hard
 
-"@nuxthq/ui@npm:^0.1.15":
-  version: 0.1.15
-  resolution: "@nuxthq/ui@npm:0.1.15"
+"@nuxthq/ui@npm:^0.1.17":
+  version: 0.1.17
+  resolution: "@nuxthq/ui@npm:0.1.17"
   dependencies:
     "@headlessui/vue": ^1.7.4
     "@iconify/vue": ^4.0.1
@@ -1181,7 +1181,7 @@ __metadata:
     fuse.js: ^6.6.2
     lodash-es: ^4.17.21
     tailwindcss: ^3.2.4
-  checksum: 0be3cc5d45e8573fa168999e87281a0dfd42848225f7d9a65179dfe9b54d72e40546db9f83236bba8ad04c89e596eef087601aeb8810662b5958dfbf6c530f22
+  checksum: 72ec6a00fb4ae366cbc616139095e4fc6a8a3ed7daec4bd116e56e92535a4c7bab58804309d864ce532096c10a234c1f7313096f6f2783f5272cb6ede58641e2
   languageName: node
   linkType: hard
 
@@ -4134,7 +4134,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: ^3.0.0
-    nuxt-website-theme: ^0.1.20
+    nuxt-website-theme: ^0.1.21
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.0.0
@@ -8944,16 +8944,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.1.20":
-  version: 0.1.20
-  resolution: "nuxt-website-theme@npm:0.1.20"
+"nuxt-website-theme@npm:^0.1.21":
+  version: 0.1.21
+  resolution: "nuxt-website-theme@npm:0.1.21"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
-    "@nuxt-themes/typography": ^0.1.3
+    "@nuxt-themes/typography": ^0.1.4
     "@nuxt/content": ^2.2.2
-    "@nuxthq/studio": ^0.3.3
-    "@nuxthq/ui": ^0.1.15
+    "@nuxthq/studio": ^0.3.4
+    "@nuxthq/ui": ^0.1.17
     "@nuxtjs/algolia": ^1.3.1
     "@nuxtjs/fontaine": ^0.2.3
     "@nuxtjs/html-validator": ^1.2.3
@@ -8971,7 +8971,7 @@ __metadata:
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.147.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: ec0964915e2ccbfb60f63a07b75376261cf7d5efc8e586d94e6b2a8b3df826d562fdb6e20642d98e316d54c3d22c5c023b79bbadae9419629f2122fbf3347edf
+  checksum: 7ff89f0af59570ba50944506efff4d1542b0ab72a7fbfc44c30505fdeac13f01c36d500d32eaba02ba268525dc4a70187426ee852de5b1619d22c78dc983b22f
   languageName: node
   linkType: hard
 
