@@ -60,7 +60,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
-      nuxt.options._layers.flatMap(layer => [`${layer.config.srcDir}/App`, `${layer.config.srcDir}/app`])
+      nuxt.options._layers.flatMap(layer => [
+        join(layer.config.srcDir, 'App'),
+        join(layer.config.srcDir, 'app')
+      ])
     )
   }
   if (!app.mainComponent) {
@@ -136,7 +139,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 }
 
-function resolvePaths <Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
+function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
   return Promise.all(items.map(async (item) => {
     if (!item[key]) { return item }
     return {
