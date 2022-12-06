@@ -33,7 +33,7 @@
     "lodash-es": "^4.17.21",
     "magic-string": "^0.27.0",
     "memfs": "^3.4.12",
-    "mini-css-extract-plugin": "^2.7.1",
+    "mini-css-extract-plugin": "^2.7.2",
     "mlly": "^1.0.0",
     "ohash": "^1.0.0",
     "pathe": "^1.0.0",
