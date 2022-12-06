@@ -1146,18 +1146,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxthq/studio@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@nuxthq/studio@npm:0.3.1"
+"@nuxthq/studio@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "@nuxthq/studio@npm:0.3.3"
   dependencies:
     "@nuxt/kit": ^3.0.0
     "@nuxt/schema": ^3.0.0
     defu: ^6.1.1
-    nuxt-component-meta: ^0.3.5
-    nuxt-config-schema: ^0.3.3
+    nuxt-component-meta: ^0.3.8
+    nuxt-config-schema: ^0.3.4
     socket.io-client: ^4.5.4
     ufo: ^1.0.1
-  checksum: 8d306dc906df81cc1d86ddd153b76ee4458fb8d0c72f8ace6bc8cd2a1919923d399da4e1e02889220677447b811f9b69b308bf0f5041f72d1ef05aaf51c67f0c
+  checksum: 6e87474c216a22265403fcb5499c9395be46bbcbbda5e38dff5d911e859634034f320548798c17f7c992d47c26861457143456295e00a1e9e971f2067e40850b
   languageName: node
   linkType: hard
 
@@ -1236,16 +1236,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxtjs/html-validator@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "@nuxtjs/html-validator@npm:1.2.2"
+"@nuxtjs/html-validator@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "@nuxtjs/html-validator@npm:1.2.3"
   dependencies:
     "@nuxt/kit": ^3.0.0
     chalk: ^5.1.2
     html-validate: ~7.10.1
     pathe: ^1.0.0
     prettier: ^2.7.1
-  checksum: faf31b23f72f6e1f3ea5842a82293611712ca4e9cb0615ca390639a16143192884659ec276b81d58b3b9755f17e7063da504c33b449640a26a3921092113968f
+    std-env: ^3.3.1
+  checksum: 52e69eeba994e83d09b88d0f2df8e336113bf2830295c6e1e83a09567f9566cb2b030329078ece1b547732563530dc34c541dfd87629d7ffc6cd05fc5b7b616d
   languageName: node
   linkType: hard
 
@@ -4133,7 +4134,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: ^3.0.0
-    nuxt-website-theme: ^0.1.18
+    nuxt-website-theme: ^0.1.20
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.0.0
@@ -8886,19 +8887,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-component-meta@npm:^0.3.5":
-  version: 0.3.5
-  resolution: "nuxt-component-meta@npm:0.3.5"
+"nuxt-component-meta@npm:^0.3.8":
+  version: 0.3.8
+  resolution: "nuxt-component-meta@npm:0.3.8"
   dependencies:
     "@nuxt/kit": ^3.0.0
     scule: ^1.0.0
     typescript: ^4.9.3
     vue-component-meta: ^1.0.9
-  checksum: 2b9c02025c71c5f8943419d3a4fd5158c89b2bb2d6c3f5d787525306a4674f70c3d7bca0ebee4399650468fb3fae0e27d316e3269788bc4952fb6bbf066c270e
+  checksum: a525b1371f0135b362c1d7ddf26ee89652d5aadc1d1d5e4a46793629d6eda819fabfed58720bfe4a80baca8e918b026024308d69e21c9b779466d7d02bf439c9
   languageName: node
   linkType: hard
 
-"nuxt-config-schema@npm:^0.3.3, nuxt-config-schema@npm:^0.3.4":
+"nuxt-config-schema@npm:^0.3.4":
   version: 0.3.4
   resolution: "nuxt-config-schema@npm:0.3.4"
   dependencies:
@@ -8943,19 +8944,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.1.18":
-  version: 0.1.18
-  resolution: "nuxt-website-theme@npm:0.1.18"
+"nuxt-website-theme@npm:^0.1.20":
+  version: 0.1.20
+  resolution: "nuxt-website-theme@npm:0.1.20"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
     "@nuxt-themes/typography": ^0.1.3
     "@nuxt/content": ^2.2.2
-    "@nuxthq/studio": ^0.3.1
+    "@nuxthq/studio": ^0.3.3
     "@nuxthq/ui": ^0.1.15
     "@nuxtjs/algolia": ^1.3.1
     "@nuxtjs/fontaine": ^0.2.3
-    "@nuxtjs/html-validator": ^1.2.2
+    "@nuxtjs/html-validator": ^1.2.3
     "@nuxtlabs/github-module": ^1.5.4
     "@vueuse/core": ^9.6.0
     "@vueuse/motion": ^2.0.0-beta.12
@@ -8970,7 +8971,7 @@ __metadata:
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.147.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: 8ac5ddbf51f44ec367045f69b27857e4a88366a67689db1719969b6fc2a50bc46d698c6da46dcd945c6ab26d5f1b6f6d3e0580aa6faf453a1e3473da24e4f9c4
+  checksum: ec0964915e2ccbfb60f63a07b75376261cf7d5efc8e586d94e6b2a8b3df826d562fdb6e20642d98e316d54c3d22c5c023b79bbadae9419629f2122fbf3347edf
   languageName: node
   linkType: hard
 
