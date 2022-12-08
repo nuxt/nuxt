@@ -31,7 +31,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "externality": "^1.0.0",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "get-port-please": "^2.6.1",
     "h3": "^1.0.1",
     "knitwork": "^1.0.0",
