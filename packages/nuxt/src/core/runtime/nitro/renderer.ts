@@ -6,8 +6,8 @@ import devalue from '@nuxt/devalue'
 import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
+import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app'
 // @ts-ignore
@@ -62,7 +62,7 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
 // @ts-ignore
-const getStaticRenderedHead = () : Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
+const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
 // @ts-ignore
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -85,6 +85,8 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     renderToString,
     buildAssetsURL
   }
+  // Allow customising options - note that this hook is experimental and options format may change
+  await useNitroApp().hooks.callHook('render:options', options)
   // Create renderer
   const renderer = createRenderer(createSSRApp, options)
 
@@ -110,6 +112,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
     renderToString: () => `<${appRootTag} id="${appRootId}"></${appRootTag}>`,
     buildAssetsURL
   }
+  // Allow customising options - note that this hook is experimental and options format may change
+  await useNitroApp().hooks.callHook('render:options', options)
   // Create SPA renderer and cache the result for all requests
   const renderer = createRenderer(() => () => {}, options)
   const result = await renderer.renderToString({})
