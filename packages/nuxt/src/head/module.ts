@@ -27,8 +27,11 @@ export default defineNuxtModule({
       ]
     })
 
-    // removes server composables in client build
-    addVitePlugin(UnheadVite({ root: nuxt.options.rootDir }))
+    // removes useSeoMeta, useServerHead in production client builds
+    addVitePlugin(UnheadVite({ root: nuxt.options.rootDir }), {
+      dev: false,
+      server: false
+    })
 
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
