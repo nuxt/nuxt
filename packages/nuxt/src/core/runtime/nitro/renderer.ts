@@ -62,7 +62,7 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
 // @ts-ignore
-const getStaticRenderedHead = () : Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
+const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
 // @ts-ignore
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -137,11 +137,11 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
-  const url = event.req.url?.substring('/__nuxt_island'.length + 1) || ''
+  const url = event.node.req.url?.substring('/__nuxt_island'.length + 1) || ''
   const [componentName, hashId] = url.split('?')[0].split(':')
 
   // TODO: Validate context
-  const context = event.req.method === 'GET' ? getQuery(event) : await readBody(event)
+  const context = event.node.req.method === 'GET' ? getQuery(event) : await readBody(event)
 
   const ctx: NuxtIslandContext = {
     url: '/',
@@ -171,7 +171,7 @@ export default defineRenderHandler(async (event) => {
   }
 
   // Check for island component rendering
-  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.req.url?.startsWith('/__nuxt_island'))
+  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.node.req.url?.startsWith('/__nuxt_island'))
     ? await getIslandContext(event)
     : undefined
 
@@ -317,8 +317,8 @@ export default defineRenderHandler(async (event) => {
 
     const response: RenderResponse = {
       body: JSON.stringify(islandResponse, null, 2),
-      statusCode: event.res.statusCode,
-      statusMessage: event.res.statusMessage,
+      statusCode: event.node.res.statusCode,
+      statusMessage: event.node.res.statusMessage,
       headers: {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
