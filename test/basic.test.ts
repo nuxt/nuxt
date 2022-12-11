@@ -840,18 +840,11 @@ describe('component islands', () => {
         }
       `)
     } else if (process.env.NUXT_TEST_DEV) {
-      // TODO: Investigate extra style
-      // Introduced by https://github.com/nuxt/framework/pull/9549
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
             {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
-              "key": "island-link",
-              "rel": "stylesheet",
-            },
-            {
-              "href": "/_nuxt/<rootDir>/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",
               "rel": "stylesheet",
             },
