@@ -1,5 +1,5 @@
-import { ViteImportMeta } from './vite'
-import { WebpackImportMeta } from './webpack'
+import type { ViteImportMeta } from './vite'
+import type { WebpackImportMeta } from './webpack'
 
 export type BundlerImportMeta = ViteImportMeta & WebpackImportMeta
 

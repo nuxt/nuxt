@@ -1,4 +1,4 @@
-import { NuxtApp } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 
 declare global {
   namespace NodeJS {

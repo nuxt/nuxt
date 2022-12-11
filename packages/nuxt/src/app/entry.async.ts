@@ -1,4 +1,4 @@
-import { CreateOptions } from '#app'
+import type { CreateOptions } from '#app'
 
 const entry = process.server
   ? (ctx?: CreateOptions['ssrContext']) => import('#app/entry').then(m => m.default(ctx))

@@ -1,6 +1,7 @@
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
-import { importModule, tryImportModule, RequireModuleOptions } from '../internal/cjs'
+import type { RequireModuleOptions } from '../internal/cjs'
+import { importModule, tryImportModule } from '../internal/cjs'
 import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {

@@ -1,5 +1,5 @@
 import type { AddressInfo } from 'node:net'
-import { RequestListener } from 'node:http'
+import type { RequestListener } from 'node:http'
 import { existsSync, readdirSync } from 'node:fs'
 import { resolve, relative, normalize } from 'pathe'
 import chokidar from 'chokidar'

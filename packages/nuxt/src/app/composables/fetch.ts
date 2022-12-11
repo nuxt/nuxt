@@ -1,6 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
-import { computed, unref, Ref, reactive } from 'vue'
+import type { Ref } from 'vue'
+import { computed, unref, reactive } from 'vue'
 import { hash } from 'ohash'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'

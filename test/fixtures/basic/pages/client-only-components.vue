@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref } from 'vue'
+import type { Ref } from 'vue'
 type Comp = Ref<{ add: () => void }>
 
 const stringStatefulComp = ref(null) as any as Comp

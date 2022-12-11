@@ -4,7 +4,8 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 import { joinURL } from 'ufo'
-import { applyPresets, WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
+import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 
 export function client (ctx: WebpackConfigContext) {

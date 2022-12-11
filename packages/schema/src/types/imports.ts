@@ -1,4 +1,4 @@
-import { UnimportOptions } from 'unimport'
+import type { UnimportOptions } from 'unimport'
 
 export interface ImportsOptions extends UnimportOptions {
   /**

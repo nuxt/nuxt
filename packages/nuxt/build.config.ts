@@ -1,4 +1,5 @@
-import { defineBuildConfig, BuildEntry } from 'unbuild'
+import type { BuildEntry } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,

@@ -3,7 +3,7 @@ import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
 import defu from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
-import { RuntimeConfig } from '../types/config'
+import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
   /**

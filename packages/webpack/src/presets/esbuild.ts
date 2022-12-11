@@ -1,5 +1,5 @@
 import esbuildLoader from 'esbuild-loader'
-import { WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
 
 export function esbuild (ctx: WebpackConfigContext) {
   const { config } = ctx

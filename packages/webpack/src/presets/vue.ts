@@ -3,7 +3,7 @@ import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
 import webpack from 'webpack'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
-import { WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
 
 export function vue (ctx: WebpackConfigContext) {
   const { options, config } = ctx

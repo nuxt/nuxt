@@ -1,15 +1,17 @@
 import { computed, reactive, shallowRef } from 'vue'
+import type {
+  NavigationGuard,
+  RouteLocation
+} from 'vue-router'
 import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  createWebHashHistory,
-  NavigationGuard,
-  RouteLocation
+  createWebHashHistory
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import NuxtPage from './page'
+import type NuxtPage from './page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
