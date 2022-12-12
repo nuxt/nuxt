@@ -28,7 +28,7 @@ importers:
       '@types/node': ^18.11.13
       '@types/rimraf': ^3
       '@types/semver': ^7
-      '@unocss/reset': ^0.47.5
+      '@unocss/reset': ^0.47.6
       case-police: ^0.5.10
       changelogen: ^0.4.0
       crawler: ^1.3.0
@@ -64,7 +64,7 @@ importers:
       '@types/node': 18.11.13
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.12
-      '@unocss/reset': 0.47.5
+      '@unocss/reset': 0.47.6
       case-police: 0.5.10
       changelogen: 0.4.0
       crawler: 1.3.0
@@ -318,7 +318,7 @@ importers:
       semver: ^7.3.8
       unbuild: ^1.0.2
       unctx: ^2.1.1
-      unimport: ^1.0.1
+      unimport: ^1.0.2
       untyped: ^1.0.0
     dependencies:
       '@nuxt/schema': link:../schema
@@ -337,7 +337,7 @@ importers:
       scule: 1.0.0
       semver: 7.3.8
       unctx: 2.1.1
-      unimport: 1.0.1
+      unimport: 1.0.2
       untyped: 1.0.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -449,8 +449,8 @@ importers:
       unctx: ^2.1.1
       unenv: ^1.0.0
       unhead: ^1.0.13
-      unimport: ^1.0.1
-      unplugin: ^1.0.0
+      unimport: ^1.0.2
+      unplugin: ^1.0.1
       untyped: ^1.0.0
       vue: 3.2.45
       vue-bundle-renderer: ^1.0.0
@@ -495,8 +495,8 @@ importers:
       unctx: 2.1.1
       unenv: 1.0.0
       unhead: 1.0.13
-      unimport: 1.0.1
-      unplugin: 1.0.0
+      unimport: 1.0.2
+      unplugin: 1.0.1
       untyped: 1.0.0
       vue: 3.2.45
       vue-bundle-renderer: 1.0.0
@@ -526,7 +526,7 @@ importers:
       std-env: ^3.3.1
       ufo: ^1.0.1
       unbuild: ^1.0.2
-      unimport: ^1.0.1
+      unimport: ^1.0.2
       untyped: ^1.0.0
       vite: ^3.2.5
     dependencies:
@@ -540,7 +540,7 @@ importers:
       scule: 1.0.0
       std-env: 3.3.1
       ufo: 1.0.1
-      unimport: 1.0.1
+      unimport: 1.0.2
       untyped: 1.0.0
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -613,7 +613,7 @@ importers:
       rollup-plugin-visualizer: ^5.8.3
       ufo: ^1.0.1
       unbuild: ^1.0.2
-      unplugin: ^1.0.0
+      unplugin: ^1.0.1
       vite: ^3.2.5
       vite-node: ^0.25.7
       vite-plugin-checker: ^0.5.2
@@ -648,7 +648,7 @@ importers:
       rollup: 2.79.1
       rollup-plugin-visualizer: 5.8.3_rollup@2.79.1
       ufo: 1.0.1
-      unplugin: 1.0.0
+      unplugin: 1.0.1
       vite: 3.2.5
       vite-node: 0.25.7
       vite-plugin-checker: 0.5.2_vite@3.2.5
@@ -698,7 +698,7 @@ importers:
       time-fix-plugin: ^2.0.7
       ufo: ^1.0.1
       unbuild: ^1.0.2
-      unplugin: ^1.0.0
+      unplugin: ^1.0.1
       url-loader: ^4.1.1
       vue: 3.2.45
       vue-bundle-renderer: ^1.0.0
@@ -739,7 +739,7 @@ importers:
       style-resources-loader: 1.5.0_webpack@5.75.0
       time-fix-plugin: 2.0.7_webpack@5.75.0
       ufo: 1.0.1
-      unplugin: 1.0.0
+      unplugin: 1.0.1
       url-loader: 4.1.1_p5dl6emkcwslbw72e37w4ug7em
       vue-bundle-renderer: 1.0.0
       vue-loader: 17.0.1_vue@3.2.45+webpack@5.75.0
@@ -2476,8 +2476,8 @@ packages:
     resolution: {integrity: sha512-ytnKxyJdjvhjHrZ9yQUnQwiuL4hiXvjZUj88F2JkwgFJX6Y8jEz3V2xU1BPZNOv20/F6P1ngzEPRfrWHG8XG6A==}
     dev: true
 
-  /@unocss/reset/0.47.5:
-    resolution: {integrity: sha512-UmAeVMlcGPyrZJdQMGDX7EMVA4UieUyR9f3l6a3B/AcUNPQtcISLIlzzRqcUg2c/SkkA5sHZdXDa+l48b5+rGA==}
+  /@unocss/reset/0.47.6:
+    resolution: {integrity: sha512-bdc2dbuDg+CzgeLowEwO1URRIMdzmCE4RH4IKpCpT1Xoa+92RRubdtzK4N/9ZiSo8d4vvfWcc8fvhZko/6smPQ==}
     dev: true
 
   /@unocss/scope/0.45.25:
@@ -6618,7 +6618,7 @@ packages:
       std-env: 3.3.1
       ufo: 1.0.1
       unenv: 1.0.0
-      unimport: 1.0.1_rollup@2.79.1
+      unimport: 1.0.2_rollup@2.79.1
       unstorage: 1.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -8483,38 +8483,38 @@ packages:
       hookable: 5.4.2
     dev: false
 
-  /unimport/1.0.1:
-    resolution: {integrity: sha512-SEPKl3uyqUvi6c0MnyCmUF9H07CuC9j9p2p33F03LmegU0sxjpnjL0fLKAhh7BTfcKaJKj+1iOiAFtg7P3m5mQ==}
+  /unimport/1.0.2:
+    resolution: {integrity: sha512-DcYkDwl1XMZNmyEKUFzVzHAul0FZcj9m0OM/WRfaAtg6Gw1waYlypYJl6qAg31k57TnNPwGDCAxYPodYC5qomQ==}
     dependencies:
       '@rollup/pluginutils': 5.0.2
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.2
-      magic-string: 0.26.7
+      magic-string: 0.27.0
       mlly: 1.0.0
       pathe: 1.0.0
       pkg-types: 1.0.1
       scule: 1.0.0
       strip-literal: 1.0.0
-      unplugin: 1.0.0
+      unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
     dev: false
 
-  /unimport/1.0.1_rollup@2.79.1:
-    resolution: {integrity: sha512-SEPKl3uyqUvi6c0MnyCmUF9H07CuC9j9p2p33F03LmegU0sxjpnjL0fLKAhh7BTfcKaJKj+1iOiAFtg7P3m5mQ==}
+  /unimport/1.0.2_rollup@2.79.1:
+    resolution: {integrity: sha512-DcYkDwl1XMZNmyEKUFzVzHAul0FZcj9m0OM/WRfaAtg6Gw1waYlypYJl6qAg31k57TnNPwGDCAxYPodYC5qomQ==}
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@2.79.1
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.2
-      magic-string: 0.26.7
+      magic-string: 0.27.0
       mlly: 1.0.0
       pathe: 1.0.0
       pkg-types: 1.0.1
       scule: 1.0.0
       strip-literal: 1.0.0
-      unplugin: 1.0.0
+      unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
 
@@ -8601,6 +8601,15 @@ packages:
       chokidar: 3.5.3
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.4.6
+    dev: false
+
+  /unplugin/1.0.1:
+    resolution: {integrity: sha512-aqrHaVBWW1JVKBHmGo33T5TxeL0qWzfvjWokObHA9bYmN7eNDkwOxmLjhioHl9878qDFMAaT51XNroRyuz7WxA==}
+    dependencies:
+      acorn: 8.8.1
+      chokidar: 3.5.3
+      webpack-sources: 3.2.3
+      webpack-virtual-modules: 0.5.0
 
   /unstorage/1.0.1:
     resolution: {integrity: sha512-J1c4b8K2KeihHrQtdgl/ybIapArUbPaPb+TyJy/nGSauDwDYqciZsEKdkee568P3c8SSH4TIgnGRHDWMPGw+Lg==}
@@ -9094,7 +9103,6 @@ packages:
 
   /webpack-virtual-modules/0.5.0:
     resolution: {integrity: sha512-kyDivFZ7ZM0BVOUteVbDFhlRt7Ah/CSPwJdi8hBpkK7QLumUqdLtVfm/PX/hkcnrvr0i77fO5+TjZ94Pe+C9iw==}
-    dev: false
 
   /webpack/5.75.0:
     resolution: {integrity: sha512-piaIaoVJlqMsPtX/+3KTTO6jfvrSYgauFVdt8cr9LTHKmcq/AMd4mhzsiP7ZF/PGRNPGA8336jldh9l2Kt2ogQ==}

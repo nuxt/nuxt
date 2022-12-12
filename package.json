@@ -51,7 +51,7 @@
     "@types/node": "^18.11.13",
     "@types/rimraf": "^3",
     "@types/semver": "^7",
-    "@unocss/reset": "^0.47.5",
+    "@unocss/reset": "^0.47.6",
     "case-police": "^0.5.10",
     "changelogen": "^0.4.0",
     "crawler": "^1.3.0",
