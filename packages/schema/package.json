@@ -16,8 +16,8 @@
   "devDependencies": {
     "@types/lodash.template": "^4",
     "@types/semver": "^7",
-    "@vitejs/plugin-vue": "^3.2.0",
     "@unhead/schema": "^1.0.13",
+    "@vitejs/plugin-vue": "^3.2.0",
     "nitropack": "^1.0.0",
     "unbuild": "latest",
     "vite": "~3.2.5"
@@ -26,6 +26,7 @@
     "c12": "^1.1.0",
     "create-require": "^1.1.1",
     "defu": "^6.1.1",
+    "hookable": "^5.4.2",
     "jiti": "^1.16.0",
     "pathe": "^1.0.0",
     "pkg-types": "^1.0.1",
