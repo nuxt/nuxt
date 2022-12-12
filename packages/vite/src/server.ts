@@ -83,10 +83,10 @@ export async function buildServer (ctx: ViteBuildContext) {
         external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
         output: {
           entryFileNames: 'server.mjs',
-          preferConst: true,
-          // TODO: https://github.com/vitejs/vite/pull/8641
-          inlineDynamicImports: !ctx.nuxt.options.experimental.viteServerDynamicImports,
-          format: 'module'
+          format: 'module',
+          generatedCode: {
+            constBindings: true
+          }
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {

@@ -91,7 +91,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.experimental.externalVue
         ? {}
         : {
-
             'vue/compiler-sfc': 'vue/compiler-sfc',
             'vue/server-renderer': 'vue/server-renderer',
             vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
@@ -121,6 +120,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       __VUE_PROD_DEVTOOLS__: false
     },
     rollupConfig: {
+      output: {},
       plugins: []
     }
   })
@@ -141,6 +141,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   // Register nuxt protection patterns
+  nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
+  nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
