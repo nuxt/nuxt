@@ -455,7 +455,6 @@ importers:
       vue: 3.2.45
       vue-bundle-renderer: ^1.0.0
       vue-devtools-stub: ^0.1.0
-      vue-meta: next
       vue-router: ^4.1.6
     dependencies:
       '@nuxt/devalue': 2.0.0
@@ -506,7 +505,6 @@ importers:
       '@types/fs-extra': 9.0.13
       '@types/hash-sum': 1.0.0
       unbuild: 1.0.2
-      vue-meta: 3.0.0-alpha.2_vue@3.2.45
 
   packages/schema:
     specifiers:
@@ -8979,15 +8977,6 @@ packages:
       vue: 3.2.45
       webpack: 5.75.0
     dev: false
-
-  /vue-meta/3.0.0-alpha.2_vue@3.2.45:
-    resolution: {integrity: sha512-mLDB/vGjn2Q58IFKs5Dtp/STWZ0sEbkdM67u+YXuMreK5EjNHnqhcylQb+xn50pwxCdQD98nGgJlEXkh16Hqug==}
-    peerDependencies:
-      '@vue/server-renderer': ^3.0.6
-      vue: ^3.0.0
-    dependencies:
-      vue: 3.2.45
-    dev: true
 
   /vue-router/4.1.6_vue@3.2.45:
     resolution: {integrity: sha512-DYWYwsG6xNPmLq/FmZn8Ip+qrhFEzA14EI12MsMgVxvHFDYvlr4NXpVF5hrRH1wVcDP8fGi5F4rxuJSl8/r+EQ==}
