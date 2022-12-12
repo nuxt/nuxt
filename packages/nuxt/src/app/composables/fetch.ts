@@ -1,5 +1,5 @@
-import type { FetchError, FetchOptions } from 'ofetch'
-import type { TypedInternalResponse, NitroFetchRequest } from 'nitropack'
+import type { FetchError } from 'ofetch'
+import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest } from 'nitropack'
 import type { Ref } from 'vue'
 import { computed, unref, reactive } from 'vue'
 import { hash } from 'ohash'
@@ -12,13 +12,14 @@ type ComputedOptions<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
 }
 
-type ComputedFetchOptions = ComputedOptions<FetchOptions>
+type ComputedFetchOptions<R extends NitroFetchRequest> = ComputedOptions<NitroFetchOptions<R>>
 
 export interface UseFetchOptions<
   DataT,
   Transform extends _Transform<DataT, any> = _Transform<DataT, DataT>,
-  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
-> extends AsyncDataOptions<DataT, Transform, PickKeys>, ComputedFetchOptions {
+  PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>,
+  R extends NitroFetchRequest = string & {}
+> extends AsyncDataOptions<DataT, Transform, PickKeys>, ComputedFetchOptions<R> {
   key?: string
 }
 
@@ -31,7 +32,7 @@ export function useFetch<
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, Transform, PickKeys>
+  opts?: UseFetchOptions<_ResT, Transform, PickKeys, ReqT>
 ): AsyncData<PickFrom<ReturnType<Transform>, PickKeys>, ErrorT | null>
 export function useFetch<
   ResT = void,
@@ -42,7 +43,7 @@ export function useFetch<
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | UseFetchOptions<_ResT, Transform, PickKeys>,
+  arg1?: string | UseFetchOptions<_ResT, Transform, PickKeys, ReqT>,
   arg2?: string
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
@@ -98,7 +99,7 @@ export function useFetch<
   const asyncData = useAsyncData<_ResT, ErrorT, Transform, PickKeys>(key, () => {
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
-    return $fetch(_request.value, { signal: controller.signal, ..._fetchOptions }) as Promise<_ResT>
+    return $fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
