@@ -444,7 +444,7 @@ importers:
       scule: ^1.0.0
       strip-literal: ^1.0.0
       ufo: ^1.0.1
-      ultrahtml: ^1.0.4
+      ultrahtml: ^1.1.0
       unbuild: ^1.0.2
       unctx: ^2.1.1
       unenv: ^1.0.0
@@ -491,7 +491,7 @@ importers:
       scule: 1.0.0
       strip-literal: 1.0.0
       ufo: 1.0.1
-      ultrahtml: 1.0.4
+      ultrahtml: 1.1.0
       unctx: 2.1.1
       unenv: 1.0.0
       unhead: 1.0.13
@@ -8395,8 +8395,8 @@ packages:
   /ufo/1.0.1:
     resolution: {integrity: sha512-boAm74ubXHY7KJQZLlXrtMz52qFvpsbOxDcZOnw/Wf+LS4Mmyu7JxmzD4tDLtUQtmZECypJ0FrCz4QIe6dvKRA==}
 
-  /ultrahtml/1.0.4:
-    resolution: {integrity: sha512-sso5lk1F1/Q1crKx0+9/9/rHCykRJFSifYLaShnhgzfJhbEDZdpntClBs7ojhx0lRmQlUtDIxrC/8hBJj5bVPw==}
+  /ultrahtml/1.1.0:
+    resolution: {integrity: sha512-6r1tMBTuzduqCAvqrtPL4WqgHOLYZSVuWhx3gwoLC8M3KILnm8ewe3R65MatMT4/GPCZlZTC1MlPGGM5MV5Hog==}
     dev: false
 
   /unbox-primitive/1.0.2:
