@@ -1,7 +1,7 @@
-import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, addPluginTemplate, updateTemplates } from '@nuxt/kit'
+import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import type { Import, Unimport } from 'unimport'
-import { createUnimport, scanDirExports, toImports } from 'unimport'
+import { createUnimport, scanDirExports } from 'unimport'
 import type { ImportsOptions, ImportPresetWithDeprecation } from '@nuxt/schema'
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
@@ -65,23 +65,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
-    // Transpile and injection
-    if (nuxt.options.dev && options.global) {
-      // Add all imports to globalThis in development mode
-      addPluginTemplate({
-        filename: 'imports.mjs',
-        getContents: async () => {
-          const imports = await ctx.getImports()
-          const importStatement = toImports(imports)
-          const globalThisSet = imports.map(i => `globalThis.${i.as} = ${i.as};`).join('\n')
-          return `${importStatement}\n\n${globalThisSet}\n\nexport default () => {};`
-        }
-      })
-    } else {
-      // Transform to inject imports in production mode
-      addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-      addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    }
+    // Transform to inject imports in production mode
+    addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     const regenerateImports = async () => {
       ctx.clearDynamicImports()
