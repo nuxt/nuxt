@@ -9,7 +9,7 @@ interface DevOnlyPluginOptions {
 }
 
 export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
-  const DEVONLY_COMP_RE = /<dev-?only>(:?[\s\S]*)<\/dev-?only>/gmi
+  const DEVONLY_COMP_RE = /<(dev-only|DevOnly)>[\s\S]*?<\/(dev-only|DevOnly)>/g
 
   return {
     name: 'nuxt:server-devonly:transform',
