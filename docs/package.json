@@ -10,7 +10,7 @@
   "devDependencies": {
     "jiti": "^1.16.0",
     "nuxt": "^3.0.0",
-    "nuxt-website-theme": "^0.1.24",
+    "nuxt-website-theme": "^0.1.25",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
     "untyped": "^1.0.0"
