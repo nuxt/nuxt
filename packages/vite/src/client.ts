@@ -149,9 +149,10 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
   } else {
     // Build
+    logger.info('Building client...')
     const start = Date.now()
     await vite.build(clientConfig)
     await ctx.nuxt.callHook('vite:compiled')
-    logger.info(`Client built in ${Date.now() - start}ms`)
+    logger.success(`Client built in ${Date.now() - start}ms`)
   }
 }
