@@ -138,7 +138,9 @@ export async function buildServer (ctx: ViteBuildContext) {
   if (!ctx.nuxt.options.dev) {
     const start = Date.now()
     logger.info('Building server...')
+    logger.restoreAll()
     await vite.build(serverConfig)
+    logger.wrapAll()
     // Write production client manifest
     await writeManifest(ctx)
     await onBuild()
