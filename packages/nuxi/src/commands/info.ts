@@ -93,7 +93,7 @@ export default defineNuxtCommand({
     console.log([
       `👉 Report an issue: https://github.com/${repo}/issues/new`,
       `👉 Suggest an improvement: https://github.com/${repo}/discussions/new`,
-      `👉 Read documentation: ${isNuxt3OrBridge ? 'https://v3.nuxtjs.org' : 'https://nuxtjs.org'}`
+      `👉 Read documentation: ${isNuxt3OrBridge ? 'https://nuxt.com' : 'https://nuxtjs.org'}`
     ].join('\n\n') + '\n')
   }
 })
