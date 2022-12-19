@@ -1,6 +1,7 @@
 import { resolve } from 'pathe'
 import { applyDefaults } from 'untyped'
-import { loadConfig, LoadConfigOptions } from 'c12'
+import type { LoadConfigOptions } from 'c12'
+import { loadConfig } from 'c12'
 import type { NuxtOptions, NuxtConfig } from '@nuxt/schema'
 import { NuxtConfigSchema } from '@nuxt/schema'
 

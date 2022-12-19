@@ -45,6 +45,12 @@
         ]
       }
     ],
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "disallowTypeAnnotations": false
+      }
+    ],
     "@typescript-eslint/no-unused-vars": [
       "error",
       {

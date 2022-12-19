@@ -1,4 +1,5 @@
-import { WebpackConfigContext, applyPresets } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
+import { applyPresets } from '../utils/config'
 
 import { assets } from './assets'
 import { base } from './base'

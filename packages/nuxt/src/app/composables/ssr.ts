@@ -1,6 +1,7 @@
 /* eslint-disable no-redeclare */
 import type { H3Event } from 'h3'
-import { useNuxtApp, NuxtApp } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export function useRequestHeaders<K extends string = string> (include: K[]): Record<Lowercase<K>, string | undefined>
 export function useRequestHeaders (): Readonly<Record<string, string | undefined>>

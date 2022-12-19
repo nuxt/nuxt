@@ -1,4 +1,5 @@
-import { defineComponent, h, ref, resolveComponent, PropType, computed, DefineComponent, ComputedRef, onMounted, onBeforeUnmount } from 'vue'
+import type { PropType, DefineComponent, ComputedRef } from 'vue'
+import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { hasProtocol } from 'ufo'
 

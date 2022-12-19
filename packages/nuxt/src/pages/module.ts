@@ -7,7 +7,8 @@ import type { NuxtApp, NuxtPage } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { distDir } from '../dirs'
 import { resolvePagesRoutes, normalizeRoutes } from './utils'
-import { PageMetaPlugin, PageMetaPluginOptions } from './page-meta'
+import type { PageMetaPluginOptions } from './page-meta'
+import { PageMetaPlugin } from './page-meta'
 
 export default defineNuxtModule({
   meta: {

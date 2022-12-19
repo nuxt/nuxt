@@ -4,7 +4,7 @@ import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
-import { ViteBuildContext, ViteOptions } from './vite'
+import type { ViteBuildContext, ViteOptions } from './vite'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
@@ -83,10 +83,10 @@ export async function buildServer (ctx: ViteBuildContext) {
         external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
         output: {
           entryFileNames: 'server.mjs',
-          preferConst: true,
-          // TODO: https://github.com/vitejs/vite/pull/8641
-          inlineDynamicImports: !ctx.nuxt.options.experimental.viteServerDynamicImports,
-          format: 'module'
+          format: 'module',
+          generatedCode: {
+            constBindings: true
+          }
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
@@ -138,7 +138,9 @@ export async function buildServer (ctx: ViteBuildContext) {
   if (!ctx.nuxt.options.dev) {
     const start = Date.now()
     logger.info('Building server...')
+    logger.restoreAll()
     await vite.build(serverConfig)
+    logger.wrapAll()
     // Write production client manifest
     await writeManifest(ctx)
     await onBuild()

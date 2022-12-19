@@ -3,7 +3,8 @@ import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocat
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { createError, NuxtError } from './error'
+import type { NuxtError } from './error'
+import { createError } from './error'
 import { useState } from './state'
 
 export const useRouter = () => {

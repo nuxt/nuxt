@@ -1,7 +1,9 @@
 import pify from 'pify'
 import webpack from 'webpack'
-import { fromNodeMiddleware, defineEventHandler, NodeMiddleware } from 'h3'
-import webpackDevMiddleware, { OutputFileSystem } from 'webpack-dev-middleware'
+import type { NodeMiddleware } from 'h3'
+import { fromNodeMiddleware, defineEventHandler } from 'h3'
+import type { OutputFileSystem } from 'webpack-dev-middleware'
+import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Watching } from 'webpack'
 

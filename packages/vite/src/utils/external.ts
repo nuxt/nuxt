@@ -1,5 +1,6 @@
-import { ExternalsOptions, ExternalsDefaults, isExternal } from 'externality'
-import { ViteDevServer } from 'vite'
+import type { ExternalsOptions } from 'externality'
+import { ExternalsDefaults, isExternal } from 'externality'
+import type { ViteDevServer } from 'vite'
 
 export function createIsExternal (viteServer: ViteDevServer, rootDir: string) {
   const externalOpts: ExternalsOptions = {

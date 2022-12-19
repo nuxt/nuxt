@@ -9,7 +9,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
-import { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
 
 export type HookResult = Promise<void> | void
 

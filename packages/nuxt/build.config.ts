@@ -1,4 +1,5 @@
-import { defineBuildConfig, BuildEntry } from 'unbuild'
+import type { BuildEntry } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,
@@ -22,7 +23,6 @@ export default defineBuildConfig({
   externals: [
     '@vue/reactivity',
     '@vue/shared',
-    '@vueuse/head',
-    'vue-meta'
+    '@vueuse/head'
   ]
 })

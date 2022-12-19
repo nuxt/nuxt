@@ -1,7 +1,8 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive, Ref } from 'vue'
-import type { App, onErrorCaptured, VNode } from 'vue'
-import { createHooks, Hookable } from 'hookable'
+import { getCurrentInstance, reactive } from 'vue'
+import type { App, onErrorCaptured, VNode, Ref } from 'vue'
+import type { Hookable } from 'hookable'
+import { createHooks } from 'hookable'
 import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'

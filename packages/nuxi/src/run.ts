@@ -1,5 +1,6 @@
 import mri from 'mri'
-import { commands, Command, NuxtCommand } from './commands'
+import type { Command, NuxtCommand } from './commands'
+import { commands } from './commands'
 
 export async function runCommand (command: string, argv = process.argv.slice(2)) {
   const args = mri(argv)

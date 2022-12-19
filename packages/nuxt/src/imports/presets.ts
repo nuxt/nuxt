@@ -1,4 +1,5 @@
-import { defineUnimportPreset, InlinePreset } from 'unimport'
+import type { InlinePreset } from 'unimport'
+import { defineUnimportPreset } from 'unimport'
 
 const commonPresets: InlinePreset[] = [
   // #head

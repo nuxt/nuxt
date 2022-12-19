@@ -1,4 +1,4 @@
-import { Nuxt, NuxtApp } from '@nuxt/schema'
+import type { Nuxt, NuxtApp } from '@nuxt/schema'
 import { normalize } from 'pathe'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'

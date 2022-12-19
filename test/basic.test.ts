@@ -381,6 +381,7 @@ describe('plugins', () => {
   it('async plugin', async () => {
     const html = await $fetch('/plugins')
     expect(html).toContain('asyncPlugin: Async plugin works! 123')
+    expect(html).toContain('useFetch works!')
   })
 })
 
@@ -839,18 +840,11 @@ describe('component islands', () => {
         }
       `)
     } else if (process.env.NUXT_TEST_DEV) {
-      // TODO: Investigate extra style
-      // Introduced by https://github.com/nuxt/framework/pull/9549
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
             {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
-              "key": "island-link",
-              "rel": "stylesheet",
-            },
-            {
-              "href": "/_nuxt/<rootDir>/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",
               "rel": "stylesheet",
             },
@@ -885,7 +879,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
-      /export default \{data:\{rand_a:\[[^\]]*\]\},prerenderedAt:\d*\}/
+      /export default \{data:\{hey:{[^}]*},rand_a:\[[^\]]*\]\},prerenderedAt:\d*\}/
     )
   })
 

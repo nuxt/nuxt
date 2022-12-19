@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
-import { Component, ComponentsOptions } from '@nuxt/schema'
+import type { Component, ComponentsOptions } from '@nuxt/schema'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'

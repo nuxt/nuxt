@@ -25,16 +25,10 @@ The example below creates a cookie called `counter`. If the cookie doesn't exist
 ```vue
 <template>
   <div>
-    <h1> Counter: {{ counter || '-' }}</h1>
-    <button @click="counter = null">
-      reset
-    </button>
-    <button @click="counter--">
-      -
-    </button>
-    <button @click="counter++">
-      +
-    </button>
+    <h1>Counter: {{ counter || '-' }}</h1>
+    <button @click="counter = null">reset</button>
+    <button @click="counter--">-</button>
+    <button @click="counter++">+</button>
   </div>
 </template>
 
@@ -137,6 +131,71 @@ be returned as the cookie's value.
 ### `default`
 
 Specifies a function that returns the cookie's default value. The function can also return a `Ref`.
+
+### `watch`
+
+Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reactivity-core.html#watch) cookie ref data.
+
+- `true` - Will watch cookie ref data changes and its nested properties. (default)
+- `shallow` - Will watch cookie ref data changes for only top level properties
+- `false` Will not watch cookie ref data changes.
+
+**Example 1:**
+
+```vue
+<template>
+  <div>User score: {{ user?.score }}</div>
+</template>
+
+<script setup>
+const user = useCookie(
+  'userInfo',
+  {
+    default: () => ({ score: -1 }),
+    watch: false
+  }
+)
+
+if (user.value && user.value !== null) {
+  user.value.score++; // userInfo cookie not update with this change
+}
+</script>
+```
+
+**Example 2:**
+
+```vue
+<template>
+  <div>
+    <h1>List</h1>
+    <pre>{{ list }}</pre>
+    <button @click="add">Add</button>
+    <button @click="save">Save</button>
+  </div>
+</template>
+
+<script setup>
+const list = useCookie(
+  'list',
+  {
+    default: () => [],
+    watch: 'shallow'
+  }
+)
+
+function add() {
+  list.value?.push(Math.round(Math.random() * 1000))
+  // list cookie not update with this change
+}
+
+function save() {
+  if (list.value && list.value !== null) {
+    list.value = [...list.value]
+    // list cookie update with this change
+  }
+}
+</script>
+```
 
 ## Handling Cookies in API Routes
 
