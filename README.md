@@ -17,9 +17,9 @@
 
 ## Nuxt 3
 
-The evolution of Nuxt powered by Vite and Vue 3 is currently in release candidate and available on:
+The evolution of Nuxt powered by Vite and Vue 3 available on:
 - GitHub: [nuxt/framework](https://github.com/nuxt/framework)
-- Documentation: [v3.nuxtjs.org](https://v3.nuxtjs.org)
+- Documentation: [nuxt.com](https://nuxt.com/)
 
 ## Links
 
