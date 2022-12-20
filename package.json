@@ -73,8 +73,8 @@
     "ufo": "^1.0.1",
     "unbuild": "^1.0.2",
     "vite": "^4.0.2",
-    "vitest": "^0.25.8",
-    "vue-tsc": "^1.0.14"
+    "vitest": "^0.26.1",
+    "vue-tsc": "^1.0.16"
   },
   "packageManager": "pnpm@7.18.2",
   "engines": {

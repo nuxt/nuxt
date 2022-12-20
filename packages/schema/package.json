@@ -18,7 +18,7 @@
     "@types/semver": "^7",
     "@unhead/schema": "^1.0.13",
     "@vitejs/plugin-vue": "^4.0.0",
-    "nitropack": "npm:nitropack-edge@2.0.0-27851797.fc75d47",
+    "nitropack": "npm:nitropack-edge@2.0.0-27857536.c326873",
     "unbuild": "latest",
     "vite": "~4.0.2"
   },
@@ -34,7 +34,7 @@
     "scule": "^1.0.0",
     "std-env": "^3.3.1",
     "ufo": "^1.0.1",
-    "unimport": "^1.0.2",
+    "unimport": "^1.1.0",
     "untyped": "^1.2.0"
   },
   "engines": {

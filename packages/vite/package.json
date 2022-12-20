@@ -27,7 +27,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.14",
     "defu": "^6.1.1",
-    "esbuild": "^0.16.9",
+    "esbuild": "^0.16.10",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.1",
     "externality": "^1.0.0",
@@ -49,7 +49,7 @@
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
     "vite": "~4.0.2",
-    "vite-node": "^0.25.8",
+    "vite-node": "^0.26.1",
     "vite-plugin-checker": "^0.5.2",
     "vue-bundle-renderer": "^1.0.0"
   },
