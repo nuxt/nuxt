@@ -48,8 +48,8 @@
     "rollup-plugin-visualizer": "^5.8.3",
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
-    "vite": "~4.0.2",
-    "vite-node": "^0.26.1",
+    "vite": "~4.0.3",
+    "vite-node": "^0.26.2",
     "vite-plugin-checker": "^0.5.2",
     "vue-bundle-renderer": "^1.0.0"
   },

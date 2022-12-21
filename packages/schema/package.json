@@ -18,9 +18,9 @@
     "@types/semver": "^7",
     "@unhead/schema": "^1.0.13",
     "@vitejs/plugin-vue": "^4.0.0",
-    "nitropack": "npm:nitropack-edge@2.0.0-27857536.c326873",
+    "nitropack": "npm:nitropack-edge@2.0.0-27860563.409fe2b",
     "unbuild": "latest",
-    "vite": "~4.0.2"
+    "vite": "~4.0.3"
   },
   "dependencies": {
     "c12": "^1.1.0",
