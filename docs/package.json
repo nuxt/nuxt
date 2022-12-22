@@ -3,14 +3,14 @@
   "private": true,
   "scripts": {
     "dev": "yarn gendocs && nuxi dev",
-    "build": "yarn gendocs && nuxi generate",
+    "build": "yarn gendocs && nuxi build",
     "build:ci": "cd .. && corepack enable && pnpm install && pnpm build:stub && cd docs && yarn build",
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
     "jiti": "^1.16.0",
     "nuxt": "^3.0.0",
-    "nuxt-website-theme": "^0.1.27",
+    "nuxt-website-theme": "^0.2.0",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
     "untyped": "^1.2.0"
