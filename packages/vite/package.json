@@ -44,13 +44,13 @@
     "postcss": "^8.4.20",
     "postcss-import": "^15.1.0",
     "postcss-url": "^10.1.3",
-    "rollup": "^3.7.5",
+    "rollup": "^3.8.1",
     "rollup-plugin-visualizer": "^5.8.3",
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
     "vite": "~4.0.3",
     "vite-node": "^0.26.2",
-    "vite-plugin-checker": "^0.5.2",
+    "vite-plugin-checker": "^0.5.3",
     "vue-bundle-renderer": "^1.0.0"
   },
   "peerDependencies": {
