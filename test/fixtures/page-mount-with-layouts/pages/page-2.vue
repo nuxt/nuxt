@@ -13,11 +13,10 @@
 
 <script>
 export default {
-  layout: "layout-2",
+  layout: 'layout-2',
 
-  mounted() {
-    window.mountedCount = (window.mountedCount || 0) + 1;
-    console.log("page-2 mounted", this.$nuxt.layoutName);
-  },
-};
+  mounted () {
+    window.mountedCount = (window.mountedCount || 0) + 1
+  }
+}
 </script>

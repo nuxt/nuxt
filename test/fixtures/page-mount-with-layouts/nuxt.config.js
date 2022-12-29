@@ -1,11 +1,11 @@
 export default {
   features: {
-    transitions: false,
+    transitions: false
   },
 
   build: {
     splitChunks: {
-      layouts: true,
-    },
-  },
-};
+      layouts: true
+    }
+  }
+}
