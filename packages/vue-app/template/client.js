@@ -619,7 +619,8 @@ function normalizeComponents (to, ___) {
 }
 
 <% if (features.layouts) { %>
-<% if (splitChunks.layouts) { %>async <% } %>function setLayoutForNextPage (to) {
+const routeMap = new WeakMap()
+<% if (splitChunks.layouts) { %>async <% } %>function getLayoutForNextPage (to, from, next) {
   // Set layout
   let hasError = Boolean(this.$options.nuxt.err)
   if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
@@ -632,9 +633,19 @@ function normalizeComponents (to, ___) {
   if (typeof layout === 'function') {
     layout = layout(app.context)
   }
+
+  routeMap.set(to, layout);
+
   <% if (splitChunks.layouts) { %>
   await this.loadLayout(layout)
   <% } %>
+  if (next) next();
+}
+
+function setLayoutForNextPage(to) {
+  const layout = routeMap.get(to)
+  routeMap.delete(to)
+
   this.setLayout(layout)
 }
 <% } %>
@@ -873,6 +884,7 @@ async function mountApp (__app) {
     // Add afterEach router hooks
     router.afterEach(normalizeComponents)
     <% if (features.layouts) { %>
+    router.beforeResolve(getLayoutForNextPage.bind(_app))
     router.afterEach(setLayoutForNextPage.bind(_app))
     <% } %>
     router.afterEach(fixPrepatch.bind(_app))
@@ -926,7 +938,8 @@ async function mountApp (__app) {
   // First render on client-side
   const clientFirstMount = () => {
     normalizeComponents(router.currentRoute, router.currentRoute)
-    setLayoutForNextPage.call(_app, router.currentRoute)
+    getLayoutForNextPage.call(_app, router.currentRoute)
+      .then(() => setLayoutForNextPage.call(_app, router.currentRoute))
     checkForErrors(_app)
     // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
     mount()
