@@ -935,11 +935,15 @@ async function mountApp (__app) {
   }
   <% } %>
 
+  const clientFirstLayoutSet = async () => {
+    await getLayoutForNextPage.call(_app, router.currentRoute)
+    setLayoutForNextPage.call(_app, router.currentRoute)
+  }
+
   // First render on client-side
   const clientFirstMount = () => {
     normalizeComponents(router.currentRoute, router.currentRoute)
-    getLayoutForNextPage.call(_app, router.currentRoute)
-      .then(() => setLayoutForNextPage.call(_app, router.currentRoute))
+    clientFirstLayoutSet()
     checkForErrors(_app)
     // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
     mount()
