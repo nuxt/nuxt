@@ -935,8 +935,8 @@ async function mountApp (__app) {
   }
   <% } %>
 
-  const clientFirstLayoutSet = async () => {
-    await getLayoutForNextPage.call(_app, router.currentRoute)
+  const clientFirstLayoutSet = <% if (splitChunks.layouts) { %>async<% } %> () => {
+    <% if (splitChunks.layouts) { %>await<% } %> getLayoutForNextPage.call(_app, router.currentRoute)
     setLayoutForNextPage.call(_app, router.currentRoute)
   }
 
