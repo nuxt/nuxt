@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>Page 1</div>
+    <h2>Page 1</h2>
 
     <NuxtLink
       id="link"
@@ -16,6 +16,7 @@ export default {
   layout: "layout-1",
 
   mounted() {
+    window.mountedCount = (window.mountedCount || 0) + 1;
     console.log("page-1 mounted", this.$nuxt.layoutName);
   },
 };
