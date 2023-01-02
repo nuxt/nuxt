@@ -68,16 +68,16 @@ function useLoadingIndicator (opts: {
   function start () {
     clear()
     progress.value = 0
-    isLoading.value = true
-    if (opts.throttle) {
-      if (process.client) {
-        _throttle = setTimeout(_startTimer, opts.throttle)
-      }
+    if (opts.throttle && process.client) {
+      _throttle = setTimeout(() => {
+        isLoading.value = true
+        _startTimer()
+      }, opts.throttle)
     } else {
+      isLoading.value = true
       _startTimer()
     }
   }
-
   function finish () {
     progress.value = 100
     _hide()
