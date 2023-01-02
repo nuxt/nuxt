@@ -7,7 +7,6 @@ export default defineUntypedSchema({
    * Any components in the directories configured here can be used throughout your
    * pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @default {{ dirs: [`~/components`] }}
    * @see https://nuxt.com/docs/guide/directory-structure/components
    * @type {boolean | typeof import('../src/types/components').ComponentsOptions | typeof import('../src/types/components').ComponentsOptions['dirs']}
    */
