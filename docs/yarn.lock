@@ -4145,7 +4145,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.0
     nuxt: ^3.0.0
-    nuxt-website-theme: ^0.2.1
+    nuxt-website-theme: ^0.2.2
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.2.0
@@ -8754,14 +8754,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-mailjet@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "node-mailjet@npm:5.1.1"
+"node-mailjet@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "node-mailjet@npm:6.0.0"
   dependencies:
     axios: ^0.27.2
     json-bigint: ^1.0.0
     url-join: ^4.0.0
-  checksum: 5a99c032996431064a6914ffd2441f00c086c0df4cb2cd52565d01b97a8353790f7b7c34e7cda62685225ae4847f2efe45e38b20652327fb114d4c27632841ba
+  checksum: 9cb999ca0250682e20ae537a1b548e4fe7cb0d8c74860cd7bcc240c3429c8f51fe6ff242b1de0f78c12df2cc2b1055ad7c11f4f03717f2ad4a8dc52b41ab2280
   languageName: node
   linkType: hard
 
@@ -8929,9 +8929,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-website-theme@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "nuxt-website-theme@npm:0.2.1"
+"nuxt-website-theme@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "nuxt-website-theme@npm:0.2.2"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
@@ -8947,7 +8947,7 @@ __metadata:
     "@vueuse/motion": ^2.0.0-beta.12
     joi: ^17.7.0
     mjml: ^4.13.0
-    node-mailjet: ^5.1.1
+    node-mailjet: ^6.0.0
     nuxt-icon: ^0.1.8
     nuxt-plausible: ^0.1.2
     remove: ^0.1.5
@@ -8955,7 +8955,7 @@ __metadata:
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.147.0
     vue-lite-youtube-embed: ^1.0.4
-  checksum: fb99d00b7fe0c87815e7df0f9d6b62a1b757cbdcae714243a7e52dad3bbc4b14e99477cc96673d4271a6e35dc1afa951ee0203ad704d84428f1ba8ce1324a5a6
+  checksum: 994fd28fcbac957d51fb440f6aff2d7b557a9a497ba98856210d310a722b1336c1b130101095ce3ae4f5695b4b0d8155e99997e0cff6a775bb5bd0f135e2e6cf
   languageName: node
   linkType: hard
 
