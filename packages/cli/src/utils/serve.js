@@ -1,4 +1,4 @@
-import { promises as fs } from 'fs'
+import { readFile, stat } from 'fs/promises'
 import { join, extname, sep } from 'path'
 import consola from 'consola'
 import connect from 'connect'
@@ -21,7 +21,7 @@ export async function serve (cmd) {
     options.target = buildConfig.target
   } catch (err) { }
 
-  const distStat = await fs.stat(options.generate.dir).catch(() => {})
+  const distStat = await stat(options.generate.dir).catch(() => {})
   const distPath = join(options.generate.dir.replace(process.cwd() + sep, ''), sep)
   if (!distStat || !distStat.isDirectory()) {
     throw new Error('Output directory `' + distPath + '` does not exist, please use `nuxt generate` before `nuxt start` for static target.')
@@ -35,7 +35,7 @@ export async function serve (cmd) {
     })
   )
   if (options.generate.fallback) {
-    const fallbackFile = await fs.readFile(join(options.generate.dir, options.generate.fallback), 'utf-8')
+    const fallbackFile = await readFile(join(options.generate.dir, options.generate.fallback), 'utf-8')
     app.use((req, res, next) => {
       const ext = extname(req.url) || '.html'
 
