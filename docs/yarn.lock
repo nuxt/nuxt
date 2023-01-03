@@ -4143,7 +4143,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:."
   dependencies:
-    jiti: ^1.16.0
+    jiti: ^1.16.1
     nuxt: ^3.0.0
     nuxt-website-theme: ^0.2.2
     pathe: ^1.0.0
@@ -6652,6 +6652,15 @@ __metadata:
   bin:
     jiti: bin/jiti.js
   checksum: 28844cd69168fd0491b296d4925e0034cc9f23aba51bdb94b896818e444059092af838f98d406477dc1b6e0ca15a5ff4522e060bf3f289f9e1ca1ee572a54e6b
+  languageName: node
+  linkType: hard
+
+"jiti@npm:^1.16.1":
+  version: 1.16.1
+  resolution: "jiti@npm:1.16.1"
+  bin:
+    jiti: bin/jiti.js
+  checksum: dce56f5bb0ba61d500e854389fed128a19f72061247c86405c7e2a47f772ca8dea26bb9e64b9b69a5645dbc1d4170f29e147606e4c6359a3a0800a0658e4e593
   languageName: node
   linkType: hard
 

@@ -20,14 +20,14 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "nitropack": "npm:nitropack-edge@2.0.0-27860563.409fe2b",
     "unbuild": "latest",
-    "vite": "~4.0.3"
+    "vite": "~4.0.4"
   },
   "dependencies": {
     "c12": "^1.1.0",
     "create-require": "^1.1.1",
     "defu": "^6.1.1",
     "hookable": "^5.4.2",
-    "jiti": "^1.16.0",
+    "jiti": "^1.16.1",
     "pathe": "^1.0.0",
     "pkg-types": "^1.0.1",
     "postcss-import-resolver": "^2.0.0",
