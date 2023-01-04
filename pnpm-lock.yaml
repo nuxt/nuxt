@@ -558,7 +558,7 @@ importers:
       consola: ^2.15.3
       defu: ^6.1.1
       execa: ^6.1.0
-      get-port-please: ^2.6.1
+      get-port-please: ^3.0.1
       jiti: ^1.16.1
       ofetch: ^1.0.0
       pathe: ^1.0.0
@@ -571,7 +571,7 @@ importers:
       consola: 2.15.3
       defu: 6.1.1
       execa: 6.1.0
-      get-port-please: 2.6.1
+      get-port-please: 3.0.1
       jiti: 1.16.1
       ofetch: 1.0.0
       pathe: 1.0.0
@@ -597,7 +597,7 @@ importers:
       estree-walker: ^3.0.1
       externality: ^1.0.0
       fs-extra: ^11.1.0
-      get-port-please: ^2.6.1
+      get-port-please: ^3.0.1
       h3: ^1.0.2
       knitwork: ^1.0.0
       magic-string: ^0.27.0
@@ -633,7 +633,7 @@ importers:
       estree-walker: 3.0.1
       externality: 1.0.0
       fs-extra: 11.1.0
-      get-port-please: 2.6.1
+      get-port-please: 3.0.1
       h3: 1.0.2
       knitwork: 1.0.0
       magic-string: 0.27.0
@@ -5090,6 +5090,10 @@ packages:
     resolution: {integrity: sha512-4PDSrL6+cuMM1xs6w36ZIkaKzzE0xzfVBCfebHIJ3FE8iB9oic/ECwPw3iNiD4h1AoJ5XLLBhEviFAVrZsDC5A==}
     dependencies:
       fs-memo: 1.2.0
+
+  /get-port-please/3.0.1:
+    resolution: {integrity: sha512-R5pcVO8Z1+pVDu8Ml3xaJCEkBiiy1VQN9za0YqH8GIi1nIqD4IzQhzY6dDzMRtdS1lyiGlucRzm8IN8wtLIXng==}
+    dev: false
 
   /get-stdin/9.0.0:
     resolution: {integrity: sha512-dVKBjfWisLAicarI2Sf+JuBE/DghV4UzNAVe9yhEJuzeREd3JhOTE9cUaJTeSa77fsbQUK3pcOpJfM59+VKZaA==}
