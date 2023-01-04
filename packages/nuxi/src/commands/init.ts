@@ -18,6 +18,11 @@ export default defineNuxtCommand({
     // Clone template
     const template = args.template || args.t || 'v3'
 
+    if (typeof template === 'boolean') {
+      consola.error('Please specify a template!')
+      process.exit(1)
+    }
+
     const t = await downloadTemplate(template, {
       dir: args._[0] as string,
       force: args.force,
