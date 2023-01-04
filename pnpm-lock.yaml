@@ -51,7 +51,7 @@ importers:
       unbuild: ^1.0.2
       vite: ^4.0.4
       vitest: ^0.26.3
-      vue-tsc: ^1.0.19
+      vue-tsc: ^1.0.20
     devDependencies:
       '@actions/core': 1.10.0
       '@nuxt/kit': link:packages/kit
@@ -87,7 +87,7 @@ importers:
       unbuild: 1.0.2
       vite: 4.0.4_@types+node@18.11.18
       vitest: 0.26.3
-      vue-tsc: 1.0.19_typescript@4.9.4
+      vue-tsc: 1.0.20_typescript@4.9.4
 
   examples/advanced/config-extends:
     specifiers:
@@ -319,7 +319,7 @@ importers:
       unbuild: ^1.0.2
       unctx: ^2.1.1
       unimport: ^1.1.0
-      untyped: ^1.2.0
+      untyped: ^1.2.1
     dependencies:
       '@nuxt/schema': link:../schema
       c12: 1.1.0
@@ -338,7 +338,7 @@ importers:
       semver: 7.3.8
       unctx: 2.1.1
       unimport: 1.1.0
-      untyped: 1.2.0
+      untyped: 1.2.1
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.12
@@ -426,7 +426,7 @@ importers:
       defu: ^6.1.1
       destr: ^1.2.2
       escape-string-regexp: ^5.0.0
-      estree-walker: ^3.0.1
+      estree-walker: ^3.0.2
       fs-extra: ^11.1.0
       globby: ^13.1.3
       h3: ^1.0.2
@@ -451,7 +451,7 @@ importers:
       unhead: ^1.0.14
       unimport: ^1.1.0
       unplugin: ^1.0.1
-      untyped: ^1.2.0
+      untyped: ^1.2.1
       vue: 3.2.45
       vue-bundle-renderer: ^1.0.0
       vue-devtools-stub: ^0.1.0
@@ -472,7 +472,7 @@ importers:
       defu: 6.1.1
       destr: 1.2.2
       escape-string-regexp: 5.0.0
-      estree-walker: 3.0.1
+      estree-walker: 3.0.2
       fs-extra: 11.1.0
       globby: 13.1.3
       h3: 1.0.2
@@ -496,7 +496,7 @@ importers:
       unhead: 1.0.14
       unimport: 1.1.0
       unplugin: 1.0.1
-      untyped: 1.2.0
+      untyped: 1.2.1
       vue: 3.2.45
       vue-bundle-renderer: 1.0.0
       vue-devtools-stub: 0.1.0
@@ -526,7 +526,7 @@ importers:
       ufo: ^1.0.1
       unbuild: ^1.0.2
       unimport: ^1.1.0
-      untyped: ^1.2.0
+      untyped: ^1.2.1
       vite: ^4.0.4
     dependencies:
       c12: 1.1.0
@@ -541,7 +541,7 @@ importers:
       std-env: 3.3.1
       ufo: 1.0.1
       unimport: 1.1.0
-      untyped: 1.2.0
+      untyped: 1.2.1
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.12
@@ -594,7 +594,7 @@ importers:
       defu: ^6.1.1
       esbuild: ^0.16.13
       escape-string-regexp: ^5.0.0
-      estree-walker: ^3.0.1
+      estree-walker: ^3.0.2
       externality: ^1.0.0
       fs-extra: ^11.1.0
       get-port-please: ^3.0.1
@@ -630,7 +630,7 @@ importers:
       defu: 6.1.1
       esbuild: 0.16.13
       escape-string-regexp: 5.0.0
-      estree-walker: 3.0.1
+      estree-walker: 3.0.2
       externality: 1.0.0
       fs-extra: 11.1.0
       get-port-please: 3.0.1
@@ -677,7 +677,7 @@ importers:
       cssnano: ^5.1.14
       esbuild-loader: ^2.20.0
       escape-string-regexp: ^5.0.0
-      estree-walker: ^3.0.1
+      estree-walker: ^3.0.2
       file-loader: ^6.2.0
       fork-ts-checker-webpack-plugin: ^7.2.14
       fs-extra: ^11.1.0
@@ -719,7 +719,7 @@ importers:
       cssnano: 5.1.14_postcss@8.4.20
       esbuild-loader: 2.20.0_webpack@5.75.0
       escape-string-regexp: 5.0.0
-      estree-walker: 3.0.1
+      estree-walker: 3.0.2
       file-loader: 6.2.0_webpack@5.75.0
       fork-ts-checker-webpack-plugin: 7.2.14_webpack@5.75.0
       fs-extra: 11.1.0
@@ -1067,8 +1067,8 @@ packages:
       - supports-color
     dev: false
 
-  /@babel/standalone/7.20.6:
-    resolution: {integrity: sha512-u5at/CbBLETf7kx2LOY4XdhseD79Y099WZKAOMXeT8qvd9OSR515my2UNBBLY4qIht/Qi9KySeQHQwQwxJN4Sw==}
+  /@babel/standalone/7.20.11:
+    resolution: {integrity: sha512-WUPlwwXFk3iViGE7QFVVp423eVtT+eoXu1940Xu4QJgqgHBF6WWtlwO1Ip5rIWQnp7OHrGdwrwKLtLhUVfOZbA==}
     engines: {node: '>=6.9.0'}
 
   /@babel/template/7.20.7:
@@ -1095,15 +1095,6 @@ packages:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
-
-  /@babel/types/7.20.5:
-    resolution: {integrity: sha512-c9fst/h2/dcF7H+MJKZ2T0KjEQ8hY/BNnDk/H3XY8C4Aw/eWQXWn/lWntHF9ooUBnGmEvbfGrTgLWc+um0YDUg==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/helper-string-parser': 7.19.4
-      '@babel/helper-validator-identifier': 7.19.1
-      to-fast-properties: 2.0.0
-    dev: false
 
   /@babel/types/7.20.7:
     resolution: {integrity: sha512-69OnhBxSSgK0OzTJai4kyPDiKTIe3j+ctaHdIGVbRahTLAT7L3R9oeXHC2aVSuGYt3cVnoAMDmOCgJ2yaiLMvg==}
@@ -2541,30 +2532,30 @@ packages:
       vue: 3.2.45
     dev: false
 
-  /@volar/language-core/1.0.19:
-    resolution: {integrity: sha512-BRxhwqn66VHeLIxxgV4ybY9NDtwMp2bl1w7085qlK7i1pa4jeFR5lJG2U5qd0oI3e0PIWML+PryxSrKNd3+SZw==}
+  /@volar/language-core/1.0.20:
+    resolution: {integrity: sha512-FU6TC+xQDLkBmp226NTeZ454MTb8VFLga6CIzWP+TsxuxGwB9Exvzof9TKpilIhTdF4IGVJJ4X1aCP6ycnLMbg==}
     dependencies:
-      '@volar/source-map': 1.0.19
+      '@volar/source-map': 1.0.20
       muggle-string: 0.1.0
     dev: true
 
-  /@volar/source-map/1.0.19:
-    resolution: {integrity: sha512-5fYKsl1evR/QAZ9LADto3kzbYKfpjZLWS9reNpxGR3ODPFTpaJgYk4lqghFyq4yU7/e/ZPZ1zLXjEsnL526URw==}
+  /@volar/source-map/1.0.20:
+    resolution: {integrity: sha512-6wwrvAjuy7HepvHW7CqCw5b57YIFrj9mcfJvjic1WCX9TqjnXAcuHFqiUPid7EdZ4SCRKCYQbWmWreThYbHaZw==}
     dependencies:
       muggle-string: 0.1.0
     dev: true
 
-  /@volar/typescript/1.0.19:
-    resolution: {integrity: sha512-S6n945uhpc5J1qCVXVV4tz4k1nyxWaoG+wqy9TYdRDazPHeq9l45WDg58g/ehblUWux85TZN8i3zdsLRLkFrdw==}
+  /@volar/typescript/1.0.20:
+    resolution: {integrity: sha512-98D2+rC4igqPL7emqIf0NtIx3UYXZ8xqILiP/ihwP7G2T4oyoGr2vKEOwo49sUzvgUvQl2AI5p8ZQ71mFJfP7w==}
     dependencies:
-      '@volar/language-core': 1.0.19
+      '@volar/language-core': 1.0.20
     dev: true
 
-  /@volar/vue-language-core/1.0.19:
-    resolution: {integrity: sha512-3mIjJvQ+0tNOp+U9+Nggy92HYIqnltf882UMG9RuNHrd0Jn/rdvjRBs0jNTzwYDV9tn3tjDHGIfQak9XrUCaRg==}
+  /@volar/vue-language-core/1.0.20:
+    resolution: {integrity: sha512-Zz6yuxtA6BG6YU8KPwV4qhO5kh3e2Et6+YOu0QC43SiDgjIw2Vzzi+qAqm8UYofg9UBn82OArO1L+VrZPCCK8A==}
     dependencies:
-      '@volar/language-core': 1.0.19
-      '@volar/source-map': 1.0.19
+      '@volar/language-core': 1.0.20
+      '@volar/source-map': 1.0.20
       '@vue/compiler-dom': 3.2.45
       '@vue/compiler-sfc': 3.2.45
       '@vue/reactivity': 3.2.45
@@ -2573,11 +2564,11 @@ packages:
       vue-template-compiler: 2.7.14
     dev: true
 
-  /@volar/vue-typescript/1.0.19:
-    resolution: {integrity: sha512-HKaLCz/lb5xkJ1SyaMmms0Ww/OVStQ16qWttSbHRnnyRV/IDMFrwlovA/bIAPzHUq8EVoDAznRVsCysr2QCOGA==}
+  /@volar/vue-typescript/1.0.20:
+    resolution: {integrity: sha512-FxucnAIZc503CfkdEGmUSw8EQfT31gi0DST7YmCNBK3cWOqJTF7UaHaBDpejnYGbsB568KZQbWTLNSpid5S/lA==}
     dependencies:
-      '@volar/typescript': 1.0.19
-      '@volar/vue-language-core': 1.0.19
+      '@volar/typescript': 1.0.20
+      '@volar/vue-language-core': 1.0.20
     dev: true
 
   /@vue/babel-helper-vue-transform-on/1.0.2:
@@ -4742,6 +4733,10 @@ packages:
 
   /estree-walker/3.0.1:
     resolution: {integrity: sha512-woY0RUD87WzMBUiZLx8NsYr23N5BKsOMZHhu2hoNRVh6NXGfoiT1KOL8G3UHlJAnEDGmfa5ubNA/AacfG+Kb0g==}
+    dev: false
+
+  /estree-walker/3.0.2:
+    resolution: {integrity: sha512-C03BvXCQIH/po+PNPONx/zSM9ziPr9weX8xNhYb/IJtdJ9z+L4z9VKPTB+UTHdmhnIopA2kc419ueyVyHVktwA==}
     dev: false
 
   /esutils/2.0.3:
@@ -8178,7 +8173,7 @@ packages:
       rollup-plugin-dts: 5.0.0_nv3cvulfrssbbv5jon74ek7f7i
       scule: 1.0.0
       typescript: 4.9.4
-      untyped: 1.0.0
+      untyped: 1.2.1
     transitivePeerDependencies:
       - sass
       - supports-color
@@ -8370,27 +8365,15 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /untyped/1.0.0:
-    resolution: {integrity: sha512-aBeR3Z51038d7zVzsNShYEdO7u/VCp5R17fxpPXlD2QvG9g6uVJ+JM+zMJ7KFPIt1BNf3I6bU6PhAlsAFkIfdA==}
+  /untyped/1.2.1:
+    resolution: {integrity: sha512-hEtBC6MvqXLEEpx5ItPhnpgHIf3hRP310IYHj7N3D5zjdLJnmJNsGRDFbovk6DM2dekF/OBWuxDr0b6479eUkA==}
     dependencies:
       '@babel/core': 7.20.7
-      '@babel/standalone': 7.20.6
+      '@babel/standalone': 7.20.11
       '@babel/types': 7.20.7
       scule: 1.0.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /untyped/1.2.0:
-    resolution: {integrity: sha512-nG0A55YEhUU5UCEM+nhIhCVkA8a4L1spIVtzO0937WDjEA6jrKpu184O2K9iv5UuJNHnwhu+Q3TXiSJh/JrjlQ==}
-    dependencies:
-      '@babel/core': 7.20.5
-      '@babel/standalone': 7.20.6
-      '@babel/types': 7.20.5
-      scule: 1.0.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /update-browserslist-db/1.0.9_browserslist@4.21.4:
     resolution: {integrity: sha512-/xsqn21EGVdXI3EXSum1Yckj3ZVZugqyOZQ/CxYPBD/R+ko9NSUScf8tFF4dOKY+2pvSSJA/S+5B8s4Zr4kyvg==}
@@ -8770,14 +8753,14 @@ packages:
       he: 1.2.0
     dev: true
 
-  /vue-tsc/1.0.19_typescript@4.9.4:
-    resolution: {integrity: sha512-UuI4G9PwV07Q2U+xYDLP5y3aUXTfuIF0Exy0qXT8+BbLlahubQ2r2PGSodSBnHxAhm/XsrD0KleC2rSzLKXDfQ==}
+  /vue-tsc/1.0.20_typescript@4.9.4:
+    resolution: {integrity: sha512-AApewYXozAD7v4Iz9I0QzQebSVgvlUvpfbGe2e9TwtBdcw5gBsGiX8Oj5BdxRRiGnOdDG3BHPK8msl7Qhmy/1A==}
     hasBin: true
     peerDependencies:
       typescript: '*'
     dependencies:
-      '@volar/vue-language-core': 1.0.19
-      '@volar/vue-typescript': 1.0.19
+      '@volar/vue-language-core': 1.0.20
+      '@volar/vue-typescript': 1.0.20
       typescript: 4.9.4
     dev: true
 

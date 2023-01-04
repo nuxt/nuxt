@@ -29,7 +29,7 @@
     "defu": "^6.1.1",
     "esbuild": "^0.16.13",
     "escape-string-regexp": "^5.0.0",
-    "estree-walker": "^3.0.1",
+    "estree-walker": "^3.0.2",
     "externality": "^1.0.0",
     "fs-extra": "^11.1.0",
     "get-port-please": "^3.0.1",
