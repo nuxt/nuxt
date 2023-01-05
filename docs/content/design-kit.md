@@ -7,7 +7,7 @@ image: '/socials/design-kit.jpg'
 ::page-hero
 ---
 image:
-  src: '/assets/design-kit/hero-designkit'
+  path: '/assets/design-kit/hero-designkit'
   format: 'webp'
   height: '216'
   width: '400'
