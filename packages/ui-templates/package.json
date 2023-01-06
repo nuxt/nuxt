@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/ui-templates",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repository": "nuxt/ui",
   "license": "CC-BY-ND-4.0",
   "exports": {
@@ -24,7 +24,7 @@
     "test": "pnpm lint && pnpm build"
   },
   "devDependencies": {
-    "@nuxt/ui-assets": "^0.1.0",
+    "@nuxt/ui-assets": "^0.2.0",
     "@types/html-minifier": "^4.0.2",
     "@types/lodash.template": "^4.5.1",
     "critters": "^0.0.16",

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.4.0...@nuxt/ui-templates@1.1.0) (2023-01-06)
+
+
+### Bug Fixes
+
+* **templates:** avoid using blur in no-animation mode, disable animation in Safari ([#175](https://github.com/nuxt/ui/issues/175)) ([e552ec5](https://github.com/nuxt/ui/commit/e552ec53478d1b310f2aac6aac552777d00c16f7))
+* use dynamic copyright year ([#193](https://github.com/nuxt/ui/issues/193)) ([816f361](https://github.com/nuxt/ui/commit/816f3616015cf6cad1568dbdb830f0664bdc5ca5))
+
+
+### Features
+
+* new design welcome template ([#178](https://github.com/nuxt/ui/issues/178)) ([85ceb30](https://github.com/nuxt/ui/commit/85ceb30301a58094e9ae4a6556e086dec245a3fb))
+
+
+
+
+
 # [0.4.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.3.3...@nuxt/ui-templates@0.4.0) (2022-09-20)
 
 
