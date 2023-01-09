@@ -196,7 +196,8 @@ export default defineNuxtModule<ComponentsOptions>({
       config.plugins.push(loaderPlugin.vite({
         sourcemap: nuxt.options.sourcemap[mode],
         getComponents,
-        mode
+        mode,
+        experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
       if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
@@ -212,7 +213,8 @@ export default defineNuxtModule<ComponentsOptions>({
         config.plugins.push(loaderPlugin.webpack({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents,
-          mode
+          mode,
+          experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
         if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({

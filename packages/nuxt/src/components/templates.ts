@@ -86,7 +86,13 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
 export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   // components.islands.mjs'
   getContents ({ options }) {
-    return options.getComponents().filter(c => c.island).map(
+    const components = options.getComponents()
+    const islands = components.filter(component =>
+      component.island ||
+      // .server components without a corresponding .client component will need to be rendered as an island
+      (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+    )
+    return islands.map(
       (c) => {
         const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
         const comment = createImportMagicComments(c)
