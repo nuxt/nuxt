@@ -4,7 +4,7 @@ import type { Server as HttpsServer } from 'node:https'
 import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
-import type { Import, InlinePreset } from 'unimport'
+import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
@@ -74,6 +74,7 @@ export interface NuxtHooks {
 
   'imports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
   'imports:extend': (imports: Import[]) => HookResult
+  'imports:context': (context: Unimport) => HookResult
   'imports:dirs': (dirs: string[]) => HookResult
 
   // Components

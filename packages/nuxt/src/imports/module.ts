@@ -20,7 +20,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     transform: {
       include: [],
       exclude: undefined
-    }
+    },
+    virtualImports: ['#imports']
   },
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
@@ -34,13 +35,15 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Create a context to share state between module internals
     const ctx = createUnimport({
-      presets,
-      imports: options.imports,
-      virtualImports: ['#imports'],
+      ...options,
       addons: {
-        vueTemplate: options.autoImport
-      }
+        vueTemplate: options.autoImport,
+        ...options.addons
+      },
+      presets
     })
+
+    await nuxt.callHook('imports:context', ctx)
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
