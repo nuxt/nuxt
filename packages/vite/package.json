@@ -36,7 +36,7 @@
     "h3": "^1.0.2",
     "knitwork": "^1.0.0",
     "magic-string": "^0.27.0",
-    "mlly": "^1.0.0",
+    "mlly": "^1.1.0",
     "ohash": "^1.0.0",
     "pathe": "^1.0.0",
     "perfect-debounce": "^0.1.3",
@@ -49,7 +49,7 @@
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
     "vite": "~4.0.4",
-    "vite-node": "^0.26.3",
+    "vite-node": "^0.27.0",
     "vite-plugin-checker": "^0.5.3",
     "vue-bundle-renderer": "^1.0.0"
   },
