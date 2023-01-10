@@ -57,6 +57,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         css: resolveCSSOptions(nuxt),
         build: {
+          copyPublicDir: false,
           rollupOptions: {
             output: {
               sanitizeFileName: sanitizeFilePath,
