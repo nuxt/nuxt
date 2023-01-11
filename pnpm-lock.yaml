@@ -37,7 +37,7 @@ importers:
       execa: ^6.1.0
       expect-type: ^0.15.0
       globby: ^13.1.3
-      jiti: ^1.16.1
+      jiti: ^1.16.2
       markdownlint-cli: ^0.33.0
       nuxi: workspace:*
       nuxt: workspace:*
@@ -73,7 +73,7 @@ importers:
       execa: 6.1.0
       expect-type: 0.15.0
       globby: 13.1.3
-      jiti: 1.16.1
+      jiti: 1.16.2
       markdownlint-cli: 0.33.0
       nuxi: link:packages/nuxi
       nuxt: link:packages/nuxt
@@ -308,7 +308,7 @@ importers:
       globby: ^13.1.3
       hash-sum: ^2.0.0
       ignore: ^5.2.4
-      jiti: ^1.16.1
+      jiti: ^1.16.2
       knitwork: ^1.0.0
       lodash.template: ^4.5.0
       mlly: ^1.1.0
@@ -328,7 +328,7 @@ importers:
       globby: 13.1.3
       hash-sum: 2.0.0
       ignore: 5.2.4
-      jiti: 1.16.1
+      jiti: 1.16.2
       knitwork: 1.0.0
       lodash.template: 4.5.0
       mlly: 1.1.0
@@ -365,7 +365,7 @@ importers:
       fsevents: ~2.3.2
       giget: ^1.0.0
       h3: ^1.0.2
-      jiti: ^1.16.1
+      jiti: ^1.16.2
       listhen: ^1.0.1
       mlly: ^1.1.0
       mri: ^1.2.0
@@ -396,7 +396,7 @@ importers:
       flat: 5.0.2
       giget: 1.0.0
       h3: 1.0.2
-      jiti: 1.16.1
+      jiti: 1.16.2
       listhen: 1.0.1
       mlly: 1.1.0
       mri: 1.2.0
@@ -435,7 +435,7 @@ importers:
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
-      nitropack: npm:nitropack-edge@2.0.0-27887983.dcc59c7
+      nitropack: npm:nitropack-edge@2.0.0-27890666.bece791
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
@@ -481,7 +481,7 @@ importers:
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
-      nitropack: /nitropack-edge/2.0.0-27887983.dcc59c7
+      nitropack: /nitropack-edge/2.0.0-27890666.bece791
       nuxi: link:../nuxi
       ofetch: 1.0.0
       ohash: 1.0.0
@@ -516,8 +516,8 @@ importers:
       create-require: ^1.1.1
       defu: ^6.1.1
       hookable: ^5.4.2
-      jiti: ^1.16.1
-      nitropack: npm:nitropack-edge@2.0.0-27887983.dcc59c7
+      jiti: ^1.16.2
+      nitropack: npm:nitropack-edge@2.0.0-27890666.bece791
       pathe: ^1.0.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
@@ -533,7 +533,7 @@ importers:
       create-require: 1.1.1
       defu: 6.1.1
       hookable: 5.4.2
-      jiti: 1.16.1
+      jiti: 1.16.2
       pathe: 1.0.0
       pkg-types: 1.0.1
       postcss-import-resolver: 2.0.0
@@ -547,7 +547,7 @@ importers:
       '@types/semver': 7.3.12
       '@unhead/schema': 1.0.15
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.4
-      nitropack: /nitropack-edge/2.0.0-27887983.dcc59c7
+      nitropack: /nitropack-edge/2.0.0-27890666.bece791
       unbuild: 1.0.2
       vite: 4.0.4
 
@@ -559,7 +559,7 @@ importers:
       defu: ^6.1.1
       execa: ^6.1.0
       get-port-please: ^3.0.1
-      jiti: ^1.16.1
+      jiti: ^1.16.2
       ofetch: ^1.0.0
       pathe: ^1.0.0
       playwright: ^1.29.2
@@ -572,7 +572,7 @@ importers:
       defu: 6.1.1
       execa: 6.1.0
       get-port-please: 3.0.1
-      jiti: 1.16.1
+      jiti: 1.16.2
       ofetch: 1.0.0
       pathe: 1.0.0
     devDependencies:
@@ -679,7 +679,7 @@ importers:
       escape-string-regexp: ^5.0.0
       estree-walker: ^3.0.2
       file-loader: ^6.2.0
-      fork-ts-checker-webpack-plugin: ^7.2.14
+      fork-ts-checker-webpack-plugin: ^7.3.0
       fs-extra: ^11.1.0
       hash-sum: ^2.0.0
       lodash-es: ^4.17.21
@@ -721,7 +721,7 @@ importers:
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.2
       file-loader: 6.2.0_webpack@5.75.0
-      fork-ts-checker-webpack-plugin: 7.2.14_webpack@5.75.0
+      fork-ts-checker-webpack-plugin: 7.3.0_webpack@5.75.0
       fs-extra: 11.1.0
       hash-sum: 2.0.0
       lodash-es: 4.17.21
@@ -1751,7 +1751,7 @@ packages:
       git-url-parse: 13.1.0
       inquirer: 9.1.4
       is-docker: 3.0.0
-      jiti: 1.16.1
+      jiti: 1.16.2
       mri: 1.2.0
       nanoid: 4.0.0
       node-fetch: 3.3.0
@@ -3487,7 +3487,7 @@ packages:
       defu: 6.1.1
       dotenv: 16.0.3
       gittar: 0.1.1
-      jiti: 1.16.1
+      jiti: 1.16.2
       mlly: 0.5.16
       pathe: 0.3.9
       pkg-types: 0.3.6
@@ -3500,7 +3500,7 @@ packages:
       defu: 6.1.1
       dotenv: 16.0.3
       giget: 1.0.0
-      jiti: 1.16.1
+      jiti: 1.16.2
       mlly: 1.1.0
       pathe: 1.0.0
       pkg-types: 1.0.1
@@ -5212,8 +5212,8 @@ packages:
     resolution: {integrity: sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw==}
     dev: true
 
-  /fork-ts-checker-webpack-plugin/7.2.14_webpack@5.75.0:
-    resolution: {integrity: sha512-Tg2feh/n8k486KX0EbXVUfJj3j0xnnbKYTJw0fnIb2QdV0+lblOYZSal5ed9hARoWVwKeOC7sYE2EakSRLo5ZA==}
+  /fork-ts-checker-webpack-plugin/7.3.0_webpack@5.75.0:
+    resolution: {integrity: sha512-IN+XTzusCjR5VgntYFgxbxVx3WraPRnKehBFrf00cMSrtUuW9MsG9dhL6MWpY6MkjC3wVwoujfCDgZZCQwbswA==}
     engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
     peerDependencies:
       typescript: '>3.6.0'
@@ -6001,8 +6001,8 @@ packages:
       supports-color: 8.1.1
     dev: false
 
-  /jiti/1.16.1:
-    resolution: {integrity: sha512-kJUp4Bj44uTaZAwG6R2/GjbodOWHULn8Swue0B7tY8v5BpTkUvDR+zBM5tsbC4x/jCeYDZ+mAdrUIScwIo4oPw==}
+  /jiti/1.16.2:
+    resolution: {integrity: sha512-OKBOVWmU3FxDt/UH4zSwiKPuc1nihFZiOD722FuJlngvLz2glX1v2/TJIgoA4+mrpnXxHV6dSAoCvPcYQtoG5A==}
     hasBin: true
 
   /joycon/3.1.1:
@@ -6520,7 +6520,7 @@ packages:
       esbuild: 0.15.18
       fs-extra: 10.1.0
       globby: 13.1.3
-      jiti: 1.16.1
+      jiti: 1.16.2
       mri: 1.2.0
       pathe: 1.0.0
       typescript: 4.9.4
@@ -6586,8 +6586,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge/2.0.0-27887983.dcc59c7:
-    resolution: {integrity: sha512-4WgEq/rsOnY3p9Ro/qUiexhgUBjtK8ggsnrg1y9sif8RAdKdGE4uNDX9XumeP28Vsb4RiMmWP6URoPxBbpQE5A==}
+  /nitropack-edge/2.0.0-27890666.bece791:
+    resolution: {integrity: sha512-iVZd0bsH42kFXM++2MP8nNvoZbwvgAmvMGbD+ktuUl5nEvUeT8Iy8ZTWxnrIqH1kDUkmMeGtxENvLPOPflCr0Q==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
@@ -6622,7 +6622,7 @@ packages:
       hookable: 5.4.2
       http-proxy: 1.18.1
       is-primitive: 3.0.1
-      jiti: 1.16.1
+      jiti: 1.16.2
       klona: 2.0.5
       knitwork: 1.0.0
       listhen: 1.0.1
@@ -8435,7 +8435,7 @@ packages:
       esbuild: 0.15.18
       globby: 13.1.3
       hookable: 5.4.2
-      jiti: 1.16.1
+      jiti: 1.16.2
       magic-string: 0.27.0
       mkdirp: 1.0.4
       mkdist: 1.0.0_typescript@4.9.4
@@ -8460,7 +8460,7 @@ packages:
     dependencies:
       '@antfu/utils': 0.5.2
       defu: 6.1.1
-      jiti: 1.16.1
+      jiti: 1.16.2
     dev: true
 
   /unctx/2.1.1:

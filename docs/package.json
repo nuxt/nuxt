@@ -8,9 +8,9 @@
     "gendocs": "jiti ./scripts/gen-docs.ts"
   },
   "devDependencies": {
-    "jiti": "^1.16.1",
+    "jiti": "^1.16.2",
     "nuxt": "^3.0.0",
-    "nuxt-website-theme": "^0.2.5",
+    "nuxt-website-theme": "^0.3.3",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
     "untyped": "^1.2.1"

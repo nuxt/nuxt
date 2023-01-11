@@ -18,7 +18,7 @@
     "@types/semver": "^7",
     "@unhead/schema": "^1.0.15",
     "@vitejs/plugin-vue": "^4.0.0",
-    "nitropack": "npm:nitropack-edge@2.0.0-27887983.dcc59c7",
+    "nitropack": "npm:nitropack-edge@2.0.0-27890666.bece791",
     "unbuild": "latest",
     "vite": "~4.0.4"
   },
@@ -27,7 +27,7 @@
     "create-require": "^1.1.1",
     "defu": "^6.1.1",
     "hookable": "^5.4.2",
-    "jiti": "^1.16.1",
+    "jiti": "^1.16.2",
     "pathe": "^1.0.0",
     "pkg-types": "^1.0.1",
     "postcss-import-resolver": "^2.0.0",
