@@ -12,6 +12,7 @@ export default defineBuildConfig({
     ...[
       'core',
       'head',
+      'components',
       'pages'
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm' } as BuildEntry))
   ],
