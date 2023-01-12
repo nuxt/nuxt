@@ -12794,17 +12794,17 @@ __metadata:
   linkType: hard
 
 "vue-lite-youtube-embed@npm:^1.0.4":
-  version: 1.0.9
-  resolution: "vue-lite-youtube-embed@npm:1.0.9"
+  version: 1.0.4
+  resolution: "vue-lite-youtube-embed@npm:1.0.4"
   dependencies:
     vue-demi: latest
   peerDependencies:
-    "@vue/composition-api": ^1.7.1
-    vue: ^2.6.14 || >=3.0.0
+    "@vue/composition-api": ^1.1.0
+    vue: ^2.6.14 || >=3.0.0-rc.0
   peerDependenciesMeta:
     "@vue/composition-api":
       optional: true
-  checksum: f1e36f5ed095d36a1f4e116c91550941976cf82b9469fabff9719360ada5e8ed8ada9b7fcc6aecb7c7d4babe8f082175e4d88610b3ee79f2af7a3e3389f97fc5
+  checksum: 26b89a3c77132ae52659587a6cf09f2942d3fd3d525d7b58542d7cc365611b78977057f1d1928e66a4eea1330c233a3770eeed8ef4eb02d731b634268ca8711a
   languageName: node
   linkType: hard
 
