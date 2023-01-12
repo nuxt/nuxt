@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   build: {
     transpile: [/nuxt-website-theme/]
   },
+  experimental: { inlineSSRStyles: false },
   nitro: {
     esbuild: {
       options: {
