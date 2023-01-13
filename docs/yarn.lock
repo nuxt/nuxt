@@ -1636,6 +1636,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nuxtjs/plausible@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@nuxtjs/plausible@npm:0.2.0"
+  dependencies:
+    "@nuxt/kit": ^3.0.0
+    defu: ^6.1.1
+    pathe: ^1.0.0
+    plausible-tracker: ^0.3.8
+  checksum: 68143cd45d018bd93d95c7a5a5f1103bee309b23d3c6336131fb26508c24d9524efc2548156c22e51a0f93efb4590e1f0d681a257696541d9bfc2a63babddaf3
+  languageName: node
+  linkType: hard
+
 "@nuxtjs/tailwindcss@npm:^6.1.3":
   version: 6.1.3
   resolution: "@nuxtjs/tailwindcss@npm:6.1.3"
@@ -4676,7 +4688,7 @@ __metadata:
   dependencies:
     jiti: ^1.16.2
     nuxt: "npm:nuxt3@latest"
-    nuxt-website-theme: ^0.3.3
+    nuxt-website-theme: ^0.3.5
     pathe: ^1.0.0
     scule: ^1.0.0
     untyped: ^1.2.1
@@ -9681,21 +9693,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-plausible@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "nuxt-plausible@npm:0.1.2"
-  dependencies:
-    "@nuxt/kit": ^3.0.0
-    defu: ^6.1.1
-    pathe: ^1.0.0
-    plausible-tracker: ^0.3.8
-  checksum: f560bdf32363006b6028395193f46c056896760a50e6a47169ef4c8e0caaaad511c9a5397f7249353e02a02e9d483d4e56d42920f1f1e8e713c3bd301af03a29
-  languageName: node
-  linkType: hard
-
-"nuxt-website-theme@npm:^0.3.3":
-  version: 0.3.3
-  resolution: "nuxt-website-theme@npm:0.3.3"
+"nuxt-website-theme@npm:^0.3.5":
+  version: 0.3.5
+  resolution: "nuxt-website-theme@npm:0.3.5"
   dependencies:
     "@docsearch/css": ^3.3.0
     "@docsearch/js": ^3.3.0
@@ -9707,6 +9707,7 @@ __metadata:
     "@nuxtjs/algolia": ^1.3.1
     "@nuxtjs/fontaine": ^0.2.3
     "@nuxtjs/html-validator": ^1.2.3
+    "@nuxtjs/plausible": ^0.2.0
     "@nuxtlabs/github-module": ^1.5.4
     "@sendgrid/client": ^7.7.0
     "@sendgrid/mail": ^7.7.0
@@ -9717,14 +9718,13 @@ __metadata:
     mjml: ^4.13.0
     node-mailjet: ^6.0.0
     nuxt-icon: ^0.1.8
-    nuxt-plausible: ^0.1.2
     ohash: ^1.0.0
     remove: ^0.1.5
     sitemap: ^7.1.1
     tailwindcss-border-gradient-radius: ^3.0.1
     three: ^0.147.0
-    vue-lite-youtube-embed: ^1.0.4
-  checksum: be4e73ca21b457e2745d0ef985ba200bb5c95fc01aae41301b3186a439488320308badd53df8b0a80fb4dc5d75dcc610fad008ca1ee21369235f9d4363d35c50
+    vue-lite-youtube-embed: ^1.0.9
+  checksum: 13bac3645e29869ba917eaa0cff98aae2de2dccb003f3f4e5f66daed6f7feb07e7fe9f3e0b8c0f06c4f55f6fb4ddabb10fe0a6e1b3f55d1e0dc8206cfe501f39
   languageName: node
   linkType: hard
 
@@ -13420,18 +13420,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-lite-youtube-embed@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "vue-lite-youtube-embed@npm:1.0.4"
+"vue-lite-youtube-embed@npm:^1.0.9":
+  version: 1.0.9
+  resolution: "vue-lite-youtube-embed@npm:1.0.9"
   dependencies:
     vue-demi: latest
   peerDependencies:
-    "@vue/composition-api": ^1.1.0
-    vue: ^2.6.14 || >=3.0.0-rc.0
+    "@vue/composition-api": ^1.7.1
+    vue: ^2.6.14 || >=3.0.0
   peerDependenciesMeta:
     "@vue/composition-api":
       optional: true
-  checksum: 26b89a3c77132ae52659587a6cf09f2942d3fd3d525d7b58542d7cc365611b78977057f1d1928e66a4eea1330c233a3770eeed8ef4eb02d731b634268ca8711a
+  checksum: f1e36f5ed095d36a1f4e116c91550941976cf82b9469fabff9719360ada5e8ed8ada9b7fcc6aecb7c7d4babe8f082175e4d88610b3ee79f2af7a3e3389f97fc5
   languageName: node
   linkType: hard
 
