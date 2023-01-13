@@ -26,7 +26,7 @@ if (import.meta.hot) {
     Object.assign(__nuxt_page_meta, mod)
   })
 }
-// Webpack
+// webpack
 if (import.meta.webpackHot) {
   import.meta.webpackHot.accept((err) => {
     if (err) { window.location = window.location.href }

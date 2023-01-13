@@ -39,7 +39,7 @@ function isVueTemplate (id: string) {
     return false
   }
 
-  // Query `?vue&type=template` (in Webpack or external template)
+  // Query `?vue&type=template` (in webpack or external template)
   return true
 }
 

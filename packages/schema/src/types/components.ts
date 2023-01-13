@@ -39,13 +39,13 @@ export interface ScanDir {
    */
   enabled?: boolean
   /**
-   * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by Webpack via its magic comments.
-   * Learn more on Webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
+   * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by webpack via its magic comments.
+   * Learn more on webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
    */
   prefetch?: boolean
   /**
-   * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by Webpack via its magic comments.
-   * Learn more on Webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
+   * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by webpack via its magic comments.
+   * Learn more on webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
    */
   preload?: boolean
   /**

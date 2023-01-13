@@ -679,7 +679,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
     }
   })
 
-  // Webpack injects CSS differently
+  // webpack injects CSS differently
   it.skipIf(process.env.TEST_WITH_WEBPACK)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])

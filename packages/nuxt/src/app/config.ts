@@ -69,7 +69,7 @@ if (process.dev) {
     })
   }
 
-  // Webpack
+  // webpack
   if (import.meta.webpackHot) {
     import.meta.webpackHot.accept('#build/app.config.mjs', () => {
       applyHMR(__appConfig)

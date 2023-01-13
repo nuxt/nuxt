@@ -41,7 +41,7 @@ function loaders (ctx: WebpackConfigContext) {
   // CSS
   config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
 
-  // Postcss
+  // PostCSS
   config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
 
   // Less

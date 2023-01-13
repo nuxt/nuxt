@@ -75,8 +75,8 @@ export default defineUntypedSchema({
      *       { children: ':root { color: red }', type: 'text/css' }
      *     ],
      *     noscript: [
-     *       // <noscript>Javascript is required</noscript>
-     *       { children: 'Javascript is required' }
+     *       // <noscript>JavaScript is required</noscript>
+     *       { children: 'JavaScript is required' }
      *     ]
      *   }
      * }
