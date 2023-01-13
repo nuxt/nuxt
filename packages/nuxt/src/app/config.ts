@@ -26,6 +26,7 @@ function deepAssign (obj: any, newObj: any) {
   for (const key in newObj) {
     const val = newObj[key]
     if (val !== null && typeof val === 'object') {
+      obj[key] = obj[key] || {}
       deepAssign(obj[key], val)
     } else {
       obj[key] = val
