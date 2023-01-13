@@ -82,6 +82,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               '@nuxt/',
               nuxt.options.buildDir
             ]),
+        ...nuxt.options.build.transpile.filter(i => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
         distDir
