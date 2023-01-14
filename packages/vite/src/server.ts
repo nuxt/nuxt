@@ -12,6 +12,7 @@ import { writeManifest } from './manifest'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
+  const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     entry: ctx.entry,
     base: ctx.nuxt.options.dev
@@ -24,11 +25,11 @@ export async function buildServer (ctx: ViteBuildContext) {
           return { relative: true }
         }
         if (type === 'public') {
-          return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
+          return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
         }
         if (type === 'asset') {
           const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir)), '')
-          return { runtime: `globalThis.__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
+          return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
         }
       }
     },
