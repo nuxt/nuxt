@@ -415,7 +415,7 @@ importers:
       '@nuxt/telemetry': ^2.1.8
       '@nuxt/ui-templates': ^1.1.0
       '@nuxt/vite-builder': workspace:*
-      '@types/fs-extra': ^9.0.13
+      '@types/fs-extra': ^11.0.1
       '@types/hash-sum': ^1.0.0
       '@unhead/ssr': ^1.0.15
       '@vue/reactivity': ^3.2.45
@@ -502,7 +502,7 @@ importers:
       vue-devtools-stub: 0.1.0
       vue-router: 4.1.6_vue@3.2.45
     devDependencies:
-      '@types/fs-extra': 9.0.13
+      '@types/fs-extra': 11.0.1
       '@types/hash-sum': 1.0.0
       unbuild: 1.0.2
 
@@ -2171,10 +2171,11 @@ packages:
     resolution: {integrity: sha512-3zsplnP2djeps5P9OyarTxwRpMLoe5Ash8aL9iprw0JxB+FAHjY+ifn4yZUuW4/9hqtnmor6uvjSRzJhiVbrEQ==}
     dev: true
 
-  /@types/fs-extra/9.0.13:
-    resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
+  /@types/fs-extra/11.0.1:
+    resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
-      '@types/node': 18.11.15
+      '@types/jsonfile': 6.1.1
+      '@types/node': 18.11.18
     dev: true
 
   /@types/glob/8.0.0:
@@ -2209,6 +2210,12 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+    dev: true
+
+  /@types/jsonfile/6.1.1:
+    resolution: {integrity: sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==}
+    dependencies:
+      '@types/node': 18.11.18
     dev: true
 
   /@types/lodash-es/4.17.6:

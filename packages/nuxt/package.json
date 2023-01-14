@@ -82,7 +82,7 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
+    "@types/fs-extra": "^11.0.1",
     "@types/hash-sum": "^1.0.0",
     "unbuild": "latest"
   },
