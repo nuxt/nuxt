@@ -90,6 +90,9 @@ describe('pages', () => {
     expect(html).toContain('[...slug].vue')
     expect(html).toContain('404 at not-found')
 
+    // Middleware still runs after validation: https://github.com/nuxt/framework/issues/9701
+    expect(html).toContain('Middleware ran: true')
+
     await expectNoClientErrors('/not-found')
   })
 
