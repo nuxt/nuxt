@@ -487,6 +487,10 @@ describe('extends support', () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Composable | useExtendsFoo: foo')
     })
+    it('allows overriding composables', async () => {
+      const html = await $fetch('/extends')
+      expect(html).toContain('test from project')
+    })
   })
 
   describe('plugins', () => {
