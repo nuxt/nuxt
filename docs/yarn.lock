@@ -241,7 +241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.18.13, @babel/core@npm:^7.20.5":
+"@babel/core@npm:^7.18.13, @babel/core@npm:^7.20.12, @babel/core@npm:^7.20.5":
   version: 7.20.12
   resolution: "@babel/core@npm:7.20.12"
   dependencies:
@@ -637,7 +637,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/standalone@npm:^7.18.13":
+"@babel/standalone@npm:^7.18.13, @babel/standalone@npm:^7.20.12":
   version: 7.20.12
   resolution: "@babel/standalone@npm:7.20.12"
   checksum: dcf7220672b3f2f7ca7a81799d8b7be157442cd9ebb1eee28ddbda052414de410a8efde483a452286fab627922dd8a37cab65b965520fcd72982244309e7f015
@@ -4691,7 +4691,7 @@ __metadata:
     nuxt-website-theme: ^0.3.6
     pathe: ^1.0.0
     scule: ^1.0.0
-    untyped: ^1.2.1
+    untyped: ^1.2.2
   languageName: unknown
   linkType: soft
 
@@ -13067,6 +13067,18 @@ __metadata:
     "@babel/types": ^7.20.7
     scule: ^1.0.0
   checksum: e0ec1f8d2e542f5c891603282fdd0fda37991aa5fbc4ad8bf945833ce8b75ec210a8149fcab09b5c6461f2d569bdf8d08cd23ce698c3e28a4e345df70786e1c6
+  languageName: node
+  linkType: hard
+
+"untyped@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "untyped@npm:1.2.2"
+  dependencies:
+    "@babel/core": ^7.20.12
+    "@babel/standalone": ^7.20.12
+    "@babel/types": ^7.20.7
+    scule: ^1.0.0
+  checksum: 556bb7a3ee10f580c4e775ecbd02130e38635b290d312e65bbc29973a07346f34457850515e8e68add5ced79676336ef92574ca9a21fe1b0ae528a6838df8a74
   languageName: node
   linkType: hard
 

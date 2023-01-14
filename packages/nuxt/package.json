@@ -75,7 +75,7 @@
     "unenv": "^1.0.1",
     "unimport": "^1.2.0",
     "unplugin": "^1.0.1",
-    "untyped": "^1.2.1",
+    "untyped": "^1.2.2",
     "vue": "^3.2.45",
     "vue-bundle-renderer": "^1.0.0",
     "vue-devtools-stub": "^0.1.0",
