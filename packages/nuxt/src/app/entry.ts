@@ -77,7 +77,7 @@ if (process.client) {
   }
 
   entry().catch((error: unknown) => {
-    console.error('Error while mounting app:', error) // eslint-disable-line no-console
+    console.error('Error while mounting app:', error)
   })
 }
 

@@ -3,6 +3,7 @@ import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { isIgnored } from '@nuxt/kit'
+// eslint-disable-next-line vue/prefer-import-from-vue
 import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
 

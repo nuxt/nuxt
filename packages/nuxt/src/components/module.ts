@@ -81,7 +81,6 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          // eslint-disable-next-line no-console
           console.warn('Components directory not found: `' + dirPath + '`')
         }
 

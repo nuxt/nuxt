@@ -54,12 +54,12 @@ export default defineComponent({
       html.value = res.html
     }
 
-    if (process.server || !nuxtApp.isHydrating) {
-      await fetchComponent()
-    }
-
     if (process.client) {
       watch(props, debounce(fetchComponent, 100))
+    }
+
+    if (process.server || !nuxtApp.isHydrating) {
+      await fetchComponent()
     }
 
     return () => createStaticVNode(html.value, 1)

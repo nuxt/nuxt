@@ -178,7 +178,7 @@ describe('composables', () => {
 
   it('infer request url string literal from server/api routes', () => {
     // request can accept dynamic string type
-    const dynamicStringUrl: string = 'https://example.com/api'
+    const dynamicStringUrl = 'https://example.com/api'
     expectTypeOf(useFetch(dynamicStringUrl).data).toEqualTypeOf<Ref<unknown>>()
 
     // request param should infer string literal type / show auto-complete hint base on server routes, ex: '/api/hello'
