@@ -894,6 +894,16 @@ describe('component islands', () => {
   })
 })
 
+describe.runIf(process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK)('vite plugins', () => {
+  it('does not override vite plugins', async () => {
+    expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
+    expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
+  })
+  it('does not allow direct access to nuxt source folder', async () => {
+    expect(await $fetch('/app.config')).toContain('404')
+  })
+})
+
 describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })

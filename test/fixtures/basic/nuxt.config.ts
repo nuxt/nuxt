@@ -100,6 +100,28 @@ export default defineNuxtConfig({
         export: 'namedExport',
         filePath: '~/other-components-folder/named-export'
       })
+    },
+    'vite:extendConfig' (config) {
+      config.plugins!.push({
+        name: 'nuxt:server',
+        configureServer (server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/vite-plugin-without-path') {
+              res.end('vite-plugin without path')
+              return
+            }
+            next()
+          })
+
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/__nuxt-test') {
+              res.end('vite-plugin with __nuxt prefix')
+              return
+            }
+            next()
+          })
+        }
+      })
     }
   },
   experimental: {
