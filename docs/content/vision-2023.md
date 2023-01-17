@@ -21,7 +21,7 @@ This past year has been an exciting one. Looking into the new year, there is a l
 
 This past year has been an exciting one, with the release of Nuxt 3 and Nitro and the launch of the new [nuxt.com](http://nuxt.com/) website. It's been the culmination of years of work, and has not only resulted in a new major version of Nuxt, but a new Nuxt architecture, a full-stack server framework ([Nitro](https://nitro.unjs.io/)), and a new GitHub organisation and ecosystem ([UnJS](https://github.com/unjs/)).
 
-Throughout that whole time, Pooya Parsa has led the Nuxt team, putting in countless hours of work and thought into building Nuxt 3.
+Throughout that whole time, [Pooya Parsa](https://github.com/pi0) has led the Nuxt team, putting in countless hours of work and thought into building Nuxt 3.
 
 Now, at the start of 2023, he's handing over the helm of the Nuxt open-source work to me ([Daniel Roe](https://github.com/danielroe)). Pooya will continue to be actively contributing to the Nuxt project and of course driving the development of UnJS ecosystem and Nitro project.
 
