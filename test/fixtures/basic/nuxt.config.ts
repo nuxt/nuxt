@@ -22,6 +22,14 @@ export default defineNuxtConfig({
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
+  build: {
+    transpile: [
+      (ctx) => {
+        if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
+        return false
+      }
+    ]
+  },
   theme: './extends/bar',
   css: ['~/assets/global.css'],
   extends: [

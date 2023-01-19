@@ -53,7 +53,7 @@ export default defineUntypedSchema({
      * ```js
       transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
-     * @type {Array<string | RegExp | Function>}
+     * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
       $resolve: val => [].concat(val).filter(Boolean)

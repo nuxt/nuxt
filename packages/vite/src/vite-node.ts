@@ -11,6 +11,7 @@ import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
 import { createIsExternal } from './utils/external'
+import { transpile } from './utils/transpile'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 fixed for adding middlewares after setup
@@ -99,7 +100,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         inline: [
           /\/(nuxt|nuxt3)\//,
           /^#/,
-          ...ctx.nuxt.options.build.transpile as string[]
+          ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev })
         ]
       },
       transformMode: {
