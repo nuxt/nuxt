@@ -7,14 +7,14 @@ image: '/socials/vision-2023.jpg'
 
 ::blog-article
 ---
-authors: 
+authors:
   - name: Daniel Roe
     avatarUrl: https://github.com/danielroe.png
     link: https://twitter.com/danielcroe
 date: "Jan 17, 2023"
 ---
 #title
-# Nuxt: A vision for 2023
+Nuxt: A vision for 2023
 #description
 This past year has been an exciting one. Looking into the new year, there is a lot we have planned as a team and we'd love to share it with you. :sparkles:
 #body
