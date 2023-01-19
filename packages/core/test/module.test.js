@@ -475,7 +475,6 @@ describe('core: module', () => {
     expect(module.requiredModules.moduleTest).toBeDefined()
   })
 
-
   test('should prevent adding not installed buildModules', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
