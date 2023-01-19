@@ -1,6 +1,6 @@
-name: "\U0001F41E Bug report"
+name: "\U0001F41E Bug report (Nuxt 2)"
 description: Create a report to help us improve Nuxt
-labels: ["pending triage", "3.x"]
+labels: ["pending triage", "2.x"]
 body:
   - type: markdown
     attributes:
@@ -9,13 +9,13 @@ body:
         👉 https://nuxt.com/docs/community/reporting-bugs
 
         Please use a template below to create a minimal reproduction
-        👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
-        👉 https://codesandbox.io/p/github/nuxt/starter/v3-codesandbox
+        👉 https://stackblitz.com/github/nuxt/starter/tree/v2
+        👉 https://codesandbox.io/p/github/nuxt/starter/v2
   - type: textarea
     id: bug-env
     attributes:
       label: Environment
-      description: You can use `npx nuxi info` to fill this section
+      description: You can use `npx envinfo --system --npmPackages '{nuxt,@nuxt/*}' --binaries --browsers` to fill this section
       placeholder: Environment
     validations:
       required: true

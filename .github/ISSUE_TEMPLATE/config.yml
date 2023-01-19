@@ -1,7 +1,11 @@
+blank_issues_enabled: true
 contact_links:
-  - name: 📚 Documentation
-    url: https://v3.nuxtjs.org/
-    about: Check documentation for usage
+  - name: 📚 Nuxt 3 Documentation
+    url: https://nuxt.com/docs/
+    about: Check the documentation for usage of Nuxt 3
+  - name: 📚 Nuxt 2 Documentation
+    url: https://nuxtjs.org/
+    about: Check the documentation for usage of Nuxt 2
   - name: 💬 Discussions
-    url: https://github.com/nuxt/framework/discussions
-    about: Use discussions if you have an idea for improvement and asking questions
+    url: https://github.com/nuxt/nuxt.js/discussions
+    about: Use discussions if you have another issue, an idea for improvement or for asking questions.
