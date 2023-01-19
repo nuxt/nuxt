@@ -11,7 +11,7 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import type NuxtPage from './page'
+import type NuxtPage from '../page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
