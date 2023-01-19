@@ -3,7 +3,7 @@
  * Documentation: https://nuxtjs.org/api/configuration-servermiddleware
  */
 
-import { NextHandleFunction } from 'connect'
+import type { NextHandleFunction } from 'connect'
 
 export type ServerMiddleware = NextHandleFunction
 

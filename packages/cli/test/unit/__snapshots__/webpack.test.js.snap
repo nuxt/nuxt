@@ -61,7 +61,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
   },
   Object {
     \\"exclude\\": [Function exclude],
-    \\"test\\": /\\\\.m?jsx?$/i,
+    \\"test\\": /\\\\.(c|m)?jsx?$/i,
     \\"type\\": \\"javascript/auto\\",
     \\"use\\": Array [
       Object {
@@ -674,7 +674,7 @@ exports[`webpack nuxt webpack module.rules loader=vue- 1`] = `
 exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
 "Object {
   \\"exclude\\": [Function exclude],
-  \\"test\\": /\\\\.m?jsx?$/i,
+  \\"test\\": /\\\\.(c|m)?jsx?$/i,
   \\"type\\": \\"javascript/auto\\",
   \\"use\\": Array [
     Object {

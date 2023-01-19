@@ -239,7 +239,7 @@ export default class WebpackBaseConfig {
 
     return {
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: ['.mjs', '.cjs', '.js', '.json', '.vue', '.jsx', '.wasm'],
         alias: this.alias(),
         modules: webpackModulesDir,
         plugins: resolvePlugins
@@ -329,7 +329,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.m?jsx?$/i,
+        test: /\.(c|m)?jsx?$/i,
         type: 'javascript/auto',
         exclude: (file) => {
           file = file.split(/node_modules(.*)/)[1]

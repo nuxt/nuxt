@@ -10,16 +10,16 @@
   "dependencies": {
     "consola": "^2.15.3",
     "create-require": "^1.1.1",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^10.1.0",
     "hash-sum": "^2.0.0",
-    "jiti": "^1.12.9",
+    "jiti": "^1.16.2",
     "lodash": "^4.17.21",
     "proper-lockfile": "^4.1.2",
-    "semver": "^7.3.5",
-    "serialize-javascript": "^6.0.0",
-    "signal-exit": "^3.0.5",
-    "ua-parser-js": "^1.0.2",
-    "ufo": "^0.7.9"
+    "semver": "^7.3.8",
+    "serialize-javascript": "^6.0.1",
+    "signal-exit": "^3.0.7",
+    "ua-parser-js": "^1.0.32",
+    "ufo": "^0.8.6"
   },
   "publishConfig": {
     "access": "public"
