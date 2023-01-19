@@ -13,15 +13,15 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "node-fetch-native": "^0.1.4",
-    "ufo": "^0.8.5",
+    "node-fetch-native": "^0.1.8",
+    "ufo": "^0.8.6",
     "unfetch": "^4.2.0",
     "vue": "^2.7.10",
     "vue-client-only": "^2.1.0",
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.6.4",
-    "vue-template-compiler": "^2.7.10",
+    "vue-router": "^3.6.5",
+    "vue-template-compiler": "^2.7.14",
     "vuex": "^3.6.2"
   },
   "publishConfig": {
