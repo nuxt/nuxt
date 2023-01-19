@@ -3,11 +3,11 @@ name: windows
 on:
   push:
     branches:
-      - dev
+      - 2.x-dev
       - 2.x
   pull_request:
     branches:
-      - dev
+      - 2.x-dev
       - 2.x
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
         id: node_modules_cache_id
         uses: actions/cache@v3
         with:
-          path:  |
+          path: |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
@@ -50,7 +50,6 @@ jobs:
             distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
-
 
   test-unit:
     runs-on: ${{ matrix.os }}
