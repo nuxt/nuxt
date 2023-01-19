@@ -20,6 +20,7 @@
             <v-list-item-avatar>
               <img :src="`https://randomuser.me/api/portraits/men/${item.picture}.jpg`" alt="">
             </v-list-item-avatar>
+            <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
             <v-list-item-title v-text="item.text" />
           </v-list-item>
         </v-list>
