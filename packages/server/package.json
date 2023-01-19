@@ -24,7 +24,7 @@
     "serve-placeholder": "^1.2.4",
     "serve-static": "^1.15.0",
     "server-destroy": "^1.0.1",
-    "ufo": "^0.8.5"
+    "ufo": "^0.8.6"
   },
   "publishConfig": {
     "access": "public"
