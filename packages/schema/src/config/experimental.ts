@@ -17,7 +17,7 @@ export default defineUntypedSchema({
 
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     * @see https://github.com/nuxt/framework/issues/4084
+     * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
 
@@ -47,7 +47,7 @@ export default defineUntypedSchema({
     /**
      * Split server bundle into multiple chunks and dynamically import them.
      *
-     * @see https://github.com/nuxt/framework/issues/6432
+     * @see https://github.com/nuxt/nuxt/issues/14525
      */
     viteServerDynamicImports: true,
 

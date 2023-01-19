@@ -31,7 +31,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
-      // nitro generate output: https://github.com/nuxt/framework/blob/main/packages/nuxt/src/core/nitro.ts#L186
+      // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
   })

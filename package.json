@@ -1,7 +1,7 @@
 {
   "name": "nuxt-framework",
   "private": true,
-  "repository": "nuxt/framework",
+  "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
   "scripts": {

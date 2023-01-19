@@ -11,5 +11,5 @@ If the composable file provides a default export, the name of the composable wil
 ::ReadMore{link="/docs/guide/directory-structure/composables"}
 ::
 
-::sandbox{repo="nuxt/framework" branch="main" dir="examples/auto-imports/composables" file="app.vue"}
+::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/auto-imports/composables" file="app.vue"}
 ::

@@ -13,5 +13,5 @@ This example shows how to use the `<Teleport>` with client-side and server-side 
 ::ReadMore{link="/docs/api/components/teleports"}
 ::
 
-::sandbox{repo="nuxt/framework" branch="main" dir="examples/app/teleport" file="app.vue"}
+::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/app/teleport" file="app.vue"}
 ::

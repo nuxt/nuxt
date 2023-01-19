@@ -1,7 +1,7 @@
 {
   "name": "@nuxt/test-utils",
   "version": "3.0.0",
-  "repository": "nuxt/framework",
+  "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
   "exports": "./dist/index.mjs",

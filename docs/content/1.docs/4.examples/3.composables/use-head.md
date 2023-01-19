@@ -12,5 +12,5 @@ This example shows how to use useHead and Nuxt built-in components to bind meta 
 ::ReadMore{link="/docs/getting-started/seo-meta"}
 ::
 
-::sandbox{repo="nuxt/framework" branch="main" dir="examples/composables/use-head" file="app.vue"}
+::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/composables/use-head" file="app.vue"}
 ::

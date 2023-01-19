@@ -1,7 +1,7 @@
 {
   "name": "@nuxt/schema",
   "version": "3.0.0",
-  "repository": "nuxt/framework",
+  "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.mjs",

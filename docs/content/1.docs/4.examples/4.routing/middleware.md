@@ -9,5 +9,5 @@ This example shows how to add route middleware with the middleware/ directory or
 ::ReadMore{link="/docs/guide/directory-structure/middleware"}
 ::
 
-::sandbox{repo="nuxt/framework" branch="main" dir="examples/routing/middleware" file="app.vue"}
+::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/routing/middleware" file="app.vue"}
 ::
