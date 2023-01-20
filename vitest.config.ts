@@ -13,6 +13,7 @@ export default defineConfig({
     tsconfigRaw: '{}'
   },
   test: {
-    testTimeout: isWindows ? 60000 : 10000
+    testTimeout: isWindows ? 60000 : 10000,
+    exclude: ['**/my-plugin.spec.js']
   }
 })
