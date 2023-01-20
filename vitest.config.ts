@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/config'
 import { isWindows } from 'std-env'
 
 export default defineConfig({
@@ -14,7 +15,7 @@ export default defineConfig({
   },
   test: {
     testTimeout: isWindows ? 60000 : 10000,
-    // Excluded defaults + specific plugin because it should throw an error when accidentally loaded via Nuxt
-    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', '**/this-should-not-load.spec.js']
+    // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
+    exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js']
   }
 })
