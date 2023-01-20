@@ -15,6 +15,6 @@ export default defineConfig({
   test: {
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded because it should throw an error when accidentally loaded via Nuxt
-    exclude: ['**/my-plugin.spec.js']
+    exclude: ['**/this-should-not-load.spec.js']
   }
 })
