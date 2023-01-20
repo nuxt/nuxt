@@ -23,7 +23,7 @@
     "@types/clear": "^0",
     "@types/flat": "^5.0.2",
     "@types/mri": "^1.1.1",
-    "@types/semver": "^7",
+    "@types/semver": "^7.3.13",
     "c12": "^1.1.0",
     "chokidar": "^3.5.3",
     "clear": "^0.1.0",

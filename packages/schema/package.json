@@ -15,10 +15,10 @@
   },
   "devDependencies": {
     "@types/lodash.template": "^4",
-    "@types/semver": "^7",
+    "@types/semver": "^7.3.13",
     "@unhead/schema": "^1.0.17",
     "@vitejs/plugin-vue": "^4.0.0",
-    "nitropack": "npm:nitropack-edge@2.0.0-27903752.456f82a",
+    "nitropack": "npm:nitropack-edge@2.0.0-27903795.b77735e",
     "unbuild": "latest",
     "vite": "~4.0.4"
   },
