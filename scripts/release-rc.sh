@@ -16,6 +16,8 @@ for PKG in packages/* ; do
     TAG="rc"
   fi
   echo "⚡ Publishing $PKG with tag $TAG"
+  cp ../../LICENSE .
+  cp ../../README.md .
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
