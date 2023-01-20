@@ -7,5 +7,5 @@ contact_links:
     url: https://nuxtjs.org/
     about: Check the documentation for usage of Nuxt 2
   - name: 💬 Discussions
-    url: https://github.com/nuxt/nuxt.js/discussions
+    url: https://github.com/nuxt/nuxt/discussions
     about: Use discussions if you have another issue, an idea for improvement or for asking questions.
