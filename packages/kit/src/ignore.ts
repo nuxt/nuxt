@@ -35,8 +35,6 @@ export function isIgnored (pathname: string): boolean {
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
 }
 
-// Internal
-
 /**
  * This function turns string containing groups '**\/*.{spec,test}.{js,ts}' into an array of strings.
  * For example will '**\/*.{spec,test}.{js,ts}' be resolved to:
