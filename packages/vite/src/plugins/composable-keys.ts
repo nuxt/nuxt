@@ -33,6 +33,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       // https://github.com/unjs/unplugin/issues/90
       let count = 0
       const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
+      // @ts-expect-error TODO
       walk(this.parse(script, {
         sourceType: 'module',
         ecmaVersion: 'latest'

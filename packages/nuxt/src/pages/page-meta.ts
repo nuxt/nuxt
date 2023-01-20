@@ -68,6 +68,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       // Remove any references to the macro from our pages
       if (!query.macro) {
         if (hasMacro) {
+          // @ts-expect-error TODO
           walk(this.parse(code, {
             sourceType: 'module',
             ecmaVersion: 'latest'
@@ -125,6 +126,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         }
       }
 
+      // @ts-expect-error TODO
       walk(this.parse(code, {
         sourceType: 'module',
         ecmaVersion: 'latest'
