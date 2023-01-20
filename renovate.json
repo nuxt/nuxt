@@ -3,10 +3,49 @@
   "extends": [
     "github>nuxt/renovate-config-nuxt"
   ],
-  "ignoreDeps": [
-    "nuxt",
-    "nuxt3",
-    "@nuxt/kit",
-    "parse5"
+  "baseBranches": [
+    "main",
+    "2.x-dev"
+  ],
+  "packageRules": [
+    {
+      "matchBaseBranches": [
+        "main"
+      ],
+      "ignoreDeps": [
+        "nuxt",
+        "nuxt3",
+        "@nuxt/kit",
+        "parse5"
+      ]
+    },
+    {
+      "matchBaseBranches": [
+        "2.x-dev"
+      ],
+      "ignoreDeps": [
+        "core-js",
+        "postcss",
+        "postcss-import",
+        "postcss-loader",
+        "postcss-url",
+        "css-loader",
+        "sass-loader",
+        "npm",
+        "boxen",
+        "html-webpack-plugin",
+        "terser-webpack-plugin",
+        "@types/terser-webpack-plugin",
+        "@types/webpack-bundle-analyzer",
+        "wrap-ansi",
+        "jest",
+        "babel-jest",
+        "globby",
+        "execa",
+        "chalk",
+        "vue",
+        "vuex"
+      ]
+    }
   ]
 }

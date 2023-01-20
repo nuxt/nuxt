@@ -10,10 +10,10 @@
   "devDependencies": {
     "jiti": "^1.16.2",
     "nuxt": "npm:nuxt3@latest",
-    "nuxt-website-theme": "^0.3.5",
+    "nuxt-website-theme": "^0.3.10",
     "pathe": "^1.0.0",
     "scule": "^1.0.0",
-    "untyped": "^1.2.1"
+    "untyped": "^1.2.2"
   },
   "resolutions": {
     "parse5": "6.0.1"

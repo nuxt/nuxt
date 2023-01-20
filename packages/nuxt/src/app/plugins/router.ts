@@ -1,4 +1,4 @@
-import { reactive, h } from 'vue'
+import { reactive, h, isReadonly } from 'vue'
 import { parseURL, stringifyParsedURL, parseQuery, stringifyQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig, useState } from '..'
@@ -222,8 +222,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
   nuxtApp.hooks.hookOnce('app:created', async () => {
     router.beforeEach(async (to, from) => {
       to.meta = reactive(to.meta || {})
-      if (nuxtApp.isHydrating) {
-        to.meta.layout = initialLayout.value ?? to.meta.layout
+      if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
+        to.meta.layout = initialLayout.value
       }
       nuxtApp._processingMiddleware = true
 

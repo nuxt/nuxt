@@ -81,7 +81,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 function clientPlugins (ctx: WebpackConfigContext) {
   const { options, config } = ctx
 
-  // Webpack Bundle Analyzer
+  // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
   if (!ctx.isDev && ctx.name === 'client' && options.webpack.analyze) {
     const statsDir = resolve(options.buildDir, 'stats')

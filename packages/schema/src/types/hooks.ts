@@ -98,7 +98,7 @@ export interface NuxtHooks {
   'vite:serverCreated': (viteServer: ViteDevServer, env: { isClient: boolean, isServer: boolean }) => HookResult
   'vite:compiled': () => HookResult
 
-  // Webpack
+  // webpack
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
   'webpack:compile': (options: { name: string, compiler: Compiler }) => HookResult
   'webpack:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult

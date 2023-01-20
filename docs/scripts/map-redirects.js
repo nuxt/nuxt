@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { readFile, writeFile } = require('node:fs/promises')
 
 const netlifyToVercel = (redirects) => {

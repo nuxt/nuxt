@@ -141,7 +141,7 @@ async function existsSensitive (path: string) {
   return dirFiles.includes(basename(path))
 }
 
-// Usage note: We assume path existance is already ensured
+// Usage note: We assume path existence is already ensured
 async function isDirectory (path: string) {
   return (await fsp.lstat(path)).isDirectory()
 }

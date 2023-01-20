@@ -56,7 +56,7 @@ export default defineComponent({
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(Component, { key, routeProps, pageKey: key, hasTransition } as {}) })
+            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {}) })
             )).default()
         }
       })
@@ -84,7 +84,8 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
   return defu(..._props)
 }
 
-const Component = defineComponent({
+const RouteProvider = defineComponent({
+  name: 'RouteProvider',
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
   props: ['routeProps', 'pageKey', 'hasTransition'],

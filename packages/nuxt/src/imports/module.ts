@@ -72,11 +72,17 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
+    const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
+
     const regenerateImports = async () => {
       ctx.clearDynamicImports()
       await ctx.modifyDynamicImports(async (imports) => {
         // Scan composables/
-        imports.push(...await scanDirExports(composablesDirs))
+        const composableImports = await scanDirExports(composablesDirs)
+        for (const i of composableImports) {
+          i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+        }
+        imports.push(...composableImports)
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
       })

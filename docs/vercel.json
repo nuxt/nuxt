@@ -57,6 +57,11 @@
       "source": "/docs/guide/directory-structure/app.config",
       "destination": "/docs/guide/directory-structure/app-config",
       "permanent": false
+    },
+    {
+      "source": "/workshops/nuxt-3-migration",
+      "destination": "https://docs.google.com/forms/d/e/1FAIpQLScv6M2XJOLOK2t6tQnw6oXTritmH-K3fPkgX7ftVMxodNEJig/viewform?usp=sf_link",
+      "permanent": false
     }
   ]
 }

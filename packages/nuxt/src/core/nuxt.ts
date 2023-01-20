@@ -3,7 +3,7 @@ import { createHooks, createDebugger } from 'hookable'
 import type { Nuxt, NuxtOptions, NuxtHooks } from '@nuxt/schema'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
-/* eslint-disable import/no-restricted-paths */
+
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'

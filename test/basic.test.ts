@@ -90,6 +90,9 @@ describe('pages', () => {
     expect(html).toContain('[...slug].vue')
     expect(html).toContain('404 at not-found')
 
+    // Middleware still runs after validation: https://github.com/nuxt/nuxt/issues/15650
+    expect(html).toContain('Middleware ran: true')
+
     await expectNoClientErrors('/not-found')
   })
 
@@ -407,6 +410,16 @@ describe('layouts', () => {
     expect(html).toContain('Custom Layout:')
     await expectNoClientErrors('/with-dynamic-layout')
   })
+  it('should work with a computed layout', async () => {
+    const html = await $fetch('/with-computed-layout')
+
+    // Snapshot
+    // expect(html).toMatchInlineSnapshot()
+
+    expect(html).toContain('with-computed-layout')
+    expect(html).toContain('Custom Layout')
+    await expectNoClientErrors('/with-computed-layout')
+  })
   it('should allow passing custom props to a layout', async () => {
     const html = await $fetch('/layouts/with-props')
     expect(html).toContain('some prop was passed')
@@ -473,6 +486,10 @@ describe('extends support', () => {
     it('extends foo/composables/foo', async () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Composable | useExtendsFoo: foo')
+    })
+    it('allows overriding composables', async () => {
+      const html = await $fetch('/extends')
+      expect(html).toContain('test from project')
     })
   })
 
@@ -679,7 +696,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
     }
   })
 
-  // Webpack injects CSS differently
+  // webpack injects CSS differently
   it.skipIf(process.env.TEST_WITH_WEBPACK)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
@@ -877,11 +894,21 @@ describe('component islands', () => {
   })
 })
 
+describe.runIf(process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK)('vite plugins', () => {
+  it('does not override vite plugins', async () => {
+    expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
+    expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
+  })
+  it('does not allow direct access to nuxt source folder', async () => {
+    expect(await $fetch('/app.config')).toContain('404')
+  })
+})
+
 describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
-      /export default \{data:\{hey:{[^}]*},rand_a:\[[^\]]*\]\},prerenderedAt:\d*\}/
+      /export default \{data:\{hey:\{[^}]*\},rand_a:\[[^\]]*\],".*":\{html:".*server-only component.*",head:\{link:\[\],style:\[\]\}\}\},prerenderedAt:\d*\}/
     )
   })
 
@@ -903,6 +930,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
 
     // We are not triggering API requests in the payload
     expect(requests).not.toContain(expect.stringContaining('/api/random'))
+    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
     // requests.length = 0
 
     await page.click('[href="/random/b"]')
@@ -910,6 +938,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
+    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
 
     // We are fetching a payload we did not prefetch
     expect(requests).toContain('/random/b/_payload.js' + importSuffix)
@@ -923,6 +952,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
+    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'

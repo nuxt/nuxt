@@ -12,6 +12,7 @@ import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.conf
 
 // TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
 const LayoutLoader = defineComponent({
+  name: 'LayoutLoader',
   inheritAttrs: false,
   props: {
     name: String,
@@ -42,6 +43,7 @@ const LayoutLoader = defineComponent({
   }
 })
 export default defineComponent({
+  name: 'NuxtLayout',
   inheritAttrs: false,
   props: {
     name: {

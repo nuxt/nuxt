@@ -161,7 +161,8 @@ export function baseTranspile (ctx: WebpackConfigContext) {
 
   for (let pattern of options.build.transpile) {
     if (typeof pattern === 'function') {
-      pattern = pattern(ctx)
+      const result = pattern(ctx)
+      if (result) { pattern = result }
     }
     if (typeof pattern === 'string') {
       transpile.push(new RegExp(escapeRegExp(normalize(pattern))))
