@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { isAbsolute, relative } from 'pathe'
-import { walk } from 'estree-walker'
+import { walk, Node } from 'estree-walker'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import type { CallExpression } from 'estree'
@@ -36,7 +36,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       walk(this.parse(script, {
         sourceType: 'module',
         ecmaVersion: 'latest'
-      }), {
+      }) as Node, {
         enter (_node) {
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node: CallExpression = _node as CallExpression

@@ -4,7 +4,7 @@ import { parseQuery, parseURL, stringifyQuery } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findStaticImports, findExports, parseStaticImport } from 'mlly'
 import type { CallExpression, Identifier, Expression } from 'estree'
-import { walk } from 'estree-walker'
+import { Node, walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute, normalize } from 'pathe'
 
@@ -71,7 +71,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           walk(this.parse(code, {
             sourceType: 'module',
             ecmaVersion: 'latest'
-          }), {
+          }) as Node, {
             enter (_node) {
               if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
               const node = _node as CallExpression & { start: number, end: number }
@@ -128,7 +128,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       walk(this.parse(code, {
         sourceType: 'module',
         ecmaVersion: 'latest'
-      }), {
+      }) as Node, {
         enter (_node) {
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node = _node as CallExpression & { start: number, end: number }
