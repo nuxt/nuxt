@@ -32,9 +32,6 @@ export function isIgnored (pathname: string): boolean {
   if (relativePath.startsWith('..')) {
     return false
   }
-  if (pathname.includes('FOOO')) {
-    console.log('isIgnored', relativePath, nuxt._ignore.test(relativePath), nuxt.options.ignore)
-  }
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
 }
 
