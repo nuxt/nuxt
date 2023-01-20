@@ -435,7 +435,7 @@ importers:
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
-      nitropack: npm:nitropack-edge@2.0.0-27903795.b77735e
+      nitropack: ^2.0.0-rc.0
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
@@ -481,7 +481,7 @@ importers:
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
-      nitropack: /nitropack-edge/2.0.0-27903795.b77735e
+      nitropack: 2.0.0-rc.0
       nuxi: link:../nuxi
       ofetch: 1.0.0
       ohash: 1.0.0
@@ -517,7 +517,7 @@ importers:
       defu: ^6.1.1
       hookable: ^5.4.2
       jiti: ^1.16.2
-      nitropack: npm:nitropack-edge@2.0.0-27903795.b77735e
+      nitropack: ^2.0.0-rc.0
       pathe: ^1.0.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
@@ -547,7 +547,7 @@ importers:
       '@types/semver': 7.3.13
       '@unhead/schema': 1.0.17
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.4
-      nitropack: /nitropack-edge/2.0.0-27903795.b77735e
+      nitropack: 2.0.0-rc.0
       unbuild: 1.1.1
       vite: 4.0.4
 
@@ -6543,8 +6543,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge/2.0.0-27903795.b77735e:
-    resolution: {integrity: sha512-+2GydZooysVqzguKAwOjvRb4jKek+q0Lbv4qYPxCgH1cc23BFx7X7EmMtq+Sp/PJsYx5+wa3klMH5Tq8zFsAYA==}
+  /nitropack/2.0.0-rc.0:
+    resolution: {integrity: sha512-o8m1syi8W06aKz7lg10yMZ7hfXyi1jwF03KJng7c/1BAfQHlxDh5RXp+SFgWXfJ+2oJ+2xwYr+B/ZGKXIIII1w==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
