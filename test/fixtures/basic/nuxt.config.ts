@@ -137,7 +137,8 @@ export default defineNuxtConfig({
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true
+    payloadExtraction: true,
+    configSchema: true
   },
   appConfig: {
     fromNuxtConfig: true,

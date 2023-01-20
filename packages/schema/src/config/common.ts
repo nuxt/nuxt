@@ -442,4 +442,12 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').AppConfig}
    */
   appConfig: {},
+
+  /**
+   * Experimental custom config schema
+   * @type {type import('untyped').SchemaDefinition}
+   *
+   * @see https://github.com/nuxt/nuxt/issues/15592
+  */
+  $schema: {}
 })

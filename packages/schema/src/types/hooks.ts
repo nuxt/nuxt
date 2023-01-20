@@ -10,6 +10,7 @@ import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
 import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { Schema, SchemaDefinition } from 'untyped'
 
 export type HookResult = Promise<void> | void
 
@@ -91,6 +92,12 @@ export interface NuxtHooks {
   'build:error': (error: Error) => HookResult
   'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: TSConfig }) => HookResult
   'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
+
+  // Schema
+  'schema:extend': (schemas: SchemaDefinition[]) => void
+  'schema:resolved': (schema: Schema) => void
+  'schema:beforeWrite': (schema: Schema) => void
+  'schema:written': () => void
 
   // Vite
   'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteInlineConfig }) => HookResult
