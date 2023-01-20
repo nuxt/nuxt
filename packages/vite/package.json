@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "3.0.0",
-    "@types/cssnano": "^5",
+    "@types/cssnano": "^5.1.0",
     "unbuild": "latest",
     "vue": "3.2.45"
   },
@@ -27,9 +27,9 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.14",
     "defu": "^6.1.1",
-    "esbuild": "^0.16.17",
+    "esbuild": "^0.17.3",
     "escape-string-regexp": "^5.0.0",
-    "estree-walker": "^3.0.2",
+    "estree-walker": "^3.0.3",
     "externality": "^1.0.0",
     "fs-extra": "^11.1.0",
     "get-port-please": "^3.0.1",
@@ -44,13 +44,13 @@
     "postcss": "^8.4.21",
     "postcss-import": "^15.1.0",
     "postcss-url": "^10.1.3",
-    "rollup": "^3.10.0",
+    "rollup": "^3.10.1",
     "rollup-plugin-visualizer": "^5.9.0",
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
     "vite": "~4.0.4",
-    "vite-node": "^0.27.1",
-    "vite-plugin-checker": "^0.5.3",
+    "vite-node": "^0.27.2",
+    "vite-plugin-checker": "^0.5.4",
     "vue-bundle-renderer": "^1.0.0"
   },
   "peerDependencies": {
