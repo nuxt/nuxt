@@ -23,13 +23,23 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    const t = await downloadTemplate(template, {
-      dir: args._[0] as string,
-      force: args.force,
-      offline: args.offline,
-      preferOffline: args['prefer-offline'],
-      registry: process.env.NUXI_INIT_REGISTRY || DEFAULT_REGISTRY
-    })
+    let t
+
+    try {
+      t = await downloadTemplate(template, {
+        dir: args._[0] as string,
+        force: args.force,
+        offline: args.offline,
+        preferOffline: args['prefer-offline'],
+        registry: process.env.NUXI_INIT_REGISTRY || DEFAULT_REGISTRY
+      })
+    } catch (err) {
+      if (process.env.DEBUG) {
+        throw err
+      }
+      consola.error((err as Error).toString())
+      process.exit(1)
+    }
 
     // Show next steps
     const relativeDist = rpath(t.dir)
