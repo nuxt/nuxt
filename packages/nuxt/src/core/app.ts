@@ -111,8 +111,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}`
+          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
