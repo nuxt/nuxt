@@ -11,7 +11,10 @@
     "nuxt": "./bin/nuxt.mjs"
   },
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": {
+      "types": "./types.d.ts",
+      "import": "./dist/index.mjs"
+    },
     "./config": {
       "types": "./config.d.ts",
       "import": "./config.mjs",
@@ -25,7 +28,10 @@
       "types": "./kit.d.ts",
       "import": "./kit.mjs"
     },
-    "./app": "./dist/app/index.mjs",
+    "./app": {
+      "types": "./dist/app/index.d.ts",
+      "import": "./dist/app/index.mjs"
+    },
     "./package.json": "./package.json"
   },
   "imports": {
