@@ -55,7 +55,16 @@ export default defineNuxtConfig({
     }
   },
   modules: [
-    '~/modules/example',
+    [
+      '~/modules/example',
+      {
+        typeTest (val) {
+          // @ts-expect-error module type defines val as boolean
+          const b: string = val
+          return !!b
+        }
+      }
+    ],
     function (_, nuxt) {
       if (process.env.TEST_WITH_WEBPACK) { return }
 
