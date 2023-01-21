@@ -1,14 +1,11 @@
 import os from 'node:os'
-import { existsSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { resolve } from 'pathe'
 import jiti from 'jiti'
-import destr from 'destr'
 import { splitByCase } from 'scule'
 import clipboardy from 'clipboardy'
 import type { NuxtModule } from '@nuxt/schema'
 import { getPackageManager, getPackageManagerVersion } from '../utils/packageManagers'
-import { findup } from '../utils/fs'
+import { createGetDepVersion } from '../utils/packages'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -24,11 +21,7 @@ export default defineNuxtCommand({
     // Load nuxt.config
     const nuxtConfig = getNuxtConfig(rootDir)
 
-    // Find nearest package.json
-    const { dependencies = {}, devDependencies = {} } = findPackage(rootDir)
-
-    // Utils to query a dependency version
-    const getDepVersion = (name: string) => getPkg(name, rootDir)?.version || dependencies[name] || devDependencies[name]
+    const getDepVersion = createGetDepVersion(rootDir)
 
     const listModules = (arr = []) => arr
       .map(m => normalizeConfigModule(m, rootDir))
@@ -125,36 +118,5 @@ function getNuxtConfig (rootDir: string) {
   } catch (err) {
     // TODO: Show error as warning if it is not 404
     return {}
-  }
-}
-
-function getPkg (name: string, rootDir: string) {
-  // Assume it is in {rootDir}/node_modules/${name}/package.json
-  let pkgPath = resolve(rootDir, 'node_modules', name, 'package.json')
-
-  // Try to resolve for more accuracy
-  const _require = createRequire(rootDir)
-  try { pkgPath = _require.resolve(name + '/package.json') } catch (_err) {
-    // console.log('not found:', name)
-  }
-
-  return readJSONSync(pkgPath)
-}
-
-function findPackage (rootDir: string) {
-  return findup(rootDir, (dir) => {
-    const p = resolve(dir, 'package.json')
-    if (existsSync(p)) {
-      return readJSONSync(p)
-    }
-  }) || {}
-}
-
-function readJSONSync (filePath: string) {
-  try {
-    return destr(readFileSync(filePath, 'utf-8'))
-  } catch (err) {
-    // TODO: Warn error
-    return null
   }
 }
