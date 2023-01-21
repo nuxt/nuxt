@@ -122,19 +122,24 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
 
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const moduleMap: Record<string, any> = {}
+    const getImportName = (name: string) => name.startsWith('.') ? './' + join(relativeRoot, name) : name
+    const getSchemaProps = (meta: any) => {
+      const [configKey, importName] = [genString(meta.configKey), getImportName(meta.importName)]
+      moduleMap[importName] = configKey
+
+      return { configKey, importName };
+    }
 
     return [
       "import { NuxtModule } from '@nuxt/schema'",
       "declare module '@nuxt/schema' {",
       '  interface NuxtConfig {',
       ...moduleInfo.filter(Boolean).map((meta) => {
-        const configKey = genString(meta.configKey)
-        const importName = meta.importName.startsWith('.') ? './' + join(relativeRoot, meta.importName) : meta.importName
-        moduleMap[importName] = configKey
+        const { configKey, importName } = getSchemaProps(meta)
 
         return `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       }),
-      Object.keys(moduleMap).length > 0 ? `    modules?: (NuxtModule | string | ${Object.keys(moduleMap).join(' | ')} | [NuxtModule | string, Record<string, any>] | ${Object.entries(moduleMap).map(([importName, configKey]) => `[${genString(importName)}, NuxtConfig[${genString(configKey)}]]`).join(' | ')})[]` : '',
+      Object.keys(moduleMap).length > 0 ? `    modules?: (NuxtModule | string | ${Object.keys(moduleMap).map(m => genString(m)).join(' | ')} | [NuxtModule | string, Record<string, any>] | ${Object.entries(moduleMap).map(([importName, configKey]) => `[${genString(importName)}, NuxtConfig[${genString(configKey)}]]`).join(' | ')})[]` : '',
       '  }',
       generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
         {
