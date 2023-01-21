@@ -7,7 +7,7 @@ import { isCI } from 'std-env'
 
 const logger = consola.withTag('crawler')
 
-const baseURL = withoutTrailingSlash(process.env.BASE_URL || 'https://v3.nuxtjs.org')
+const baseURL = withoutTrailingSlash(process.env.BASE_URL || 'https://nuxt.com')
 const startingURL = baseURL + '/'
 
 const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif']
