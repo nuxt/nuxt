@@ -17,7 +17,7 @@ export default defineComponent({
       default: 3
     },
     color: {
-      type: String,
+      type: [String, Boolean],
       default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)'
     }
   },
@@ -45,7 +45,7 @@ export default defineComponent({
         width: `${indicator.progress.value}%`,
         height: `${props.height}px`,
         opacity: indicator.isLoading.value ? 1 : 0,
-        background: props.color,
+        background: props.color || undefined,
         backgroundSize: `${(100 / indicator.progress.value) * 100}% auto`,
         transition: 'width 0.1s, height 0.4s, opacity 0.4s',
         zIndex: 999999
