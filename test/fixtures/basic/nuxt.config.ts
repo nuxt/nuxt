@@ -58,7 +58,7 @@ export default defineNuxtConfig({
     [
       '~/modules/example',
       {
-        typeTest(val) {
+        typeTest (val) {
           // @ts-expect-error module type defines val as boolean
           const b: string = val
           return !!b
