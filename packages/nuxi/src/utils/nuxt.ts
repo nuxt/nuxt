@@ -28,8 +28,8 @@ export async function cleanupNuxtDirs (rootDir: string) {
 }
 
 export function nuxtVersionToGitIdentifier (version: string) {
-  // match the git identifier in the release, for example: 3.0.0-rc.8-27677607.a3a8706
-  const id = /\.([0-9a-f]{7,8})$/.exec(version)
+  // match the pattern with 8 digits and git identifier in the release and extracts only git identifier, for example: 3.0.0-rc.8-27677607.a3a8706
+  const id = (/-\d{8}.([a-z0-9]{7,8})/).exec(version)
   if (id?.[1]) {
     return id[1]
   }
