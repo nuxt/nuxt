@@ -1,6 +1,6 @@
 name: "🚀 Feature request"
 description: Suggest a feature that will improve Nuxt
-labels: ["pending triage"]
+labels: ["pending triage", "3.x"]
 body:
   - type: markdown
     attributes:
