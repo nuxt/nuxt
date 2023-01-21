@@ -134,7 +134,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
 
         return `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       }),
-      Object.keys(moduleMap).length > 0 ? `    modules: (NuxtModule | string | ${Object.keys(moduleMap).join(' | ')} | [NuxtModule | string, Record<string, any>] | ${Object.entries(moduleMap).map(([importName, configKey]) => `[${genString(importName)}, NuxtConfig[${genString(configKey)}]]`).join(' | ')})[]` : '',
+      Object.keys(moduleMap).length > 0 ? `    modules?: (NuxtModule | string | ${Object.keys(moduleMap).join(' | ')} | [NuxtModule | string, Record<string, any>] | ${Object.entries(moduleMap).map(([importName, configKey]) => `[${genString(importName)}, NuxtConfig[${genString(configKey)}]]`).join(' | ')})[]` : '',
       '  }',
       generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
         {
