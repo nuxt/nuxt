@@ -122,7 +122,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
 
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name.startsWith('.') ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map((meta) => [genString(meta.configKey), getImportName(meta.importName)])
+    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
       "import { NuxtModule } from '@nuxt/schema'",
