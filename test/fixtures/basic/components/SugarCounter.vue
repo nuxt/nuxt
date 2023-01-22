@@ -1,14 +1,17 @@
 <script setup lang="ts">
-const props = defineProps<{
-  count: number,
+// eslint-disable-next-line vue/no-setup-props-destructure
+const { multiplier } = defineProps<{
+  multiplier: number
 }>()
-// eslint-disable-next-line prefer-const
-let multiplier = $ref(2)
-const doubled = $computed(() => props.count * multiplier)
+const count = $ref(12)
+const doubled = $computed(() => count * multiplier)
 </script>
 
 <template>
-  <div>
+  <div class="sugar-counter">
     Sugar Counter {{ count }} x {{ multiplier }} = {{ doubled }}
+    <button @click="count += 1">
+      Inc
+    </button>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps({
-  count: {
+  multiplier: {
     type: Number,
     required: true
   }
@@ -9,6 +9,6 @@ defineProps({
 
 <template>
   <div>
-    <SugarCounter :count="count" />
+    <SugarCounter :multiplier="multiplier" />
   </div>
 </template>
