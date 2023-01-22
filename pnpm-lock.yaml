@@ -121,7 +121,7 @@ importers:
     devDependencies:
       '@nuxt/test-utils': link:../../../packages/test-utils
       nuxt: link:../../../packages/nuxt
-      vitest: 0.27.2
+      vitest: 0.27.3
 
   examples/app-config:
     specifiers:
@@ -417,10 +417,10 @@ importers:
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^11.0.1
       '@types/hash-sum': ^1.0.0
-      '@unhead/ssr': ^1.0.17
+      '@unhead/ssr': ^1.0.18
       '@vue/reactivity': ^3.2.45
       '@vue/shared': ^3.2.45
-      '@vueuse/head': ^1.0.22
+      '@vueuse/head': ^1.0.23
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
       defu: ^6.1.1
@@ -448,7 +448,7 @@ importers:
       unbuild: ^1.1.1
       unctx: ^2.1.1
       unenv: ^1.0.1
-      unhead: ^1.0.17
+      unhead: ^1.0.18
       unimport: ^1.3.0
       unplugin: ^1.0.1
       untyped: ^1.2.2
@@ -463,10 +463,10 @@ importers:
       '@nuxt/telemetry': 2.1.9
       '@nuxt/ui-templates': 1.1.0
       '@nuxt/vite-builder': link:../vite
-      '@unhead/ssr': 1.0.17
+      '@unhead/ssr': 1.0.18
       '@vue/reactivity': 3.2.45
       '@vue/shared': 3.2.45
-      '@vueuse/head': 1.0.22_vue@3.2.45
+      '@vueuse/head': 1.0.23_vue@3.2.45
       chokidar: 3.5.3
       cookie-es: 0.5.0
       defu: 6.1.1
@@ -493,7 +493,7 @@ importers:
       ultrahtml: 1.2.0
       unctx: 2.1.1
       unenv: 1.0.1
-      unhead: 1.0.17
+      unhead: 1.0.18
       unimport: 1.3.0
       unplugin: 1.0.1
       untyped: 1.2.2
@@ -510,7 +510,7 @@ importers:
     specifiers:
       '@types/lodash.template': ^4
       '@types/semver': ^7.3.13
-      '@unhead/schema': ^1.0.17
+      '@unhead/schema': ^1.0.18
       '@vitejs/plugin-vue': ^4.0.0
       c12: ^1.1.0
       create-require: ^1.1.1
@@ -545,7 +545,7 @@ importers:
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.13
-      '@unhead/schema': 1.0.17
+      '@unhead/schema': 1.0.18
       '@vitejs/plugin-vue': 4.0.0_vite@4.0.4
       nitropack: 2.0.0-rc.0
       unbuild: 1.1.1
@@ -2287,30 +2287,30 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unhead/dom/1.0.17:
-    resolution: {integrity: sha512-iLVBQ1ck8r8U+n1Rdk93ry6NP0jgRXuJwrujXlYUFkrvbkXl08rTfyyXHT+AkA1aZgFLS9KtYtbEhwzNeWfZtg==}
+  /@unhead/dom/1.0.18:
+    resolution: {integrity: sha512-zX7w/Z3a1/spyQ3SuxB/0s1Tjx8zu5RzYBBXTtYvGutF8g/ScXreC0c5Vm5F3x4HOPdWG+71Qr/M+k6AxPLHDA==}
     dependencies:
-      '@unhead/schema': 1.0.17
+      '@unhead/schema': 1.0.18
     dev: false
 
-  /@unhead/schema/1.0.17:
-    resolution: {integrity: sha512-Vfc6HWcZAzibzlzBMNhVTOC7AYqvq3QMIY6VF7myowl4xbSiPLOmp63ZWAXKavYjHDchAJXvL/PF+6sDaIeCLQ==}
+  /@unhead/schema/1.0.18:
+    resolution: {integrity: sha512-LjNxwwQMZTD0b3LlB4/mmCZpO6HP7ZjK5sKuMpy7/+2O9HJO6TefxsDVrJVAitdUfm5Jej9cNEjnL2gJkc2uWg==}
     dependencies:
       '@zhead/schema': 1.0.9
       hookable: 5.4.2
 
-  /@unhead/ssr/1.0.17:
-    resolution: {integrity: sha512-+Ghf7RO7GDdS1AR38FFpmn0ZmhlgYxmAD6xg79Zgen6blmlfYVsWTL78rjnkkBc6EB9qvnGVAcqYtjO+KwjljA==}
+  /@unhead/ssr/1.0.18:
+    resolution: {integrity: sha512-In0bJSLAyN8DdCuNJaoOIrjsK40g904ELR/0Eue9VzyO0fe147dPGfYlwwUrZOqj0JzGtndiQCF/D6bjn76ovw==}
     dependencies:
-      '@unhead/schema': 1.0.17
+      '@unhead/schema': 1.0.18
     dev: false
 
-  /@unhead/vue/1.0.17_vue@3.2.45:
-    resolution: {integrity: sha512-yTz8yKMWpseWXSL449vIm0lAIxZAYSLiWRBhUG5vcAPo6L39fyKsBXiUOHt+ScYLAQaoxT2gEEIcsbHMxv5pmQ==}
+  /@unhead/vue/1.0.18_vue@3.2.45:
+    resolution: {integrity: sha512-VZ61a2pRtGXI9sj1aba5Qmm35veVvRDIE0Xsog3I0TfwavlwklZcg9bF2eT+GcDnsq1NxNO7uDyrb/+xNAzSxA==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.0.17
+      '@unhead/schema': 1.0.18
       hookable: 5.4.2
       vue: 3.2.45
     dev: false
@@ -2722,15 +2722,15 @@ packages:
       - vue
     dev: true
 
-  /@vueuse/head/1.0.22_vue@3.2.45:
-    resolution: {integrity: sha512-YmUdbzNdCnhmrAFxGnJS+Rixj+swE+TQC9OEaYDHIro6gE7W11jugcdwVP00HrA4WRQhg+TOQ4YcY2oL/PP1hw==}
+  /@vueuse/head/1.0.23_vue@3.2.45:
+    resolution: {integrity: sha512-CiC9VWYbvwAqjWDBJH4WfQfBk7NWMZpvmpvIUYsm3X+aa8QHMiDGzR+RFKZSUtykiCGnSZk97yIvo5eJBmSh8A==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/dom': 1.0.17
-      '@unhead/schema': 1.0.17
-      '@unhead/ssr': 1.0.17
-      '@unhead/vue': 1.0.17_vue@3.2.45
+      '@unhead/dom': 1.0.18
+      '@unhead/schema': 1.0.18
+      '@unhead/ssr': 1.0.18
+      '@unhead/vue': 1.0.18_vue@3.2.45
       vue: 3.2.45
     dev: false
 
@@ -8082,11 +8082,11 @@ packages:
       node-fetch-native: 1.0.1
       pathe: 1.0.0
 
-  /unhead/1.0.17:
-    resolution: {integrity: sha512-JjKjFxKwsmsAl/nLu3uTqd7bSTGOu4bhDj2KSYGBBfTVBmzJVK8lC/Aj0q/1au5g4NH4la+ulbmo3oWU4BqICw==}
+  /unhead/1.0.18:
+    resolution: {integrity: sha512-lHuOvFcj7ijFM6ceRuPq1+0sOAap8fueJxf+SkuWtfm68oxuLP8ct3C3oRyMT/hyWjzfWgoaECmjmw5x2cHnpg==}
     dependencies:
-      '@unhead/dom': 1.0.17
-      '@unhead/schema': 1.0.17
+      '@unhead/dom': 1.0.18
+      '@unhead/schema': 1.0.18
       hookable: 5.4.2
     dev: false
 
@@ -8348,6 +8348,29 @@ packages:
       - terser
     dev: true
 
+  /vite-node/0.27.3_@types+node@18.11.18:
+    resolution: {integrity: sha512-eyJYOO64o5HIp8poc4bJX+ZNBwMZeI3f6/JdiUmJgW02Mt7LnoCtDMRVmLaY9S05SIsjGe339ZK4uo2wQ+bF9g==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.4
+      mlly: 1.1.0
+      pathe: 0.2.0
+      picocolors: 1.0.0
+      source-map: 0.6.1
+      source-map-support: 0.5.21
+      vite: 4.0.4_@types+node@18.11.18
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
   /vite-plugin-checker/0.5.4_vite@4.0.4:
     resolution: {integrity: sha512-T6y+OHXqwOjGrCErbhzg5x79NQZV46cgLwYTxuMQnDzAfA6skh2i8PIHcKks8ZlxopzbkvMb5vwc2DpNXiHJdg==}
     engines: {node: '>=14.16'}
@@ -8502,6 +8525,56 @@ packages:
       tinyspy: 1.0.2
       vite: 4.0.4_@types+node@18.11.18
       vite-node: 0.27.2_@types+node@18.11.18
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vitest/0.27.3:
+    resolution: {integrity: sha512-Ld3UVgRVhJUtqvQ3dW89GxiApFAgBsWJZBCWzK+gA3w2yG68csXlGZZ4WDJURf+8ecNfgrScga6xY+8YSOpiMg==}
+    engines: {node: '>=v14.16.0'}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@vitest/browser': '*'
+      '@vitest/ui': '*'
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/chai': 4.3.4
+      '@types/chai-subset': 1.3.3
+      '@types/node': 18.11.18
+      acorn: 8.8.1
+      acorn-walk: 8.2.0
+      cac: 6.7.14
+      chai: 4.3.7
+      debug: 4.3.4
+      local-pkg: 0.4.3
+      picocolors: 1.0.0
+      source-map: 0.6.1
+      std-env: 3.3.1
+      strip-literal: 1.0.0
+      tinybench: 2.3.1
+      tinypool: 0.3.0
+      tinyspy: 1.0.2
+      vite: 4.0.4_@types+node@18.11.18
+      vite-node: 0.27.3_@types+node@18.11.18
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
