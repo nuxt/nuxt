@@ -1,4 +1,5 @@
-import { fileName, WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
+import { fileName } from '../utils/config'
 
 export function assets (ctx: WebpackConfigContext) {
   ctx.config.module!.rules!.push(

@@ -3,7 +3,8 @@ import { defineNuxtModule, addPlugin, useNuxt } from '@nuxt/kit'
 
 export default defineNuxtModule({
   defaults: {
-    enabled: true
+    enabled: true,
+    typeTest: (value: boolean) => typeof value === 'boolean'
   },
   meta: {
     name: 'my-module',

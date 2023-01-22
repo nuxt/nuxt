@@ -1,5 +1,5 @@
 import { joinURL } from 'ufo'
-import { Plugin } from 'vite'
+import type { Plugin } from 'vite'
 import { isCSS } from '../utils'
 
 export interface DevStyleSSRPluginOptions {

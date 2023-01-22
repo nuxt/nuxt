@@ -110,10 +110,10 @@ export default defineNuxtRouteMiddleware((to, from) => {
 <script setup>
 // will throw an error;
 // navigating to an external URL is not allowed by default
-await navigateTo('https://v3.nuxtjs.org')
+await navigateTo('https://nuxt.com')
 
 // will redirect successfully with the 'external' parameter set to 'true'
-await navigateTo('https://v3.nuxtjs.org', {
+await navigateTo('https://nuxt.com', {
   external: true
 })
 </script>

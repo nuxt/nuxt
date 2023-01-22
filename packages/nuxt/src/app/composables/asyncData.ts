@@ -1,6 +1,7 @@
 import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref, toRef } from 'vue'
 import type { Ref, WatchSource } from 'vue'
-import { NuxtApp, useNuxtApp } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 import { createError } from './error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
@@ -187,7 +188,11 @@ export function useAsyncData<
   // Server side
   if (process.server && fetchOnServer && options.immediate) {
     const promise = initialFetch()
-    onServerPrefetch(() => promise)
+    if (getCurrentInstance()) {
+      onServerPrefetch(() => promise)
+    } else {
+      nuxt.hook('app:created', () => promise)
+    }
   }
 
   // Client side

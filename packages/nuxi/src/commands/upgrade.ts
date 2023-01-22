@@ -67,7 +67,7 @@ export default defineNuxtCommand({
       const commitA = nuxtVersionToGitIdentifier(currentVersion)
       const commitB = nuxtVersionToGitIdentifier(upgradedVersion)
       if (commitA && commitB) {
-        consola.info('Changelog:', `https://github.com/nuxt/framework/compare/${commitA}...${commitB}`)
+        consola.info('Changelog:', `https://github.com/nuxt/nuxt/compare/${commitA}...${commitB}`)
       }
     }
   }

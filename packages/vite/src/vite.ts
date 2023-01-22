@@ -57,6 +57,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         css: resolveCSSOptions(nuxt),
         build: {
+          copyPublicDir: false,
           rollupOptions: {
             output: {
               sanitizeFileName: sanitizeFilePath,
@@ -126,7 +127,7 @@ export async function bundle (nuxt: Nuxt) {
 
     if (
       nuxt.options.vite.warmupEntry !== false &&
-      // https://github.com/nuxt/framework/issues/7510
+      // https://github.com/nuxt/nuxt/issues/14898
       !(env.isServer && ctx.nuxt.options.vite.devBundler !== 'legacy')
     ) {
       const start = Date.now()

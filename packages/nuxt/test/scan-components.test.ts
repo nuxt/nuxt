@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { ComponentsDir } from '@nuxt/schema'
+import type { ComponentsDir } from '@nuxt/schema'
 import { expect, it, vi } from 'vitest'
 import { scanComponents } from '../src/components/scan'
 

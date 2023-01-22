@@ -4,7 +4,7 @@ title: "definePageMeta"
 
 # `definePageMeta`
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the `pages/` directory (unless [set otherwise](https://v3.nuxtjs.org/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the `pages/` directory (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
 <script setup>

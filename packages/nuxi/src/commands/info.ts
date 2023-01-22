@@ -6,7 +6,7 @@ import jiti from 'jiti'
 import destr from 'destr'
 import { splitByCase } from 'scule'
 import clipboardy from 'clipboardy'
-import { NuxtModule } from '@nuxt/schema'
+import type { NuxtModule } from '@nuxt/schema'
 import { getPackageManager, getPackageManagerVersion } from '../utils/packageManagers'
 import { findup } from '../utils/fs'
 import { defineNuxtCommand } from './index'
@@ -89,11 +89,10 @@ export default defineNuxtCommand({
     console.log(`Nuxt project info: ${copied ? '(copied to clipboard)' : ''}\n\n${splitter}\n${infoStr}${splitter}\n`)
 
     const isNuxt3OrBridge = infoObj.NuxtVersion.startsWith('3') || infoObj.BuildModules.includes('bridge')
-    const repo = isNuxt3OrBridge ? 'nuxt/framework' : 'nuxt/nuxt.js'
     console.log([
-      `👉 Report an issue: https://github.com/${repo}/issues/new`,
-      `👉 Suggest an improvement: https://github.com/${repo}/discussions/new`,
-      `👉 Read documentation: ${isNuxt3OrBridge ? 'https://v3.nuxtjs.org' : 'https://nuxtjs.org'}`
+      '👉 Report an issue: https://github.com/nuxt/nuxt/issues/new',
+      '👉 Suggest an improvement: https://github.com/nuxt/nuxt/discussions/new',
+      `👉 Read documentation: ${isNuxt3OrBridge ? 'https://nuxt.com' : 'https://nuxtjs.org'}`
     ].join('\n\n') + '\n')
   }
 })

@@ -18,6 +18,7 @@
     "vue/one-component-per-file": "off",
     "vue/require-default-prop": "off",
     "vue/no-multiple-template-root": "off",
+    "vue/no-v-model-argument": "off",
     "jsdoc/require-jsdoc": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
@@ -43,6 +44,12 @@
             "message": "nitro should not directly import other packages."
           }
         ]
+      }
+    ],
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "disallowTypeAnnotations": false
       }
     ],
     "@typescript-eslint/no-unused-vars": [

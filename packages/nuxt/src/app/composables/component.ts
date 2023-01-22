@@ -1,6 +1,7 @@
-import { defineComponent, getCurrentInstance, reactive, toRefs } from 'vue'
-import type { DefineComponent } from 'vue'
-import { NuxtApp, useNuxtApp } from '../nuxt'
+import { getCurrentInstance, reactive, toRefs } from 'vue'
+import type { DefineComponent, defineComponent } from 'vue'
+import type { NuxtApp } from '../nuxt'
+import { useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 

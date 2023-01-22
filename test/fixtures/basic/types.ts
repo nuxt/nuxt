@@ -4,10 +4,9 @@ import type { Ref } from 'vue'
 import type { AppConfig } from '@nuxt/schema'
 
 import type { FetchError } from 'ofetch'
-import { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
-import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
-// eslint-disable-next-line import/order
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
 import { isVue3 } from '#app'
+import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
 import { useRouter } from '#imports'
 
@@ -178,7 +177,7 @@ describe('composables', () => {
 
   it('infer request url string literal from server/api routes', () => {
     // request can accept dynamic string type
-    const dynamicStringUrl: string = 'https://example.com/api'
+    const dynamicStringUrl = 'https://example.com/api'
     expectTypeOf(useFetch(dynamicStringUrl).data).toEqualTypeOf<Ref<unknown>>()
 
     // request param should infer string literal type / show auto-complete hint base on server routes, ex: '/api/hello'

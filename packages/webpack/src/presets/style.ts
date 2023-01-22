@@ -1,6 +1,7 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import { fileName, WebpackConfigContext, applyPresets } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
+import { fileName, applyPresets } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
 
 export function style (ctx: WebpackConfigContext) {
@@ -40,7 +41,7 @@ function loaders (ctx: WebpackConfigContext) {
   // CSS
   config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
 
-  // Postcss
+  // PostCSS
   config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
 
   // Less

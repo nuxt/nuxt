@@ -1,7 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
-import { parse, walk, ELEMENT_NODE, Node } from 'ultrahtml'
+import type { Node } from 'ultrahtml'
+import { parse, walk, ELEMENT_NODE } from 'ultrahtml'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 

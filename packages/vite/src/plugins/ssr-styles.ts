@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { Plugin } from 'vite'
+import type { Plugin } from 'vite'
 import { findStaticImports } from 'mlly'
 import { dirname, relative } from 'pathe'
 import { genObjectFromRawEntries } from 'knitwork'

@@ -1,4 +1,5 @@
 import { createHead, useHead } from '@vueuse/head'
+import { renderSSRHead } from '@unhead/ssr'
 import { defineNuxtPlugin } from '#app'
 // @ts-expect-error untyped
 import { appHead } from '#build/nuxt.config.mjs'
@@ -29,7 +30,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   if (process.server) {
     nuxtApp.ssrContext!.renderMeta = async () => {
-      const { renderSSRHead } = await import('@unhead/ssr')
       const meta = await renderSSRHead(head.unhead)
       return {
         ...meta,

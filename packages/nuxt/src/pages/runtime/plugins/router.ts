@@ -1,15 +1,17 @@
-import { computed, reactive, shallowRef } from 'vue'
+import { computed, isReadonly, reactive, shallowRef } from 'vue'
+import type {
+  NavigationGuard,
+  RouteLocation
+} from 'vue-router'
 import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  createWebHashHistory,
-  NavigationGuard,
-  RouteLocation
+  createWebHashHistory
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import NuxtPage from './page'
+import type NuxtPage from '../page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
@@ -117,8 +119,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const initialLayout = useState('_layout')
   router.beforeEach(async (to, from) => {
     to.meta = reactive(to.meta)
-    if (nuxtApp.isHydrating) {
-      to.meta.layout = initialLayout.value ?? to.meta.layout
+    if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
+      to.meta.layout = initialLayout.value
     }
     nuxtApp._processingMiddleware = true
 

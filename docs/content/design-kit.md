@@ -4,13 +4,31 @@ description: Welcome to Nuxt design definition page. Identity was redefined by h
 image: '/socials/design-kit.jpg'
 ---
 
-::resources-design-kit-hero
+::page-hero
+---
+image:
+  path: '/assets/design-kit/hero-designkit'
+  format: 'webp'
+  height: '216'
+  width: '400'
+buttons:
+  - label: 'Download Design Kit'
+    size: 'lg'
+    variant: 'secondary'
+    to: '/assets/design-kit/nuxt-assets.zip'
+    target: '_blank'
+  - label: 'Preview guidelines'
+    size: 'lg'
+    to: 'https://www.figma.com/file/DOO3neicujKl3ymcqUg9dK/%E2%9B%B0%EF%B8%8F---Nuxt-Brand-Guidelines?node-id=0%3A1&t=qBS3UqvGpjrIkxIm-1'
+    icon: 'uil:arrow-right'
+    trailing: 'trailing'
+    download: true
+    target: '_blank'
+---
 #title
 Design Kit
 #description
 Welcome to Nuxt design definition page. Identity was redefined by handpicking conscientiously colors, typography and shapes in order to put forward how performant, useful & easy Nuxt products are.
-#buttonText
-Download design kit
 ::
 
 ::resources-design-kit-section

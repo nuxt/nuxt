@@ -12,6 +12,7 @@
     <NuxtLink to="/random/c" prefetched-class="prefetched">
       Random (C)
     </NuxtLink>
+    <ServerOnlyComponent />
     <br>
 
     Random: {{ random }}

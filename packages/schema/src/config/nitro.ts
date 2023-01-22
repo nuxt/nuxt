@@ -38,7 +38,7 @@ export default defineUntypedSchema({
    * - middleware: Specifies whether it is a middleware handler.
    * - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see https://v3.nuxtjs.org/guide/features/server-routes
+   * @see https://nuxt.com/docs/guide/directory-structure/server
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *

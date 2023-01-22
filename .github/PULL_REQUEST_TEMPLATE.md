@@ -2,7 +2,7 @@
 ☝️ PR title should follow conventional commits (https://conventionalcommits.org)
 
 Please carefully read the contribution docs before creating a pull request
- 👉 https://v3.nuxtjs.org/community/contribution
+ 👉 https://nuxt.com/docs/community/contribution
 -->
 
 ### 🔗 Linked issue

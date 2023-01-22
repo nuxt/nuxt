@@ -1,4 +1,5 @@
-import { defineBuildConfig, BuildEntry } from 'unbuild'
+import type { BuildEntry } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
   declaration: true,
@@ -11,6 +12,7 @@ export default defineBuildConfig({
     ...[
       'core',
       'head',
+      'components',
       'pages'
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm' } as BuildEntry))
   ],
@@ -22,7 +24,6 @@ export default defineBuildConfig({
   externals: [
     '@vue/reactivity',
     '@vue/shared',
-    '@vueuse/head',
-    'vue-meta'
+    '@vueuse/head'
   ]
 })

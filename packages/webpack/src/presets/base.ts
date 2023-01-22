@@ -8,8 +8,10 @@ import { logger } from '@nuxt/kit'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
-import WarningIgnorePlugin, { WarningFilter } from '../plugins/warning-ignore'
-import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
+import type { WarningFilter } from '../plugins/warning-ignore'
+import WarningIgnorePlugin from '../plugins/warning-ignore'
+import type { WebpackConfigContext } from '../utils/config'
+import { applyPresets, fileName } from '../utils/config'
 
 export function base (ctx: WebpackConfigContext) {
   applyPresets(ctx, [
@@ -159,7 +161,8 @@ export function baseTranspile (ctx: WebpackConfigContext) {
 
   for (let pattern of options.build.transpile) {
     if (typeof pattern === 'function') {
-      pattern = pattern(ctx)
+      const result = pattern(ctx)
+      if (result) { pattern = result }
     }
     if (typeof pattern === 'string') {
       transpile.push(new RegExp(escapeRegExp(normalize(pattern))))

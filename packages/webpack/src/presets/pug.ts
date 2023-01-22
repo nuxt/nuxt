@@ -1,4 +1,4 @@
-import { WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config'
 
 export function pug (ctx: WebpackConfigContext) {
   ctx.config.module!.rules!.push({
