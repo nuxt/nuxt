@@ -113,7 +113,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     await router.isReady()
   } catch (error: any) {
     // We'll catch 404s here
-    callWithNuxt(nuxtApp, showError, [error])
+    await callWithNuxt(nuxtApp, showError, [error])
   }
 
   const initialLayout = useState('_layout')
@@ -171,7 +171,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       await callWithNuxt(nuxtApp, clearError)
     }
     if (to.matched.length === 0) {
-      callWithNuxt(nuxtApp, showError, [createError({
+      await callWithNuxt(nuxtApp, showError, [createError({
         statusCode: 404,
         fatal: false,
         statusMessage: `Page not found: ${to.fullPath}`
@@ -193,7 +193,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })
     } catch (error: any) {
       // We'll catch middleware errors or deliberate exceptions here
-      callWithNuxt(nuxtApp, showError, [error])
+      await callWithNuxt(nuxtApp, showError, [error])
     }
   })
 

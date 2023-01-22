@@ -283,7 +283,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>): Promise<ReturnType<T>> | ReturnType<T> {
   const fn = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
     return nuxtAppCtx.callAsync<ReturnType<T>>(nuxt, fn)
