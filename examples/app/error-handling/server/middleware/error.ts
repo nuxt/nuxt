@@ -1,8 +1,7 @@
-import { getQuery, defineMiddleware } from 'h3'
+import { getQuery, defineEventHandler } from 'h3'
 
-export default defineMiddleware((req, res, next) => {
-  if ('api' in getQuery(req)) {
+export default defineEventHandler((event) => {
+  if ('api' in getQuery(event)) {
     throw new Error('Server middleware error')
   }
-  next()
 })
