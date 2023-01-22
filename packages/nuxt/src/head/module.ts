@@ -1,6 +1,5 @@
 import { resolve } from 'pathe'
-import { addComponent, addImportsSources, addPlugin, defineNuxtModule, addVitePlugin } from '@nuxt/kit'
-import UnheadVite from '@unhead/addons/vite'
+import { addComponent, addImportsSources, addPlugin, defineNuxtModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -21,16 +20,8 @@ export default defineNuxtModule({
     addImportsSources({
       from: '@vueuse/head',
       imports: [
-        'useSeoMeta',
-        'injectHead',
-        'useServerHead'
+        'useSeoMeta'
       ]
-    })
-
-    // removes useSeoMeta, useServerHead in production client builds
-    addVitePlugin(UnheadVite({ root: nuxt.options.rootDir }), {
-      dev: false,
-      server: false
     })
 
     // Register components
