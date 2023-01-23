@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir } from 'node:fs/promises'
+import { writeFile, mkdir, rm } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
 import { defu } from 'defu'
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
@@ -98,6 +98,15 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
+      // Avoid writing empty schema
+      const isEmptySchema = schema.type !== 'object' ||
+        !schema.properties ||
+        Object.keys(schema.properties).length === 0
+      if (isEmptySchema) {
+        await rm(resolve(nuxt.options.buildDir, 'schema'), { recursive: true }).catch(() => { })
+        return
+      }
+
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
