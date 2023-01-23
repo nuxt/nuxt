@@ -5,6 +5,7 @@ import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { AppHeadMetaObject } from './meta'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
+export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
