@@ -55,9 +55,13 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
         invalidateVirtualModules()
       })
 
-      server.watcher.on('all', (event, file) => {
+      server.watcher.on('all', (event, file, stats) => {
+        if (stats?.isFile() === false) {
+          return
+        }
         markInvalidates(server.moduleGraph.getModulesByFile(file))
-        if (event === 'add') {
+        // Invalidate all virtual modules when a file is added or removed
+        if (event === 'add' || event === 'unlink') {
           invalidateVirtualModules()
         }
       })
