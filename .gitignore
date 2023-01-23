@@ -61,3 +61,5 @@ Temporary Items
 .build-*
 .env
 .netlify
+
+fixtures-temp

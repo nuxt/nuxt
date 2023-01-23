@@ -14,7 +14,7 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
-    <NestedSugarCounter :count="12" />
+    <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />

@@ -143,8 +143,6 @@ export function createNuxtApp (options: CreateOptions) {
 
         if (hydratingCount === 0) {
           nuxtApp.isHydrating = false
-          // @ts-expect-error private flag
-          globalThis.__hydrated = true
           return nuxtApp.callHook('app:suspense:resolve')
         }
       }

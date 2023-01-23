@@ -14,8 +14,11 @@ export default defineConfig({
     tsconfigRaw: '{}'
   },
   test: {
+    globalSetup: 'test/setup.ts',
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-    exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js']
+    exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js'],
+    maxThreads: process.env.NUXT_TEST_DEV ? 1 : undefined,
+    minThreads: process.env.NUXT_TEST_DEV ? 1 : undefined
   }
 })

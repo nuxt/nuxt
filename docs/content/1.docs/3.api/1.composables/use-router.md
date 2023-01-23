@@ -26,8 +26,8 @@ If you have a `pages/` folder, `useRouter` is identical in behavior to the one p
 - **back:** Go back in history if possible, same as `router.go(-1)`.
 - **forward:** Go forward in history if possible, same as `router.go(1)`.
 - **go:** Move forward or backward through the history without the hierarchical restrictions enforced in `router.back()` and `router.forward()`.
-- **push:** Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](http://v3.nuxtjs.org/api/utils/navigate-to) instead.**
-- **replace:** Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](http://v3.nuxtjs.org/api/utils/navigate-to) instead.**
+- **push:** Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
+- **replace:** Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
 
 > TIP: `router.addRoute()` adds route details into an array of routes and it is useful while building Nuxt plugins while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in Nuxt Page components, Vue components and composable.
 
