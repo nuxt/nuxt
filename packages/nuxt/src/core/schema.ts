@@ -1,7 +1,9 @@
 import { existsSync } from 'node:fs'
 import { writeFile, mkdir, rm } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
+import chokidar from 'chokidar'
 import { defu } from 'defu'
+import { debounce } from 'perfect-debounce'
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
 import {
   resolveSchema as resolveUntypedSchema,
@@ -17,7 +19,7 @@ export default defineNuxtModule({
   meta: {
     name: 'nuxt-config-schema'
   },
-  setup (options, nuxt) {
+  async setup (options, nuxt) {
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
@@ -52,7 +54,27 @@ export default defineNuxtModule({
       await nuxt.hooks.callHook('schema:written')
     })
 
-    // --- Bound utils ---
+    // Watch for schema changes in development mode
+    if (nuxt.options.dev) {
+      const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
+        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*')
+      ))
+      const watcher = chokidar.watch(filesToWatch, {
+        ...nuxt.options.watchers.chokidar,
+        ignoreInitial: true
+      })
+      const onChange = debounce(async () => {
+        console.log('Event!')
+        schema = await resolveSchema()
+        await nuxt.hooks.callHook('schema:beforeWrite', schema)
+        await writeSchema(schema)
+        await nuxt.hooks.callHook('schema:written')
+      })
+      watcher.on('all', onChange)
+      nuxt.hook('close', () => watcher.close())
+    }
+
+    // --- utils ---
 
     async function resolveSchema () {
       // Global import
@@ -99,9 +121,7 @@ export default defineNuxtModule({
 
     async function writeSchema (schema: Schema) {
       // Avoid writing empty schema
-      const isEmptySchema = schema.type !== 'object' ||
-        !schema.properties ||
-        Object.keys(schema.properties).length === 0
+      const isEmptySchema = !schema.properties || Object.keys(schema.properties).length === 0
       if (isEmptySchema) {
         await rm(resolve(nuxt.options.buildDir, 'schema'), { recursive: true }).catch(() => { })
         return
@@ -122,19 +142,19 @@ export default defineNuxtModule({
       )
       const _types = generateTypes(schema, {
         addExport: true,
-        interfaceName: 'NuxtUserConfig',
+        interfaceName: 'NuxtCustomSchema',
         partial: true
       })
       const types =
         _types +
         `
-export type UserAppConfig = Exclude<NuxtUserConfig['appConfig'], undefined>
+export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
 
 declare module '@nuxt/schema' {
-  interface NuxtConfig extends NuxtUserConfig {}
-  interface NuxtOptions extends NuxtUserConfig {}
-  interface AppConfigInput extends UserAppConfig {}
-  interface AppConfig extends UserAppConfig {}
+  interface NuxtConfig extends NuxtCustomSchema {}
+  interface NuxtOptions extends NuxtCustomSchema {}
+  interface AppConfigInput extends CustomAppConfig {}
+  interface AppConfig extends CustomAppConfig {}
 }`
       const typesPath = resolve(
         nuxt.options.buildDir,
