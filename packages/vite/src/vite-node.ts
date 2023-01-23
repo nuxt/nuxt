@@ -33,8 +33,6 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     }
   }
 
-  const runtimeDir = resolve(distDir, 'pages/runtime')
-
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
@@ -45,7 +43,11 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
             markInvalidate(mod)
           }
         }
-        markInvalidates(server.moduleGraph.getModulesByFile(resolve(runtimeDir, 'plugins/router')))
+        for (const plugin of ctx.nuxt.options.plugins) {
+          markInvalidates(server.moduleGraph.getModulesByFile(
+            typeof plugin === 'string' ? plugin : plugin.src
+          ))
+        }
       }
 
       server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
