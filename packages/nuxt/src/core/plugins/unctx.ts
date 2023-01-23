@@ -15,6 +15,8 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
     name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
+      if (id.includes('macro=true')) { return true }
+
       id = normalize(id).replace(/\?.*$/, '')
       return app?.plugins.some(i => i.src === id) || app?.middleware.some(m => m.path === id)
     },

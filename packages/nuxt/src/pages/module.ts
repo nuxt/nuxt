@@ -137,8 +137,12 @@ export default defineNuxtModule({
         layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
       )
     }
-    addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-    addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    // We unshift this plugin to ensure they can fully extract meta before other plugins
+    // transform the source (like auto-imports or unctx transform)
+    nuxt.options.vite.plugins = nuxt.options.vite.plugins || []
+    nuxt.options.vite.plugins.unshift(PageMetaPlugin.vite(pageMetaOptions))
+    nuxt.options.webpack.plugins = nuxt.options.webpack.plugins || []
+    nuxt.options.webpack.plugins.unshift(PageMetaPlugin.webpack(pageMetaOptions))
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
