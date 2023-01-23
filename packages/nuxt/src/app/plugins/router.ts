@@ -1,7 +1,7 @@
 import { reactive, h, isReadonly } from 'vue'
 import { parseURL, stringifyParsedURL, parseQuery, stringifyQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
-import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig, useState } from '..'
+import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig, useState, useRequestEvent } from '..'
 import { callWithNuxt } from '../nuxt'
 // @ts-ignore
 import { globalMiddleware } from '#build/middleware'
@@ -250,7 +250,9 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>((nuxtApp) => {
 
     await router.replace(initialURL)
     if (!isEqual(route.fullPath, initialURL)) {
-      await callWithNuxt(nuxtApp, navigateTo, [route.fullPath])
+      const event = await callWithNuxt(nuxtApp, useRequestEvent)
+      const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
+      await callWithNuxt(nuxtApp, navigateTo, [route.fullPath, options])
     }
   })
 
