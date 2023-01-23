@@ -5,7 +5,7 @@ import type { AppConfig } from '@nuxt/schema'
 
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
-import { isVue3 } from '#app'
+import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
 import { useRouter } from '#imports'
@@ -222,5 +222,12 @@ describe('app config', () => {
 describe('extends type declarations', () => {
   it('correctly adds references to tsconfig', () => {
     expectTypeOf<import('bing').BingInterface>().toEqualTypeOf<{ foo: 'bar' }>()
+  })
+})
+
+describe('composables inference', () => {
+  it('callWithNuxt', () => {
+    const bob = callWithNuxt({} as any, () => true)
+    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
   })
 })
