@@ -257,7 +257,7 @@ describe('pages:generateRoutesFromFiles', () => {
   for (const test of tests) {
     it(test.description, async () => {
       if (test.error) {
-        expect(() => generateRoutesFromFiles(test.files, pagesDir)).to.throws(test.error)
+        expect(() => generateRoutesFromFiles(test.files, pagesDir, '.')).to.throws(test.error)
       } else {
         expect(await generateRoutesFromFiles(test.files, pagesDir, '.')).to.deep.equal(test.output)
       }
