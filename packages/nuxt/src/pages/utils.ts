@@ -38,14 +38,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
       const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
-      return generateRoutesFromFiles(files, dir)
+      return generateRoutesFromFiles(files, dir, nuxt.options.router.routeSeparator)
     })
   )).flat()
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtPage[] {
+export function generateRoutesFromFiles (files: string[], pagesDir: string, routeSeparator = '-'): NuxtPage[] {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -70,7 +70,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '-') + segmentName
+      route.name += (route.name && routeSeparator) + segmentName
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))

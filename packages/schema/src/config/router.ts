@@ -13,6 +13,7 @@ export default defineUntypedSchema({
      * @type {import('../src/types/router').RouterConfigSerializable}
      *
      */
-    options: {}
+    options: {},
+    routeSeparator: '-',
   }
 })

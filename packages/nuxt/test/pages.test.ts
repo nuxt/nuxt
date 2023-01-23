@@ -26,7 +26,7 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         },
         {
-          name: 'parent-child',
+          name: 'parent.child',
           path: '/parent/child',
           file: `${pagesDir}/parent/child/index.vue`,
           children: []
@@ -46,7 +46,7 @@ describe('pages:generateRoutesFromFiles', () => {
           file: `${pagesDir}/parent.vue`,
           children: [
             {
-              name: 'parent-child',
+              name: 'parent.child',
               path: 'child',
               file: `${pagesDir}/parent/child.vue`,
               children: []
@@ -69,7 +69,7 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         },
         {
-          name: 'stories-id',
+          name: 'stories.id',
           path: '/stories/:id',
           file: `${pagesDir}/stories/[id].vue`,
           children: []
@@ -168,19 +168,19 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/:bar'
         },
         {
-          name: 'nonopt-slug',
+          name: 'nonopt.slug',
           path: '/nonopt/:slug',
           file: `${pagesDir}/nonopt/[slug].vue`,
           children: []
         },
         {
-          name: 'opt-slug',
+          name: 'opt.slug',
           path: '/opt/:slug?',
           file: `${pagesDir}/opt/[[slug]].vue`,
           children: []
         },
         {
-          name: 'sub-route-slug',
+          name: 'sub.route-slug',
           path: '/:sub?/route-:slug',
           file: `${pagesDir}/[[sub]]/route-[slug].vue`,
           children: []
@@ -259,7 +259,7 @@ describe('pages:generateRoutesFromFiles', () => {
       if (test.error) {
         expect(() => generateRoutesFromFiles(test.files, pagesDir)).to.throws(test.error)
       } else {
-        expect(await generateRoutesFromFiles(test.files, pagesDir)).to.deep.equal(test.output)
+        expect(await generateRoutesFromFiles(test.files, pagesDir, '.')).to.deep.equal(test.output)
       }
     })
   }
