@@ -112,6 +112,10 @@ Nuxt's goal is to make web development intuitive and performant, with a great de
 
 Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#set-up-your-local-development-environment) to contribute to the framework and documentation.
 
+## Nuxt 2
+
+You can find the code for Nuxt 2 on the [`2.x-dev` branch](https://github.com/nuxt/nuxt/tree/2.x-dev) and the documentation at [nuxtjs.org](https://nuxtjs.org).
+
 ## Follow us
 
 <p valign="center">
