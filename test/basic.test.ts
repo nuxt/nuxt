@@ -1029,5 +1029,19 @@ if (isDev() && !isWindows) {
       expect(consoleLogErrors).toEqual([])
       expect(consoleLogWarnings).toEqual([])
     }, isWindows ? 60_000 : 30_000)
+
+    it('should detect new routes', async () => {
+      const { status } = await fetch('/some-404')
+      expect(status).toEqual(404)
+
+      // write new page route
+      const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
+      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
+
+      await expectWithPolling(
+        () => fetch('/some-404').then(r => String(r.status)),
+        '200'
+      )
+    })
   })
 }
