@@ -21,6 +21,8 @@ export const UnctxTransformPlugin = (nuxt: Nuxt) => {
       return app?.plugins.some(i => i.src === id) || app?.middleware.some(m => m.path === id)
     },
     transform (code, id) {
+      // TODO: needed for webpack - update transform in unctx
+      if (code.includes('__executeAsync')) { return }
       const result = transformer.transform(code)
       if (result) {
         return {
