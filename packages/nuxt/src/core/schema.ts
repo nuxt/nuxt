@@ -64,7 +64,6 @@ export default defineNuxtModule({
         ignoreInitial: true
       })
       const onChange = debounce(async () => {
-        console.log('Event!')
         schema = await resolveSchema()
         await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
