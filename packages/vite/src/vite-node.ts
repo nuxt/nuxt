@@ -18,34 +18,49 @@ import { transpile } from './utils/transpile'
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
+
   function markInvalidate (mod: ModuleNode) {
     if (!mod.id) { return }
     if (invalidates.has(mod.id)) { return }
     invalidates.add(mod.id)
-    for (const importer of mod.importers) {
-      markInvalidate(importer)
+    markInvalidates(mod.importers)
+  }
+
+  function markInvalidates (mods?: ModuleNode[] | Set<ModuleNode>) {
+    if (!mods) { return }
+    for (const mod of mods) {
+      markInvalidate(mod)
     }
   }
+
+  const runtimeDir = resolve(distDir, 'pages/runtime')
 
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
-      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
-      // Invalidate all virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', () => {
+      function invalidateVirtualModules () {
         for (const [id, mod] of server.moduleGraph.idToModuleMap) {
           if (id.startsWith('virtual:')) {
             markInvalidate(mod)
           }
         }
-      })
-    },
-    handleHotUpdate ({ file, server }) {
-      const mods = server.moduleGraph.getModulesByFile(file) || []
-      for (const mod of mods) {
-        markInvalidate(mod)
+        markInvalidates(server.moduleGraph.getModulesByFile(resolve(runtimeDir, 'plugins/router')))
       }
+
+      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+
+      // Invalidate all virtual modules when templates are regenerated
+      ctx.nuxt.hook('app:templatesGenerated', () => {
+        invalidateVirtualModules()
+      })
+
+      server.watcher.on('all', (event, file) => {
+        markInvalidates(server.moduleGraph.getModulesByFile(file))
+        if (event === 'add') {
+          invalidateVirtualModules()
+        }
+      })
     }
   }
 }
