@@ -12,7 +12,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 import type NuxtPage from '../page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
 // @ts-ignore
@@ -179,7 +179,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL)) {
-        await callWithNuxt(nuxtApp, navigateTo, [currentURL])
+        const event = await callWithNuxt(nuxtApp, useRequestEvent)
+        const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
+        await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
       }
     }
   })
