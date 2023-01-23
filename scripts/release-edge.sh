@@ -20,6 +20,8 @@ fi
 for p in packages/* ; do
   pushd $p
   echo "Publishing $p"
+  cp ../../LICENSE .
+  cp ../../README.md .
   pnpm publish --access public --no-git-checks
   popd
 done

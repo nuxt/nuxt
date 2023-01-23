@@ -3,6 +3,8 @@ node_modules
 jspm_packages
 
 package-lock.json
+packages/*/README.md
+packages/*/LICENSE
 */**/yarn.lock
 /.yarn
 
