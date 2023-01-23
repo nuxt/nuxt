@@ -19,7 +19,10 @@ export default defineNuxtModule({
   meta: {
     name: 'nuxt-config-schema'
   },
-  async setup (options, nuxt) {
+  async setup (_, nuxt) {
+    if (!nuxt.options.experimental.configSchema) {
+      return
+    }
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader

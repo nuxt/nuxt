@@ -232,9 +232,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
         .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
     }
   }])
-  if (options.experimental.configSchema) {
-    options._modules.push(schemaModule)
-  }
+  options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push('@nuxt/ui-templates')
