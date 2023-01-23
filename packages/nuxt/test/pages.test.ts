@@ -84,7 +84,7 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
       output: [
         {
-          name: 'stories-id',
+          name: 'stories.id',
           path: '/stories/:id',
           file: `${pagesDir}/stories/[id].vue`,
           children: []
