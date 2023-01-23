@@ -14,6 +14,10 @@ export default defineUntypedSchema({
      *
      */
     options: {},
+    /**
+     * The string used as separator between nested routes.
+     * `parent/[slug].vue` will be converted to `parent-slug` where `'-'` is the separator by default.
+     */
     routeSeparator: '-',
   }
 })
