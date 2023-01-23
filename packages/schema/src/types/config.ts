@@ -4,6 +4,8 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { AppHeadMetaObject } from './meta'
 import type { Nuxt } from './nuxt'
+import type { SchemaDefinition } from 'untyped'
+export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
@@ -11,6 +13,13 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite'>> {
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
+
+  /**
+   * Experimental custom config schema
+   *
+   * @see https://github.com/nuxt/nuxt/issues/15592
+  */
+  $schema?: SchemaDefinition
 }
 
 // TODO: Expose ConfigLayer<T> from c12
@@ -29,6 +38,7 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | { bundle: (nuxt: Nuxt) => Promise<void> }
   _layers: NuxtConfigLayer[]
+  $schema: SchemaDefinition
 }
 
 export interface ViteConfig extends ViteUserConfig {

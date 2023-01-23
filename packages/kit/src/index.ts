@@ -4,6 +4,7 @@ export * from './module/install'
 
 // Loader
 export * from './loader/config'
+export * from './loader/schema'
 export * from './loader/nuxt'
 
 // Utils

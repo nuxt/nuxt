@@ -442,4 +442,6 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').AppConfig}
    */
   appConfig: {},
+
+  $schema: {}
 })
