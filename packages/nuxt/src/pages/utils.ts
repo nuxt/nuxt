@@ -70,7 +70,6 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string, rout
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      console.log((route.name && routeSeparator) + segmentName)
       route.name += (route.name && routeSeparator) + segmentName
 
       // ex: parent.vue + parent/child.vue
