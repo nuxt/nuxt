@@ -5,7 +5,12 @@
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
-  "exports": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
   "files": [
     "dist"
   ],
