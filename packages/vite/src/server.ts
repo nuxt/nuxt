@@ -34,6 +34,9 @@ export async function buildServer (ctx: ViteBuildContext) {
         }
       }
     },
+    css: {
+      devSourcemap: ctx.nuxt.options.sourcemap.server
+    },
     define: {
       'process.server': true,
       'process.client': false,
