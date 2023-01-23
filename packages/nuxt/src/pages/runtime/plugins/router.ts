@@ -12,7 +12,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 import type NuxtPage from '../page'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
 // @ts-ignore
@@ -113,7 +113,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     await router.isReady()
   } catch (error: any) {
     // We'll catch 404s here
-    callWithNuxt(nuxtApp, showError, [error])
+    await callWithNuxt(nuxtApp, showError, [error])
   }
 
   const initialLayout = useState('_layout')
@@ -171,7 +171,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       await callWithNuxt(nuxtApp, clearError)
     }
     if (to.matched.length === 0) {
-      callWithNuxt(nuxtApp, showError, [createError({
+      await callWithNuxt(nuxtApp, showError, [createError({
         statusCode: 404,
         fatal: false,
         statusMessage: `Page not found: ${to.fullPath}`
@@ -179,7 +179,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL)) {
-        await callWithNuxt(nuxtApp, navigateTo, [currentURL])
+        const event = await callWithNuxt(nuxtApp, useRequestEvent)
+        const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
+        await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
       }
     }
   })
@@ -193,7 +195,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })
     } catch (error: any) {
       // We'll catch middleware errors or deliberate exceptions here
-      callWithNuxt(nuxtApp, showError, [error])
+      await callWithNuxt(nuxtApp, showError, [error])
     }
   })
 

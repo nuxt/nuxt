@@ -30,6 +30,9 @@ export async function buildClient (ctx: ViteBuildContext) {
         return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
       }
     },
+    css: {
+      devSourcemap: ctx.nuxt.options.sourcemap.client
+    },
     define: {
       'process.server': false,
       'process.client': true,
