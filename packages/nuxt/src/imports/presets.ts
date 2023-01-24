@@ -6,7 +6,8 @@ const commonPresets: InlinePreset[] = [
   defineUnimportPreset({
     from: '#head',
     imports: [
-      'useHead'
+      'useHead',
+      'useSeoMeta'
     ]
   }),
   // vue-demi (mocked)

@@ -17,13 +17,6 @@ export default defineNuxtModule({
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir
 
-    addImportsSources({
-      from: '@vueuse/head',
-      imports: [
-        'useSeoMeta'
-      ]
-    })
-
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
     for (const componentName of components) {
