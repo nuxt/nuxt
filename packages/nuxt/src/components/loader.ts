@@ -134,7 +134,7 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
   if (component) { return component }
 
   // Render client-only components on the server with <ServerPlaceholder> (a simple div)
-  if (mode === 'server' && !component) {
+  if (mode === 'server' && !component && components.some(c => id === c.pascalName)) {
     return components.find(c => c.pascalName === 'ServerPlaceholder')
   }
 
