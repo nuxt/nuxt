@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addComponent, addImportsSources, addPlugin, defineNuxtModule } from '@nuxt/kit'
+import { addComponent, addPlugin, defineNuxtModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -16,13 +16,6 @@ export default defineNuxtModule({
 
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir
-
-    addImportsSources({
-      from: '@vueuse/head',
-      imports: [
-        'useSeoMeta'
-      ]
-    })
 
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
