@@ -199,10 +199,11 @@ function parseSegment (segment: string) {
 }
 
 function prepareRoutes (routes: NuxtPage[], routeNameSeparator: string, parent?: NuxtPage) {
+  const separatorWithIndex = new RegExp(`${escapeRE(routeNameSeparator)}index$`)
   for (const route of routes) {
-    // Remove <routeNameSeparator>index
     if (route.name) {
-      route.name = route.name.replace(new RegExp(`${escapeRE(routeNameSeparator)}index$`), '')
+      // Remove <routeNameSeparator>index
+      route.name = route.name.replace(separatorWithIndex, '')
     }
 
     // Remove leading / if children route
