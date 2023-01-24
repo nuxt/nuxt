@@ -2,10 +2,6 @@
 
 `useNuxtData` gives you access to the current cached value of `useAsyncData`, `useLazyAsyncData`, `useFetch` and `useLazyFetch` with explicitly provided key.
 
-::Alert
-This feature is not released yet. You can beta test using [Edge Channel](https://nuxt.com/docs/guide/going-further/edge-channel).
-::
-
 ## Type
 
 ```ts
