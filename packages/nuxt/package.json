@@ -74,7 +74,7 @@
     "unctx": "^2.1.1",
     "unenv": "^1.0.1",
     "unhead": "^1.0.18",
-    "unimport": "^1.3.0",
+    "unimport": "^2.0.0",
     "unplugin": "^1.0.1",
     "untyped": "^1.2.2",
     "vue": "^3.2.45",
