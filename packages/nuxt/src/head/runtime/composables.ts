@@ -21,9 +21,18 @@ export function useHead<T extends HeadAugmentations> (input: UseHeadInput<T>, op
  * This helps you avoid typos and common mistakes, such as using `name`
  * instead of `property`.
  *
- * This function will have no effect (and will return nothing) if called on the client.
+ * It is advised to use `useServerSeoMeta` unless you _need_ client-side
+ * rendering of your SEO meta tags.
  */
 export const useSeoMeta: typeof _useSeoMeta = (meta) => {
+  return _useSeoMeta(meta)
+}
+
+/**
+ * The `useServerSeoMeta` composable is identical to `useSeoMeta` except that
+ * it will have no effect (and will return nothing) if called on the client.
+ */
+export const useServerSeoMeta: typeof _useSeoMeta = (meta) => {
   if (process.server) {
     return _useSeoMeta(meta)
   }
