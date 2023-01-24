@@ -318,7 +318,7 @@ importers:
       semver: ^7.3.8
       unbuild: ^1.1.1
       unctx: ^2.1.1
-      unimport: ^2.0.0
+      unimport: ^2.0.1
       untyped: ^1.2.2
     dependencies:
       '@nuxt/schema': link:../schema
@@ -337,7 +337,7 @@ importers:
       scule: 1.0.0
       semver: 7.3.8
       unctx: 2.1.1
-      unimport: 2.0.0
+      unimport: 2.0.1
       untyped: 1.2.2
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -450,7 +450,7 @@ importers:
       unctx: ^2.1.1
       unenv: ^1.0.1
       unhead: ^1.0.18
-      unimport: ^2.0.0
+      unimport: ^2.0.1
       unplugin: ^1.0.1
       untyped: ^1.2.2
       vue: 3.2.45
@@ -496,7 +496,7 @@ importers:
       unctx: 2.1.1
       unenv: 1.0.1
       unhead: 1.0.18
-      unimport: 2.0.0
+      unimport: 2.0.1
       unplugin: 1.0.1
       untyped: 1.2.2
       vue: 3.2.45
@@ -527,7 +527,7 @@ importers:
       std-env: ^3.3.1
       ufo: ^1.0.1
       unbuild: ^1.1.1
-      unimport: ^2.0.0
+      unimport: ^2.0.1
       untyped: ^1.2.2
       vite: ^4.0.4
     dependencies:
@@ -542,7 +542,7 @@ importers:
       scule: 1.0.0
       std-env: 3.3.1
       ufo: 1.0.1
-      unimport: 2.0.0
+      unimport: 2.0.1
       untyped: 1.2.2
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -8189,8 +8189,8 @@ packages:
     transitivePeerDependencies:
       - rollup
 
-  /unimport/2.0.0:
-    resolution: {integrity: sha512-THRpoyIMY21cokBqG+txTWqJtvkztit0US4cpbhq43F2gpeW75eijr1wpOuWC9J0KfcK8drtKmGa1P8FCvj+6w==}
+  /unimport/2.0.1:
+    resolution: {integrity: sha512-hMeDspGrEcocahicTr0AQYUGes24FvJtOxk9QEjeEOGv+n1EdpsDiT6z8t209PWhemPg0T5w/ooTVhup2GdrFA==}
     dependencies:
       '@rollup/pluginutils': 5.0.2
       escape-string-regexp: 5.0.0
