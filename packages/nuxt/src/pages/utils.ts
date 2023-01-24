@@ -38,14 +38,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
       const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
-      return generateRoutesFromFiles(files, dir, nuxt.options.router.routeSeparator)
+      return generateRoutesFromFiles(files, dir, nuxt.options.router.routeNameSeparator)
     })
   )).flat()
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string, routeSeparator = '-'): NuxtPage[] {
+export function generateRoutesFromFiles (files: string[], pagesDir: string, routeNameSeparator = '-'): NuxtPage[] {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -70,7 +70,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string, rout
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && routeSeparator) + segmentName
+      route.name += (route.name && routeNameSeparator) + segmentName
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
@@ -88,7 +88,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string, rout
     parent.push(route)
   }
 
-  return prepareRoutes(routes, routeSeparator)
+  return prepareRoutes(routes, routeNameSeparator)
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
@@ -198,11 +198,11 @@ function parseSegment (segment: string) {
   return tokens
 }
 
-function prepareRoutes (routes: NuxtPage[], routeSeparator: string, parent?: NuxtPage) {
+function prepareRoutes (routes: NuxtPage[], routeNameSeparator: string, parent?: NuxtPage) {
   for (const route of routes) {
-    // Remove <routeSeparator>index
+    // Remove <routeNameSeparator>index
     if (route.name) {
-      route.name = route.name.replace(new RegExp(`${escapeRE(routeSeparator)}index$`), '')
+      route.name = route.name.replace(new RegExp(`${escapeRE(routeNameSeparator)}index$`), '')
     }
 
     // Remove leading / if children route
@@ -211,7 +211,7 @@ function prepareRoutes (routes: NuxtPage[], routeSeparator: string, parent?: Nux
     }
 
     if (route.children?.length) {
-      route.children = prepareRoutes(route.children, routeSeparator, route)
+      route.children = prepareRoutes(route.children, routeNameSeparator, route)
     }
 
     if (route.children?.find(childRoute => childRoute.path === '')) {
