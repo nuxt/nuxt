@@ -7,7 +7,8 @@ const commonPresets: InlinePreset[] = [
     from: '#head',
     imports: [
       'useHead',
-      'useSeoMeta'
+      'useSeoMeta',
+      'useServerSeoMeta'
     ]
   }),
   // vue-demi (mocked)
