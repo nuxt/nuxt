@@ -24,8 +24,7 @@ export function useHead<T extends HeadAugmentations> (input: UseHeadInput<T>, op
  * This function will have no effect (and will return nothing) if called on the client.
  */
 export const useSeoMeta: typeof _useSeoMeta = (meta) => {
-  // SEO meta is
-  if (process.server || process.dev) {
+  if (process.server) {
     return _useSeoMeta(meta)
   }
 }
