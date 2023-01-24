@@ -5,7 +5,7 @@ import { addTemplate } from '../template'
 /**
  * Expose virtual module config to the NuxtApp and nitro with TypeScript support.
  */
-export function exposeModuleConfig (moduleName: string, config: Record<string, any>) {
+export function exposeRuntimeModuleConfig (moduleName: string, config: Record<string, any>) {
   const nuxt = useNuxt()
   const jsExports = Object.entries(config).map(([k, v]) => `export const ${k} = ${JSON.stringify(v)}`).join('\n')
   const alias = `#${moduleName}/config`
