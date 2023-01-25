@@ -100,6 +100,13 @@ export default defineUntypedSchema({
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
      */
-    componentIslands: false
+    componentIslands: false,
+
+    /**
+     * Enable experimental config schema support
+     *
+     * @see https://github.com/nuxt/nuxt/issues/15592
+     */
+    configSchema: false
   }
 })

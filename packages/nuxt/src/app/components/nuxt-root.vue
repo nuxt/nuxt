@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, onErrorCaptured, provide } from 'vue'
+import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { callWithNuxt, isNuxtError, showError, useError, useRoute, useNuxtApp } from '#app'
 import AppComponent from '#build/app-component.mjs'
 

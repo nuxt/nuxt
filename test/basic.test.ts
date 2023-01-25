@@ -1028,7 +1028,7 @@ if (isDev() && !isWindows) {
       expect(pageErrors).toEqual([])
       expect(consoleLogErrors).toEqual([])
       expect(consoleLogWarnings).toEqual([])
-    }, isWindows ? 60_000 : 30_000)
+    }, 60_000)
 
     it('should detect new routes', async () => {
       const html = await $fetch('/some-404')

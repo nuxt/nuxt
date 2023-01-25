@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition } from 'vue'
-import type { DefineComponent, VNode, KeepAliveProps, TransitionProps } from 'vue'
+import type { VNode, KeepAliveProps, TransitionProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocation } from 'vue-router'
@@ -62,14 +62,7 @@ export default defineComponent({
       })
     }
   }
-}) as DefineComponent<{
-  name?: string
-  transition?: boolean | TransitionProps
-  keepalive?: boolean | KeepAliveProps
-  route?: RouteLocationNormalized
-  pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
-  [key: string]: any
-}>
+})
 
 function _toArray (val: any) {
   return Array.isArray(val) ? val : (val ? [val] : [])

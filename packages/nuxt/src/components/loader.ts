@@ -133,12 +133,14 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
   const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
   if (component) { return component }
 
+  const otherModeComponent = components.find(component => id === component.pascalName)
+
   // Render client-only components on the server with <ServerPlaceholder> (a simple div)
-  if (mode === 'server' && !component) {
+  if (mode === 'server' && otherModeComponent) {
     return components.find(c => c.pascalName === 'ServerPlaceholder')
   }
 
   // Return the other-mode component in all other cases - we'll handle createClientOnly
   // and createServerComponent above
-  return components.find(component => id === component.pascalName)
+  return otherModeComponent
 }
