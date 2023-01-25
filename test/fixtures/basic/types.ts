@@ -6,6 +6,7 @@ import type { AppConfig } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
 import { callWithNuxt, isVue3 } from '#app'
+import NuxtPage from '~~/../../../packages/nuxt/src/pages/runtime/page'
 import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
 import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
 import { useRouter } from '#imports'
@@ -152,6 +153,12 @@ describe('head', () => {
         return titleChunk ? `${titleChunk} - Site Title` : 'Site Title'
       }
     })
+  })
+})
+
+describe('components', () => {
+  it('includes types for NuxtPage', () => {
+    expectTypeOf(NuxtPage).not.toBeAny()
   })
 })
 

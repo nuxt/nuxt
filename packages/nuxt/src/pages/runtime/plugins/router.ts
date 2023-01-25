@@ -11,7 +11,6 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import type NuxtPage from '../page'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
 // @ts-ignore
 import _routes from '#build/routes'
@@ -19,12 +18,6 @@ import _routes from '#build/routes'
 import routerOptions from '#build/router.options'
 // @ts-ignore
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
-
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents {
-    NuxtPage: typeof NuxtPage
-  }
-}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
