@@ -79,7 +79,7 @@ export default defineUntypedSchema({
      */
     payloadExtraction: {
       async $resolve(enabled, get) {
-        if (enabled == null) {
+        if (enabled === null || enabled === undefined) {
           console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
         }
         return enabled ?? false
