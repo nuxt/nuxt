@@ -17,7 +17,7 @@ export const vueShim: NuxtTemplate = {
   getContents: () =>
     [
       'declare module \'*.vue\' {',
-      '  import { DefineComponent } from \'@vue/runtime-core\'',
+      '  import { DefineComponent } from \'vue\'',
       '  const component: DefineComponent<{}, {}, any>',
       '  export default component',
       '}'
@@ -102,7 +102,7 @@ declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
 
