@@ -16,15 +16,15 @@
     "@nuxt/kit": "3.1.0",
     "@nuxt/schema": "3.1.0",
     "consola": "^2.15.3",
-    "defu": "^6.1.1",
+    "defu": "^6.1.2",
     "execa": "^6.1.0",
     "get-port-please": "^3.0.1",
     "jiti": "^1.16.2",
     "ofetch": "^1.0.0",
-    "pathe": "^1.0.0"
+    "pathe": "^1.1.0"
   },
   "devDependencies": {
-    "playwright": "^1.29.2",
+    "playwright": "^1.30.0",
     "unbuild": "latest",
     "vitest": "^0.28.2"
   },

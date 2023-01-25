@@ -28,12 +28,12 @@ importers:
       '@types/node': ^18.11.18
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
-      '@unocss/reset': ^0.48.4
+      '@unocss/reset': ^0.49.0
       case-police: ^0.5.10
       changelogen: ^0.4.1
       crawler: ^1.4.0
       eslint: ^8.32.0
-      eslint-plugin-jsdoc: ^39.6.7
+      eslint-plugin-jsdoc: ^39.6.8
       execa: ^6.1.0
       expect-type: ^0.15.0
       globby: ^13.1.3
@@ -42,8 +42,8 @@ importers:
       nuxi: workspace:*
       nuxt: workspace:*
       ofetch: ^1.0.0
-      pathe: ^1.0.0
-      rimraf: ^4.1.1
+      pathe: ^1.1.0
+      rimraf: ^4.1.2
       semver: ^7.3.8
       std-env: ^3.3.1
       typescript: ^4.9.4
@@ -64,7 +64,7 @@ importers:
       '@types/node': 18.11.18
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
-      '@unocss/reset': 0.48.5
+      '@unocss/reset': 0.49.0
       case-police: 0.5.10
       changelogen: 0.4.1
       crawler: 1.4.0
@@ -304,7 +304,7 @@ importers:
       '@types/semver': ^7.3.13
       c12: ^1.1.0
       consola: ^2.15.3
-      defu: ^6.1.1
+      defu: ^6.1.2
       globby: ^13.1.3
       hash-sum: ^2.0.0
       ignore: ^5.2.4
@@ -312,7 +312,7 @@ importers:
       knitwork: ^1.0.0
       lodash.template: ^4.5.0
       mlly: ^1.1.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       pkg-types: ^1.0.1
       scule: ^1.0.0
       semver: ^7.3.8
@@ -366,10 +366,10 @@ importers:
       giget: ^1.0.0
       h3: ^1.0.2
       jiti: ^1.16.2
-      listhen: ^1.0.1
+      listhen: ^1.0.2
       mlly: ^1.1.0
       mri: ^1.2.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       perfect-debounce: ^0.1.3
       pkg-types: ^1.0.1
       scule: ^1.0.0
@@ -397,7 +397,7 @@ importers:
       giget: 1.0.0
       h3: 1.0.2
       jiti: 1.16.2
-      listhen: 1.0.1
+      listhen: 1.0.2
       mlly: 1.1.0
       mri: 1.2.0
       pathe: 1.1.0
@@ -423,7 +423,7 @@ importers:
       '@vueuse/head': ^1.0.23
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
-      defu: ^6.1.1
+      defu: ^6.1.2
       destr: ^1.2.2
       escape-string-regexp: ^5.0.0
       estree-walker: ^3.0.3
@@ -440,7 +440,7 @@ importers:
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       perfect-debounce: ^0.1.3
       scule: ^1.0.0
       strip-literal: ^1.0.0
@@ -516,11 +516,11 @@ importers:
       '@vitejs/plugin-vue': ^4.0.0
       c12: ^1.1.0
       create-require: ^1.1.1
-      defu: ^6.1.1
+      defu: ^6.1.2
       hookable: ^5.4.2
       jiti: ^1.16.2
       nitropack: ^2.0.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
       scule: ^1.0.0
@@ -558,13 +558,13 @@ importers:
       '@nuxt/kit': workspace:*
       '@nuxt/schema': workspace:*
       consola: ^2.15.3
-      defu: ^6.1.1
+      defu: ^6.1.2
       execa: ^6.1.0
       get-port-please: ^3.0.1
       jiti: ^1.16.2
       ofetch: ^1.0.0
-      pathe: ^1.0.0
-      playwright: ^1.29.2
+      pathe: ^1.1.0
+      playwright: ^1.30.0
       unbuild: ^1.1.1
       vitest: ^0.28.2
     dependencies:
@@ -578,7 +578,7 @@ importers:
       ofetch: 1.0.0
       pathe: 1.1.0
     devDependencies:
-      playwright: 1.29.2
+      playwright: 1.30.0
       unbuild: 1.1.1
       vitest: 0.28.2
 
@@ -593,8 +593,8 @@ importers:
       autoprefixer: ^10.4.13
       chokidar: ^3.5.3
       cssnano: ^5.1.14
-      defu: ^6.1.1
-      esbuild: ^0.17.3
+      defu: ^6.1.2
+      esbuild: ^0.17.4
       escape-string-regexp: ^5.0.0
       estree-walker: ^3.0.3
       externality: ^1.0.0
@@ -605,7 +605,7 @@ importers:
       magic-string: ^0.27.0
       mlly: ^1.1.0
       ohash: ^1.0.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       perfect-debounce: ^0.1.3
       pkg-types: ^1.0.1
       postcss: ^8.4.21
@@ -690,7 +690,7 @@ importers:
       mini-css-extract-plugin: ^2.7.2
       mlly: ^1.1.0
       ohash: ^1.0.0
-      pathe: ^1.0.0
+      pathe: ^1.1.0
       pify: ^6.1.0
       postcss: ^8.4.21
       postcss-import: ^15.1.0
@@ -2452,8 +2452,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset/0.48.5:
-    resolution: {integrity: sha512-+JJT3Btj1oNX4XwKBDPRUYre3NYBNmi0PsC3tqkHN2VphJG0iZl91XNfsveLz8pVpDJPUDdLH4xsqh52WmxU1g==}
+  /@unocss/reset/0.49.0:
+    resolution: {integrity: sha512-OvLVSv4Q9lWXQYQWMvdhlufVV3UUvJ9jeh3OLTvYwkdxUovdGOK7IJfP0F9sEOth/wI7BD1Z6Zyn8A/gjJ9MQA==}
     dev: true
 
   /@unocss/scope/0.45.30:
@@ -4938,9 +4938,6 @@ packages:
       jsonfile: 6.1.0
       universalify: 2.0.0
 
-  /fs-memo/1.2.0:
-    resolution: {integrity: sha512-YEexkCpL4j03jn5SxaMHqcO6IuWuqm8JFUYhyCep7Ao89JIYmB8xoKhK7zXXJ9cCaNXpyNH5L3QtAmoxjoHW2w==}
-
   /fs-minipass/2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
     engines: {node: '>= 8'}
@@ -5011,14 +5008,8 @@ packages:
       has-symbols: 1.0.3
     dev: true
 
-  /get-port-please/2.6.1:
-    resolution: {integrity: sha512-4PDSrL6+cuMM1xs6w36ZIkaKzzE0xzfVBCfebHIJ3FE8iB9oic/ECwPw3iNiD4h1AoJ5XLLBhEviFAVrZsDC5A==}
-    dependencies:
-      fs-memo: 1.2.0
-
   /get-port-please/3.0.1:
     resolution: {integrity: sha512-R5pcVO8Z1+pVDu8Ml3xaJCEkBiiy1VQN9za0YqH8GIi1nIqD4IzQhzY6dDzMRtdS1lyiGlucRzm8IN8wtLIXng==}
-    dev: false
 
   /get-stdin/9.0.0:
     resolution: {integrity: sha512-dVKBjfWisLAicarI2Sf+JuBE/DghV4UzNAVe9yhEJuzeREd3JhOTE9cUaJTeSa77fsbQUK3pcOpJfM59+VKZaA==}
@@ -5825,13 +5816,13 @@ packages:
       uc.micro: 1.0.6
     dev: true
 
-  /listhen/1.0.1:
-    resolution: {integrity: sha512-RBzBGHMCc5wP8J5Vf8WgF4CAJH8dWHi9LaKB7vfzZt54CiH/0dp01rudy2hFD9wCrTM+UfxFVnn5wTIiY+Qhiw==}
+  /listhen/1.0.2:
+    resolution: {integrity: sha512-yXz0NIYfVJDBQK2vlCpD/OjSzYkur2mR44boUtlg0eES4holn7oYZf439y5JxP55EOzFtClZ8eZlMJ8a++FwlQ==}
     dependencies:
       clipboardy: 3.0.0
       colorette: 2.0.19
       defu: 6.1.2
-      get-port-please: 2.6.1
+      get-port-please: 3.0.1
       http-shutdown: 1.2.2
       ip-regex: 5.0.0
       node-forge: 1.3.1
@@ -6296,7 +6287,7 @@ packages:
       jiti: 1.16.2
       klona: 2.0.6
       knitwork: 1.0.0
-      listhen: 1.0.1
+      listhen: 1.0.2
       mime: 3.0.0
       mlly: 1.1.0
       mri: 1.2.0
@@ -6707,19 +6698,19 @@ packages:
       mlly: 1.1.0
       pathe: 1.1.0
 
-  /playwright-core/1.29.2:
-    resolution: {integrity: sha512-94QXm4PMgFoHAhlCuoWyaBYKb92yOcGVHdQLoxQ7Wjlc7Flg4aC/jbFW7xMR52OfXMVkWicue4WXE7QEegbIRA==}
+  /playwright-core/1.30.0:
+    resolution: {integrity: sha512-7AnRmTCf+GVYhHbLJsGUtskWTE33SwMZkybJ0v6rqR1boxq2x36U7p1vDRV7HO2IwTZgmycracLxPEJI49wu4g==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
 
-  /playwright/1.29.2:
-    resolution: {integrity: sha512-hKBYJUtdmYzcjdhYDkP9WGtORwwZBBKAW8+Lz7sr0ZMxtJr04ASXVzH5eBWtDkdb0c3LLFsehfPBTRfvlfKJOA==}
+  /playwright/1.30.0:
+    resolution: {integrity: sha512-ENbW5o75HYB3YhnMTKJLTErIBExrSlX2ZZ1C/FzmHjUYIfxj/UnI+DWpQr992m+OQVSg0rCExAOlRwB+x+yyIg==}
     engines: {node: '>=14'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.29.2
+      playwright-core: 1.30.0
     dev: true
 
   /pluralize/8.0.0:
@@ -8295,7 +8286,7 @@ packages:
       destr: 1.2.2
       h3: 1.0.2
       ioredis: 5.2.5
-      listhen: 1.0.1
+      listhen: 1.0.2
       mkdir: 0.0.2
       mri: 1.2.0
       ofetch: 1.0.0
