@@ -102,7 +102,7 @@ declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
 
