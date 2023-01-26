@@ -1,4 +1,4 @@
-import type { NuxtHooks } from '@nuxt/schema'
+import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { useNuxt } from './context'
@@ -33,4 +33,9 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
       ? defu(rule, opts.routeRules[route])
       : defu(opts.routeRules[route], rule)
   }
+}
+
+export function extendMiddleware(cb: (middleware: NuxtMiddleware[]) => void) {
+  const nuxt = useNuxt()
+  nuxt.hook('app:resolve', app => cb(app.middleware))
 }
