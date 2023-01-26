@@ -35,7 +35,7 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
   }
 }
 
-export function extendMiddleware(cb: (middleware: NuxtMiddleware[]) => void) {
+export function extendMiddleware (cb: (middleware: NuxtMiddleware[]) => void) {
   const nuxt = useNuxt()
   nuxt.hook('app:resolve', app => cb(app.middleware))
 }
