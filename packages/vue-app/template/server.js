@@ -321,8 +321,7 @@ const render404Page = () => {
         promise.then((asyncDataResult) => {
           ssrContext.asyncData[Component.cid] = asyncDataResult
           applyAsyncData(Component)
-          return asyncDataResult
-        })
+        }).catch(() => {})
         promises.push(promise)
       } else {
         promises.push(null)
