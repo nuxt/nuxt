@@ -51,6 +51,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     privateConfig: 'secret_key',
     public: {
+      needsFallback: undefined,
       testConfig: 123
     }
   },

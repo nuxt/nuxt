@@ -423,14 +423,17 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
-    $resolve: async (val: RuntimeConfig, get) => defu(val, {
-      public: {},
-      app: {
-        baseURL: (await get('app')).baseURL,
-        buildAssetsDir: (await get('app')).buildAssetsDir,
-        cdnURL: (await get('app')).cdnURL,
-      }
-    })
+    $resolve: async (val: RuntimeConfig, get) => {
+      provideFallbackValues(val)
+      return defu(val, {
+        public: {},
+        app: {
+          baseURL: (await get('app')).baseURL,
+          buildAssetsDir: (await get('app')).buildAssetsDir,
+          cdnURL: (await get('app')).cdnURL,
+        }
+      })
+    }
   },
 
   /**
@@ -445,3 +448,13 @@ export default defineUntypedSchema({
 
   $schema: {}
 })
+
+function provideFallbackValues (obj: Record<string, any>) {
+  for (const key in obj) {
+    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+      obj[key] = ''
+    } else if (typeof obj[key] === 'object') {
+      provideFallbackValues(obj[key])
+    }
+  }
+}
