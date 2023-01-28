@@ -1,6 +1,5 @@
 {
-  "name": "nuxt-framework",
-  "private": true,
+  "name": "@johnjenkins/nuxt",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
