@@ -25,3 +25,10 @@ export function setResponseStatus (code: number, message?: string) {
     }
   }
 }
+
+export function setResponseHeader (name: string, value: string) {
+  const event = process.server && useRequestEvent()
+  if (event) {
+    event.node.res.setHeader(name, value)
+  }
+}
