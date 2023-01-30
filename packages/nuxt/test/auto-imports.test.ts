@@ -91,6 +91,7 @@ const excludedVueHelpers = [
   'EffectScope',
   'ReactiveEffect',
   'stop',
+  'assertNumber',
   'camelize',
   'capitalize',
   'normalizeClass',
