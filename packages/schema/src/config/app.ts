@@ -1,5 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { AppHeadMetaObject } from '../types/meta'
 
 export default defineUntypedSchema({

@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
-import defu from 'defu'
+import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
 

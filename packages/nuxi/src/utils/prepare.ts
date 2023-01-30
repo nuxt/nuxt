@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { getModulePaths, getNearestPackage } from './cjs'
 

@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { TestContext, TestOptions, TestRunner } from './types'
 
 let currentContext: TestContext | undefined
