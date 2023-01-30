@@ -5,7 +5,7 @@ import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
-import type { SSRContext } from 'vue-bundle-renderer/runtime'
+import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -23,7 +23,7 @@ type NuxtMeta = {
 
 type HookResult = Promise<void> | void
 
-type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'] }
+type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
 export interface RuntimeNuxtHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult

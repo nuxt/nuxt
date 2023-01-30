@@ -1,6 +1,7 @@
 {
-  "name": "@johnjenkins/nuxt",
-  "repository": "nuxt/nuxt",
+  "name": "nuxt-framework",
+  "private": true,
+  "version": "3.0.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
