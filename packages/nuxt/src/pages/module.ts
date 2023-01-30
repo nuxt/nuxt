@@ -186,6 +186,10 @@ export default defineNuxtModule({
     nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
     nuxt.options.vite.optimizeDeps.include.push('vue-router')
 
+    nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
+    nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+    nuxt.options.vite.resolve.dedupe.push('vue-router')
+
     // Add router options template
     addTemplate({
       filename: 'router.options.mjs',
