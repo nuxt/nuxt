@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.1.0...@nuxt/ui-templates@1.1.1) (2023-01-31)
+
+**Note:** Version bump only for package @nuxt/ui-templates
+
+
+
+
+
 # [1.1.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@0.4.0...@nuxt/ui-templates@1.1.0) (2023-01-06)
 
 
