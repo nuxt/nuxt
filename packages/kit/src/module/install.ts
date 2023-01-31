@@ -9,7 +9,10 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
 
   // Call module
-  await nuxtModule(inlineOptions, nuxt)
+  const res = await nuxtModule(inlineOptions, nuxt)
+  if (res === false /* setup aborted */) {
+    return
+  }
 
   if (typeof moduleToInstall === 'string') {
     nuxt.options.build.transpile.push(moduleToInstall)
