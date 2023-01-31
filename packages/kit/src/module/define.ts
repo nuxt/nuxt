@@ -2,7 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { Nuxt, NuxtModule, ModuleOptions, ModuleReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
 import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
@@ -67,7 +67,26 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Call setup
-    await definition.setup?.call(null as any, _options, nuxt)
+    const setupStart = process.hrtime()
+    const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
+    const setupEnd = process.hrtime(setupStart)
+
+    // Measure setup time
+    const setupTime = Math.round((setupEnd[0] * 1000000000 + setupEnd[1]) / 10000) / 100 /* round by two digits */
+    console.log({ uniqueKey, setupTime })
+    if (setupTime > 1000) {
+      console.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup!`)
+    }
+
+    // Check if module is ignored
+    if (res === false) { return false }
+
+    // Return module install result
+    return defu(res, <ModuleReturn> {
+      timings: {
+        setup: setupTime
+      }
+    })
   }
 
   // Define getters for options and meta
