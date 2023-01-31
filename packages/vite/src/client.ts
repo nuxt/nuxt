@@ -7,12 +7,13 @@ import type { ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
+import { runtimePathsPlugin } from './plugins/paths'
 import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -63,6 +64,9 @@ export async function buildClient (ctx: ViteBuildContext) {
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
+      }),
+      runtimePathsPlugin({
+        sourcemap: ctx.nuxt.options.sourcemap.client
       }),
       viteNodePlugin(ctx)
     ],
