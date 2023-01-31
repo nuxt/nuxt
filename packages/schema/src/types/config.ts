@@ -9,19 +9,41 @@ export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
-type UpperSnakeCase<T extends string> = T extends `${infer A}_${infer B}`
-  ? `${UpperSnakeCase<A>}_${Uppercase<B>}`
-  : T extends `${infer A}${infer B}`
-    ? A extends Uppercase<A>
-      ? B extends `${Uppercase<string>}${infer D}`
-        ? D[0] extends Lowercase<D[0]>
-          ? B extends `${infer C}${D}`
-            ? `_${A}${C}${UpperSnakeCase<D>}`
-            : never
-          : `_${A}${B}`
-        : `_${A}${UpperSnakeCase<B>}`
-      : `${Uppercase<A>}${UpperSnakeCase<B>}`
-    : Uppercase<T>
+type ExtractUpperChunk<T extends string> = T extends `${infer A}${infer B}`
+  ? A extends Uppercase<A>
+    ? B extends `${Uppercase<string>}${infer Rest}`
+      ? B extends `${infer C}${Rest}`
+        ? `${A}${C}${ExtractUpperChunk<Rest>}`
+        : never
+      : A
+    : ''
+  : never
+
+type SliceLast<T extends string> = T extends `${infer A}${infer B}`
+  ? B extends `${infer C}${infer D}`
+    ? D extends ''
+      ? A
+      : `${A}${C}${SliceLast<D>}`
+    : ''
+  : never
+
+type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
+  ? A extends Uppercase<A>
+    ? State extends 'lower' | 'upper'
+      ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
+        ? SliceLast<ExtractUpperChunk<B>> extends ''
+          ? `_${A}_${UpperSnakeCase<B, 'start'>}`
+          : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+        : B extends Uppercase<B>
+          ? `_${A}${B}`
+          : `_${A}${UpperSnakeCase<B, 'lower'>}`
+      : State extends 'start'
+        ? `${A}${UpperSnakeCase<B, 'lower'>}`
+        : never
+    : State extends 'start' | 'lower'
+      ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+      : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+  : Uppercase<T>
 
 const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
