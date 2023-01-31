@@ -29,20 +29,22 @@ type SliceLast<T extends string> = T extends `${infer A}${infer B}`
 
 type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
   ? A extends Uppercase<A>
-    ? State extends 'lower' | 'upper'
-      ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
-        ? SliceLast<ExtractUpperChunk<B>> extends ''
-          ? `_${A}_${UpperSnakeCase<B, 'start'>}`
-          : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
-        : B extends Uppercase<B>
-          ? `_${A}${B}`
-          : `_${A}${UpperSnakeCase<B, 'lower'>}`
-      : State extends 'start'
-        ? `${A}${UpperSnakeCase<B, 'lower'>}`
-        : never
-    : State extends 'start' | 'lower'
-      ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
-      : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+    ? A extends `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0}`
+      ? `${A}${UpperSnakeCase<B, 'lower'>}`
+      : State extends 'lower' | 'upper'
+        ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
+          ? SliceLast<ExtractUpperChunk<B>> extends ''
+            ? `_${A}_${UpperSnakeCase<B, 'start'>}`
+            : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+          : B extends Uppercase<B>
+            ? `_${A}${B}`
+            : `_${A}${UpperSnakeCase<B, 'lower'>}`
+        : State extends 'start'
+          ? `${A}${UpperSnakeCase<B, 'lower'>}`
+          : never
+      : State extends 'start' | 'lower'
+        ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+        : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
   : Uppercase<T>
 
 const message = Symbol('message')
