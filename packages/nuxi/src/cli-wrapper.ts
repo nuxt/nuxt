@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 import { EXIT_CODE_RESTART } from './constants'
 
-const ENTRY = new URL('./cli-run.mjs', import.meta.url)
+const ENTRY = new URL('../dist/cli-run.mjs', import.meta.url)
 
 async function start (preArgs: string[], postArgs: string[]) {
   const child = await execa(
