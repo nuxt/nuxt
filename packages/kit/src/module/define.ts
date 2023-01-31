@@ -74,7 +74,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     // Measure setup time
     const setupTime = Math.round((setupEnd[0] * 1000000000 + setupEnd[1]) / 10000) / 100 /* round by two digits */
     if (setupTime > 1000) {
-      logger.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup!`)
+      logger.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup`)
     }
 
     // Check if module is ignored
