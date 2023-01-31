@@ -73,7 +73,6 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
 
     // Measure setup time
     const setupTime = Math.round((setupEnd[0] * 1000000000 + setupEnd[1]) / 10000) / 100 /* round by two digits */
-    console.log({ uniqueKey, setupTime })
     if (setupTime > 1000) {
       console.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup!`)
     }
