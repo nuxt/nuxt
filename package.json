@@ -62,7 +62,7 @@
     "finalhandler": "^1.2.0",
     "fs-extra": "^10.1.0",
     "get-port": "^5.1.1",
-    "glob": "^7.2.3",
+    "glob": "^8.1.0",
     "got": "^11.8.6",
     "improved-yarn-audit": "^3.0.0",
     "jest": "^28.1.1",
