@@ -13,7 +13,7 @@
     "consola": "^2.15.3",
     "defu": "^6.1.2",
     "devalue": "^4.2.3",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "html-minifier": "^4.0.0",
     "node-html-parser": "^6.1.4",
     "ufo": "^1.0.1"
