@@ -12,7 +12,7 @@
     "@nuxt/server": "2.15.6",
     "@nuxt/utils": "2.15.6",
     "consola": "^2.15.3",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "hable": "^3.0.0",
     "hash-sum": "^2.0.0",
     "lodash": "^4.17.21"

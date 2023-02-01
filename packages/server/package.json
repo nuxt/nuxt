@@ -16,7 +16,7 @@
     "consola": "^2.15.3",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "ip": "^1.1.8",
     "launch-editor-middleware": "^2.6.0",
     "on-headers": "^1.0.2",

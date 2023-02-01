@@ -60,7 +60,7 @@
     "execa": "^5.1.1",
     "express": "^4.18.2",
     "finalhandler": "^1.2.0",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.1.0",
     "get-port": "^5.1.1",
     "glob": "^7.2.3",
     "got": "^11.8.6",
