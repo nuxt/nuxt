@@ -41,7 +41,6 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
   return routes
 }
 
-// eslint-disable-next-line default-param-last
 function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
