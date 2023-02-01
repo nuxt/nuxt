@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import consola from 'consola'
 import Glob from 'glob'
 import pify from 'pify'
