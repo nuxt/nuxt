@@ -102,7 +102,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
   }
 
   // This is needed for Nuxt 2 which clears the build directory again before building
-  // https://github.com/nuxt/nuxt/blob/2.x-dev/packages/builder/src/builder.js#L144
+  // https://github.com/nuxt/nuxt/blob/2.x/packages/builder/src/builder.js#L144
   // @ts-expect-error
   nuxt.hook('builder:prepared', writeFile)
 
