@@ -41,12 +41,12 @@ module.exports = {
   ],
 
   transformIgnorePatterns: [
-    'node_modules/(?!(@nuxt|nuxt))',
+    'node_modules/(?!(@nuxt|nuxt|devalue))',
     'packages/utils/test/serialize\\.test\\.input\\.js'
   ],
 
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.[cm]?[jt]sx?$': 'babel-jest',
     '^.+\\.vue$': '@vue/vue2-jest'
   },
 
