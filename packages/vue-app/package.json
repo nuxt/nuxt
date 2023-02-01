@@ -15,7 +15,7 @@
   "dependencies": {
     "node-fetch-native": "^1.0.1",
     "ufo": "^1.0.1",
-    "unfetch": "^4.2.0",
+    "unfetch": "^5.0.0",
     "vue": "^2.7.10",
     "vue-client-only": "^2.1.0",
     "vue-meta": "^2.4.0",
