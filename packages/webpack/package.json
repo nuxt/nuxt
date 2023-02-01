@@ -42,7 +42,7 @@
     "terser-webpack-plugin": "^4.2.3",
     "thread-loader": "^3.0.4",
     "time-fix-plugin": "^2.0.7",
-    "ufo": "^0.8.6",
+    "ufo": "^1.0.1",
     "url-loader": "^4.1.1",
     "vue-loader": "^15.10.1",
     "vue-style-loader": "^4.1.3",

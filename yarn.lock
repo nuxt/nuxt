@@ -12193,7 +12193,7 @@ raw-body@2.5.1:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-rc9@^1.2.0, rc9@^1.2.4:
+rc9@^1.2.0:
   version "1.2.4"
   resolved "https://registry.npmjs.org/rc9/-/rc9-1.2.4.tgz#a625f5ec63a54eebd66114eb9c6ce9a6c54dfac8"
   integrity sha512-YD1oJO9LUzMdmr2sAsVlwQVtEoDCmvuyDwmSWrg2GKFprl3BckP5cmw9rHPunei0lV6Xl4E5t2esT+0trY1xfQ==
@@ -12201,6 +12201,15 @@ rc9@^1.2.0, rc9@^1.2.4:
     defu "^6.0.0"
     destr "^1.1.1"
     flat "^5.0.0"
+
+rc9@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/rc9/-/rc9-2.0.1.tgz#51e0f556759ee434e20ed29ca506b4ce97e7c6c0"
+  integrity sha512-9EfjLgNmzP9255YX8bGnILQcmdtOXKtUlFTu8bOZPJVtaUDZ2imswcUdpK51tMjTRQyB7r5RebNijrzuyGXcVA==
+  dependencies:
+    defu "^6.1.2"
+    destr "^1.2.2"
+    flat "^5.0.2"
 
 react-is@^18.0.0:
   version "18.2.0"
@@ -14000,10 +14009,10 @@ ua-parser-js@^1.0.33:
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-1.0.33.tgz#f21f01233e90e7ed0f059ceab46eb190ff17f8f4"
   integrity sha512-RqshF7TPTE0XLYAqmjlu5cLLuGdKrNu9O1KLA/qp39QtbZwuzwv1dT46DZSopoUMsYgXpB3Cv8a03FI8b74oFQ==
 
-ufo@^0.8.6:
-  version "0.8.6"
-  resolved "https://registry.npmjs.org/ufo/-/ufo-0.8.6.tgz#c0ec89bc0e0c9fa59a683680feb0f28b55ec323b"
-  integrity sha512-fk6CmUgwKCfX79EzcDQQpSCMxrHstvbLswFChHS0Vump+kFkw7nJBfTZoC1j0bOGoY9I7R3n2DGek5ajbcYnOw==
+ufo@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/ufo/-/ufo-1.0.1.tgz#64ed43b530706bda2e4892f911f568cf4cf67d29"
+  integrity sha512-boAm74ubXHY7KJQZLlXrtMz52qFvpsbOxDcZOnw/Wf+LS4Mmyu7JxmzD4tDLtUQtmZECypJ0FrCz4QIe6dvKRA==
 
 uglify-js@^3.1.4, uglify-js@^3.5.1:
   version "3.17.4"

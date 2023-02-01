@@ -16,9 +16,9 @@
     "destr": "^1.2.2",
     "dotenv": "^16.0.3",
     "lodash": "^4.17.21",
-    "rc9": "^1.2.4",
+    "rc9": "^2.0.1",
     "std-env": "^3.3.1",
-    "ufo": "^0.8.6"
+    "ufo": "^1.0.1"
   },
   "publishConfig": {
     "access": "public"
