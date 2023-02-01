@@ -20,7 +20,7 @@
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
     "lodash": "^4.17.21",
-    "pify": "^5.0.0",
+    "pify": "^6.1.0",
     "serialize-javascript": "^6.0.1",
     "upath": "^2.0.1"
   },
