@@ -121,7 +121,7 @@ or disable the build step: \`generate({ build: false })\``)
         )
       } catch (e) {
         consola.error('Could not resolve routes')
-        throw e // eslint-disable-line no-unreachable
+        throw e
       }
     }
     let routes = []
