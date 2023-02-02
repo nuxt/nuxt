@@ -194,6 +194,16 @@ export default class PostcssConfig {
 
     // Apply default plugins
     if (isPureObject(postcssOptions)) {
+      const postcssLoaderOptions = this.postcssLoaderOptions
+      if (postcssLoaderOptions.plugins && !postcssOptions.plugins) {
+        postcssOptions.plugins = postcssLoaderOptions.plugins
+        delete postcssLoaderOptions.plugins
+      }
+      if (postcssLoaderOptions.order && !postcssOptions.order) {
+        postcssOptions.order = postcssLoaderOptions.order
+        delete postcssLoaderOptions.order
+      }
+
       if (Array.isArray(postcssOptions.plugins)) {
         defaults(postcssOptions, this.defaultPostcssOptions)
       } else {
@@ -203,7 +213,6 @@ export default class PostcssConfig {
       }
 
       delete postcssOptions.order
-      const postcssLoaderOptions = this.postcssLoaderOptions
       delete postcssLoaderOptions.preset
 
       return {
