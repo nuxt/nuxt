@@ -83,7 +83,7 @@ export default class PostcssConfig {
         'postcss-url': {},
 
         // https://github.com/csstools/postcss-preset-env
-        'postcss-preset-env': this.preset || {},
+        'postcss-preset-env': this.postcssLoaderOptions.preset || {},
 
         cssnano: dev
           ? false
