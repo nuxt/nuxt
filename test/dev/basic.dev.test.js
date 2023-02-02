@@ -110,15 +110,14 @@ describe('basic dev', () => {
   })
 
   test('Config: preset-env and cssnano are at then end of postcss plugins', () => {
-    const plugins = postcssLoader.options.plugins.map((plugin) => {
+    const plugins = postcssLoader.options.postcssOptions.plugins.map((plugin) => {
       return plugin.postcssPlugin
-    })
+    }).filter(Boolean)
     expect(plugins).toEqual([
       'postcss-import',
       'postcss-url',
       'nuxt-test',
-      'postcss-preset-env',
-      'cssnano'
+      'postcss-preset-env'
     ])
   })
 

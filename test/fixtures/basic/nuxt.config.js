@@ -95,9 +95,11 @@ export default {
           'custom-selectors': true
         }
       },
-      plugins: {
-        cssnano: {},
-        [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
+      postcssOptions: {
+        plugins: {
+          cssnano: {},
+          [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
+        }
       }
     }
   }
