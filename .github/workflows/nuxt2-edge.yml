@@ -1,6 +1,7 @@
 name: nuxt2-nightly
 
 on:
+  workflow_dispatch:
   schedule:
     - cron:  '0 0 * * *'
 
@@ -10,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: 'refs/remotes/origin/2.x'
+          ref: '2.x'
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
