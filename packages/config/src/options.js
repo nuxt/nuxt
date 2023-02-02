@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import { defaultsDeep, pick, uniq } from 'lodash'
-import defu from 'defu'
+import { defu } from 'defu'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
