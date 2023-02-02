@@ -31,7 +31,9 @@ export default function rollupConfig ({
       entryFileNames: `${name}.js`,
       chunkFileNames: `${name}-[name].js`,
       format: 'cjs',
-      preferConst: true
+      generatedCode: {
+        constBindings: true
+      }
     },
     external: externals,
     plugins: [
