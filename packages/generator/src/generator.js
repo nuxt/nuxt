@@ -1,12 +1,12 @@
 import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
-import devalue from 'devalue'
+import { uneval } from 'devalue'
 import fsExtra from 'fs-extra'
-import defu from 'defu'
+import { defu } from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutTrailingSlash, decode } from 'ufo'
 
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
@@ -64,7 +64,7 @@ export default class Generator {
       await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
       await fsExtra.ensureDir(this.staticAssetsDir)
-      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
+      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${uneval(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
     }
 
@@ -121,7 +121,7 @@ or disable the build step: \`generate({ build: false })\``)
         )
       } catch (e) {
         consola.error('Could not resolve routes')
-        throw e // eslint-disable-line no-unreachable
+        throw e
       }
     }
     let routes = []
@@ -353,7 +353,7 @@ or disable the build step: \`generate({ build: false })\``)
       // Save Static Assets
       if (this.staticAssetsDir && renderContext.staticAssets) {
         for (const asset of renderContext.staticAssets) {
-          const assetPath = path.join(this.staticAssetsDir, decodeURI(asset.path))
+          const assetPath = path.join(this.staticAssetsDir, decode(asset.path))
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }

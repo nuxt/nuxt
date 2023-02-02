@@ -18,4 +18,4 @@ export default {
 }
 </script>
 
-<style src="@/assets/css/post.css"/>
+<style src="@/assets/css/post.css" />

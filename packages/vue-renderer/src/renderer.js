@@ -4,7 +4,7 @@ import consola from 'consola'
 import { template } from 'lodash'
 import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
 import { normalizeURL } from 'ufo'
-import defu from 'defu'
+import { defu } from 'defu'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -153,7 +153,8 @@ export default class VueRenderer {
 
     if (await fs.exists(loadingHTMLPath)) {
       this.serverContext.resources.loadingHTML = await fs.readFile(loadingHTMLPath, 'utf8')
-      this.serverContext.resources.loadingHTML = this.serverContext.resources.loadingHTML.replace(/\r|\n|[\t\s]{3,}/g, '')
+      this.serverContext.resources.loadingHTML =
+        this.serverContext.resources.loadingHTML.replace(/\r|\n/g, ' ').replace(/[\t\s]+/g, ' ')
     } else {
       this.serverContext.resources.loadingHTML = ''
     }

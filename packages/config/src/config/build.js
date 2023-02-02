@@ -1,7 +1,7 @@
-import env from 'std-env'
+import { isCI, isTest } from 'std-env'
 
 export default () => ({
-  quiet: Boolean(env.ci || env.test),
+  quiet: Boolean(isCI || isTest),
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,

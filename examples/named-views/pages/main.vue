@@ -37,6 +37,7 @@
 
 <script>
 export default {
+  // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Main'
 }
 </script>

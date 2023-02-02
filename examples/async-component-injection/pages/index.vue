@@ -27,4 +27,4 @@ export default {
 }
 </script>
 
-<style src="@/assets/css/index.css"/>
+<style src="@/assets/css/index.css" />
