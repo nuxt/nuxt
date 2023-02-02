@@ -2532,28 +2532,28 @@
     consola "^2.15.0"
     node-fetch "^2.6.7"
 
-"@nuxt/telemetry@^1.3.9":
-  version "1.3.9"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.3.9.tgz#634e53658c2ebf562e4638611362174f018e946c"
-  integrity sha512-QR+UjZ1VXBsLwNjxe5cFqy5yhU+0x13/+dyjSLfC2vwRRQLPlCCPIAhtB1pvnE6Qxn7hh8psxRYu/efWS7laDA==
+"@nuxt/telemetry@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.4.1.tgz#92765a9614f0d137cf4f43ff007ce8787e45de5a"
+  integrity sha512-3+F6kI17QtcgKQD9NKlLZ4LUy0koXULzkX1FgyILU17PptClnGOu+c+jT+PlZK2GsCjucLwQLjOQQkRIczU3uA==
   dependencies:
     arg "^5.0.2"
     chalk "^4.1.1"
-    ci-info "^3.6.1"
+    ci-info "^3.7.1"
     consola "^2.15.3"
     create-require "^1.1.1"
-    defu "^5.0.0"
-    destr "^1.1.0"
+    defu "^6.1.2"
+    destr "^1.2.2"
     dotenv "^9.0.2"
     fs-extra "^8.1.0"
     git-url-parse "^13.1.0"
     inquirer "^7.3.3"
-    jiti "^1.9.2"
+    jiti "^1.16.2"
     nanoid "^3.1.23"
     node-fetch "^2.6.1"
     parse-git-config "^3.0.0"
-    rc9 "^1.2.0"
-    std-env "^2.3.0"
+    rc9 "^2.0.1"
+    std-env "^3.3.1"
 
 "@nuxtjs/eslint-config-typescript@^12.0.0":
   version "12.0.0"
@@ -4995,7 +4995,7 @@ ci-info@^2.0.0:
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-2.0.0.tgz#67a9e964be31a51e15e5010d58e6f12834002f46"
   integrity sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==
 
-ci-info@^3.1.1, ci-info@^3.2.0, ci-info@^3.4.0, ci-info@^3.6.1:
+ci-info@^3.2.0, ci-info@^3.4.0, ci-info@^3.7.1:
   version "3.7.1"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.7.1.tgz#708a6cdae38915d597afdf3b145f2f8e1ff55f3f"
   integrity sha512-4jYS4MOAaCIStSRwiuxc4B8MYhIe676yO1sYGzARnjXkWpmzZMMYxY6zu8WYWDhSuth5zhrQ1rhNSibyyvv4/w==
@@ -6038,7 +6038,7 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-destr@^1.1.0, destr@^1.1.1, destr@^1.2.2:
+destr@^1.2.2:
   version "1.2.2"
   resolved "https://registry.npmjs.org/destr/-/destr-1.2.2.tgz#7ba9befcafb645a50e76b260449c63927b51e22f"
   integrity sha512-lrbCJwD9saUQrqUfXvl6qoM+QN3W7tLV5pAOs+OqOmopCCz/JkE05MHedJR1xfk4IAnZuJXPVuN5+7jNA2ZCiA==
@@ -7236,7 +7236,7 @@ flat-cache@^3.0.4:
     flatted "^3.1.0"
     rimraf "^3.0.2"
 
-flat@^5.0.0, flat@^5.0.2:
+flat@^5.0.2:
   version "5.0.2"
   resolved "https://registry.npmjs.org/flat/-/flat-5.0.2.tgz#8ca6fe332069ffa9d324c327198c598259ceb241"
   integrity sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==
@@ -9193,7 +9193,7 @@ jest@^28.1.1:
     import-local "^3.0.2"
     jest-cli "^28.1.3"
 
-jiti@^1.16.2, jiti@^1.9.2:
+jiti@^1.16.2:
   version "1.16.2"
   resolved "https://registry.npmjs.org/jiti/-/jiti-1.16.2.tgz#75f7a0a8fde4a0e57e576f7d329491d588db89cf"
   integrity sha512-OKBOVWmU3FxDt/UH4zSwiKPuc1nihFZiOD722FuJlngvLz2glX1v2/TJIgoA4+mrpnXxHV6dSAoCvPcYQtoG5A==
@@ -12372,15 +12372,6 @@ raw-body@2.5.1:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-rc9@^1.2.0:
-  version "1.2.4"
-  resolved "https://registry.npmjs.org/rc9/-/rc9-1.2.4.tgz#a625f5ec63a54eebd66114eb9c6ce9a6c54dfac8"
-  integrity sha512-YD1oJO9LUzMdmr2sAsVlwQVtEoDCmvuyDwmSWrg2GKFprl3BckP5cmw9rHPunei0lV6Xl4E5t2esT+0trY1xfQ==
-  dependencies:
-    defu "^6.0.0"
-    destr "^1.1.1"
-    flat "^5.0.0"
-
 rc9@^2.0.1:
   version "2.0.1"
   resolved "https://registry.npmjs.org/rc9/-/rc9-2.0.1.tgz#51e0f556759ee434e20ed29ca506b4ce97e7c6c0"
@@ -13470,17 +13461,10 @@ statuses@~1.5.0:
   resolved "https://registry.npmjs.org/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
 
-std-env@^2.3.0:
-  version "2.3.1"
-  resolved "https://registry.npmjs.org/std-env/-/std-env-2.3.1.tgz#d42271908819c243f8defc77a140fc1fcee336a1"
-  integrity sha512-eOsoKTWnr6C8aWrqJJ2KAReXoa7Vn5Ywyw6uCXgA/xDhxPoaIsBa5aNJmISY04dLwXPBnDHW4diGM7Sn5K4R/g==
-  dependencies:
-    ci-info "^3.1.1"
-
-std-env@^3.0.1, std-env@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.npmjs.org/std-env/-/std-env-3.3.1.tgz#93a81835815e618c8aa75e7c8a4dc04f7c314e29"
-  integrity sha512-3H20QlwQsSm2OvAxWIYhs+j01MzzqwMwGiiO1NQaJYZgJZFPuAbf95/DiKRBSTYIJ2FeGUc+B/6mPGcWP9dO3Q==
+std-env@^3.0.1, std-env@^3.3.1, std-env@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-3.3.2.tgz#af27343b001616015534292178327b202b9ee955"
+  integrity sha512-uUZI65yrV2Qva5gqE0+A7uVAvO40iPo6jGhs7s8keRfHCmtg+uB2X6EiLGCI9IgL1J17xGhvoOqSz79lzICPTA==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
