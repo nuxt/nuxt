@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: 'refs/heads/2.x'
+          ref: 'refs/remotes/origin/2.x'
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
