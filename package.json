@@ -75,7 +75,6 @@
     "lerna": "^6.4.1",
     "lodash": "^4.17.21",
     "node-fetch-native": "^1.0.1",
-    "postcss-custom-selectors": "^6.0.0",
     "puppeteer-core": "^19.6.3",
     "request": "^2.88.2",
     "rimraf": "^4.1.2",

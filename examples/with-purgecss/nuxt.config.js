@@ -14,10 +14,10 @@ export default {
     postcss: {
       postcssOptions: {
         plugins: {
-          tailwindcss: path.resolve('./tailwind.js'),
-          autoprefixer: { grid: true }
+          tailwindcss: path.resolve('./tailwind.js')
         }
-      }
+      },
+      preset: { autoprefixer: { grid: true } }
     },
     extend (config, { isDev }) {
       if (!isDev) {

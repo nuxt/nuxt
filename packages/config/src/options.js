@@ -440,11 +440,6 @@ export function getNuxtConfig (_options) {
     delete options.build.crossorigin
   }
 
-  if (options.build.postcss.preset) {
-    consola.warn('`postcss.preset` is disabled because `postcss-preset-env` doesn\'t fully support `postcss v8`.')
-    delete options.build.postcss.preset
-  }
-
   if (options.build.postcss.plugins) {
     consola.warn('`postcss.plugins` option has been moved to `postcss.postcssOptions.plugins` for aligning `postcss-loader` format.')
     options.build.postcss.postcssOptions.plugins = options.build.postcss.plugins

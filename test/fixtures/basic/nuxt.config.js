@@ -90,9 +90,13 @@ export default {
       layouts: true
     },
     postcss: {
+      preset: {
+        features: {
+          'custom-selectors': true
+        }
+      },
       postcssOptions: {
         plugins: {
-          'postcss-custom-selectors': {},
           cssnano: {},
           [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
         }

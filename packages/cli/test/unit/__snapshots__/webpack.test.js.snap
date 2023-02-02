@@ -122,11 +122,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -290,11 +533,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -464,11 +950,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -632,11 +1361,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -806,11 +1778,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -980,11 +2195,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -1160,11 +2618,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -1337,11 +3038,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -1520,11 +3464,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -1694,11 +3881,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -1874,11 +4304,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [
@@ -2048,11 +4721,254 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                     \\"postcssPlugin\\": \\"postcss-url\\",
                   },
                   Object {
-                    \\"browsers\\": undefined,
-                    \\"info\\": [Function info],
-                    \\"options\\": Object {},
-                    \\"postcssPlugin\\": \\"autoprefixer\\",
-                    \\"prepare\\": [Function prepare],
+                    \\"plugins\\": Array [
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-clamp\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-function\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-normalize-display-values\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"clear\\": [Function makeTransform],
+                          \\"float\\": [Function makeTransform],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-float-and-clear\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-ic-unit\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"resize\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical-resize\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-logical-viewport-units\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-nested-calc\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-oklab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"opacity\\": [Function opacity],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-opacity-percentage\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-text-decoration-shorthand\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-unset-value\\",
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-media\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"postcssPlugin\\": \\"postcss-custom-properties\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-image-set-function\\",
+                      },
+                      Object {
+                        \\"AtRule\\": Object {
+                          \\"custom-media\\": [Function custom-media],
+                          \\"media\\": [Function media],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-media-minmax\\",
+                      },
+                      Object {
+                        \\"AtRule\\": [Function AtRule],
+                        \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-selector-not\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"block-size\\": [Function anonymous],
+                          \\"border-block\\": [Function anonymous],
+                          \\"border-block-color\\": [Function anonymous],
+                          \\"border-block-end\\": [Function anonymous],
+                          \\"border-block-end-color\\": [Function anonymous],
+                          \\"border-block-end-style\\": [Function anonymous],
+                          \\"border-block-end-width\\": [Function anonymous],
+                          \\"border-block-start\\": [Function anonymous],
+                          \\"border-block-start-color\\": [Function anonymous],
+                          \\"border-block-start-style\\": [Function anonymous],
+                          \\"border-block-start-width\\": [Function anonymous],
+                          \\"border-block-style\\": [Function anonymous],
+                          \\"border-block-width\\": [Function anonymous],
+                          \\"border-end-end-radius\\": [Function anonymous],
+                          \\"border-end-start-radius\\": [Function anonymous],
+                          \\"border-inline\\": [Function anonymous],
+                          \\"border-inline-color\\": [Function anonymous],
+                          \\"border-inline-end\\": [Function anonymous],
+                          \\"border-inline-end-color\\": [Function anonymous],
+                          \\"border-inline-end-style\\": [Function anonymous],
+                          \\"border-inline-end-width\\": [Function anonymous],
+                          \\"border-inline-start\\": [Function anonymous],
+                          \\"border-inline-start-color\\": [Function anonymous],
+                          \\"border-inline-start-style\\": [Function anonymous],
+                          \\"border-inline-start-width\\": [Function anonymous],
+                          \\"border-inline-style\\": [Function anonymous],
+                          \\"border-inline-width\\": [Function anonymous],
+                          \\"border-start-end-radius\\": [Function anonymous],
+                          \\"border-start-start-radius\\": [Function anonymous],
+                          \\"caption-side\\": [Function anonymous],
+                          \\"inline-size\\": [Function anonymous],
+                          \\"inset\\": [Function anonymous],
+                          \\"inset-block\\": [Function anonymous],
+                          \\"inset-block-end\\": [Function anonymous],
+                          \\"inset-block-start\\": [Function anonymous],
+                          \\"inset-inline\\": [Function anonymous],
+                          \\"inset-inline-end\\": [Function anonymous],
+                          \\"inset-inline-start\\": [Function anonymous],
+                          \\"margin-block\\": [Function anonymous],
+                          \\"margin-block-end\\": [Function anonymous],
+                          \\"margin-block-start\\": [Function anonymous],
+                          \\"margin-inline\\": [Function anonymous],
+                          \\"margin-inline-end\\": [Function anonymous],
+                          \\"margin-inline-start\\": [Function anonymous],
+                          \\"padding-block\\": [Function anonymous],
+                          \\"padding-block-end\\": [Function anonymous],
+                          \\"padding-block-start\\": [Function anonymous],
+                          \\"padding-inline\\": [Function anonymous],
+                          \\"padding-inline-end\\": [Function anonymous],
+                          \\"padding-inline-start\\": [Function anonymous],
+                          \\"text-align\\": [Function anonymous],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-logical\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-functional-notation\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-double-position-gradients\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-hex-alpha\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-hwb-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-lab-function\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-rebeccapurple\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-page-break\\",
+                      },
+                      Object {
+                        \\"Once\\": [Function Once],
+                        \\"postcssPlugin\\": \\"postcss-font-variant\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Rule\\": [Function Rule],
+                        \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gap-properties\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-overflow-shorthand\\",
+                      },
+                      Object {
+                        \\"Declaration\\": Object {
+                          \\"overflow-wrap\\": [Function overflow-wrap],
+                        },
+                        \\"postcssPlugin\\": \\"postcss-replace-overflow-wrap\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-place\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-system-ui-font\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-stepped-value-functions\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-trigonometric-functions\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-cascade-layers\\",
+                      },
+                      Object {
+                        \\"browsers\\": undefined,
+                        \\"info\\": [Function info],
+                        \\"options\\": Object {
+                          \\"overrideBrowserslist\\": undefined,
+                        },
+                        \\"postcssPlugin\\": \\"autoprefixer\\",
+                        \\"prepare\\": [Function prepare],
+                      },
+                      Object {
+                        \\"RuleExit\\": [Function RuleExit],
+                        \\"postcssPlugin\\": \\"postcss-progressive-custom-properties\\",
+                      },
+                      Object {
+                        \\"OnceExit\\": [Function OnceExit],
+                        \\"postcssPlugin\\": \\"postcss-preset-env\\",
+                      },
+                    ],
+                    \\"postcssPlugin\\": \\"postcss-preset-env\\",
                   },
                   Processor {
                     \\"plugins\\": Array [

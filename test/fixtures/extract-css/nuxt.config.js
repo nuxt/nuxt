@@ -7,11 +7,9 @@ export default {
       }
     },
     postcss: {
-      postcssOptions: {
-        plugins: {
-          autoprefixer: {
-            grid: true
-          }
+      preset: {
+        autoprefixer: {
+          grid: true
         }
       }
     },

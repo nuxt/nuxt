@@ -14,15 +14,15 @@ export const orderPresets = {
     }
     return names
   },
-  autoprefixerLast (names) {
-    const nanoIndex = names.indexOf('autoprefixer')
+  presetEnvLast (names) {
+    const nanoIndex = names.indexOf('postcss-preset-env')
     if (nanoIndex !== names.length - 1) {
       names.push(names.splice(nanoIndex, 1)[0])
     }
     return names
   },
-  autoprefixerAndCssnanoLast (names) {
-    return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
+  presetEnvAndCssnanoLast (names) {
+    return orderPresets.cssnanoLast(orderPresets.presetEnvLast(names))
   }
 }
 
@@ -82,7 +82,8 @@ export default class PostcssConfig {
         // https://github.com/postcss/postcss-url
         'postcss-url': {},
 
-        autoprefixer: {},
+        // https://github.com/csstools/postcss-preset-env
+        'postcss-preset-env': this.preset || {},
 
         cssnano: dev
           ? false
@@ -95,7 +96,7 @@ export default class PostcssConfig {
           }
       },
       // Array, String or Function
-      order: 'autoprefixerAndCssnanoLast'
+      order: 'presetEnvAndCssnanoLast'
     }
   }
 
@@ -202,10 +203,12 @@ export default class PostcssConfig {
       }
 
       delete postcssOptions.order
+      const postcssLoaderOptions = this.postcssLoaderOptions
+      delete postcssLoaderOptions.preset
 
       return {
         sourceMap: this.cssSourceMap,
-        ...this.postcssLoaderOptions,
+        ...postcssLoaderOptions,
         postcssOptions
       }
     }
