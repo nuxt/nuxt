@@ -50,7 +50,7 @@
     "watchpack": "^2.4.0",
     "webpack": "^4.46.0",
     "webpack-bundle-analyzer": "^4.7.0",
-    "webpack-dev-middleware": "^5.3.3",
+    "webpack-dev-middleware": "^6.0.1",
     "webpack-hot-middleware": "^2.25.3",
     "webpack-node-externals": "^3.0.0",
     "webpackbar": "^5.0.2"
