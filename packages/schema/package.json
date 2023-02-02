@@ -20,7 +20,7 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "nitropack": "^2.1.1",
     "unbuild": "latest",
-    "vite": "~4.1.0"
+    "vite": "~4.1.1"
   },
   "dependencies": {
     "c12": "^1.1.0",
@@ -32,7 +32,7 @@
     "pkg-types": "^1.0.1",
     "postcss-import-resolver": "^2.0.0",
     "scule": "^1.0.0",
-    "std-env": "^3.3.1",
+    "std-env": "^3.3.2",
     "ufo": "^1.0.1",
     "unimport": "^2.1.0",
     "untyped": "^1.2.2"
