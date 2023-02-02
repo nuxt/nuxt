@@ -1,7 +1,7 @@
 import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
-import { uneval } from 'devalue'
+import devalue from 'devalue'
 import fsExtra from 'fs-extra'
 import { defu } from 'defu'
 import htmlMinifier from 'html-minifier'
@@ -64,7 +64,7 @@ export default class Generator {
       await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
       await fsExtra.ensureDir(this.staticAssetsDir)
-      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${uneval(this.manifest)})`, 'utf-8')
+      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
     }
 
