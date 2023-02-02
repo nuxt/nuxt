@@ -1,0 +1,49 @@
+name: nuxt2-nightly
+
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'refs/heads/2.x'
+          fetch-depth: 0 # All history
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+      - name: install
+        run: yarn --check-files --frozen-lockfile --non-interactive
+      - name: lint
+        run: yarn test:lint
+      - name: audit
+        run: yarn run audit
+      - name: build
+        run: yarn test:fixtures -i
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: lint app
+        run: yarn lint:app
+      - name: test types
+        run: yarn test:types
+      - name: test dev
+        run: yarn test:dev
+      - name: test unit
+        run: yarn test:unit
+      - name: test e2e
+        run: yarn test:e2e
+      - name: bump version
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
+      - name: build
+        run: PACKAGE_SUFFIX=edge yarn build
+      - name: publish
+        run: ./scripts/workspace-run npm publish -q
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+
