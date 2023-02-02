@@ -10,7 +10,7 @@ overrides:
   nuxt: workspace:*
   nuxt3: workspace:nuxt@*
   unbuild: ^1.1.1
-  vite: ^4.1.0
+  vite: ^4.1.1
   vue: 3.2.47
 
 importers:
@@ -28,7 +28,7 @@ importers:
       '@types/node': ^18.11.18
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
-      '@unocss/reset': ^0.49.2
+      '@unocss/reset': ^0.49.4
       case-police: ^0.5.10
       changelogen: ^0.4.1
       crawler: ^1.4.0
@@ -45,11 +45,11 @@ importers:
       pathe: ^1.1.0
       rimraf: ^4.1.2
       semver: ^7.3.8
-      std-env: ^3.3.1
+      std-env: ^3.3.2
       typescript: ^4.9.5
       ufo: ^1.0.1
       unbuild: ^1.1.1
-      vite: ^4.1.0
+      vite: ^4.1.1
       vitest: ^0.28.3
       vue-tsc: ^1.0.24
     devDependencies:
@@ -64,7 +64,7 @@ importers:
       '@types/node': 18.11.18
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
-      '@unocss/reset': 0.49.2
+      '@unocss/reset': 0.49.4
       case-police: 0.5.10
       changelogen: 0.4.1
       crawler: 1.4.0
@@ -81,11 +81,11 @@ importers:
       pathe: 1.1.0
       rimraf: 4.1.2
       semver: 7.3.8
-      std-env: 3.3.1
+      std-env: 3.3.2
       typescript: 4.9.5
       ufo: 1.0.1
       unbuild: 1.1.1
-      vite: 4.1.0_@types+node@18.11.18
+      vite: 4.1.1_@types+node@18.11.18
       vitest: 0.28.3
       vue-tsc: 1.0.24_typescript@4.9.5
 
@@ -524,12 +524,12 @@ importers:
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
       scule: ^1.0.0
-      std-env: ^3.3.1
+      std-env: ^3.3.2
       ufo: ^1.0.1
       unbuild: ^1.1.1
       unimport: ^2.1.0
       untyped: ^1.2.2
-      vite: ^4.1.0
+      vite: ^4.1.1
     dependencies:
       c12: 1.1.0
       create-require: 1.1.1
@@ -540,7 +540,7 @@ importers:
       pkg-types: 1.0.1
       postcss-import-resolver: 2.0.0
       scule: 1.0.0
-      std-env: 3.3.1
+      std-env: 3.3.2
       ufo: 1.0.1
       unimport: 2.1.0
       untyped: 1.2.2
@@ -548,10 +548,10 @@ importers:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.13
       '@unhead/schema': 1.0.20
-      '@vitejs/plugin-vue': 4.0.0_vite@4.1.0
+      '@vitejs/plugin-vue': 4.0.0_vite@4.1.1
       nitropack: 2.1.1
       unbuild: 1.1.1
-      vite: 4.1.0
+      vite: 4.1.1
 
   packages/test-utils:
     specifiers:
@@ -616,7 +616,7 @@ importers:
       ufo: ^1.0.1
       unbuild: ^1.1.1
       unplugin: ^1.0.1
-      vite: ^4.1.0
+      vite: ^4.1.1
       vite-node: ^0.28.3
       vite-plugin-checker: ^0.5.5
       vue: 3.2.47
@@ -624,8 +624,8 @@ importers:
     dependencies:
       '@nuxt/kit': link:../kit
       '@rollup/plugin-replace': 5.0.2_rollup@3.12.1
-      '@vitejs/plugin-vue': 4.0.0_vite@4.1.0+vue@3.2.47
-      '@vitejs/plugin-vue-jsx': 3.0.0_vite@4.1.0+vue@3.2.47
+      '@vitejs/plugin-vue': 4.0.0_vite@4.1.1+vue@3.2.47
+      '@vitejs/plugin-vue-jsx': 3.0.0_vite@4.1.1+vue@3.2.47
       autoprefixer: 10.4.13_postcss@8.4.21
       chokidar: 3.5.3
       cssnano: 5.1.14_postcss@8.4.21
@@ -651,9 +651,9 @@ importers:
       rollup-plugin-visualizer: 5.9.0_rollup@3.12.1
       ufo: 1.0.1
       unplugin: 1.0.1
-      vite: 4.1.0
+      vite: 4.1.1
       vite-node: 0.28.3
-      vite-plugin-checker: 0.5.5_vite@4.1.0
+      vite-plugin-checker: 0.5.5_vite@4.1.1
       vue-bundle-renderer: 1.0.0
     devDependencies:
       '@nuxt/schema': link:../schema
@@ -2543,8 +2543,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset/0.49.2:
-    resolution: {integrity: sha512-O0dZDhIqUaB2Uwq2O9IVA2wqpC/kojTHWMGYNSw9OWoaVGyUAd5Ale+tB3RTw1QDbVQCasWIEmypbe0s+AI7xQ==}
+  /@unocss/reset/0.49.4:
+    resolution: {integrity: sha512-+9j4bN4cWlsWr3HGlFk+bAb7+1DdwTxQM3UbHjd9QsKVAVV1gE0VHHxU207NOYsIdeBFAOFVkxqFYCyhnfQpnQ==}
     dev: true
 
   /@unocss/scope/0.45.30:
@@ -2629,7 +2629,7 @@ packages:
       - encoding
       - supports-color
 
-  /@vitejs/plugin-vue-jsx/3.0.0_vite@4.1.0+vue@3.2.47:
+  /@vitejs/plugin-vue-jsx/3.0.0_vite@4.1.1+vue@3.2.47:
     resolution: {integrity: sha512-vurkuzgac5SYuxd2HUZqAFAWGTF10diKBwJNbCvnWijNZfXd+7jMtqjPFbGt7idOJUn584fP1Ar9j/GN2jQ3Ew==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2639,30 +2639,30 @@ packages:
       '@babel/core': 7.20.12
       '@babel/plugin-transform-typescript': 7.20.13_@babel+core@7.20.12
       '@vue/babel-plugin-jsx': 1.1.1_@babel+core@7.20.12
-      vite: 4.1.0
+      vite: 4.1.1
       vue: 3.2.47
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@vitejs/plugin-vue/4.0.0_vite@4.1.0:
+  /@vitejs/plugin-vue/4.0.0_vite@4.1.1:
     resolution: {integrity: sha512-e0X4jErIxAB5oLtDqbHvHpJe/uWNkdpYV83AOG2xo2tEVSzCzewgJMtREZM30wXnM5ls90hxiOtAuVU6H5JgbA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.1.0
+      vite: 4.1.1
     dev: true
 
-  /@vitejs/plugin-vue/4.0.0_vite@4.1.0+vue@3.2.47:
+  /@vitejs/plugin-vue/4.0.0_vite@4.1.1+vue@3.2.47:
     resolution: {integrity: sha512-e0X4jErIxAB5oLtDqbHvHpJe/uWNkdpYV83AOG2xo2tEVSzCzewgJMtREZM30wXnM5ls90hxiOtAuVU6H5JgbA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.1.0
+      vite: 4.1.1
       vue: 3.2.47
     dev: false
 
@@ -7796,6 +7796,9 @@ packages:
   /std-env/3.3.1:
     resolution: {integrity: sha512-3H20QlwQsSm2OvAxWIYhs+j01MzzqwMwGiiO1NQaJYZgJZFPuAbf95/DiKRBSTYIJ2FeGUc+B/6mPGcWP9dO3Q==}
 
+  /std-env/3.3.2:
+    resolution: {integrity: sha512-uUZI65yrV2Qva5gqE0+A7uVAvO40iPo6jGhs7s8keRfHCmtg+uB2X6EiLGCI9IgL1J17xGhvoOqSz79lzICPTA==}
+
   /streamsearch/1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
@@ -8538,7 +8541,7 @@ packages:
       picocolors: 1.0.0
       source-map: 0.6.1
       source-map-support: 0.5.21
-      vite: 4.1.0
+      vite: 4.1.1
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8561,7 +8564,7 @@ packages:
       picocolors: 1.0.0
       source-map: 0.6.1
       source-map-support: 0.5.21
-      vite: 4.1.0_@types+node@18.11.18
+      vite: 4.1.1_@types+node@18.11.18
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8572,7 +8575,7 @@ packages:
       - terser
     dev: true
 
-  /vite-plugin-checker/0.5.5_vite@4.1.0:
+  /vite-plugin-checker/0.5.5_vite@4.1.1:
     resolution: {integrity: sha512-BLaRlBmiVn3Fg/wR9A0+YNwgXVteFJaH8rCIiIgYQcQ50jc3oVe2m8i0xxG5geq36UttNJsAj7DpDelN7/KjOg==}
     engines: {node: '>=14.16'}
     peerDependencies:
@@ -8615,15 +8618,15 @@ packages:
       npm-run-path: 4.0.1
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
-      vite: 4.1.0
+      vite: 4.1.1
       vscode-languageclient: 7.0.0
       vscode-languageserver: 7.0.0
       vscode-languageserver-textdocument: 1.0.8
       vscode-uri: 3.0.7
     dev: false
 
-  /vite/4.1.0:
-    resolution: {integrity: sha512-YoUKE/9bbK4C8ZeSYMDDEF8H5aypmWUq4WisftDhntR1gkI2zt2SGT/5Wd2xu6ZoVXkCyO3U4844KWG9e4nFoQ==}
+  /vite/4.1.1:
+    resolution: {integrity: sha512-LM9WWea8vsxhr782r9ntg+bhSFS06FJgCvvB0+8hf8UWtvaiDagKYWXndjfX6kGl74keHJUcpzrQliDXZlF5yg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8654,8 +8657,8 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vite/4.1.0_@types+node@18.11.18:
-    resolution: {integrity: sha512-YoUKE/9bbK4C8ZeSYMDDEF8H5aypmWUq4WisftDhntR1gkI2zt2SGT/5Wd2xu6ZoVXkCyO3U4844KWG9e4nFoQ==}
+  /vite/4.1.1_@types+node@18.11.18:
+    resolution: {integrity: sha512-LM9WWea8vsxhr782r9ntg+bhSFS06FJgCvvB0+8hf8UWtvaiDagKYWXndjfX6kGl74keHJUcpzrQliDXZlF5yg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8731,7 +8734,7 @@ packages:
       tinybench: 2.3.1
       tinypool: 0.3.1
       tinyspy: 1.0.2
-      vite: 4.1.0_@types+node@18.11.18
+      vite: 4.1.1_@types+node@18.11.18
       vite-node: 0.28.3_@types+node@18.11.18
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
@@ -9006,7 +9009,7 @@ packages:
       chalk: 4.1.2
       consola: 2.15.3
       pretty-time: 1.1.0
-      std-env: 3.3.1
+      std-env: 3.3.2
       webpack: 5.75.0
     dev: false
 
