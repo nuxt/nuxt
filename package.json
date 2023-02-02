@@ -36,8 +36,8 @@
     "nuxt": "workspace:*",
     "nuxt3": "workspace:nuxt@*",
     "unbuild": "^1.1.1",
-    "vite": "^4.0.4",
-    "vue": "3.2.45"
+    "vite": "^4.1.0",
+    "vue": "3.2.47"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
@@ -72,7 +72,7 @@
     "typescript": "^4.9.5",
     "ufo": "^1.0.1",
     "unbuild": "^1.1.1",
-    "vite": "^4.0.4",
+    "vite": "^4.1.0",
     "vitest": "^0.28.3",
     "vue-tsc": "^1.0.24"
   },
