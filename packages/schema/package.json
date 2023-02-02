@@ -20,7 +20,7 @@
     "@vitejs/plugin-vue": "^4.0.0",
     "nitropack": "^2.1.1",
     "unbuild": "latest",
-    "vite": "~4.0.4"
+    "vite": "~4.1.0"
   },
   "dependencies": {
     "c12": "^1.1.0",
