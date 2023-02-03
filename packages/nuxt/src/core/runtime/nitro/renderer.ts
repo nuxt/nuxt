@@ -69,7 +69,7 @@ const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').th
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
 // @ts-ignore
-const getSSRStyles = (): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r)
+const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
