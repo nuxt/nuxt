@@ -90,11 +90,10 @@ function detectImportNames (code: string) {
   const imports = findStaticImports(code)
   const names = new Set<string>()
   for (const i of imports) {
-    console.log(i.specifier)
     if (i.specifier.includes('nuxt')) { continue }
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
-    for (const imp of namedImports ? Object.values(namedImports) : []) {
-      names.add(imp)
+    for (const name in namedImports || {}) {
+      names.add(namedImports![name])
     }
     if (defaultImport) {
       names.add(defaultImport)
