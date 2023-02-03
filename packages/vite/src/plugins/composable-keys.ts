@@ -86,11 +86,13 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
   }
 })
 
+const NUXT_IMPORT_RE = /nuxt|#app|#imports/
+
 function detectImportNames (code: string) {
   const imports = findStaticImports(code)
   const names = new Set<string>()
   for (const i of imports) {
-    if (i.specifier.includes('nuxt')) { continue }
+    if (NUXT_IMPORT_RE.test(i.specifier)) { continue }
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
     for (const name in namedImports || {}) {
       names.add(namedImports![name])
