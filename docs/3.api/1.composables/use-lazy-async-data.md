@@ -36,4 +36,8 @@ watch(count, (newCount) => {
 </script>
 ```
 
+::alert{type=warning}
+`useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
+::
+
 :ReadMore{link="/docs/getting-started/data-fetching#uselazyasyncdata"}
