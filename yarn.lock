@@ -12796,10 +12796,10 @@ rollup-plugin-license@^3.0.1:
     spdx-expression-validate "~2.0.0"
     spdx-satisfies "~5.0.1"
 
-rollup@3.12.1:
-  version "3.12.1"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-3.12.1.tgz#2975b97713e4af98c15e7024b88292d7fddb3853"
-  integrity sha512-t9elERrz2i4UU9z7AwISj3CQcXP39cWxgRWLdf4Tm6aKm1eYrqHIgjzXBgb67GNY1sZckTFFi0oMozh3/S++Ig==
+rollup@3.13.0:
+  version "3.13.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-3.13.0.tgz#202883a91b5d1bf98302efe4daa907e3e5e4ae94"
+  integrity sha512-HJwQtrXAc0AmyDohTJ/2c+Bx/sWPScJLlAUJ1kuD7rAkCro8Cr2SnVB2gVYBiSLxpgD2kZ24jbyXtG++GumrYQ==
   optionalDependencies:
     fsevents "~2.3.2"
 
@@ -13219,10 +13219,10 @@ sort-object-keys@^1.1.3:
   resolved "https://registry.npmjs.org/sort-object-keys/-/sort-object-keys-1.1.3.tgz#bff833fe85cab147b34742e45863453c1e190b45"
   integrity sha512-855pvK+VkU7PaKYPc+Jjnmt4EzejQHyhhF33q31qG8x7maDzkeFhAAThdCYay11CISO+qAMwjOBP+fPZe0IPyg==
 
-sort-package-json@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-2.4.0.tgz#cfd1a5ae940cfef17779a3822fd47ca231e8be74"
-  integrity sha512-vhoGWP7XDlQbO7/sBchjOetLyTKb26kyZaQQklfTJpH5BuDaXII/61wQ/o8fZgdx1kPwMbNiCoBUs3+qCEDJsQ==
+sort-package-json@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-2.4.1.tgz#4ea68a0b9ef34c2bc519e86d0d07de56622a7600"
+  integrity sha512-Nd3rgLBJcZ4iw7tpuOhwBupG6SvUDU0Fy1cZGAMorA2JmDUb+29Dg5phJK9gapa2Ak9d15w/RuMl/viwX+nKwQ==
   dependencies:
     detect-indent "^7.0.1"
     detect-newline "^4.0.0"
