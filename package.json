@@ -78,12 +78,12 @@
     "puppeteer-core": "^19.6.3",
     "request": "^2.88.2",
     "rimraf": "^4.1.2",
-    "rollup": "3.12.1",
+    "rollup": "3.13.0",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-license": "^3.0.1",
     "sass": "^1.58.0",
     "sass-loader": "^10.1.1",
-    "sort-package-json": "^2.4.0",
+    "sort-package-json": "^2.4.1",
     "typescript": "~4.9.5",
     "vue-jest": "^4.0.1"
   }
