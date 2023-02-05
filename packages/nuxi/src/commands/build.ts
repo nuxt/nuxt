@@ -52,6 +52,9 @@ export default defineNuxtCommand({
     await buildNuxt(nuxt)
 
     if (args.prerender) {
+      if (!nuxt.options.ssr) {
+        consola.warn('HTML content not prerendered because `ssr: false` was set.')
+      }
       // TODO: revisit later if/when nuxt build --prerender will output hybrid
       const dir = nitro?.options.output.publicDir
       const publicDir = dir ? relative(process.cwd(), dir) : '.output/public'
