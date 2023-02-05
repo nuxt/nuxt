@@ -46,9 +46,8 @@ export interface AddRouteMiddlewareOptions {
 
 export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
   const nuxt = useNuxt()
+  const middlewares = Array.isArray(input) ? input : [input]
   nuxt.hook('app:resolve', (app) => {
-    const middlewares = Array.isArray(input) ? input : [input]
-
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
