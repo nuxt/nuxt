@@ -82,7 +82,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
-      ssr: ctx.nuxt.options.ssr ?? true,
+      ssr: true,
       rollupOptions: {
         input: ctx.entry,
         external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
