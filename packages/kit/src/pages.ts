@@ -49,7 +49,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
   nuxt.hook('app:resolve', (app) => {
     const middlewares = Array.isArray(input) ? input : [input]
 
-    middlewares.forEach((middleware) => {
+    for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
         if (options.override === true) {
