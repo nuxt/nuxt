@@ -60,6 +60,6 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
       } else {
         app.middleware.push(middleware)
       }
-    })
+    }
   })
 }
