@@ -37,7 +37,7 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
 
 export interface AddRouteMiddlewareOptions {
   /**
-   * Override middleware path
+   * Override existing middleware with the same name, if it exists
    *
    * @default false
    */
