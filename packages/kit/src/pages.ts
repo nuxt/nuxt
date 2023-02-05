@@ -1,6 +1,5 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack'
-import consola from 'consola'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { isNuxt2 } from './compatibility'
@@ -38,7 +37,7 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
 
 export interface AddRouteMiddlewareOptions {
   /**
-   * Override route rule config
+   * Override middleware path
    *
    * @default false
    */
@@ -48,22 +47,19 @@ export interface AddRouteMiddlewareOptions {
 export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
   const nuxt = useNuxt()
   nuxt.hook('app:resolve', (app) => {
-    const addMiddleware = (middleware: NuxtMiddleware) => {
+    const middlewares = Array.isArray(input) ? input : [input]
+
+    middlewares.forEach(middleware => {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
         if (options.override === true) {
           app.middleware[find] = middleware
         } else {
-          consola.warn(`'${middleware.name}' middleware exists with '${app.middleware[find].path}' path. You can set override option 'true' for replace with your middleware path.`)
+          console.warn(`'${middleware.name}' middleware exists with '${app.middleware[find].path}' path. You can set override option 'true' for replace with your middleware path.`)
         }
       } else {
         app.middleware.push(middleware)
       }
-    }
-    if (Array.isArray(input)) {
-      input.forEach(addMiddleware)
-    } else {
-      addMiddleware(input)
-    }
+    })
   })
 }
