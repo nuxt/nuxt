@@ -48,7 +48,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/crawler": "^1.2.2",
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.11.19",
     "@types/rimraf": "^3",
     "@types/semver": "^7.3.13",
     "@unocss/reset": "^0.49.4",

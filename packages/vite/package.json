@@ -44,7 +44,7 @@
     "postcss": "^8.4.21",
     "postcss-import": "^15.1.0",
     "postcss-url": "^10.1.3",
-    "rollup": "^3.13.0",
+    "rollup": "^3.14.0",
     "rollup-plugin-visualizer": "^5.9.0",
     "ufo": "^1.0.1",
     "unplugin": "^1.0.1",
