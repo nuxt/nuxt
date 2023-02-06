@@ -8,7 +8,8 @@ export interface RuntimePathsOptions {
 }
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
-const JS_RE = /\.((c|m)?j|t)sx?$/
+const CSS_RE =
+  /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)$/
 
 export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
   return {
@@ -16,14 +17,15 @@ export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
     enforce: 'post',
     transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+
+      // skip import into css files
+      if (CSS_RE.test(pathname)) { return }
+
+      // skip import into <style> vue files
       if (pathname.endsWith('.vue')) {
-        // vue files
-        if (search && parseQuery(search).type !== 'script') {
-          return
-        }
-      } else if (!JS_RE.test(pathname)) {
-        return
+        if (search && parseQuery(search).type === 'style') { return }
       }
+
       if (VITE_ASSET_RE.test(code)) {
         const s = new MagicString(code)
         // Register dependency on paths.mjs, which sets globalThis.__publicAssetsURL
