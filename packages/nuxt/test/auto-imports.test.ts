@@ -100,6 +100,7 @@ const excludedVueHelpers = [
   'toDisplayString',
   'toHandlerKey',
   'BaseTransition',
+  'BaseTransitionPropsValidators',
   'Comment',
   'Fragment',
   'KeepAlive',
