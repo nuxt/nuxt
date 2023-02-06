@@ -440,10 +440,8 @@ export function getNuxtConfig (_options) {
     delete options.build.crossorigin
   }
 
-  if (options.build.postcss.plugins) {
+  if (options.build.postcss?.plugins) {
     consola.warn('`postcss.plugins` option has been moved to `postcss.postcssOptions.plugins` for aligning `postcss-loader` format.')
-    options.build.postcss.postcssOptions.plugins = options.build.postcss.plugins
-    delete options.build.postcss.plugins
   }
 
   if (options.buildModules && options.buildModules.includes('@nuxt/postcss8')) {
