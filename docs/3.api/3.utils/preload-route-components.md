@@ -2,7 +2,7 @@
 title: "preloadRouteComponents"
 ---
 
-# `preloadComponents`
+# `preloadRouteComponents`
 
 `preloadRouteComponent` allows you to manually preload individual pages in your Nuxt app.
 
