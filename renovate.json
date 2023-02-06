@@ -5,7 +5,7 @@
   ],
   "baseBranches": [
     "main",
-    "2.x-dev"
+    "2.x"
   ],
   "packageRules": [
     {
@@ -21,7 +21,7 @@
     },
     {
       "matchBaseBranches": [
-        "2.x-dev"
+        "2.x"
       ],
       "ignoreDeps": [
         "core-js",
