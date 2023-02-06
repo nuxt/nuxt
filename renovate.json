@@ -37,6 +37,7 @@
         "terser-webpack-plugin",
         "@types/terser-webpack-plugin",
         "@types/webpack-bundle-analyzer",
+        "@types/webpack-hot-middleware",
         "wrap-ansi",
         "jest",
         "babel-jest",
