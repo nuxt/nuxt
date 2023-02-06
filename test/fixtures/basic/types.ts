@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
-import type { AppConfig } from '@nuxt/schema'
+import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
@@ -124,8 +124,24 @@ describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
+  })
+  it('provides hints on overriding these values', () => {
+    const val = defineNuxtConfig({
+      runtimeConfig: {
+        public: {
+          // @ts-expect-error
+          testConfig: 'test'
+        }
+      }
+    })
+    expectTypeOf(val.runtimeConfig!.public!.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'>>()
+    expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
+    expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
+    expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
+    expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<any>()
   })
 })
 
