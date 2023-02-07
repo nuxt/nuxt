@@ -145,12 +145,27 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState'
-  ] as Array<keyof typeof import('vue')>
+  ]
+})
+
+const vueTypesPreset = defineUnimportPreset({
+  from: 'vue',
+  type: true,
+  imports: [
+    'Component',
+    'ComponentPublicInstance',
+    'ComputedRef',
+    'InjectionKey',
+    'PropType',
+    'Ref',
+    'VNode'
+  ]
 })
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   appPreset,
   routerPreset,
-  vuePreset
+  vuePreset,
+  vueTypesPreset
 ]
