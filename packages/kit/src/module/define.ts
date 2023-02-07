@@ -1,5 +1,5 @@
 import { promises as fsp } from 'node:fs'
-import defu from 'defu'
+import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
 import type { Nuxt, NuxtModule, ModuleOptions, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
@@ -41,8 +41,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     if (uniqueKey) {
       nuxt.options._requiredModules = nuxt.options._requiredModules || {}
       if (nuxt.options._requiredModules[uniqueKey]) {
-        // TODO: Notify user if inline options is provided since will be ignored!
-        return
+        return false
       }
       nuxt.options._requiredModules[uniqueKey] = true
     }

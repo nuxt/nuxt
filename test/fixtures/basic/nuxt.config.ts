@@ -49,8 +49,11 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    baseURL: '',
+    baseAPIToken: '',
     privateConfig: 'secret_key',
     public: {
+      needsFallback: undefined,
       testConfig: 123
     }
   },

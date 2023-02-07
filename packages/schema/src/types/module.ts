@@ -36,8 +36,9 @@ export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
 }
 
 /** Nuxt modules are always a simple function. */
+type Awaitable<T> = T | Promise<T>
 export interface NuxtModule<T extends ModuleOptions = ModuleOptions> {
-  (this: void, inlineOptions: T, nuxt: Nuxt): void | Promise<void>
+  (this: void, inlineOptions: T, nuxt: Nuxt): Awaitable<void | false>
   getOptions?: (inlineOptions?: T, nuxt?: Nuxt) => Promise<T>
   getMeta?: () => Promise<ModuleMeta>
 }

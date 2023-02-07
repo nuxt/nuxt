@@ -122,6 +122,10 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 })
 ```
 
+::alert{type=warning}
+`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+::
+
 :ReadMore{link="/docs/getting-started/data-fetching"}
 
 ::LinkExample{link="/docs/examples/composables/use-fetch"}

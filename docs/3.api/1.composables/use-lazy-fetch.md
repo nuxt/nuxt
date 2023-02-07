@@ -40,4 +40,8 @@ watch(posts, (newPosts) => {
 </script>
 ```
 
+::alert{type=warning}
+`useLazyFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyFetch`.
+::
+
 :ReadMore{link="/docs/getting-started/data-fetching#uselazyfetch"}

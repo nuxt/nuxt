@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { getModulePaths, getNearestPackage } from './cjs'
 
@@ -102,7 +102,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
   }
 
   // This is needed for Nuxt 2 which clears the build directory again before building
-  // https://github.com/nuxt/nuxt/blob/2.x-dev/packages/builder/src/builder.js#L144
+  // https://github.com/nuxt/nuxt/blob/2.x/packages/builder/src/builder.js#L144
   // @ts-expect-error
   nuxt.hook('builder:prepared', writeFile)
 

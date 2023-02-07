@@ -9,10 +9,59 @@ export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
+type ExtractUpperChunk<T extends string> = T extends `${infer A}${infer B}`
+  ? A extends Uppercase<A>
+    ? B extends `${Uppercase<string>}${infer Rest}`
+      ? B extends `${infer C}${Rest}`
+        ? `${A}${C}${ExtractUpperChunk<Rest>}`
+        : never
+      : A
+    : ''
+  : never
+
+type SliceLast<T extends string> = T extends `${infer A}${infer B}`
+  ? B extends `${infer C}${infer D}`
+    ? D extends ''
+      ? A
+      : `${A}${C}${SliceLast<D>}`
+    : ''
+  : never
+
+type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
+  ? A extends Uppercase<A>
+    ? A extends `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0}`
+      ? `${A}${UpperSnakeCase<B, 'lower'>}`
+      : State extends 'lower' | 'upper'
+        ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
+          ? SliceLast<ExtractUpperChunk<B>> extends ''
+            ? `_${A}_${UpperSnakeCase<B, 'start'>}`
+            : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+          : B extends Uppercase<B>
+            ? `_${A}${B}`
+            : `_${A}${UpperSnakeCase<B, 'lower'>}`
+        : State extends 'start'
+          ? `${A}${UpperSnakeCase<B, 'lower'>}`
+          : never
+      : State extends 'start' | 'lower'
+        ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+        : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+  : Uppercase<T>
+
+const message = Symbol('message')
+export type RuntimeValue<T, B extends string> = T & { [message]?: B }
+type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
+  [K in keyof T]?: K extends string
+    ? T[K] extends Record<string, any>
+      ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+      : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+    : never
+}
+
 /** User configuration in `nuxt.config` file */
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'runtimeConfig'>> {
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
+  runtimeConfig?: Overrideable<RuntimeConfig>
 
   /**
    * Experimental custom config schema
