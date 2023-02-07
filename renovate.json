@@ -24,6 +24,7 @@
         "2.x"
       ],
       "ignoreDeps": [
+        "@types/node",
         "core-js",
         "postcss",
         "postcss-import",
