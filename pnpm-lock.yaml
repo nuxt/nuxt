@@ -5274,15 +5274,6 @@ packages:
       ufo: 1.0.1
       uncrypto: 0.1.2
 
-  /h3/1.2.1:
-    resolution: {integrity: sha512-uYRENV7pNd4kl4nGFDkVOZRZgDVmH4Ur4h64QAsqPsHj1jxI6MAU+7xT0JX9Tg3iKbmgMPpRf8QI6e4CJZ12MQ==}
-    dependencies:
-      cookie-es: 0.5.0
-      destr: 1.2.2
-      radix3: 1.0.0
-      ufo: 1.0.1
-      uncrypto: 0.1.2
-
   /har-schema/2.0.0:
     resolution: {integrity: sha512-Oqluz6zhGX8cyRaTQlFMPw80bSJVG2x/cFb8ZPhUILGgHka9SsokCCOQgpveePerqidZOrT14ipqfJb7ILcW5Q==}
     engines: {node: '>=4'}
@@ -8252,15 +8243,6 @@ packages:
     dependencies:
       busboy: 1.6.0
     dev: true
-
-  /unenv/1.1.0:
-    resolution: {integrity: sha512-7jLgwQ5iDHVcDoW2rCJ1vB1jUw7zT+21LC+vWCs9SWWsycgk1d4SHvPUYRsu5wNuY7hqoArgjr4xQKmIkXyAmA==}
-    dependencies:
-      defu: 6.1.2
-      mime: 3.0.0
-      node-fetch-native: 1.0.1
-      pathe: 1.1.0
-    dev: false
 
   /unenv/1.1.0:
     resolution: {integrity: sha512-7jLgwQ5iDHVcDoW2rCJ1vB1jUw7zT+21LC+vWCs9SWWsycgk1d4SHvPUYRsu5wNuY7hqoArgjr4xQKmIkXyAmA==}
