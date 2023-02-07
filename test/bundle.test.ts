@@ -79,6 +79,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "source-map",
         "source-map-support",
         "ufo",
+        "uncrypto",
         "unctx",
         "unenv",
         "unstorage",
