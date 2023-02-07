@@ -28,7 +28,7 @@ export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
@@ -40,7 +40,7 @@ export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
@@ -112,7 +112,7 @@ export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
@@ -124,7 +124,7 @@ export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   Transform extends (res: _ResT) => any = (res: _ResT) => _ResT,
   PickKeys extends KeyOfRes<Transform> = KeyOfRes<Transform>
