@@ -318,7 +318,7 @@ importers:
       semver: ^7.3.8
       unbuild: ^1.1.1
       unctx: ^2.1.1
-      unimport: ^2.1.0
+      unimport: ^2.2.4
       untyped: ^1.2.2
     dependencies:
       '@nuxt/schema': link:../schema
@@ -337,7 +337,7 @@ importers:
       scule: 1.0.0
       semver: 7.3.8
       unctx: 2.1.1
-      unimport: 2.1.0
+      unimport: 2.2.4
       untyped: 1.2.2
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -450,7 +450,7 @@ importers:
       unctx: ^2.1.1
       unenv: ^1.1.0
       unhead: ^1.0.21
-      unimport: ^2.1.0
+      unimport: ^2.2.4
       unplugin: ^1.0.1
       untyped: ^1.2.2
       vue: 3.2.47
@@ -496,7 +496,7 @@ importers:
       unctx: 2.1.1
       unenv: 1.1.0
       unhead: 1.0.21
-      unimport: 2.1.0
+      unimport: 2.2.4
       unplugin: 1.0.1
       untyped: 1.2.2
       vue: 3.2.47
@@ -527,7 +527,7 @@ importers:
       std-env: ^3.3.2
       ufo: ^1.0.1
       unbuild: ^1.1.1
-      unimport: ^2.1.0
+      unimport: ^2.2.4
       untyped: ^1.2.2
       vite: ^4.1.1
     dependencies:
@@ -542,7 +542,7 @@ importers:
       scule: 1.0.0
       std-env: 3.3.2
       ufo: 1.0.1
-      unimport: 2.1.0
+      unimport: 2.2.4
       untyped: 1.2.2
     devDependencies:
       '@types/lodash.template': 4.5.1
@@ -6380,7 +6380,7 @@ packages:
       std-env: 3.3.2
       ufo: 1.0.1
       unenv: 1.1.0
-      unimport: 2.1.0_rollup@3.14.0
+      unimport: 2.2.4_rollup@3.14.0
       unstorage: 1.1.3
     transitivePeerDependencies:
       - bufferutil
@@ -7809,11 +7809,6 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /strip-literal/1.0.0:
-    resolution: {integrity: sha512-5o4LsH1lzBzO9UFH63AJ2ad2/S2AVx6NtjOcaz+VTT2h1RiRvbipW72z8M/lxEhcPHDBQwpDrnTF7sXy/7OwCQ==}
-    dependencies:
-      acorn: 8.8.2
-
   /strip-literal/1.0.1:
     resolution: {integrity: sha512-QZTsipNpa2Ppr6v1AmJHESqJ3Uz247MUS0OjrnnZjFAvEoWqxuyFuXn2xLgMtRnijJShAa1HL0gtJyUs7u7n3Q==}
     dependencies:
@@ -8251,8 +8246,8 @@ packages:
       hookable: 5.4.2
     dev: false
 
-  /unimport/2.1.0:
-    resolution: {integrity: sha512-GDVIxATluUquX8EqelT6DtnmnZaXGID1jsO9IXwlnxb0OIEqKAxTOnTlnGmHbseoGTh+ZC9kcNDaO18HYQj9KA==}
+  /unimport/2.2.4:
+    resolution: {integrity: sha512-qMgmeEGqqrrmEtm0dqxMG37J6xBtrriqxq9hILvDb+e6l2F0yTnJomLoCCp0eghLR7bYGeBsUU5Y0oyiUYhViw==}
     dependencies:
       '@rollup/pluginutils': 5.0.2
       escape-string-regexp: 5.0.0
@@ -8263,14 +8258,14 @@ packages:
       pathe: 1.1.0
       pkg-types: 1.0.1
       scule: 1.0.0
-      strip-literal: 1.0.0
+      strip-literal: 1.0.1
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup
     dev: false
 
-  /unimport/2.1.0_rollup@3.14.0:
-    resolution: {integrity: sha512-GDVIxATluUquX8EqelT6DtnmnZaXGID1jsO9IXwlnxb0OIEqKAxTOnTlnGmHbseoGTh+ZC9kcNDaO18HYQj9KA==}
+  /unimport/2.2.4_rollup@3.14.0:
+    resolution: {integrity: sha512-qMgmeEGqqrrmEtm0dqxMG37J6xBtrriqxq9hILvDb+e6l2F0yTnJomLoCCp0eghLR7bYGeBsUU5Y0oyiUYhViw==}
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.14.0
       escape-string-regexp: 5.0.0
@@ -8281,7 +8276,7 @@ packages:
       pathe: 1.1.0
       pkg-types: 1.0.1
       scule: 1.0.0
-      strip-literal: 1.0.0
+      strip-literal: 1.0.1
       unplugin: 1.0.1
     transitivePeerDependencies:
       - rollup

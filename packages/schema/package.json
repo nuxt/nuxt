@@ -34,7 +34,7 @@
     "scule": "^1.0.0",
     "std-env": "^3.3.2",
     "ufo": "^1.0.1",
-    "unimport": "^2.1.0",
+    "unimport": "^2.2.4",
     "untyped": "^1.2.2"
   },
   "engines": {
