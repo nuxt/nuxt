@@ -6,7 +6,7 @@ import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
   meta: {
-    name: 'enable',
+    name: 'disable',
     usage: `npx nuxi enable|disable ${Object.keys(featureCLIs).join('|')} [rootDir]`,
     description: 'Enable or disable features in a Nuxt project'
   },
