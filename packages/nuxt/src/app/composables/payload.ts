@@ -1,6 +1,7 @@
 import { joinURL } from 'ufo'
 import { useNuxtApp } from '../nuxt'
-import { useHead, useRuntimeConfig } from '..'
+import { useRuntimeConfig } from '..'
+import { useHead } from './head'
 
 interface LoadPayloadOptions {
   fresh?: boolean

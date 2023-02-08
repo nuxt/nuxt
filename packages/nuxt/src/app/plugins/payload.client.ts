@@ -1,5 +1,5 @@
 import { parseURL } from 'ufo'
-import { defineNuxtPlugin, loadPayload, isPrerendered, useRouter } from '#app'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Only enable behavior if initial page is prerendered
