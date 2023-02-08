@@ -3,7 +3,7 @@ import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest, Avail
 import type { Ref } from 'vue'
 import { computed, unref, reactive } from 'vue'
 import { hash } from 'ohash'
-import { useRequestEvent } from './ssr'
+import { useRequestEvent, useRequestFetch } from './ssr'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
@@ -105,13 +105,11 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
+    const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
     let _$fetch = opts.$fetch || globalThis.$fetch
     // Use fetch with request context and headers for server direct API calls
-    if (
-      process.server && !opts.$fetch &&
-      typeof _request.value === 'string' && _request.value.startsWith('/')
-    ) {
-      _$fetch = useRequestEvent().$fetch as typeof globalThis.$fetch || _$fetch
+    if (process.server && !opts.$fetch && isLocalFetch) {
+      _$fetch = useRequestFetch()
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
