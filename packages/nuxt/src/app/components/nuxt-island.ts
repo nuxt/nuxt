@@ -7,7 +7,6 @@ import { appendHeader } from 'h3'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
-// eslint-disable-next-line import/no-restricted-paths
 import { useHead } from '#app/composables/head'
 
 const pKey = '_islandPromises'
