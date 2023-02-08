@@ -82,7 +82,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       generateTsConfig: false
     },
     publicAssets: [
-      { dir: resolve(nuxt.options.buildDir, 'dist/client') },
+      {
+        dir: resolve(join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir)),
+        maxAge: 30 * 24 * 60 * 60,
+        baseURL: nuxt.options.app.buildAssetsDir
+      },
       ...nuxt.options._layers
         .map(layer => join(layer.config.srcDir, layer.config.dir?.public || 'public'))
         .filter(dir => existsSync(dir))
