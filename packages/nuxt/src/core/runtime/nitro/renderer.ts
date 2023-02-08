@@ -10,7 +10,7 @@ import { renderToString as _renderToString } from 'vue/server-renderer'
 import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app'
+import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
 // @ts-ignore
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-ignore
