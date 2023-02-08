@@ -908,7 +908,7 @@ describe('component islands', () => {
   })
 })
 
-describe.runIf(process.env.NUXT_TEST_DEV === 'true' && !process.env.TEST_WITH_WEBPACK === 'true')('vite plugins', () => {
+describe.runIf(process.env.NUXT_TEST_DEV === 'true' && process.env.TEST_WITH_WEBPACK !== 'true')('vite plugins', () => {
   it('does not override vite plugins', async () => {
     expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
@@ -937,7 +937,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true' || isWindows)('payload rend
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = process.env.NUXT_TEST_DEV === 'true' && !process.env.TEST_WITH_WEBPACK === 'true' ? '?import' : ''
+    const importSuffix = process.env.NUXT_TEST_DEV === 'true' && process.env.TEST_WITH_WEBPACK !== 'true' ? '?import' : ''
 
     // We are manually prefetching other payloads
     expect(requests).toContain('/random/c/_payload.js')
