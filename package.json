@@ -68,7 +68,7 @@
     "jest": "^28.1.1",
     "jest-environment-jsdom": "^29.4.2",
     "jest-util": "^29.4.2",
-    "jiti": "^1.16.2",
+    "jiti": "^1.17.0",
     "jsdom": "^21.1.0",
     "jsonfile": "^6.1.0",
     "klaw-sync": "^6.0.0",
