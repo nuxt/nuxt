@@ -13,9 +13,9 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./config": {
+      "types": "./config.d.ts",
       "import": "./config.mjs",
-      "require": "./config.cjs",
-      "types": "./config.d.ts"
+      "require": "./config.cjs"
     },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
