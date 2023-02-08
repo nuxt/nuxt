@@ -364,7 +364,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^1.0.0
-      h3: ^1.2.1
+      h3: ^1.3.0
       jiti: ^1.16.2
       listhen: ^1.0.2
       mlly: ^1.1.0
@@ -395,7 +395,7 @@ importers:
       execa: 6.1.0
       flat: 5.0.2
       giget: 1.0.0
-      h3: 1.2.1
+      h3: 1.3.0
       jiti: 1.16.2
       listhen: 1.0.2
       mlly: 1.1.0
@@ -429,14 +429,14 @@ importers:
       estree-walker: ^3.0.3
       fs-extra: ^11.1.0
       globby: ^13.1.3
-      h3: ^1.2.1
+      h3: ^1.3.0
       hash-sum: ^2.0.0
       hookable: ^5.4.2
       jiti: ^1.16.2
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
-      nitropack: ^2.1.2
+      nitropack: npm:nitropack-edge@2.2.0-27930920.4f08e5d
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
@@ -447,7 +447,7 @@ importers:
       ufo: ^1.0.1
       unbuild: ^1.1.1
       unctx: ^2.1.1
-      unenv: ^1.1.0
+      unenv: ^1.1.1
       unhead: ^1.0.21
       unimport: ^2.2.4
       unplugin: ^1.0.1
@@ -475,14 +475,14 @@ importers:
       estree-walker: 3.0.3
       fs-extra: 11.1.0
       globby: 13.1.3
-      h3: 1.2.1
+      h3: 1.3.0
       hash-sum: 2.0.0
       hookable: 5.4.2
       jiti: 1.16.2
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
-      nitropack: 2.1.2
+      nitropack: /nitropack-edge/2.2.0-27930920.4f08e5d
       nuxi: link:../nuxi
       ofetch: 1.0.0
       ohash: 1.0.0
@@ -492,7 +492,7 @@ importers:
       strip-literal: 1.0.1
       ufo: 1.0.1
       unctx: 2.1.1
-      unenv: 1.1.0
+      unenv: 1.1.1
       unhead: 1.0.21
       unimport: 2.2.4
       unplugin: 1.0.1
@@ -517,7 +517,7 @@ importers:
       defu: ^6.1.2
       hookable: ^5.4.2
       jiti: ^1.16.2
-      nitropack: ^2.1.2
+      nitropack: npm:nitropack-edge@2.2.0-27930920.4f08e5d
       pathe: ^1.1.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
@@ -547,7 +547,7 @@ importers:
       '@types/semver': 7.3.13
       '@unhead/schema': 1.0.21
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.1
-      nitropack: 2.1.2
+      nitropack: /nitropack-edge/2.2.0-27930920.4f08e5d
       unbuild: 1.1.1
       vite: 4.1.1
 
@@ -598,7 +598,7 @@ importers:
       externality: ^1.0.0
       fs-extra: ^11.1.0
       get-port-please: ^3.0.1
-      h3: ^1.2.1
+      h3: ^1.3.0
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
@@ -634,7 +634,7 @@ importers:
       externality: 1.0.0
       fs-extra: 11.1.0
       get-port-please: 3.0.1
-      h3: 1.2.1
+      h3: 1.3.0
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
@@ -5250,11 +5250,12 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/1.2.1:
-    resolution: {integrity: sha512-uYRENV7pNd4kl4nGFDkVOZRZgDVmH4Ur4h64QAsqPsHj1jxI6MAU+7xT0JX9Tg3iKbmgMPpRf8QI6e4CJZ12MQ==}
+  /h3/1.3.0:
+    resolution: {integrity: sha512-nuEQOgMmdVl5wJYGoGnMwd048j004IcPcNdPmSrIjjPSbgusM4+ObSQ2b5SWqXAV7rspxjdG5+Er1ORmJOVbaQ==}
     dependencies:
       cookie-es: 0.5.0
       destr: 1.2.2
+      iron-webcrypto: 0.4.0
       radix3: 1.0.0
       ufo: 1.0.1
       uncrypto: 0.1.2
@@ -5509,6 +5510,9 @@ packages:
   /ip-regex/5.0.0:
     resolution: {integrity: sha512-fOCG6lhoKKakwv+C6KdsOnGvgXnmgfmp0myi3bcNwj3qfwPAxRKWEuFhvEFF7ceYIz6+1jRZ+yguLFAmUNPEfw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  /iron-webcrypto/0.4.0:
+    resolution: {integrity: sha512-5OG53gJ4dBTq4y3IJqK7MEG9CPZRsYn9EP9J4jjgH4TcP/ywdsSMAmqj9VTSzdXu0/xfUrqjGHU7WLUme2+k5Q==}
 
   /is-array-buffer/3.0.1:
     resolution: {integrity: sha512-ASfLknmY8Xa2XtB4wmbz13Wu202baeA18cJBCeCy0wXUHZF0IPyVEXqKEcd+t2fNSLLL1vC6k7lxZEojNbISXQ==}
@@ -6313,8 +6317,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack/2.1.2:
-    resolution: {integrity: sha512-Z6hRUsvDI+tLFGmZugWukdatBc9eRyRTP1l5CqZg3CQWrDkr6fQb8nh2x8Zdp9UNqhoessrHiO/62pWsau3AUg==}
+  /nitropack-edge/2.2.0-27930920.4f08e5d:
+    resolution: {integrity: sha512-NHrVbS7AbIaXklp0xefBNj4HqVCbyKqycHBcIK1p4/7cQJB/f5cqTqsEb2NTl7kl+hLctf79gf4GvISPGhytKg==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
@@ -6345,7 +6349,7 @@ packages:
       fs-extra: 11.1.0
       globby: 13.1.3
       gzip-size: 7.0.0
-      h3: 1.2.1
+      h3: 1.3.0
       hookable: 5.4.2
       http-proxy: 1.18.1
       is-primitive: 3.0.1
@@ -6373,7 +6377,7 @@ packages:
       source-map-support: 0.5.21
       std-env: 3.3.2
       ufo: 1.0.1
-      unenv: 1.1.0
+      unenv: 1.1.1
       unimport: 2.2.4_rollup@3.14.0
       unstorage: 1.1.3
     transitivePeerDependencies:
@@ -8220,8 +8224,8 @@ packages:
       busboy: 1.6.0
     dev: true
 
-  /unenv/1.1.0:
-    resolution: {integrity: sha512-7jLgwQ5iDHVcDoW2rCJ1vB1jUw7zT+21LC+vWCs9SWWsycgk1d4SHvPUYRsu5wNuY7hqoArgjr4xQKmIkXyAmA==}
+  /unenv/1.1.1:
+    resolution: {integrity: sha512-AfQ+sKCdeSPX/rp0tL9LZz3cAu1Mt0i9UADuN1MtbsITKDS2PqSx8LQUBMf8lKuziitIWXXwU6JXrmzARFVSRw==}
     dependencies:
       defu: 6.1.2
       mime: 3.0.0
@@ -8363,7 +8367,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 1.2.2
-      h3: 1.2.1
+      h3: 1.3.0
       ioredis: 5.3.0
       listhen: 1.0.2
       lru-cache: 7.14.1
