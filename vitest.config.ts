@@ -16,6 +16,7 @@ export default defineConfig({
   test: {
     globalSetup: 'test/setup.ts',
     testTimeout: isWindows ? 60000 : 10000,
+    deps: { inline: ['@vitejs/plugin-vue'] },
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
     exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js'],
     maxThreads: process.env.NUXT_TEST_DEV ? 1 : undefined,
