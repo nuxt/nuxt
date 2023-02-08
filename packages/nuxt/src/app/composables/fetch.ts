@@ -3,7 +3,7 @@ import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest, Avail
 import type { Ref } from 'vue'
 import { computed, unref, reactive } from 'vue'
 import { hash } from 'ohash'
-import { useRequestEvent, useRequestFetch } from './ssr'
+import { useRequestFetch } from './ssr'
 import type { AsyncDataOptions, _Transform, KeyOfRes, AsyncData, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
