@@ -7,7 +7,8 @@ import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
-  createWebHashHistory
+  createWebHashHistory,
+  RouteRecordRaw
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
@@ -40,6 +41,18 @@ function createCurrentLocation (
   return path + search + hash
 }
 
+function provideMeta (route: RouteRecordRaw) {
+  const originalRoute = _routes.find(originalRoute => originalRoute.path === route)
+
+  return {
+    ...route,
+    meta: {
+      ...(originalRoute?.meta || {}),
+      ...route
+    }
+  }
+}
+
 export default defineNuxtPlugin(async (nuxtApp) => {
   let routerBase = useRuntimeConfig().app.baseURL
   if (routerOptions.hashMode && !routerBase.includes('#')) {
@@ -52,7 +65,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     : createMemoryHistory(routerBase)
   )
 
-  const routes = routerOptions.routes?.(_routes) ?? _routes
+  const routes = routerOptions.routes
+    ? routerOptions.routes?.(_routes).map(provideMeta)
+    : _routes
 
   const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
   const router = createRouter({
