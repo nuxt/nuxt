@@ -193,7 +193,7 @@ jobs:
       - lint
       - build
       - test-fixtures
-      - test-fixtures-webpack
+      - test-unit
       - test-types
     runs-on: ${{ matrix.os }}
 
