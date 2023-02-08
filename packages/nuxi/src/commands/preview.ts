@@ -4,6 +4,7 @@ import { execa } from 'execa'
 import { setupDotenv } from 'c12'
 import { resolve } from 'pathe'
 import consola from 'consola'
+import { loadKit } from '../utils/kit'
 
 import { defineNuxtCommand } from './index'
 
@@ -16,8 +17,11 @@ export default defineNuxtCommand({
   async invoke (args) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
+    const { loadNuxtConfig } = await loadKit(rootDir)
+    const config = await loadNuxtConfig({ cwd: rootDir })
+    const serverOutputDir = config.nitro.output?.dir?.replace(/^~\//, '') || '.output'
 
-    const nitroJSONPaths = ['.output/nitro.json', 'nitro.json'].map(p => resolve(rootDir, p))
+    const nitroJSONPaths = [`${serverOutputDir}/nitro.json`, 'nitro.json'].map(p => resolve(rootDir, p))
     const nitroJSONPath = nitroJSONPaths.find(p => existsSync(p))
     if (!nitroJSONPath) {
       consola.error('Cannot find `nitro.json`. Did you run `nuxi build` first? Search path:\n', nitroJSONPaths)
