@@ -21,7 +21,7 @@
     "play:preview": "pnpm nuxi preview playground",
     "test:fixtures": "NUXT_TELEMETRY_DISABLED=1 pnpm nuxi prepare test/fixtures/basic && JITI_ESM_RESOLVE=1 vitest run --dir test",
     "test:fixtures:dev": "NUXT_TELEMETRY_DISABLED=1 NUXT_TEST_DEV=true pnpm test:fixtures",
-    "test:fixtures:webpack": "NUXT_TELEMETRY_DISABLED=1 TEST_WITH_WEBPACK=1 pnpm test:fixtures",
+    "test:fixtures:webpack": "NUXT_TELEMETRY_DISABLED=1 TEST_WITH_WEBPACK=true pnpm test:fixtures",
     "test:types": "pnpm nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
     "test:unit": "JITI_ESM_RESOLVE=1 vitest run --dir packages",
     "typecheck": "tsc --noEmit"

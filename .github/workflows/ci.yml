@@ -67,12 +67,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-  typecheck:
+  test-unit:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
         node: [16]
 
     timeout-minutes: 10
@@ -94,12 +94,17 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Test (unit)
+        run: pnpm test:unit
+
   test-fixtures:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        dev: ['true', 'false']
+        webpack: ['true', 'false']
         node: [16]
 
     timeout-minutes: 10
@@ -139,64 +144,12 @@ jobs:
       - name: Build (stub)
         run: pnpm build:stub
 
-      - name: Test (unit)
-        run: pnpm test:unit
-
       - name: Test (fixtures)
         run: pnpm test:fixtures
-
-      - name: Test (fixtures with dev)
-        run: pnpm test:fixtures:dev
         env:
+          NUXT_TEST_DEV: ${{ matrix.dev }}
+          TEST_WITH_WEBPACK: ${{ matrix.webpack }}
           NODE_OPTIONS: --max-old-space-size=8192
-
-  test-fixtures-webpack:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        node: [16]
-
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v3
-      - run: corepack enable
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml#L62
-      # Install playwright's binary under custom directory to cache
-      - name: Set Playwright path (non-windows)
-        if: runner.os != 'Windows'
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
-      - name: Set Playwright path (windows)
-        if: runner.os == 'Windows'
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
-
-      - name: Cache Playwright's binary
-        uses: actions/cache@v3
-        with:
-          # Playwright removes unused browsers automatically
-          # So does not need to add playwright version to key
-          key: ${{ runner.os }}-playwright-bin-v1
-          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-
-      - name: Install Playwright
-        # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
-        run: pnpm playwright install chromium
-
-      - name: Build (stub)
-        run: pnpm build:stub
-
-      - name: Test (fixtures)
-        run: pnpm test:fixtures:webpack
 
   test-types:
     needs:

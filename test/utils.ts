@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
-export const fixturesDir = fileURLToPath(new URL(process.env.NUXT_TEST_DEV ? './fixtures-temp' : './fixtures', import.meta.url))
+export const fixturesDir = fileURLToPath(new URL(process.env.NUXT_TEST_DEV === 'true' ? './fixtures-temp' : './fixtures', import.meta.url))
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
