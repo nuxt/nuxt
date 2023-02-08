@@ -675,7 +675,7 @@ importers:
       css-loader: ^6.7.3
       css-minimizer-webpack-plugin: ^4.2.2
       cssnano: ^5.1.14
-      esbuild-loader: ^2.21.0
+      esbuild-loader: ^3.0.0
       escape-string-regexp: ^5.0.0
       estree-walker: ^3.0.3
       file-loader: ^6.2.0
@@ -717,7 +717,7 @@ importers:
       css-loader: 6.7.3_webpack@5.75.0
       css-minimizer-webpack-plugin: 4.2.2_webpack@5.75.0
       cssnano: 5.1.14_postcss@8.4.21
-      esbuild-loader: 2.21.0_webpack@5.75.0
+      esbuild-loader: 3.0.0_webpack@5.75.0
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       file-loader: 6.2.0_webpack@5.75.0
@@ -4273,16 +4273,14 @@ packages:
       is-symbol: 1.0.4
     dev: true
 
-  /esbuild-loader/2.21.0_webpack@5.75.0:
-    resolution: {integrity: sha512-k7ijTkCT43YBSZ6+fBCW1Gin7s46RrJ0VQaM8qA7lq7W+OLsGgtLyFV8470FzYi/4TeDexniTBTPTwZUnXXR5g==}
+  /esbuild-loader/3.0.0_webpack@5.75.0:
+    resolution: {integrity: sha512-+wZUslAmbj9SKhYt0ZiRsUzw4dP/99kwHAEPtLyAdGckpt8+DSGs2u+sXQSAuCG/m1a8Od3gVcqj1BpE3fl++Q==}
     peerDependencies:
       webpack: ^4.40.0 || ^5.0.0
     dependencies:
-      esbuild: 0.16.17
-      joycon: 3.1.1
-      json5: 2.2.3
+      esbuild: 0.17.6
+      get-tsconfig: 4.4.0
       loader-utils: 2.0.4
-      tapable: 2.2.1
       webpack: 5.75.0
       webpack-sources: 1.4.3
     dev: false
@@ -4400,7 +4398,7 @@ packages:
       enhanced-resolve: 5.12.0
       eslint: 8.33.0
       eslint-plugin-import: 2.27.5_c6pjvta7aysubsdnhvgec47vxe
-      get-tsconfig: 4.3.0
+      get-tsconfig: 4.4.0
       globby: 13.1.3
       is-core-module: 2.11.0
       is-glob: 4.0.3
@@ -5088,9 +5086,8 @@ packages:
       get-intrinsic: 1.2.0
     dev: true
 
-  /get-tsconfig/4.3.0:
-    resolution: {integrity: sha512-YCcF28IqSay3fqpIu5y3Krg/utCBHBeoflkZyHj/QcqI2nrLPC3ZegS9CmIo+hJb8K7aiGsuUl7PwWVjNG2HQQ==}
-    dev: true
+  /get-tsconfig/4.4.0:
+    resolution: {integrity: sha512-0Gdjo/9+FzsYhXCEFueo2aY1z1tpXrxWZzP7k8ul9qt1U5o8rYJwTJYmaeHdrVosYIVYkOy2iwCJ9FdpocJhPQ==}
 
   /getpass/0.1.7:
     resolution: {integrity: sha512-0fzj9JxOLfJ+XGLhR8ze3unN0KZCgZwiSSDz168VERjK8Wl8kVSdcu2kspd4s4wtAa1y/qrVRiAA0WclVsu0ng==}
@@ -5752,11 +5749,6 @@ packages:
   /jiti/1.16.2:
     resolution: {integrity: sha512-OKBOVWmU3FxDt/UH4zSwiKPuc1nihFZiOD722FuJlngvLz2glX1v2/TJIgoA4+mrpnXxHV6dSAoCvPcYQtoG5A==}
     hasBin: true
-
-  /joycon/3.1.1:
-    resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
-    engines: {node: '>=10'}
-    dev: false
 
   /js-sdsl/4.3.0:
     resolution: {integrity: sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==}
