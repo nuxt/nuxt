@@ -37,7 +37,7 @@ importers:
       execa: ^6.1.0
       expect-type: ^0.15.0
       globby: ^13.1.3
-      jiti: ^1.16.2
+      jiti: ^1.17.0
       markdownlint-cli: ^0.33.0
       nuxi: workspace:*
       nuxt: workspace:*
@@ -73,7 +73,7 @@ importers:
       execa: 6.1.0
       expect-type: 0.15.0
       globby: 13.1.3
-      jiti: 1.16.2
+      jiti: 1.17.0
       markdownlint-cli: 0.33.0
       nuxi: link:packages/nuxi
       nuxt: link:packages/nuxt
@@ -308,7 +308,7 @@ importers:
       globby: ^13.1.3
       hash-sum: ^2.0.0
       ignore: ^5.2.4
-      jiti: ^1.16.2
+      jiti: ^1.17.0
       knitwork: ^1.0.0
       lodash.template: ^4.5.0
       mlly: ^1.1.0
@@ -328,7 +328,7 @@ importers:
       globby: 13.1.3
       hash-sum: 2.0.0
       ignore: 5.2.4
-      jiti: 1.16.2
+      jiti: 1.17.0
       knitwork: 1.0.0
       lodash.template: 4.5.0
       mlly: 1.1.0
@@ -365,7 +365,7 @@ importers:
       fsevents: ~2.3.2
       giget: ^1.0.0
       h3: ^1.4.0
-      jiti: ^1.16.2
+      jiti: ^1.17.0
       listhen: ^1.0.2
       mlly: ^1.1.0
       mri: ^1.2.0
@@ -396,7 +396,7 @@ importers:
       flat: 5.0.2
       giget: 1.0.0
       h3: 1.4.0
-      jiti: 1.16.2
+      jiti: 1.17.0
       listhen: 1.0.2
       mlly: 1.1.0
       mri: 1.2.0
@@ -432,11 +432,11 @@ importers:
       h3: ^1.4.0
       hash-sum: ^2.0.0
       hookable: ^5.4.2
-      jiti: ^1.16.2
+      jiti: ^1.17.0
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
-      nitropack: npm:nitropack-edge@2.2.0-27930959.4a4f539
+      nitropack: ^2.2.0
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
@@ -478,11 +478,11 @@ importers:
       h3: 1.4.0
       hash-sum: 2.0.0
       hookable: 5.4.2
-      jiti: 1.16.2
+      jiti: 1.17.0
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
-      nitropack: /nitropack-edge/2.2.0-27930959.4a4f539
+      nitropack: 2.2.0
       nuxi: link:../nuxi
       ofetch: 1.0.0
       ohash: 1.0.0
@@ -498,7 +498,7 @@ importers:
       unplugin: 1.0.1
       untyped: 1.2.2
       vue: 3.2.47
-      vue-bundle-renderer: 1.0.0
+      vue-bundle-renderer: 1.0.1
       vue-devtools-stub: 0.1.0
       vue-router: 4.1.6_vue@3.2.47
     devDependencies:
@@ -516,8 +516,8 @@ importers:
       create-require: ^1.1.1
       defu: ^6.1.2
       hookable: ^5.4.2
-      jiti: ^1.16.2
-      nitropack: npm:nitropack-edge@2.2.0-27930959.4a4f539
+      jiti: ^1.17.0
+      nitropack: ^2.2.0
       pathe: ^1.1.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
@@ -533,7 +533,7 @@ importers:
       create-require: 1.1.1
       defu: 6.1.2
       hookable: 5.4.2
-      jiti: 1.16.2
+      jiti: 1.17.0
       pathe: 1.1.0
       pkg-types: 1.0.1
       postcss-import-resolver: 2.0.0
@@ -547,7 +547,7 @@ importers:
       '@types/semver': 7.3.13
       '@unhead/schema': 1.0.21
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.1
-      nitropack: /nitropack-edge/2.2.0-27930959.4a4f539
+      nitropack: 2.2.0
       unbuild: 1.1.1
       vite: 4.1.1
 
@@ -559,7 +559,7 @@ importers:
       defu: ^6.1.2
       execa: ^6.1.0
       get-port-please: ^3.0.1
-      jiti: ^1.16.2
+      jiti: ^1.17.0
       ofetch: ^1.0.0
       pathe: ^1.1.0
       playwright: ^1.30.0
@@ -572,7 +572,7 @@ importers:
       defu: 6.1.2
       execa: 6.1.0
       get-port-please: 3.0.1
-      jiti: 1.16.2
+      jiti: 1.17.0
       ofetch: 1.0.0
       pathe: 1.1.0
     devDependencies:
@@ -652,7 +652,7 @@ importers:
       vite: 4.1.1
       vite-node: 0.28.4
       vite-plugin-checker: 0.5.5_vite@4.1.1
-      vue-bundle-renderer: 1.0.0
+      vue-bundle-renderer: 1.0.1
     devDependencies:
       '@nuxt/schema': link:../schema
       '@types/cssnano': 5.1.0_postcss@8.4.21
@@ -741,7 +741,7 @@ importers:
       ufo: 1.0.1
       unplugin: 1.0.1
       url-loader: 4.1.1_p5dl6emkcwslbw72e37w4ug7em
-      vue-bundle-renderer: 1.0.0
+      vue-bundle-renderer: 1.0.1
       vue-loader: 17.0.1_vue@3.2.47+webpack@5.75.0
       webpack: 5.75.0
       webpack-bundle-analyzer: 4.7.0
@@ -1640,7 +1640,7 @@ packages:
       git-url-parse: 13.1.0
       inquirer: 9.1.4
       is-docker: 3.0.0
-      jiti: 1.16.2
+      jiti: 1.17.0
       mri: 1.2.0
       nanoid: 4.0.1
       node-fetch: 3.3.0
@@ -3329,7 +3329,7 @@ packages:
       defu: 6.1.2
       dotenv: 16.0.3
       giget: 1.0.0
-      jiti: 1.16.2
+      jiti: 1.17.0
       mlly: 1.1.0
       pathe: 1.1.0
       pkg-types: 1.0.1
@@ -5695,8 +5695,8 @@ packages:
       supports-color: 8.1.1
     dev: false
 
-  /jiti/1.16.2:
-    resolution: {integrity: sha512-OKBOVWmU3FxDt/UH4zSwiKPuc1nihFZiOD722FuJlngvLz2glX1v2/TJIgoA4+mrpnXxHV6dSAoCvPcYQtoG5A==}
+  /jiti/1.17.0:
+    resolution: {integrity: sha512-CByzPgFqYoB9odEeef7GNmQ3S5THIBOtzRYoSCya2Sv27AuQxy2jgoFjQ6VTF53xsq1MXRm+YWNvOoDHUAteOw==}
     hasBin: true
 
   /js-sdsl/4.3.0:
@@ -6191,7 +6191,7 @@ packages:
       esbuild: 0.17.6
       fs-extra: 11.1.0
       globby: 13.1.3
-      jiti: 1.16.2
+      jiti: 1.17.0
       mri: 1.2.0
       pathe: 1.1.0
       typescript: 4.9.5
@@ -6252,8 +6252,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge/2.2.0-27930959.4a4f539:
-    resolution: {integrity: sha512-SG/cd5d5WY4AC2IRHbxHQA6uN5fi6mLnWVhSJyeZ40i9iJs+Q1Zplws54lU+T27RfzVPkJCRpFYONA1UTK9juQ==}
+  /nitropack/2.2.0:
+    resolution: {integrity: sha512-aNJdupXKA3OiYHDvlCnrcJMKrVGoW7RGnRjm8sCUrgICRC9bbVdsZU/EQh3pLIc7DQW/rej3eRxceqfnlKsOkg==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
@@ -6288,7 +6288,7 @@ packages:
       hookable: 5.4.2
       http-proxy: 1.18.1
       is-primitive: 3.0.1
-      jiti: 1.16.2
+      jiti: 1.17.0
       klona: 2.0.6
       knitwork: 1.0.0
       listhen: 1.0.2
@@ -8098,7 +8098,7 @@ packages:
       esbuild: 0.16.17
       globby: 13.1.3
       hookable: 5.4.2
-      jiti: 1.16.2
+      jiti: 1.17.0
       magic-string: 0.27.0
       mkdirp: 1.0.4
       mkdist: 1.1.1_typescript@4.9.5
@@ -8122,7 +8122,7 @@ packages:
     dependencies:
       '@antfu/utils': 0.5.2
       defu: 6.1.2
-      jiti: 1.16.2
+      jiti: 1.17.0
     dev: true
 
   /uncrypto/0.1.2:
@@ -8633,8 +8633,8 @@ packages:
     resolution: {integrity: sha512-eOpPHogvorZRobNqJGhapa0JdwaxpjVvyBp0QIUMRMSf8ZAlqOdEquKuRmw9Qwu0qXtJIWqFtMkmvJjUZmMjVA==}
     dev: false
 
-  /vue-bundle-renderer/1.0.0:
-    resolution: {integrity: sha512-43vCqTgaMXfHhtR8/VcxxWD1DgtzyvNc4wNyG5NKCIH19O1z5G9ZCRXTGEA2wifVec5PU82CkRLD2sTK9NkTdA==}
+  /vue-bundle-renderer/1.0.1:
+    resolution: {integrity: sha512-w1zRgff5lVJ5YAIkVSKuFjDyCgKdg/sPbcgZbosnMCoHblg0uThCKA2n/XWUGnw0Rh2+03UY/VtkwaYwMUSRyQ==}
     dependencies:
       ufo: 1.0.1
     dev: false
