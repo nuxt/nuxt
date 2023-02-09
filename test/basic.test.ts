@@ -634,7 +634,7 @@ describe('automatically keyed composables', () => {
   })
 })
 
-describe.skipIf(process.env.TEST_ENV === 'dev' || process.env.TEST_BUILDER === 'webpack')('inlining component styles', () => {
+describe.skipIf(isDev() || process.env.TEST_BUILDER === 'webpack')('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of [
@@ -681,7 +681,7 @@ describe('prefetching', () => {
   })
 })
 
-describe.runIf(process.env.TEST_ENV === 'dev')('detecting invalid root nodes', () => {
+describe.runIf(isDev())('detecting invalid root nodes', () => {
   it('should detect invalid root nodes in pages', async () => {
     for (const path of ['1', '2', '3', '4']) {
       const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
@@ -702,7 +702,7 @@ describe.runIf(process.env.TEST_ENV === 'dev')('detecting invalid root nodes', (
 })
 
 // TODO: dynamic paths in dev
-describe.skipIf(process.env.TEST_ENV === 'dev')('dynamic paths', () => {
+describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -820,7 +820,7 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
 
-    if (process.env.TEST_ENV === 'dev') {
+    if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
     }
 
@@ -847,7 +847,7 @@ describe('component islands', () => {
       })
     }))
 
-    if (process.env.TEST_ENV === 'dev') {
+    if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
@@ -861,7 +861,7 @@ describe('component islands', () => {
       key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
     }))
 
-    if (!(process.env.TEST_ENV === 'dev' || process.env.TEST_BUILDER === 'webpack')) {
+    if (!(isDev() || process.env.TEST_BUILDER === 'webpack')) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [],
@@ -873,7 +873,7 @@ describe('component islands', () => {
           ],
         }
       `)
-    } else if (process.env.TEST_ENV === 'dev') {
+    } else if (isDev()) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
@@ -909,7 +909,7 @@ describe('component islands', () => {
   })
 })
 
-describe.runIf(process.env.TEST_ENV === 'dev' && process.env.TEST_BUILDER !== 'webpack')('vite plugins', () => {
+describe.runIf(isDev() && process.env.TEST_BUILDER !== 'webpack')('vite plugins', () => {
   it('does not override vite plugins', async () => {
     expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
@@ -919,7 +919,7 @@ describe.runIf(process.env.TEST_ENV === 'dev' && process.env.TEST_BUILDER !== 'w
   })
 })
 
-describe.skipIf(process.env.TEST_ENV === 'dev' || isWindows)('payload rendering', () => {
+describe.skipIf(isDev() || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
@@ -938,7 +938,7 @@ describe.skipIf(process.env.TEST_ENV === 'dev' || isWindows)('payload rendering'
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = process.env.TEST_ENV === 'dev' && process.env.TEST_BUILDER !== 'webpack' ? '?import' : ''
+    const importSuffix = isDev() && process.env.TEST_BUILDER !== 'webpack' ? '?import' : ''
 
     // We are manually prefetching other payloads
     expect(requests).toContain('/random/c/_payload.js')
@@ -971,7 +971,7 @@ describe.skipIf(process.env.TEST_ENV === 'dev' || isWindows)('payload rendering'
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
-    // expect(requests.filter(p => p.includes('_payload')).length).toBe(process.env.TEST_ENV === 'dev' ? 1 : 0)
+    // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
   })
 })
 
