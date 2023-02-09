@@ -126,8 +126,8 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
-      "import { NuxtModule } from '@nuxt/schema'",
-      "declare module '@nuxt/schema' {",
+      "import { NuxtModule } from 'nuxt/schema'",
+      "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
@@ -200,7 +200,7 @@ ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from $
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 
-declare module '@nuxt/schema' {
+declare module 'nuxt/schema' {
   interface AppConfig extends ResolvedAppConfig { }
 }
 `
