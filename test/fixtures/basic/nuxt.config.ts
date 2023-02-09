@@ -69,7 +69,7 @@ export default defineNuxtConfig({
       }
     ],
     function (_, nuxt) {
-      if (process.env.TEST_BUILDER === 'webpack') { return }
+      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')

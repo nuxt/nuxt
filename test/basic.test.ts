@@ -10,13 +10,20 @@ import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, fixturesDir, expectWithPolling, renderPage, withLogs } from './utils'
 
+const isWebpack = process.env.TEST_BUILDER === 'webpack'
+
 const fixturePath = join(fixturesDir, 'basic')
 await setup({
   rootDir: fixturePath,
   dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
-  setupTimeout: (isWindows ? 240 : 120) * 1000
+  setupTimeout: (isWindows ? 240 : 120) * 1000,
+  nuxtConfig: {
+    builder: isWebpack ? 'webpack' : 'vite',
+    buildDir: process.env.NITRO_BUILD_DIR,
+    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
+  }
 })
 
 describe('server api', () => {
@@ -634,7 +641,7 @@ describe('automatically keyed composables', () => {
   })
 })
 
-describe.skipIf(isDev() || process.env.TEST_BUILDER === 'webpack')('inlining component styles', () => {
+describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of [
@@ -712,7 +719,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
   })
 
   // webpack injects CSS differently
-  it.skipIf(process.env.TEST_BUILDER === 'webpack')('adds relative paths to CSS', async () => {
+  it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
@@ -741,7 +748,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
         url.startsWith('/foo/_other/') ||
         url === '/foo/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -758,7 +765,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
         url.startsWith('./_nuxt/') ||
         url === './public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -786,7 +793,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
         url.startsWith('https://example.com/_cdn/') ||
         url === 'https://example.com/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -861,7 +868,7 @@ describe('component islands', () => {
       key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
     }))
 
-    if (!(isDev() || process.env.TEST_BUILDER === 'webpack')) {
+    if (!(isDev() || isWebpack)) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [],
@@ -909,7 +916,7 @@ describe('component islands', () => {
   })
 })
 
-describe.runIf(isDev() && process.env.TEST_BUILDER !== 'webpack')('vite plugins', () => {
+describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
     expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
@@ -938,7 +945,7 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = isDev() && process.env.TEST_BUILDER !== 'webpack' ? '?import' : ''
+    const importSuffix = isDev() && !isWebpack ? '?import' : ''
 
     // We are manually prefetching other payloads
     expect(requests).toContain('/random/c/_payload.js')
