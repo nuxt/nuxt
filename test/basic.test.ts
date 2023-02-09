@@ -13,6 +13,7 @@ import { expectNoClientErrors, fixturesDir, expectWithPolling, renderPage, withL
 const fixturePath = join(fixturesDir, 'basic')
 await setup({
   rootDir: fixturePath,
+  dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
   setupTimeout: (isWindows ? 240 : 120) * 1000
