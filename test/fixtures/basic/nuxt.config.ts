@@ -110,6 +110,9 @@ export default defineNuxtConfig({
       })
     }
   ],
+  vite: {
+    logLevel: 'silent'
+  },
   hooks: {
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
