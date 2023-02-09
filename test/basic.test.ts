@@ -633,7 +633,7 @@ describe('automatically keyed composables', () => {
   })
 })
 
-describe.skipIf(process.env.NUXT_TEST_DEV === 'true' || process.env.TEST_WITH_WEBPACK === 'true')('inlining component styles', () => {
+describe.skipIf(process.env.TEST_ENV === 'dev' || process.env.TEST_BUILDER === 'webpack')('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of [
@@ -680,7 +680,7 @@ describe('prefetching', () => {
   })
 })
 
-describe.runIf(process.env.NUXT_TEST_DEV === 'true')('detecting invalid root nodes', () => {
+describe.runIf(process.env.TEST_ENV === 'dev')('detecting invalid root nodes', () => {
   it('should detect invalid root nodes in pages', async () => {
     for (const path of ['1', '2', '3', '4']) {
       const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
@@ -701,7 +701,7 @@ describe.runIf(process.env.NUXT_TEST_DEV === 'true')('detecting invalid root nod
 })
 
 // TODO: dynamic paths in dev
-describe.skipIf(process.env.NUXT_TEST_DEV === 'true')('dynamic paths', () => {
+describe.skipIf(process.env.TEST_ENV === 'dev')('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -711,7 +711,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true')('dynamic paths', () => {
   })
 
   // webpack injects CSS differently
-  it.skipIf(process.env.TEST_WITH_WEBPACK === 'true')('adds relative paths to CSS', async () => {
+  it.skipIf(process.env.TEST_BUILDER === 'webpack')('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
@@ -740,7 +740,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true')('dynamic paths', () => {
         url.startsWith('/foo/_other/') ||
         url === '/foo/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK === 'true' && url === '/public.svg')
+        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -757,7 +757,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true')('dynamic paths', () => {
         url.startsWith('./_nuxt/') ||
         url === './public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK === 'true' && url === '/public.svg')
+        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
       ).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -785,7 +785,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true')('dynamic paths', () => {
         url.startsWith('https://example.com/_cdn/') ||
         url === 'https://example.com/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK === 'true' && url === '/public.svg')
+        (process.env.TEST_BUILDER === 'webpack' && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -819,7 +819,7 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
 
-    if (process.env.NUXT_TEST_DEV === 'true') {
+    if (process.env.TEST_ENV === 'dev') {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
     }
 
@@ -846,7 +846,7 @@ describe('component islands', () => {
       })
     }))
 
-    if (process.env.NUXT_TEST_DEV === 'true') {
+    if (process.env.TEST_ENV === 'dev') {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
@@ -860,7 +860,7 @@ describe('component islands', () => {
       key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
     }))
 
-    if (!(process.env.NUXT_TEST_DEV === 'true' || process.env.TEST_WITH_WEBPACK === 'true')) {
+    if (!(process.env.TEST_ENV === 'dev' || process.env.TEST_BUILDER === 'webpack')) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [],
@@ -872,7 +872,7 @@ describe('component islands', () => {
           ],
         }
       `)
-    } else if (process.env.NUXT_TEST_DEV === 'true') {
+    } else if (process.env.TEST_ENV === 'dev') {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
@@ -908,7 +908,7 @@ describe('component islands', () => {
   })
 })
 
-describe.runIf(process.env.NUXT_TEST_DEV === 'true' && process.env.TEST_WITH_WEBPACK !== 'true')('vite plugins', () => {
+describe.runIf(process.env.TEST_ENV === 'dev' && process.env.TEST_BUILDER !== 'webpack')('vite plugins', () => {
   it('does not override vite plugins', async () => {
     expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
@@ -918,7 +918,7 @@ describe.runIf(process.env.NUXT_TEST_DEV === 'true' && process.env.TEST_WITH_WEB
   })
 })
 
-describe.skipIf(process.env.NUXT_TEST_DEV === 'true' || isWindows)('payload rendering', () => {
+describe.skipIf(process.env.TEST_ENV === 'dev' || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
@@ -937,7 +937,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true' || isWindows)('payload rend
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = process.env.NUXT_TEST_DEV === 'true' && process.env.TEST_WITH_WEBPACK !== 'true' ? '?import' : ''
+    const importSuffix = process.env.TEST_ENV === 'dev' && process.env.TEST_BUILDER !== 'webpack' ? '?import' : ''
 
     // We are manually prefetching other payloads
     expect(requests).toContain('/random/c/_payload.js')
@@ -970,7 +970,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV === 'true' || isWindows)('payload rend
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
-    // expect(requests.filter(p => p.includes('_payload')).length).toBe(process.env.NUXT_TEST_DEV === 'true' ? 1 : 0)
+    // expect(requests.filter(p => p.includes('_payload')).length).toBe(process.env.TEST_ENV === 'dev' ? 1 : 0)
   })
 })
 

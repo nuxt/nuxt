@@ -103,8 +103,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        dev: ['true', 'false']
-        webpack: ['true', 'false']
+        env: ['dev', 'built']
+        builder: ['vite', 'webpack']
         node: [16]
 
     timeout-minutes: 10
@@ -147,8 +147,8 @@ jobs:
       - name: Test (fixtures)
         run: pnpm test:fixtures
         env:
-          NUXT_TEST_DEV: ${{ matrix.dev }}
-          TEST_WITH_WEBPACK: ${{ matrix.webpack }}
+          TEST_ENV: ${{ matrix.env }}
+          TEST_BUILDER: ${{ matrix.builder }}
           NODE_OPTIONS: --max-old-space-size=8192
 
   test-types:
