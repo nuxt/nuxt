@@ -8,8 +8,23 @@ import { decode, parsePath, withoutTrailingSlash } from 'ufo'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
+import { cloneDeep } from 'lodash'
+import VueMeta from 'vue-meta'
 
 export default class SSRRenderer extends BaseRenderer {
+  constructor (serverContext) {
+    super(serverContext)
+
+    this.vueMetaConfig = {
+      ssrAppId: '1',
+      ...this.options.vueMeta,
+      keyName: 'head',
+      attribute: 'data-n-head',
+      ssrAttribute: 'data-n-head-ssr',
+      tagIDKeyName: 'hid'
+    }
+  }
+
   get rendererOptions () {
     const hasModules = fs.existsSync(path.resolve(this.options.rootDir, 'node_modules'))
 
@@ -130,19 +145,25 @@ export default class SSRRenderer extends BaseRenderer {
     })
 
     if (meta) {
-      HEAD += meta.title.text() + meta.meta.text()
+      // Get vue-meta context
+      renderContext.head = typeof this.options.head === 'function'
+        ? this.options.head()
+        : cloneDeep(this.options.head)
+
+      const m = VueMeta.generate(renderContext.head || {}, this.vueMetaConfig)
+
+      HEAD +=
+        m.title.text() +
+        m.meta.text() +
+        m.link.text() +
+        m.style.text() +
+        m.script.text() +
+        m.noscript.text()
     }
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
       HEAD += `<base href="${this.options.router.base}">`
-    }
-
-    if (meta) {
-      HEAD += meta.link.text() +
-        meta.style.text() +
-        meta.script.text() +
-        meta.noscript.text()
     }
 
     // Check if we need to inject scripts and state
