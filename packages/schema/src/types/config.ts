@@ -54,7 +54,9 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
     ? T[K] extends Record<string, any>
       ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
       : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-    : never
+    : K extends number
+      ? T[K]
+      : never
 }
 
 /** User configuration in `nuxt.config` file */
