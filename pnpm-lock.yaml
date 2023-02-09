@@ -29,7 +29,7 @@ importers:
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
       '@unocss/reset': ^0.49.4
-      case-police: ^0.5.10
+      case-police: ^0.5.11
       changelogen: ^0.4.1
       crawler: ^1.4.0
       eslint: ^8.33.0
@@ -436,7 +436,7 @@ importers:
       knitwork: ^1.0.0
       magic-string: ^0.27.0
       mlly: ^1.1.0
-      nitropack: ^2.2.0
+      nitropack: ^2.2.1
       nuxi: workspace:*
       ofetch: ^1.0.0
       ohash: ^1.0.0
@@ -453,7 +453,7 @@ importers:
       unplugin: ^1.0.1
       untyped: ^1.2.2
       vue: 3.2.47
-      vue-bundle-renderer: ^1.0.0
+      vue-bundle-renderer: ^1.0.1
       vue-devtools-stub: ^0.1.0
       vue-router: ^4.1.6
     dependencies:
@@ -482,7 +482,7 @@ importers:
       knitwork: 1.0.0
       magic-string: 0.27.0
       mlly: 1.1.0
-      nitropack: 2.2.0
+      nitropack: 2.2.1
       nuxi: link:../nuxi
       ofetch: 1.0.0
       ohash: 1.0.0
@@ -517,7 +517,7 @@ importers:
       defu: ^6.1.2
       hookable: ^5.4.2
       jiti: ^1.17.0
-      nitropack: ^2.2.0
+      nitropack: ^2.2.1
       pathe: ^1.1.0
       pkg-types: ^1.0.1
       postcss-import-resolver: ^2.0.0
@@ -547,7 +547,7 @@ importers:
       '@types/semver': 7.3.13
       '@unhead/schema': 1.0.21
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.1
-      nitropack: 2.2.0
+      nitropack: 2.2.1
       unbuild: 1.1.1
       vite: 4.1.1
 
@@ -618,7 +618,7 @@ importers:
       vite-node: ^0.28.4
       vite-plugin-checker: ^0.5.5
       vue: 3.2.47
-      vue-bundle-renderer: ^1.0.0
+      vue-bundle-renderer: ^1.0.1
     dependencies:
       '@nuxt/kit': link:../kit
       '@rollup/plugin-replace': 5.0.2_rollup@3.14.0
@@ -701,7 +701,7 @@ importers:
       unplugin: ^1.0.1
       url-loader: ^4.1.1
       vue: 3.2.47
-      vue-bundle-renderer: ^1.0.0
+      vue-bundle-renderer: ^1.0.1
       vue-loader: ^17.0.1
       webpack: ^5.75.0
       webpack-bundle-analyzer: ^4.7.0
@@ -6252,8 +6252,8 @@ packages:
   /neo-async/2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack/2.2.0:
-    resolution: {integrity: sha512-aNJdupXKA3OiYHDvlCnrcJMKrVGoW7RGnRjm8sCUrgICRC9bbVdsZU/EQh3pLIc7DQW/rej3eRxceqfnlKsOkg==}
+  /nitropack/2.2.1:
+    resolution: {integrity: sha512-V7sYOqyNZFQ+Yp3S2Ks9VUiLDp7Fz3vdc4ULTAK+E0R5nMSq5MuoQZqH4BT0x8UHC30lo+fd3gXk2fCYzUft1g==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
