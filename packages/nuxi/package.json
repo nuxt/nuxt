@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@nuxt/kit": "3.2.0",
-    "@nuxt/schema": "3.2.0",
+    "@nuxt/schema": "3.1.2",
     "@types/clear": "^0",
     "@types/flat": "^5.0.2",
     "@types/mri": "^1.1.1",

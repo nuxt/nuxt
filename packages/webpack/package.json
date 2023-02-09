@@ -57,7 +57,7 @@
     "webpackbar": "^5.0.2"
   },
   "devDependencies": {
-    "@nuxt/schema": "3.2.0",
+    "@nuxt/schema": "3.1.2",
     "@types/lodash-es": "^4.17.6",
     "@types/pify": "^5.0.1",
     "@types/webpack-bundle-analyzer": "^4.6.0",
