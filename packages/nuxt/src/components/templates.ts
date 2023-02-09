@@ -31,7 +31,7 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
     const globalComponents = options.getComponents().filter(c => c.global === true)
 
     return `import { defineAsyncComponent } from 'vue'
-import { defineNuxtPlugin } from '#app'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 const components = ${genObjectFromRawEntries(globalComponents.map((c) => {
   const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`

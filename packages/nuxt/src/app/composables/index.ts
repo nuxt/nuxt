@@ -15,3 +15,5 @@ export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBefor
 export type { AddRouteMiddlewareOptions, RouteMiddleware } from './router'
 export { preloadComponents, prefetchComponents, preloadRouteComponents } from './preload'
 export { isPrerendered, loadPayload, preloadPayload } from './payload'
+export type { MetaObject } from './head'
+export { useHead, useSeoMeta, useServerSeoMeta } from './head'

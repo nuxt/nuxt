@@ -11,7 +11,12 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
+import { showError, clearError, useError } from '#app/composables/error'
+import { useRequestEvent } from '#app/composables/ssr'
+import { useState } from '#app/composables/state'
+import { navigateTo } from '#app/composables/router'
+
 // @ts-ignore
 import _routes from '#build/routes'
 // @ts-ignore

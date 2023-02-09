@@ -2,15 +2,6 @@ import type { InlinePreset } from 'unimport'
 import { defineUnimportPreset } from 'unimport'
 
 const commonPresets: InlinePreset[] = [
-  // #head
-  defineUnimportPreset({
-    from: '#head',
-    imports: [
-      'useHead',
-      'useSeoMeta',
-      'useServerSeoMeta'
-    ]
-  }),
   // vue-demi (mocked)
   defineUnimportPreset({
     from: 'vue-demi',
@@ -24,6 +15,9 @@ const commonPresets: InlinePreset[] = [
 const appPreset = defineUnimportPreset({
   from: '#app',
   imports: [
+    'useHead',
+    'useSeoMeta',
+    'useServerSeoMeta',
     'useAsyncData',
     'useLazyAsyncData',
     'useNuxtData',
