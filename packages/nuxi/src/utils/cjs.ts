@@ -15,7 +15,7 @@ export function getModulePaths (paths?: string | string[]): string[] {
     .filter(Boolean) as string[]
 }
 
-const _require = createRequire(process.cwd())
+const _require = createRequire(import.meta.url)
 
 export function resolveModule (id: string, paths?: string | string[]) {
   return normalize(_require.resolve(id, { paths: getModulePaths(paths) }))
