@@ -70,6 +70,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "estree-walker",
         "h3",
         "hookable",
+        "iron-webcrypto",
         "node-fetch-native",
         "ofetch",
         "ohash",
