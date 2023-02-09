@@ -1,7 +1,12 @@
 import { reactive, h, isReadonly } from 'vue'
 import { parseURL, stringifyParsedURL, parseQuery, stringifyQuery, withoutBase, isEqual, joinURL } from 'ufo'
 import { createError } from 'h3'
-import { defineNuxtPlugin, clearError, navigateTo, showError, useRuntimeConfig, useState, useRequestEvent } from '..'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import { clearError, showError } from '../composables/error'
+import { navigateTo } from '../composables/router'
+import { useState } from '../composables/state'
+import { useRequestEvent } from '../composables/ssr'
+
 import { callWithNuxt } from '../nuxt'
 // @ts-ignore
 import { globalMiddleware } from '#build/middleware'

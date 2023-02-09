@@ -1,7 +1,7 @@
 import type { HeadEntryOptions, UseHeadInput, ActiveHeadEntry } from '@vueuse/head'
 import type { HeadAugmentations } from '@nuxt/schema'
 import { useSeoMeta as _useSeoMeta } from '@vueuse/head'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 
 /**
  * You can pass in a meta object, which has keys corresponding to meta tags:

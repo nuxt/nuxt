@@ -29,7 +29,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
     expect(stats.client.totalBytes).toBeLessThan(108000)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/composables.js",
+        "_nuxt/app.js",
         "_nuxt/entry.js",
         "_nuxt/error-404.js",
         "_nuxt/error-500.js",
@@ -70,6 +70,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "estree-walker",
         "h3",
         "hookable",
+        "iron-webcrypto",
         "node-fetch-native",
         "ofetch",
         "ohash",

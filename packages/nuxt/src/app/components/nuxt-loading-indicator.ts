@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
