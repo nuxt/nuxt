@@ -148,6 +148,18 @@ const expectedComponents = [
     preload: false
   },
   {
+    chunkName: 'components/client-with-client-only-setup',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-with-client-only-setup',
+    mode: 'all',
+    pascalName: 'ClientWithClientOnlySetup',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/client/WithClientOnlySetup.vue'
+  },
+  {
     mode: 'server',
     pascalName: 'ParentFolder',
     kebabName: 'parent-folder',

@@ -444,6 +444,16 @@ describe('server tree shaking', () => {
     const html = await $fetch('/client')
 
     expect(html).toContain('This page should not crash when rendered')
+    expect(html).toContain('fallback for ClientOnly')
+    expect(html).not.toContain('rendered client-side')
+    expect(html).not.toContain('id="client-side"')
+
+    const page = await createPage('/client')
+    await page.waitForLoadState('networkidle')
+    // ensure scoped classes are correctly assigned between client and server
+    expect(await page.$eval('.red', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+    expect(await page.$eval('.blue', e => getComputedStyle(e).color)).toBe('rgb(0, 0, 255)')
+    expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
   })
 })
 
