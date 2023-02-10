@@ -69,10 +69,10 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
-      const segmentName = tokens.map(({ value }) => value).join('').replace(/-/g, '\\-')
+      const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '-') + segmentName
+      route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
@@ -214,8 +214,8 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
     // Remove -index
     if (route.name) {
       route.name = route.name
-        .replace(/-index$/, '')
-        .replace(/\\-/g, '-')
+        .replace(/\/index$/, '')
+        .replace(/\//g, '-')
 
       if (names.has(route.name)) {
         const existingRoute = findRouteByName(route.name, routes)
