@@ -27,7 +27,7 @@ permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   build:
