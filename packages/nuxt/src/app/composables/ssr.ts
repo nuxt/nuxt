@@ -16,6 +16,14 @@ export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): H3Event {
   return nuxtApp.ssrContext?.event as H3Event
 }
 
+export function useRequestFetch (): typeof global.$fetch {
+  if (process.client) {
+    return globalThis.$fetch
+  }
+  const event = useNuxtApp().ssrContext?.event as H3Event
+  return event?.$fetch as typeof globalThis.$fetch || globalThis.$fetch
+}
+
 export function setResponseStatus (code: number, message?: string) {
   const event = process.server && useRequestEvent()
   if (event) {

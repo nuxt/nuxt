@@ -10,7 +10,7 @@ import { renderToString as _renderToString } from 'vue/server-renderer'
 import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app'
+import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
 // @ts-ignore
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-ignore
@@ -69,7 +69,7 @@ const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').th
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
 // @ts-ignore
-const getSSRStyles = (): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r)
+const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {

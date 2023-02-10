@@ -1,4 +1,4 @@
-import { defineNuxtRouteMiddleware } from '#app'
+import { defineNuxtRouteMiddleware } from '#app/composables/router'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (!to.meta?.validate) { return }

@@ -8,7 +8,9 @@
 
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
-import { callWithNuxt, isNuxtError, showError, useError, useRoute, useNuxtApp } from '#app'
+import { callWithNuxt, useNuxtApp } from '#app/nuxt'
+import { isNuxtError, showError, useError } from '#app/composables/error'
+import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))

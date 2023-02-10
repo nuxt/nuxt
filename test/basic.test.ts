@@ -52,6 +52,7 @@ describe('pages', () => {
     expect(html).toContain('Hello Nuxt 3!')
     // should inject runtime config
     expect(html).toContain('RuntimeConfig | testConfig: 123')
+    expect(html).toContain('needsFallback:')
     // composables auto import
     expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
     expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
@@ -443,6 +444,16 @@ describe('server tree shaking', () => {
     const html = await $fetch('/client')
 
     expect(html).toContain('This page should not crash when rendered')
+    expect(html).toContain('fallback for ClientOnly')
+    expect(html).not.toContain('rendered client-side')
+    expect(html).not.toContain('id="client-side"')
+
+    const page = await createPage('/client')
+    await page.waitForLoadState('networkidle')
+    // ensure scoped classes are correctly assigned between client and server
+    expect(await page.$eval('.red', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+    expect(await page.$eval('.blue', e => getComputedStyle(e).color)).toBe('rgb(0, 0, 255)')
+    expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
   })
 })
 
