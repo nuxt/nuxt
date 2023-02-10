@@ -28,7 +28,7 @@
     "globby": "^11.0.4",
     "hable": "^3.0.0",
     "lodash": "^4.17.21",
-    "minimist": "^1.2.7",
+    "minimist": "^1.2.8",
     "opener": "1.5.2",
     "pretty-bytes": "^5.6.0",
     "semver": "^7.3.8",
