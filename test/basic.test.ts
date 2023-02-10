@@ -3,11 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-// eslint-disable-next-line import/order
-import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, renderPage, waitFor, withLogs } from './utils'
+import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
