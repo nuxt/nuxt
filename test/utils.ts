@@ -53,13 +53,14 @@ export async function expectNoClientErrors (path: string) {
   expect(consoleLogWarnings).toEqual([])
 }
 
+type EqualityVal = string | number | boolean | null | undefined | RegExp
 export async function expectWithPolling (
-  get: () => Promise<string> | string,
-  expected: string,
+  get: () => Promise<EqualityVal> | EqualityVal,
+  expected: EqualityVal,
   retries = process.env.CI ? 100 : 30,
   delay = process.env.CI ? 500 : 100
 ) {
-  let result: string | undefined
+  let result: EqualityVal
   for (let i = retries; i >= 0; i--) {
     result = await get()
     if (result === expected) {
@@ -67,7 +68,7 @@ export async function expectWithPolling (
     }
     await new Promise(resolve => setTimeout(resolve, delay))
   }
-  expect(result).toEqual(expected)
+  expect(result?.toString()).toEqual(expected?.toString())
 }
 
 export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {

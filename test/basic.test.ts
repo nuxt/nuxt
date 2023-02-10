@@ -692,9 +692,12 @@ describe.runIf(isDev())('detecting invalid root nodes', () => {
   it('should detect invalid root nodes in pages', async () => {
     for (const path of ['1', '2', '3', '4']) {
       const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-      await waitFor(isWindows ? 100 : 10)
-      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning').map(w => w.text).join('\n')
-      expect(consoleLogsWarns).toContain('does not have a single root node and will cause errors when navigating between routes')
+      await expectWithPolling(
+        () => consoleLogs.filter(i => i.type === 'warning')
+          .map(w => w.text).join('\n')
+          .includes('does not have a single root node and will cause errors when navigating between routes'),
+        true
+      )
     }
   })
 
