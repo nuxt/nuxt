@@ -689,27 +689,22 @@ describe('prefetching', () => {
 })
 
 describe.runIf(isDev())('detecting invalid root nodes', () => {
-  it('should detect invalid root nodes in pages', async () => {
-    for (const path of ['1', '2', '3', '4']) {
-      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-      await expectWithPolling(
-        () => consoleLogs.filter(i => i.type === 'warning')
-          .map(w => w.text).join('\n')
-          .includes('does not have a single root node and will cause errors when navigating between routes'),
-        true
-      )
-    }
+  it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (/invalid-root/%s)', async (path) => {
+    const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+    await expectWithPolling(
+      () => consoleLogs.filter(i => i.type === 'warning')
+        .map(w => w.text).join('\n')
+        .includes('does not have a single root node and will cause errors when navigating between routes'),
+      true
+    )
   })
 
-  it('should not complain if there is no transition', async () => {
-    for (const path of ['fine']) {
-      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-      await waitFor(isWindows ? 100 : 10)
+  it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
+    const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+    await waitFor(isWindows ? 100 : 10)
 
-      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
-
-      expect(consoleLogsWarns.length).toEqual(0)
-    }
+    const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
+    expect(consoleLogsWarns.length).toEqual(0)
   })
 })
 
