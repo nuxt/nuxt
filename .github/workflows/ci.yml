@@ -41,10 +41,10 @@ jobs:
         run: pnpm test:types
 
       - name: Cache dist
-        uses: actions/cache@v3
+        uses: actions/upload-artifact@v3
         with:
+          name: dist
           path: packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
 
   lint:
     runs-on: ${{ matrix.os }}
@@ -142,11 +142,11 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
 
   build-release:
-    if: |
-      github.event_name == 'push' &&
-      !contains(github.event.head_commit.message, '[skip-release]') &&
-      !contains(github.event.head_commit.message, 'chore') &&
-      !contains(github.event.head_commit.message, 'docs')
+    # if: |
+    #   github.event_name == 'push' &&
+    #   !contains(github.event.head_commit.message, '[skip-release]') &&
+    #   !contains(github.event.head_commit.message, 'chore') &&
+    #   !contains(github.event.head_commit.message, 'docs')
     needs:
       - lint
       - build
@@ -172,12 +172,14 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/cache@v3
+        uses: actions/download-artifact@v3
         with:
-          path: packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-${{ github.sha }}
+          name: dist
+          path: packages
 
-      - name: Release Edge
-        run: ./scripts/release-edge.sh
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      - run: ls packages/*/dist
+
+      # - name: Release Edge
+      #   run: ./scripts/release-edge.sh
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
