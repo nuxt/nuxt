@@ -142,11 +142,11 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
 
   build-release:
-    # if: |
-    #   github.event_name == 'push' &&
-    #   !contains(github.event.head_commit.message, '[skip-release]') &&
-    #   !contains(github.event.head_commit.message, 'chore') &&
-    #   !contains(github.event.head_commit.message, 'docs')
+    if: |
+      github.event_name == 'push' &&
+      !contains(github.event.head_commit.message, '[skip-release]') &&
+      !contains(github.event.head_commit.message, 'chore') &&
+      !contains(github.event.head_commit.message, 'docs')
     needs:
       - lint
       - build
@@ -177,9 +177,7 @@ jobs:
           name: dist
           path: packages
 
-      - run: ls packages/*/dist
-
-      # - name: Release Edge
-      #   run: ./scripts/release-edge.sh
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      - name: Release Edge
+        run: ./scripts/release-edge.sh
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
