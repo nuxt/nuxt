@@ -11,6 +11,8 @@
       <HelloWorld />
       <Glob />
       <SomeGlob />
+      <SomeIsland />
+      <NotToBeTreeShaken />
     </ClientOnly>
     <ClientOnly>
       <div class="should-be-treeshaken">
@@ -20,6 +22,7 @@
       <Treeshaken />
       <ResolvedImport />
     </ClientOnly>
+    <NotToBeTreeShaken />
   </div>
 </template>
 
@@ -29,6 +32,22 @@ import HelloWorld from '../HelloWorld.vue'
 import { Glob, ClientImport } from '#components'
 
 const hello = 'world'
+
+const SomeIsland = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../some.island.vue'))
+  }
+
+  return {}
+})
+
+const NotToBeTreeShaken = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
 </script>
 
 <style scoped>

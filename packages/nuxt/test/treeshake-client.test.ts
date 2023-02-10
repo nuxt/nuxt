@@ -115,6 +115,12 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaked).not.toContain('const _component_ResolvedImport =')
       expect(clientResult).toContain('const _component_ResolvedImport =')
 
+      // treeshake multi line variable declaration
+      expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
+      expect(treeshaked).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
+      expect(treeshaked).not.toContain("return (await import('./../some.island.vue'))")
+      expect(treeshaked).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaked).not.toContain('ClientImport')
       expect(treeshaked).toContain('import { Glob, } from \'#components\'')

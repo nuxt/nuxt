@@ -1,8 +1,9 @@
+/* eslint-disable no-labels */
 import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
-import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node } from 'estree'
+import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern } from 'estree'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { Component } from '@nuxt/schema'
@@ -96,16 +97,19 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                       }
                     }
                   })
+
                   const componentsToRemove = [...componentsSet]
                   for (const componentName of componentsToRemove) {
-                    let removed = false
-                    // remove const _component_ = resolveComponent...
-                    const VAR_RE = new RegExp(`(?:const|let|var) ${componentName} = ([^;\\n]*);?`)
-                    s.replace(VAR_RE, () => {
-                      removed = true
-                      return ''
-                    })
-                    if (!removed) {
+                    const isVariableDeclaration = new RegExp(`(?:const|let|var) ${componentName} = ([^;\\n]*);?`).test(code)
+
+                    if (isVariableDeclaration) {
+                      walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
+                        enter (node) {
+                          const removed = removeVariableDeclarator(s, node as AcornNode<Node>, componentName)
+                          if (removed) { this.skip() }
+                        }
+                      })
+                    } else {
                       // remove direct import
                       const declaration = findImportDeclaration(importDeclarations, componentName)
                       if (declaration) {
@@ -196,4 +200,38 @@ function removeFromSetupReturnStatement (s: MagicString, node: Property, name: s
       if (componentProperty) { s.remove(componentProperty.start, componentProperty.end + 1) }
     }
   }
+}
+
+/**
+ * remove a variable declaration within the code
+ * don't remove ArrayPattern, MemberExpressions, RestElement
+ */
+function removeVariableDeclarator (code: MagicString, node: AcornNode<Node>, declarationName: string): boolean {
+  let toRemove: AcornNode<Node>|undefined
+
+  if (node.type === 'VariableDeclaration') {
+    declarationsLoop:
+    for (const declarator of node.declarations) {
+      switch (declarator.id.type) {
+        case 'Identifier':
+          if (declarator.id.name === declarationName) {
+            toRemove = node
+            break declarationsLoop
+          }
+          break
+        case 'ObjectPattern':
+          if (declarator.id.properties.length < 2 && declarator.id.properties.some(p => p.type === 'Property' && p.value.type === 'Identifier' && p.value.name === declarationName)) {
+            toRemove = node
+            break declarationsLoop
+          }
+          break
+      }
+    }
+  }
+
+  if (toRemove) {
+    code.remove(toRemove.start, toRemove.end)
+    return true
+  }
+  return false
 }
