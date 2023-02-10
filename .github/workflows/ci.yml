@@ -12,15 +12,26 @@ on:
     branches:
       - main
 
+# https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+  # install playwright binary manually (because pnpm only runs install script once)
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [16]
-
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -28,11 +39,11 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --prefer-offline
+        run: pnpm install
 
       - name: Build
         run: pnpm build
@@ -43,18 +54,12 @@ jobs:
       - name: Cache dist
         uses: actions/upload-artifact@v3
         with:
-          retention-days: 1
+          retention-days: 5
           name: dist
           path: packages/*/dist
 
   lint:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [16]
-
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -62,11 +67,11 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --prefer-offline
+        run: pnpm install
 
       - name: Lint
         run: pnpm lint
@@ -75,6 +80,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         env: ['dev', 'built']
@@ -95,16 +101,30 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --prefer-offline
+        run: pnpm install
 
-      # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml#L62
       # Install playwright's binary under custom directory to cache
-      - name: Set Playwright path
+      - name: (non-windows) Set Playwright path and Get playwright version
         if: runner.os != 'Windows'
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
-      - name: Set Playwright path (windows)
+        run: |
+          echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
+          PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright | jq --raw-output '.[0].unsavedDependencies["playwright"].version')"
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: (windows) Set Playwright path and Get playwright version
         if: runner.os == 'Windows'
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
+        run: |
+          echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
+          $env:PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright | jq --raw-output '.[0].unsavedDependencies[\"playwright\"].version')"
+          echo "PLAYWRIGHT_VERSION=$env:PLAYWRIGHT_VERSION" >> $env:GITHUB_ENV
+
+      - name: Cache Playwright's binary
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-playwright-bin-v1-${{ env.PLAYWRIGHT_VERSION }}
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-bin-v1-
 
       - name: Cache Playwright's binary
         uses: actions/cache@v3
@@ -126,21 +146,18 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          NODE_OPTIONS: --max-old-space-size=8192
 
       - name: Test (unit)
         run: pnpm test:unit
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          NODE_OPTIONS: --max-old-space-size=8192
 
       - name: Test (fixtures)
         run: pnpm test:fixtures
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          NODE_OPTIONS: --max-old-space-size=8192
 
   build-release:
     if: |
@@ -170,7 +187,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install --prefer-offline
+        run: pnpm install
 
       - name: Restore dist cache
         uses: actions/download-artifact@v3
