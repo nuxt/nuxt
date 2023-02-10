@@ -53,6 +53,7 @@ export default defineNuxtConfig({
     baseAPIToken: '',
     privateConfig: 'secret_key',
     public: {
+      ids: [1, 2, 3],
       needsFallback: undefined,
       testConfig: 123
     }
