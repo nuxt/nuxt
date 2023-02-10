@@ -61,6 +61,16 @@
       }
     ]
   },
+  "overrides": [
+    {
+      "files": [
+        "test/**"
+      ],
+      "rules": {
+        "import-order": "off"
+      }
+    }
+  ],
   "settings": {
     "jsdoc": {
       "tagNamePreference": {
