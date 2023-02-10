@@ -32,7 +32,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline
 
       - name: Build
         run: pnpm build
@@ -65,7 +65,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline
 
       - name: Lint
         run: pnpm lint
@@ -94,7 +94,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline
 
       # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml#L62
       # Install playwright's binary under custom directory to cache
@@ -169,7 +169,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline
 
       - name: Restore dist cache
         uses: actions/download-artifact@v3
