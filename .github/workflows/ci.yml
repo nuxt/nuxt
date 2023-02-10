@@ -106,7 +106,7 @@ jobs:
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
         node: [16]
-    if: matrix.env != 'dev' || matrix.builder != 'webpack'
+    if: ${{ matrix.env != 'dev' || matrix.builder != 'webpack' }}
 
     timeout-minutes: 10
 
