@@ -15,6 +15,7 @@
     </ClientSetupScript>
     <ClientOnly>
       Should not be server rendered.
+      <BreakServerComponent />
       <template #fallback>
         <div>Fallback</div>
       </template>
@@ -69,6 +70,9 @@ const stringStatefulComp = ref(null) as any as Comp
 const stringStatefulScriptComp = ref(null) as any as Comp
 const clientScript = ref(null) as any as Comp
 const clientSetupScript = ref(null) as any as Comp
+const BreakServerComponent = defineAsyncComponent(() => {
+  return import('./../components/BreaksServer.client')
+})
 
 const show = ref(false)
 </script>
