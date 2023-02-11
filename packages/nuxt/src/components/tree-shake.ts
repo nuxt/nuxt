@@ -100,6 +100,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                   const componentsToRemove = [...componentsSet]
                   const removedNode = new WeakSet<AcornNode<Node>>()
 
+                  // remove variables
                   walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
                     enter (node) {
                       if (node.type === 'VariableDeclaration') {
@@ -117,17 +118,8 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                   })
 
                   for (const componentName of componentsToRemove) {
-                    // remove direct import
-                    const declaration = findImportDeclaration(importDeclarations, componentName)
-                    if (declaration) {
-                      if (declaration.specifiers.length > 1) {
-                        const componentSpecifier = declaration.specifiers.find(s => s.local.name === componentName) as AcornNode<Identifier> | undefined
-
-                        if (componentSpecifier) { s.remove(componentSpecifier.start, componentSpecifier.end + 1) }
-                      } else {
-                        s.remove(declaration.start, declaration.end)
-                      }
-                    }
+                    // remove import declaration if it exists
+                    removeImportDeclaration(importDeclarations, componentName, s)
                   }
                 }
               }
@@ -147,6 +139,22 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
     }
   }
 })
+
+function removeImportDeclaration (declarations: AcornNode<ImportDeclaration>[], importName: string, magicString: MagicString): boolean {
+  // remove direct import
+  const declaration = findImportDeclaration(declarations, importName)
+  if (declaration) {
+    if (declaration.specifiers.length > 1) {
+      const componentSpecifier = declaration.specifiers.find(s => s.local.name === importName) as AcornNode<Identifier> | undefined
+
+      if (componentSpecifier) { magicString.remove(componentSpecifier.start, componentSpecifier.end + 1) }
+    } else {
+      magicString.remove(declaration.start, declaration.end)
+    }
+    return true
+  }
+  return false
+}
 
 /**
  * find and return the importDeclaration that contain the import specifier
