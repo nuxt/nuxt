@@ -13,9 +13,9 @@
       <SomeGlob />
       <SomeIsland />
       <NotToBeTreeShaken />
-      <WeirdDeclaration />
-      <SuperWeirdDeclaration />
-      <UltraWeirdDeclaration />
+      <ObjectPattern />
+      <ObjectPatternDeclaration />
+      <Halllo />
     </ClientOnly>
     <ClientOnly>
       <div class="should-be-treeshaken">
@@ -61,7 +61,7 @@ const NotToBeTreeShaken = defineAsyncComponent(async () => {
   return {}
 })
 
-const { WeirdDeclaration } = defineAsyncComponent(async () => {
+const { ObjectPattern } = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../HelloWorld.vue'))
   }
@@ -69,7 +69,7 @@ const { WeirdDeclaration } = defineAsyncComponent(async () => {
   return {}
 })
 
-const { WeirdDeclaration: SuperWeirdDeclaration } = defineAsyncComponent(async () => {
+const { ObjectPattern: ObjectPatternDeclaration } = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../HelloWorld.vue'))
   }
@@ -77,7 +77,7 @@ const { WeirdDeclaration: SuperWeirdDeclaration } = defineAsyncComponent(async (
   return {}
 })
 
-const { WeirdDeclaration: UltraWeirdDeclaration, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
+const { ObjectPattern: Halllo, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../HelloWorld.vue'))
   }

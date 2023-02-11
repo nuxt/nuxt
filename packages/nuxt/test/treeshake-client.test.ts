@@ -122,8 +122,8 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaked).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
 
       // treeshake object and array declaration
-      expect(treeshaked).not.toContain("const { WeirdDeclaration } = await import('nuxt.com')")
-      expect(treeshaked).not.toContain("const { WeirdDeclaration: SuperWeirdDeclaration } = await import('nuxt.com')")
+      expect(treeshaked).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
+      expect(treeshaked).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
       expect(treeshaked).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaked).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
