@@ -27,6 +27,9 @@
       <FromArray />
       <Please />
       <Doo />
+      <What />
+      <Deep />
+      <Pattern />
     </ClientOnly>
     <ButShouldNotBeTreeShaken />
     <Dont />
@@ -75,6 +78,25 @@ const { WeirdDeclaration: SuperWeirdDeclaration } = defineAsyncComponent(async (
 })
 
 const { WeirdDeclaration: UltraWeirdDeclaration, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+const isThis = {}
+
+const { woooooo, What = isThis } = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+console.log(woooooo)
+
+const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../HelloWorld.vue'))
   }

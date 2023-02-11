@@ -127,6 +127,12 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaked).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaked).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
+      // treeshake object that has an assignement pattern
+      expect(treeshaked).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
+      expect(treeshaked).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
+      // expect no strange behavior on treeshaking
+      expect(treeshaked).not.toContain('const {  } = defineAsyncComponent')
+
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaked).not.toContain('ClientImport')
       expect(treeshaked).toContain('import { Glob, } from \'#components\'')
