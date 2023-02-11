@@ -13,6 +13,9 @@
       <SomeGlob />
       <SomeIsland />
       <NotToBeTreeShaken />
+      <WeirdDeclaration />
+      <SuperWeirdDeclaration />
+      <UltraWeirdDeclaration />
     </ClientOnly>
     <ClientOnly>
       <div class="should-be-treeshaken">
@@ -21,7 +24,13 @@
       <ClientImport />
       <Treeshaken />
       <ResolvedImport />
+      <FromArray />
+      <Please />
+      <Doo />
     </ClientOnly>
+    <ButShouldNotBeTreeShaken />
+    <Dont />
+    <That />
     <NotToBeTreeShaken />
   </div>
 </template>
@@ -42,6 +51,46 @@ const SomeIsland = defineAsyncComponent(async () => {
 })
 
 const NotToBeTreeShaken = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+const { WeirdDeclaration } = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+const { WeirdDeclaration: SuperWeirdDeclaration } = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+const { WeirdDeclaration: UltraWeirdDeclaration, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+const [FromArray] = defineAsyncComponent(async () => {
+  if (process.client) {
+    return (await import('./../HelloWorld.vue'))
+  }
+
+  return {}
+})
+
+const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../HelloWorld.vue'))
   }

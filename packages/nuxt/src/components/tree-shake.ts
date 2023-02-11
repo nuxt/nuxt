@@ -1,9 +1,8 @@
-/* eslint-disable no-labels */
 import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
-import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern } from 'estree'
+import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty } from 'estree'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { Component } from '@nuxt/schema'
@@ -15,7 +14,7 @@ interface TreeShakeTemplatePluginOptions {
   getComponents (): Component[]
 }
 
-type AcornNode<N> = N & { start: number, end: number }
+type AcornNode<N extends Node> = N & { start: number, end: number }
 
 const SSR_RENDER_RE = /ssrRenderComponent/
 const PLACEHOLDER_EXACT_RE = /^(fallback|placeholder)$/
@@ -100,13 +99,16 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
 
                   const componentsToRemove = [...componentsSet]
                   for (const componentName of componentsToRemove) {
-                    const isVariableDeclaration = new RegExp(`(?:const|let|var) ${componentName} = ([^;\\n]*);?`).test(code)
+                    const isVariableDeclaration = new RegExp(`(?:const|let|var)(.*)${componentName}([^=]*)=`).test(s.toString())
 
                     if (isVariableDeclaration) {
+                      let removed = false
                       walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
                         enter (node) {
-                          const removed = removeVariableDeclarator(s, node as AcornNode<Node>, componentName)
-                          if (removed) { this.skip() }
+                          if (!removed && node.type === 'VariableDeclaration') {
+                            const hasBeenRemoved = removeVariableDeclarator(s, node as AcornNode<VariableDeclaration>, componentName)
+                            if (hasBeenRemoved) { removed = true }
+                          }
                         }
                       })
                     } else {
@@ -204,34 +206,40 @@ function removeFromSetupReturnStatement (s: MagicString, node: Property, name: s
 
 /**
  * remove a variable declaration within the code
- * don't remove ArrayPattern, MemberExpressions, RestElement
  */
-function removeVariableDeclarator (code: MagicString, node: AcornNode<Node>, declarationName: string): boolean {
-  let toRemove: AcornNode<Node>|undefined
+function removeVariableDeclarator (code: MagicString, variableDeclaration: AcornNode<VariableDeclaration>, declarationName: string): boolean {
+  for (const declarator of variableDeclaration.declarations) {
+    const toRemove = findMatchingPatternToRemove(declarator.id as AcornNode<Pattern>, variableDeclaration, declarationName)
+    if (toRemove) {
+      code.remove(toRemove.start, toRemove.end + 1)
+      return true
+    }
+  }
+  return false
+}
 
-  if (node.type === 'VariableDeclaration') {
-    declarationsLoop:
-    for (const declarator of node.declarations) {
-      switch (declarator.id.type) {
-        case 'Identifier':
-          if (declarator.id.name === declarationName) {
-            toRemove = node
-            break declarationsLoop
-          }
-          break
-        case 'ObjectPattern':
-          if (declarator.id.properties.length < 2 && declarator.id.properties.some(p => p.type === 'Property' && p.value.type === 'Identifier' && p.value.name === declarationName)) {
-            toRemove = node
-            break declarationsLoop
-          }
-          break
+function findMatchingPatternToRemove (node: AcornNode<Pattern>, toRemoveIfMatched: AcornNode<Node>, declarationName: string): AcornNode<Node>|undefined {
+  if (node.type === 'Identifier') {
+    if (node.name === declarationName) {
+      return toRemoveIfMatched as AcornNode<Node>
+    }
+  } else if (node.type === 'ArrayPattern') {
+    const elements = node.elements.filter((e): e is AcornNode<Pattern> => e !== null)
+
+    for (const element of elements) {
+      const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, declarationName)
+      if (matched) {
+        return matched
+      }
+    }
+  } else if (node.type === 'ObjectPattern') {
+    const properties = node.properties.filter((e): e is AssignmentProperty => e.type === 'Property')
+
+    for (const property of properties) {
+      const matched = findMatchingPatternToRemove(property.value as AcornNode<Pattern>, properties.length > 1 ? (property as AcornNode<AssignmentProperty>) : toRemoveIfMatched, declarationName)
+      if (matched) {
+        return matched
       }
     }
   }
-
-  if (toRemove) {
-    code.remove(toRemove.start, toRemove.end)
-    return true
-  }
-  return false
 }

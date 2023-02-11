@@ -73,7 +73,7 @@ const stateToTest: {name: string, options: Partial<Options & {devServer: {config
     }
   },
   {
-    name: 'dev not inlined',
+    name: 'dev',
     options: {
       isProduction: false,
       devServer: {
@@ -120,6 +120,12 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaked).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
       expect(treeshaked).not.toContain("return (await import('./../some.island.vue'))")
       expect(treeshaked).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+
+      // treeshake object and array declaration
+      expect(treeshaked).not.toContain("const { WeirdDeclaration } = await import('nuxt.com')")
+      expect(treeshaked).not.toContain("const { WeirdDeclaration: SuperWeirdDeclaration } = await import('nuxt.com')")
+      expect(treeshaked).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
+      expect(treeshaked).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaked).not.toContain('ClientImport')
