@@ -1,7 +1,7 @@
 <template>
   <Suspense @resolve="onResolve">
     <ErrorComponent v-if="error" :error="error" />
-    <IslandRendererer v-else-if="islandContext" :context="islandContext" />
+    <IslandRenderer v-else-if="islandContext" :context="islandContext" />
     <AppComponent v-else />
   </Suspense>
 </template>
@@ -14,7 +14,7 @@ import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
-const IslandRendererer = process.server
+const IslandRenderer = process.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
