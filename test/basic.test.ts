@@ -83,6 +83,16 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status } = await fetch('/forbidden')
     expect(status).toEqual(404)
+
+    const page = await createPage('/navigate-to-forbidden')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should throw a 404 error').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
+
+    page.goto(url('/navigate-to-forbidden'))
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should be caught by catchall').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
   })
 
   it('render 404', async () => {
@@ -92,7 +102,7 @@ describe('pages', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('[...slug].vue')
-    expect(html).toContain('404 at not-found')
+    expect(html).toContain('catchall at not-found')
 
     // Middleware still runs after validation: https://github.com/nuxt/nuxt/issues/15650
     expect(html).toContain('Middleware ran: true')
@@ -914,7 +924,7 @@ describe.runIf(process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK)('vit
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
-    expect(await $fetch('/app.config')).toContain('404')
+    expect(await $fetch('/app.config')).toContain('catchall at')
   })
 })
 
@@ -1043,7 +1053,7 @@ if (isDev() && !isWindows) {
 
     it('should detect new routes', async () => {
       const html = await $fetch('/some-404')
-      expect(html).toContain('404 at some-404')
+      expect(html).toContain('catchall at some-404')
 
       // write new page route
       const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
