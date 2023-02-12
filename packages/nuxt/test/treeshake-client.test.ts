@@ -130,8 +130,13 @@ describe('treeshake client only in ssr', () => {
       // treeshake object that has an assignement pattern
       expect(treeshaked).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
       expect(treeshaked).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
-      // expect no strange behavior on treeshaking
+
+      // expect empty ObjectPattern on treeshaking
       expect(treeshaked).not.toContain('const {  } = defineAsyncComponent')
+      expect(treeshaked).not.toContain('import {  } from')
+
+      // expect components used in setup to not be removed
+      expect(treeshaked).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaked).not.toContain('ClientImport')

@@ -30,6 +30,7 @@
       <What />
       <Deep />
       <Pattern />
+      <DontRemoveThisSinceItIsUsedInSetup />
     </ClientOnly>
     <ButShouldNotBeTreeShaken />
     <Dont />
@@ -41,6 +42,7 @@
 <script setup>
 import { Treeshaken } from 'somepath'
 import HelloWorld from '../HelloWorld.vue'
+import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'
 import { Glob, ClientImport } from '#components'
 
 const hello = 'world'
@@ -119,6 +121,8 @@ const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
 
   return {}
 })
+
+console.log(DontRemoveThisSinceItIsUsedInSetup.props)
 </script>
 
 <style scoped>

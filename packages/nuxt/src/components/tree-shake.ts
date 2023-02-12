@@ -2,9 +2,9 @@ import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
-import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty } from 'estree'
+import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty, SpreadElement, Expression } from 'estree'
+import type { UnpluginBuildContext, UnpluginContext } from 'unplugin'
 import { createUnplugin } from 'unplugin'
-import escapeStringRegexp from 'escape-string-regexp'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { distDir } from '../dirs'
@@ -18,6 +18,7 @@ type AcornNode<N extends Node> = N & { start: number, end: number }
 
 const SSR_RENDER_RE = /ssrRenderComponent/
 const PLACEHOLDER_EXACT_RE = /^(fallback|placeholder)$/
+const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
 
 export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplatePluginOptions) => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
@@ -48,7 +49,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
 
       walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
         enter: (_node) => {
-          const node = _node as AcornNode<CallExpression | ImportDeclaration>
+          const node = _node as AcornNode<Node>
           if (node.type === 'ImportDeclaration') {
             importDeclarations.push(node)
           } else if (
@@ -68,25 +69,20 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                   const componentsSet = new Set<string>()
                   s.remove(slot.start, slot.end + 1)
                   const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
-                  const currentCode = s.toString()
-                  walk(this.parse(removedCode, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
+                  const currentCodeAst = this.parse(s.toString(), PARSER_OPTIONS) as Node
+                  walk(this.parse(removedCode, PARSER_OPTIONS) as Node, {
                     enter: (_node) => {
                       const node = _node as AcornNode<CallExpression>
                       if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)) {
+                        // detect if the component is called else where
                         const componentNode = node.arguments[0]
 
-                        if (componentNode.type === 'CallExpression') {
-                          const identifier = componentNode.arguments[0] as Identifier
-                          if (!isRenderedInCode(currentCode, removedCode.slice((componentNode as AcornNode<CallExpression>).start, (componentNode as AcornNode<CallExpression>).end))) { componentsSet.add(identifier.name) }
-                        } else if (componentNode.type === 'Identifier' && !isRenderedInCode(currentCode, componentNode.name)) {
-                          componentsSet.add(componentNode.name)
-                        } else if (componentNode.type === 'MemberExpression') {
-                          // expect componentNode to be a memberExpression (mostly used in dev with $setup[])
-                          const { start, end } = componentNode as AcornNode<MemberExpression>
-                          if (!isRenderedInCode(currentCode, removedCode.slice(start, end))) {
-                            componentsSet.add(((componentNode as MemberExpression).property as Literal).value as string)
+                        const nameToRemove = isComponentNotCalledInSetup.call(this, currentCodeAst, componentNode)
+                        if (nameToRemove) {
+                          componentsSet.add(nameToRemove)
+                          if (componentNode.type === 'MemberExpression') {
                             // remove the component from the return statement of `setup()`
-                            walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
+                            walk(this.parse(code, PARSER_OPTIONS) as Node, {
                               enter: (node) => {
                                 removeFromSetupReturnStatement(s, node as Property, ((componentNode as MemberExpression).property as Literal).value as string)
                               }
@@ -101,7 +97,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                   const removedNode = new WeakSet<AcornNode<Node>>()
 
                   // remove variables
-                  walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
+                  walk(this.parse(code, PARSER_OPTIONS) as Node, {
                     enter (node) {
                       if (node.type === 'VariableDeclaration') {
                         for (const componentName of [...componentsToRemove]) {
@@ -145,15 +141,65 @@ function removeImportDeclaration (declarations: AcornNode<ImportDeclaration>[], 
   const declaration = findImportDeclaration(declarations, importName)
   if (declaration) {
     if (declaration.specifiers.length > 1) {
-      const componentSpecifier = declaration.specifiers.find(s => s.local.name === importName) as AcornNode<Identifier> | undefined
-
-      if (componentSpecifier) { magicString.remove(componentSpecifier.start, componentSpecifier.end + 1) }
+      const specifierIndex = declaration.specifiers.findIndex(s => s.local.name === importName)
+      if (specifierIndex > -1) {
+        magicString.remove((declaration.specifiers[specifierIndex] as AcornNode<Node>).start, (declaration.specifiers[specifierIndex] as AcornNode<Node>).end + 1)
+        declaration.specifiers.splice(specifierIndex, 1)
+      }
     } else {
       magicString.remove(declaration.start, declaration.end)
     }
     return true
   }
   return false
+}
+
+/**
+ * detect if the component is called else where
+ * ImportDeclarations and VariableDeclarations are ignored
+ * return the name of the component if is not called
+ */
+function isComponentNotCalledInSetup (this: UnpluginBuildContext & UnpluginContext, codeAst: Node, ssrRenderExpression: Expression|SpreadElement): string|void {
+  let name: string|undefined
+
+  switch (ssrRenderExpression.type) {
+    case 'CallExpression':
+      // _unref(ClientOnly)
+      name = (ssrRenderExpression.arguments[0] as Identifier).name
+      break
+    case 'MemberExpression':
+      // $setup['ClientOnly']
+      if (ssrRenderExpression.property.type === 'Literal') {
+        name = ssrRenderExpression.property.value ? ssrRenderExpression.property.value.toString() : undefined
+      }
+      break
+    case 'Identifier':
+      // ClientOnly
+      name = ssrRenderExpression.name
+  }
+  if (name) {
+    let found = false
+    walk(codeAst, {
+      enter (node) {
+        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && node.id?.name === '_sfc_ssrRender')) {
+          // walk through the setup function node or the ssrRender function
+          walk(node, {
+            enter (node) {
+              if (found || node.type === 'VariableDeclaration') {
+                this.skip()
+              } else if (node.type === 'Identifier' && node.name === name) {
+                found = true
+              } else if (node.type === 'MemberExpression') {
+                // dev only with $setup or _ctx
+                found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
+              }
+            }
+          })
+        }
+      }
+    })
+    if (!found) { return name }
+  }
 }
 
 /**
@@ -170,16 +216,6 @@ function findImportDeclaration (declarations: AcornNode<ImportDeclaration>[], im
   })
 
   return declaration
-}
-
-/**
- * test if the name argument is used to render a component in the code
- *
- * @param code code to test
- * @param name component name
- */
-function isRenderedInCode (code: string, name: string) {
-  return new RegExp(`ssrRenderComponent\\(${escapeStringRegexp(name)}`).test(code)
 }
 
 /**
