@@ -95,40 +95,40 @@ describe('treeshake client only in ssr', () => {
 
       const ssrResult = await SFCCompile(`SomeComponent${index}.vue`, WithClientOnly, state.options, true)
 
-      const treeshaked = await treeshake(ssrResult)
+      const treeshaken = await treeshake(ssrResult)
       const [_, scopeId] = clientResult.match(/_pushScopeId\("(.*)"\)/)!
 
       // ensure the id is correctly passed between server and client
       expect(clientResult).toContain(`pushScopeId("${scopeId}")`)
-      expect(treeshaked).toContain(`<div ${scopeId}>`)
+      expect(treeshaken).toContain(`<div ${scopeId}>`)
 
       expect(clientResult).toContain('should-be-treeshaken')
-      expect(treeshaked).not.toContain('should-be-treeshaken')
+      expect(treeshaken).not.toContain('should-be-treeshaken')
 
-      expect(treeshaked).not.toContain("import HelloWorld from '../HelloWorld.vue'")
+      expect(treeshaken).not.toContain("import HelloWorld from '../HelloWorld.vue'")
       expect(clientResult).toContain("import HelloWorld from '../HelloWorld.vue'")
 
-      expect(treeshaked).not.toContain("import { Treeshaken } from 'somepath'")
+      expect(treeshaken).not.toContain("import { Treeshaken } from 'somepath'")
       expect(clientResult).toContain("import { Treeshaken } from 'somepath'")
 
       // remove resolved import
-      expect(treeshaked).not.toContain('const _component_ResolvedImport =')
+      expect(treeshaken).not.toContain('const _component_ResolvedImport =')
       expect(clientResult).toContain('const _component_ResolvedImport =')
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
-      expect(treeshaked).not.toContain('ClientImport')
-      expect(treeshaked).toContain('import { Glob, } from \'#components\'')
+      expect(treeshaken).not.toContain('ClientImport')
+      expect(treeshaken).toContain('import { Glob, } from \'#components\'')
 
       if (state.options.isProduction === false) {
         // treeshake at inlined template
-        expect(treeshaked).not.toContain('ssrRenderComponent($setup["HelloWorld"]')
-        expect(treeshaked).toContain('ssrRenderComponent($setup["Glob"]')
+        expect(treeshaken).not.toContain('ssrRenderComponent($setup["HelloWorld"]')
+        expect(treeshaken).toContain('ssrRenderComponent($setup["Glob"]')
       } else {
         // treeshake unref
-        expect(treeshaked).not.toContain('ssrRenderComponent(_unref(HelloWorld')
-        expect(treeshaked).toContain('ssrRenderComponent(_unref(Glob')
+        expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
+        expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
       }
-      expect(treeshaked).toMatchSnapshot()
+      expect(treeshaken).toMatchSnapshot()
     })
   }
 })

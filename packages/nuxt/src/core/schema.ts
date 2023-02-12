@@ -50,7 +50,7 @@ export default defineNuxtModule({
       schema = await resolveSchema()
     })
 
-    // Writie schema after build to allow further modifications
+    // Write schema after build to allow further modifications
     nuxt.hooks.hook('build:done', async () => {
       await nuxt.hooks.callHook('schema:beforeWrite', schema)
       await writeSchema(schema)
@@ -112,7 +112,7 @@ export default defineNuxtModule({
       )
 
       // @ts-expect-error
-      // Merge after normalazation
+      // Merge after normalization
       const schema = defu(...schemas)
 
       // Allow hooking to extend resolved schema
