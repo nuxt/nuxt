@@ -129,10 +129,11 @@ export default class SSRRenderer extends BaseRenderer {
       ln: this.options.dev
     })
 
+    console.log('in ssr')
     if (meta) {
       //  charset must come before the title to avoid encoding issues
-      const charset = meta.meta.text({ charset: true })
       let metaTags = meta.meta.text()
+      const charset = meta.meta.text({ charset: true })
       if (charset) {
         HEAD += charset
         metaTags = metaTags.replace(charset, '')
