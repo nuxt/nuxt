@@ -88,7 +88,8 @@ export default () => ({
     preset: {
       // https://cssdb.org/#staging-process
       stage: 2
-    }
+    },
+    postcssOptions: {}
   },
   html: {
     minify: {
