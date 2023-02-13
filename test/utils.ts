@@ -1,9 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
-
-export const fixturesDir = fileURLToPath(new URL(process.env.NUXT_TEST_DEV ? './fixtures-temp' : './fixtures', import.meta.url))
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -53,21 +50,22 @@ export async function expectNoClientErrors (path: string) {
   expect(consoleLogWarnings).toEqual([])
 }
 
+type EqualityVal = string | number | boolean | null | undefined | RegExp
 export async function expectWithPolling (
-  get: () => Promise<string> | string,
-  expected: string,
+  get: () => Promise<EqualityVal> | EqualityVal,
+  expected: EqualityVal,
   retries = process.env.CI ? 100 : 30,
   delay = process.env.CI ? 500 : 100
 ) {
-  let result: string | undefined
+  let result: EqualityVal
   for (let i = retries; i >= 0; i--) {
     result = await get()
-    if (result === expected) {
+    if (result?.toString() === expected?.toString()) {
       break
     }
     await new Promise(resolve => setTimeout(resolve, delay))
   }
-  expect(result).toEqual(expected)
+  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
 }
 
 export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {
@@ -76,8 +74,8 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   const logs: string[] = []
   page.on('console', (msg) => {
     const text = msg.text()
-    if (done) {
-      throw new Error('Test finished prematurely')
+    if (done && !text.includes('[vite] server connection lost')) {
+      throw new Error(`Test finished prematurely before log: [${msg.type()}] ${text}`)
     }
     logs.push(text)
   })

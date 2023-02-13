@@ -374,7 +374,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-// TOOD: Move to external library
+// TODO: Move to external library
 const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
 const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {

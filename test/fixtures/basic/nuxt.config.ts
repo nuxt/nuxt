@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
+  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -70,7 +70,7 @@ export default defineNuxtConfig({
       }
     ],
     function (_, nuxt) {
-      if (process.env.TEST_WITH_WEBPACK) { return }
+      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
