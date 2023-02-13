@@ -157,6 +157,17 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
+const normalizeSsrError = (ssrErrorQuery: ReturnType<typeof getQuery>) => {
+  const { statusCode, ...ssrErrorStringProps } = ssrErrorQuery
+  const ssrError = ssrErrorStringProps as unknown as Exclude<NuxtApp['payload']['error'], Error>
+
+  if (ssrError && typeof statusCode === 'string') {
+    ssrError.statusCode = parseInt(statusCode)
+  }
+
+  return ssrError
+}
+
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 
@@ -167,7 +178,7 @@ export default defineRenderHandler(async (event) => {
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
+    ? normalizeSsrError(getQuery(event))
     : null
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
     throw createError('Cannot directly render error page!')
