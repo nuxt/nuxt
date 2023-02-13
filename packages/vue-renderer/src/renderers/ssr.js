@@ -130,7 +130,14 @@ export default class SSRRenderer extends BaseRenderer {
     })
 
     if (meta) {
-      HEAD += meta.title.text() + meta.meta.text()
+      //  charset must come before the title to avoid encoding issues
+      const charset = meta.meta.text({ charset: true })
+      let metaTags = meta.meta.text()
+      if (charset) {
+        HEAD += charset
+        metaTags = metaTags.replace(charset, '')
+      }
+      HEAD += meta.title.text() + metaTags
     }
 
     // Add <base href=""> meta if router base specified
