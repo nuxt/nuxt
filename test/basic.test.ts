@@ -549,7 +549,7 @@ describe('deferred app suspense resolve', () => {
       await page.waitForLoadState('networkidle')
 
       // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
       expect(hydrationLogs.length).toBe(3)
@@ -577,7 +577,7 @@ describe('page key', () => {
 
         // Wait for all pending micro ticks to be cleared,
         // so we are not resolved too early when there are repeated page loading
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
         expect(logs.filter(l => l.includes('Child Setup')).length).toBe(1)
       })
@@ -596,7 +596,7 @@ describe('page key', () => {
 
         // Wait for all pending micro ticks to be cleared,
         // so we are not resolved too early when there are repeated page loading
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
         expect(logs.filter(l => l.includes('Child Setup')).length).toBe(2)
       })
@@ -617,7 +617,7 @@ describe('layout change not load page twice', () => {
 
       // Wait for all pending micro ticks to be cleared,
       // so we are not resolved too early when there are repeated page loading
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       expect(logs.filter(l => l.includes('Layout2 Page Setup')).length).toBe(1)
     })
@@ -688,7 +688,8 @@ describe('prefetching', () => {
 
 describe.runIf(isDev())('detecting invalid root nodes', () => {
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (/invalid-root/%s)', async (path) => {
-    const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+    const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
     await expectWithPolling(
       () => consoleLogs.filter(i => i.type === 'warning')
         .map(w => w.text).join('\n')
@@ -698,8 +699,8 @@ describe.runIf(isDev())('detecting invalid root nodes', () => {
   })
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
-    const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-    await waitFor(isWindows ? 100 : 10)
+    const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
