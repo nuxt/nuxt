@@ -85,7 +85,7 @@ interface _NuxtApp {
     rendered?: Function
     error?: Error | {
       url: string
-      statusCode: string
+      statusCode: number
       statusMessage: string
       message: string
       description: string
