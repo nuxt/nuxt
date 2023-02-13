@@ -74,8 +74,8 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   const logs: string[] = []
   page.on('console', (msg) => {
     const text = msg.text()
-    if (done) {
-      throw new Error('Test finished prematurely')
+    if (done && !text.includes('[vite] server connection lost')) {
+      throw new Error(`Test finished prematurely before log: [${msg.type()}] ${text}`)
     }
     logs.push(text)
   })
