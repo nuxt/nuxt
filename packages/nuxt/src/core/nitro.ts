@@ -2,7 +2,6 @@ import { existsSync, promises as fsp } from 'node:fs'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
-import type { Nuxt } from '@nuxt/schema'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -12,6 +11,7 @@ import { createHeadCore } from 'unhead'
 import { renderSSRHead } from '@unhead/ssr'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
+import type { Nuxt } from 'nuxt/schema'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config

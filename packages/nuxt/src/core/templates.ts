@@ -1,4 +1,3 @@
-import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
@@ -7,6 +6,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { resolvePath } from 'mlly'
 import { filename } from 'pathe/utils'
+import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 
 export interface TemplateContext {
   nuxt: Nuxt
