@@ -8,7 +8,7 @@ fi
 
 yarn build
 
-./scripts/workspace-run npm publish --tag 2.x -q
+./scripts/workspace-run npm publish --tag 2x -q
 
 git tag -a v$1 -m v$1
 git push --tags
