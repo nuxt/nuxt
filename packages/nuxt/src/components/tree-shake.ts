@@ -48,6 +48,9 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
 
       const codeAst = this.parse(code, PARSER_OPTIONS) as AcornNode<Program>
 
+      const componentsToRemoveSet = new Set<string>()
+
+      // remove client only components or components called in ClientOnly default slot
       walk(codeAst, {
         enter: (_node) => {
           const node = _node as AcornNode<Node>
@@ -65,10 +68,10 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                 const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) as AcornNode<Property>[] : children.properties as AcornNode<Property>[]
 
                 for (const slot of slotsToRemove) {
-                  const componentsSet = new Set<string>()
                   s.remove(slot.start, slot.end + 1)
                   const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
                   const currentCodeAst = this.parse(s.toString(), PARSER_OPTIONS) as Node
+
                   walk(this.parse(removedCode, PARSER_OPTIONS) as Node, {
                     enter: (_node) => {
                       const node = _node as AcornNode<CallExpression>
@@ -78,10 +81,10 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
 
                         const nameToRemove = isComponentNotCalledInSetup.call(this, currentCodeAst, componentNode)
                         if (nameToRemove) {
-                          componentsSet.add(nameToRemove)
+                          componentsToRemoveSet.add(nameToRemove)
                           if (componentNode.type === 'MemberExpression') {
                             // remove the component from the return statement of `setup()`
-                            walk(this.parse(code, PARSER_OPTIONS) as Node, {
+                            walk(codeAst, {
                               enter: (node) => {
                                 removeFromSetupReturnStatement(s, node as Property, ((componentNode as MemberExpression).property as Literal).value as string)
                               }
@@ -91,37 +94,37 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                       }
                     }
                   })
-
-                  const componentsToRemove = [...componentsSet]
-                  const removedNode = new WeakSet<AcornNode<Node>>()
-
-                  // remove variables
-                  walk(this.parse(code, PARSER_OPTIONS) as Node, {
-                    enter (node) {
-                      if (node.type === 'VariableDeclaration') {
-                        for (const componentName of [...componentsToRemove]) {
-                          const hasBeenRemoved = removeVariableDeclarator(s, node as AcornNode<VariableDeclaration>, componentName, removedNode)
-
-                          if (hasBeenRemoved) {
-                            removedNode.add(hasBeenRemoved)
-                            const index = componentsToRemove.findIndex(c => c === componentName)
-                            componentsToRemove.splice(index, 1)
-                          }
-                        }
-                      }
-                    }
-                  })
-
-                  for (const componentName of componentsToRemove) {
-                    // remove import declaration if it exists
-                    removeImportDeclaration(codeAst, componentName, s)
-                  }
                 }
               }
             }
           }
         }
       })
+
+      const componentsToRemove = [...componentsToRemoveSet]
+      const removedNode = new WeakSet<AcornNode<Node>>()
+
+      // remove variables
+      walk(codeAst, {
+        enter (node) {
+          if (node.type === 'VariableDeclaration') {
+            for (const componentName of [...componentsToRemove]) {
+              const hasBeenRemoved = removeVariableDeclarator(s, node as AcornNode<VariableDeclaration>, componentName, removedNode)
+
+              if (hasBeenRemoved) {
+                removedNode.add(hasBeenRemoved)
+                const index = componentsToRemove.findIndex(c => c === componentName)
+                componentsToRemove.splice(index, 1)
+              }
+            }
+          }
+        }
+      })
+
+      for (const componentName of componentsToRemove) {
+        // remove import declaration if it exists
+        removeImportDeclaration(codeAst, componentName, s)
+      }
 
       if (s.hasChanged()) {
         return {
