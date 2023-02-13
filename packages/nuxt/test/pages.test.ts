@@ -56,6 +56,27 @@ describe('pages:generateRoutesFromFiles', () => {
       ]
     },
     {
+      description: 'should not generate colliding route names when hyphens are in file name',
+      files: [
+        `${pagesDir}/parent/[child].vue`,
+        `${pagesDir}/parent-[child].vue`
+      ],
+      output: [
+        {
+          name: 'parent-child',
+          path: '/parent/:child',
+          file: `${pagesDir}/parent/[child].vue`,
+          children: []
+        },
+        {
+          name: 'parent-child',
+          path: '/parent-:child',
+          file: `${pagesDir}/parent-[child].vue`,
+          children: []
+        }
+      ]
+    },
+    {
       description: 'should generate correct id for catchall (order 1)',
       files: [
         `${pagesDir}/[...stories].vue`,

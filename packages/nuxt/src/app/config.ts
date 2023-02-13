@@ -1,6 +1,6 @@
-import type { AppConfig } from '@nuxt/schema'
 import { reactive } from 'vue'
 import { useNuxtApp } from './nuxt'
+import type { AppConfig } from 'nuxt/schema'
 // @ts-ignore
 import __appConfig from '#build/app.config.mjs'
 

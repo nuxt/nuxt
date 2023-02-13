@@ -22,6 +22,7 @@ export default defineBuildConfig({
     'ofetch'
   ],
   externals: [
+    'nuxt/schema',
     '@vue/reactivity',
     '@vue/shared',
     '@vueuse/head'

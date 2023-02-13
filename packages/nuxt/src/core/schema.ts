@@ -152,7 +152,7 @@ export default defineNuxtModule({
         `
 export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
 
-declare module '@nuxt/schema' {
+declare module 'nuxt/schema' {
   interface NuxtConfig extends NuxtCustomSchema {}
   interface NuxtOptions extends NuxtCustomSchema {}
   interface AppConfigInput extends CustomAppConfig {}
