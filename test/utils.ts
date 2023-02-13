@@ -60,12 +60,12 @@ export async function expectWithPolling (
   let result: EqualityVal
   for (let i = retries; i >= 0; i--) {
     result = await get()
-    if (result === expected) {
+    if (result?.toString() === expected?.toString()) {
       break
     }
     await new Promise(resolve => setTimeout(resolve, delay))
   }
-  expect(result?.toString()).toEqual(expected?.toString())
+  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
 }
 
 export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {

@@ -687,11 +687,11 @@ describe('prefetching', () => {
 })
 
 describe.runIf(isDev())('detecting invalid root nodes', () => {
-  it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (/invalid-root/%s)', async (path) => {
+  it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
     await expectWithPolling(
-      () => consoleLogs.filter(i => i.type === 'warning')
+      () => consoleLogs
         .map(w => w.text).join('\n')
         .includes('does not have a single root node and will cause errors when navigating between routes'),
       true
