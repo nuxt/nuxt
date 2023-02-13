@@ -9,8 +9,8 @@
   ],
   "dependencies": {
     "@nuxt/config": "2.16.1",
-    "@nuxt/server": "2.16.0",
-    "@nuxt/utils": "2.16.0",
+    "@nuxt/server": "2.16.1",
+    "@nuxt/utils": "2.16.1",
     "consola": "^2.15.3",
     "fs-extra": "^10.1.0",
     "hable": "^3.0.0",

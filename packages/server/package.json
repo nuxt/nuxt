@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.16.0",
+  "version": "2.16.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/server.js",
@@ -8,8 +8,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.16.0",
-    "@nuxt/vue-renderer": "2.16.0",
+    "@nuxt/utils": "2.16.1",
+    "@nuxt/vue-renderer": "2.16.1",
     "@nuxtjs/youch": "^4.2.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",

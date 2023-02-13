@@ -13,7 +13,7 @@
   ],
   "dependencies": {
     "@nuxt/config": "2.16.1",
-    "@nuxt/utils": "2.16.0",
+    "@nuxt/utils": "2.16.1",
     "boxen": "^5.1.2",
     "chalk": "^4.1.2",
     "compression": "^1.7.4",
