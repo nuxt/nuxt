@@ -7,8 +7,10 @@ import devalue from '@nuxt/devalue'
 import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
+import { useRuntimeConfig, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
+// @ts-ignore
+import { useNitroApp } from '#internal/nitro/app'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
 // @ts-ignore
@@ -372,7 +374,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-// TOOD: Move to external library
+// TODO: Move to external library
 const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
 const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {

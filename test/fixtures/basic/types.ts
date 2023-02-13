@@ -133,6 +133,7 @@ describe('runtimeConfig', () => {
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
+    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
   })
   it('provides hints on overriding these values', () => {
@@ -140,7 +141,8 @@ describe('runtimeConfig', () => {
       runtimeConfig: {
         public: {
           // @ts-expect-error
-          testConfig: 'test'
+          testConfig: 'test',
+          ids: [1, 2]
         }
       }
     })
@@ -148,6 +150,7 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
+    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number | undefined>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<any>()
   })
 })
