@@ -5,7 +5,7 @@ import { useRouter } from '#app/composables/router'
 
 export default defineNuxtPlugin((nuxtApp) => {
   // Only enable behavior if initial page is prerendered
-  // TOOD: Support hybrid and dev
+  // TODO: Support hybrid and dev
   if (!isPrerendered()) {
     return
   }
