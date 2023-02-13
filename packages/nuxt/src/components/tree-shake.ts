@@ -5,9 +5,9 @@ import { walk } from 'estree-walker'
 import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node } from 'estree'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
-import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { distDir } from '../dirs'
+import type { Component } from 'nuxt/schema'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean

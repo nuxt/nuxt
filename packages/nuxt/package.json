@@ -17,6 +17,10 @@
       "import": "./config.mjs",
       "require": "./config.cjs"
     },
+    "./schema": {
+      "types": "./schema.d.ts",
+      "import": "./schema.mjs"
+    },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
   },
@@ -30,7 +34,8 @@
     "bin",
     "types.d.ts",
     "dist",
-    "config.*"
+    "config.*",
+    "schema.*"
   ],
   "scripts": {
     "prepack": "unbuild"

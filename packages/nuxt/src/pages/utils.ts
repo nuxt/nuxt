@@ -1,12 +1,12 @@
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
-import type { NuxtPage } from '@nuxt/schema'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
 import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { uniqueBy } from '../core/utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 enum SegmentParserState {
   initial,
