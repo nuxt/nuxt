@@ -131,7 +131,7 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaked).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
       expect(treeshaked).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
 
-      // expect empty ObjectPattern on treeshaking
+      // expect no empty ObjectPattern on treeshaking
       expect(treeshaked).not.toContain('const {  } = defineAsyncComponent')
       expect(treeshaked).not.toContain('import {  } from')
 
