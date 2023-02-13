@@ -86,6 +86,12 @@ describe('basic ssr', () => {
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
+    // charset should be before title
+    const charset = html.indexOf('<meta data-n-head="ssr" charset="utf-8">')
+    const title = html.indexOf('<title>My title - Nuxt</title>')
+    expect(charset).toBeLessThan(title)
+    expect(charset).toBeGreaterThan(0)
+
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[1].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
