@@ -1,7 +1,7 @@
 import { defineComponent, ref, onErrorCaptured } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
-export default defineComponent({
+export default /* #__PURE__ */ defineComponent({
   emits: {
     error (_error: unknown) {
       return true

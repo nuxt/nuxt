@@ -4,7 +4,7 @@ import { createBlock, defineComponent, h, Teleport } from 'vue'
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
 
-export default defineComponent({
+export default /* #__PURE__ */ defineComponent({
   props: {
     context: {
       type: Object as () => { name: string, props?: Record<string, any> },

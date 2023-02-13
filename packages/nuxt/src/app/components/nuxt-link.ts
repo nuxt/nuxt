@@ -54,7 +54,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  return defineComponent({
+  return /* #__PURE__ */ defineComponent({
     name: componentName,
     props: {
       // Routing
@@ -265,7 +265,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   }) as unknown as DefineComponent<NuxtLinkProps>
 }
 
-export default defineNuxtLink({ componentName: 'NuxtLink' })
+export default /* @__PURE__ */ defineNuxtLink({ componentName: 'NuxtLink' })
 
 // --- Prefetching utils ---
 type CallbackFn = () => void

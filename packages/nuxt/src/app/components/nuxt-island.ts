@@ -11,7 +11,7 @@ import { useHead } from '#app/composables/head'
 
 const pKey = '_islandPromises'
 
-export default defineComponent({
+export default /* #__PURE__ */ defineComponent({
   name: 'NuxtIsland',
   props: {
     name: {
