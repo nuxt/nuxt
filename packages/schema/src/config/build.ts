@@ -56,7 +56,7 @@ export default defineUntypedSchema({
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
-      $resolve: val => [].concat(val).filter(Boolean)
+      $resolve: val => ['nuxt/app'].concat(val).filter(Boolean)
     },
 
     /**
