@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
-import type { CallExpression, Property, Identifier, ImportDeclaration, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty, SpreadElement, Expression } from 'estree'
+import type { CallExpression, Property, Identifier, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty, SpreadElement, Expression, Program } from 'estree'
 import type { UnpluginBuildContext, UnpluginContext } from 'unplugin'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
@@ -42,17 +42,16 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       }
 
       const s = new MagicString(code)
-      const importDeclarations: AcornNode<ImportDeclaration>[] = []
 
       const [COMPONENTS_RE, COMPONENTS_IDENTIFIERS_RE] = regexpMap.get(components)!
       if (!COMPONENTS_RE.test(code)) { return }
 
-      walk(this.parse(code, { sourceType: 'module', ecmaVersion: 'latest' }) as Node, {
+      const codeAst = this.parse(code, PARSER_OPTIONS) as AcornNode<Program>
+
+      walk(codeAst, {
         enter: (_node) => {
           const node = _node as AcornNode<Node>
-          if (node.type === 'ImportDeclaration') {
-            importDeclarations.push(node)
-          } else if (
+          if (
             node.type === 'CallExpression' &&
             node.callee.type === 'Identifier' &&
             SSR_RENDER_RE.test(node.callee.name)
@@ -115,7 +114,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
 
                   for (const componentName of componentsToRemove) {
                     // remove import declaration if it exists
-                    removeImportDeclaration(importDeclarations, componentName, s)
+                    removeImportDeclaration(codeAst, componentName, s)
                   }
                 }
               }
@@ -136,20 +135,23 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
   }
 })
 
-function removeImportDeclaration (declarations: AcornNode<ImportDeclaration>[], importName: string, magicString: MagicString): boolean {
-  // remove direct import
-  const declaration = findImportDeclaration(declarations, importName)
-  if (declaration) {
-    if (declaration.specifiers.length > 1) {
-      const specifierIndex = declaration.specifiers.findIndex(s => s.local.name === importName)
-      if (specifierIndex > -1) {
-        magicString.remove((declaration.specifiers[specifierIndex] as AcornNode<Node>).start, (declaration.specifiers[specifierIndex] as AcornNode<Node>).end + 1)
-        declaration.specifiers.splice(specifierIndex, 1)
+function removeImportDeclaration (ast: Program, importName: string, magicString: MagicString): boolean {
+  for (const node of ast.body) {
+    if (node.type === 'ImportDeclaration') {
+      const specifier = node.specifiers.find(s => s.local.name === importName)
+      if (specifier) {
+        if (node.specifiers.length > 1) {
+          const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
+          if (specifierIndex > -1) {
+            magicString.remove((node.specifiers[specifierIndex] as AcornNode<Node>).start, (node.specifiers[specifierIndex] as AcornNode<Node>).end + 1)
+            node.specifiers.splice(specifierIndex, 1)
+          }
+        } else {
+          magicString.remove((node as AcornNode<Node>).start, (node as AcornNode<Node>).end)
+        }
+        return true
       }
-    } else {
-      magicString.remove(declaration.start, declaration.end)
     }
-    return true
   }
   return false
 }
@@ -200,22 +202,6 @@ function isComponentNotCalledInSetup (this: UnpluginBuildContext & UnpluginConte
     })
     if (!found) { return name }
   }
-}
-
-/**
- * find and return the importDeclaration that contain the import specifier
- *
- * @param {AcornNode<ImportDeclaration>[]} declarations - list of import declarations
- * @param {string} importName - name of the import
- */
-function findImportDeclaration (declarations: AcornNode<ImportDeclaration>[], importName: string): AcornNode<ImportDeclaration> | undefined {
-  const declaration = declarations.find((d) => {
-    const specifier = d.specifiers.find(s => s.local.name === importName)
-    if (specifier) { return true }
-    return false
-  })
-
-  return declaration
 }
 
 /**
