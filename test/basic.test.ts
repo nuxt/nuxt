@@ -7,7 +7,7 @@ import { normalize } from 'pathe'
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, expectWithPolling, renderPage, waitFor, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 

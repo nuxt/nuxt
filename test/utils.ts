@@ -86,7 +86,3 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
     done = true
   }
 }
-
-export function waitFor (ms = 100) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
