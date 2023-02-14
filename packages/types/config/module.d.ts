@@ -4,8 +4,8 @@
  *                https://nuxtjs.org/guide/modules
  */
 
-import type { Nuxt } from '../nuxt'
 import type { Configuration as WebpackConfiguration } from 'webpack'
+import type { Nuxt } from '../nuxt'
 import type { NuxtOptionsLoaders } from './build'
 import type { NuxtRouteConfig } from './router'
 import type { NuxtOptionsServerMiddleware } from './server-middleware'

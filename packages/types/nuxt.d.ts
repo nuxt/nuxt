@@ -1,5 +1,5 @@
-import type { NuxtOptions } from './config'
 import type { RequestListener } from 'http'
+import type { NuxtOptions } from './config'
 
 export interface Nuxt {
   options: NuxtOptions,
