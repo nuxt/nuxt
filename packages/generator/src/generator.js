@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import consola from 'consola'
 import devalue from 'devalue'
 import fsExtra from 'fs-extra'
-import defu from 'defu'
+import { defu } from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 import { withTrailingSlash, withoutTrailingSlash, decode } from 'ufo'
@@ -121,7 +121,7 @@ or disable the build step: \`generate({ build: false })\``)
         )
       } catch (e) {
         consola.error('Could not resolve routes')
-        throw e // eslint-disable-line no-unreachable
+        throw e
       }
     }
     let routes = []

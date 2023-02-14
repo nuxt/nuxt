@@ -95,9 +95,14 @@ export default {
           'custom-selectors': true
         }
       },
+      // deliberately invalid config to test normalization
       plugins: {
-        cssnano: {},
-        [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
+        cssnano: {}
+      },
+      postcssOptions: {
+        plugins: {
+          [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
+        }
       }
     }
   }

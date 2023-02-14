@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import { defaultsDeep, pick, uniq } from 'lodash'
-import defu from 'defu'
+import { defu } from 'defu'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
@@ -438,6 +438,15 @@ export function getNuxtConfig (_options) {
     consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
     options.render.crossorigin = options.build.crossorigin
     delete options.build.crossorigin
+  }
+
+  if (options.build.postcss?.plugins) {
+    consola.warn('`postcss.plugins` option has been moved to `postcss.postcssOptions.plugins` for aligning `postcss-loader` format.')
+  }
+
+  if (options.buildModules && options.buildModules.includes('@nuxt/postcss8')) {
+    consola.info('`@nuxt/postcss8` is disabled since nuxt has upgraded to postcss v8.')
+    options.buildModules = options.buildModules.filter(module => module !== '@nuxt/postcss8')
   }
 
   const { timing } = options.server
