@@ -117,26 +117,26 @@ describe('treeshake client only in ssr', () => {
 
       // treeshake multi line variable declaration
       expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaked).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaked).not.toContain("return (await import('./../some.island.vue'))")
-      expect(treeshaked).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain("return (await import('./../some.island.vue'))")
+      expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
 
       // treeshake object and array declaration
-      expect(treeshaked).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
-      expect(treeshaked).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
-      expect(treeshaked).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
-      expect(treeshaked).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
+      expect(treeshaken).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
+      expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
+      expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
       // treeshake object that has an assignement pattern
-      expect(treeshaked).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
-      expect(treeshaked).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
+      expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
 
       // expect no empty ObjectPattern on treeshaking
-      expect(treeshaked).not.toContain('const {  } = defineAsyncComponent')
-      expect(treeshaked).not.toContain('import {  } from')
+      expect(treeshaken).not.toContain('const {  } = defineAsyncComponent')
+      expect(treeshaken).not.toContain('import {  } from')
 
       // expect components used in setup to not be removed
-      expect(treeshaked).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
+      expect(treeshaken).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
