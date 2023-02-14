@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
-import { isCI, isTest, hasTTY } from 'std-env'
+import { isMinimal } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -49,7 +49,7 @@ export default defineUntypedSchema({
    */
   quiet: {
     $resolve: async (val, get) => {
-      return val ?? (isTest || isCI || !hasTTY)
+      return val ?? (isMinimal)
     }
   },
 
