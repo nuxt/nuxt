@@ -1,6 +1,6 @@
-import type { RouterConfig } from '@nuxt/schema'
 import type { RouterScrollBehavior, RouteLocationNormalized } from 'vue-router'
 import { nextTick } from 'vue'
+import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 // @ts-ignore
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
