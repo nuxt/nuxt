@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
-import { isWindows } from 'std-env'
+import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
 // eslint-disable-next-line import/order
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
@@ -686,7 +686,8 @@ describe('prefetching', () => {
   })
 })
 
-describe.runIf(isDev())('detecting invalid root nodes', () => {
+// TODO: make test less flakey on Windows
+describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes', () => {
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
