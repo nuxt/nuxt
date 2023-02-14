@@ -8,7 +8,6 @@ import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { distDir } from '../dirs'
-import type { Component } from 'nuxt/schema'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
