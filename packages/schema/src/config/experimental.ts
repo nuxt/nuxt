@@ -30,6 +30,7 @@ export default defineUntypedSchema({
     /**
      * Perform a hard reload of the new route when a chunk fails to load
      * when navigating to a new route.
+     * @see https://github.com/nuxt/nuxt/pull/19038
      */
     reloadOnRouteChunkError: false,
 
