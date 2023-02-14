@@ -53,11 +53,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       walk(codeAst, {
         enter: (_node) => {
           const node = _node as AcornNode<Node>
-          if (
-            node.type === 'CallExpression' &&
-            node.callee.type === 'Identifier' &&
-            SSR_RENDER_RE.test(node.callee.name)
-          ) {
+          if (isSSRRenderComponent(node)) {
             const [componentCall, _, children] = node.arguments
             if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
               const componentName = getComponentName(node)
@@ -74,7 +70,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                   walk(this.parse(removedCode, PARSER_OPTIONS) as Node, {
                     enter: (_node) => {
                       const node = _node as AcornNode<CallExpression>
-                      if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)) {
+                      if (isSSRRenderComponent(node)) {
                         // detect if the component is called else where
                         const componentNode = node.arguments[0]
 
@@ -136,6 +132,10 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
     }
   }
 })
+
+function isSSRRenderComponent (node: Node): node is AcornNode<CallExpression> {
+  return node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)
+}
 
 function removeImportDeclaration (ast: Program, importName: string, magicString: MagicString): boolean {
   for (const node of ast.body) {
