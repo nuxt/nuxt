@@ -6,7 +6,7 @@ import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocat
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 // @ts-ignore
 import { appPageTransition as defaultPageTransition, appKeepalive as defaultKeepaliveConfig } from '#build/nuxt.config.mjs'

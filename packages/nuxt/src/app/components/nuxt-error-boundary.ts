@@ -1,5 +1,5 @@
 import { defineComponent, ref, onErrorCaptured } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 
 export default defineComponent({
   emits: {
