@@ -16,7 +16,7 @@ export interface PageMetaPluginOptions {
 }
 
 const CODE_EMPTY = `
-const __nuxt_page_meta = {}
+const __nuxt_page_meta = null
 export default __nuxt_page_meta
 `
 
@@ -138,7 +138,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
           const meta = node.arguments[0] as Expression & { start: number, end: number }
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || '{}'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
           function addImport (name: string | false) {
             if (name && importMap.has(name)) {
