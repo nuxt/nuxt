@@ -19,7 +19,7 @@ export default defineConfig({
     deps: { inline: ['@vitejs/plugin-vue'] },
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
     exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js'],
-    maxThreads: process.env.NUXT_TEST_DEV ? 1 : undefined,
-    minThreads: process.env.NUXT_TEST_DEV ? 1 : undefined
+    maxThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined,
+    minThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined
   }
 })
