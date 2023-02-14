@@ -1,7 +1,7 @@
 import type { ServerResponse } from 'http'
 import type { IncomingMessage, NextFunction } from 'connect'
 import type Vue from 'vue'
-import type { Route } from 'vue-router'
+import type { Location, Route } from 'vue-router'
 import type { Store } from 'vuex'
 import VueRouter from 'vue-router'
 

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/generator",
-  "version": "2.15.6",
+  "version": "2.16.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/generator.js",
@@ -8,15 +8,15 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.15.6",
+    "@nuxt/utils": "2.16.1",
     "chalk": "^4.1.2",
     "consola": "^2.15.3",
-    "defu": "^6.1.0",
+    "defu": "^6.1.2",
     "devalue": "^2.0.1",
     "fs-extra": "^10.1.0",
     "html-minifier": "^4.0.0",
-    "node-html-parser": "^5.4.2",
-    "ufo": "^0.8.5"
+    "node-html-parser": "^6.1.4",
+    "ufo": "^1.0.1"
   },
   "publishConfig": {
     "access": "public"

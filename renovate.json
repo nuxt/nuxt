@@ -7,10 +7,6 @@
   ],
   "ignoreDeps": [
     "core-js",
-    "postcss",
-    "postcss-import",
-    "postcss-loader",
-    "postcss-url",
     "css-loader",
     "sass-loader",
     "npm",
