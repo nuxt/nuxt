@@ -11,7 +11,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'analyze',
-    usage: 'npx nuxi analyze [rootDir]',
+    usage: 'npx nuxi analyze [--quiet, -q] [rootDir]',
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
   async invoke (args) {
@@ -28,6 +28,9 @@ export default defineNuxtCommand({
         build: {
           analyze: true
         }
+      },
+      overrides: {
+        quiet: args.quiet ?? args.q
       }
     })
 

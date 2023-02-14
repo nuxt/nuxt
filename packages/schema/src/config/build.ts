@@ -1,6 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
+import { isCI, isTest, hasTTY } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -36,6 +37,20 @@ export default defineUntypedSchema({
         client: await get('dev')
       })
     },
+  },
+
+  /**
+   * Whether or not to suppress non-essential logs when building Nuxt.
+   *
+   * Defaults to true when running in CI or when a TTY is not available.
+   *
+   * @type {boolean}
+   * @default {false}
+   */
+  quiet: {
+    $resolve: async (val, get) => {
+      return val ?? (isTest || isCI || !hasTTY)
+    }
   },
 
   /**

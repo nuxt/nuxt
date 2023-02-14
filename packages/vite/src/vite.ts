@@ -39,6 +39,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
+        logLevel: nuxt.options.quiet ? 'silent' : undefined,
         resolve: {
           alias: {
             ...nuxt.options.alias,

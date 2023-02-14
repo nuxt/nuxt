@@ -19,7 +19,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
+    usage: 'npx nuxi dev [rootDir] [--dotenv] [--quiet, -q] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {
@@ -75,7 +75,14 @@ export default defineNuxtCommand({
         if (currentNuxt) {
           await currentNuxt.close()
         }
-        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        currentNuxt = await loadNuxt({
+          rootDir,
+          dev: true,
+          ready: false,
+          overrides: {
+            quiet: args.quiet ?? args.q
+          }
+        })
         if (!isRestart) {
           showURL()
         }

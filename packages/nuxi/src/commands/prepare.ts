@@ -9,7 +9,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'prepare',
-    usage: 'npx nuxi prepare',
+    usage: 'npx nuxi prepare [--quiet, -q] [rootDir]',
     description: 'Prepare nuxt for development/build'
   },
   async invoke (args) {
@@ -17,7 +17,13 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
 
     const { loadNuxt } = await loadKit(rootDir)
-    const nuxt = await loadNuxt({ rootDir, config: { _prepare: true } })
+    const nuxt = await loadNuxt({
+      rootDir,
+      config: { _prepare: true },
+      overrides: {
+        quiet: args.quiet ?? args.q
+      }
+    })
     await clearDir(nuxt.options.buildDir)
 
     await buildNuxt(nuxt)

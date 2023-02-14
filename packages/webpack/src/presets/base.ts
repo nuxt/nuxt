@@ -40,7 +40,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: 'none',
+    stats: ctx.nuxt.options.quiet ? 'none' : 'summary',
     ...ctx.config
   }
 }
