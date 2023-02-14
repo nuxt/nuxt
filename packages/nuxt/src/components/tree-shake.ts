@@ -3,7 +3,6 @@ import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
 import type { CallExpression, Property, Identifier, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty, SpreadElement, Expression, Program } from 'estree'
-import type { UnpluginBuildContext, UnpluginContext } from 'unplugin'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
@@ -79,7 +78,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                         // detect if the component is called else where
                         const componentNode = node.arguments[0]
 
-                        const nameToRemove = isComponentNotCalledInSetup.call(this, currentCodeAst, componentNode)
+                        const nameToRemove = isComponentNotCalledInSetup(currentCodeAst, componentNode)
                         if (nameToRemove) {
                           componentsToRemoveSet.add(nameToRemove)
                           if (componentNode.type === 'MemberExpression') {
@@ -164,7 +163,7 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
  * ImportDeclarations and VariableDeclarations are ignored
  * return the name of the component if is not called
  */
-function isComponentNotCalledInSetup (this: UnpluginBuildContext & UnpluginContext, codeAst: Node, ssrRenderExpression: Expression|SpreadElement): string|void {
+function isComponentNotCalledInSetup (codeAst: Node, ssrRenderExpression: Expression|SpreadElement): string|void {
   let name: string|undefined
 
   switch (ssrRenderExpression.type) {
@@ -257,7 +256,7 @@ function removeVariableDeclarator (code: MagicString, variableDeclaration: Acorn
 function findMatchingPatternToRemove (node: AcornNode<Pattern>, toRemoveIfMatched: AcornNode<Node>, declarationName: string, removedNodeSet: WeakSet<Node>): AcornNode<Node> | undefined {
   if (node.type === 'Identifier') {
     if (node.name === declarationName) {
-      return toRemoveIfMatched as AcornNode<Node>
+      return toRemoveIfMatched
     }
   } else if (node.type === 'ArrayPattern') {
     const elements = node.elements.filter((e): e is AcornNode<Pattern> => e !== null && !removedNodeSet.has(e))
