@@ -265,7 +265,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   }) as unknown as DefineComponent<NuxtLinkProps>
 }
 
-export default /* @__PURE__ */ defineNuxtLink({ componentName: 'NuxtLink' })
+export default /* #__PURE__ */ defineNuxtLink({ componentName: 'NuxtLink' })
 
 // --- Prefetching utils ---
 type CallbackFn = () => void
