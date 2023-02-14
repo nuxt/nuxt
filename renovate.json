@@ -7,10 +7,6 @@
   ],
   "ignoreDeps": [
     "core-js",
-    "postcss",
-    "postcss-import",
-    "postcss-loader",
-    "postcss-url",
     "css-loader",
     "sass-loader",
     "npm",
@@ -24,7 +20,9 @@
     "babel-jest",
     "globby",
     "execa",
-    "chalk"
+    "chalk",
+    "vue",
+    "vuex"
   ],
   "lockFileMaintenance": {
     "enabled": true

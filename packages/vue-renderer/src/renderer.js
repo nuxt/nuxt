@@ -4,7 +4,7 @@ import consola from 'consola'
 import { template } from 'lodash'
 import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
 import { normalizeURL } from 'ufo'
-import defu from 'defu'
+import { defu } from 'defu'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'

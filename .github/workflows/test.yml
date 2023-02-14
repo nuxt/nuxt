@@ -3,11 +3,9 @@ name: test
 on:
   push:
     branches:
-      - dev
       - 2.x
   pull_request:
     branches:
-      - dev
       - 2.x
 
 jobs:
@@ -319,7 +317,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@master
         with:
-          ref: 'refs/heads/dev'
+          ref: "refs/heads/dev"
           fetch-depth: 0 # All history
 
       - name: fetch tags
@@ -338,7 +336,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - name: bump version
         run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose

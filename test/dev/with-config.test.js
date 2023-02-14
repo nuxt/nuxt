@@ -1,5 +1,5 @@
-import { resolve } from 'path'
 import { existsSync } from 'fs'
+import { resolve } from 'upath'
 import jsdom from 'jsdom'
 import Glob from 'glob'
 import pify from 'pify'
