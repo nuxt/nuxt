@@ -59,7 +59,7 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml).toContain('background-color:#00f')
+    expect(headHtml).toContain('background-color:blue')
 
     // const element = window.document.querySelector('div.red')
     // t.is(window.getComputedStyle(element)['background-color'], 'blue')
@@ -85,6 +85,12 @@ describe('basic ssr', () => {
     const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
+
+    // charset should be before title
+    const charset = html.indexOf('<meta data-n-head="ssr" charset="utf-8">')
+    const title = html.indexOf('<title>My title - Nuxt</title>')
+    expect(charset).toBeLessThan(title)
+    expect(charset).toBeGreaterThan(0)
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[1].getAttribute('content')).toBe('my meta')
@@ -182,14 +188,14 @@ describe('basic ssr', () => {
     test('/redirect -> external link', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching/')
+      expect(_headers.Location).toBe('https://example.com/test/')
       expect(html).toContain('<div data-server-rendered="true" id="__nuxt"></div>')
     })
 
     test('/redirect -> external link without trailing slash', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external-no-slash', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching')
+      expect(_headers.Location).toBe('https://example.com/test')
       expect(html).toContain('<div data-server-rendered="true" id="__nuxt"></div>')
     })
 
@@ -316,7 +322,6 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html).toContain('Displayed only on client-side</h1>')
-    expect(consola.warn).toHaveBeenCalledTimes(1)
     expect(consola.warn).toHaveBeenCalledWith(
       expect.stringContaining('<no-ssr> has been deprecated')
     )

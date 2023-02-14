@@ -14,7 +14,7 @@
           "doc-url": "https://nuxtjs.org/api/components-nuxt",
           "attributes": [
             {
-              "name": "next-child-key",
+              "name": "nuxt-child-key",
               "value": {
                 "kind": "expression",
                 "type": "string"

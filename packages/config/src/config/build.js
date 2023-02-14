@@ -1,7 +1,7 @@
-import env from 'std-env'
+import { isCI, isTest } from 'std-env'
 
 export default () => ({
-  quiet: Boolean(env.ci || env.test),
+  quiet: Boolean(isCI || isTest),
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
@@ -88,7 +88,8 @@ export default () => ({
     preset: {
       // https://cssdb.org/#staging-process
       stage: 2
-    }
+    },
+    postcssOptions: {}
   },
   html: {
     minify: {

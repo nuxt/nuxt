@@ -58,7 +58,6 @@ export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
   for (const child of children) {
     if (child.$fetch) {
       instances.push(child)
-      continue; // Don't get the children since it will reload the template
     }
     if (child.$children) {
       getChildrenComponentInstancesUsingFetch(child, instances)

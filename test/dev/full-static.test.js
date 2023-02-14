@@ -1,5 +1,5 @@
 import http from 'http'
-import { join, resolve } from 'path'
+import { join, resolve } from 'upath'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import glob from 'glob'
