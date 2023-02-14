@@ -7,7 +7,7 @@ import { Parser } from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
-import { fixtureDir } from './utils'
+import { fixtureDir, normalizeLineEndings } from './utils'
 
 vi.mock('node:crypto', () => ({
   update: vi.fn().mockReturnThis(),
@@ -31,7 +31,7 @@ function vuePlugin (options: Options) {
   }
 }
 
-const WithClientOnly = readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString()
+const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({ sourcemap: false, getComponents () { return [] } }, { framework: 'rollup' }) as Plugin
 
