@@ -33,6 +33,7 @@ export interface RuntimeNuxtHooks {
   'app:suspense:resolve': (Component?: VNode) => HookResult
   'app:error': (err: any) => HookResult
   'app:error:cleared': (options: { redirect?: string }) => HookResult
+  'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
@@ -184,6 +185,13 @@ export function createNuxtApp (options: CreateOptions) {
       public: options.ssrContext!.runtimeConfig.public,
       app: options.ssrContext!.runtimeConfig.app
     }
+  }
+
+  // Listen to chunk load errors
+  if (process.client) {
+    window.addEventListener('nuxt.preloadError', (event) => {
+      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+    })
   }
 
   // Expose runtime config

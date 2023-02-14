@@ -28,6 +28,12 @@ export default defineUntypedSchema({
     treeshakeClientOnly: true,
 
     /**
+     * Perform a hard reload of the new route when a chunk fails to load
+     * when navigating to a new route.
+     */
+    reloadOnRouteChunkError: false,
+
+    /**
      * Use vite-node for on-demand server chunk loading
      *
      * @deprecated use `vite.devBundler: 'vite-node'`

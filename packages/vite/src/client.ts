@@ -11,6 +11,7 @@ import { defu } from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
 import { cacheDirPlugin } from './plugins/cache-dir'
+import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
@@ -68,7 +69,10 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx)
+      viteNodePlugin(ctx),
+      chunkErrorPlugin({
+        sourcemap: ctx.nuxt.options.sourcemap.client
+      })
     ],
     appType: 'custom',
     server: {
