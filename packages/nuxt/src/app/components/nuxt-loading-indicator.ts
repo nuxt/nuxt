@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
-export default /* #__PURE__ */ defineComponent({
+export default defineComponent({
   name: 'NuxtLoadingIndicator',
   props: {
     throttle: {

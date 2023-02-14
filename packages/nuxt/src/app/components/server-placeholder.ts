@@ -1,6 +1,6 @@
 import { defineComponent, createElementBlock } from 'vue'
 
-export default /* #__PURE__ */ defineComponent({
+export default defineComponent({
   name: 'ServerPlaceholder',
   render () {
     return createElementBlock('div')

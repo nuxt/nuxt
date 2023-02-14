@@ -66,7 +66,7 @@ const globalProps = {
 }
 
 // <noscript>
-export const NoScript = /* #__PURE__ */ defineComponent({
+export const NoScript = defineComponent({
   name: 'NoScript',
   inheritAttrs: false,
   props: {
@@ -91,7 +91,7 @@ export const NoScript = /* #__PURE__ */ defineComponent({
 })
 
 // <link>
-export const Link = /* #__PURE__ */ defineComponent({
+export const Link = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Link',
   inheritAttrs: false,
@@ -129,7 +129,7 @@ export const Link = /* #__PURE__ */ defineComponent({
 })
 
 // <base>
-export const Base = /* #__PURE__ */ defineComponent({
+export const Base = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Base',
   inheritAttrs: false,
@@ -144,7 +144,7 @@ export const Base = /* #__PURE__ */ defineComponent({
 })
 
 // <title>
-export const Title = /* #__PURE__ */ defineComponent({
+export const Title = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Title',
   inheritAttrs: false,
@@ -160,7 +160,7 @@ export const Title = /* #__PURE__ */ defineComponent({
 })
 
 // <meta>
-export const Meta = /* #__PURE__ */ defineComponent({
+export const Meta = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Meta',
   inheritAttrs: false,
@@ -187,7 +187,7 @@ export const Meta = /* #__PURE__ */ defineComponent({
 })
 
 // <style>
-export const Style = /* #__PURE__ */ defineComponent({
+export const Style = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Style',
   inheritAttrs: false,
@@ -221,7 +221,7 @@ export const Style = /* #__PURE__ */ defineComponent({
 })
 
 // <head>
-export const Head = /* #__PURE__ */ defineComponent({
+export const Head = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Head',
   inheritAttrs: false,
@@ -229,7 +229,7 @@ export const Head = /* #__PURE__ */ defineComponent({
 })
 
 // <html>
-export const Html = /* #__PURE__ */ defineComponent({
+export const Html = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Html',
   inheritAttrs: false,
@@ -244,7 +244,7 @@ export const Html = /* #__PURE__ */ defineComponent({
 })
 
 // <body>
-export const Body = /* #__PURE__ */ defineComponent({
+export const Body = defineComponent({
   // eslint-disable-next-line vue/no-reserved-component-names
   name: 'Body',
   inheritAttrs: false,

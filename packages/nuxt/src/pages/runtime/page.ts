@@ -11,7 +11,7 @@ import { _wrapIf } from '#app/components/utils'
 // @ts-ignore
 import { appPageTransition as defaultPageTransition, appKeepalive as defaultKeepaliveConfig } from '#build/nuxt.config.mjs'
 
-export default /* #__PURE__ */ defineComponent({
+export default defineComponent({
   name: 'NuxtPage',
   inheritAttrs: false,
   props: {
@@ -77,7 +77,7 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
   return defu(..._props)
 }
 
-const RouteProvider = /* #__PURE__ */ defineComponent({
+const RouteProvider = defineComponent({
   name: 'RouteProvider',
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types

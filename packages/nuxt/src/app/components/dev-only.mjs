@@ -1,6 +1,6 @@
 import { defineComponent } from 'vue'
 
-export default /* #__PURE__ */ defineComponent({
+export default defineComponent({
   name: 'DevOnly',
   setup (_, props) {
     if (process.dev) {

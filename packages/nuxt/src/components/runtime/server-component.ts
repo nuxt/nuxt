@@ -12,7 +12,7 @@ import { useHead } from '#app/composables/head'
 const pKey = '_islandPromises'
 
 export const createServerComponent = (name: string) => {
-  return /* #__PURE__ */ defineComponent({
+  return defineComponent({
     name,
     inheritAttrs: false,
     setup (_props, { attrs }) {
@@ -24,7 +24,7 @@ export const createServerComponent = (name: string) => {
   })
 }
 
-const NuxtServerComponent = /* #__PURE__ */ defineComponent({
+const NuxtServerComponent = defineComponent({
   name: 'NuxtServerComponent',
   props: {
     name: {

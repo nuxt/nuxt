@@ -13,9 +13,9 @@ import { isNuxtError, showError, useError } from '#app/composables/error'
 import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
 
-const ErrorComponent = /* #__PURE__ */ defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
+const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
 const IslandRenderer = process.server
-  ? /* #__PURE__ */ defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
+  ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
 const nuxtApp = useNuxtApp()

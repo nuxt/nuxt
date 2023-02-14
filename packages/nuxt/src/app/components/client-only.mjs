@@ -1,6 +1,6 @@
 import { ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
 
-export default /* #__PURE__ */ defineComponent({
+export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
   // eslint-disable-next-line vue/require-prop-types
