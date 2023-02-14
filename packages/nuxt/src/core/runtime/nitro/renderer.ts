@@ -167,8 +167,13 @@ export default defineRenderHandler(async (event) => {
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
+    ? getQuery(event) as unknown as Exclude<NuxtApp['payload']['error'], Error>
     : null
+
+  if (ssrError && ssrError.statusCode) {
+    ssrError.statusCode = parseInt(ssrError.statusCode as any)
+  }
+
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
     throw createError('Cannot directly render error page!')
   }

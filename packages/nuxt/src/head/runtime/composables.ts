@@ -1,6 +1,6 @@
 import type { HeadEntryOptions, UseHeadInput, ActiveHeadEntry } from '@vueuse/head'
-import type { HeadAugmentations } from '@nuxt/schema'
 import { useSeoMeta as _useSeoMeta } from '@vueuse/head'
+import type { HeadAugmentations } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 
 /**
