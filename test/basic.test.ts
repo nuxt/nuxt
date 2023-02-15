@@ -78,7 +78,7 @@ describe('pages', () => {
 
   // TODO: support jsx with webpack
   it.runIf(!isWebpack)('supports jsx', async () => {
-    const html = await $fetch('/')
+    const html = await $fetch('/jsx')
 
     // should import JSX/TSX components with custom elements
     expect(html).toContain('TSX component')
