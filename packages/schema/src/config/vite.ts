@@ -43,6 +43,11 @@ export default defineUntypedSchema({
         }
       }
     },
+    vueJsx: {
+      isCustomElement: {
+        $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions?.isCustomElement
+      }
+    },
     optimizeDeps: {
       exclude: {
         $resolve: async (val, get) => [
