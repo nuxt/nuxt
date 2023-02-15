@@ -4,11 +4,13 @@ import { useRouter } from '#app/composables/router'
 export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
-  let chunkError: TypeError | null = null
-  nuxtApp.hook('app:chunkError', ({ error }) => { chunkError = error })
+  const chunkErrors = new Set()
+
+  router.beforeEach(() => { chunkErrors.clear() })
+  nuxtApp.hook('app:chunkError', ({ error }) => { chunkErrors.add(error) })
 
   router.onError((error, to) => {
-    if (chunkError !== error) { return }
+    if (!chunkErrors.has(error)) { return }
 
     let handledPath: Record<string, any> = {}
     try {
