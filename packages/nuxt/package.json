@@ -79,7 +79,7 @@
     "unenv": "^1.1.1",
     "unhead": "^1.0.21",
     "unimport": "^2.2.4",
-    "unplugin": "^1.0.1",
+    "unplugin": "^1.1.0",
     "untyped": "^1.2.2",
     "vue": "^3.2.47",
     "vue-bundle-renderer": "^1.0.1",

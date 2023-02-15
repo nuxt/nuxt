@@ -12,6 +12,7 @@ overrides:
   unbuild: ^1.1.1
   vite: ^4.1.1
   vue: 3.2.47
+  magic-string: ^0.29.0
 
 importers:
 
@@ -450,7 +451,7 @@ importers:
       unenv: ^1.1.1
       unhead: ^1.0.21
       unimport: ^2.2.4
-      unplugin: ^1.0.1
+      unplugin: ^1.1.0
       untyped: ^1.2.2
       vue: 3.2.47
       vue-bundle-renderer: ^1.0.1
@@ -495,7 +496,7 @@ importers:
       unenv: 1.1.1
       unhead: 1.0.21
       unimport: 2.2.4
-      unplugin: 1.0.1
+      unplugin: 1.1.0
       untyped: 1.2.2
       vue: 3.2.47
       vue-bundle-renderer: 1.0.1
@@ -613,7 +614,7 @@ importers:
       rollup-plugin-visualizer: ^5.9.0
       ufo: ^1.0.1
       unbuild: ^1.1.1
-      unplugin: ^1.0.1
+      unplugin: ^1.1.0
       vite: ^4.1.1
       vite-node: ^0.28.5
       vite-plugin-checker: ^0.5.5
@@ -648,7 +649,7 @@ importers:
       rollup: 3.15.0
       rollup-plugin-visualizer: 5.9.0_rollup@3.15.0
       ufo: 1.0.1
-      unplugin: 1.0.1
+      unplugin: 1.1.0
       vite: 4.1.1
       vite-node: 0.28.5
       vite-plugin-checker: 0.5.5_vite@4.1.1
@@ -698,7 +699,7 @@ importers:
       time-fix-plugin: ^2.0.7
       ufo: ^1.0.1
       unbuild: ^1.1.1
-      unplugin: ^1.0.1
+      unplugin: ^1.1.0
       url-loader: ^4.1.1
       vue: 3.2.47
       vue-bundle-renderer: ^1.0.1
@@ -739,7 +740,7 @@ importers:
       style-resources-loader: 1.5.0_webpack@5.75.0
       time-fix-plugin: 2.0.7_webpack@5.75.0
       ufo: 1.0.1
-      unplugin: 1.0.1
+      unplugin: 1.1.0
       url-loader: 4.1.1_p5dl6emkcwslbw72e37w4ug7em
       vue-bundle-renderer: 1.0.1
       vue-loader: 17.0.1_vue@3.2.47+webpack@5.75.0
@@ -1968,7 +1969,7 @@ packages:
       estree-walker: 2.0.2
       glob: 8.1.0
       is-reference: 1.2.1
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       rollup: 3.14.0
 
   /@rollup/plugin-inject/5.0.3_rollup@3.14.0:
@@ -1982,7 +1983,7 @@ packages:
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.14.0
       estree-walker: 2.0.2
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       rollup: 3.14.0
 
   /@rollup/plugin-json/6.0.0_rollup@3.14.0:
@@ -2024,7 +2025,7 @@ packages:
         optional: true
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.14.0
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       rollup: 3.14.0
 
   /@rollup/plugin-replace/5.0.2_rollup@3.15.0:
@@ -2037,7 +2038,7 @@ packages:
         optional: true
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.15.0
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       rollup: 3.15.0
     dev: false
 
@@ -2558,7 +2559,7 @@ packages:
       colorette: 2.0.19
       consola: 2.15.3
       fast-glob: 3.2.12
-      magic-string: 0.26.7
+      magic-string: 0.29.0
       pathe: 0.3.9
       perfect-debounce: 0.1.3
     transitivePeerDependencies:
@@ -2712,7 +2713,7 @@ packages:
       '@unocss/inspector': 0.45.30
       '@unocss/scope': 0.45.30
       '@unocss/transformer-directives': 0.45.30
-      magic-string: 0.26.7
+      magic-string: 0.29.0
     transitivePeerDependencies:
       - rollup
     dev: true
@@ -2726,7 +2727,7 @@ packages:
       '@rollup/pluginutils': 5.0.2
       '@unocss/config': 0.45.30
       '@unocss/core': 0.45.30
-      magic-string: 0.26.7
+      magic-string: 0.29.0
       unplugin: 0.10.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
@@ -2906,7 +2907,7 @@ packages:
       '@vue/reactivity-transform': 3.2.47
       '@vue/shared': 3.2.47
       estree-walker: 2.0.2
-      magic-string: 0.25.9
+      magic-string: 0.29.0
       postcss: 8.4.21
       source-map: 0.6.1
 
@@ -2927,7 +2928,7 @@ packages:
       '@vue/compiler-core': 3.2.47
       '@vue/shared': 3.2.47
       estree-walker: 2.0.2
-      magic-string: 0.25.9
+      magic-string: 0.29.0
 
   /@vue/reactivity/3.2.47:
     resolution: {integrity: sha512-7khqQ/75oyyg+N/e+iwV6lpy1f5wq759NdlS1fpAhFXa8VeAIKGgk2E/C4VF59lx5b+Ezs5fpp/5WsRYXQiKxQ==}
@@ -6237,30 +6238,11 @@ packages:
     resolution: {integrity: sha512-ysxwsnTKdAx96aTRdhDOCQfDgbHnt8SK0KY8SEjO0wHinhWOFTESbjVCMPbU1uGXg/ch4lifqx0wfjOawU2+WA==}
     engines: {node: '>=12'}
 
-  /magic-string/0.25.9:
-    resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
-    dependencies:
-      sourcemap-codec: 1.4.8
-
-  /magic-string/0.26.7:
-    resolution: {integrity: sha512-hX9XH3ziStPoPhJxLq1syWuZMxbDvGNbVchfrdCtanC7D13888bMFow61x8axrx+GfHLtVeAx2kxL7tTGRl+Ow==}
-    engines: {node: '>=12'}
-    dependencies:
-      sourcemap-codec: 1.4.8
-    dev: true
-
-  /magic-string/0.27.0:
-    resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}
-    engines: {node: '>=12'}
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.14
-
   /magic-string/0.29.0:
     resolution: {integrity: sha512-WcfidHrDjMY+eLjlU+8OvwREqHwpgCeKVBUpQ3OhYYuvfaYCUgcbuBzappNzZvg/v8onU3oQj+BYpkOJe9Iw4Q==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.14
-    dev: false
 
   /make-dir/3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
@@ -7590,7 +7572,7 @@ packages:
       rollup: ^3.0.0
       typescript: ^4.1
     dependencies:
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       rollup: 3.14.0
       typescript: 4.9.5
     optionalDependencies:
@@ -7876,10 +7858,6 @@ packages:
   /source-map/0.7.4:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
-
-  /sourcemap-codec/1.4.8:
-    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
-    deprecated: Please use @jridgewell/sourcemap-codec instead
 
   /spdx-correct/3.1.1:
     resolution: {integrity: sha512-cOYcUWwhCuHCXi49RhFRCyJEK3iPj1Ziz9DpViV3tbZOwXD49QzIN3MpOLJNxh2qwq2lJJZaKMVw9qNi4jTC0w==}
@@ -8391,7 +8369,7 @@ packages:
       globby: 13.1.3
       hookable: 5.4.2
       jiti: 1.17.0
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       mkdirp: 1.0.4
       mkdist: 1.1.1_typescript@4.9.5
       mlly: 1.1.0
@@ -8425,7 +8403,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       estree-walker: 3.0.3
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       unplugin: 1.0.1
     dev: false
 
@@ -8459,7 +8437,7 @@ packages:
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.3
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       mlly: 1.1.0
       pathe: 1.1.0
       pkg-types: 1.0.1
@@ -8477,7 +8455,7 @@ packages:
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.3
-      magic-string: 0.27.0
+      magic-string: 0.29.0
       mlly: 1.1.0
       pathe: 1.1.0
       pkg-types: 1.0.1
@@ -8572,6 +8550,15 @@ packages:
       chokidar: 3.5.3
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.5.0
+
+  /unplugin/1.1.0:
+    resolution: {integrity: sha512-I8obQ8Rs/hnkxokRV6g8JKOQFgYNnTd9DL58vcSt5IJ9AkK8wbrtsnzD5hi4BJlvcY536JzfEXj9L6h7j559/A==}
+    dependencies:
+      acorn: 8.8.2
+      chokidar: 3.5.3
+      webpack-sources: 3.2.3
+      webpack-virtual-modules: 0.5.0
+    dev: false
 
   /unstorage/1.1.4:
     resolution: {integrity: sha512-nrnCoWN8ewaZrwz5yf7QGkMn0FDoVer6yGIR56wvocNzAmZi1vXOnCaBxueB3Uu/SqNSH5N/ww41t6jNT8XccA==}
