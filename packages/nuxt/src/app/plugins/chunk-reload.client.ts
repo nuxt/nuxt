@@ -12,11 +12,11 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     let handledPath: Record<string, any> = {}
     try {
-      handledPath = JSON.parse(localStorage.getItem('n:chunk:reload') ?? '{}')
+      handledPath = JSON.parse(localStorage.getItem('nuxt:reload') || '{}')
     } catch {}
 
     if (handledPath?.path !== to.fullPath || handledPath?.expires < Date.now()) {
-      localStorage.setItem('n:chunk:reload', JSON.stringify({ path: to.fullPath, expires: Date.now() + 10000 }))
+      localStorage.setItem('nuxt:reload', JSON.stringify({ path: to.fullPath, expires: Date.now() + 10000 }))
       window.location.href = to.fullPath
     }
   })
