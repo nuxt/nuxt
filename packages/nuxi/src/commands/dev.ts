@@ -46,7 +46,10 @@ export default defineNuxtCommand({
 
     const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
 
-    const config = await loadNuxtConfig({})
+    const config = await loadNuxtConfig({
+      cwd: rootDir,
+      overrides: { dev: true }
+    })
 
     const listener = await listen(serverHandler, {
       showURL: false,
