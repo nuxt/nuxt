@@ -7,6 +7,7 @@
       foo="hello"
     >
       <template #test>
+        <BreakServerComponent />
         <div class="slot-test">
           Hello
           <BreaksServer />
