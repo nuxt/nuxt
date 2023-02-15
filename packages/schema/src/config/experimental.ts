@@ -28,11 +28,16 @@ export default defineUntypedSchema({
     treeshakeClientOnly: true,
 
     /**
-     * Perform a hard reload of the new route when a chunk fails to load
-     * when navigating to a new route.
+     * Emit `app:chunkError` hook when there is an error loading vite/webpack
+     * chunks.
+     *
+     * You can set this to `reload` to perform a hard reload of the new route
+     * when a chunk fails to load when navigating to a new route.
+     *
      * @see https://github.com/nuxt/nuxt/pull/19038
+     * @type {boolean | 'reload'}
      */
-    reloadOnRouteChunkError: false,
+    emitRouteChunkError: false,
 
     /**
      * Use vite-node for on-demand server chunk loading

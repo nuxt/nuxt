@@ -193,7 +193,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add experimental page reload support
-  if (nuxt.options.experimental.reloadOnRouteChunkError) {
+  if (nuxt.options.experimental.emitRouteChunkError === 'reload') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
 

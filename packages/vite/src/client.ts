@@ -69,10 +69,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx),
-      chunkErrorPlugin({
-        sourcemap: ctx.nuxt.options.sourcemap.client
-      })
+      viteNodePlugin(ctx)
     ],
     appType: 'custom',
     server: {
@@ -84,6 +81,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   // to detect whether to inject production or development code (such as HMR code)
   if (!ctx.nuxt.options.dev) {
     clientConfig.server!.hmr = false
+  }
+
+  // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
+  if (ctx.nuxt.options.experimental.emitRouteChunkError) {
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
   }
 
   // We want to respect users' own rollup output options

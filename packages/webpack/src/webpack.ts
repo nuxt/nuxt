@@ -40,7 +40,8 @@ export async function bundle (nuxt: Nuxt) {
     config.plugins!.push(DynamicBasePlugin.webpack({
       sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
-    if (config.name === 'client') {
+    // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     config.plugins!.push(composableKeysPlugin.webpack({
