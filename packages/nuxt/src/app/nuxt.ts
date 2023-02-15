@@ -59,6 +59,7 @@ export interface NuxtSSRContext extends SSRContext {
 interface _NuxtApp {
   vueApp: App<Element>
   globalName: string
+  version: string
 
   hooks: Hookable<RuntimeNuxtHooks>
   hook: _NuxtApp['hooks']['hook']
@@ -119,6 +120,7 @@ export function createNuxtApp (options: CreateOptions) {
   const nuxtApp: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
+    version: __NUXT_VERSION__,
     payload: reactive({
       data: {},
       state: {},
