@@ -53,7 +53,8 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          include: ['vue']
+          include: ['vue'],
+          exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
         build: {

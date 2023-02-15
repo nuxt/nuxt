@@ -90,6 +90,13 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-    config.plugins.push(new ForkTSCheckerWebpackPlugin({ logger }))
+    config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+      logger,
+      typescript: {
+        extensions: {
+          vue: { compiler: '@vue/compiler-sfc' }
+        }
+      }
+    }))
   }
 }

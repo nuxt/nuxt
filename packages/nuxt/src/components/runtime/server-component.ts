@@ -4,7 +4,10 @@ import { hash } from 'ohash'
 import { appendHeader } from 'h3'
 
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
-import { useAsyncData, useHead, useNuxtApp, useRequestEvent } from '#app'
+import { useNuxtApp } from '#app/nuxt'
+import { useRequestEvent } from '#app/composables/ssr'
+import { useAsyncData } from '#app/composables/asyncData'
+import { useHead } from '#app/composables/head'
 
 const pKey = '_islandPromises'
 

@@ -3,12 +3,12 @@ import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
 import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
-import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
@@ -85,7 +85,7 @@ interface _NuxtApp {
     rendered?: Function
     error?: Error | {
       url: string
-      statusCode: string
+      statusCode: number
       statusMessage: string
       message: string
       description: string

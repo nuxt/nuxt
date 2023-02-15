@@ -2,13 +2,6 @@ import type { InlinePreset } from 'unimport'
 import { defineUnimportPreset } from 'unimport'
 
 const commonPresets: InlinePreset[] = [
-  // #head
-  defineUnimportPreset({
-    from: '#head',
-    imports: [
-      'useHead'
-    ]
-  }),
   // vue-demi (mocked)
   defineUnimportPreset({
     from: 'vue-demi',
@@ -22,6 +15,9 @@ const commonPresets: InlinePreset[] = [
 const appPreset = defineUnimportPreset({
   from: '#app',
   imports: [
+    'useHead',
+    'useSeoMeta',
+    'useServerSeoMeta',
     'useAsyncData',
     'useLazyAsyncData',
     'useNuxtData',
@@ -37,6 +33,7 @@ const appPreset = defineUnimportPreset({
     'useCookie',
     'useRequestHeaders',
     'useRequestEvent',
+    'useRequestFetch',
     'setResponseStatus',
     'setPageLayout',
     'onNuxtReady',
@@ -143,12 +140,27 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState'
-  ] as Array<keyof typeof import('vue')>
+  ]
+})
+
+const vueTypesPreset = defineUnimportPreset({
+  from: 'vue',
+  type: true,
+  imports: [
+    'Component',
+    'ComponentPublicInstance',
+    'ComputedRef',
+    'InjectionKey',
+    'PropType',
+    'Ref',
+    'VNode'
+  ]
 })
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   appPreset,
   routerPreset,
-  vuePreset
+  vuePreset,
+  vueTypesPreset
 ]

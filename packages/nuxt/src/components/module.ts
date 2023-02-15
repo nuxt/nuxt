@@ -1,12 +1,12 @@
 import { statSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate, updateTemplates } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
 import { componentsPluginTemplate, componentsTemplate, componentsIslandsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
@@ -192,35 +192,35 @@ export default defineNuxtModule<ComponentsOptions>({
       const mode = isClient ? 'client' : 'server'
 
       config.plugins = config.plugins || []
-      config.plugins.push(loaderPlugin.vite({
-        sourcemap: nuxt.options.sourcemap[mode],
-        getComponents,
-        mode,
-        experimentalComponentIslands: nuxt.options.experimental.componentIslands
-      }))
       if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents
         }))
       }
+      config.plugins.push(loaderPlugin.vite({
+        sourcemap: nuxt.options.sourcemap[mode],
+        getComponents,
+        mode,
+        experimentalComponentIslands: nuxt.options.experimental.componentIslands
+      }))
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
         const mode = config.name === 'client' ? 'client' : 'server'
         config.plugins = config.plugins || []
-        config.plugins.push(loaderPlugin.webpack({
-          sourcemap: nuxt.options.sourcemap[mode],
-          getComponents,
-          mode,
-          experimentalComponentIslands: nuxt.options.experimental.componentIslands
-        }))
         if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
             sourcemap: nuxt.options.sourcemap[mode],
             getComponents
           }))
         }
+        config.plugins.push(loaderPlugin.webpack({
+          sourcemap: nuxt.options.sourcemap[mode],
+          getComponents,
+          mode,
+          experimentalComponentIslands: nuxt.options.experimental.componentIslands
+        }))
       })
     })
   }

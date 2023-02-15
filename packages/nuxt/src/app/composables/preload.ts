@@ -39,7 +39,6 @@ export async function preloadRouteComponents (to: string, router: Router & { _ro
 
   if (!router._routePreloaded) { router._routePreloaded = new Set() }
   if (router._routePreloaded.has(to)) { return }
-  router._routePreloaded.add(to)
 
   const promises = router._preloadPromises = router._preloadPromises || []
 
@@ -47,6 +46,8 @@ export async function preloadRouteComponents (to: string, router: Router & { _ro
     // Defer adding new preload requests until the existing ones have resolved
     return Promise.all(promises).then(() => preloadRouteComponents(to, router))
   }
+
+  router._routePreloaded.add(to)
 
   const components = router.resolve(to).matched
     .map(component => component.components?.default)

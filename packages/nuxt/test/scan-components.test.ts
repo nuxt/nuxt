@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
-import type { ComponentsDir } from '@nuxt/schema'
 import { expect, it, vi } from 'vitest'
 import { scanComponents } from '../src/components/scan'
+import type { ComponentsDir } from 'nuxt/schema'
 
 const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
@@ -146,6 +146,18 @@ const expectedComponents = [
     island: undefined,
     prefetch: false,
     preload: false
+  },
+  {
+    chunkName: 'components/client-with-client-only-setup',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-with-client-only-setup',
+    mode: 'all',
+    pascalName: 'ClientWithClientOnlySetup',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/client/WithClientOnlySetup.vue'
   },
   {
     mode: 'server',

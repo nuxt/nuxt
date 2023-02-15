@@ -1,1 +1,0 @@
-Sitemap: https://nuxt.com/sitemap.xml

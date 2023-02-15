@@ -1,6 +1,5 @@
 import { join, normalize, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
-import type { Nuxt, NuxtOptions, NuxtHooks } from '@nuxt/schema'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 
@@ -22,6 +21,7 @@ import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -80,8 +80,10 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(ImportProtectionPlugin.webpack(config))
 
   // Add unctx transform
-  addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-  addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+  nuxt.hook('modules:done', () => {
+    addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+  })
 
   if (!nuxt.options.dev) {
     const removeFromServer = ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount']
@@ -109,6 +111,9 @@ async function initNuxt (nuxt: Nuxt) {
       }
     })
   }
+
+  // Transpile #app if it is imported directly from subpath export
+  nuxt.options.build.transpile.push('nuxt/app')
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(

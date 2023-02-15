@@ -16,6 +16,7 @@
     </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
+    <Spin>Test</Spin>
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />
     <ClientWrapped ref="clientRef" style="color: red;" class="client-only" />
