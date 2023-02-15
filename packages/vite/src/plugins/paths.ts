@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
 import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
-import { SourceMap } from 'rollup'
+import type { SourceMap } from 'rollup'
 
 export interface RuntimePathsOptions {
   sourcemap?: boolean
