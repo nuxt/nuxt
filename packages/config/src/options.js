@@ -67,7 +67,7 @@ export function getNuxtConfig (_options) {
     : `nuxt`
 
   // Resolve rootDir
-  options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
+  options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : path.normalize(process.cwd())
 
   // Apply defaults by ${buildDir}/dist/build.config.js
   // TODO: Unsafe operation.

@@ -170,7 +170,7 @@ export async function snapshot ({ globbyOptions, ignore, rootDir }) {
   const files = await globby('**/*.*', {
     ...globbyOptions,
     ignore,
-    cwd: path.normalize(rootDir),
+    cwd: rootDir,
     absolute: true
   })
 
