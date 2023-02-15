@@ -33,7 +33,32 @@ function vuePlugin (options: Options) {
 
 const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
-const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({ sourcemap: false, getComponents () { return [] } }, { framework: 'rollup' }) as Plugin
+const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
+  sourcemap: false,
+  getComponents () {
+    return [{
+      pascalName: 'NotDotClientComponent',
+      kebabName: 'not-dot-client-component',
+      export: 'default',
+      filePath: 'dummypath',
+      shortPath: 'dummypath',
+      chunkName: '123',
+      prefetch: false,
+      preload: false,
+      mode: 'client'
+    }, {
+      pascalName: 'DotClientComponent',
+      kebabName: 'dot-client-component',
+      export: 'default',
+      filePath: 'dummypath',
+      shortPath: 'dummypath',
+      chunkName: '123',
+      prefetch: false,
+      preload: false,
+      mode: 'client'
+    }]
+  }
+}, { framework: 'rollup' }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   const result = await (treeshakeTemplatePlugin.transform! as Function).call({
@@ -141,6 +166,15 @@ describe('treeshake client only in ssr', () => {
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
       expect(treeshaken).toContain('import { Glob, } from \'#components\'')
+
+      // treeshake .client slot
+      expect(treeshaken).not.toContain('ByeBye')
+      // don't treeshake variables that has the same name as .client components
+      expect(treeshaken).toContain('NotDotClientComponent')
+      expect(treeshaken).not.toContain('(DotClientComponent')
+
+      expect(treeshaken).not.toContain('AutoImportedComponent')
+      expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
 
       if (state.options.isProduction === false) {
         // treeshake at inlined template

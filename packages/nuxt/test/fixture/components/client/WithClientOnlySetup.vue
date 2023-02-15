@@ -1,5 +1,8 @@
 <template>
   <div>
+    <NotDotClientComponent>
+      <ByeBye />
+    </NotDotClientComponent>
     <div>
       <Glob />
     </div>
@@ -7,7 +10,7 @@
     <div class="not-client">
       Hello
     </div>
-    <ClientOnly>
+    <DotClientComponent>
       <HelloWorld />
       <Glob />
       <SomeGlob />
@@ -15,8 +18,10 @@
       <NotToBeTreeShaken />
       <ObjectPattern />
       <ObjectPatternDeclaration />
+      <AutoImportedNotTreeShakenComponent />
+      <AutoImportedComponent />
       <Halllo />
-    </ClientOnly>
+    </DotClientComponent>
     <ClientOnly>
       <div class="should-be-treeshaken">
         this should not be visible
@@ -36,6 +41,7 @@
     <Dont />
     <That />
     <NotToBeTreeShaken />
+    <AutoImportedNotTreeShakenComponent />
   </div>
 </template>
 
@@ -46,7 +52,9 @@ import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'
 import { Glob, ClientImport } from '#components'
 
 const hello = 'world'
+const ByeBye = defineAsyncComponent(() => import('./../some-glob.global.vue'))
 
+const NotDotClientComponent = defineAsyncComponent(() => import('./../some.island.vue'))
 const SomeIsland = defineAsyncComponent(async () => {
   if (process.client) {
     return (await import('./../some.island.vue'))
