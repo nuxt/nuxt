@@ -22,7 +22,7 @@
     "autoprefixer": "^10.4.13",
     "css-loader": "^6.7.3",
     "css-minimizer-webpack-plugin": "^4.2.2",
-    "cssnano": "^5.1.14",
+    "cssnano": "^5.1.15",
     "esbuild-loader": "^3.0.1",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
