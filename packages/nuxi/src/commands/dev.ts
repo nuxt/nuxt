@@ -76,6 +76,8 @@ export default defineNuxtCommand({
           await currentNuxt.close()
         }
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        currentNuxt.hook('restart', () => load(true))
+
         if (!isRestart) {
           showURL()
         }
