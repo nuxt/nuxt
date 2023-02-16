@@ -37,7 +37,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 // --- Internal ---
 
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
-  if (!hasProtocol(url, true)) {
+  if (hasProtocol(url, true)) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const u = new URL(url, 'http://localhost')
