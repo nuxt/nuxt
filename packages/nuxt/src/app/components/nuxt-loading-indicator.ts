@@ -42,11 +42,13 @@ export default defineComponent({
         right: 0,
         left: 0,
         pointerEvents: 'none',
-        width: `${indicator.progress.value}%`,
+        width: 'auto',
         height: `${props.height}px`,
         opacity: indicator.isLoading.value ? 1 : 0,
         background: props.color || undefined,
         backgroundSize: `${(100 / indicator.progress.value) * 100}% auto`,
+        transform: `scaleX(${indicator.progress.value}%`,
+        transform-origin: 'left';
         transition: 'width 0.1s, height 0.4s, opacity 0.4s',
         zIndex: 999999
       }
