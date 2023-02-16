@@ -1,6 +1,6 @@
 {
   "name": "nuxi",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -18,8 +18,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/kit": "3.2.0",
-    "@nuxt/schema": "3.2.0",
+    "@nuxt/kit": "3.2.1",
+    "@nuxt/schema": "3.2.1",
     "@types/clear": "^0",
     "@types/flat": "^5.0.2",
     "@types/mri": "^1.1.1",
