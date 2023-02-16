@@ -29,7 +29,7 @@ importers:
       '@types/node': ^18.13.0
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
-      '@unocss/reset': ^0.49.4
+      '@unocss/reset': ^0.49.5
       case-police: ^0.5.11
       changelogen: ^0.4.1
       crawler: ^1.4.0
@@ -65,7 +65,7 @@ importers:
       '@types/node': 18.13.0
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
-      '@unocss/reset': 0.49.4
+      '@unocss/reset': 0.49.5
       case-police: 0.5.11
       changelogen: 0.4.1
       crawler: 1.4.0
@@ -418,7 +418,7 @@ importers:
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^11.0.1
       '@types/hash-sum': ^1.0.0
-      '@unhead/ssr': ^1.0.21
+      '@unhead/ssr': ^1.0.22
       '@vue/reactivity': ^3.2.47
       '@vue/shared': ^3.2.47
       '@vueuse/head': ^1.0.26
@@ -449,7 +449,7 @@ importers:
       unbuild: ^1.1.1
       unctx: ^2.1.2
       unenv: ^1.1.1
-      unhead: ^1.0.21
+      unhead: ^1.0.22
       unimport: ^2.2.4
       unplugin: ^1.1.0
       untyped: ^1.2.2
@@ -464,7 +464,7 @@ importers:
       '@nuxt/telemetry': 2.1.9
       '@nuxt/ui-templates': 1.1.1
       '@nuxt/vite-builder': link:../vite
-      '@unhead/ssr': 1.0.21
+      '@unhead/ssr': 1.0.22
       '@vue/reactivity': 3.2.47
       '@vue/shared': 3.2.47
       '@vueuse/head': 1.0.26_vue@3.2.47
@@ -494,7 +494,7 @@ importers:
       ufo: 1.0.1
       unctx: 2.1.2
       unenv: 1.1.1
-      unhead: 1.0.21
+      unhead: 1.0.22
       unimport: 2.2.4
       unplugin: 1.1.0
       untyped: 1.2.2
@@ -511,7 +511,7 @@ importers:
     specifiers:
       '@types/lodash.template': ^4
       '@types/semver': ^7.3.13
-      '@unhead/schema': ^1.0.21
+      '@unhead/schema': ^1.0.22
       '@vitejs/plugin-vue': ^4.0.0
       c12: ^1.1.0
       create-require: ^1.1.1
@@ -546,7 +546,7 @@ importers:
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.13
-      '@unhead/schema': 1.0.21
+      '@unhead/schema': 1.0.22
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.1
       nitropack: 2.2.1
       unbuild: 1.1.1
@@ -2505,12 +2505,6 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unhead/dom/1.0.21:
-    resolution: {integrity: sha512-rwVz7NWMdQ8kSTXv/WOhB0eTWYFD2SQwQ/J109IEqNUN9X3pIwcvdvlXMCG+qhJGFyiIgOl2X+W0cE+u/IiLVA==}
-    dependencies:
-      '@unhead/schema': 1.0.21
-    dev: false
-
   /@unhead/dom/1.0.22:
     resolution: {integrity: sha512-oqTHB6OgiH91grELZLQxxw17la86dUBiGz40fItaiE6ywIImCSGjid10IjH5VVifHSmLaQ08qq+s5HH0s/hZ4w==}
     dependencies:
@@ -2518,29 +2512,16 @@ packages:
       '@unhead/shared': 1.0.22
     dev: false
 
-  /@unhead/schema/1.0.21:
-    resolution: {integrity: sha512-amYg6vJ37xUhnL6bvL4S3lz6yDs5lWeqJu63/3a5bxH3Dq0WPJ+kdhpUXI+4enoNaWvLvm860WXUOtKr5D+DMg==}
-    dependencies:
-      '@zhead/schema': 1.1.0
-      hookable: 5.4.2
-
   /@unhead/schema/1.0.22:
     resolution: {integrity: sha512-Pg+F4UmYhI3Vz1Jio3bjCxEjuhvqlYrybwphsK2XacIDHYGQmcvBtMiB/5Y8Diuy1lGfHFloWaNjMuvAdh5gNA==}
     dependencies:
       hookable: 5.4.2
       zhead: 2.0.0
-    dev: false
 
   /@unhead/shared/1.0.22:
     resolution: {integrity: sha512-0PsmYRoATAdCsJ7edBxKXgUq2vP9gznFOLux+OelF5axGTo3WpxeK7BczaPmyz3fVHg6mJWhWOaHIeOktOcTiQ==}
     dependencies:
       '@unhead/schema': 1.0.22
-    dev: false
-
-  /@unhead/ssr/1.0.21:
-    resolution: {integrity: sha512-QWy+vKZWVb+XfHl/B/rEoniMGFpDjXiYBkjJZyuf+9By8DzQUscMaTv14neW1ZR6pq56c4B7Tp1N3Lve8SW+rA==}
-    dependencies:
-      '@unhead/schema': 1.0.21
     dev: false
 
   /@unhead/ssr/1.0.22:
@@ -2697,8 +2678,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset/0.49.4:
-    resolution: {integrity: sha512-+9j4bN4cWlsWr3HGlFk+bAb7+1DdwTxQM3UbHjd9QsKVAVV1gE0VHHxU207NOYsIdeBFAOFVkxqFYCyhnfQpnQ==}
+  /@unocss/reset/0.49.5:
+    resolution: {integrity: sha512-KjFCmN+VjluhB0aRVxl0Qzzmibv3Zmwp1Lu9TOPXOYUfmAb21Ynw+FTpln/XvUylAII7STU93n+V2f91cHB34A==}
     dev: true
 
   /@unocss/scope/0.45.30:
@@ -3185,9 +3166,6 @@ packages:
 
   /@xtuc/long/4.2.2:
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
-
-  /@zhead/schema/1.1.0:
-    resolution: {integrity: sha512-hEtK+hUAKS3w1+F++m6EeZ6bWeLDXraqN2nCyRVIP5vvR3bWjXVP9OM9x7Pmn7Hp6T7FKmsG2C8rvouQU2806w==}
 
   /abbrev/1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -8458,14 +8436,6 @@ packages:
       node-fetch-native: 1.0.1
       pathe: 1.1.0
 
-  /unhead/1.0.21:
-    resolution: {integrity: sha512-vHXnozOkoSkCYIpGTWkW4JJbWMlY2I737sbBGxPj6maa9gEDMC50gwhCCVMnIvvMsJ6OxgNE5asEfSkSopfO+A==}
-    dependencies:
-      '@unhead/dom': 1.0.21
-      '@unhead/schema': 1.0.21
-      hookable: 5.4.2
-    dev: false
-
   /unhead/1.0.22:
     resolution: {integrity: sha512-CIA8aEFHfoW3uABL+inYqDz5h50xgK3mwQQzPL4WtJRG9fEFciM2mjLtW7djvrnUlcGyf/tgVTOcAkhHb+320Q==}
     dependencies:
@@ -9337,7 +9307,6 @@ packages:
 
   /zhead/2.0.0:
     resolution: {integrity: sha512-d7URVnQ0i2llNAewFknJ8L87R23/1XByNWmFJonY2Pwr7SP/HtZ3h8LW6N014lu1uTc5s+b/cDc8sZ3ICMIOPA==}
-    dev: false
 
   /zip-stream/4.1.0:
     resolution: {integrity: sha512-zshzwQW7gG7hjpBlgeQP9RuyPGNxvJdzR8SUM3QhxCnLjWN2E7j3dOvpeDcQoETfHx0urRS7EtmVToql7YpU4A==}
