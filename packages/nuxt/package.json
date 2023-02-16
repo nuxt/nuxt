@@ -76,7 +76,7 @@
     "strip-literal": "^1.0.1",
     "ufo": "^1.0.1",
     "unctx": "^2.1.2",
-    "unenv": "^1.1.1",
+    "unenv": "^1.2.0",
     "unhead": "^1.0.22",
     "unimport": "^2.2.4",
     "unplugin": "^1.1.0",
