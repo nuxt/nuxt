@@ -36,7 +36,12 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 // --- Internal ---
 
+const LOCAL_PATH_RE = /^\/[^/]/
+
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+  if (!LOCAL_PATH_RE.test(url)) {
+    throw new Error('Payload URL must be an absolute path without hostname: ' + url)
+  }
   const u = new URL(url, 'http://localhost')
   if (u.search) {
     throw new Error('Payload URL cannot contain search params: ' + url)
@@ -45,7 +50,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL cannot contain host: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, url, hash ? `_payload.${hash}.js` : '_payload.js')
+  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
 }
 
 async function _importPayload (payloadURL: string) {
