@@ -21,6 +21,8 @@
       <AutoImportedNotTreeShakenComponent />
       <AutoImportedComponent />
       <Halllo />
+      <Both />
+      <AreTreeshaken />
     </DotClientComponent>
     <ClientOnly>
       <div class="should-be-treeshaken">
@@ -50,6 +52,7 @@ import { Treeshaken } from 'somepath'
 import HelloWorld from '../HelloWorld.vue'
 import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'
 import { Glob, ClientImport } from '#components'
+import { Both, AreTreeshaken } from '#imports'
 
 const hello = 'world'
 const ByeBye = defineAsyncComponent(() => import('./../some-glob.global.vue'))

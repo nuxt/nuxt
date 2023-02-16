@@ -176,6 +176,9 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).not.toContain('AutoImportedComponent')
       expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
 
+      expect(treeshaken).not.toContain('Both')
+      expect(treeshaken).not.toContain('AreTreeshaken')
+
       if (state.options.isProduction === false) {
         // treeshake at inlined template
         expect(treeshaken).not.toContain('ssrRenderComponent($setup["HelloWorld"]')
