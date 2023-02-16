@@ -38,7 +38,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   if (!hasProtocol(url, true)) {
-    throw new Error('Payload URL must be an absolute path without hostname: ' + url)
+    throw new Error('Payload URL must not include hostname: ' + url)
   }
   const u = new URL(url, 'http://localhost')
   if (u.search) {
