@@ -1,4 +1,4 @@
-import { joinURL } from 'ufo'
+import { joinURL, hasProtocol } from 'ufo'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { useHead } from './head'
 
@@ -37,12 +37,12 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 // --- Internal ---
 
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+  if (hasProtocol(url, true)) {
+    throw new Error('Payload URL must not include hostname: ' + url)
+  }
   const u = new URL(url, 'http://localhost')
   if (u.search) {
     throw new Error('Payload URL cannot contain search params: ' + url)
-  }
-  if (u.host !== 'localhost') {
-    throw new Error('Payload URL cannot contain host: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
   return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
