@@ -421,7 +421,7 @@ importers:
       '@unhead/ssr': ^1.0.21
       '@vue/reactivity': ^3.2.47
       '@vue/shared': ^3.2.47
-      '@vueuse/head': ^1.0.25
+      '@vueuse/head': ^1.0.26
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
       defu: ^6.1.2
@@ -467,7 +467,7 @@ importers:
       '@unhead/ssr': 1.0.21
       '@vue/reactivity': 3.2.47
       '@vue/shared': 3.2.47
-      '@vueuse/head': 1.0.25_vue@3.2.47
+      '@vueuse/head': 1.0.26_vue@3.2.47
       chokidar: 3.5.3
       cookie-es: 0.5.0
       defu: 6.1.2
@@ -2511,11 +2511,31 @@ packages:
       '@unhead/schema': 1.0.21
     dev: false
 
+  /@unhead/dom/1.0.22:
+    resolution: {integrity: sha512-oqTHB6OgiH91grELZLQxxw17la86dUBiGz40fItaiE6ywIImCSGjid10IjH5VVifHSmLaQ08qq+s5HH0s/hZ4w==}
+    dependencies:
+      '@unhead/schema': 1.0.22
+      '@unhead/shared': 1.0.22
+    dev: false
+
   /@unhead/schema/1.0.21:
     resolution: {integrity: sha512-amYg6vJ37xUhnL6bvL4S3lz6yDs5lWeqJu63/3a5bxH3Dq0WPJ+kdhpUXI+4enoNaWvLvm860WXUOtKr5D+DMg==}
     dependencies:
       '@zhead/schema': 1.1.0
       hookable: 5.4.2
+
+  /@unhead/schema/1.0.22:
+    resolution: {integrity: sha512-Pg+F4UmYhI3Vz1Jio3bjCxEjuhvqlYrybwphsK2XacIDHYGQmcvBtMiB/5Y8Diuy1lGfHFloWaNjMuvAdh5gNA==}
+    dependencies:
+      hookable: 5.4.2
+      zhead: 2.0.0
+    dev: false
+
+  /@unhead/shared/1.0.22:
+    resolution: {integrity: sha512-0PsmYRoATAdCsJ7edBxKXgUq2vP9gznFOLux+OelF5axGTo3WpxeK7BczaPmyz3fVHg6mJWhWOaHIeOktOcTiQ==}
+    dependencies:
+      '@unhead/schema': 1.0.22
+    dev: false
 
   /@unhead/ssr/1.0.21:
     resolution: {integrity: sha512-QWy+vKZWVb+XfHl/B/rEoniMGFpDjXiYBkjJZyuf+9By8DzQUscMaTv14neW1ZR6pq56c4B7Tp1N3Lve8SW+rA==}
@@ -2523,13 +2543,22 @@ packages:
       '@unhead/schema': 1.0.21
     dev: false
 
-  /@unhead/vue/1.0.21_vue@3.2.47:
-    resolution: {integrity: sha512-UCwgY4MbQEnFUo+/xmzBPK3PjC+oeCCzSsgK6eLk3vUC8Cuarrvw06wy8s0cO94DkpAi56Ih9oRWA16a/tih1A==}
+  /@unhead/ssr/1.0.22:
+    resolution: {integrity: sha512-0r9b+QFUAABHqewlqwW+mfNTR4qtWsBe3KCCzhqrNEXFxMBAXqqAtnKRiDJ3YwVZZHJ3YULLu7GlmfivIBM5zA==}
+    dependencies:
+      '@unhead/schema': 1.0.22
+      '@unhead/shared': 1.0.22
+    dev: false
+
+  /@unhead/vue/1.0.22_vue@3.2.47:
+    resolution: {integrity: sha512-v6PdiDYKuRXZYFPB11QvoiFjP7Pw+U59MmA0V4yvRZQSz9KAx4KUefgxi3f6JnLeyyUX1xPEZ1Zv6z6Pm8nyOg==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.0.21
+      '@unhead/schema': 1.0.22
+      '@unhead/shared': 1.0.22
       hookable: 5.4.2
+      unhead: 1.0.22
       vue: 3.2.47
     dev: false
 
@@ -2972,15 +3001,15 @@ packages:
       - vue
     dev: true
 
-  /@vueuse/head/1.0.25_vue@3.2.47:
-    resolution: {integrity: sha512-ACfRqD3bbh92cIzDDR1CmqShXCXhQv/EUUcaDMYaexA4ulorYHd+2Yo5/ljoS4jDoMgsqBSP0XJZT3nySMB5gw==}
+  /@vueuse/head/1.0.26_vue@3.2.47:
+    resolution: {integrity: sha512-Dg51HTkGNS3XCDk5ZMKrF+zhrd0iDLhl7YPpsiSUGR8MFQrulu62BhTOh6gDXic/xNNPB3PLstKtVl49S7CbEQ==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/dom': 1.0.21
-      '@unhead/schema': 1.0.21
-      '@unhead/ssr': 1.0.21
-      '@unhead/vue': 1.0.21_vue@3.2.47
+      '@unhead/dom': 1.0.22
+      '@unhead/schema': 1.0.22
+      '@unhead/ssr': 1.0.22
+      '@unhead/vue': 1.0.22_vue@3.2.47
       vue: 3.2.47
     dev: false
 
@@ -8437,6 +8466,15 @@ packages:
       hookable: 5.4.2
     dev: false
 
+  /unhead/1.0.22:
+    resolution: {integrity: sha512-CIA8aEFHfoW3uABL+inYqDz5h50xgK3mwQQzPL4WtJRG9fEFciM2mjLtW7djvrnUlcGyf/tgVTOcAkhHb+320Q==}
+    dependencies:
+      '@unhead/dom': 1.0.22
+      '@unhead/schema': 1.0.22
+      '@unhead/shared': 1.0.22
+      hookable: 5.4.2
+    dev: false
+
   /unimport/2.2.4:
     resolution: {integrity: sha512-qMgmeEGqqrrmEtm0dqxMG37J6xBtrriqxq9hILvDb+e6l2F0yTnJomLoCCp0eghLR7bYGeBsUU5Y0oyiUYhViw==}
     dependencies:
@@ -9296,6 +9334,10 @@ packages:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
     dev: true
+
+  /zhead/2.0.0:
+    resolution: {integrity: sha512-d7URVnQ0i2llNAewFknJ8L87R23/1XByNWmFJonY2Pwr7SP/HtZ3h8LW6N014lu1uTc5s+b/cDc8sZ3ICMIOPA==}
+    dev: false
 
   /zip-stream/4.1.0:
     resolution: {integrity: sha512-zshzwQW7gG7hjpBlgeQP9RuyPGNxvJdzR8SUM3QhxCnLjWN2E7j3dOvpeDcQoETfHx0urRS7EtmVToql7YpU4A==}
