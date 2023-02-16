@@ -148,6 +148,18 @@ const expectedComponents = [
     preload: false
   },
   {
+    chunkName: 'components/client-component-with-props',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-component-with-props',
+    mode: 'all',
+    pascalName: 'ClientComponentWithProps',
+    prefetch: false,
+    preload: false,
+    shortPath: 'components/client/ComponentWithProps.vue'
+  },
+  {
     chunkName: 'components/client-with-client-only-setup',
     export: 'default',
     global: undefined,
