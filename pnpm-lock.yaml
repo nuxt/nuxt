@@ -448,7 +448,7 @@ importers:
       ufo: ^1.0.1
       unbuild: ^1.1.1
       unctx: ^2.1.2
-      unenv: ^1.1.1
+      unenv: ^1.2.0
       unhead: ^1.0.22
       unimport: ^2.2.4
       unplugin: ^1.1.0
@@ -493,7 +493,7 @@ importers:
       strip-literal: 1.0.1
       ufo: 1.0.1
       unctx: 2.1.2
-      unenv: 1.1.1
+      unenv: 1.2.0
       unhead: 1.0.22
       unimport: 2.2.4
       unplugin: 1.1.0
@@ -6580,7 +6580,7 @@ packages:
       source-map-support: 0.5.21
       std-env: 3.3.2
       ufo: 1.0.1
-      unenv: 1.1.1
+      unenv: 1.2.0
       unimport: 2.2.4_rollup@3.14.0
       unstorage: 1.1.4
     transitivePeerDependencies:
@@ -8432,8 +8432,8 @@ packages:
       busboy: 1.6.0
     dev: true
 
-  /unenv/1.1.1:
-    resolution: {integrity: sha512-AfQ+sKCdeSPX/rp0tL9LZz3cAu1Mt0i9UADuN1MtbsITKDS2PqSx8LQUBMf8lKuziitIWXXwU6JXrmzARFVSRw==}
+  /unenv/1.2.0:
+    resolution: {integrity: sha512-8AcXA+xAz/C8ZVlIv+voD/uCe6V/LkQgZtQYOBjuKYNXhBitsOiy+QYrUPelLRDY2WB86Njw/qLawYNh8iDsvQ==}
     dependencies:
       defu: 6.1.2
       mime: 3.0.0
