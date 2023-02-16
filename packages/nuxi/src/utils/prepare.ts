@@ -10,6 +10,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
+      forceConsistentCasingInFileNames: true,
       jsx: 'preserve',
       target: 'ESNext',
       module: 'ESNext',
