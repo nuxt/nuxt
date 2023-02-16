@@ -75,7 +75,7 @@
     "unbuild": "^1.1.1",
     "vite": "^4.1.1",
     "vitest": "^0.28.5",
-    "vue-tsc": "^1.0.24"
+    "vue-tsc": "^1.1.0"
   },
   "packageManager": "pnpm@7.27.0",
   "engines": {
