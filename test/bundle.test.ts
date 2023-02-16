@@ -53,6 +53,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
       [
         "@babel/parser",
         "@unhead/dom",
+        "@unhead/shared",
         "@unhead/ssr",
         "@unhead/vue",
         "@vue/compiler-core",
@@ -83,6 +84,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "uncrypto",
         "unctx",
         "unenv",
+        "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
