@@ -61,7 +61,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
-      viteJsxPlugin(),
+      viteJsxPlugin(ctx.config.vueJsx),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)

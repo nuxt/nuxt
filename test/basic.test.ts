@@ -76,6 +76,15 @@ describe('pages', () => {
     await expectNoClientErrors('/')
   })
 
+  // TODO: support jsx with webpack
+  it.runIf(!isWebpack)('supports jsx', async () => {
+    const html = await $fetch('/jsx')
+
+    // should import JSX/TSX components with custom elements
+    expect(html).toContain('TSX component')
+    expect(html).toContain('<custom-component>custom</custom-component>')
+  })
+
   it('respects aliases in page metadata', async () => {
     const html = await $fetch('/some-alias')
     expect(html).toContain('Hello Nuxt 3!')
