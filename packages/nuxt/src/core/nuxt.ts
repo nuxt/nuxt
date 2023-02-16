@@ -192,6 +192,11 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
   }
 
+  // Add experimental page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'reload') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
+  }
+
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
