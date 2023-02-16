@@ -16,7 +16,7 @@
   "devDependencies": {
     "@types/lodash.template": "^4",
     "@types/semver": "^7.3.13",
-    "@unhead/schema": "^1.0.21",
+    "@unhead/schema": "^1.0.22",
     "@vitejs/plugin-vue": "^4.0.0",
     "nitropack": "^2.2.1",
     "unbuild": "latest",
