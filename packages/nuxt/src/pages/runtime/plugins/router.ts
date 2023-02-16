@@ -176,7 +176,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })])
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
-      if (!isEqual(currentURL, initialURL)) {
+      if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
         const event = await callWithNuxt(nuxtApp, useRequestEvent)
         const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
         await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
