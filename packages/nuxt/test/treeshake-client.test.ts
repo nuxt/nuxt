@@ -7,7 +7,7 @@ import { Parser } from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
-import { fixtureDir } from './utils'
+import { fixtureDir, normalizeLineEndings } from './utils'
 
 vi.mock('node:crypto', () => ({
   update: vi.fn().mockReturnThis(),
@@ -31,9 +31,34 @@ function vuePlugin (options: Options) {
   }
 }
 
-const WithClientOnly = readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString()
+const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
-const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({ sourcemap: false, getComponents () { return [] } }, { framework: 'rollup' }) as Plugin
+const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
+  sourcemap: false,
+  getComponents () {
+    return [{
+      pascalName: 'NotDotClientComponent',
+      kebabName: 'not-dot-client-component',
+      export: 'default',
+      filePath: 'dummypath',
+      shortPath: 'dummypath',
+      chunkName: '123',
+      prefetch: false,
+      preload: false,
+      mode: 'client'
+    }, {
+      pascalName: 'DotClientComponent',
+      kebabName: 'dot-client-component',
+      export: 'default',
+      filePath: 'dummypath',
+      shortPath: 'dummypath',
+      chunkName: '123',
+      prefetch: false,
+      preload: false,
+      mode: 'client'
+    }]
+  }
+}, { framework: 'rollup' }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   const result = await (treeshakeTemplatePlugin.transform! as Function).call({
@@ -73,7 +98,7 @@ const stateToTest: {name: string, options: Partial<Options & {devServer: {config
     }
   },
   {
-    name: 'dev not inlined',
+    name: 'dev',
     options: {
       isProduction: false,
       devServer: {
@@ -115,9 +140,44 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).not.toContain('const _component_ResolvedImport =')
       expect(clientResult).toContain('const _component_ResolvedImport =')
 
+      // treeshake multi line variable declaration
+      expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain("return (await import('./../some.island.vue'))")
+      expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+
+      // treeshake object and array declaration
+      expect(treeshaken).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
+      expect(treeshaken).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
+      expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
+      expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+
+      // treeshake object that has an assignement pattern
+      expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
+      expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
+
+      // expect no empty ObjectPattern on treeshaking
+      expect(treeshaken).not.toContain('const {  } = defineAsyncComponent')
+      expect(treeshaken).not.toContain('import {  } from')
+
+      // expect components used in setup to not be removed
+      expect(treeshaken).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
+
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
       expect(treeshaken).toContain('import { Glob, } from \'#components\'')
+
+      // treeshake .client slot
+      expect(treeshaken).not.toContain('ByeBye')
+      // don't treeshake variables that has the same name as .client components
+      expect(treeshaken).toContain('NotDotClientComponent')
+      expect(treeshaken).not.toContain('(DotClientComponent')
+
+      expect(treeshaken).not.toContain('AutoImportedComponent')
+      expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
+
+      expect(treeshaken).not.toContain('Both')
+      expect(treeshaken).not.toContain('AreTreeshaken')
 
       if (state.options.isProduction === false) {
         // treeshake at inlined template

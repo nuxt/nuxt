@@ -11,6 +11,7 @@ import { defu } from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
 import { cacheDirPlugin } from './plugins/cache-dir'
+import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
@@ -61,7 +62,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
-      viteJsxPlugin(),
+      viteJsxPlugin(ctx.config.vueJsx),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
@@ -85,6 +86,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   // to detect whether to inject production or development code (such as HMR code)
   if (!ctx.nuxt.options.dev) {
     clientConfig.server!.hmr = false
+  }
+
+  // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
+  if (ctx.nuxt.options.experimental.emitRouteChunkError) {
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
   }
 
   // We want to respect users' own rollup output options

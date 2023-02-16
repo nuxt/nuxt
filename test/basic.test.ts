@@ -76,6 +76,15 @@ describe('pages', () => {
     await expectNoClientErrors('/')
   })
 
+  // TODO: support jsx with webpack
+  it.runIf(!isWebpack)('supports jsx', async () => {
+    const html = await $fetch('/jsx')
+
+    // should import JSX/TSX components with custom elements
+    expect(html).toContain('TSX component')
+    expect(html).toContain('<custom-component>custom</custom-component>')
+  })
+
   it('respects aliases in page metadata', async () => {
     const html = await $fetch('/some-alias')
     expect(html).toContain('Hello Nuxt 3!')
@@ -89,6 +98,16 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status } = await fetch('/forbidden')
     expect(status).toEqual(404)
+
+    const page = await createPage('/navigate-to-forbidden')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should throw a 404 error').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
+
+    page.goto(url('/navigate-to-forbidden'))
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should be caught by catchall').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
   })
 
   it('render 404', async () => {
@@ -98,7 +117,7 @@ describe('pages', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('[...slug].vue')
-    expect(html).toContain('404 at not-found')
+    expect(html).toContain('catchall at not-found')
 
     // Middleware still runs after validation: https://github.com/nuxt/nuxt/issues/15650
     expect(html).toContain('Middleware ran: true')
@@ -329,6 +348,15 @@ describe('errors', () => {
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
     expect(await res.text()).toContain('This is a custom error')
+  })
+
+  // TODO: need to create test for webpack
+  it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
+    const { page, consoleLogs } = await renderPage('/')
+    await page.getByText('Chunk error').click()
+    await page.waitForURL(url('/chunk-error'))
+    expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
+    expect(await page.innerText('div')).toContain('Chunk error page')
   })
 })
 
@@ -923,7 +951,7 @@ describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
-    expect(await $fetch('/app.config')).toContain('404')
+    expect(await $fetch('/app.config')).toContain('catchall at')
   })
 })
 
