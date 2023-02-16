@@ -74,7 +74,7 @@ export interface NuxtHooks {
    */
   'close': (nuxt: Nuxt) => HookResult
   /**
-   * Called when Nuxt instance is restarting.
+   * Called to restart the current Nuxt instance.
    * @returns Promise
    */
   'restart': () => HookResult
