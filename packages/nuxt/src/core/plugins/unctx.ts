@@ -1,7 +1,7 @@
-import type { Nuxt, NuxtApp } from '@nuxt/schema'
 import { normalize } from 'pathe'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
+import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 

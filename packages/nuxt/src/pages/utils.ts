@@ -1,12 +1,12 @@
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
-import type { NuxtPage } from '@nuxt/schema'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
 import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { uniqueBy } from '../core/utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 enum SegmentParserState {
   initial,
@@ -72,7 +72,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '-') + segmentName
+      route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
@@ -200,11 +200,28 @@ function parseSegment (segment: string) {
   return tokens
 }
 
-function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage) {
+function findRouteByName (name: string, routes: NuxtPage[]): NuxtPage | undefined {
+  for (const route of routes) {
+    if (route.name === name) {
+      return route
+    }
+  }
+  return findRouteByName(name, routes)
+}
+
+function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<string>()) {
   for (const route of routes) {
     // Remove -index
     if (route.name) {
-      route.name = route.name.replace(/-index$/, '')
+      route.name = route.name
+        .replace(/\/index$/, '')
+        .replace(/\//g, '-')
+
+      if (names.has(route.name)) {
+        const existingRoute = findRouteByName(route.name, routes)
+        const extra = existingRoute?.name ? `is the same as \`${existingRoute.file}\`` : 'is a duplicate'
+        console.warn(`[nuxt] Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+      }
     }
 
     // Remove leading / if children route
@@ -213,11 +230,15 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage) {
     }
 
     if (route.children?.length) {
-      route.children = prepareRoutes(route.children, route)
+      route.children = prepareRoutes(route.children, route, names)
     }
 
     if (route.children?.find(childRoute => childRoute.path === '')) {
       delete route.name
+    }
+
+    if (route.name) {
+      names.add(route.name)
     }
   }
 
@@ -243,7 +264,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         name: `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`,
         path: `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`,
         children: page.children ? normalizeRoutes(page.children, metaImports).routes : [],
-        meta: page.meta ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : metaImportName,
+        meta: page.meta ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`,
         alias: aliasCode,
         redirect: page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`,
         component: genDynamicImport(file, { interopDefault: true })

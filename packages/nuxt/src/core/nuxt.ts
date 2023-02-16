@@ -1,6 +1,5 @@
 import { join, normalize, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
-import type { Nuxt, NuxtOptions, NuxtHooks } from '@nuxt/schema'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 
@@ -22,6 +21,7 @@ import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -112,6 +112,9 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  // Transpile #app if it is imported directly from subpath export
+  nuxt.options.build.transpile.push('nuxt/app')
+
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string)
@@ -187,6 +190,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
+  }
+
+  // Add experimental page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'reload') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
 
   // Track components used to render for webpack
