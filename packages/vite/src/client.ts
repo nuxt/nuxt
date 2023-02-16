@@ -15,6 +15,7 @@ import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
+import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -69,7 +70,11 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx)
+      viteNodePlugin(ctx),
+      pureAnnotationsPlugin.vite({
+        sourcemap: ctx.nuxt.options.sourcemap.client,
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+      })
     ],
     appType: 'custom',
     server: {

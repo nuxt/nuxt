@@ -29,7 +29,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
     expect(stats.client.totalBytes).toBeLessThan(108000)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/app.js",
+        "_nuxt/_plugin-vue_export-helper.js",
         "_nuxt/entry.js",
         "_nuxt/error-404.js",
         "_nuxt/error-500.js",
@@ -40,7 +40,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(90200)
+    expect(stats.server.totalBytes).toBeLessThan(92000)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(modules.totalBytes).toBeLessThan(2700000)

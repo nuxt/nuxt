@@ -8,6 +8,7 @@ import type { ViteBuildContext, ViteOptions } from './vite'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
+import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 
@@ -110,7 +111,11 @@ export async function buildServer (ctx: ViteBuildContext) {
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
       vuePlugin(ctx.config.vue),
-      viteJsxPlugin(ctx.config.vueJsx)
+      viteJsxPlugin(ctx.config.vueJsx),
+      pureAnnotationsPlugin.vite({
+        sourcemap: ctx.nuxt.options.sourcemap.server,
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+      })
     ]
   } as ViteOptions)
 
