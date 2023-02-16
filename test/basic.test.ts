@@ -321,9 +321,17 @@ describe('legacy async data', () => {
 
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
-    const { headers } = await fetch('/navigate-to/', { redirect: 'manual' })
+    const { headers, status } = await fetch('/navigate-to/', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(301)
+  })
+
+  it('respects redirects + headers in middleware', async () => {
+    const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
+    expect(res.headers.get('location')).toEqual('/navigate-some-path')
+    expect(res.status).toEqual(307)
+    expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
   })
 })
 
