@@ -413,7 +413,7 @@ importers:
       '@nuxt/devalue': ^2.0.0
       '@nuxt/kit': workspace:*
       '@nuxt/schema': workspace:*
-      '@nuxt/telemetry': ^2.1.9
+      '@nuxt/telemetry': ^2.1.10
       '@nuxt/ui-templates': ^1.1.1
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^11.0.1
@@ -461,7 +461,7 @@ importers:
       '@nuxt/devalue': 2.0.0
       '@nuxt/kit': link:../kit
       '@nuxt/schema': link:../schema
-      '@nuxt/telemetry': 2.1.9
+      '@nuxt/telemetry': 2.1.10
       '@nuxt/ui-templates': 1.1.1
       '@nuxt/vite-builder': link:../vite
       '@unhead/ssr': 1.0.22
@@ -1624,8 +1624,8 @@ packages:
       webpack: 5.75.0
     dev: false
 
-  /@nuxt/telemetry/2.1.9:
-    resolution: {integrity: sha512-mUyDqmB8GUJwTHVnwxuapeUHDSsUycOt+ZsA7GB6F8MOBJiVhQl/EeEAWoO2TUs0BPp2SlY9uO6eQihvxyLRqQ==}
+  /@nuxt/telemetry/2.1.10:
+    resolution: {integrity: sha512-FOsfC0i6Ix66M/ZlWV/095JIdfnRR9CRbFvBSpojt2CpbwU1pGMbRiicwYg2f1Wf27LXQRNpNn1OczruBfEWag==}
     hasBin: true
     dependencies:
       '@nuxt/kit': link:packages/kit

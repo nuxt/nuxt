@@ -44,7 +44,7 @@
     "@nuxt/devalue": "^2.0.0",
     "@nuxt/kit": "3.2.0",
     "@nuxt/schema": "3.2.0",
-    "@nuxt/telemetry": "^2.1.9",
+    "@nuxt/telemetry": "^2.1.10",
     "@nuxt/ui-templates": "^1.1.1",
     "@nuxt/vite-builder": "3.2.0",
     "@unhead/ssr": "^1.0.22",
