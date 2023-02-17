@@ -3,12 +3,12 @@ import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
 import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
-import type { RuntimeConfig, AppConfigInput } from '@nuxt/schema'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
@@ -33,6 +33,7 @@ export interface RuntimeNuxtHooks {
   'app:suspense:resolve': (Component?: VNode) => HookResult
   'app:error': (err: any) => HookResult
   'app:error:cleared': (options: { redirect?: string }) => HookResult
+  'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
@@ -85,7 +86,7 @@ interface _NuxtApp {
     rendered?: Function
     error?: Error | {
       url: string
-      statusCode: string
+      statusCode: number
       statusMessage: string
       message: string
       description: string
@@ -143,8 +144,6 @@ export function createNuxtApp (options: CreateOptions) {
 
         if (hydratingCount === 0) {
           nuxtApp.isHydrating = false
-          // @ts-expect-error private flag
-          globalThis.__hydrated = true
           return nuxtApp.callHook('app:suspense:resolve')
         }
       }
@@ -186,6 +185,13 @@ export function createNuxtApp (options: CreateOptions) {
       public: options.ssrContext!.runtimeConfig.public,
       app: options.ssrContext!.runtimeConfig.app
     }
+  }
+
+  // Listen to chunk load errors
+  if (process.client) {
+    window.addEventListener('nuxt.preloadError', (event) => {
+      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+    })
   }
 
   // Expose runtime config
@@ -286,9 +292,9 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param setup The function to call
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
-  const fn = () => args ? setup(...args as Parameters<T>) : setup()
+  const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync<ReturnType<T>>(nuxt, fn)
+    return nuxtAppCtx.callAsync(nuxt, fn)
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt)

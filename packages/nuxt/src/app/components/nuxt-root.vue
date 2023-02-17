@@ -1,18 +1,20 @@
 <template>
   <Suspense @resolve="onResolve">
     <ErrorComponent v-if="error" :error="error" />
-    <IslandRendererer v-else-if="islandContext" :context="islandContext" />
+    <IslandRenderer v-else-if="islandContext" :context="islandContext" />
     <AppComponent v-else />
   </Suspense>
 </template>
 
 <script setup>
-import { defineAsyncComponent, onErrorCaptured, provide } from 'vue'
-import { callWithNuxt, isNuxtError, showError, useError, useRoute, useNuxtApp } from '#app'
+import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
+import { callWithNuxt, useNuxtApp } from '#app/nuxt'
+import { isNuxtError, showError, useError } from '#app/composables/error'
+import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
-const IslandRendererer = process.server
+const IslandRenderer = process.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
@@ -33,7 +35,8 @@ const error = useError()
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info).catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (process.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
-    callWithNuxt(nuxtApp, showError, [err])
+    const p = callWithNuxt(nuxtApp, showError, [err])
+    onServerPrefetch(() => p)
   }
 })
 

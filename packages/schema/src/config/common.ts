@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
-import defu from 'defu'
+import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
 
@@ -164,8 +164,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
-   * If set to `false` and combined with `static` target, generated pages will simply display
-   * a loading screen with no content.
+   * If set to `false` generated pages will have no content.
    */
   ssr: {
     $resolve: (val) => val ?? true,
@@ -423,14 +422,17 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
-    $resolve: async (val: RuntimeConfig, get) => defu(val, {
-      public: {},
-      app: {
-        baseURL: (await get('app')).baseURL,
-        buildAssetsDir: (await get('app')).buildAssetsDir,
-        cdnURL: (await get('app')).cdnURL,
-      }
-    })
+    $resolve: async (val: RuntimeConfig, get) => {
+      provideFallbackValues(val)
+      return defu(val, {
+        public: {},
+        app: {
+          baseURL: (await get('app')).baseURL,
+          buildAssetsDir: (await get('app')).buildAssetsDir,
+          cdnURL: (await get('app')).cdnURL,
+        }
+      })
+    }
   },
 
   /**
@@ -442,4 +444,16 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').AppConfig}
    */
   appConfig: {},
+
+  $schema: {}
 })
+
+function provideFallbackValues (obj: Record<string, any>) {
+  for (const key in obj) {
+    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+      obj[key] = ''
+    } else if (typeof obj[key] === 'object') {
+      provideFallbackValues(obj[key])
+    }
+  }
+}

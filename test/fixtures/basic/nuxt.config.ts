@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_WITH_WEBPACK ? 'webpack' : 'vite',
+  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -49,15 +49,28 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
+    baseURL: '',
+    baseAPIToken: '',
     privateConfig: 'secret_key',
     public: {
+      ids: [1, 2, 3],
+      needsFallback: undefined,
       testConfig: 123
     }
   },
   modules: [
-    '~/modules/example',
+    [
+      '~/modules/example',
+      {
+        typeTest (val) {
+          // @ts-expect-error module type defines val as boolean
+          const b: string = val
+          return !!b
+        }
+      }
+    ],
     function (_, nuxt) {
-      if (process.env.TEST_WITH_WEBPACK) { return }
+      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
@@ -98,6 +111,9 @@ export default defineNuxtConfig({
       })
     }
   ],
+  vite: {
+    logLevel: 'silent'
+  },
   hooks: {
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
@@ -132,12 +148,21 @@ export default defineNuxtConfig({
       })
     }
   },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => {
+        return tag === 'custom-component'
+      }
+    }
+  },
   experimental: {
+    emitRouteChunkError: 'reload',
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true
+    payloadExtraction: true,
+    configSchema: true
   },
   appConfig: {
     fromNuxtConfig: true,

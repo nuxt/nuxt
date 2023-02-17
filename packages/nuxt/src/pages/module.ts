@@ -3,12 +3,12 @@ import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlug
 import { relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtApp, NuxtPage } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { distDir } from '../dirs'
 import { resolvePagesRoutes, normalizeRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
+import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 
 export default defineNuxtModule({
   meta: {
@@ -185,6 +185,10 @@ export default defineNuxtModule({
     nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
     nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
     nuxt.options.vite.optimizeDeps.include.push('vue-router')
+
+    nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
+    nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+    nuxt.options.vite.resolve.dedupe.push('vue-router')
 
     // Add router options template
     addTemplate({

@@ -50,14 +50,32 @@ export async function expectNoClientErrors (path: string) {
   expect(consoleLogWarnings).toEqual([])
 }
 
+type EqualityVal = string | number | boolean | null | undefined | RegExp
+export async function expectWithPolling (
+  get: () => Promise<EqualityVal> | EqualityVal,
+  expected: EqualityVal,
+  retries = process.env.CI ? 100 : 30,
+  delay = process.env.CI ? 500 : 100
+) {
+  let result: EqualityVal
+  for (let i = retries; i >= 0; i--) {
+    result = await get()
+    if (result?.toString() === expected?.toString()) {
+      break
+    }
+    await new Promise(resolve => setTimeout(resolve, delay))
+  }
+  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
+}
+
 export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {
   let done = false
   const page = await createPage()
   const logs: string[] = []
   page.on('console', (msg) => {
     const text = msg.text()
-    if (done) {
-      throw new Error('Test finished prematurely')
+    if (done && !text.includes('[vite] server connection lost')) {
+      throw new Error(`Test finished prematurely before log: [${msg.type()}] ${text}`)
     }
     logs.push(text)
   })

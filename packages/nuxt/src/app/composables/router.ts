@@ -6,6 +6,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { useState } from './state'
+import { setResponseStatus } from './ssr'
 
 export const useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -81,7 +82,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
   const isExternal = hasProtocol(toPath, true)
   if (isExternal && !options?.external) {
-    throw new Error('Navigating to external URL is not allowed by default. Use `nagivateTo (url, { external: true })`.')
+    throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
   if (isExternal && parseURL(toPath).protocol === 'script:') {
     throw new Error('Cannot navigate to an URL with script protocol.')
@@ -97,8 +98,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (process.server) {
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
+      // Let vue-router handle internal redirects within middleware
+      // to prevent the navigation happening after response is sent
+      if (isProcessingMiddleware() && !isExternal) {
+        setResponseStatus(options?.redirectCode || 302)
+        return to
+      }
       const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, router.resolve(to).fullPath || '/')
-      return nuxtApp.callHook('app:redirected').then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
+      return nuxtApp.callHook('app:redirected')
+        .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
     }
   }
 

@@ -44,19 +44,26 @@ export default defineNuxtCommand({
 
     await setupDotenv({ cwd: rootDir, fileName: args.dotenv })
 
+    const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
+
+    const config = await loadNuxtConfig({
+      cwd: rootDir,
+      overrides: { dev: true }
+    })
+
     const listener = await listen(serverHandler, {
       showURL: false,
       clipboard: args.clipboard,
       open: args.open || args.o,
-      port: args.port || args.p || process.env.NUXT_PORT,
-      hostname: args.host || args.h || process.env.NUXT_HOST,
-      https: args.https && {
-        cert: args['ssl-cert'],
-        key: args['ssl-key']
-      }
+      port: args.port || args.p || process.env.NUXT_PORT || config.devServer.port,
+      hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
+      https: (args.https !== false && (args.https || config.devServer.https))
+        ? {
+            cert: args['ssl-cert'] || (config.devServer.https && config.devServer.https.cert) || undefined,
+            key: args['ssl-key'] || (config.devServer.https && config.devServer.https.key) || undefined
+          }
+        : false
     })
-
-    const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
     let currentNuxt: Nuxt
     const showURL = () => {

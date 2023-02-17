@@ -1,45 +1,40 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { join, relative, resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
-import { joinURL, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
-import defu from 'defu'
+import { joinURL, withoutLeadingSlash } from 'ufo'
+import { defu } from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
-import { genString } from 'knitwork'
 import { cacheDirPlugin } from './plugins/cache-dir'
+import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext, ViteOptions } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
+import { runtimePathsPlugin } from './plugins/paths'
+import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const buildAssetsDir = withoutLeadingSlash(
-    withoutTrailingSlash(ctx.nuxt.options.app.buildAssetsDir)
-  )
-  const relativeToBuildAssetsDir = (filename: string) => './' + relative(buildAssetsDir, filename)
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
     entry: ctx.entry,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : './',
     experimental: {
-      renderBuiltUrl: (filename, { type, hostType, hostId }) => {
-        // When rendering inline styles, we can skip loading CSS chunk that matches the current page
-        if (ctx.nuxt.options.experimental.inlineSSRStyles && hostType === 'js' && filename.endsWith('.css')) {
-          return {
-            runtime: `!globalThis.__hydrated ? ${genString(relativeToBuildAssetsDir(hostId))} : ${genString(relativeToBuildAssetsDir(filename))}`
-          }
-        }
+      renderBuiltUrl: (filename, { type, hostType }) => {
         if (hostType !== 'js' || type === 'asset') {
           // In CSS we only use relative paths until we craft a clever runtime CSS hack
           return { relative: true }
         }
         return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
       }
+    },
+    css: {
+      devSourcemap: ctx.nuxt.options.sourcemap.client
     },
     define: {
       'process.server': false,
@@ -67,12 +62,19 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       vuePlugin(ctx.config.vue),
-      viteJsxPlugin(),
+      viteJsxPlugin(ctx.config.vueJsx),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
       }),
-      viteNodePlugin(ctx)
+      runtimePathsPlugin({
+        sourcemap: ctx.nuxt.options.sourcemap.client
+      }),
+      viteNodePlugin(ctx),
+      pureAnnotationsPlugin.vite({
+        sourcemap: ctx.nuxt.options.sourcemap.client,
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+      })
     ],
     appType: 'custom',
     server: {
@@ -84,6 +86,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   // to detect whether to inject production or development code (such as HMR code)
   if (!ctx.nuxt.options.dev) {
     clientConfig.server!.hmr = false
+  }
+
+  // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
+  if (ctx.nuxt.options.experimental.emitRouteChunkError) {
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
   }
 
   // We want to respect users' own rollup output options

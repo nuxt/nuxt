@@ -14,8 +14,12 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
-    <NestedSugarCounter :count="12" />
+    <NuxtLink to="/chunk-error" :prefetch="false">
+      Chunk error
+    </NuxtLink>
+    <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
+    <Spin>Test</Spin>
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />
     <ClientWrapped ref="clientRef" style="color: red;" class="client-only" />

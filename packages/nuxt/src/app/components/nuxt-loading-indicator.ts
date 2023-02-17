@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
@@ -17,7 +17,7 @@ export default defineComponent({
       default: 3
     },
     color: {
-      type: String,
+      type: [String, Boolean],
       default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)'
     }
   },
@@ -42,12 +42,14 @@ export default defineComponent({
         right: 0,
         left: 0,
         pointerEvents: 'none',
-        width: `${indicator.progress.value}%`,
+        width: 'auto',
         height: `${props.height}px`,
         opacity: indicator.isLoading.value ? 1 : 0,
-        background: props.color,
+        background: props.color || undefined,
         backgroundSize: `${(100 / indicator.progress.value) * 100}% auto`,
-        transition: 'width 0.1s, height 0.4s, opacity 0.4s',
+        transform: `scaleX(${indicator.progress.value}%)`,
+        transformOrigin: 'left',
+        transition: 'transform 0.1s, height 0.4s, opacity 0.4s',
         zIndex: 999999
       }
     }, slots)
