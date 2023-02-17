@@ -21,7 +21,7 @@
     "@vitejs/plugin-vue-jsx": "^3.0.0",
     "nitropack": "^2.2.2",
     "unbuild": "latest",
-    "vite": "~4.1.1"
+    "vite": "~4.1.2"
   },
   "dependencies": {
     "c12": "^1.1.2",
