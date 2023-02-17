@@ -1,7 +1,6 @@
 
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
-import type { SourceMap } from 'rollup'
 
 export function chunkErrorPlugin (options: { sourcemap?: boolean }): Plugin {
   return {
@@ -22,7 +21,7 @@ export const __vitePreload = (...args) => ___vitePreload(...args).catch(err => {
       return {
         code: s.toString(),
         map: options.sourcemap
-          ? s.generateMap({ source: id, includeContent: true }) as SourceMap
+          ? s.generateMap({ source: id, includeContent: true })
           : undefined
       }
     }
