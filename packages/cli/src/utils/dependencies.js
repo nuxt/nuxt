@@ -8,7 +8,7 @@ const dependencies = {
   'sass-loader': '^10.1.1'
 }
 
-const nodeVersion = '>=12.0.0'
+const nodeVersion = '>=14.18.0'
 
 function getInstalledVersion (name) {
   try {

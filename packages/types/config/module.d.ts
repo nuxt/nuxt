@@ -5,6 +5,7 @@
  */
 
 import type { Configuration as WebpackConfiguration } from 'webpack'
+import type { Nuxt } from '../nuxt'
 import type { NuxtOptionsLoaders } from './build'
 import type { NuxtRouteConfig } from './router'
 import type { NuxtOptionsServerMiddleware } from './server-middleware'
@@ -57,8 +58,8 @@ interface ModuleThis {
   // eslint-disable-next-line no-use-before-define
   addModule (moduleOpts: NuxtOptionsModule, paths?: string[]): Promise<any>
   options: NuxtOptions
-  nuxt: any // TBD
-  [key: string]: any // TBD
+  nuxt: Nuxt
+  [key: string]: any
 }
 
 export type Module<T = any> = (this: ModuleThis, moduleOptions: T) => Promise<void> | void

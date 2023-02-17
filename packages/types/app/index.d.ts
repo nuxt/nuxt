@@ -32,14 +32,6 @@ export interface Context {
   app: NuxtAppOptions
   base: string
   /**
-   * @deprecated Use process.client instead
-  */
-  isClient: boolean
-  /**
-   * @deprecated Use process.server instead
-  */
-  isServer: boolean
-  /**
    * @deprecated Use process.static instead
   */
   isStatic: boolean

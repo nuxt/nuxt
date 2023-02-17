@@ -24,10 +24,13 @@
     "@babel/runtime": "^7.20.13",
     "@vue/babel-preset-jsx": "^1.4.0",
     "core-js": "^3.19.0",
-    "core-js-compat": "^3.27.2",
+    "core-js-compat": "^3.28.0",
     "regenerator-runtime": "^0.13.11"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }
