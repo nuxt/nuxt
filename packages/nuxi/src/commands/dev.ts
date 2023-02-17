@@ -78,7 +78,7 @@ export default defineNuxtCommand({
           await currentNuxt.close()
         }
         if (distWatcher) {
-          distWatcher.close()
+          await distWatcher.close()
         }
 
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
