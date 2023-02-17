@@ -158,6 +158,11 @@ export default defineNuxtCommand({
 
     await load(false)
 
+    const distWatcher = chokidar.watch(resolve(rootDir, '.nuxt/dist'), { ignoreInitial: true })
+    distWatcher.on('unlinkDir', () => {
+      dLoad(true, '.nuxt/dist directory has been removed')
+    })
+
     return 'wait' as const
   }
 })
