@@ -196,9 +196,5 @@ function rewriteQuery (id: string) {
 
 function parseMacroQuery (id: string) {
   const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery(search)
-  if (id.includes('?macro=true')) {
-    return { macro: 'true', ...query }
-  }
-  return query
+  return parseQuery(search)
 }
