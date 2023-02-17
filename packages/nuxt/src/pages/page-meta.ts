@@ -191,8 +191,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
 function rewriteQuery (id: string) {
-  const query = stringifyQuery({ macro: 'true', ...parseMacroQuery(id) })
-  return id.replace(/\?.+$/, '?' + query)
+  return id.replace('?vue', '?macro=true&vue')
 }
 
 function parseMacroQuery (id: string) {
