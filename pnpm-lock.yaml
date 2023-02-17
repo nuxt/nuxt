@@ -314,7 +314,7 @@ importers:
       lodash.template: ^4.5.0
       mlly: ^1.1.1
       pathe: ^1.1.0
-      pkg-types: ^1.0.1
+      pkg-types: ^1.0.2
       scule: ^1.0.0
       semver: ^7.3.8
       unbuild: ^1.1.2
@@ -372,7 +372,7 @@ importers:
       mri: ^1.2.0
       pathe: ^1.1.0
       perfect-debounce: ^0.1.3
-      pkg-types: ^1.0.1
+      pkg-types: ^1.0.2
       scule: ^1.0.0
       semver: ^7.3.8
       unbuild: ^1.1.2
@@ -521,7 +521,7 @@ importers:
       jiti: ^1.17.1
       nitropack: ^2.2.2
       pathe: ^1.1.0
-      pkg-types: ^1.0.1
+      pkg-types: ^1.0.2
       postcss-import-resolver: ^2.0.0
       scule: ^1.0.0
       std-env: ^3.3.2
@@ -608,7 +608,7 @@ importers:
       ohash: ^1.0.0
       pathe: ^1.1.0
       perfect-debounce: ^0.1.3
-      pkg-types: ^1.0.1
+      pkg-types: ^1.0.2
       postcss: ^8.4.21
       postcss-import: ^15.1.0
       postcss-url: ^10.1.3

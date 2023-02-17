@@ -25,7 +25,7 @@
     "lodash.template": "^4.5.0",
     "mlly": "^1.1.1",
     "pathe": "^1.1.0",
-    "pkg-types": "^1.0.1",
+    "pkg-types": "^1.0.2",
     "scule": "^1.0.0",
     "semver": "^7.3.8",
     "unctx": "^2.1.2",
