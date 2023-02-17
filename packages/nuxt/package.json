@@ -82,7 +82,7 @@
     "unplugin": "^1.1.0",
     "untyped": "^1.2.2",
     "vue": "^3.2.47",
-    "vue-bundle-renderer": "^1.0.1",
+    "vue-bundle-renderer": "^1.0.2",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.1.6"
   },
