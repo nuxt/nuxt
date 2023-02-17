@@ -181,7 +181,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
   nitroConfig.rollupConfig!.plugins!.push(
-    // @ts-expect-error remove when rollup updates its types
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
       patterns: [
