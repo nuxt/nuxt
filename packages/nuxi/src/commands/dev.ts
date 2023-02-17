@@ -86,7 +86,7 @@ export default defineNuxtCommand({
           showURL()
         }
 
-        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true })
+        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
         distWatcher.on('unlinkDir', () => {
           dLoad(true, '.nuxt/dist directory has been removed')
         })
