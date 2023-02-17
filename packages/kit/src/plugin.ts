@@ -20,8 +20,9 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   // TODO: only scan top-level files #18418
-  if (/\/plugins\/[^/]+\/index\.[^/]+$/i.test(plugin.src) && !useNuxt().options.plugins.includes(plugin.src)) {
-    console.warn(`[warn] [nuxt] [deprecation] You are using a plugin in a file of pattern 'plugins/*/index' without adding it to your plugins config explicitly. Change export to top-level plugins directory or add '${plugin.src}' to plugins to remove warning.`)
+  const nonTopLevelPlugin = plugin.src.match(/\/plugins\/[^/]+\/index\.[^/]+$/i)
+  if (nonTopLevelPlugin && nonTopLevelPlugin.length > 0 && !useNuxt().options.plugins.find(i => (typeof i === 'string' ? i : i.src).endsWith(nonTopLevelPlugin[0]))) {
+    console.warn(`[warn] [nuxt] [deprecation] You are using a plugin in a file of pattern 'plugins/*/index' without adding it to your config explicitly. Change export to top-level plugins directory or include the file '~${nonTopLevelPlugin[0]}' to plugins config (https://nuxt.com/docs/api/configuration/nuxt-config#plugins-1) to remove warning.`)
   }
 
   // Normalize full path to plugin
