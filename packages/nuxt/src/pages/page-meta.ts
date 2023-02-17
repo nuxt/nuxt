@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL, stringifyQuery } from 'ufo'
+import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findStaticImports, findExports, parseStaticImport } from 'mlly'
 import type { CallExpression, Identifier, Expression } from 'estree'
@@ -191,8 +191,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
 function rewriteQuery (id: string) {
-  const query = stringifyQuery({ macro: 'true', ...parseMacroQuery(id) })
-  return id.replace(/\?.+$/, '?' + query)
+  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(/^\?/, '').replace(/&macro=true/, ''))
 }
 
 function parseMacroQuery (id: string) {
