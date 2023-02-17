@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL, stringifyQuery } from 'ufo'
+import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findStaticImports, findExports, parseStaticImport } from 'mlly'
 import type { CallExpression, Identifier, Expression } from 'estree'
