@@ -364,7 +364,7 @@ importers:
       execa: ^7.0.0
       flat: ^5.0.2
       fsevents: ~2.3.2
-      giget: ^1.1.1
+      giget: ^1.1.2
       h3: ^1.5.0
       jiti: ^1.17.1
       listhen: ^1.0.3
@@ -395,7 +395,7 @@ importers:
       destr: 1.2.2
       execa: 7.0.0
       flat: 5.0.2
-      giget: 1.1.1
+      giget: 1.1.2
       h3: 1.5.0
       jiti: 1.17.1
       listhen: 1.0.3
@@ -3348,7 +3348,7 @@ packages:
     dependencies:
       defu: 6.1.2
       dotenv: 16.0.3
-      giget: 1.1.1
+      giget: 1.1.2
       jiti: 1.17.1
       mlly: 1.1.1
       pathe: 1.1.0
@@ -5074,8 +5074,8 @@ packages:
       assert-plus: 1.0.0
     dev: true
 
-  /giget/1.1.1:
-    resolution: {integrity: sha512-P9FzMriXNDs0NYHO4nJSiODCE2+lC0XwwVquaC+rCVSmy8nDqCLMdHxq2N6IeJeheCcL+QxrBP/BiUIHdbtZ5Q==}
+  /giget/1.1.2:
+    resolution: {integrity: sha512-HsLoS07HiQ5oqvObOI+Qb2tyZH4Gj5nYGfF9qQcZNrPw+uEFhdXtgJr01aO2pWadGHucajYDLxxbtQkm97ON2A==}
     hasBin: true
     dependencies:
       colorette: 2.0.19
