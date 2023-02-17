@@ -19,6 +19,11 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
   }
 
+  // TODO: only scan top-level files #18418
+  if (/\/plugins\/[^/]+\/index\.[^/]+$/i.test(plugin.src) && !useNuxt().options.plugins.includes(plugin.src)) {
+    console.warn(`[warn] [nuxt] [deprecation] You are using a plugin in a file of pattern 'plugins/*/index' without adding it to your plugins config explicitly. Change export to top-level plugins directory or add '${plugin.src}' to plugins to remove warning.`)
+  }
+
   // Normalize full path to plugin
   plugin.src = normalize(resolveAlias(plugin.src))
 
