@@ -364,7 +364,7 @@ importers:
       execa: ^7.0.0
       flat: ^5.0.2
       fsevents: ~2.3.2
-      giget: ^1.1.0
+      giget: ^1.1.1
       h3: ^1.5.0
       jiti: ^1.17.1
       listhen: ^1.0.3
@@ -395,7 +395,7 @@ importers:
       destr: 1.2.2
       execa: 7.0.0
       flat: 5.0.2
-      giget: 1.1.0
+      giget: 1.1.1
       h3: 1.5.0
       jiti: 1.17.1
       listhen: 1.0.3
@@ -5116,6 +5116,21 @@ packages:
       tar: 6.1.13
     transitivePeerDependencies:
       - supports-color
+
+  /giget/1.1.1:
+    resolution: {integrity: sha512-P9FzMriXNDs0NYHO4nJSiODCE2+lC0XwwVquaC+rCVSmy8nDqCLMdHxq2N6IeJeheCcL+QxrBP/BiUIHdbtZ5Q==}
+    hasBin: true
+    dependencies:
+      colorette: 2.0.19
+      defu: 6.1.2
+      https-proxy-agent: 5.0.1
+      mri: 1.2.0
+      node-fetch-native: 1.0.2
+      pathe: 1.1.0
+      tar: 6.1.13
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /git-config-path/2.0.0:
     resolution: {integrity: sha512-qc8h1KIQbJpp+241id3GuAtkdyJ+IK+LIVtkiFTRKRrmddDzs3SI9CvP1QYmWBFvm1I/PWRwj//of8bgAc0ltA==}
