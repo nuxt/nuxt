@@ -61,7 +61,7 @@ function watch (nuxt: Nuxt) {
 async function bundle (nuxt: Nuxt) {
   try {
     const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await importModule(nuxt.options.builder, { paths: nuxt.options.rootDir })
+      ? await importModule(nuxt.options.builder, { paths: [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url] })
       : nuxt.options.builder
 
     return bundle(nuxt)
