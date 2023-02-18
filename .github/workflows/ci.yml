@@ -35,7 +35,7 @@ jobs:
     continue-on-error: true
 
     permissions:
-      checks: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v3
@@ -47,7 +47,6 @@ jobs:
 
       - uses: preactjs/compressed-size-action@v2
         with:
-          use-check: true
           repo-token: ${{ github.token }}
           # build-script: "test:fixtures"
           # pattern: ".output/public/_nuxt/**"
