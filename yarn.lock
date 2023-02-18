@@ -12380,10 +12380,10 @@ rollup-plugin-license@^3.0.1:
     spdx-expression-validate "~2.0.0"
     spdx-satisfies "~5.0.1"
 
-rollup@3.17.0:
-  version "3.17.0"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-3.17.0.tgz#f5ab5ffc16838a4732f6f71f7f58ffd96e6521d1"
-  integrity sha512-0zZQ0J4p0ZtTla6l8sheDTUyNfGZQDpU5h0nPHf6xtUXIzKK70LmB2IRR0wLnzaL8a02fjmsJy+XCncbSwOpjg==
+rollup@3.17.1:
+  version "3.17.1"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-3.17.1.tgz#4be78852c2689d8ce5a21efbc2a45879bac75362"
+  integrity sha512-8RnSms6rNqHmZK+wiqgnPCqen+rRnUHXkciGDirh7B00g1rX1vpKbPDhuxCvAG2bburoI+W4Q9/PlUB/zYkiYA==
   optionalDependencies:
     fsevents "~2.3.2"
 
