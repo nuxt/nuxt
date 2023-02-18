@@ -44,6 +44,8 @@ jobs:
 
       - uses: preactjs/compressed-size-action@v2
         with:
+          use-check: true
+          repo-token: ${{ github.token }}
           # build-script: "test:fixtures"
           # pattern: ".output/public/_nuxt/**"
           strip-hash: "\\b\\w{8}\\."
