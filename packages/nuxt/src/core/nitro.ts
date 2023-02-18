@@ -227,6 +227,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await writeTypes(nitro)
     }
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+    // expose internal nitro types required for typing of nitro virtual utilities
+    opts.tsConfig.compilerOptions!.paths['#internal/nitro/*'] = [nitro.options.alias['#internal/nitro'] + '/*']
   })
 
   // nuxt build/dev

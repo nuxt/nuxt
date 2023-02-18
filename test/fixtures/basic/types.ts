@@ -5,6 +5,8 @@ import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+import type { Storage } from 'unstorage'
+// import { useStorage } from '#internal/nitro'
 import { callWithNuxt, isVue3 } from '#app'
 import NuxtPage from '~~/../../../packages/nuxt/src/pages/runtime/page'
 import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
@@ -262,5 +264,11 @@ describe('composables inference', () => {
   it('callWithNuxt', () => {
     const bob = callWithNuxt({} as any, () => true)
     expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+  })
+})
+
+describe('nitro types', () => {
+  it('auto imports', () => {
+    expectTypeOf<typeof useStorage>().toEqualTypeOf<() => Storage>()
   })
 })
