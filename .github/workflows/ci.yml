@@ -35,7 +35,7 @@ jobs:
     continue-on-error: true
 
     permissions:
-      pull-requests: write
+      checks: write
 
     steps:
       - uses: actions/checkout@v3
