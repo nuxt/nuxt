@@ -32,9 +32,15 @@ concurrency:
 jobs:
   size:
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
 
       - uses: preactjs/compressed-size-action@v2
         with:
