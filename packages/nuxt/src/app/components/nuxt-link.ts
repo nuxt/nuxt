@@ -176,7 +176,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = process.server ? undefined : ref<HTMLElement | null>(null)
       if (process.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && typeof to.value === 'string' && props.target !== '_blank' && !isSlowConnection()
+        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
           let idleId: number
@@ -190,7 +190,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                     unobserve?.()
                     unobserve = null
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', to.value as string).catch(() => {}),
+                      nuxtApp.hooks.callHook('link:prefetch', to.value).catch(() => {}),
                       !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
                     ])
                     prefetched.value = true

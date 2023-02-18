@@ -6,6 +6,8 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
+
+import type { RouteLocationRaw } from 'vue-router'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
@@ -35,7 +37,7 @@ export interface RuntimeNuxtHooks {
   'app:error:cleared': (options: { redirect?: string }) => HookResult
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
-  'link:prefetch': (link: string) => HookResult
+  'link:prefetch': (link: RouteLocationRaw) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
