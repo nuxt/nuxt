@@ -30,6 +30,29 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
+  size:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm build:stub
+
+      - uses: preactjs/compressed-size-action@v2
+        with:
+          build-script: "test:build:minimal"
+          pattern: "./output/public/_nuxt/**"
+          strip-hash: "\\b\\w{8}\\."
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -24,6 +24,7 @@
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:types": "pnpm nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
     "test:unit": "JITI_ESM_RESOLVE=1 vitest run --dir packages",
+    "test:build:minimal": "nuxi build test/fixtures/minimal",
     "typecheck": "tsc --noEmit"
   },
   "resolutions": {
