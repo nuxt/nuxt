@@ -6,7 +6,6 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
-
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
