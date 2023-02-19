@@ -189,8 +189,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                   unobserve = observer!.observe(el.value, async () => {
                     unobserve?.()
                     unobserve = null
+
+                    const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', router.resolve(to.value).fullPath).catch(() => {}),
+                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
                       !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
                     ])
                     prefetched.value = true
