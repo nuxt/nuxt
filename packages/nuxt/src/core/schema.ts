@@ -57,6 +57,13 @@ export default defineNuxtModule({
       await nuxt.hooks.callHook('schema:written')
     })
 
+    // Write schema during preparation
+    nuxt.hooks.hook('prepare:types', async () => {
+      await nuxt.hooks.callHook('schema:beforeWrite', schema)
+      await writeSchema(schema)
+      await nuxt.hooks.callHook('schema:written')
+    })
+
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
@@ -122,24 +129,11 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
-      // Avoid writing empty schema
-      const isEmptySchema = !schema.properties || Object.keys(schema.properties).length === 0
-      if (isEmptySchema) {
-        await rm(resolve(nuxt.options.buildDir, 'schema'), { recursive: true }).catch(() => { })
-        return
-      }
-
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
         resolve(nuxt.options.buildDir, 'schema/nuxt.schema.json'),
         JSON.stringify(schema, null, 2),
-        'utf8'
-      )
-      const markdown = '# Nuxt Custom Config Schema' + generateMarkdown(schema)
-      await writeFile(
-        resolve(nuxt.options.buildDir, 'schema/nuxt.schema.md'),
-        markdown,
         'utf8'
       )
       const _types = generateTypes(schema, {
