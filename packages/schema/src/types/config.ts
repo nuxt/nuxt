@@ -136,9 +136,9 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 
 // -- App Config --
 
-export interface CustomAppConfig extends Record<string, any> { }
+export interface _AppConfig extends Record<string, any> { }
 
-export interface AppConfigInput extends CustomAppConfig {
+export interface AppConfigInput extends _AppConfig {
   /** @deprecated reserved */
   private?: never
   /** @deprecated reserved */
@@ -156,4 +156,4 @@ export interface NuxtAppConfig {
   keepalive: boolean | KeepAliveProps
 }
 
-export interface AppConfig extends CustomAppConfig { }
+export interface AppConfig extends _AppConfig { }
