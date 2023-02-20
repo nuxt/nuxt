@@ -142,20 +142,18 @@ export default defineNuxtModule({
       const types =
         _types +
         `
-export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
+export type _CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
 
 declare module '@nuxt/schema' {
   interface NuxtConfig extends NuxtCustomSchema {}
   interface NuxtOptions extends NuxtCustomSchema {}
-  interface AppConfigInput extends CustomAppConfig {}
-  interface AppConfig extends CustomAppConfig {}
+  interface CustomAppConfig extends _CustomAppConfig {}
 }
 
 declare module 'nuxt/schema' {
   interface NuxtConfig extends NuxtCustomSchema {}
   interface NuxtOptions extends NuxtCustomSchema {}
-  interface AppConfigInput extends CustomAppConfig {}
-  interface AppConfig extends CustomAppConfig {}
+  interface CustomAppConfig extends _CustomAppConfig {}
 }
 `
       const typesPath = resolve(
