@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir, rm } from 'node:fs/promises'
+import { writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { defu } from 'defu'
@@ -7,7 +7,6 @@ import { debounce } from 'perfect-debounce'
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
 import {
   resolveSchema as resolveUntypedSchema,
-  generateMarkdown,
   generateTypes
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
