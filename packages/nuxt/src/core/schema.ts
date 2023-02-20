@@ -39,9 +39,14 @@ export default defineNuxtModule({
     })
 
     // Register module types
-    nuxt.hook('prepare:types', (ctx) => {
+    nuxt.hook('prepare:types', async (ctx) => {
       ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
+      if (nuxt.options._prepare) {
+        await nuxt.hooks.callHook('schema:beforeWrite', schema)
+        await writeSchema(schema)
+        await nuxt.hooks.callHook('schema:written')
+      }
     })
 
     // Resolve schema after all modules initialized
@@ -52,13 +57,6 @@ export default defineNuxtModule({
 
     // Write schema after build to allow further modifications
     nuxt.hooks.hook('build:done', async () => {
-      await nuxt.hooks.callHook('schema:beforeWrite', schema)
-      await writeSchema(schema)
-      await nuxt.hooks.callHook('schema:written')
-    })
-
-    // Write schema during preparation
-    nuxt.hooks.hook('prepare:types', async () => {
       await nuxt.hooks.callHook('schema:beforeWrite', schema)
       await writeSchema(schema)
       await nuxt.hooks.callHook('schema:written')
