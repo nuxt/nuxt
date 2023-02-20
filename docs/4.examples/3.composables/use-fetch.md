@@ -1,7 +1,7 @@
 ---
 toc: false
 ---
-
+a
 # useFetch
 
 This example shows how to use useFetch to fetch data from an API endpoint.
