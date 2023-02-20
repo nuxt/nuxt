@@ -1,12 +1,12 @@
 import type { Compiler } from 'webpack'
-import { RuntimeGlobals } from 'webpack'
+import webpack from 'webpack'
 
 const pluginName = 'ChunkErrorPlugin'
 
 const script = `
-if (typeof ${RuntimeGlobals.require} !== "undefined") {
-  var _ensureChunk = ${RuntimeGlobals.ensureChunk};
-  ${RuntimeGlobals.ensureChunk} = function (chunkId) {
+if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
+  var _ensureChunk = ${webpack.RuntimeGlobals.ensureChunk};
+  ${webpack.RuntimeGlobals.ensureChunk} = function (chunkId) {
     return Promise.resolve(_ensureChunk(chunkId)).catch(err => {
       const e = new Event("nuxt.preloadError");
       e.payload = err;
