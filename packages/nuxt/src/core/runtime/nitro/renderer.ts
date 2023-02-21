@@ -381,6 +381,8 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 }
 
 // TODO: Move to external library
+const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
+const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {
   const tags: { tagName: string, attrs: Record<string, string>, innerHTML: string }[] = []
   for (const tagMatch of html.matchAll(HTML_TAG_RE)) {
