@@ -47,7 +47,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to use the vue-router integration in Nuxt 3. If you do not provide a value it will be
-   * enabled if you have a `pages/` directory in your source folder.
+   * enabled if you have a `pages/` directory in your source folder. A glob pattern to match pages is also accepted.
    *
    * @type {boolean}
    */
