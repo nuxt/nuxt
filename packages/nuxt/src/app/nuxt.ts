@@ -194,6 +194,11 @@ export function createNuxtApp (options: CreateOptions) {
     })
   }
 
+  // Log all errors in development
+  if (process.dev) {
+    nuxtApp.hook('app:error', (...args) => console.error('[nuxt] [dev]', ...args))
+  }
+
   // Expose runtime config
   const runtimeConfig = process.server
     ? options.ssrContext!.runtimeConfig
