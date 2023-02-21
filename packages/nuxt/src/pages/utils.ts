@@ -35,13 +35,9 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
   )
 
-  const pageGlobs = nuxt.options._layers.map(
-    layer => typeof layer.config.pages === 'string' ? layer.config.pages : `**/*{${nuxt.options.extensions.join(',')}}`
-  )
-
   const allRoutes = (await Promise.all(
     pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, pageGlobs)
+      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
       return generateRoutesFromFiles(files, dir)

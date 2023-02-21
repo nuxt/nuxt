@@ -22,8 +22,8 @@ export default defineNuxtModule({
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
     const isPagesEnabled = () => {
-      if (typeof nuxt.options.pages === 'boolean' || typeof nuxt.options.pages === 'string') {
-        return !!nuxt.options.pages
+      if (typeof nuxt.options.pages === 'boolean') {
+        return nuxt.options.pages
       }
       if (nuxt.options._layers.some(layer => existsSync(resolve(layer.config.srcDir, 'app/router.options.ts')))) {
         return true
