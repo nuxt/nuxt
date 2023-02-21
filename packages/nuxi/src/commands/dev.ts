@@ -66,6 +66,8 @@ export default defineNuxtCommand({
     })
 
     let currentNuxt: Nuxt
+    let distWatcher: chokidar.FSWatcher
+
     const showURL = () => {
       listener.showURL({
         // TODO: Normalize URL with trailing slash within schema
@@ -82,10 +84,19 @@ export default defineNuxtCommand({
         if (currentNuxt) {
           await currentNuxt.close()
         }
+        if (distWatcher) {
+          await distWatcher.close()
+        }
+
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
         if (!isRestart) {
           showURL()
         }
+
+        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
+        distWatcher.on('unlinkDir', () => {
+          dLoad(true, '.nuxt/dist directory has been removed')
+        })
 
         // Write manifest and also check if we need cache invalidation
         if (!isRestart) {
