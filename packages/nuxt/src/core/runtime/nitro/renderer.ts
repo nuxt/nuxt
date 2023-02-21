@@ -411,7 +411,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return <RenderResponse> {
-    body: stringify(splitPayload(ssrContext).payload),
+    body: stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers),
     statusCode: ssrContext.event.node.res.statusCode,
     statusMessage: ssrContext.event.node.res.statusMessage,
     headers: {
