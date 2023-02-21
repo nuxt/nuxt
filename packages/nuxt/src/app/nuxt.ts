@@ -196,7 +196,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
   // as well as when mounting the app and in the `app:mounted` hook
-  nuxtApp.hook('app:error', console.error)
+  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
 
   // Expose runtime config
   const runtimeConfig = process.server
