@@ -410,7 +410,6 @@ importers:
 
   packages/nuxt:
     specifiers:
-      '@nuxt/devalue': ^2.0.0
       '@nuxt/kit': workspace:*
       '@nuxt/schema': workspace:*
       '@nuxt/telemetry': ^2.1.10
@@ -426,6 +425,7 @@ importers:
       cookie-es: ^0.5.0
       defu: ^6.1.2
       destr: ^1.2.2
+      devalue: ^4.3.0
       escape-string-regexp: ^5.0.0
       estree-walker: ^3.0.3
       fs-extra: ^11.1.0
@@ -458,7 +458,6 @@ importers:
       vue-devtools-stub: ^0.1.0
       vue-router: ^4.1.6
     dependencies:
-      '@nuxt/devalue': 2.0.0
       '@nuxt/kit': link:../kit
       '@nuxt/schema': link:../schema
       '@nuxt/telemetry': 2.1.10
@@ -472,6 +471,7 @@ importers:
       cookie-es: 0.5.0
       defu: 6.1.2
       destr: 1.2.2
+      devalue: 4.3.0
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       fs-extra: 11.1.0
@@ -1782,10 +1782,6 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
-
-  /@nuxt/devalue/2.0.0:
-    resolution: {integrity: sha512-YBI/6o2EBz02tdEJRBK8xkt3zvOFOWlLBf7WKYGBsSYSRtjjgrqPe2skp6VLLmKx5WbHHDNcW+6oACaurxGzeA==}
-    dev: false
 
   /@nuxt/friendly-errors-webpack-plugin/2.5.2_webpack@5.75.0:
     resolution: {integrity: sha512-LLc+90lnxVbpKkMqk5z1EWpXoODhc6gRkqqXJCInJwF5xabHAE7biFvbULfvTRmtaTzAaP8IV4HQDLUgeAUTTw==}
@@ -4205,6 +4201,10 @@ packages:
   /detect-libc/2.0.1:
     resolution: {integrity: sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==}
     engines: {node: '>=8'}
+
+  /devalue/4.3.0:
+    resolution: {integrity: sha512-n94yQo4LI3w7erwf84mhRUkUJfhLoCZiLyoOZ/QFsDbcWNZePrLwbQpvZBUG2TNxwV3VjCKPxkiiQA6pe3TrTA==}
+    dev: false
 
   /diff/5.1.0:
     resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}

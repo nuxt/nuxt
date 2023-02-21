@@ -3,7 +3,7 @@ import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
-import devalue from '@nuxt/devalue'
+import { uneval } from 'devalue'
 import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -288,8 +288,8 @@ export default defineRenderHandler(async (event) => {
       process.env.NUXT_NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-            ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${devalue(splitPayload(ssrContext).initial)})}</script>`
-            : `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`
+            ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${uneval(splitPayload(ssrContext).initial)})}</script>`
+            : `<script>window.__NUXT__=${uneval(ssrContext.payload)}</script>`
           ),
       _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
@@ -410,7 +410,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return <RenderResponse> {
-    body: `export default ${devalue(splitPayload(ssrContext).payload)}`,
+    body: `export default ${uneval(splitPayload(ssrContext).payload)}`,
     statusCode: ssrContext.event.node.res.statusCode,
     statusMessage: ssrContext.event.node.res.statusMessage,
     headers: {

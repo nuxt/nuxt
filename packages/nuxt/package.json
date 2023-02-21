@@ -41,7 +41,6 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/devalue": "^2.0.0",
     "@nuxt/kit": "3.2.2",
     "@nuxt/schema": "3.2.2",
     "@nuxt/telemetry": "^2.1.10",
@@ -55,6 +54,7 @@
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
     "destr": "^1.2.2",
+    "devalue": "^4.3.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.0",
