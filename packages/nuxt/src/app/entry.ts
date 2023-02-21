@@ -28,7 +28,7 @@ if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
-    const nuxt = createNuxtApp({ vueApp, ssrContext })
+    const nuxt = await createNuxtApp({ vueApp, ssrContext })
 
     try {
       await applyPlugins(nuxt, plugins)
@@ -52,10 +52,13 @@ if (process.client) {
   }
 
   entry = async function initApp () {
-    const isSSR = Boolean(window.__NUXT__?.serverRendered)
+    const isSSR = Boolean(
+      window.__NUXT__?.serverRendered ||
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+    )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
-    const nuxt = createNuxtApp({ vueApp })
+    const nuxt = await createNuxtApp({ vueApp })
 
     try {
       await applyPlugins(nuxt, plugins)

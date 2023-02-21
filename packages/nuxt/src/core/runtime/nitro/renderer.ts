@@ -3,7 +3,7 @@ import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
-import { uneval } from 'devalue'
+import { stringify } from 'devalue'
 import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -158,7 +158,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 }
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
-const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.json(\?.*)?$/
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -217,7 +217,7 @@ export default defineRenderHandler(async (event) => {
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, '_payload.js') : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, '_payload.json') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -253,7 +253,7 @@ export default defineRenderHandler(async (event) => {
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.js'))
+    appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.json'))
     // Use same ssr context to generate payload for this route
     PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
   }
@@ -272,7 +272,7 @@ export default defineRenderHandler(async (event) => {
     htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
     head: normalizeChunks([
       renderedMeta.headTags,
-      _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
+      _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null,
       _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
@@ -288,8 +288,8 @@ export default defineRenderHandler(async (event) => {
       process.env.NUXT_NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-            ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${uneval(splitPayload(ssrContext).initial)})}</script>`
-            : `<script>window.__NUXT__=${uneval(ssrContext.payload)}</script>`
+            ? renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           ),
       _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
@@ -380,8 +380,6 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 }
 
 // TODO: Move to external library
-const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
-const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {
   const tags: { tagName: string, attrs: Record<string, string>, innerHTML: string }[] = []
   for (const tagMatch of html.matchAll(HTML_TAG_RE)) {
@@ -410,14 +408,24 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return <RenderResponse> {
-    body: `export default ${uneval(splitPayload(ssrContext).payload)}`,
+    body: stringify(splitPayload(ssrContext).payload),
     statusCode: ssrContext.event.node.res.statusCode,
     statusMessage: ssrContext.event.node.res.statusMessage,
     headers: {
-      'content-type': 'text/javascript;charset=UTF-8',
+      'content-type': 'application/json;charset=UTF-8',
       'x-powered-by': 'Nuxt'
     }
   }
+}
+
+function renderPayloadScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }) {
+  const attrs = [
+    'type="application/json"',
+    `id="${opts.id}"`,
+    `data-ssr="${!(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR)}"`,
+    opts.src ? `data-src="${opts.src}"` : ''
+  ].filter(Boolean)
+  return `<script ${attrs.join(' ')}>${opts.data ? stringify(opts.data) : ''}</script>`
 }
 
 function splitPayload (ssrContext: NuxtSSRContext) {

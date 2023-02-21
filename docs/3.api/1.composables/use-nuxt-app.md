@@ -84,7 +84,7 @@ await nuxtApp.callHook('my-plugin:init')
 
 ### `payload`
 
-`payload` exposes data and state variables from server side to client side and makes them available in the `window.__NUXT__` object that is accessible from the browser.
+`payload` exposes data and state variables from server side to client side and makes them available in the palod object that is accessible from the browser.
 
 `payload` exposes the following keys on the client side after they are stringified and passed from the server side:
 

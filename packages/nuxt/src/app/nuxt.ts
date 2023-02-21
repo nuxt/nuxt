@@ -8,6 +8,7 @@ import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import { getNuxtClientPayload } from './composables/payload'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
@@ -115,7 +116,7 @@ export interface CreateOptions {
   globalName?: NuxtApp['globalName']
 }
 
-export function createNuxtApp (options: CreateOptions) {
+export async function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
     provide: undefined,
@@ -124,7 +125,7 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      ...(process.client ? window.__NUXT__ : { serverRendered: true })
+      ...(process.client ? await getNuxtClientPayload() : { serverRendered: true })
     }),
     static: {
       data: {}
@@ -173,7 +174,7 @@ export function createNuxtApp (options: CreateOptions) {
     if (nuxtApp.ssrContext) {
       nuxtApp.ssrContext.nuxt = nuxtApp
     }
-    // Expose to server renderer to create window.__NUXT__
+    // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
     if (nuxtApp.ssrContext!.payload) {
       Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)

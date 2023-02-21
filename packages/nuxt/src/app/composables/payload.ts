@@ -1,4 +1,5 @@
 import { joinURL, hasProtocol } from 'ufo'
+import { parse } from 'devalue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { useHead } from './head'
 
@@ -60,4 +61,34 @@ export function isPrerendered () {
   // Note: Alternative for server is checking x-nitro-prerender header
   const nuxtApp = useNuxtApp()
   return !!nuxtApp.payload.prerenderedAt
+}
+
+let payloadCache: any = null
+export async function getNuxtClientPayload () {
+  if (process.server) {
+    return
+  }
+  if (payloadCache) {
+    return payloadCache
+  }
+
+  const el = document.getElementById('__NUXT_DATA__')
+  if (!el) {
+    return {}
+  }
+
+  const inlineData = parse(el.textContent || '')
+
+  let externalData
+  if (el.dataset.src) {
+    externalData = parse(await fetch(el.dataset.src).then(res => res.text()))
+  }
+
+  payloadCache = {
+    ...inlineData,
+    ...externalData,
+    ...window.__NUXT__
+  }
+
+  return payloadCache
 }
