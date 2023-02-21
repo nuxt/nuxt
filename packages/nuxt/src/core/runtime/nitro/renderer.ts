@@ -212,6 +212,7 @@ export default defineRenderHandler(async (event) => {
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload'],
+    _payloadReducers: {},
     islandContext
   }
 
@@ -425,7 +426,8 @@ function renderPayloadScript (opts: { id: string, ssrContext: NuxtSSRContext, da
     `data-ssr="${!(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR)}"`,
     opts.src ? `data-src="${opts.src}"` : ''
   ].filter(Boolean)
-  return `<script ${attrs.join(' ')}>${opts.data ? stringify(opts.data) : ''}</script>`
+  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
+  return `<script ${attrs.join(' ')}>${contents}</script>`
 }
 
 function splitPayload (ssrContext: NuxtSSRContext) {

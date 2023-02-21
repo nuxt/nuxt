@@ -8,7 +8,7 @@ import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import { getNuxtClientPayload } from './composables/payload'
+import { getNuxtClientPayload, useNuxtPayloadTypes } from './composables/payload'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
@@ -74,6 +74,7 @@ interface _NuxtApp {
     pending: Ref<boolean>
     error: Ref<any>
   } | undefined>
+  _payloadRevivers: Record<string, (data: any) => any>
 
   isHydrating?: boolean
   deferHydration: () => () => void | Promise<void>
@@ -173,6 +174,10 @@ export async function createNuxtApp (options: CreateOptions) {
     // Expose nuxt to the renderContext
     if (nuxtApp.ssrContext) {
       nuxtApp.ssrContext.nuxt = nuxtApp
+    }
+    // Expose payload types
+    if (nuxtApp.ssrContext) {
+      nuxtApp.ssrContext._payloadReducers = useNuxtPayloadTypes().reducers
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any

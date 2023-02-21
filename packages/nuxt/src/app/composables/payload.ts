@@ -77,11 +77,14 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const inlineData = parse(el.textContent || '')
+  const { revivers } = useNuxtPayloadTypes()
+
+  const inlineData = parse(el.textContent || '', revivers)
 
   let externalData
   if (el.dataset.src) {
-    externalData = parse(await fetch(el.dataset.src).then(res => res.text()))
+    const text = await fetch(el.dataset.src).then(res => res.text())
+    externalData = parse(text, revivers)
   }
 
   payloadCache = {
@@ -91,4 +94,29 @@ export async function getNuxtClientPayload () {
   }
 
   return payloadCache
+}
+
+export function useNuxtPayloadTypes () {
+  const _globalThis = globalThis as any
+  if (!_globalThis.__nuxt_payload_types__) {
+    _globalThis.__nuxt_payload_types__ = {
+      reducers: {},
+      revivers: {}
+    }
+  }
+  return _globalThis.__nuxt_payload_types__
+}
+
+export function definePayloadType (
+  name: string,
+  reduce: (data: any) => any,
+  revive: (data: string) => any | undefined
+) {
+  const types = useNuxtPayloadTypes()
+  if (process.client) {
+    types.revivers[name] = revive
+  }
+  if (process.server) {
+    types.reducers[name] = reduce
+  }
 }
