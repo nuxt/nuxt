@@ -119,7 +119,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         const parsed = parseStaticImport(i)
         for (const name of [
           parsed.defaultImport,
-          ...Object.keys(parsed.namedImports || {}),
+          ...Object.values(parsed.namedImports || {}),
           parsed.namespacedImport
         ].filter(Boolean) as string[]) {
           importMap.set(name, i)
