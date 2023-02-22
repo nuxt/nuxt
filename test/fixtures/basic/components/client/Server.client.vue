@@ -1,8 +1,5 @@
 <template>
-  <div class="fragment-server-client client">
-    world !
-  </div>
-  <div class="fragment-server-client client">
+  <div class="client-server client">
     world !
   </div>
 </template>

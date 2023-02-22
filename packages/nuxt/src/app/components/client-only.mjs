@@ -61,12 +61,15 @@ export function createClientOnly (component) {
     const instance = getCurrentInstance()
 
     const inheritAttrs = instance.inheritAttrs
+    // remove exsting directives during hydration
+    const directives = extractDirectives(instance)
     // prevent attrs inheritance since a staticVNode is rendered before hydration
     instance.inheritAttrs = false
     const mounted$ = ref(false)
 
     onMounted(() => {
       instance.inheritAttrs = inheritAttrs
+      instance.vnode.dirs = directives
       mounted$.value = true
     })
 
@@ -130,4 +133,11 @@ function isStartFragment (element) {
 
 function isEndFragment (element) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+
+function extractDirectives (instance) {
+  if (!instance.vnode.dirs) { return null }
+  const directives = instance.vnode.dirs
+  instance.vnode.dirs = null
+  return directives
 }

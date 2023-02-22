@@ -1,8 +1,8 @@
 <template>
   <div class="client-server-fragment server">
-    Hello
+    hello
   </div>
   <div class="client-server-fragment server">
-    Hello
+    hello
   </div>
 </template>
