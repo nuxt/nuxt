@@ -74,7 +74,7 @@ export function main () {
       if (result === 'error') {
         process.exit(1)
       } else if (result !== 'wait') {
-        process.exit(0)
+        process.exit()
       }
     })
     .catch((error) => {

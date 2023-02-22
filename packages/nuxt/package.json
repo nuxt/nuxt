@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.1.2",
+  "version": "3.2.2",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -13,9 +13,13 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./config": {
+      "types": "./config.d.ts",
       "import": "./config.mjs",
-      "require": "./config.cjs",
-      "types": "./config.d.ts"
+      "require": "./config.cjs"
+    },
+    "./schema": {
+      "types": "./schema.d.ts",
+      "import": "./schema.mjs"
     },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
@@ -30,22 +34,23 @@
     "bin",
     "types.d.ts",
     "dist",
-    "config.*"
+    "config.*",
+    "schema.*"
   ],
   "scripts": {
     "prepack": "unbuild"
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.0",
-    "@nuxt/kit": "3.1.2",
-    "@nuxt/schema": "3.1.2",
-    "@nuxt/telemetry": "^2.1.9",
+    "@nuxt/kit": "3.2.2",
+    "@nuxt/schema": "3.2.2",
+    "@nuxt/telemetry": "^2.1.10",
     "@nuxt/ui-templates": "^1.1.1",
-    "@nuxt/vite-builder": "3.1.2",
-    "@unhead/ssr": "^1.0.21",
+    "@nuxt/vite-builder": "3.2.2",
+    "@unhead/ssr": "^1.0.22",
     "@vue/reactivity": "^3.2.47",
     "@vue/shared": "^3.2.47",
-    "@vueuse/head": "^1.0.25",
+    "@vueuse/head": "^1.0.26",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
@@ -54,31 +59,30 @@
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.0",
     "globby": "^13.1.3",
-    "h3": "^1.2.1",
+    "h3": "^1.5.0",
     "hash-sum": "^2.0.0",
     "hookable": "^5.4.2",
-    "jiti": "^1.16.2",
+    "jiti": "^1.17.1",
     "knitwork": "^1.0.0",
-    "magic-string": "^0.27.0",
-    "mlly": "^1.1.0",
-    "nitropack": "^2.1.2",
-    "nuxi": "3.1.2",
-    "ofetch": "^1.0.0",
+    "magic-string": "^0.29.0",
+    "mlly": "^1.1.1",
+    "nitropack": "^2.2.2",
+    "nuxi": "3.2.2",
+    "ofetch": "^1.0.1",
     "ohash": "^1.0.0",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
     "scule": "^1.0.0",
     "strip-literal": "^1.0.1",
-    "ufo": "^1.0.1",
-    "ultrahtml": "^1.2.0",
-    "unctx": "^2.1.1",
-    "unenv": "^1.1.0",
-    "unhead": "^1.0.21",
+    "ufo": "^1.1.0",
+    "unctx": "^2.1.2",
+    "unenv": "^1.2.0",
+    "unhead": "^1.0.22",
     "unimport": "^2.2.4",
-    "unplugin": "^1.0.1",
+    "unplugin": "^1.1.0",
     "untyped": "^1.2.2",
     "vue": "^3.2.47",
-    "vue-bundle-renderer": "^1.0.0",
+    "vue-bundle-renderer": "^1.0.2",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.1.6"
   },
@@ -88,6 +92,6 @@
     "unbuild": "latest"
   },
   "engines": {
-    "node": "^14.16.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }

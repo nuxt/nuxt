@@ -1,6 +1,6 @@
 import { createHead, useHead } from '@vueuse/head'
 import { renderSSRHead } from '@unhead/ssr'
-import { defineNuxtPlugin } from '#app'
+import { defineNuxtPlugin } from '#app/nuxt'
 // @ts-expect-error untyped
 import { appHead } from '#build/nuxt.config.mjs'
 

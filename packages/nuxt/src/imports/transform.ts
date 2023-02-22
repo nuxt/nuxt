@@ -2,8 +2,8 @@ import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { Unimport } from 'unimport'
-import type { ImportsOptions } from '@nuxt/schema'
 import { normalize } from 'pathe'
+import type { ImportsOptions } from 'nuxt/schema'
 
 export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => {
   return {

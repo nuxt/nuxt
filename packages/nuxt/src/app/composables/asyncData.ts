@@ -121,7 +121,7 @@ export function useAsyncData<
       error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
     }
   }
-  // TODO: Else, Soemhow check for confliciting keys with different defaults or fetcher
+  // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT, DataE>
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {

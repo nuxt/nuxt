@@ -2,7 +2,6 @@ import { existsSync, promises as fsp } from 'node:fs'
 import { resolve, join } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
-import type { Nuxt } from '@nuxt/schema'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -12,6 +11,7 @@ import { createHeadCore } from 'unhead'
 import { renderSSRHead } from '@unhead/ssr'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
+import type { Nuxt } from 'nuxt/schema'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -82,7 +82,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       generateTsConfig: false
     },
     publicAssets: [
-      { dir: resolve(nuxt.options.buildDir, 'dist/client') },
+      nuxt.options.dev
+        ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
+        : {
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 30 * 24 * 60 * 60,
+            baseURL: nuxt.options.app.buildAssetsDir
+          },
       ...nuxt.options._layers
         .map(layer => join(layer.config.srcDir, layer.config.dir?.public || 'public'))
         .filter(dir => existsSync(dir))
@@ -157,10 +163,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
     nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
+    // In case a non-normalized absolute path is called for on Windows
+    if (process.platform === 'win32') {
+      nitroConfig.virtual!['#build/dist/server/server.mjs'.replace(/\//g, '\\')] = 'export default () => {}'
+    }
   }
 
   if (!nuxt.options.experimental.inlineSSRStyles) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
+    // In case a non-normalized absolute path is called for on Windows
+    if (process.platform === 'win32') {
+      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(/\//g, '\\')] = 'export default {}'
+    }
   }
 
   // Register nuxt protection patterns

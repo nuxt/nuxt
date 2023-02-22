@@ -14,6 +14,9 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
+    <NuxtLink to="/chunk-error" :prefetch="false">
+      Chunk error
+    </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
     <Spin>Test</Spin>

@@ -2,6 +2,7 @@ import type { KeepAliveProps, TransitionProps } from 'vue'
 import type { ConfigSchema } from '../../schema/config'
 import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
+import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { AppHeadMetaObject } from './meta'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
@@ -54,7 +55,9 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
     ? T[K] extends Record<string, any>
       ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
       : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-    : never
+    : K extends number
+      ? T[K]
+      : never
 }
 
 /** User configuration in `nuxt.config` file */
@@ -93,9 +96,15 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
 export interface ViteConfig extends ViteUserConfig {
   /**
    * Options passed to @vitejs/plugin-vue
-   * @see https://github.com/vitejs/vite/tree/main/packages/plugin-vue
+   * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
    */
   vue?: VuePluginOptions
+
+  /**
+   * Options passed to @vitejs/plugin-vue-jsx
+   * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx
+   */
+  vueJsx?: VueJsxPluginOptions
 
   /**
    * Bundler for dev time server-side rendering.
