@@ -1,4 +1,13 @@
-import { ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
+import {
+  ref,
+  onMounted,
+  defineComponent,
+  createElementBlock,
+  h,
+  createElementVNode,
+  createStaticVNode,
+  getCurrentInstance
+} from 'vue'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -37,7 +46,7 @@ export function createClientOnly (component) {
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
       } else {
-        return h('div', ctx.$attrs ?? ctx._.attrs)
+        return process.client ? getStaticVNode(ctx._.vnode) : h('div', ctx.$attrs ?? ctx._.attrs)
       }
     }
   } else if (clone.template) {
@@ -49,8 +58,17 @@ export function createClientOnly (component) {
   }
 
   clone.setup = (props, ctx) => {
+    const instance = getCurrentInstance()
+
+    const inheritAttrs = instance.inheritAttrs
+    // prevent attrs inheritance since a staticVNode is rendered before hydration
+    instance.inheritAttrs = false
     const mounted$ = ref(false)
-    onMounted(() => { mounted$.value = true })
+
+    onMounted(() => {
+      instance.inheritAttrs = inheritAttrs
+      mounted$.value = true
+    })
 
     return Promise.resolve(component.setup?.(props, ctx) || {})
       .then((setupState) => {
@@ -63,7 +81,7 @@ export function createClientOnly (component) {
                   ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
                   : h(res)
               } else {
-                return h('div', ctx.attrs)
+                return process.client ? getStaticVNode(args[0]._.vnode) : h('div', ctx.attrs)
               }
             }
       })
@@ -72,4 +90,44 @@ export function createClientOnly (component) {
   cache.set(component, clone)
 
   return clone
+}
+
+function getStaticVNode (vnode) {
+  const fragment = getFragmentHTML(vnode.el)
+
+  if (fragment.length === 0) {
+    return null
+  }
+  return createStaticVNode(fragment.join(''), fragment.length)
+}
+
+function getFragmentHTML (element) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element)
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element, blocks = []) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      blocks.push(element.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks)
+  }
+  return blocks
+}
+
+function isStartFragment (element) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
 }

@@ -191,6 +191,20 @@ describe('pages', () => {
     await expectNoClientErrors('/another-parent')
   })
 
+  it('/client-server', async () => {
+    // expect no hydration issues
+    await expectNoClientErrors('/client-server')
+    const page = await createPage('/client-server')
+    await page.waitForLoadState('networkidle')
+    expect(page.locator('.placeholder-to-ensure-no-override').all()).toHaveLength(5)
+    expect(page.locator('.server').all()).toHaveLength(0)
+    expect(page.locator('.client-fragment-server.client')).toHaveLength(2)
+    expect(page.locator('.client-fragment-server-fragment.client')).toHaveLength(2)
+    expect(page.locator('.fragment-server-client.client')).toHaveLength(1)
+    expect(page.locator('.client-server-fragment.client')).toHaveLength(1)
+    expect(page.locator('.client-server-fragment.client')).toHaveLength(1)
+  })
+
   it('/client-only-components', async () => {
     const html = await $fetch('/client-only-components')
     // ensure fallbacks with classes and arbitrary attributes are rendered
