@@ -80,6 +80,29 @@ const { data, pending, error, refresh } = await useAsyncData(
 )
 ```
 
+## Example with watching params change
+
+built-in `watch` option allow to watch for changes passed as param, ex. _page_ used in pagination logic
+
+```ts
+const page = ref(1);
+
+const { data: posts } = await useAsyncData(
+  'posts',
+  () => $fetch( ``, {
+    baseURL: '[https://fakeApi.com/posts',
+    params: {
+      page: page.value,
+    }
+  } ), {
+    watch: [
+      page
+    ]
+  }
+);
+```
+
+
 ::alert{type=warning}
 `useAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useAsyncData`.
 ::
