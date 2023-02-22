@@ -12,7 +12,7 @@ overrides:
   unbuild: ^1.1.2
   vite: ^4.1.4
   vue: 3.2.47
-  magic-string: ^0.29.0
+  magic-string: ^0.30.0
 
 importers:
 
@@ -29,7 +29,7 @@ importers:
       '@types/node': ^18.14.0
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
-      '@unocss/reset': ^0.49.7
+      '@unocss/reset': ^0.50.0
       case-police: ^0.5.11
       changelogen: ^0.4.1
       crawler: ^1.4.0
@@ -65,7 +65,7 @@ importers:
       '@types/node': 18.14.0
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
-      '@unocss/reset': 0.49.7
+      '@unocss/reset': 0.50.0
       case-police: 0.5.11
       changelogen: 0.4.1
       crawler: 1.4.0
@@ -435,7 +435,7 @@ importers:
       hookable: ^5.4.2
       jiti: ^1.17.1
       knitwork: ^1.0.0
-      magic-string: ^0.29.0
+      magic-string: ^0.30.0
       mlly: ^1.1.1
       nitropack: ^2.2.3
       nuxi: workspace:*
@@ -481,7 +481,7 @@ importers:
       hookable: 5.4.2
       jiti: 1.17.1
       knitwork: 1.0.0
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       mlly: 1.1.1
       nitropack: 2.2.3
       nuxi: link:../nuxi
@@ -603,7 +603,7 @@ importers:
       get-port-please: ^3.0.1
       h3: ^1.5.0
       knitwork: ^1.0.0
-      magic-string: ^0.29.0
+      magic-string: ^0.30.0
       mlly: ^1.1.1
       ohash: ^1.0.0
       pathe: ^1.1.0
@@ -640,7 +640,7 @@ importers:
       get-port-please: 3.0.1
       h3: 1.5.0
       knitwork: 1.0.0
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       mlly: 1.1.1
       ohash: 1.0.0
       pathe: 1.1.0
@@ -688,7 +688,7 @@ importers:
       fs-extra: ^11.1.0
       hash-sum: ^2.0.0
       lodash-es: ^4.17.21
-      magic-string: ^0.29.0
+      magic-string: ^0.30.0
       memfs: ^3.4.13
       mini-css-extract-plugin: ^2.7.2
       mlly: ^1.1.1
@@ -730,7 +730,7 @@ importers:
       fs-extra: 11.1.0
       hash-sum: 2.0.0
       lodash-es: 4.17.21
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       memfs: 3.4.13
       mini-css-extract-plugin: 2.7.2_webpack@5.75.0
       mlly: 1.1.1
@@ -1788,7 +1788,7 @@ packages:
       estree-walker: 2.0.2
       glob: 8.1.0
       is-reference: 1.2.1
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       rollup: 3.17.2
 
   /@rollup/plugin-inject/5.0.3_rollup@3.17.2:
@@ -1802,7 +1802,7 @@ packages:
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.17.2
       estree-walker: 2.0.2
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       rollup: 3.17.2
 
   /@rollup/plugin-json/6.0.0_rollup@3.17.2:
@@ -1844,7 +1844,7 @@ packages:
         optional: true
     dependencies:
       '@rollup/pluginutils': 5.0.2_rollup@3.17.2
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       rollup: 3.17.2
 
   /@rollup/plugin-terser/0.4.0_rollup@3.17.2:
@@ -2359,7 +2359,7 @@ packages:
       colorette: 2.0.19
       consola: 2.15.3
       fast-glob: 3.2.12
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       pathe: 0.3.9
       perfect-debounce: 0.1.3
     transitivePeerDependencies:
@@ -2468,8 +2468,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset/0.49.7:
-    resolution: {integrity: sha512-dodJ+4LLyBJVLNZZyZNGRnEF/Sepb2n4q+JC+TZ1SjxGpiYGxeDvPFw9kE1M7DZ0XshWE+j31HhojQXc1GDsBA==}
+  /@unocss/reset/0.50.0:
+    resolution: {integrity: sha512-cU3YlVWvt9F1wW6X1/j5HXL/DQvod6bM+2sF7wvIuQyeLoiMM7z4Ne5VBwUX4Q0Tt9Chu295MqdQkK6elrDUYg==}
     dev: true
 
   /@unocss/scope/0.45.30:
@@ -2513,7 +2513,7 @@ packages:
       '@unocss/inspector': 0.45.30
       '@unocss/scope': 0.45.30
       '@unocss/transformer-directives': 0.45.30
-      magic-string: 0.29.0
+      magic-string: 0.30.0
     transitivePeerDependencies:
       - rollup
     dev: true
@@ -2527,7 +2527,7 @@ packages:
       '@rollup/pluginutils': 5.0.2
       '@unocss/config': 0.45.30
       '@unocss/core': 0.45.30
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       unplugin: 0.10.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
@@ -2720,7 +2720,7 @@ packages:
       '@vue/reactivity-transform': 3.2.47
       '@vue/shared': 3.2.47
       estree-walker: 2.0.2
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       postcss: 8.4.21
       source-map: 0.6.1
 
@@ -2741,7 +2741,7 @@ packages:
       '@vue/compiler-core': 3.2.47
       '@vue/shared': 3.2.47
       estree-walker: 2.0.2
-      magic-string: 0.29.0
+      magic-string: 0.30.0
 
   /@vue/reactivity/3.2.47:
     resolution: {integrity: sha512-7khqQ/75oyyg+N/e+iwV6lpy1f5wq759NdlS1fpAhFXa8VeAIKGgk2E/C4VF59lx5b+Ezs5fpp/5WsRYXQiKxQ==}
@@ -6018,8 +6018,8 @@ packages:
     resolution: {integrity: sha512-VJBdeMa9Bz27NNlx+DI/YXGQtXdjUU+9gdfN1rYfra7vtTjhodl5tVNmR42bo+ORHuDqDT+lGAUAb+lzvY42Bw==}
     engines: {node: '>=12'}
 
-  /magic-string/0.29.0:
-    resolution: {integrity: sha512-WcfidHrDjMY+eLjlU+8OvwREqHwpgCeKVBUpQ3OhYYuvfaYCUgcbuBzappNzZvg/v8onU3oQj+BYpkOJe9Iw4Q==}
+  /magic-string/0.30.0:
+    resolution: {integrity: sha512-LA+31JYDJLs82r2ScLrlz1GjSgu66ZV518eyWT+S8VhyQn/JL0u9MeBOvQMGYiPk1DBiSN9DDMOcXvigJZaViQ==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.14
@@ -7359,7 +7359,7 @@ packages:
       rollup: ^3.0.0
       typescript: ^4.1
     dependencies:
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       rollup: 3.17.2
       typescript: 4.9.5
     optionalDependencies:
@@ -8130,7 +8130,7 @@ packages:
       globby: 13.1.3
       hookable: 5.4.2
       jiti: 1.17.1
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       mkdist: 1.1.1_typescript@4.9.5
       mlly: 1.1.1
       mri: 1.2.0
@@ -8163,7 +8163,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       estree-walker: 3.0.3
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       unplugin: 1.1.0
     dev: false
 
@@ -8198,7 +8198,7 @@ packages:
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.3
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       mlly: 1.1.1
       pathe: 1.1.0
       pkg-types: 1.0.2
@@ -8216,7 +8216,7 @@ packages:
       escape-string-regexp: 5.0.0
       fast-glob: 3.2.12
       local-pkg: 0.4.3
-      magic-string: 0.29.0
+      magic-string: 0.30.0
       mlly: 1.1.1
       pathe: 1.1.0
       pkg-types: 1.0.2
