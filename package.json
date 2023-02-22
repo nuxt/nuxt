@@ -38,7 +38,7 @@
     "unbuild": "^1.1.2",
     "vite": "^4.1.4",
     "vue": "3.2.47",
-    "magic-string": "^0.29.0"
+    "magic-string": "^0.30.0"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
@@ -52,7 +52,7 @@
     "@types/node": "^18.14.0",
     "@types/rimraf": "^3",
     "@types/semver": "^7.3.13",
-    "@unocss/reset": "^0.49.7",
+    "@unocss/reset": "^0.50.0",
     "case-police": "^0.5.11",
     "changelogen": "^0.4.1",
     "crawler": "^1.4.0",
