@@ -60,9 +60,10 @@ describe('pages', () => {
     expect(html).toContain('RuntimeConfig | testConfig: 123')
     expect(html).toContain('needsFallback:')
     // composables auto import
-    expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
-    expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
-    expect(html).toContain('Composable | template: auto imported from ~/components/template.ts')
+    expect(html).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(html).toContain('Composable | bar: auto imported from ~/utils/useBar.ts')
+    expect(html).toContain('Composable | template: auto imported from ~/composables/template.ts')
+    expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
     // should apply attributes to client-only components
