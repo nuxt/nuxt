@@ -249,7 +249,18 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const file = normalize(page.file || '')
+      if (!page.file) {
+        return {
+          name: page.name ? JSON.stringify(page.name) : 'undefined',
+          path: JSON.stringify(page.path),
+          children: page.children ? normalizeRoutes(page.children, metaImports).routes : [],
+          meta: page.meta ? `{...${JSON.stringify(page.meta)}}` : '{}',
+          alias: Array.isArray(page.alias) && page.alias.length ? JSON.stringify(page.alias) : '[]',
+          redirect: page.redirect ? JSON.stringify(page.redirect) : 'undefined'
+        }
+      }
+
+      const file = normalize(page.file)
       const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
