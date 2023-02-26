@@ -249,31 +249,39 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           if (!slots.default) {
             return null
           }
-          const url = href && parseURL(href)
-          return slots.default({
+
+          const props = {
             href,
             navigate,
-            route: url
-              ? {
-                  path: url.pathname,
-                  fullPath: url.pathname,
-                  query: parseQuery(url.search),
-                  hash: url.hash,
-                  // stub properties for compat with vue-router
-                  params: {},
-                  name: undefined,
-                  matched: [],
-                  redirectedFrom: undefined,
-                  meta: {},
-                  href
-                }
-              : undefined,
             rel,
             target,
             isExternal: isExternal.value,
             isActive: false,
             isExactActive: false
+          }
+
+          Object.defineProperty(props, 'route', {
+            get () {
+              if (!href) { return undefined }
+
+              const url = parseURL(href)
+              return {
+                path: url.pathname,
+                fullPath: url.pathname,
+                query: parseQuery(url.search),
+                hash: url.hash,
+                // stub properties for compat with vue-router
+                params: {},
+                name: undefined,
+                matched: [],
+                redirectedFrom: undefined,
+                meta: {},
+                href
+              }
+            }
           })
+
+          return slots.default(props)
         }
 
         return h('a', { ref: el, href, rel, target }, slots.default?.())
