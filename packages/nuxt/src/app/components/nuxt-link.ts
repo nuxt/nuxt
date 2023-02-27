@@ -1,7 +1,7 @@
 import type { PropType, DefineComponent, ComputedRef } from 'vue'
 import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { hasProtocol } from 'ufo'
+import { hasProtocol, parseQuery, parseURL } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -250,10 +250,28 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           if (!slots.default) {
             return null
           }
+
           return slots.default({
             href,
             navigate,
-            route: router.resolve(href!),
+            get route () {
+              if (!href) { return undefined }
+
+              const url = parseURL(href)
+              return {
+                path: url.pathname,
+                fullPath: url.pathname,
+                get query () { return parseQuery(url.search) },
+                hash: url.hash,
+                // stub properties for compat with vue-router
+                params: {},
+                name: undefined,
+                matched: [],
+                redirectedFrom: undefined,
+                meta: {},
+                href
+              }
+            },
             rel,
             target,
             isExternal: isExternal.value,
