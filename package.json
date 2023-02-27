@@ -49,14 +49,14 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/crawler": "^1.2.2",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.14.2",
     "@types/rimraf": "^3",
     "@types/semver": "^7.3.13",
-    "@unocss/reset": "^0.50.0",
-    "case-police": "^0.5.11",
+    "@unocss/reset": "^0.50.1",
+    "case-police": "^0.5.13",
     "changelogen": "^0.4.1",
     "crawler": "^1.4.0",
-    "eslint": "^8.34.0",
+    "eslint": "^8.35.0",
     "eslint-plugin-jsdoc": "^40.0.0",
     "execa": "^7.0.0",
     "expect-type": "^0.15.0",
@@ -74,10 +74,10 @@
     "ufo": "^1.1.0",
     "unbuild": "^1.1.2",
     "vite": "^4.1.4",
-    "vitest": "^0.28.5",
-    "vue-tsc": "^1.1.7"
+    "vitest": "^0.29.1",
+    "vue-tsc": "^1.2.0"
   },
-  "packageManager": "pnpm@7.27.1",
+  "packageManager": "pnpm@7.28.0",
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
