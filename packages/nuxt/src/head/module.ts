@@ -33,8 +33,8 @@ export default defineNuxtModule({
       })
     }
 
-    addVitePlugin(UnheadVite, { build: true })
-    addWebpackPlugin(UnheadWebpack, { build: true })
+    addVitePlugin(UnheadVite(), { build: true })
+    addWebpackPlugin(UnheadWebpack(), { build: true })
 
     addPlugin({ src: resolve(runtimeDir, 'plugin') })
   }
