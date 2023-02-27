@@ -14,7 +14,7 @@ export default defineNuxtModule({
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
     // Avoid vue dependency issues
-    nuxt.options.build.transpile.push('@unhead/vue')
+    nuxt.options.build.transpile.push('@unhead/vue', 'unhead')
 
     // backwards compatibility
     nuxt.options.alias['@vueuse/head'] = '@unhead/vue'
