@@ -1,9 +1,4 @@
 <script setup lang="ts">
-useSeoMeta({
-  title: 'hello world',
-  ogTitle: '%s',
-  ogDescription: 'hello world'
-})
 </script>
 
 <template>

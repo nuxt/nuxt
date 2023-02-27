@@ -8,8 +8,10 @@ import type { HeadAugmentations, CreateHeadOptions } from 'nuxt/schema'
 import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const headOptions: CreateHeadOptions = {}
-  nuxtApp.hooks.hook('head:init', headOptions)
+  // resolve head options
+  const headOptions: CreateHeadOptions = appHead.options || {}
+  delete appHead.options
+
   let head: VueHeadClient<HeadAugmentations>
   if (process.server) {
     head = createServerHead<HeadAugmentations>(headOptions)
@@ -40,7 +42,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.hooks.hook('app:mounted', unpauseDom)
   }
 
-  // useHead does not depend on a vue component context, we keep it on the nuxtApp for backwards compatibility
+  // support backwards compatibility, remove at some point
   nuxtApp._useHead = useHead
 
   if (process.server) {

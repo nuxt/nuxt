@@ -1,4 +1,4 @@
-import type { Head, MergeHead } from '@unhead/schema'
+import type { Head, MergeHead, CreateHeadOptions } from '@unhead/schema'
 
 export interface HeadAugmentations extends MergeHead {
   // runtime type modifications
@@ -29,6 +29,10 @@ export type AppHeadMetaObject = MetaObjectRaw & {
    * @default `'width=device-width, initial-scale=1'`
    */
   viewport?: string
+  /**
+   * Options used to create the head instance.
+   */
+  options?: Pick<CreateHeadOptions, 'experimentalHashHydration'>
 }
 
-export type { CreateHeadOptions } from '@unhead/schema'
+export type { CreateHeadOptions }
