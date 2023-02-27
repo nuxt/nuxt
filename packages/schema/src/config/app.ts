@@ -90,7 +90,8 @@ export default defineUntypedSchema({
           link: [],
           style: [],
           script: [],
-          noscript: []
+          noscript: [],
+          options: {}
         })
 
         // provides default charset and viewport if not set

@@ -1,4 +1,5 @@
 import { useHead, createHead, createServerHead } from '@unhead/vue'
+// @ts-expect-error untyped
 import { polyfillAsVueUseHead } from '@unhead/vue/polyfill'
 import { renderSSRHead } from '@unhead/ssr'
 import type { VueHeadClient } from '@unhead/vue'
@@ -18,9 +19,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     // when SSR it's safe to only render the appHead server side
     head.push(appHead, { mode: 'server' })
   } else {
-    // SPA mode
     head = createHead<HeadAugmentations>(headOptions)
-    head.push(appHead)
+    // only in SPA mode do we need to push the appHead client side
+    if (nuxtApp.ssrContext?.noSSR) {
+      head.push(appHead)
+    }
   }
   // avoid breaking ecosystem dependencies using low-level @vueuse/head APIs
   head = polyfillAsVueUseHead(head)
