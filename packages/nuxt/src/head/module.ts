@@ -14,7 +14,7 @@ export default defineNuxtModule({
     // Avoid vue dependency issues
     nuxt.options.build.transpile.push('@unhead/vue')
 
-    // add backwards compatibility for any integrations importing from @vueuse/head
+    // backwards compatibility
     nuxt.options.alias['@vueuse/head'] = '@unhead/vue'
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir

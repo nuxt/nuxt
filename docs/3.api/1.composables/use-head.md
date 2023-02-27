@@ -15,12 +15,13 @@ The `useHead` composable function allows you to manage your head tags in a progr
 useHead(meta: MaybeComputedRef<MetaObject>): void
 ```
 
-Below are the non-reactive types for `useHead`. See [zhead](https://github.com/harlan-zw/zhead/tree/main/packages/schema/src) for more detailed types.
+Below are the non-reactive types for `useHead`.
 
 ```ts
 interface MetaObject {
   title?: string
   titleTemplate?: string | ((title?: string) => string)
+  templateParams?: Record<string, string | Record<string, string>>
   base?: Base
   link?: Link[]
   meta?: Meta[]
@@ -31,6 +32,8 @@ interface MetaObject {
   bodyAttrs?: BodyAttributes
 }
 ```
+
+See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/schema/src/schema.ts) for more detailed types.
 
 ::alert{type=info}
 The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `reactive` properties. `meta` parameter can also accept a function returning an object to make the entire object reactive.
