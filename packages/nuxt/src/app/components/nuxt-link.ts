@@ -222,7 +222,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               exactActiveClass: props.exactActiveClass || options.exactActiveClass,
               replace: props.replace,
               ariaCurrentValue: props.ariaCurrentValue,
-              custom: props.custom
+              custom: props.custom,
+              rel: props.rel
             },
             slots.default
           )
