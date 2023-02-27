@@ -11,18 +11,18 @@ import { appHead } from '#build/nuxt.config.mjs'
 export default defineNuxtPlugin((nuxtApp) => {
   // resolve head options
   const headOptions: CreateHeadOptions = appHead.options || {}
-  delete appHead.options
+  const initialInput = { ...appHead, options: undefined }
 
   let head: VueHeadClient<HeadAugmentations>
   if (process.server) {
     head = createServerHead<HeadAugmentations>(headOptions)
     // when SSR it's safe to only render the appHead server side
-    head.push(appHead, { mode: 'server' })
+    head.push(initialInput, { mode: 'server' })
   } else {
     head = createHead<HeadAugmentations>(headOptions)
     // only in SPA mode do we need to push the appHead client side
     if (nuxtApp.ssrContext?.noSSR) {
-      head.push(appHead)
+      head.push(initialInput)
     }
   }
   // avoid breaking ecosystem dependencies using low-level @vueuse/head APIs
