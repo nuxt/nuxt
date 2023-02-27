@@ -4,7 +4,7 @@ description: The recommended way to provide head data with user input.
 
 # `useHeadSafe`
 
-The useHeadSafe composable is a wrapper around the [useHead](/api/composables/use-head) composable that restricts the input to only allow safe values.
+The useHeadSafe composable is a wrapper around the [useHead](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
 
 ::ReadMore{link="https://unhead.harlanzw.com/guide/composables/use-head-safe"}
 ::

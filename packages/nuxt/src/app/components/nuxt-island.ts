@@ -2,9 +2,10 @@ import { defineComponent, createStaticVNode, computed, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
+import type { ReactiveHead } from '@unhead/vue'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
-import type { MetaObject } from 'nuxt/schema'
+import type { HeadAugmentations } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 import { useHead } from '#app/composables/head'
@@ -34,7 +35,7 @@ export default defineComponent({
     const event = useRequestEvent()
 
     const html = ref<string>('')
-    const cHead = ref<MetaObject>({ link: [], style: [] })
+    const cHead = ref<ReactiveHead<HeadAugmentations>>({ link: [], style: [] })
     useHead(cHead)
 
     function _fetchComponent () {
