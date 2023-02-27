@@ -8,7 +8,7 @@ import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
+import type { RuntimeConfig, AppConfigInput, CreateHeadOptions } from 'nuxt/schema'
 
 const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
 
@@ -35,6 +35,7 @@ export interface RuntimeNuxtHooks {
   'app:error:cleared': (options: { redirect?: string }) => HookResult
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
+  'head:init': (options: CreateHeadOptions) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult

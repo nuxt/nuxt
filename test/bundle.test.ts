@@ -40,10 +40,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(92100)
+    expect(stats.server.totalBytes).toBeLessThan(93500)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2710200)
+    expect(modules.totalBytes).toBeLessThan(2712300)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -55,7 +55,6 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/vue",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",

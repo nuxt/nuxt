@@ -11,9 +11,11 @@ export default defineNuxtModule({
   setup (options, nuxt) {
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
-    // Transpile @nuxt/meta and @vueuse/head
-    nuxt.options.build.transpile.push('@vueuse/head')
+    // Avoid vue dependency issues
+    nuxt.options.build.transpile.push('@unhead/vue')
 
+    // add backwards compatibility for any integrations importing from @vueuse/head
+    nuxt.options.alias['@vueuse/head'] = '@unhead/vue'
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir
 
@@ -30,6 +32,6 @@ export default defineNuxtModule({
     }
 
     // Add library specific plugin
-    addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head.plugin') })
+    addPlugin({ src: resolve(runtimeDir, 'plugin') })
   }
 })

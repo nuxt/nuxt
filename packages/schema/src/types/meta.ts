@@ -30,3 +30,5 @@ export type AppHeadMetaObject = MetaObjectRaw & {
    */
   viewport?: string
 }
+
+export type { CreateHeadOptions } from '@unhead/schema'

@@ -15,9 +15,6 @@ const commonPresets: InlinePreset[] = [
 const appPreset = defineUnimportPreset({
   from: '#app',
   imports: [
-    'useHead',
-    'useSeoMeta',
-    'useServerSeoMeta',
     'useAsyncData',
     'useLazyAsyncData',
     'useNuxtData',
@@ -57,7 +54,14 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered'
+    'isPrerendered',
+    // head
+    'useHead',
+    'useSeoMeta',
+    'useServerSeoMeta',
+    'useSeoMeta',
+    'useHeadSafe',
+    'injectHead'
   ]
 })
 
