@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition } from 'vue'
+import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, ref, watch, getCurrentInstance } from 'vue'
 import type { VNode, KeepAliveProps, TransitionProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
@@ -34,8 +34,28 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs }) {
+  setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
+    const routeProviderRef = ref()
+    const instance = getCurrentInstance()
+
+    // expose an empty object
+    expose({})
+
+    watch(routeProviderRef, (ref) => {
+      if (instance) {
+        // delete previously exposed values
+        Object.keys(instance.exposed || {})
+          .forEach((key) => {
+            delete instance.exposed![key]
+          })
+
+        Object.entries(ref.pageRef as Record<string, any>).forEach(([key, value]) => {
+          instance.exposed![key] = value
+        })
+      }
+    })
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -56,7 +76,7 @@ export default defineComponent({
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {}) })
+            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, ref: routeProviderRef } as {}) })
             )).default()
         }
       })
@@ -82,12 +102,17 @@ const RouteProvider = defineComponent({
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
   props: ['routeProps', 'pageKey', 'hasTransition'],
-  setup (props) {
+  setup (props, { expose }) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.pageKey
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousRoute = props.routeProps.route
+
+    const pageRef = ref()
+    expose({
+      pageRef
+    })
 
     // Provide a reactive route within the page
     const route = {} as RouteLocation
@@ -111,11 +136,11 @@ const RouteProvider = defineComponent({
 
     return () => {
       if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component)
+        vnode = h(props.routeProps.Component, { ref: pageRef })
         return vnode
       }
 
-      return h(props.routeProps.Component)
+      return h(props.routeProps.Component, { ref: pageRef })
     }
   }
 })
