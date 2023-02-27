@@ -250,25 +250,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             return null
           }
 
-          const props = {
+          return slots.default({
             href,
             navigate,
-            rel,
-            target,
-            isExternal: isExternal.value,
-            isActive: false,
-            isExactActive: false
-          }
-
-          Object.defineProperty(props, 'route', {
-            get () {
+            get route () {
               if (!href) { return undefined }
 
               const url = parseURL(href)
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
-                query: parseQuery(url.search),
+                get query () { return parseQuery(url.search) },
                 hash: url.hash,
                 // stub properties for compat with vue-router
                 params: {},
@@ -278,10 +270,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                 meta: {},
                 href
               }
-            }
+            },
+            rel,
+            target,
+            isExternal: isExternal.value,
+            isActive: false,
+            isExactActive: false
           })
-
-          return slots.default(props)
         }
 
         return h('a', { ref: el, href, rel, target }, slots.default?.())
