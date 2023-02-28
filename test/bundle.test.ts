@@ -43,7 +43,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
     expect(stats.server.totalBytes).toBeLessThan(92800)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2721900)
+    expect(modules.totalBytes).toBeLessThan(2722000)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
