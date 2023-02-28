@@ -14,7 +14,7 @@ export default defineNuxtModule({
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
     // Avoid vue dependency issues
-    nuxt.options.build.transpile.push('@unhead/vue', 'unhead')
+    nuxt.options.build.transpile.push('unhead', '@unhead/vue')
 
     // backwards compatibility
     nuxt.options.alias['@vueuse/head'] = '@unhead/vue'
@@ -33,8 +33,14 @@ export default defineNuxtModule({
       })
     }
 
-    addVitePlugin(UnheadVite(), { build: true })
-    addWebpackPlugin(UnheadWebpack(), { build: true })
+    const pluginConfig = {
+      transformSeoMeta: {
+        imports: false
+      },
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
+    }
+    addVitePlugin(UnheadVite(pluginConfig), { build: true })
+    addWebpackPlugin(UnheadWebpack(pluginConfig), { build: true })
 
     addPlugin({ src: resolve(runtimeDir, 'plugin') })
   }
