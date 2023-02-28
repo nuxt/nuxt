@@ -2,6 +2,7 @@ import { resolve } from 'pathe'
 import { addComponent, addPlugin, addVitePlugin, addWebpackPlugin, defineNuxtModule } from '@nuxt/kit'
 import UnheadVite from '@unhead/addons/vite'
 import UnheadWebpack from '@unhead/addons/webpack'
+import type { UnpluginOptions } from '@unhead/addons/vite'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -33,7 +34,7 @@ export default defineNuxtModule({
       })
     }
 
-    const pluginConfig = {
+    const pluginConfig: UnpluginOptions = {
       transformSeoMeta: {
         imports: false
       },
