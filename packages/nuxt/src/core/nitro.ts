@@ -86,7 +86,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
         : {
             dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-            maxAge: 30 * 24 * 60 * 60,
+            maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir
           },
       ...nuxt.options._layers
