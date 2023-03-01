@@ -1,5 +1,5 @@
-import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, ref, watch, getCurrentInstance } from 'vue'
-import type { VNode, KeepAliveProps, TransitionProps } from 'vue'
+import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, watch, getCurrentInstance, shallowRef } from 'vue'
+import type { VNode, KeepAliveProps, TransitionProps, Ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocation } from 'vue-router'
@@ -34,26 +34,24 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs, expose }) {
+  setup (props, { attrs }) {
     const nuxtApp = useNuxtApp()
-    const routeProviderRef = ref()
-    const instance = getCurrentInstance()
 
-    // expose an empty object
-    expose({})
+    const vnode: Ref<VNode| null> = shallowRef(null)
 
-    watch(routeProviderRef, (ref) => {
-      if (instance) {
-        // delete previously exposed values
-        Object.keys(instance.exposed || {})
-          .forEach((key) => {
-            delete instance.exposed![key]
-          })
+    const instance = getCurrentInstance()!
 
-        Object.entries(ref.pageRef as Record<string, any>).forEach(([key, value]) => {
-          instance.exposed![key] = value
-        })
+    // forward the exposed data from the route component
+    watch(vnode, async (vnode) => {
+      // await 2 ticks - one for this component and another for the RouteProvider's nextTick
+      await nextTick()
+      await nextTick()
+      if (vnode && vnode.component && vnode.component.exposed) {
+        instance.exposed = vnode.component.exposed
+      } else {
+        instance.exposed = null
       }
+      instance.parent?.update()
     })
 
     return () => {
@@ -76,7 +74,12 @@ export default defineComponent({
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, ref: routeProviderRef } as {}) })
+            }, {
+              default: () => {
+                vnode.value = h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {})
+                return vnode.value
+              }
+            })
             )).default()
         }
       })
@@ -102,17 +105,12 @@ const RouteProvider = defineComponent({
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
   props: ['routeProps', 'pageKey', 'hasTransition'],
-  setup (props, { expose }) {
+  setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.pageKey
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousRoute = props.routeProps.route
-
-    const pageRef = ref()
-    expose({
-      pageRef
-    })
 
     // Provide a reactive route within the page
     const route = {} as RouteLocation
@@ -122,12 +120,24 @@ const RouteProvider = defineComponent({
 
     provide('_route', reactive(route))
 
-    let vnode: VNode
+    const vnode: Ref<VNode| null> = shallowRef(null)
+
+    // forward the exposed data from the route component
+    const instance = getCurrentInstance()!
+    watch(vnode, async (vnode) => {
+      await nextTick()
+      if (vnode && vnode.component && vnode.component.exposed) {
+        instance.exposed = vnode.component.exposed
+      } else {
+        instance.exposed = null
+      }
+    })
+
     if (process.dev && process.client && props.hasTransition) {
       onMounted(() => {
         nextTick(() => {
-          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
+          if (['#comment', '#text'].includes(vnode.value?.el?.nodeName)) {
+            const filename = (vnode.value?.type as any).__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }
         })
@@ -135,12 +145,8 @@ const RouteProvider = defineComponent({
     }
 
     return () => {
-      if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component, { ref: pageRef })
-        return vnode
-      }
-
-      return h(props.routeProps.Component, { ref: pageRef })
+      vnode.value = h(props.routeProps.Component)
+      return vnode.value
     }
   }
 })
