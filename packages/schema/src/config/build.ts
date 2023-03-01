@@ -46,7 +46,6 @@ export default defineUntypedSchema({
    * This option is then used as 'silent' in Vite and 'none' in Webpack
    *
    * @type {'quiet' | typeof import('../src/types/global/vite').ViteLogLevel | typeof import('../src/types/global/webpack').WebpackStats}
-   * @default {false}
    */
   logLevel: {
     $resolve: (val) => {

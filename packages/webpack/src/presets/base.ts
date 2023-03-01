@@ -2,7 +2,7 @@ import { resolve, normalize } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
-import webpack from 'webpack'
+import webpack, { Configuration } from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
@@ -40,7 +40,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: ctx.nuxt.options.logLevel === 'quiet' ? 'none' : ctx.nuxt.options.logLevel || 'normal',
+    stats: ctx.nuxt.options.logLevel === 'quiet' ? 'none' : ctx.nuxt.options.logLevel as Configuration["stats"] || 'normal',
     ...ctx.config
   }
 }
