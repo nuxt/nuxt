@@ -152,6 +152,7 @@ export default defineNuxtModule({
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', async (manifest) => {
+      if (nuxt.options.dev) { return }
       const pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', pages)
 
