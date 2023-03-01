@@ -29,7 +29,7 @@ importers:
       '@types/node': ^18.14.2
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
-      '@unocss/reset': ^0.50.1
+      '@unocss/reset': ^0.50.2
       case-police: ^0.5.13
       changelogen: ^0.4.1
       crawler: ^1.4.0
@@ -65,7 +65,7 @@ importers:
       '@types/node': 18.14.2
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
-      '@unocss/reset': 0.50.1
+      '@unocss/reset': 0.50.2
       case-police: 0.5.13
       changelogen: 0.4.1
       crawler: 1.4.0
@@ -2473,8 +2473,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset/0.50.1:
-    resolution: {integrity: sha512-BcANWHHrKgHML5TLaPuSl148L2WLA938r0pLi4PrRTmZtkgP4OhBLs8U8BaDNVVGR/nli7VDxNRZFb9es3Tq9Q==}
+  /@unocss/reset/0.50.2:
+    resolution: {integrity: sha512-2oheAsguYkp0DrGfIGu9oPf1n74OPwf4WUCURCN47DzaWfZRLLVNve85KOlpO00yry9GwdtuUf6CqhEV/K+TnA==}
     dev: true
 
   /@unocss/scope/0.45.30:
