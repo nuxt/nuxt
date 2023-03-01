@@ -48,7 +48,8 @@ export default defineNuxtCommand({
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
-      overrides: { dev: true }
+      overrides: { dev: true },
+      config: args.config,
     })
 
     const listener = await listen(serverHandler, {
@@ -88,7 +89,7 @@ export default defineNuxtCommand({
           await distWatcher.close()
         }
 
-        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false, config: args.config })
         currentNuxt.hooks.hookOnce('restart', () => load(true))
 
         if (!isRestart) {
