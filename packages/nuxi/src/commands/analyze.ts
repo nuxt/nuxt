@@ -27,10 +27,10 @@ export default defineNuxtCommand({
       config: {
         build: {
           analyze: true
-        },
-        overrides: {
-          logLevel: args.logLevel ?? args.l
         }
+      },
+      overrides: {
+        logLevel: args.logLevel ?? args.l
       }
     })
 
