@@ -43,6 +43,7 @@ export default defineNuxtModule({
       })
       addComponent({
         name: 'NuxtPage',
+        priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder')
       })
       return
@@ -254,6 +255,7 @@ export default defineNuxtModule({
     // Add <NuxtPage>
     addComponent({
       name: 'NuxtPage',
+      priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
     })
 

@@ -24,6 +24,8 @@ export default defineNuxtModule({
         name: componentName,
         filePath: componentsPath,
         export: componentName,
+        // built-in that we do not expect the user to override
+        priority: 10,
         // kebab case version of these tags is not valid
         kebabName: componentName
       })

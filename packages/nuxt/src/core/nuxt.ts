@@ -130,35 +130,41 @@ async function initNuxt (nuxt: Nuxt) {
   // Add <NuxtWelcome>
   addComponent({
     name: 'NuxtWelcome',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')!
   })
 
   addComponent({
     name: 'NuxtLayout',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/layout')
   })
 
   // Add <NuxtErrorBoundary>
   addComponent({
     name: 'NuxtErrorBoundary',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-error-boundary')
   })
 
   // Add <ClientOnly>
   addComponent({
     name: 'ClientOnly',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/client-only')
   })
 
   // Add <DevOnly>
   addComponent({
     name: 'DevOnly',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/dev-only')
   })
 
   // Add <ServerPlaceholder>
   addComponent({
     name: 'ServerPlaceholder',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/server-placeholder')
   })
 
@@ -178,6 +184,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.componentIslands) {
     addComponent({
       name: 'NuxtIsland',
+      priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
   }
