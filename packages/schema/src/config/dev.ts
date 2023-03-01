@@ -28,10 +28,13 @@ export default defineUntypedSchema({
     port: process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000,
 
     /** Dev server listening host */
-    host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || 'localhost',
+    host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || '',
 
     /**
-     * Listening dev server url
+     * Listening dev server URL.
+     *
+     * This should not be set directly as it will always be overridden by the
+     * dev server with the full URL (for module and internal use).
      */
     url: 'http://localhost:3000',
   }

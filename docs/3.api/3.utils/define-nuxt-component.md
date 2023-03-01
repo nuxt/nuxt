@@ -11,7 +11,7 @@ description: defineNuxtComponent() is a helper function for defining type safe c
 Using `<script setup lang="ts">` is the recommended way of declaring Vue components in Nuxt 3.
 ::
 
-:ReadMore{link=/getting-started/data-fetching#options-api-support}
+:ReadMore{link=/docs/getting-started/data-fetching#options-api-support}
 
 ## `asyncData()`
 

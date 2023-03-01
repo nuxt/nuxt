@@ -4,7 +4,6 @@ import { hash } from 'ohash'
 import { appendHeader } from 'h3'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
-import type { MetaObject } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 import { useHead } from '#app/composables/head'
@@ -34,7 +33,7 @@ export default defineComponent({
     const event = useRequestEvent()
 
     const html = ref<string>('')
-    const cHead = ref<MetaObject>({ link: [], style: [] })
+    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
     function _fetchComponent () {
