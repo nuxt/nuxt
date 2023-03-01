@@ -148,7 +148,15 @@ export default defineNuxtConfig({
       })
     }
   },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => {
+        return tag === 'custom-component'
+      }
+    }
+  },
   experimental: {
+    emitRouteChunkError: 'reload',
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
     reactivityTransform: true,

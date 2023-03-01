@@ -33,6 +33,7 @@ export interface RuntimeNuxtHooks {
   'app:suspense:resolve': (Component?: VNode) => HookResult
   'app:error': (err: any) => HookResult
   'app:error:cleared': (options: { redirect?: string }) => HookResult
+  'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
@@ -187,6 +188,17 @@ export function createNuxtApp (options: CreateOptions) {
       app: options.ssrContext!.runtimeConfig.app
     }
   }
+
+  // Listen to chunk load errors
+  if (process.client) {
+    window.addEventListener('nuxt.preloadError', (event) => {
+      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+    })
+  }
+
+  // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
+  // as well as when mounting the app and in the `app:mounted` hook
+  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
 
   // Expose runtime config
   const runtimeConfig = process.server
