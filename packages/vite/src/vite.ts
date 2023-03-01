@@ -3,7 +3,8 @@ import { join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import type { InlineConfig, SSROptions } from 'vite'
 import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
-import type { Options } from '@vitejs/plugin-vue'
+import type { Options as VueOptions } from '@vitejs/plugin-vue'
+import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
@@ -17,7 +18,8 @@ import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 
 export interface ViteOptions extends InlineConfig {
-  vue?: Options
+  vue?: VueOptions
+  vueJsx?: VueJsxOptions
   ssr?: SSROptions
   devBundler?: 'vite-node' | 'legacy'
 }
@@ -57,6 +59,7 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
+        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
         build: {
           copyPublicDir: false,
           rollupOptions: {

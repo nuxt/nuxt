@@ -70,7 +70,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
     it('should detect new routes', async () => {
       const html = await $fetch('/some-404')
-      expect(html).toContain('404 at some-404')
+      expect(html).toContain('catchall at some-404')
 
       // write new page route
       const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
