@@ -12,15 +12,13 @@ export default defineNuxtModule({
     name: 'meta'
   },
   setup (options, nuxt) {
-    const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
+    const runtimeDir = resolve(distDir, 'head/runtime')
 
     // Avoid vue dependency issues
     nuxt.options.build.transpile.push('@unhead/vue')
 
     // backwards compatibility
     nuxt.options.alias['@vueuse/head'] = '@unhead/vue'
-    // Add #head alias
-    nuxt.options.alias['#head'] = runtimeDir
 
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
