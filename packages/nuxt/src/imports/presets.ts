@@ -54,14 +54,7 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered',
-    // head
-    'useHead',
-    'useSeoMeta',
-    'useServerSeoMeta',
-    'useSeoMeta',
-    'useHeadSafe',
-    'injectHead'
+    'isPrerendered'
   ]
 })
 

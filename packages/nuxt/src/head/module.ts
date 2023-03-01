@@ -1,8 +1,9 @@
 import { resolve } from 'pathe'
-import { addComponent, addPlugin, addVitePlugin, addWebpackPlugin, defineNuxtModule } from '@nuxt/kit'
+import { addComponent, addImportsSources, addPlugin, addVitePlugin, addWebpackPlugin, defineNuxtModule } from '@nuxt/kit'
 import UnheadVite from '@unhead/addons/vite'
 import UnheadWebpack from '@unhead/addons/webpack'
 import type { UnpluginOptions } from '@unhead/addons/vite'
+import { unheadVueComposablesImports } from '@unhead/vue'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -32,6 +33,11 @@ export default defineNuxtModule({
       })
     }
 
+    addImportsSources({
+      from: '@unhead/vue',
+      imports: unheadVueComposablesImports['@unhead/vue']
+    })
+
     const pluginConfig: UnpluginOptions = {
       transformSeoMeta: {
         imports: false
@@ -39,35 +45,22 @@ export default defineNuxtModule({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
     }
 
-    const [
-      // removes server only composables from the client build
-      ViteTreeshakeServerComposables,
-      // transforms useSeoMeta -> useHead
-      ViteTransformSeoMeta
-    ] = UnheadVite(pluginConfig)
+    const [, ViteTransformSeoMeta] = UnheadVite(pluginConfig)
+    // transforms useSeoMeta -> useHead
     addVitePlugin(ViteTransformSeoMeta, {
       // allow easier debugging if the AST transforms are not working, change once stable
       dev: true,
-      build: true
-    })
-    addVitePlugin(ViteTreeshakeServerComposables, {
       build: true,
+      server: true,
       client: true
     })
 
-    const [
-      // removes server only composables from the client build
-      WebpackTreeshakeServerComposables,
-      // transforms useSeoMeta -> useHead
-      WebpackTransformSeoMeta
-    ] = UnheadWebpack(pluginConfig)
+    const [, WebpackTransformSeoMeta] = UnheadWebpack(pluginConfig)
     addWebpackPlugin(WebpackTransformSeoMeta, {
       // allow easier debugging if the AST transforms are not working, change once stable
       dev: true,
-      build: true
-    })
-    addWebpackPlugin(WebpackTreeshakeServerComposables, {
       build: true,
+      server: true,
       client: true
     })
 
