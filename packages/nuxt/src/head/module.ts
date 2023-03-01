@@ -40,8 +40,38 @@ export default defineNuxtModule({
       },
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
     }
-    addVitePlugin(UnheadVite(pluginConfig), { build: true })
-    addWebpackPlugin(UnheadWebpack(pluginConfig), { build: true })
+
+    const [
+      // removes server only composables from the client build
+      ViteTreeshakeServerComposables,
+      // transforms useSeoMeta -> useHead
+      ViteTransformSeoMeta
+    ] = UnheadVite(pluginConfig)
+    addVitePlugin(ViteTransformSeoMeta, {
+      // allow easier debugging if the AST transforms are not working, change once stable
+      dev: true,
+      build: true
+    })
+    addVitePlugin(ViteTreeshakeServerComposables, {
+      build: true,
+      client: true
+    })
+
+    const [
+      // removes server only composables from the client build
+      WebpackTreeshakeServerComposables,
+      // transforms useSeoMeta -> useHead
+      WebpackTransformSeoMeta
+    ] = UnheadWebpack(pluginConfig)
+    addWebpackPlugin(WebpackTransformSeoMeta, {
+      // allow easier debugging if the AST transforms are not working, change once stable
+      dev: true,
+      build: true
+    })
+    addWebpackPlugin(WebpackTreeshakeServerComposables, {
+      build: true,
+      client: true
+    })
 
     addPlugin({ src: resolve(runtimeDir, 'plugin') })
   }
