@@ -217,3 +217,5 @@ export interface WebpackImportMeta {
   /** the webpack major version as number */
   webpack?: number
 }
+
+export type WebpackStats = 'errors-only' | 'errors-warnings' | 'minimal' | 'none' | 'normal' | 'verbose' | 'detailed' | 'summary'

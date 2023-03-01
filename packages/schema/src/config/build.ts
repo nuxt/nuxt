@@ -1,6 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
+import { isMinimal } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -36,6 +37,24 @@ export default defineUntypedSchema({
         client: await get('dev')
       })
     },
+  },
+
+  /**
+   * Log level when building logs.
+   *
+   * Defaults to 'quiet' when running in CI or when a TTY is not available.
+   * This option is then used as 'silent' in Vite and 'none' in Webpack
+   *
+   * @type {'quiet' | typeof import('../src/types/global/vite').ViteLogLevel | typeof import('../src/types/global/webpack').WebpackStats}
+   * @default {false}
+   */
+  logLevel: {
+    $resolve: (val) => {
+      if (isMinimal) {
+        return 'quiet'
+      }
+      return val
+    }
   },
 
   /**
