@@ -29,7 +29,7 @@ export default defineNuxtCommand({
           analyze: true
         },
         overrides: {
-          logLevel: args.logLevel ?? args.l,
+          logLevel: args.logLevel ?? args.l
         }
       }
     })

@@ -93,7 +93,7 @@ export default defineNuxtCommand({
           dev: true,
           ready: false,
           overrides: {
-            logLevel: args.logLevel ?? args.l,
+            logLevel: args.logLevel ?? args.l
           }
         })
         currentNuxt.hooks.hookOnce('restart', () => load(true))

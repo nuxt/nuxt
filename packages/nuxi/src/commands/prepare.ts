@@ -21,7 +21,7 @@ export default defineNuxtCommand({
       rootDir,
       config: { _prepare: true },
       overrides: {
-        logLevel: args.logLevel ?? args.l,
+        logLevel: args.logLevel ?? args.l
       }
     })
     await clearDir(nuxt.options.buildDir)
