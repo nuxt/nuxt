@@ -14,8 +14,12 @@ During server-side rendering, calling `$fetch` **on the server side** to fetch y
 
 ```ts
 <script setup>
-const dataTwice = await $fetch("/api/item"); // During SSR data is fetched twice, one on the server and one on the client.
-const { data } = await useAsyncData('item', () => $fetch('/api/item')); // During SSR data is fetched only on the server side and transferred to the client.
+// During SSR data is fetched twice, one on the server and one on the client.
+const dataTwice = await $fetch("/api/item")
+// During SSR data is fetched only on the server side and transferred to the client.
+const { data } = await useAsyncData('item', () => $fetch('/api/item'))
+// You can also useFetch as shortcut of useAsyncData + $fetch
+const { data } = await useFetch('/api/item')
 </script>
 ```
 
