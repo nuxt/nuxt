@@ -100,7 +100,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       (await ctx.getImports())
         .filter(i => ['server', 'client'].includes(i.meta?.mode))
         .forEach((i) => {
-          _ctx[i.meta!.mode as 'server' | 'client'].treeShake.add(i.name)
+          const mode = i.meta!.mode as 'server' | 'client'
+          _ctx[mode === 'server' ? 'client' : 'server'].treeShake.add(i.name)
         })
     })
 

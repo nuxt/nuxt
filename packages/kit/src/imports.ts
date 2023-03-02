@@ -35,7 +35,7 @@ export function markTreeShakableImports (imports: string | string[], mode: 'serv
 
   useNuxt().hook('imports:treeShake', (ctx) => {
     (Array.isArray(imports) ? imports : [imports]).forEach((importName) => {
-      ctx[mode].treeShake.add(importName)
+      ctx[mode === 'server' ? 'client' : 'server'].treeShake.add(importName)
     })
   })
 }

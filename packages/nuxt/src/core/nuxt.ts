@@ -105,10 +105,10 @@ async function initNuxt (nuxt: Nuxt) {
   // watch for import changes
   nuxt.hook('imports:extend', async () => { await regenerateTreeShakeCtx() })
 
-  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.client), { client: false })
-  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.server), { server: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.client), { client: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.server), { server: false })
+  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.server), { client: false })
+  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.client), { server: false })
+  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.server), { client: false })
+  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.client), { server: false })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
