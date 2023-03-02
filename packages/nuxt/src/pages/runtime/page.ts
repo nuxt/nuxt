@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, watch, getCurrentInstance, shallowRef } from 'vue'
+import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, watch, getCurrentInstance, shallowRef, markRaw } from 'vue'
 import type { VNode, KeepAliveProps, TransitionProps, Ref } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
@@ -34,30 +34,31 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs }) {
+  setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
 
     const vnode: Ref<VNode| null> = shallowRef(null)
-
+    const exposed = markRaw({}) as Record<string, any>
+    expose(exposed)
     const instance = getCurrentInstance()!
-
-    // forward the exposed data from the route component
-    watch(vnode, async (vnode) => {
-      // await 2 ticks - one for this component and another for the RouteProvider's nextTick
-      await nextTick()
-      await nextTick()
-      if (vnode && vnode.component && vnode.component.exposed) {
-        instance.exposed = vnode.component.exposed
-      } else {
-        instance.exposed = null
-      }
-      instance.parent?.update()
-    })
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
           if (!routeProps.Component) { return }
+
+          if (process.client) {
+            // expose the exposed route components data to the exposed object
+            nextTick(async () => {
+              // await a second tick for the route component's tick
+              await nextTick()
+              Object.keys(exposed).forEach(key => delete exposed[key])
+              if (vnode.value && vnode.value.component && vnode.value.component.exposed) {
+                Object.assign(exposed, vnode.value.component.exposed)
+              }
+              instance.parent?.update()
+            })
+          }
 
           const key = generateRouteKey(routeProps, props.pageKey)
           const done = nuxtApp.deferHydration()
@@ -105,7 +106,7 @@ const RouteProvider = defineComponent({
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
   props: ['routeProps', 'pageKey', 'hasTransition'],
-  setup (props) {
+  setup (props, { expose }) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.pageKey
@@ -122,14 +123,15 @@ const RouteProvider = defineComponent({
 
     const vnode: Ref<VNode| null> = shallowRef(null)
 
+    const exposed = markRaw({}) as Record<string, any>
+
+    expose(exposed)
     // forward the exposed data from the route component
-    const instance = getCurrentInstance()!
-    watch(vnode, async (vnode) => {
+    watch(vnode, async () => {
       await nextTick()
-      if (vnode && vnode.component && vnode.component.exposed) {
-        instance.exposed = vnode.component.exposed
-      } else {
-        instance.exposed = null
+      Object.keys(exposed).forEach(key => delete exposed[key])
+      if (vnode.value && vnode.value.component && vnode.value.component.exposed) {
+        Object.assign(exposed, vnode.value.component.exposed)
       }
     })
 
