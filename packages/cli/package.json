@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.16.1",
+  "version": "2.16.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/cli.js",
@@ -12,8 +12,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.16.1",
-    "@nuxt/utils": "2.16.1",
+    "@nuxt/config": "2.16.2",
+    "@nuxt/utils": "2.16.2",
     "boxen": "^5.1.2",
     "chalk": "^4.1.2",
     "compression": "^1.7.4",
@@ -39,5 +39,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }
