@@ -121,25 +121,17 @@ const RouteProvider = defineComponent({
 
     provide('_route', reactive(route))
 
-    const vnode: Ref<VNode| null> = shallowRef(null)
+    let vnode: VNode| undefined
 
     const exposed = markRaw({}) as Record<string, any>
 
     expose(exposed)
-    // forward the exposed data from the route component
-    watch(vnode, async () => {
-      await nextTick()
-      Object.keys(exposed).forEach(key => delete exposed[key])
-      if (vnode.value && vnode.value.component && vnode.value.component.exposed) {
-        Object.assign(exposed, vnode.value.component.exposed)
-      }
-    })
 
     if (process.dev && process.client && props.hasTransition) {
       onMounted(() => {
         nextTick(() => {
-          if (['#comment', '#text'].includes(vnode.value?.el?.nodeName)) {
-            const filename = (vnode.value?.type as any).__file
+          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
+            const filename = (vnode?.type as any).__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }
         })
@@ -147,8 +139,17 @@ const RouteProvider = defineComponent({
     }
 
     return () => {
-      vnode.value = h(props.routeProps.Component)
-      return vnode.value
+      vnode = h(props.routeProps.Component)
+
+      if (process.client) {
+        nextTick(() => {
+          Object.keys(exposed).forEach(key => delete exposed[key])
+          if (vnode && vnode.component && vnode.component.exposed) {
+            Object.assign(exposed, vnode.component.exposed)
+          }
+        })
+      }
+      return vnode
     }
   }
 })
