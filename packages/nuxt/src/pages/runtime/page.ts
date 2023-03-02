@@ -37,7 +37,7 @@ export default defineComponent({
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
 
-    const vnode: Ref<VNode| null> = shallowRef(null)
+    let vnode: VNode| null = null
     const exposed = markRaw({}) as Record<string, any>
     expose(exposed)
     const instance = getCurrentInstance()!
@@ -53,8 +53,8 @@ export default defineComponent({
               // await a second tick for the route component's tick
               await nextTick()
               Object.keys(exposed).forEach(key => delete exposed[key])
-              if (vnode.value && vnode.value.component && vnode.value.component.exposed) {
-                Object.assign(exposed, vnode.value.component.exposed)
+              if (vnode && vnode.component && vnode.component.exposed) {
+                Object.assign(exposed, vnode.component.exposed)
               }
               instance.parent?.update()
             })
@@ -77,8 +77,8 @@ export default defineComponent({
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
               default: () => {
-                vnode.value = h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {})
-                return vnode.value
+                vnode = h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {})
+                return vnode
               }
             })
             )).default()
