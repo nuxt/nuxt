@@ -49,10 +49,7 @@ export default defineUntypedSchema({
    */
   logLevel: {
     $resolve: (val) => {
-      if (isMinimal) {
-        return 'quiet'
-      }
-      return val
+      return val ?? (isMinimal ? 'quiet' : null)
     }
   },
 
