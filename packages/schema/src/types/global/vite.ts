@@ -33,5 +33,3 @@ export interface ViteImportMeta {
   /** vite glob import utility - https://vitejs.dev/guide/features.html#glob-import */
   glob (glob: string | string[], options?: ViteGlobOptions): Record<string, () => Promise<Record<string, any>>>
 }
-
-export type ViteLogLevel = 'info' | 'warn' | 'error' | 'silent'

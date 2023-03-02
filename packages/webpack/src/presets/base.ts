@@ -41,7 +41,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: ctx.nuxt.options.logLevel === 'quiet' ? 'none' : ctx.nuxt.options.logLevel as Configuration['stats'] || 'normal',
+    stats: ctx.nuxt.options.logLevel === 'silent' ? 'none' :  'normal',
     ...ctx.config
   }
 }

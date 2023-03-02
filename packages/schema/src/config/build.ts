@@ -42,14 +42,14 @@ export default defineUntypedSchema({
   /**
    * Log level when building logs.
    *
-   * Defaults to 'quiet' when running in CI or when a TTY is not available.
+   * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
    *
-   * @type {'quiet' | typeof import('../src/types/global/vite').ViteLogLevel | typeof import('../src/types/global/webpack').WebpackStats}
+   * @type {'silent' | 'info'}
    */
   logLevel: {
     $resolve: (val) => {
-      return val ?? (isMinimal ? 'quiet' : null)
+      return val ?? (isMinimal ? 'silent' : null)
     }
   },
 
