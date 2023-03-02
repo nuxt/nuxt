@@ -21,7 +21,7 @@ export const TreeShakePlugin = createUnplugin((options: ImportsTreeShakeCtx[keyo
     name: 'nuxt:tree-shake:transform',
     enforce: 'post',
     transformInclude (id) {
-      if (!options.matcher) { return }
+      if (!options.matcher) { return false }
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const { type } = parseQuery(search)
 
@@ -36,6 +36,7 @@ export const TreeShakePlugin = createUnplugin((options: ImportsTreeShakeCtx[keyo
       }
     },
     transform (code, id) {
+      if (!options.matcher) { return }
       if (!code.match(options.matcher)) { return }
 
       const s = new MagicString(code)
