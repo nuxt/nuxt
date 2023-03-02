@@ -119,6 +119,6 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: false
+    configSchema: true
   }
 })
