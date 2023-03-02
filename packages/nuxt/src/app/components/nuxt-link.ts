@@ -211,20 +211,29 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       return () => {
         if (!isExternal.value) {
+          const routerLinkProps: Record<string, any> = {
+            ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
+            to: to.value,
+            activeClass: props.activeClass || options.activeClass,
+            exactActiveClass: props.exactActiveClass || options.exactActiveClass,
+            replace: props.replace,
+            ariaCurrentValue: props.ariaCurrentValue,
+            custom: props.custom
+          }
+
+          // `custom` API cannot support fallthrough attributes as the slot
+          // may render fragment or text root nodes (#14897, #19375)
+          if (!props.custom) {
+            if (prefetched.value) {
+              routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+            }
+            routerLinkProps.rel = props.rel
+          }
+
           // Internal link
           return h(
             resolveComponent('RouterLink'),
-            {
-              ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
-              to: to.value,
-              ...((prefetched.value && !props.custom) ? { class: props.prefetchedClass || options.prefetchedClass } : {}),
-              activeClass: props.activeClass || options.activeClass,
-              exactActiveClass: props.exactActiveClass || options.exactActiveClass,
-              replace: props.replace,
-              ariaCurrentValue: props.ariaCurrentValue,
-              custom: props.custom,
-              rel: props.rel
-            },
+            routerLinkProps,
             slots.default
           )
         }
