@@ -1,8 +1,7 @@
-import { addComponent, addImportsTreeShake, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { addComponent, markTreeShakableImports, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
-import { markTreeShakableImports } from '@nuxt/kit/src'
 
 // (defined in nuxt/src/core/nitro.ts)
 declare module 'nitropack' {
