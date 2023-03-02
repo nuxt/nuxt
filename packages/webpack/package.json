@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.16.1",
+  "version": "2.16.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/webpack.js",
@@ -8,16 +8,16 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.20.12",
-    "@nuxt/babel-preset-app": "2.16.1",
+    "@babel/core": "^7.21.0",
+    "@nuxt/babel-preset-app": "2.16.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
-    "@nuxt/utils": "2.16.1",
+    "@nuxt/utils": "2.16.2",
     "babel-loader": "^8.3.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001452",
+    "caniuse-lite": "^1.0.30001458",
     "consola": "^2.15.3",
     "css-loader": "^5.2.7",
-    "cssnano": "^5.1.14",
+    "cssnano": "^5.1.15",
     "eventsource-polyfill": "^0.9.6",
     "extract-css-chunks-webpack-plugin": "^4.9.0",
     "file-loader": "^6.2.0",
@@ -42,7 +42,7 @@
     "terser-webpack-plugin": "^4.2.3",
     "thread-loader": "^3.0.4",
     "time-fix-plugin": "^2.0.7",
-    "ufo": "^1.0.1",
+    "ufo": "^1.1.1",
     "upath": "^2.0.1",
     "url-loader": "^4.1.1",
     "vue-loader": "^15.10.1",
@@ -58,5 +58,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "engines": {
+    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
 }
