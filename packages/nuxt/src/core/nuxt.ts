@@ -122,16 +122,16 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = [
-    ...nuxt.options.modules,
-    ...nuxt.options._modules
-  ]
+  const modulesToInstall = [...nuxt.options.modules]
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
     const userModules = await resolveFiles(config.srcDir, `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`)
     modulesToInstall.push(...userModules)
   }
+
+  // Register ad-hoc modules
+  modulesToInstall.push(...nuxt.options._modules)
 
   // Add <NuxtWelcome>
   addComponent({
