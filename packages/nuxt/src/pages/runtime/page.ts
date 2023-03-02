@@ -1,5 +1,5 @@
-import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, watch, getCurrentInstance, shallowRef, markRaw } from 'vue'
-import type { VNode, KeepAliveProps, TransitionProps, Ref } from 'vue'
+import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition, getCurrentInstance, markRaw } from 'vue'
+import type { VNode, KeepAliveProps, TransitionProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocation } from 'vue-router'

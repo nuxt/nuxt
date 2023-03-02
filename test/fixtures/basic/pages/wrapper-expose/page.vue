@@ -14,11 +14,11 @@
 <script setup lang="ts">
 const page = ref()
 
-function logFoo() {
+function logFoo () {
   page.value.foo()
 }
 
-function logHello() {
+function logHello () {
   page.value.hello()
 }
 </script>
