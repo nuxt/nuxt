@@ -8,4 +8,4 @@
  * }
  * ```
  */
-export const EXIT_CODE_RESTART = 44
+export const EXIT_CODE_RESTART = 85
