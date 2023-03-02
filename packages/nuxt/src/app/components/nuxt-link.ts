@@ -1,7 +1,7 @@
 import type { PropType, DefineComponent, ComputedRef } from 'vue'
 import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { hasProtocol } from 'ufo'
+import { hasProtocol, parseQuery, parseURL } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -176,7 +176,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = process.server ? undefined : ref<HTMLElement | null>(null)
       if (process.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && typeof to.value === 'string' && props.target !== '_blank' && !isSlowConnection()
+        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
           let idleId: number
@@ -189,8 +189,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                   unobserve = observer!.observe(el.value, async () => {
                     unobserve?.()
                     unobserve = null
+
+                    const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', to.value as string).catch(() => {}),
+                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
                       !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
                     ])
                     prefetched.value = true
@@ -209,19 +211,29 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       return () => {
         if (!isExternal.value) {
+          const routerLinkProps: Record<string, any> = {
+            ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
+            to: to.value,
+            activeClass: props.activeClass || options.activeClass,
+            exactActiveClass: props.exactActiveClass || options.exactActiveClass,
+            replace: props.replace,
+            ariaCurrentValue: props.ariaCurrentValue,
+            custom: props.custom
+          }
+
+          // `custom` API cannot support fallthrough attributes as the slot
+          // may render fragment or text root nodes (#14897, #19375)
+          if (!props.custom) {
+            if (prefetched.value) {
+              routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+            }
+            routerLinkProps.rel = props.rel
+          }
+
           // Internal link
           return h(
             resolveComponent('RouterLink'),
-            {
-              ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
-              to: to.value,
-              ...((prefetched.value && !props.custom) ? { class: props.prefetchedClass || options.prefetchedClass } : {}),
-              activeClass: props.activeClass || options.activeClass,
-              exactActiveClass: props.exactActiveClass || options.exactActiveClass,
-              replace: props.replace,
-              ariaCurrentValue: props.ariaCurrentValue,
-              custom: props.custom
-            },
+            routerLinkProps,
             slots.default
           )
         }
@@ -247,10 +259,28 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           if (!slots.default) {
             return null
           }
+
           return slots.default({
             href,
             navigate,
-            route: router.resolve(href!),
+            get route () {
+              if (!href) { return undefined }
+
+              const url = parseURL(href)
+              return {
+                path: url.pathname,
+                fullPath: url.pathname,
+                get query () { return parseQuery(url.search) },
+                hash: url.hash,
+                // stub properties for compat with vue-router
+                params: {},
+                name: undefined,
+                matched: [],
+                redirectedFrom: undefined,
+                meta: {},
+                href
+              }
+            },
             rel,
             target,
             isExternal: isExternal.value,

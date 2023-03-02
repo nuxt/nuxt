@@ -7,9 +7,10 @@
     <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
+    <div>Composable | template: {{ templateAutoImport }}</div>
+    <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
-    <div>Composable | template: {{ templateAutoImport }}</div>
     <div>Path: {{ $route.fullPath }}</div>
     <NuxtLink to="/">
       Link
