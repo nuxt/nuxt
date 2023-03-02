@@ -9,7 +9,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
-import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { ImportsTreeShakeCtx, NuxtCompatibility, NuxtCompatibilityIssues } from '..'
 import type { Schema, SchemaDefinition } from 'untyped'
 
 export type HookResult = Promise<void> | void
@@ -178,6 +178,13 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'imports:dirs': (dirs: string[]) => HookResult
+
+  /**
+   * Called when the tree-shake context is being generated.
+   * @param context The tree-shake context
+   * @returns Promise
+   */
+  'imports:treeShake': (context: ImportsTreeShakeCtx) => HookResult
 
   // Components
   /**

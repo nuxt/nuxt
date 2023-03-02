@@ -1,5 +1,11 @@
 import type { UnimportOptions } from 'unimport'
 
+export type ImportsTreeShakeCtx = Record<'client' | 'server', {
+  sourcemap: boolean
+  treeShake: Set<string>
+  matcher?: RegExp
+}>
+
 export interface ImportsOptions extends UnimportOptions {
   /**
    * Enable implicit auto import from Vue, Nuxt and module contributed utilities.

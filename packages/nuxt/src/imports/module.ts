@@ -1,5 +1,5 @@
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
-import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
+import { isAbsolute, join, relative, resolve, normalize, basename, extname } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
 import { TransformPlugin } from './transform'
@@ -81,6 +81,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         const composableImports = await scanDirExports(composablesDirs)
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          const mode = (basename(i.from, extname(i.from)).match(/(?<=\.)(client|server)*$/)?.[1]) as 'client' | 'server' | undefined
+          if (mode) {
+            i.meta = i.meta || {}
+            i.meta.mode = mode
+          }
         }
         imports.push(...composableImports)
         // Modules extending
@@ -89,6 +94,15 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     await regenerateImports()
+
+    // Provide server/client only composables to the tree shake config
+    nuxt.hook('imports:treeShake', async (_ctx) => {
+      (await ctx.getImports())
+        .filter(i => ['server', 'client'].includes(i.meta?.mode))
+        .forEach((i) => {
+          _ctx[i.meta!.mode as 'server' | 'client'].treeShake.add(i.name)
+        })
+    })
 
     // Generate types
     addDeclarationTemplates(ctx, options)

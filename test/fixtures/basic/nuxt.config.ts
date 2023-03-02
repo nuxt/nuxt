@@ -1,7 +1,8 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { addComponent, addImportsTreeShake, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import { markTreeShakableImports } from '@nuxt/kit/src'
 
 // (defined in nuxt/src/core/nitro.ts)
 declare module 'nitropack' {
@@ -109,6 +110,10 @@ export default defineNuxtConfig({
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
       })
+    },
+    function () {
+      // treeshake useServerOnlySomething from client bundles
+      markTreeShakableImports('useModuleServerOnlyComposable', 'server')
     }
   ],
   vite: {

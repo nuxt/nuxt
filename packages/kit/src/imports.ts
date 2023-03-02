@@ -29,3 +29,13 @@ export function addImportsSources (presets: ImportPresetWithDeprecation | Import
     }
   })
 }
+
+export function markTreeShakableImports (imports: string | string[], mode: 'server' | 'client') {
+  assertNuxtCompatibility({ bridge: true })
+
+  useNuxt().hook('imports:treeShake', (ctx) => {
+    (Array.isArray(imports) ? imports : [imports]).forEach((importName) => {
+      ctx[mode].treeShake.add(importName)
+    })
+  })
+}
