@@ -19,7 +19,6 @@ async function main () {
   const config = await loadChangelogConfig(process.cwd())
 
   const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
-  console.log({ latestTag })
 
   const commits = await getGitDiff(latestTag)
   const bumpType = determineSemverChange(parseCommits(commits, config), config)
