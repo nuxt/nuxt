@@ -48,7 +48,10 @@ export default defineNuxtCommand({
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
-      overrides: { dev: true }
+      overrides: {
+        dev: true,
+        logLevel: args.logLevel ?? args.l
+      }
     })
 
     const listener = await listen(serverHandler, {

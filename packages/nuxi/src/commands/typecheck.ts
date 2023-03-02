@@ -19,8 +19,8 @@ export default defineNuxtCommand({
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
     const nuxt = await loadNuxt({
       rootDir,
-      config: { _prepare: true },
       overrides: {
+        _prepare: true,
         logLevel: args.logLevel ?? args.l
       }
     })

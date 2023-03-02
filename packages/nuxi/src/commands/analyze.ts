@@ -24,12 +24,8 @@ export default defineNuxtCommand({
 
     const nuxt = await loadNuxt({
       rootDir,
-      config: {
-        build: {
-          analyze: true
-        }
-      },
       overrides: {
+        build: { analyze: true },
         logLevel: args.logLevel ?? args.l
       }
     })
