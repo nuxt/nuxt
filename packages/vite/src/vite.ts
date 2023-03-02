@@ -64,6 +64,9 @@ export async function bundle (nuxt: Nuxt) {
           copyPublicDir: false,
           rollupOptions: {
             output: {
+              sourcemapIgnoreList: (relativeSourcePath) => {
+                return relativeSourcePath.includes('/node_modules/') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)
+              },
               sanitizeFileName: sanitizeFilePath,
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
