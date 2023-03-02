@@ -1,7 +1,7 @@
 import { join, normalize, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import { resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -126,6 +126,12 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options.modules,
     ...nuxt.options._modules
   ]
+
+  // Automatically register user modules
+  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+    const userModules = await resolveFiles(config.srcDir, `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`)
+    modulesToInstall.push(...userModules)
+  }
 
   // Add <NuxtWelcome>
   addComponent({
