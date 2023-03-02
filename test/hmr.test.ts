@@ -3,9 +3,10 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
+// eslint-disable-next-line import/order
+import { setup, $fetch } from '@nuxt/test-utils'
 
 import { expectWithPolling, renderPage } from './utils'
-import { setup, $fetch } from '@nuxt/test-utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
