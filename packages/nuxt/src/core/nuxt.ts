@@ -128,11 +128,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
-    const userModules = await resolveFiles(config.srcDir, [
+    const layerModules = await resolveFiles(config.srcDir, [
       `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
-    for (const mod of userModules) {
+    for (const mod of layerModules) {
       modulesToInstall.push(mod)
       watchedPaths.add(relative(config.srcDir, mod))
     }
