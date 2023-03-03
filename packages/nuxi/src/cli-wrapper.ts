@@ -22,7 +22,7 @@ function startSubprocess () {
     if (childProc) {
       childProc.kill()
     }
-  });
+  })
 
   start()
 
