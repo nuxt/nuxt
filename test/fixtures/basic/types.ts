@@ -246,9 +246,10 @@ describe('app config', () => {
       nested: {
         val: number
       },
-      userConfig?: number
+      userConfig: number
+      [key: string]: any
     }
-    expectTypeOf<AppConfig>().toMatchTypeOf<ExpectedMergedAppConfig>()
+    expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })
 })
 

@@ -11,6 +11,7 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
+  typescript: { strict: true },
   app: {
     pageTransition: true,
     layoutTransition: true,
