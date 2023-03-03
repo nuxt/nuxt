@@ -65,7 +65,7 @@ if (process.dev) {
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
-      const newConfig = newModule._getAppConfig()
+      const newConfig = newModule?._getAppConfig()
       applyHMR(newConfig)
     })
   }
