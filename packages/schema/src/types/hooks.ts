@@ -61,7 +61,7 @@ export interface NuxtHooks {
   'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
 
   // Nuxt
-  /** 
+  /**
    * Called after Nuxt initialization, when the Nuxt instance is ready to work.
    * @param nuxt The configured Nuxt object
    * @returns Promise
@@ -73,6 +73,11 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'close': (nuxt: Nuxt) => HookResult
+  /**
+   * Called to restart the current Nuxt instance.
+   * @returns Promise
+   */
+  'restart': () => HookResult
 
   /**
    * Called during Nuxt initialization, before installing user modules.
