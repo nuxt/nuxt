@@ -22,7 +22,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type NuxtPage = {
   name?: string
   path: string
-  file: string
+  file?: string
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: string

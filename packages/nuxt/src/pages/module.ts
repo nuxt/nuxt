@@ -146,9 +146,11 @@ export default defineNuxtModule({
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
-    const getSources = (pages: NuxtPage[]): string[] => pages.flatMap(p =>
-      [relative(nuxt.options.srcDir, p.file), ...getSources(p.children || [])]
-    )
+    const getSources = (pages: NuxtPage[]): string[] => pages
+      .filter(p => Boolean(p.file))
+      .flatMap(p =>
+        [relative(nuxt.options.srcDir, p.file as string), ...getSources(p.children || [])]
+      )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', async (manifest) => {
