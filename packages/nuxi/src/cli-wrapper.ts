@@ -28,7 +28,7 @@ function startSubprocess () {
 
   function start () {
     childProc = fork(cliEntry)
-    childProc.on('close', (code) => { if (code) { process.exit() } })
+    childProc.on('close', (code) => { if (code) { process.exit(code) } })
     childProc.on('message', (message) => {
       if ((message as { type: string })?.type === 'nuxt:restart') {
         childProc.kill()
