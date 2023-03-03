@@ -230,6 +230,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     'process.mode': JSON.stringify(ctx.config.mode),
     'process.dev': options.dev,
+    __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,

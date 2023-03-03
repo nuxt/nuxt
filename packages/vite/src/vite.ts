@@ -59,10 +59,14 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
+        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
         build: {
           copyPublicDir: false,
           rollupOptions: {
             output: {
+              sourcemapIgnoreList: (relativeSourcePath) => {
+                return relativeSourcePath.includes('/node_modules/') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)
+              },
               sanitizeFileName: sanitizeFilePath,
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
