@@ -8,25 +8,25 @@ export type ModuleNamespace = Record<string, any> & {
 export interface ViteHot {
   readonly data: any
 
-  accept(): void
-  accept(cb: (mod: ModuleNamespace | undefined) => void): void
-  accept(dep: string, cb: (mod: ModuleNamespace | undefined) => void): void
-  accept(
+  accept (): void
+  accept (cb: (mod: ModuleNamespace | undefined) => void): void
+  accept (dep: string, cb: (mod: ModuleNamespace | undefined) => void): void
+  accept (
     deps: readonly string[],
     cb: (mods: Array<ModuleNamespace | undefined>) => void
   ): void
 
-  acceptExports(
+  acceptExports (
     exportNames: string | readonly string[],
     cb?: (mod: ModuleNamespace | undefined) => void
   ): void
 
-  dispose(cb: (data: any) => void): void
-  prune(cb: (data: any) => void): void
-  invalidate(message?: string): void
+  dispose (cb: (data: any) => void): void
+  prune (cb: (data: any) => void): void
+  invalidate (message?: string): void
 
-  on(event: any, cb: (payload: any) => void): void
-  send(event: any, data?: any): void
+  on (event: any, cb: (payload: any) => void): void
+  send (event: any, data?: any): void
 }
 
 export interface KnownAsTypeMap {
