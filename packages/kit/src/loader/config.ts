@@ -30,17 +30,16 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // Resolve `rootDir` & `srcDir` of layers
   for (const layer of layers) {
     layer.config = layer.config || {}
+    layer.cwd = layer.cwd || cwd
     layer.config.rootDir = layer.config.rootDir ?? layer.cwd
     layer.config.srcDir = resolve(layer.config.rootDir!, layer.config.srcDir!)
   }
 
-  // Filter layers
-  const _layers = layers.filter(layer => layer.configFile && !layer.configFile.endsWith('.nuxtrc'))
-  ;(nuxtConfig as any)._layers = _layers
+  ;(nuxtConfig as any)._layers = layers
 
   // Ensure at least one layer remains (without nuxt.config)
-  if (!_layers.length) {
-    _layers.push({
+  if (!layers.length) {
+    layers.push({
       cwd,
       config: {
         rootDir: cwd,
