@@ -11,15 +11,8 @@ export interface ViteHot {
   accept (): void
   accept (cb: (mod: ModuleNamespace | undefined) => void): void
   accept (dep: string, cb: (mod: ModuleNamespace | undefined) => void): void
-  accept (
-    deps: readonly string[],
-    cb: (mods: Array<ModuleNamespace | undefined>) => void
-  ): void
-
-  acceptExports (
-    exportNames: string | readonly string[],
-    cb?: (mod: ModuleNamespace | undefined) => void
-  ): void
+  accept (deps: readonly string[], cb: (mods: Array<ModuleNamespace | undefined>) => void): void
+  acceptExports (exportNames: string | readonly string[], cb?: (mod: ModuleNamespace | undefined) => void): void
 
   dispose (cb: (data: any) => void): void
   prune (cb: (data: any) => void): void
