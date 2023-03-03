@@ -1,4 +1,4 @@
-import { join, normalize, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
@@ -124,17 +124,27 @@ async function initNuxt (nuxt: Nuxt) {
   await nuxt.callHook('modules:before')
   const modulesToInstall = [...nuxt.options.modules]
 
+  const watchedPaths = new Set<string>()
+
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
     const userModules = await resolveFiles(config.srcDir, [
       `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
-    modulesToInstall.push(...userModules)
+    for (const mod of userModules) {
+      modulesToInstall.push(mod)
+      watchedPaths.add(relative(config.srcDir, mod))
+    }
   }
 
   // Register ad-hoc modules
   modulesToInstall.push(...nuxt.options._modules)
+
+  nuxt.hook('builder:watch', (event, path) => {
+    // TODO: fix cache issue so we do not need a hard restart
+    if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
+  })
 
   // Add <NuxtWelcome>
   addComponent({
