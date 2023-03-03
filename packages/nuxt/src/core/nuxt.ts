@@ -122,12 +122,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = [...nuxt.options.modules]
+  const modulesToInstall = []
 
   const watchedPaths = new Set<string>()
 
   // Automatically register user modules
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     const userModules = await resolveFiles(config.srcDir, [
       `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
@@ -138,8 +138,8 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
-  // Register ad-hoc modules
-  modulesToInstall.push(...nuxt.options._modules)
+  // Register user and then ad-hoc modules
+  modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
 
   nuxt.hooks.hookOnce('builder:watch', (event, path) => {
     if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
