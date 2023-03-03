@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
-import { isMinimal } from 'std-env'
+import { isTest } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -49,7 +49,7 @@ export default defineUntypedSchema({
    */
   logLevel: {
     $resolve: (val) => {
-      return val ?? (isMinimal ? 'silent' : null)
+      return val ?? (isTest ? 'silent' : null)
     }
   },
 
