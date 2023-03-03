@@ -34,7 +34,7 @@ async function startSubprocess (preArgs: string[], postArgs: string[]) {
 const args = process.argv.slice(2)
 // only enable wrapper in dev command
 if (args[0] === 'dev') {
-  await startSubprocess([], args)
+  startSubprocess([], args)
 } else {
-  await import(cliEntry)
+  import(cliEntry)
 }
