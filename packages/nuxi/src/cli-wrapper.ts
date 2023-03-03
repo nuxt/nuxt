@@ -7,7 +7,7 @@ import type { ChildProcess } from 'node:child_process'
 
 const cliEntry = fileURLToPath(new URL('../dist/cli-run.mjs', import.meta.url))
 
-// Only enable wrapper For nuxt dev command
+// Only enable wrapper for nuxt dev command
 if (process.argv[2] === 'dev') {
   process.env.__CLI_ARGV__ = JSON.stringify(process.argv)
   startSubprocess()
