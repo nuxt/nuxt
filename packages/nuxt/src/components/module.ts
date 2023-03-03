@@ -202,6 +202,7 @@ export default defineNuxtModule<ComponentsOptions>({
         sourcemap: nuxt.options.sourcemap[mode],
         getComponents,
         mode,
+        transform: nuxt.options.components?.transform,
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
     })
@@ -219,6 +220,7 @@ export default defineNuxtModule<ComponentsOptions>({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents,
           mode,
+          transform: nuxt.options.components?.transform,
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
       })
