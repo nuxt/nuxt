@@ -14,6 +14,7 @@ import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/cjs'
 import { overrideEnv } from '../utils/env'
 import { writeNuxtManifest, loadNuxtManifest, cleanupNuxtDirs } from '../utils/nuxt'
+import { EXIT_CODE_RESTART } from '../constants'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -89,6 +90,14 @@ export default defineNuxtCommand({
         }
 
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        // Hard restart
+        if (process.env.NUXI_CLI_WRAPPER) {
+          currentNuxt.hooks.hook('restart', (options) => {
+            if (options?.hard) {
+              process.exit(EXIT_CODE_RESTART)
+            }
+          })
+        }
         currentNuxt.hooks.hookOnce('restart', () => load(true))
 
         if (!isRestart) {

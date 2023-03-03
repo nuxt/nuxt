@@ -22,7 +22,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type NuxtPage = {
   name?: string
   path: string
-  file: string
+  file?: string
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: string
@@ -77,7 +77,12 @@ export interface NuxtHooks {
    * Called to restart the current Nuxt instance.
    * @returns Promise
    */
-  'restart': () => HookResult
+  'restart': (options?: {
+    /**
+     * Try to restart the whole process if supported
+     */
+    hard?: boolean
+  }) => HookResult
 
   /**
    * Called during Nuxt initialization, before installing user modules.
