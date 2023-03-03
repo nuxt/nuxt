@@ -14,7 +14,6 @@ import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/cjs'
 import { overrideEnv } from '../utils/env'
 import { writeNuxtManifest, loadNuxtManifest, cleanupNuxtDirs } from '../utils/nuxt'
-import { EXIT_CODE_RESTART } from '../constants'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -90,15 +89,18 @@ export default defineNuxtCommand({
         }
 
         currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
-        // Hard restart
-        if (process.env.NUXI_CLI_WRAPPER) {
-          currentNuxt.hooks.hook('restart', (options) => {
-            if (options?.hard) {
-              process.exit(EXIT_CODE_RESTART)
-            }
-          })
-        }
-        currentNuxt.hooks.hookOnce('restart', () => load(true))
+
+        currentNuxt.hooks.hookOnce('restart', async (options) => {
+          if (options?.hard && process.send) {
+            await listener.close().catch(() => {})
+            await currentNuxt.close().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
+            process.send({ type: 'nuxt:restart' })
+          } else {
+            await load(true)
+          }
+        })
 
         if (!isRestart) {
           showURL()
@@ -121,7 +123,7 @@ export default defineNuxtCommand({
         await currentNuxt.ready()
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
-        const address = listener.server.address() as AddressInfo
+        const address = (listener.server.address() || {}) as AddressInfo
         currentNuxt.options.devServer.url = listener.url
         currentNuxt.options.devServer.port = address.port
         currentNuxt.options.devServer.host = address.address
