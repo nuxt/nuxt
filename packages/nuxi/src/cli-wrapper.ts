@@ -18,7 +18,7 @@ if (process.argv[2] === 'dev') {
 function startSubprocess () {
   let childProc: ChildProcess
 
-  process.on('exit', function (){
+  process.on('exit', () => {
     if (childProc) {
       childProc.kill()
     }
