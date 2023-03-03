@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -125,6 +125,14 @@ async function initNuxt (nuxt: Nuxt) {
   const modulesToInstall = []
 
   const watchedPaths = new Set<string>()
+  const specifiedModules = new Set<string>()
+
+  for (const _mod of nuxt.options.modules) {
+    const mod = Array.isArray(_mod) ? _mod[0] : _mod
+    if (typeof mod !== 'string') { continue }
+    const modPath = await resolvePath(resolveAlias(mod))
+    specifiedModules.add(modPath)
+  }
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
@@ -133,6 +141,8 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
+      if (specifiedModules.has(mod)) { continue }
+      specifiedModules.add(mod)
       modulesToInstall.push(mod)
       watchedPaths.add(relative(config.srcDir, mod))
     }
