@@ -92,8 +92,10 @@ export default defineNuxtCommand({
 
         currentNuxt.hooks.hookOnce('restart', async (options) => {
           if (options?.hard && process.send) {
-            await listener.close()
-            await currentNuxt.close()
+            await listener.close().catch(() => {})
+            await currentNuxt.close().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
             process.send({ type: 'nuxt:restart' })
           } else {
             await load(true)
