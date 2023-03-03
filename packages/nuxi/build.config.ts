@@ -10,6 +10,8 @@ export default defineBuildConfig({
   },
   entries: [
     'src/cli',
+    'src/cli-run',
+    'src/cli-wrapper',
     'src/index'
   ],
   externals: [
