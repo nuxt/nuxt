@@ -21,6 +21,10 @@
       "types": "./schema.d.ts",
       "import": "./schema.mjs"
     },
+    "./kit": {
+      "types": "./kit.d.ts",
+      "import": "./kit.mjs"
+    },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
   },
