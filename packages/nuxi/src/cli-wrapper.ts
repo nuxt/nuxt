@@ -17,15 +17,21 @@ if (process.argv[2] === 'dev') {
 
 function startSubprocess () {
   let childProc: ChildProcess
-  start()
-  function start () {
+
+  process.on('exit', function (){
     if (childProc) {
       childProc.kill()
     }
+  });
+
+  start()
+
+  function start () {
     childProc = fork(cliEntry)
-    childProc.on('close', (code) => { process.exit(code ?? 1) })
+    childProc.on('close', (code) => { if (code) { process.exit() } })
     childProc.on('message', (message) => {
       if ((message as { type: string })?.type === 'nuxt:restart') {
+        childProc.kill()
         startSubprocess()
       }
     })
