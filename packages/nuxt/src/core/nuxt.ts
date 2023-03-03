@@ -141,8 +141,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Register ad-hoc modules
   modulesToInstall.push(...nuxt.options._modules)
 
-  nuxt.hook('builder:watch', (event, path) => {
-    // TODO: fix cache issue so we do not need a hard restart
+  nuxt.hooks.hookOnce('builder:watch', (event, path) => {
     if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
   })
 
