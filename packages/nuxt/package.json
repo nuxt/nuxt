@@ -39,6 +39,7 @@
     "types.d.ts",
     "dist",
     "config.*",
+    "kit.*",
     "schema.*"
   ],
   "scripts": {
