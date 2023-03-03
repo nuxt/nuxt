@@ -46,6 +46,13 @@ describe('route rules', () => {
   })
 })
 
+describe('modules', () => {
+  it('should auto-register modules in ~/modules', async () => {
+    const result = await $fetch('/auto-registered-module')
+    expect(result).toEqual('handler added by auto-registered module')
+  })
+})
+
 describe('pages', () => {
   it('render index', async () => {
     const html = await $fetch('/')

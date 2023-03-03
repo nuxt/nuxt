@@ -220,6 +220,11 @@ export default defineUntypedSchema({
     middleware: 'middleware',
 
     /**
+     * The modules directory, each file in which will be auto-registered as a Nuxt module.
+     */
+    modules: 'modules',
+
+    /**
      * The directory which will be processed to auto-generate your application page routes.
      */
     pages: 'pages',
