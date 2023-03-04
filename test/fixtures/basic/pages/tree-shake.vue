@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 // server only
-useBreakClient()
-// server only
-useModuleServerOnlyComposable()
+useServerOnlyComposable()
+// client only
+useClientOnlyComposable()
 // can only run client side, should be tree shaken from server build
 setTitleToPink()
 </script>

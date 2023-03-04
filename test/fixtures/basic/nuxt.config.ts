@@ -111,8 +111,8 @@ export default defineNuxtConfig({
       })
     },
     function (_, nuxt) {
-      nuxt.options.build.treeShake.server.push('useServerOnlyComposable')
-      nuxt.options.build.treeShake.client.push('useClientOnlyComposable')
+      nuxt.options.build.treeShake.server.push('useClientOnlyComposable', 'setTitleToPink')
+      nuxt.options.build.treeShake.client.push('useServerOnlyComposable')
     }
   ],
   vite: {

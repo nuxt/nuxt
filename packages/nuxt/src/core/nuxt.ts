@@ -16,7 +16,8 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import { normaliseTreeShakeOptions, TreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
+import type { TreeShakePluginOptions} from './plugins/tree-shake';
+import { normaliseTreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
@@ -86,15 +87,15 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   // Add composable tree-shaking optimisations
-  const treeShakeOptions: Record<'server' | 'client', TreeShakeOptions> = {
+  const treeShakeOptions: Record<'server' | 'client', TreeShakePluginOptions> = {
     server: { sourcemap: nuxt.options.sourcemap.server, treeShake: [] },
     client: { sourcemap: nuxt.options.sourcemap.client, treeShake: [] }
   }
   function generateTreeShakeConfig () {
     treeShakeOptions.server.treeShake = nuxt.options.build.treeShake.server
     treeShakeOptions.client.treeShake = nuxt.options.build.treeShake.client
-    normaliseTreeShakeOptions(treeShakeOptions.client)
-    normaliseTreeShakeOptions(treeShakeOptions.server)
+    treeShakeOptions.client = normaliseTreeShakeOptions(treeShakeOptions.client)
+    treeShakeOptions.server = normaliseTreeShakeOptions(treeShakeOptions.server)
   }
   nuxt.hook('modules:done', async () => {
     await generateTreeShakeConfig()

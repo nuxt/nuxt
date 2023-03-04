@@ -4,20 +4,20 @@ import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 
-export interface TreeShakeOptions {
-  sourcemap: boolean
+export interface TreeShakePluginOptions {
+  sourcemap?: boolean
   treeShake: string[]
   matcher?: RegExp
 }
 
-export function normaliseTreeShakeOptions (options: TreeShakeOptions) {
+export function normaliseTreeShakeOptions (options: TreeShakePluginOptions) {
   // dedupe treeShake
   options.treeShake = [...new Set(options.treeShake)]
   options.matcher = new RegExp(`($\\s+)(${[...options.treeShake].join('|')})(?=\\()`, 'gm')
   return options
 }
 
-export const TreeShakePlugin = createUnplugin((options: TreeShakeOptions) => {
+export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
   return {
     name: 'nuxt:tree-shake:transform',
     enforce: 'post',
