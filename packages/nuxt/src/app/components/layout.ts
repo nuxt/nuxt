@@ -1,5 +1,6 @@
-import type { Ref, VNode } from 'vue'
-import { computed, defineComponent, h, inject, nextTick, onMounted, Transition, unref } from 'vue'
+import type { Ref } from 'vue'
+import { markRaw, computed, defineComponent, h, inject, nextTick, onMounted, Transition, unref, VNode } from 'vue'
+
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
@@ -21,6 +22,9 @@ const LayoutLoader = defineComponent({
   async setup (props, context) {
     let vnode: VNode
 
+    const exposed = markRaw({}) as Record<string, any>
+    context.expose(exposed)
+
     if (process.dev && process.client) {
       onMounted(() => {
         nextTick(() => {
@@ -34,14 +38,22 @@ const LayoutLoader = defineComponent({
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => {
-      if (process.dev && process.client && props.hasTransition) {
-        vnode = h(LayoutComponent, context.attrs, context.slots)
-        return vnode
+      vnode = h(LayoutComponent, context.attrs, context.slots)
+
+      if (process.client) {
+        nextTick(() => {
+          Object.keys(exposed).forEach(key => delete exposed[key])
+          if (vnode && vnode.component && vnode.component.exposed) {
+            Object.assign(exposed, vnode.component.exposed)
+          }
+        })
       }
-      return h(LayoutComponent, context.attrs, context.slots)
+
+      return vnode
     }
   }
 })
+
 export default defineComponent({
   name: 'NuxtLayout',
   inheritAttrs: false,
@@ -56,6 +68,9 @@ export default defineComponent({
     const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+
+    const exposed = markRaw({}) as Record<string, any>
+    context.expose(exposed)
 
     let vnode: VNode
     let _layout: string | false
@@ -79,12 +94,25 @@ export default defineComponent({
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => _wrapIf(LayoutLoader, hasLayout && {
-          key: layout.value,
-          name: layout.value,
-          ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-          ...context.attrs
-        }, context.slots).default()
+        default: () => {
+          const layoutNode = _wrapIf(LayoutLoader, hasLayout && {
+            key: layout.value,
+            name: layout.value,
+            ...(process.dev ? { hasTransition: !!transitionProps } : {}),
+            ...context.attrs
+          }, context.slots).default()
+
+          if (process.client) {
+            nextTick(() => {
+              Object.keys(exposed).forEach(key => delete exposed[key])
+              if (layoutNode && layoutNode.component && layoutNode.component.exposed) {
+                Object.assign(exposed, layoutNode.component.exposed)
+              }
+            })
+          }
+
+          return layoutNode
+        }
       }).default()
     }
   }

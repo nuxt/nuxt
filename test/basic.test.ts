@@ -263,6 +263,38 @@ describe('pages', () => {
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
   })
 
+  it('/expose-wrapper/layout', async () => {
+    await expectNoClientErrors('/expose-wrapper/layout')
+
+    let lastLog: string|undefined
+    const page = await createPage('/expose-wrapper/layout')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('#log-foo').click()
+    expect(lastLog).toContain('.logFoo is not a function')
+    await page.locator('#log-hello').click()
+    expect(lastLog).toContain('world')
+    await page.locator('#add-count').click()
+    expect(await page.locator('#count').innerText()).toContain('1')
+
+    // change page
+    await page.locator('#swap-layout').click()
+    expect(await page.locator('#count').innerText()).toContain('0')
+    await page.locator('#log-foo').click()
+    expect(lastLog).toContain('bar')
+    await page.locator('#log-hello').click()
+    expect(lastLog).toContain('.logHello is not a function')
+    await page.locator('#add-count').click()
+    expect(await page.locator('#count').innerText()).toContain('1')
+    await page.locator('#swap-layout').click()
+    expect(await page.locator('#count').innerText()).toContain('0')
+  })
+
   it('/client-only-explicit-import', async () => {
     const html = await $fetch('/client-only-explicit-import')
 
