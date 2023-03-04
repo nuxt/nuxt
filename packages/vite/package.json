@@ -27,7 +27,7 @@
     "chokidar": "^3.5.3",
     "cssnano": "^5.1.15",
     "defu": "^6.1.2",
-    "esbuild": "^0.17.10",
+    "esbuild": "^0.17.11",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.0",
