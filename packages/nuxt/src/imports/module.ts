@@ -1,5 +1,5 @@
 import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
-import { isAbsolute, join, relative, resolve, normalize, basename, extname } from 'pathe'
+import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
 import { TransformPlugin } from './transform'

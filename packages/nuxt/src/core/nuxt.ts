@@ -16,7 +16,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import type { TreeShakePluginOptions} from './plugins/tree-shake';
+import type { TreeShakePluginOptions } from './plugins/tree-shake'
 import { normaliseTreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
