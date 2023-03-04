@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir, rm } from 'node:fs/promises'
+import { writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { defu } from 'defu'
@@ -7,7 +7,6 @@ import { debounce } from 'perfect-debounce'
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
 import {
   resolveSchema as resolveUntypedSchema,
-  generateMarkdown,
   generateTypes
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
@@ -39,9 +38,14 @@ export default defineNuxtModule({
     })
 
     // Register module types
-    nuxt.hook('prepare:types', (ctx) => {
+    nuxt.hook('prepare:types', async (ctx) => {
       ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
+      if (nuxt.options._prepare) {
+        await nuxt.hooks.callHook('schema:beforeWrite', schema)
+        await writeSchema(schema)
+        await nuxt.hooks.callHook('schema:written')
+      }
     })
 
     // Resolve schema after all modules initialized
@@ -122,24 +126,11 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
-      // Avoid writing empty schema
-      const isEmptySchema = !schema.properties || Object.keys(schema.properties).length === 0
-      if (isEmptySchema) {
-        await rm(resolve(nuxt.options.buildDir, 'schema'), { recursive: true }).catch(() => { })
-        return
-      }
-
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
         resolve(nuxt.options.buildDir, 'schema/nuxt.schema.json'),
         JSON.stringify(schema, null, 2),
-        'utf8'
-      )
-      const markdown = '# Nuxt Custom Config Schema' + generateMarkdown(schema)
-      await writeFile(
-        resolve(nuxt.options.buildDir, 'schema/nuxt.schema.md'),
-        markdown,
         'utf8'
       )
       const _types = generateTypes(schema, {
@@ -152,12 +143,18 @@ export default defineNuxtModule({
         `
 export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
 
+declare module '@nuxt/schema' {
+  interface NuxtConfig extends NuxtCustomSchema {}
+  interface NuxtOptions extends NuxtCustomSchema {}
+  interface CustomAppConfig extends CustomAppConfig {}
+}
+
 declare module 'nuxt/schema' {
   interface NuxtConfig extends NuxtCustomSchema {}
   interface NuxtOptions extends NuxtCustomSchema {}
-  interface AppConfigInput extends CustomAppConfig {}
-  interface AppConfig extends CustomAppConfig {}
-}`
+  interface CustomAppConfig extends CustomAppConfig {}
+}
+`
       const typesPath = resolve(
         nuxt.options.buildDir,
         'schema/nuxt.schema.d.ts'
