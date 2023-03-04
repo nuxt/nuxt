@@ -16,12 +16,12 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import { normaliseTreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
+import { normaliseTreeShakeOptions, TreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
-import type { Nuxt, NuxtOptions, NuxtHooks, ImportsTreeShakeCtx } from 'nuxt/schema'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -85,30 +85,25 @@ async function initNuxt (nuxt: Nuxt) {
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
   })
 
-  const treeShakeServer = new Set(nuxt.options.dev ? [] : ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'])
-  const treeShakeClient = new Set(nuxt.options.dev ? [] : ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'])
   // Add composable tree-shaking optimisations
-  const treeShakeCtx: ImportsTreeShakeCtx = {
-    server: { sourcemap: nuxt.options.sourcemap.server, treeShake: treeShakeServer },
-    client: { sourcemap: nuxt.options.sourcemap.client, treeShake: treeShakeClient }
+  const treeShakeOptions: Record<'server' | 'client', TreeShakeOptions> = {
+    server: { sourcemap: nuxt.options.sourcemap.server, treeShake: [] },
+    client: { sourcemap: nuxt.options.sourcemap.client, treeShake: [] }
   }
-  async function regenerateTreeShakeCtx () {
-    treeShakeCtx.server.treeShake = treeShakeServer
-    treeShakeCtx.client.treeShake = treeShakeClient
-    await nuxt.callHook('imports:treeShake', treeShakeCtx)
-    treeShakeCtx.client = normaliseTreeShakeOptions(treeShakeCtx.client)
-    treeShakeCtx.server = normaliseTreeShakeOptions(treeShakeCtx.server)
+  function generateTreeShakeConfig () {
+    treeShakeOptions.server.treeShake = nuxt.options.build.treeShake.server
+    treeShakeOptions.client.treeShake = nuxt.options.build.treeShake.client
+    normaliseTreeShakeOptions(treeShakeOptions.client)
+    normaliseTreeShakeOptions(treeShakeOptions.server)
   }
   nuxt.hook('modules:done', async () => {
-    await regenerateTreeShakeCtx()
+    await generateTreeShakeConfig()
   })
-  // watch for import changes
-  nuxt.hook('imports:extend', async () => { await regenerateTreeShakeCtx() })
 
-  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.server), { client: false })
-  addVitePlugin(TreeShakePlugin.vite(treeShakeCtx.client), { server: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.server), { client: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeCtx.client), { server: false })
+  addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), { client: false })
+  addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), { server: false })
+  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), { client: false })
+  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), { server: false })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only

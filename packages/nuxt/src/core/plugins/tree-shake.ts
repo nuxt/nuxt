@@ -3,25 +3,26 @@ import { stripLiteral } from 'strip-literal'
 import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
-import type { ImportsTreeShakeCtx } from 'nuxt/schema'
 
-export type TreeShakeOptions = ImportsTreeShakeCtx[keyof ImportsTreeShakeCtx]
+export interface TreeShakeOptions {
+  sourcemap: boolean
+  treeShake: string[]
+  matcher?: RegExp
+}
 
 export function normaliseTreeShakeOptions (options: TreeShakeOptions) {
-  // only set a matcher if we have functions to tree shake
-  if (!options.treeShake.size) {
-    return options
-  }
+  // dedupe treeShake
+  options.treeShake = [...new Set(options.treeShake)]
   options.matcher = new RegExp(`($\\s+)(${[...options.treeShake].join('|')})(?=\\()`, 'gm')
   return options
 }
 
-export const TreeShakePlugin = createUnplugin((options: ImportsTreeShakeCtx[keyof ImportsTreeShakeCtx]) => {
+export const TreeShakePlugin = createUnplugin((options: TreeShakeOptions) => {
   return {
     name: 'nuxt:tree-shake:transform',
     enforce: 'post',
     transformInclude (id) {
-      if (!options.matcher) { return false }
+      if (!options.treeShake.length) { return false }
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const { type } = parseQuery(search)
 

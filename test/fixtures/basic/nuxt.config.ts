@@ -1,4 +1,4 @@
-import { addComponent, markTreeShakableImports, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
@@ -110,9 +110,9 @@ export default defineNuxtConfig({
         internalParent!.children = newPages
       })
     },
-    function () {
-      // treeshake useServerOnlySomething from client bundles
-      markTreeShakableImports('useModuleServerOnlyComposable', 'server')
+    function (_, nuxt) {
+      nuxt.options.build.treeShake.server.push('useServerOnlyComposable')
+      nuxt.options.build.treeShake.client.push('useClientOnlyComposable')
     }
   ],
   vite: {

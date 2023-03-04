@@ -81,11 +81,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         const composableImports = await scanDirExports(composablesDirs)
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
-          const mode = (basename(i.from, extname(i.from)).match(/(?<=\.)(client|server)*$/)?.[1]) as 'client' | 'server' | undefined
-          if (mode) {
-            i.meta = i.meta || {}
-            i.meta.mode = mode
-          }
         }
         imports.push(...composableImports)
         // Modules extending
@@ -94,16 +89,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     await regenerateImports()
-
-    // Provide server/client only composables to the tree shake config
-    nuxt.hook('imports:treeShake', async (_ctx) => {
-      (await ctx.getImports())
-        .filter(i => ['server', 'client'].includes(i.meta?.mode))
-        .forEach((i) => {
-          const mode = i.meta!.mode as 'server' | 'client'
-          _ctx[mode === 'server' ? 'client' : 'server'].treeShake.add(i.name)
-        })
-    })
 
     // Generate types
     addDeclarationTemplates(ctx, options)

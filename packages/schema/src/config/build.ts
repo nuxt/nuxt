@@ -59,6 +59,19 @@ export default defineUntypedSchema({
       $resolve: val => [].concat(val).filter(Boolean)
     },
 
+    treeShake: {
+      server: {
+        $resolve: async (val, get) => (await get('dev') ? [] : [
+          'onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'
+        ]).concat(val).filter(Boolean)
+      },
+      client: {
+        $resolve: async (val, get) => (await get('dev') ? [] : [
+          'onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'
+        ]).concat(val).filter(Boolean)
+      }
+    },
+
     /**
      * You can provide your own templates which will be rendered based
      * on Nuxt configuration. This feature is specially useful for using with modules.
