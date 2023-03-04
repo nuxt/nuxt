@@ -59,6 +59,14 @@ export default defineUntypedSchema({
       $resolve: val => [].concat(val).filter(Boolean)
     },
 
+    /**
+     * Tree shake composables from the server or client builds.
+     *
+     * @example
+     * ```js
+     * treeShake: { server: ['useClientOnlyComposable'] }
+     * ```
+     */
     treeShake: {
       server: {
         $resolve: async (val, get) => (await get('dev') ? [] : [
