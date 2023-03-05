@@ -24,7 +24,6 @@ vi.mock('../src/app/composables/router', () => ({
         ? { href: route.to }
         : {
             path: route.path || `/${route.name?.toString()}` || undefined,
-            name: route.name || route?.path.replace(/\//g, '') || undefined,
             query: route.query || undefined,
             hash: route.hash || undefined
           }
@@ -216,23 +215,25 @@ describe('nuxt-link:propsOrAttributes', () => {
 
     describe('trailingSlashBehavior', () => {
       it('append slash', () => {
-        const appendSlashOptions: Partial<NuxtLinkOptions> = { trailingSlashBehavior: 'append' }
+        const appendSlashOptions: NuxtLinkOptions = { trailingSlash: 'append' }
 
-        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
-        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toEqual('/to/')
         expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
         expect(nuxtLink({ to: { path: '/to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
-        expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to?param=1' }, appendSlashOptions).props.to).toEqual('/to/?param=1')
       })
 
       it('remove slash', () => {
-        const appendSlashOptions: Partial<NuxtLinkOptions> = { trailingSlashBehavior: 'remove' }
+        const removeSlashOptions: NuxtLinkOptions = { trailingSlash: 'remove' }
 
-        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
-        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
-        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
-        expect(nuxtLink({ to: { path: '/to/' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
-        expect(nuxtLink({ href: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: '/to' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: { name: 'to' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: { path: '/to/' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ href: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to/?param=1' }, removeSlashOptions).props.to).toEqual('/to?param=1')
       })
     })
   })

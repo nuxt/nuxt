@@ -1,7 +1,7 @@
 import type { PropType, DefineComponent, ComputedRef } from 'vue'
 import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
-import type { RouteLocation, RouteLocationPathRaw, RouteLocationRaw } from 'vue-router'
-import { hasProtocol, parseQuery, parseURL } from 'ufo'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import { hasProtocol, parseQuery, parseURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -19,7 +19,7 @@ export type NuxtLinkOptions = {
   activeClass?: string
   exactActiveClass?: string
   prefetchedClass?: string
-  trailingSlashBehavior?: 'append' | 'remove'
+  trailingSlash?: 'append' | 'remove'
 }
 
 export type NuxtLinkProps = {
@@ -54,13 +54,30 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
     }
   }
-  const resolveTrailingSlashBehavior = (to: RouteLocation): RouteLocationPathRaw => {
-    const trailingSlash = options.trailingSlashBehavior === 'append' ? '/' : ''
-    // modify trailing slash in "path", exclude "name" to apply trailing slash behavior
+  const resolveTrailingSlashBehavior = (
+    to: RouteLocationRaw,
+    resolve: (to: RouteLocationRaw) => RouteLocation & { href?: string }
+  ): RouteLocationRaw | RouteLocation => {
+    if (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove') {
+      return to
+    }
+
+    const forceAppend = options.trailingSlash === 'append'
+    if (typeof to === 'string') {
+      console.log('withTrailingSlash', to, withTrailingSlash(to, true))
+      return forceAppend ? withTrailingSlash(to, true) : withoutTrailingSlash(to, true)
+    } else if ('path' in to) {
+      return {
+        ...to,
+        path: forceAppend ? withTrailingSlash(to.path, true) : withoutTrailingSlash(to.path, true)
+      }
+    }
+
+    const route: RouteLocation = resolve(to)
     return {
-      path: to.path.replace(/\/$/, '') + trailingSlash,
-      query: to.query,
-      hash: to.hash
+      path: forceAppend ? withTrailingSlash(route.path, true) : withoutTrailingSlash(route.path, true),
+      query: route.query,
+      hash: route.hash
     }
   }
 
@@ -223,9 +240,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
             ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
-            to: options?.trailingSlashBehavior === 'append' || options.trailingSlashBehavior === 'remove'
-              ? resolveTrailingSlashBehavior(router.resolve(to.value))
-              : to.value,
+            to: resolveTrailingSlashBehavior(to.value, router.resolve),
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
             replace: props.replace,
