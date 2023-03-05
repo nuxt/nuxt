@@ -1,21 +1,21 @@
 <template>
   <div>
-    <button id="swap-layout" @click="swapLayout">
+    <button class="swap-layout" @click="swapLayout">
       swap layout
     </button>
-    <button id="log-foo" @click="logFoo">
+    <button class="log-foo" @click="logFoo">
       log foo
     </button>
-    <button id="log-hello" @click="logHello">
+    <button class="log-hello" @click="logHello">
       log hello
-    </button> <div v-if="layout">{{layout}}</div>
+    </button>
     <NuxtLayout ref="layout" />
   </div>
 </template>
 
 <script setup lang="ts">
 const layout = ref()
-let currentLayout = 'customLayout'
+const currentLayout = useState('current-layout', () => 'custom')
 
 definePageMeta({
   layout: 'custom'
@@ -29,8 +29,7 @@ function logHello () {
 }
 
 function swapLayout () {
-  const newLayout = currentLayout === 'custom2' ? 'custom' : 'custom2'
-  setPageLayout(newLayout)
-  currentLayout = newLayout
+  currentLayout.value = currentLayout.value === 'custom2' ? 'custom' : 'custom2'
+  setPageLayout(currentLayout.value)
 }
 </script>

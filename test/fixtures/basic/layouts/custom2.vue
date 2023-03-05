@@ -3,10 +3,10 @@
     Custom2 Layout:
     <slot />
 
-    <div id="count">
+    <div class="count">
       {{ count }}
     </div>
-    <button id="add-count" @click="count++">
+    <button class="add-count" @click="count++">
       add count
     </button>
   </div>
@@ -16,7 +16,7 @@
 const count = ref(0)
 
 function logFoo () {
-  console.log('foo')
+  console.log('bar')
 }
 
 defineExpose({
