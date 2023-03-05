@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from 'vitest'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 
@@ -16,17 +16,17 @@ vi.mock('vue', async () => {
 // Mocks Nuxt `useRouter()`
 vi.mock('../src/app/composables/router', () => ({
   useRouter: () => ({
-    resolve: (route: string | Record<string, string>) => {
+    resolve: (route: string | RouteLocation & { to?: string }): Partial<RouteLocation> & { href?: string } => {
       if (typeof route === 'string') {
         return { href: route, path: route }
       }
       return route.to
         ? { href: route.to }
         : {
-            path: route.path || `/${route.name}` || null,
-            name: route.name || route?.path.replace(/\//g, '') || null,
-            query: route.query || null,
-            hash: route.hash || null
+            path: route.path || `/${route.name?.toString()}` || undefined,
+            name: route.name || route?.path.replace(/\//g, '') || undefined,
+            query: route.query || undefined,
+            hash: route.hash || undefined
           }
     }
   })
@@ -218,21 +218,21 @@ describe('nuxt-link:propsOrAttributes', () => {
       it('append slash', () => {
         const appendSlashOptions: Partial<NuxtLinkOptions> = { trailingSlashBehavior: 'append' }
 
-        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to?.path).toEqual('/to/')
-        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to?.path).toEqual('/to/')
-        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to?.path).toEqual('/to/')
-        expect(nuxtLink({ to: { path: '/to' } }, appendSlashOptions).props.to?.path).toEqual('/to/')
-        expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to?.path).toEqual('/to/')
+        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: { path: '/to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
       })
 
       it('remove slash', () => {
         const appendSlashOptions: Partial<NuxtLinkOptions> = { trailingSlashBehavior: 'remove' }
 
-        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to?.path).toEqual('/to')
-        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to?.path).toEqual('/to')
-        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to?.path).toEqual('/to')
-        expect(nuxtLink({ to: { path: '/to/' } }, appendSlashOptions).props.to?.path).toEqual('/to')
-        expect(nuxtLink({ href: '/to/' }, appendSlashOptions).props.to?.path).toEqual('/to')
+        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: { path: '/to/' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ href: '/to/' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
       })
     })
   })
