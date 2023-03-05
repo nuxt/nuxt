@@ -1,6 +1,6 @@
 import type { PropType, DefineComponent, ComputedRef } from 'vue'
 import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocation, RouteLocationPathRaw, RouteLocationRaw } from 'vue-router'
 import { hasProtocol, parseQuery, parseURL } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
@@ -19,6 +19,7 @@ export type NuxtLinkOptions = {
   activeClass?: string
   exactActiveClass?: string
   prefetchedClass?: string
+  trailingSlashBehavior?: 'append' | 'remove'
 }
 
 export type NuxtLinkProps = {
@@ -51,6 +52,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   const checkPropConflicts = (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void => {
     if (process.dev && props[main] !== undefined && props[sub] !== undefined) {
       console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
+    }
+  }
+  const resolveTrailingSlashBehavior = (to: RouteLocation): RouteLocationPathRaw => {
+    const trailingSlash = options.trailingSlashBehavior === 'append' ? '/' : ''
+    // modify trailing slash in "path", exclude "name" to apply trailing slash behavior
+    return {
+      path: to.path.replace(/\/$/, '') + trailingSlash,
+      query: to.query,
+      hash: to.hash
     }
   }
 
@@ -213,7 +223,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
             ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
-            to: to.value,
+            to: options?.trailingSlashBehavior === 'append' || options.trailingSlashBehavior === 'remove'
+              ? resolveTrailingSlashBehavior(router.resolve(to.value))
+              : to.value,
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
             replace: props.replace,
