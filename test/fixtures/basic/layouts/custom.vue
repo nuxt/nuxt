@@ -6,7 +6,9 @@
     <div id="count">
       {{ count }}
     </div>
-    <button id="add-count" @click="count++">add count</button>
+    <button id="add-count" @click="count++">
+      add count
+    </button>
   </div>
 </template>
 
