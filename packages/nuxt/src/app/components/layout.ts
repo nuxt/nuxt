@@ -17,14 +17,13 @@ const LayoutLoader = defineComponent({
   inheritAttrs: false,
   props: {
     name: String,
+    exposed: Object as Record<string, any>,
     ...process.dev ? { hasTransition: Boolean } : {}
   },
   async setup (props, context) {
     let vnode: VNode
-
-    const exposed = markRaw({}) as Record<string, any>
-    context.expose(exposed)
-
+    // eslint-disable-next-line vue/no-setup-props-destructure
+    const { exposed } = props
     if (process.dev && process.client) {
       onMounted(() => {
         nextTick(() => {
@@ -42,8 +41,10 @@ const LayoutLoader = defineComponent({
 
       if (process.client) {
         nextTick(() => {
+          // @ts-expect-error
           Object.keys(exposed).forEach(key => delete exposed[key])
           if (vnode && vnode.component && vnode.component.exposed) {
+            // @ts-expect-error
             Object.assign(exposed, vnode.component.exposed)
           }
         })
@@ -98,6 +99,7 @@ export default defineComponent({
           const layoutNode = _wrapIf(LayoutLoader, hasLayout && {
             key: layout.value,
             name: layout.value,
+            exposed,
             ...(process.dev ? { hasTransition: !!transitionProps } : {}),
             ...context.attrs
           }, context.slots).default()

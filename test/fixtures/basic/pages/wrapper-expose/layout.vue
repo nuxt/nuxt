@@ -8,7 +8,7 @@
     </button>
     <button id="log-hello" @click="logHello">
       log hello
-    </button>
+    </button> <div v-if="layout">{{layout}}</div>
     <NuxtLayout ref="layout" />
   </div>
 </template>
@@ -29,7 +29,7 @@ function logHello () {
 }
 
 function swapLayout () {
-  const newLayout = currentLayout === 'customLayout' ? 'customLayout2' : 'customLayout'
+  const newLayout = currentLayout === 'custom2' ? 'custom' : 'custom2'
   setPageLayout(newLayout)
   currentLayout = newLayout
 }

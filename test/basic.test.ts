@@ -263,11 +263,11 @@ describe('pages', () => {
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
   })
 
-  it('/expose-wrapper/layout', async () => {
-    await expectNoClientErrors('/expose-wrapper/layout')
+  it('/wrapper-expose/layout', async () => {
+    await expectNoClientErrors('/wrapper-expose/layout')
 
     let lastLog: string|undefined
-    const page = await createPage('/expose-wrapper/layout')
+    const page = await createPage('/wrapper-expose/layout')
     page.on('console', (log) => {
       lastLog = log.text()
     })
