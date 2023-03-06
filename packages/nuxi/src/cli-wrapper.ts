@@ -16,13 +16,19 @@ if (process.argv[2] === 'dev') {
 }
 
 function startSubprocess () {
-  let childProc: ChildProcess
+  let childProc: ChildProcess | undefined
 
-  process.on('exit', () => {
+  const onShutdown = () => {
     if (childProc) {
       childProc.kill()
+      childProc = undefined
     }
-  })
+  }
+
+  process.on('exit', onShutdown)
+  process.on('SIGTERM', onShutdown) // Graceful shutdown
+  process.on('SIGINT', onShutdown) // Ctrl-C
+  process.on('SIGQUIT', onShutdown) // Ctrl-\
 
   start()
 
@@ -31,7 +37,7 @@ function startSubprocess () {
     childProc.on('close', (code) => { if (code) { process.exit(code) } })
     childProc.on('message', (message) => {
       if ((message as { type: string })?.type === 'nuxt:restart') {
-        childProc.kill()
+        childProc?.kill()
         startSubprocess()
       }
     })
