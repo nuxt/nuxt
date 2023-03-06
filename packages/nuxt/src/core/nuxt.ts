@@ -16,8 +16,8 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import type { TreeShakePluginOptions } from './plugins/tree-shake'
-import { TreeShakePlugin } from './plugins/tree-shake'
+import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
+import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
@@ -80,25 +80,27 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(ImportProtectionPlugin.vite(config))
   addWebpackPlugin(ImportProtectionPlugin.webpack(config))
 
-  // Add unctx transform
   nuxt.hook('modules:done', () => {
+    // Add unctx transform
     addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     // Add composable tree-shaking optimisations
-    const treeShakeOptions: Record<'server' | 'client', TreeShakePluginOptions> = {
-      server: { sourcemap: nuxt.options.sourcemap.server, treeShake: nuxt.options.build.treeShake.server },
-      client: { sourcemap: nuxt.options.sourcemap.client, treeShake: nuxt.options.build.treeShake.client }
+    const serverTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+      sourcemap: nuxt.options.sourcemap.server,
+      composables: nuxt.options.optimization.treeShake.composables.server
     }
-
-    if (treeShakeOptions.server.treeShake.length) {
-      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), { client: false })
-      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), { client: false })
+    if (serverTreeShakeOptions.composables.length) {
+      addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
+      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
-
-    if (treeShakeOptions.client.treeShake.length) {
-      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), { server: false })
-      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), { server: false })
+    const clientTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+      sourcemap: nuxt.options.sourcemap.client,
+      composables: nuxt.options.optimization.treeShake.composables.client
+    }
+    if (clientTreeShakeOptions.composables.length) {
+      addVitePlugin(TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
+      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
     }
   })
 

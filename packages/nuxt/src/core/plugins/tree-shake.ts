@@ -4,16 +4,16 @@ import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 
-export interface TreeShakePluginOptions {
+export interface TreeShakeComposablesPluginOptions {
   sourcemap?: boolean
-  treeShake: string[]
+  composables: string[]
 }
 
-export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
-  const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
+export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComposablesPluginOptions) => {
+  const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.composables.join('|')})(?=\\()`, 'gm')
 
   return {
-    name: 'nuxt:tree-shake:transform',
+    name: 'nuxt:tree-shake-composables:transform',
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))

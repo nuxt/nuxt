@@ -51,33 +51,12 @@ export default defineUntypedSchema({
      *
      * @example
      * ```js
-      transpile: [({ isLegacy }) => isLegacy && 'ky']
+     transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
       $resolve: val => [].concat(val).filter(Boolean)
-    },
-
-    /**
-     * Tree shake composables from the server or client builds.
-     *
-     * @example
-     * ```js
-     * treeShake: { server: ['useClientOnlyComposable'] }
-     * ```
-     */
-    treeShake: {
-      server: {
-        $resolve: async (val, get) => (await get('dev') ? [] : [
-          'onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'
-        ]).concat(val).filter(Boolean)
-      },
-      client: {
-        $resolve: async (val, get) => (await get('dev') ? [] : [
-          'onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'
-        ]).concat(val).filter(Boolean)
-      }
     },
 
     /**
@@ -102,7 +81,7 @@ export default defineUntypedSchema({
      */
     templates: [],
 
-        /**
+    /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
@@ -116,7 +95,7 @@ export default defineUntypedSchema({
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
      *
      */
-      analyze: {
+    analyze: {
       $resolve: async (val, get) => {
         if (val !== true) {
           return val ?? false
@@ -129,5 +108,37 @@ export default defineUntypedSchema({
         }
       }
     },
+  },
+
+  /**
+   * Build time optimization configuration.
+   */
+  optimization: {
+    /**
+     * Tree shake code from specific builds.
+     */
+    treeShake: {
+      /**
+       * Tree shake composables from the server or client builds.
+       *
+       * @example
+       * ```js
+       * treeShake: { server: ['useClientOnlyComposable'] }
+       * ```
+       */
+      composables: {
+        server: {
+          $resolve: async (val, get) => (await get('dev') ? [] : [
+            'onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'
+          ]).concat(val).filter(Boolean)
+        },
+        client: {
+          $resolve: async (val, get) => (await get('dev') ? [] : [
+            'onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'
+          ]).concat(val).filter(Boolean)
+        }
+      }
+    },
+
   }
 })
