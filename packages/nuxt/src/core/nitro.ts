@@ -78,6 +78,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.runtimeConfig.nitro
       }
     },
+    appConfig: nuxt.options.appConfig,
+    appConfigFiles: nuxt.options._appConfigFiles,
     typescript: {
       generateTsConfig: false
     },
