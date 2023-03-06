@@ -1,7 +1,7 @@
-import { join, normalize, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -122,10 +122,38 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = [
-    ...nuxt.options.modules,
-    ...nuxt.options._modules
-  ]
+  const modulesToInstall = []
+
+  const watchedPaths = new Set<string>()
+  const specifiedModules = new Set<string>()
+
+  for (const _mod of nuxt.options.modules) {
+    const mod = Array.isArray(_mod) ? _mod[0] : _mod
+    if (typeof mod !== 'string') { continue }
+    const modPath = await resolvePath(resolveAlias(mod))
+    specifiedModules.add(modPath)
+  }
+
+  // Automatically register user modules
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const layerModules = await resolveFiles(config.srcDir, [
+      `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
+      `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
+    ])
+    for (const mod of layerModules) {
+      watchedPaths.add(relative(config.srcDir, mod))
+      if (specifiedModules.has(mod)) { continue }
+      specifiedModules.add(mod)
+      modulesToInstall.push(mod)
+    }
+  }
+
+  // Register user and then ad-hoc modules
+  modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
+
+  nuxt.hooks.hookOnce('builder:watch', (event, path) => {
+    if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
+  })
 
   // Add <NuxtWelcome>
   addComponent({

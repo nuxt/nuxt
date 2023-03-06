@@ -202,6 +202,7 @@ export default defineNuxtModule<ComponentsOptions>({
         sourcemap: nuxt.options.sourcemap[mode],
         getComponents,
         mode,
+        transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
     })
@@ -219,6 +220,7 @@ export default defineNuxtModule<ComponentsOptions>({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents,
           mode,
+          transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
       })
