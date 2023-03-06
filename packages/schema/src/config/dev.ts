@@ -7,14 +7,14 @@ export default defineUntypedSchema({
      *
      * @example
      * ```
-     * export default {
-     *   server: {
+     * export default defineNuxtConfig({
+     *   devServer: {
      *     https: {
      *       key: './server.key',
      *       cert: './server.crt'
      *     }
      *   }
-     * }
+     * })
      * ```
      *
      *
