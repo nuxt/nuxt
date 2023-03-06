@@ -5,6 +5,8 @@ import { createBrowser } from '../browser'
 import type { TestHooks, TestOptions } from '../types'
 import setupJest from './jest'
 import setupVitest from './vitest'
+import {resolve} from "node:path";
+import {promises as fsp} from "node:fs";
 
 export const setupMaps = {
   jest: setupJest,
@@ -40,20 +42,32 @@ export function createTest (options: Partial<TestOptions>): TestHooks {
     const ctx = useTestContext()
     ctx.options.rootDir = resolveRootDir()
 
-    if (ctx.options.dev) {
+    // always output to a random build dir
+    const randomId = Math.random().toString(36).slice(2, 8)
+    const buildDir = resolve(ctx.options.rootDir, '.nuxt', randomId)
+    Object.assign(ctx.options.nuxtConfig, {
+      buildDir,
+      nitro: {
+        output: {
+          dir: resolve(buildDir, 'output')
+        }
+      }
+    })
+    await fsp.mkdir(buildDir, { recursive: true })
+
+    if (ctx.options.devServer) {
       await startDevServer()
-    } else {
-      if (ctx.options.fixture) {
-        await loadFixture()
-      }
+    }
+    if (ctx.options.fixture) {
+      await loadFixture()
+    }
 
-      if (ctx.options.build) {
-        await buildFixture()
-      }
+    if (ctx.options.build) {
+      await buildFixture()
+    }
 
-      if (ctx.options.server) {
-        await startServer()
-      }
+    if (ctx.options.server) {
+      await startServer()
     }
 
     if (ctx.options.waitFor) {

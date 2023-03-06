@@ -37,17 +37,6 @@ export const resolveRootDir = () => {
 export async function loadFixture () {
   const ctx = useTestContext()
 
-  const randomId = Math.random().toString(36).slice(2, 8)
-  const buildDir = resolve(ctx.options.rootDir, '.nuxt', randomId)
-  Object.assign(ctx.options.nuxtConfig, {
-    buildDir,
-    nitro: {
-      output: {
-        dir: resolve(buildDir, 'output')
-      }
-    }
-  })
-
   ctx.nuxt = await kit.loadNuxt({
     cwd: ctx.options.rootDir,
     dev: ctx.options.dev,
