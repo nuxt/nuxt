@@ -60,6 +60,7 @@ export interface NuxtSSRContext extends SSRContext {
 interface _NuxtApp {
   vueApp: App<Element>
   globalName: string
+  versions: Record<string, string>
 
   hooks: Hookable<RuntimeNuxtHooks>
   hook: _NuxtApp['hooks']['hook']
@@ -120,6 +121,10 @@ export function createNuxtApp (options: CreateOptions) {
   const nuxtApp: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
+    versions: {
+      get nuxt () { return __NUXT_VERSION__ },
+      get vue () { return nuxtApp.vueApp.version }
+    },
     payload: reactive({
       data: {},
       state: {},
@@ -193,6 +198,10 @@ export function createNuxtApp (options: CreateOptions) {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
   }
+
+  // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
+  // as well as when mounting the app and in the `app:mounted` hook
+  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
 
   // Expose runtime config
   const runtimeConfig = process.server

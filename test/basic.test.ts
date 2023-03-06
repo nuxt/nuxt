@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
-// eslint-disable-next-line import/order
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -47,6 +46,13 @@ describe('route rules', () => {
   })
 })
 
+describe('modules', () => {
+  it('should auto-register modules in ~/modules', async () => {
+    const result = await $fetch('/auto-registered-module')
+    expect(result).toEqual('handler added by auto-registered module')
+  })
+})
+
 describe('pages', () => {
   it('render index', async () => {
     const html = await $fetch('/')
@@ -60,9 +66,10 @@ describe('pages', () => {
     expect(html).toContain('RuntimeConfig | testConfig: 123')
     expect(html).toContain('needsFallback:')
     // composables auto import
-    expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
-    expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
-    expect(html).toContain('Composable | template: auto imported from ~/components/template.ts')
+    expect(html).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(html).toContain('Composable | bar: auto imported from ~/utils/useBar.ts')
+    expect(html).toContain('Composable | template: auto imported from ~/composables/template.ts')
+    expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
     // should apply attributes to client-only components
