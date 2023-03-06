@@ -174,7 +174,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
         checkPropConflicts(props, 'to', 'href')
 
-        return props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+        const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+
+        return resolveTrailingSlashBehavior(path, router.resolve)
       })
 
       // Resolving link type
@@ -239,7 +241,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
             ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
-            to: resolveTrailingSlashBehavior(to.value, router.resolve),
+            to: to.value,
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
             replace: props.replace,
