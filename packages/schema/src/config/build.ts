@@ -39,7 +39,13 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Functions to inject a key for. It will be added as a final argument to the function.
+   * Functions to inject a key for.
+   *
+   * As long as the number of arguments passed to the function is less than `argumentLength`, an
+   * additional magic string will be injected that can be used to deduplicate requests between server
+   * and client. You will need to take steps to handle this additional key.
+   *
+   * The key will be unique based on the location of the function being invoked within the file.
    */
   optimization: {
     /** @type {Array<{ name: string, argumentLength: number }>} */
