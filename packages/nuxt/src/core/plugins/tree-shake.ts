@@ -11,6 +11,7 @@ export interface TreeShakePluginOptions {
 
 export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
   const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
+
   return {
     name: 'nuxt:tree-shake:transform',
     enforce: 'post',

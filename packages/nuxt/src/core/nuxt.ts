@@ -17,7 +17,7 @@ import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakePluginOptions } from './plugins/tree-shake'
-import { normaliseTreeShakeOptions, TreeShakePlugin } from './plugins/tree-shake'
+import {  TreeShakePlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
@@ -92,17 +92,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     if (treeShakeOptions.server.treeShake.length) {
-      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), {client: false})
-      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), {client: false})
+      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), { client: false })
+      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), { client: false })
     }
 
     if (treeShakeOptions.client.treeShake.length) {
-      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), {server: false})
-      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), {server: false})
+      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), { server: false })
+      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), { server: false })
     }
   })
-
-
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
