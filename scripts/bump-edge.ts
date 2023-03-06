@@ -8,7 +8,7 @@ import { loadWorkspace } from './_utils'
 async function main () {
   const workspace = await loadWorkspace(process.cwd())
 
-  const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim()
+  const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim().slice(0, 8)
   const date = Math.round(Date.now() / (1000 * 60))
 
   const nuxtPkg = workspace.find('nuxt')
