@@ -39,6 +39,22 @@ export default defineUntypedSchema({
   },
 
   /**
+   * Functions to inject a key for. It will be added as a final argument to the function.
+   */
+  optimization: {
+    /** @type {Array<{ name: string, argumentLength: number }>} */
+    keyedComposables: {
+      $resolve: (val) => [
+        { name: 'useState', argumentLength: 2 },
+        { name: 'useFetch', argumentLength: 3 },
+        { name: 'useAsyncData', argumentLength: 3 },
+        { name: 'useLazyAsyncData', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 },
+      ].concat(val).filter(Boolean)
+    }
+  },
+
+  /**
    * Shared build configuration.
    */
   build: {

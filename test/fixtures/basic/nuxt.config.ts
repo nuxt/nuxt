@@ -49,6 +49,14 @@ export default defineNuxtConfig({
       ]
     }
   },
+  optimization: {
+    keyedComposables: [
+      {
+        name: 'useKeyedComposable',
+        argumentLength: 1
+      }
+    ]
+  },
   runtimeConfig: {
     baseURL: '',
     baseAPIToken: '',
