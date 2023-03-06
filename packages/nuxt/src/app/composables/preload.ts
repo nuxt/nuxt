@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { Router } from 'vue-router'
+import type { RouteLocationRaw, Router } from 'vue-router'
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from './router'
 
@@ -34,11 +34,14 @@ function _loadAsyncComponent (component: Component) {
   }
 }
 
-export async function preloadRouteComponents (to: string, router: Router & { _routePreloaded?: Set<string>; _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
+export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>; _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
   if (process.server) { return }
 
+  const { path, matched } = router.resolve(to)
+
+  if (!matched.length) { return }
   if (!router._routePreloaded) { router._routePreloaded = new Set() }
-  if (router._routePreloaded.has(to)) { return }
+  if (router._routePreloaded.has(path)) { return }
 
   const promises = router._preloadPromises = router._preloadPromises || []
 
@@ -47,9 +50,9 @@ export async function preloadRouteComponents (to: string, router: Router & { _ro
     return Promise.all(promises).then(() => preloadRouteComponents(to, router))
   }
 
-  router._routePreloaded.add(to)
+  router._routePreloaded.add(path)
 
-  const components = router.resolve(to).matched
+  const components = matched
     .map(component => component.components?.default)
     .filter(component => typeof component === 'function')
 
