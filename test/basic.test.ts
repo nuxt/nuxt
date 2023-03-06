@@ -978,6 +978,30 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     )
   })
 
+  it('does fetch payload for page with trailing slash', async () => {
+    const page = await createPage()
+    const requests = [] as string[]
+
+    page.on('request', (req) => {
+      requests.push(req.url().replace(url('/'), '/'))
+    })
+
+    await page.goto(url('/random-catchall/a/'))
+    await page.waitForLoadState('networkidle')
+  
+    // We are not triggering API requests in the payload in client-side nav
+    expect(requests).not.toContain('/api/random')
+    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+
+    // Go to pre-rendered page with trailing slash
+    await page.click('[href="/random-catchall/b/"]')
+    await page.waitForLoadState('networkidle')
+
+    // We are not triggering API requests in the payload in client-side nav
+    expect(requests).not.toContain('/api/random')
+    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+  })
+
   it('does not fetch a prefetched payload', async () => {
     const page = await createPage()
     const requests = [] as string[]

@@ -45,7 +45,9 @@ export default defineNuxtConfig({
       routes: [
         '/random/a',
         '/random/b',
-        '/random/c'
+        '/random/c',
+        '/random-catchall/a/',
+        '/random-catchall/b/',
       ]
     }
   },
