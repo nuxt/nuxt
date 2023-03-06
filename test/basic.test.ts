@@ -988,7 +988,7 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
 
     await page.goto(url('/random-catchall/a/'))
     await page.waitForLoadState('networkidle')
-  
+
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
     expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))

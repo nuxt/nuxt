@@ -47,7 +47,7 @@ export default defineNuxtConfig({
         '/random/b',
         '/random/c',
         '/random-catchall/a/',
-        '/random-catchall/b/',
+        '/random-catchall/b/'
       ]
     }
   },
