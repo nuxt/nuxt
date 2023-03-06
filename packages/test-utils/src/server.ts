@@ -24,14 +24,11 @@ export async function startDevServer () {
       NUXT_CONFIG_OVERRIDES: JSON.stringify(ctx.options.nuxtConfig)
     }
   })
-  console.log('boot dev server', ctx.options.rootDir, JSON.stringify(ctx.options.nuxtConfig))
   // wait until the server process displays the listening path
   ctx.url = await new Promise<string>(resolve => {
     // @ts-expect-error untyoed
     ctx.serverProcess.stdout?.on('data', (data: Buffer) => {
-      console.log(data.toString())
       if (data.toString().includes('Local:')) {
-        console.log('resolving')
         resolve(data.toString().split('Local:')[1].trim())
       }
     })
