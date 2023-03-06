@@ -1,6 +1,8 @@
 import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
+import { getGitDiff, determineSemverChange, loadChangelogConfig, parseCommits } from 'changelogen'
+import { execaSync } from 'execa'
 import { loadWorkspace } from './_utils'
 
 async function main () {
@@ -14,9 +16,15 @@ async function main () {
   const latestNitro = nitroInfo['dist-tags'].latest
   nuxtPkg.data.dependencies.nitropack = `npm:nitropack-edge@^${latestNitro}`
 
+  const config = await loadChangelogConfig(process.cwd())
+
+  const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
+
+  const commits = await getGitDiff(latestTag)
+  const bumpType = determineSemverChange(parseCommits(commits, config), config)
+
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
-    // TODO: Set release type based on changelog after 3.0.0
-    const newVersion = inc(pkg.data.version, 'prerelease', 'rc')
+    const newVersion = inc(pkg.data.version, bumpType || 'prerelease')
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`)
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
     workspace.rename(pkg.data.name, newname)

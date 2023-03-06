@@ -11,6 +11,7 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
+  typescript: { strict: true },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -165,8 +166,7 @@ export default defineNuxtConfig({
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true,
-    configSchema: true
+    payloadExtraction: true
   },
   appConfig: {
     fromNuxtConfig: true,
