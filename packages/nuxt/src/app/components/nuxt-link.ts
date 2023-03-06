@@ -62,19 +62,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return to
     }
 
-    const trailingSlashMethod = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
+    const normalizeTrailingSlash = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
     if (typeof to === 'string') {
-      return trailingSlashMethod(to, true)
+      return normalizeTrailingSlash(to, true)
     } else if ('path' in to) {
       return {
         ...to,
-        path: trailingSlashMethod(to.path, true)
+        path: normalizeTrailingSlash(to.path, true)
       }
     }
 
-    const route: RouteLocation = resolve(to)
+    const route = resolve(to)
     return {
-      path: trailingSlashMethod(route.path, true),
+      path: normalizeTrailingSlash(route.path),
       query: route.query,
       hash: route.hash
     }
