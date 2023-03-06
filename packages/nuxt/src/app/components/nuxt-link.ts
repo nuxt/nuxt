@@ -67,18 +67,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return normalizeTrailingSlash(to, true)
     }
 
-    if ('path' in to) {
-      return {
-        ...to,
-        path: normalizeTrailingSlash(to.path, true)
-      }
-    }
+    const path = 'path' in to ? to.path : resolve(to).path
 
-    const route = resolve(to)
     return {
       ...to,
       name: undefined, // named routes would otherwise always override trailing slash behavior
-      path: normalizeTrailingSlash(route.path)
+      path: normalizeTrailingSlash(path, true)
     }
   }
 
