@@ -52,7 +52,7 @@
     "@types/node": "^18.14.6",
     "@types/rimraf": "^3",
     "@types/semver": "^7.3.13",
-    "@unocss/reset": "^0.50.3",
+    "@unocss/reset": "^0.50.4",
     "case-police": "^0.5.13",
     "changelogen": "^0.5.1",
     "crawler": "^1.4.0",
@@ -77,7 +77,7 @@
     "vitest": "^0.29.2",
     "vue-tsc": "^1.2.0"
   },
-  "packageManager": "pnpm@7.28.0",
+  "packageManager": "pnpm@7.29.0",
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }
