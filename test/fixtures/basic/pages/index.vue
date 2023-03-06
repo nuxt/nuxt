@@ -5,6 +5,7 @@
     </Head>
     <h1>Hello Nuxt 3!</h1>
     <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
+    <div>RuntimeConfig | baseURL: {{ config.baseURL }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
     <div>Composable | template: {{ templateAutoImport }}</div>

@@ -46,9 +46,14 @@ export default defineNuxtCommand({
 
     const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
 
+    console.log('overrides', ...(process.env.NUXT_CONFIG_OVERRIDES ? JSON.parse(process.env.NUXT_CONFIG_OVERRIDES) : {}))
     const config = await loadNuxtConfig({
       cwd: rootDir,
-      overrides: { dev: true }
+      overrides: {
+        dev: true,
+        // used for testing
+        ...(process.env.NUXT_CONFIG_OVERRIDES ? JSON.parse(process.env.NUXT_CONFIG_OVERRIDES) : {})
+      }
     })
 
     const listener = await listen(serverHandler, {

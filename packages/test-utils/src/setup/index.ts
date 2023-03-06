@@ -1,6 +1,6 @@
 import { createTestContext, setTestContext } from '../context'
 import { loadFixture, buildFixture } from '../nuxt'
-import { startServer, stopServer } from '../server'
+import {startDevServer, startServer, stopServer} from '../server'
 import { createBrowser } from '../browser'
 import type { TestHooks, TestOptions } from '../types'
 import setupJest from './jest'
@@ -41,12 +41,16 @@ export function createTest (options: Partial<TestOptions>): TestHooks {
       await loadFixture()
     }
 
-    if (ctx.options.build) {
-      await buildFixture()
-    }
+    if (ctx.options.dev) {
+      await startDevServer()
+    } else {
+      if (ctx.options.build) {
+        await buildFixture()
+      }
 
-    if (ctx.options.server) {
-      await startServer()
+      if (ctx.options.server) {
+        await startServer()
+      }
     }
 
     if (ctx.options.waitFor) {
