@@ -199,12 +199,14 @@ async function initNuxt (nuxt: Nuxt) {
   // Add <NuxtLink>
   addComponent({
     name: 'NuxtLink',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-link')
   })
 
   // Add <NuxtLoadingIndicator>
   addComponent({
     name: 'NuxtLoadingIndicator',
+    priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
 
