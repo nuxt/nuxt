@@ -84,27 +84,25 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('modules:done', () => {
     addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+
+    // Add composable tree-shaking optimisations
+    const treeShakeOptions: Record<'server' | 'client', TreeShakePluginOptions> = {
+      server: { sourcemap: nuxt.options.sourcemap.server, treeShake: nuxt.options.build.treeShake.server },
+      client: { sourcemap: nuxt.options.sourcemap.client, treeShake: nuxt.options.build.treeShake.client }
+    }
+
+    if (treeShakeOptions.server.treeShake.length) {
+      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), {client: false})
+      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), {client: false})
+    }
+
+    if (treeShakeOptions.client.treeShake.length) {
+      addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), {server: false})
+      addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), {server: false})
+    }
   })
 
-  // Add composable tree-shaking optimisations
-  const treeShakeOptions: Record<'server' | 'client', TreeShakePluginOptions> = {
-    server: { sourcemap: nuxt.options.sourcemap.server, treeShake: [] },
-    client: { sourcemap: nuxt.options.sourcemap.client, treeShake: [] }
-  }
-  function generateTreeShakeConfig () {
-    treeShakeOptions.server.treeShake = nuxt.options.build.treeShake.server
-    treeShakeOptions.client.treeShake = nuxt.options.build.treeShake.client
-    treeShakeOptions.client = normaliseTreeShakeOptions(treeShakeOptions.client)
-    treeShakeOptions.server = normaliseTreeShakeOptions(treeShakeOptions.server)
-  }
-  nuxt.hook('modules:done', async () => {
-    await generateTreeShakeConfig()
-  })
 
-  addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.server), { client: false })
-  addVitePlugin(TreeShakePlugin.vite(treeShakeOptions.client), { server: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.server), { client: false })
-  addWebpackPlugin(TreeShakePlugin.webpack(treeShakeOptions.client), { server: false })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only

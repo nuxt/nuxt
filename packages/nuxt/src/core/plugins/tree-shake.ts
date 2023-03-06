@@ -7,22 +7,14 @@ import { createUnplugin } from 'unplugin'
 export interface TreeShakePluginOptions {
   sourcemap?: boolean
   treeShake: string[]
-  matcher?: RegExp
-}
-
-export function normaliseTreeShakeOptions (options: TreeShakePluginOptions) {
-  // dedupe treeShake
-  options.treeShake = [...new Set(options.treeShake)]
-  options.matcher = new RegExp(`($\\s+)(${[...options.treeShake].join('|')})(?=\\()`, 'gm')
-  return options
 }
 
 export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) => {
+  const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.treeShake.join('|')})(?=\\()`, 'gm')
   return {
     name: 'nuxt:tree-shake:transform',
     enforce: 'post',
     transformInclude (id) {
-      if (!options.treeShake.length) { return false }
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const { type } = parseQuery(search)
 
@@ -37,12 +29,11 @@ export const TreeShakePlugin = createUnplugin((options: TreeShakePluginOptions) 
       }
     },
     transform (code, id) {
-      if (!options.matcher) { return }
-      if (!code.match(options.matcher)) { return }
+      if (!code.match(COMPOSABLE_RE)) { return }
 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
-      for (const match of strippedCode.matchAll(options.matcher) || []) {
+      for (const match of strippedCode.matchAll(COMPOSABLE_RE) || []) {
         s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} /*#__PURE__*/ false && ${match[2]}`)
       }
 
