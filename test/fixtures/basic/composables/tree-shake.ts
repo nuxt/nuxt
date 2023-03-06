@@ -1,5 +1,4 @@
 export function useServerOnlyComposable () {
-  // @ts-ignore
   if (process.client) {
     throw new Error('this should not be called in the browser')
   }
@@ -7,9 +6,8 @@ export function useServerOnlyComposable () {
 
 export function useClientOnlyComposable () {
   // need to do some code that fails in node but not in the browser
-  // @ts-ignore
   if (process.server) {
-    throw new Error('this should not be called on the browser')
+    throw new Error('this should not be called on the server')
   }
 }
 
