@@ -1,5 +1,5 @@
-import { createTestContext, setTestContext } from '../context'
-import { loadFixture, buildFixture } from '../nuxt'
+import {createTestContext, setTestContext, useTestContext} from '../context'
+import {loadFixture, buildFixture, resolveRootDir} from '../nuxt'
 import {startDevServer, startServer, stopServer} from '../server'
 import { createBrowser } from '../browser'
 import type { TestHooks, TestOptions } from '../types'
@@ -37,13 +37,16 @@ export function createTest (options: Partial<TestOptions>): TestHooks {
   }
 
   const setup = async () => {
-    if (ctx.options.fixture) {
-      await loadFixture()
-    }
+    const ctx = useTestContext()
+    ctx.options.rootDir = resolveRootDir()
 
     if (ctx.options.dev) {
       await startDevServer()
     } else {
+      if (ctx.options.fixture) {
+        await loadFixture()
+      }
+
       if (ctx.options.build) {
         await buildFixture()
       }

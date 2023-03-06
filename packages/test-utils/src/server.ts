@@ -15,7 +15,7 @@ export async function startDevServer () {
   const port = await getRandomPort()
   const nuxiCLI = await kit.resolvePath('nuxi/cli')
   ctx.serverProcess = execa(nuxiCLI, ['dev'], {
-    cwd: ctx.nuxt!.options.rootDir,
+    cwd: ctx.options.rootDir,
     env: {
       ...process.env,
       PORT: String(port),
@@ -24,6 +24,7 @@ export async function startDevServer () {
       NUXT_CONFIG_OVERRIDES: JSON.stringify(ctx.options.nuxtConfig)
     }
   })
+  console.log('boot dev server', ctx.options.rootDir, JSON.stringify(ctx.options.nuxtConfig))
   // wait until the server process displays the listening path
   ctx.url = await new Promise<string>(resolve => {
     // @ts-expect-error untyoed
