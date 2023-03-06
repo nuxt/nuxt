@@ -12,8 +12,8 @@ const links = [
   '/nuxt-link/trailing-slash?test=true&thing=other/thing#thing-other',
   '/nuxt-link/trailing-slash/?test=true&thing=other/thing#thing-other',
   { name: 'nuxt-link-trailing-slash' },
-  { query: { 'with-state': true }, state: { foo: 'bar' } },
-  { query: { 'without-state': true } }
+  { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
+  { query: { 'without-state': 'true' } }
 ]
 
 const route = useRoute()
