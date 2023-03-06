@@ -40,14 +40,24 @@ export async function addComponent (opts: AddComponentOptions) {
     preload: false,
     mode: 'all',
     shortPath: opts.filePath,
+    priority: 0,
     ...opts
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {
     const existingComponent = components.find(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
     if (existingComponent) {
-      const name = existingComponent.pascalName || existingComponent.kebabName
-      console.warn(`Overriding ${name} component.`)
+      const existingPriority = existingComponent.priority ?? 0
+      const newPriority = component.priority ?? 0
+
+      if (newPriority < existingPriority) { return }
+
+      // We override where new component priority is equal or higher
+      // but we warn if they are equal.
+      if (newPriority === existingPriority) {
+        const name = existingComponent.pascalName || existingComponent.kebabName
+        console.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
+      }
       Object.assign(existingComponent, component)
     } else {
       components.push(component)
