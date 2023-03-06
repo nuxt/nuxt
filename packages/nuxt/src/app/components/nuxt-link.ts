@@ -58,24 +58,23 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     to: RouteLocationRaw,
     resolve: (to: RouteLocationRaw) => RouteLocation & { href?: string }
   ): RouteLocationRaw | RouteLocation => {
-    if (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove') {
+    if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
       return to
     }
 
-    const forceAppend = options.trailingSlash === 'append'
+    const trailingSlashMethod = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
     if (typeof to === 'string') {
-      console.log('withTrailingSlash', to, withTrailingSlash(to, true))
-      return forceAppend ? withTrailingSlash(to, true) : withoutTrailingSlash(to, true)
+      return trailingSlashMethod(to, true)
     } else if ('path' in to) {
       return {
         ...to,
-        path: forceAppend ? withTrailingSlash(to.path, true) : withoutTrailingSlash(to.path, true)
+        path: trailingSlashMethod(to.path, true)
       }
     }
 
     const route: RouteLocation = resolve(to)
     return {
-      path: forceAppend ? withTrailingSlash(route.path, true) : withoutTrailingSlash(route.path, true),
+      path: trailingSlashMethod(route.path, true),
       query: route.query,
       hash: route.hash
     }
