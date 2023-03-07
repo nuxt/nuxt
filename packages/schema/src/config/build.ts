@@ -50,7 +50,7 @@ export default defineUntypedSchema({
   logLevel: {
     $resolve: (val) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
-        console.error('Invalid `logLevel` option. Must be one of: `silent`, `info`, `verbose`.')
+        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val ?? (isTest ? 'silent' : 'info')
     }
