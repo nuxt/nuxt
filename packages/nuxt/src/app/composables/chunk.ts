@@ -37,7 +37,7 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
     } catch {}
 
     try {
-      // TODO: handle serializing/deserializing complex states: https://github.com/nuxt/nuxt/issues/12831
+      // TODO: handle serializing/deserializing complex states as JSON: https://github.com/nuxt/nuxt/pull/19205
       sessionStorage.setItem('nuxt:reload:state', JSON.stringify({ state: useNuxtApp().payload.state }))
     } catch {}
 
