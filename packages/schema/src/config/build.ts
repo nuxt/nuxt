@@ -48,9 +48,7 @@ export default defineUntypedSchema({
    * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
-    $resolve: (val) => {
-      return val ?? (isTest ? 'silent' : null)
-    }
+    $resolve: (val) => val ?? (isTest ? 'silent' : 'info')
   },
 
   /**
