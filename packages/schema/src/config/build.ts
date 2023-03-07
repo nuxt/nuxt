@@ -123,22 +123,25 @@ export default defineUntypedSchema({
        *
        * @example
        * ```js
-       * treeShake: { server: ['useClientOnlyComposable'] }
+       * treeShake: { client: { myPackage: ['useServerOnlyComposable'] } }
        * ```
        */
       composables: {
         server: {
-          $resolve: async (val, get) => (await get('dev') ? [] : [
-            'onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'
-          ]).concat(val).filter(Boolean)
+          $resolve: async (val, get) => defu(val || {},
+            await get('dev') ? {} : {
+              vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+            }
+          )
         },
         client: {
-          $resolve: async (val, get) => (await get('dev') ? [] : [
-            'onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'
-          ]).concat(val).filter(Boolean)
+          $resolve: async (val, get) => defu(val || {},
+            await get('dev') ? {} : {
+              vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+            }
+          )
         }
       }
     },
-
   }
 })

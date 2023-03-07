@@ -4,13 +4,19 @@ import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 
+type ImportPath = string
+
 export interface TreeShakeComposablesPluginOptions {
   sourcemap?: boolean
-  composables: string[]
+  composables: Record<ImportPath, string[]>
 }
 
 export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComposablesPluginOptions) => {
-  const COMPOSABLE_RE = new RegExp(`($\\s+)(${options.composables.join('|')})(?=\\()`, 'gm')
+  /**
+   * @todo Use the options import-path to tree-shake composables in a safer way.
+   */
+  const composableNames = Object.values(options.composables).flat()
+  const COMPOSABLE_RE = new RegExp(`($\\s+)(${composableNames.join('|')})(?=\\()`, 'gm')
 
   return {
     name: 'nuxt:tree-shake-composables:transform',
