@@ -4,7 +4,7 @@ description: The prepare command creates a .nuxt directory in your application a
 # `nuxi prepare`
 
 ```{bash}
-npx nuxi prepare [rootDir]
+npx nuxi prepare [--log-level] [rootDir]
 ```
 
 The `prepare` command creates a `.nuxt` directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your `package.json`.
