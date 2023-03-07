@@ -90,7 +90,7 @@ async function initNuxt (nuxt: Nuxt) {
       sourcemap: nuxt.options.sourcemap.server,
       composables: nuxt.options.optimization.treeShake.composables.server
     }
-    if (serverTreeShakeOptions.composables.length) {
+    if (Object.keys(serverTreeShakeOptions.composables).length) {
       addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
       addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
@@ -98,7 +98,7 @@ async function initNuxt (nuxt: Nuxt) {
       sourcemap: nuxt.options.sourcemap.client,
       composables: nuxt.options.optimization.treeShake.composables.client
     }
-    if (clientTreeShakeOptions.composables.length) {
+    if (Object.keys(clientTreeShakeOptions.composables).length) {
       addVitePlugin(TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
       addWebpackPlugin(TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
     }
