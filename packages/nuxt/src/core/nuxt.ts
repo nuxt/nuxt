@@ -233,6 +233,10 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.emitRouteChunkError === 'reload') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
+  // Add experimental session restoration support
+  if (nuxt.options.experimental.restoreState) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
+  }
 
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {

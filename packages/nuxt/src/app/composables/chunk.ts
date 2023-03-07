@@ -1,3 +1,5 @@
+import { useNuxtApp } from '#app/nuxt'
+
 export interface ReloadNuxtAppOptions {
   /**
    * Number of milliseconds in which to ignore future reload requests
@@ -31,6 +33,10 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
   if (options.force || handledPath?.path !== path || handledPath?.expires < Date.now()) {
     try {
       sessionStorage.setItem('nuxt:reload', JSON.stringify({ path, expires: Date.now() + (options.ttl ?? 10000) }))
+    } catch {}
+
+    try {
+      sessionStorage.setItem('nuxt:reload:state', JSON.stringify({ state: useNuxtApp().payload.state }))
     } catch {}
 
     if (window.location.pathname !== path) {

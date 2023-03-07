@@ -43,6 +43,21 @@ export default defineUntypedSchema({
     emitRouteChunkError: 'reload',
 
     /**
+     * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
+     * after a chunk error or manual `reloadNuxtApp()` call.
+     *
+     * To avoid hydration errors, it will be applied only after the Vue app has been mounted,
+     * meaning there may be a flicker on initial load.
+     *
+     * Consider carefully before enabling this as it can cause unexpected behavior, and
+     * consider providing explicit keys to `useState` as auto-generated keys may not match
+     * across builds.
+     *
+     * @type {boolean}
+     */
+    restoreState: false,
+
+    /**
      * Use vite-node for on-demand server chunk loading
      *
      * @deprecated use `vite.devBundler: 'vite-node'`
