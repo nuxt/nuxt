@@ -1,7 +1,7 @@
 import type { PropType, DefineComponent, ComputedRef } from 'vue'
 import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
-import { hasProtocol, parseQuery, parseURL } from 'ufo'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import { hasProtocol, parseQuery, parseURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -19,6 +19,7 @@ export type NuxtLinkOptions = {
   activeClass?: string
   exactActiveClass?: string
   prefetchedClass?: string
+  trailingSlash?: 'append' | 'remove'
 }
 
 export type NuxtLinkProps = {
@@ -51,6 +52,27 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   const checkPropConflicts = (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void => {
     if (process.dev && props[main] !== undefined && props[sub] !== undefined) {
       console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
+    }
+  }
+  const resolveTrailingSlashBehavior = (
+    to: RouteLocationRaw,
+    resolve: (to: RouteLocationRaw) => RouteLocation & { href?: string }
+  ): RouteLocationRaw | RouteLocation => {
+    if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
+      return to
+    }
+
+    const normalizeTrailingSlash = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
+    if (typeof to === 'string') {
+      return normalizeTrailingSlash(to, true)
+    }
+
+    const path = 'path' in to ? to.path : resolve(to).path
+
+    return {
+      ...to,
+      name: undefined, // named routes would otherwise always override trailing slash behavior
+      path: normalizeTrailingSlash(path, true)
     }
   }
 
@@ -148,7 +170,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
         checkPropConflicts(props, 'to', 'href')
 
-        return props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+        const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+
+        return resolveTrailingSlashBehavior(path, router.resolve)
       })
 
       // Resolving link type

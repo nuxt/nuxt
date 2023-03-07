@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
-// eslint-disable-next-line import/order
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -44,6 +43,13 @@ describe('server api', () => {
 describe('route rules', () => {
   it('should enable spa mode', async () => {
     expect(await $fetch('/route-rules/spa')).toContain('serverRendered:false')
+  })
+})
+
+describe('modules', () => {
+  it('should auto-register modules in ~/modules', async () => {
+    const result = await $fetch('/auto-registered-module')
+    expect(result).toEqual('handler added by auto-registered module')
   })
 })
 
@@ -273,6 +279,78 @@ describe('pages', () => {
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
+  })
+})
+
+describe('nuxt links', () => {
+  it('handles trailing slashes', async () => {
+    const html = await $fetch('/nuxt-link/trailing-slash')
+    const data: Record<string, string[]> = {}
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      data[selector] = []
+      for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
+        data[selector].push(match[1])
+      }
+    }
+    expect(data).toMatchInlineSnapshot(`
+      {
+        "link-with-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?with-state=true",
+          "/nuxt-link/trailing-slash/?without-state=true",
+        ],
+        "link-without-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "nuxt-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "router-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+      }
+    `)
+  })
+
+  it('preserves route state', async () => {
+    const page = await createPage('/nuxt-link/trailing-slash')
+    await page.waitForLoadState('networkidle')
+
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      await page.locator(`.${selector}[href*=with-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).toContain('bar')
+
+      await page.locator(`.${selector}[href*=without-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).not.toContain('bar')
+    }
   })
 })
 

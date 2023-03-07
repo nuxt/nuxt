@@ -22,7 +22,7 @@ export default defineUntypedSchema({
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
-   * @see https://nitro.unjs.io/config/#routes
+   * @see https://nitro.unjs.io/config/#routerules
    *
    * @type {typeof import('nitropack')['NitroConfig']['routeRules']}
    */

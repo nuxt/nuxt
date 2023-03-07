@@ -115,10 +115,10 @@ export default defineUntypedSchema({
     componentIslands: false,
 
     /**
-     * Enable experimental config schema support
+     * Config schema support
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: false
+    configSchema: true
   }
 })
