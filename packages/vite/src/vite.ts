@@ -1,7 +1,7 @@
 import * as vite from 'vite'
 import { join, resolve } from 'pathe'
-import type { Nuxt } from '@nuxt/schema'
-import type { InlineConfig, SSROptions } from 'vite'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { InlineConfig, SSROptions, UserConfig } from 'vite'
 import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
 import type { Options as VueOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
@@ -41,7 +41,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
-        logLevel: getLogLevel(nuxt),
+        logLevel: logLevels[nuxt.options.logLevel],
         resolve: {
           alias: {
             ...nuxt.options.alias,
@@ -149,11 +149,8 @@ export async function bundle (nuxt: Nuxt) {
   await buildServer(ctx)
 }
 
-function getLogLevel (nuxt: Nuxt) {
-  if (nuxt.options.logLevel === 'silent') {
-    return 'silent'
-  } else if (nuxt.options.logLevel === 'verbose') {
-    return 'info'
-  }
-  return 'info'
+const logLevels: Record<NuxtOptions['logLevel'], UserConfig['logLevel']> = {
+  silent: 'silent',
+  info: 'info',
+  verbose: 'info'
 }
