@@ -31,13 +31,16 @@ export default defineUntypedSchema({
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *
-     * You can set this to `reload` to perform a hard reload of the new route
+     * By default, Nuxt will perform a hard reload of the new route
      * when a chunk fails to load when navigating to a new route.
+     *
+     * You can disable automatic handling by setting this to `false`, or handle
+     * chunk errors manually by setting it to `true`.
      *
      * @see https://github.com/nuxt/nuxt/pull/19038
      * @type {boolean | 'reload'}
      */
-    emitRouteChunkError: false,
+    emitRouteChunkError: 'reload',
 
     /**
      * Use vite-node for on-demand server chunk loading
