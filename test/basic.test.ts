@@ -446,6 +446,7 @@ describe('errors', () => {
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
     expect(await page.innerText('div')).toContain('Chunk error page')
+    await page.waitForLoadState('networkidle')
     expect(await page.innerText('div')).toContain('State: 3')
   })
 })
