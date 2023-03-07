@@ -1,6 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
+import { isTest } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -36,6 +37,23 @@ export default defineUntypedSchema({
         client: await get('dev')
       })
     },
+  },
+
+  /**
+   * Log level when building logs.
+   *
+   * Defaults to 'silent' when running in CI or when a TTY is not available.
+   * This option is then used as 'silent' in Vite and 'none' in Webpack
+   *
+   * @type {'silent' | 'info' | 'verbose'}
+   */
+  logLevel: {
+    $resolve: (val) => {
+      if (val && !['silent', 'info', 'verbose'].includes(val)) {
+        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+      }
+      return val ?? (isTest ? 'silent' : 'info')
+    }
   },
 
   /**

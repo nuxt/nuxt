@@ -19,7 +19,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
+    usage: 'npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {
@@ -48,7 +48,10 @@ export default defineNuxtCommand({
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
-      overrides: { dev: true }
+      overrides: {
+        dev: true,
+        logLevel: args['log-level']
+      }
     })
 
     const listener = await listen(serverHandler, {
@@ -88,7 +91,14 @@ export default defineNuxtCommand({
           await distWatcher.close()
         }
 
-        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
+        currentNuxt = await loadNuxt({
+          rootDir,
+          dev: true,
+          ready: false,
+          overrides: {
+            logLevel: args['log-level']
+          }
+        })
 
         currentNuxt.hooks.hookOnce('restart', async (options) => {
           if (options?.hard && process.send) {

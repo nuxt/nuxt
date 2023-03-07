@@ -2,12 +2,14 @@ import { resolve, normalize } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
+import type { Configuration } from 'webpack'
 import webpack from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
+import type { NuxtOptions } from '@nuxt/schema'
 import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
@@ -40,7 +42,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: 'none',
+    stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config
   }
 }
@@ -243,4 +245,10 @@ function getEnv (ctx: WebpackConfigContext) {
   }
 
   return _env
+}
+
+const statsMap: Record<NuxtOptions['logLevel'], Configuration['stats']> = {
+  silent: 'none',
+  info: 'normal',
+  verbose: 'verbose'
 }
