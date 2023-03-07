@@ -45,7 +45,7 @@ export default defineUntypedSchema({
    * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
    *
-   * @type {'silent' | 'info'}
+   * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
     $resolve: (val) => {

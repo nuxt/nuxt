@@ -40,7 +40,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: ctx.nuxt.options.logLevel === 'silent' ? 'none' : 'normal',
+    stats: getStats(ctx),
     ...ctx.config
   }
 }
@@ -243,4 +243,13 @@ function getEnv (ctx: WebpackConfigContext) {
   }
 
   return _env
+}
+
+function getStats (ctx: WebpackConfigContext) {
+  if (ctx.nuxt.options.logLevel === 'silent') {
+    return 'none'
+  } else if (ctx.nuxt.options.logLevel === 'verbose') {
+    return 'verbose'
+  }
+  return 'normal'
 }

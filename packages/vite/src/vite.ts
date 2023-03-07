@@ -41,7 +41,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
-        logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : 'info',
+        logLevel: getLogLevel(nuxt),
         resolve: {
           alias: {
             ...nuxt.options.alias,
@@ -144,4 +144,13 @@ export async function bundle (nuxt: Nuxt) {
 
   await buildClient(ctx)
   await buildServer(ctx)
+}
+
+function getLogLevel (nuxt: Nuxt) {
+  if (nuxt.options.logLevel === 'silent') {
+    return 'silent'
+  } else if (nuxt.options.logLevel === 'verbose') {
+    return 'info'
+  }
+  return 'info'
 }
