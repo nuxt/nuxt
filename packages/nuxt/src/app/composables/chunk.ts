@@ -25,11 +25,14 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
 
   let handledPath: Record<string, any> = {}
   try {
-    handledPath = JSON.parse(localStorage.getItem('nuxt:reload') || '{}')
+    handledPath = JSON.parse(sessionStorage.getItem('nuxt:reload') || '{}')
   } catch {}
 
   if (options.force || handledPath?.path !== path || handledPath?.expires < Date.now()) {
-    localStorage.setItem('nuxt:reload', JSON.stringify({ path, expires: Date.now() + (options.ttl ?? 10000) }))
+    try {
+      sessionStorage.setItem('nuxt:reload', JSON.stringify({ path, expires: Date.now() + (options.ttl ?? 10000) }))
+    } catch {}
+
     if (window.location.pathname !== path) {
       window.location.href = path
     } else {
