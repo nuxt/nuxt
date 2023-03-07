@@ -560,6 +560,22 @@ describe('reactivity transform', () => {
   })
 })
 
+describe('composable tree shaking', () => {
+  it('should work', async () => {
+    const html = await $fetch('/tree-shake')
+
+    expect(html).toContain('Tree Shake Example')
+
+    const page = await createPage('/tree-shake')
+    // check page doesn't have any errors or warnings in the console
+    await page.waitForLoadState('networkidle')
+    // ensure scoped classes are correctly assigned between client and server
+    expect(await page.$eval('h1', e => getComputedStyle(e).color)).toBe('rgb(255, 192, 203)')
+
+    await expectNoClientErrors('/tree-shake')
+  })
+})
+
 describe('server tree shaking', () => {
   it('should work', async () => {
     const html = await $fetch('/client')

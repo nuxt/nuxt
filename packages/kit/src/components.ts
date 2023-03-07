@@ -20,7 +20,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 >>
 
 /**
- * Register a directory to be scanned for components and imported only when used.
+ * Register a component by its name and filePath.
  *
  * Requires Nuxt 2.13+
  */
