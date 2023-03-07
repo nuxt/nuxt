@@ -13,7 +13,7 @@ Please carefully read the contribution docs before creating a pull request
 
 <!-- What types of changes does your code introduce? Put an `x` in all the boxes that apply. -->
 
-- [ ] 📖 Documentation (updates to the documentation or readme)
+- [ ] 📖 Documentation (updates to the documentation, readme or JSdoc annotations)
 - [ ] 🐞 Bug fix (a non-breaking change that fixes an issue)
 - [ ] 👌 Enhancement (improving an existing functionality like performance)
 - [ ] ✨ New feature (a non-breaking change that adds functionality)
