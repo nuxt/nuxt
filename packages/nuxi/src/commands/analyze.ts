@@ -11,7 +11,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'analyze',
-    usage: 'npx nuxi analyze [--logLevel, -l] [rootDir]',
+    usage: 'npx nuxi analyze [--log-level, -l] [rootDir]',
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
   async invoke (args) {
@@ -26,7 +26,7 @@ export default defineNuxtCommand({
       rootDir,
       overrides: {
         build: { analyze: true },
-        logLevel: args.logLevel ?? args.l
+        logLevel: args['log-level'] ?? args.l
       }
     })
 

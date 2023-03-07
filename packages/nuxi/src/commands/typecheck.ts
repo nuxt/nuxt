@@ -9,7 +9,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'typecheck',
-    usage: 'npx nuxi typecheck [--logLevel, -l] [rootDir]',
+    usage: 'npx nuxi typecheck [--log-level, -l] [rootDir]',
     description: 'Runs `vue-tsc` to check types throughout your app.'
   },
   async invoke (args) {
@@ -21,7 +21,7 @@ export default defineNuxtCommand({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args.logLevel ?? args.l
+        logLevel: args['log-level'] ?? args.l
       }
     })
 

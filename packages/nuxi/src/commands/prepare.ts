@@ -9,7 +9,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'prepare',
-    usage: 'npx nuxi prepare [--logLevel, -l] [rootDir]',
+    usage: 'npx nuxi prepare [--log-level, -l] [rootDir]',
     description: 'Prepare nuxt for development/build'
   },
   async invoke (args) {
@@ -21,7 +21,7 @@ export default defineNuxtCommand({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args.logLevel ?? args.l ?? null
+        logLevel: args['log-level'] ?? args.l ?? null
       }
     })
     await clearDir(nuxt.options.buildDir)

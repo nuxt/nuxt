@@ -10,7 +10,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'build',
-    usage: 'npx nuxi build [--prerender] [--dotenv] [--logLevel, -l] [rootDir]',
+    usage: 'npx nuxi build [--prerender] [--dotenv] [--log-level, -l] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
   async invoke (args) {
@@ -33,7 +33,7 @@ export default defineNuxtCommand({
         }
       },
       overrides: {
-        logLevel: args.logLevel ?? args.l,
+        logLevel: args['log-level'] ?? args.l,
         _generate: args.prerender
       }
     })
