@@ -10,7 +10,7 @@ import type { H3Event } from 'h3'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
-const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
