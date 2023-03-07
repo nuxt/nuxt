@@ -41,7 +41,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
-        logLevel: logLevels[nuxt.options.logLevel],
+        logLevel: logLevelMap[nuxt.options.logLevel],
         resolve: {
           alias: {
             ...nuxt.options.alias,
@@ -149,7 +149,7 @@ export async function bundle (nuxt: Nuxt) {
   await buildServer(ctx)
 }
 
-const logLevels: Record<NuxtOptions['logLevel'], UserConfig['logLevel']> = {
+const logLevelMap: Record<NuxtOptions['logLevel'], UserConfig['logLevel']> = {
   silent: 'silent',
   info: 'info',
   verbose: 'info'
