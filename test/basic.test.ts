@@ -282,6 +282,78 @@ describe('pages', () => {
   })
 })
 
+describe('nuxt links', () => {
+  it('handles trailing slashes', async () => {
+    const html = await $fetch('/nuxt-link/trailing-slash')
+    const data: Record<string, string[]> = {}
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      data[selector] = []
+      for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
+        data[selector].push(match[1])
+      }
+    }
+    expect(data).toMatchInlineSnapshot(`
+      {
+        "link-with-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?with-state=true",
+          "/nuxt-link/trailing-slash/?without-state=true",
+        ],
+        "link-without-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "nuxt-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "router-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+      }
+    `)
+  })
+
+  it('preserves route state', async () => {
+    const page = await createPage('/nuxt-link/trailing-slash')
+    await page.waitForLoadState('networkidle')
+
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      await page.locator(`.${selector}[href*=with-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).toContain('bar')
+
+      await page.locator(`.${selector}[href*=without-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).not.toContain('bar')
+    }
+  })
+})
+
 describe('head tags', () => {
   it('should render tags', async () => {
     const headHtml = await $fetch('/head')
