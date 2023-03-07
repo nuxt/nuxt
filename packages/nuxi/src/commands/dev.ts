@@ -19,7 +19,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'dev',
-    usage: 'npx nuxi dev [rootDir] [--dotenv] [--log-level, -l] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
+    usage: 'npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
   async invoke (args) {
@@ -50,7 +50,7 @@ export default defineNuxtCommand({
       cwd: rootDir,
       overrides: {
         dev: true,
-        logLevel: args['log-level'] ?? args.l
+        logLevel: args['log-level']
       }
     })
 
@@ -96,7 +96,7 @@ export default defineNuxtCommand({
           dev: true,
           ready: false,
           overrides: {
-            logLevel: args['log-level'] ?? args.l
+            logLevel: args['log-level']
           }
         })
 
