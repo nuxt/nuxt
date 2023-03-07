@@ -42,7 +42,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: statsMap[ctx.nuxt.options.logLevel],
+    stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config
   }
 }

@@ -41,7 +41,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
-        logLevel: logLevelMap[nuxt.options.logLevel],
+        logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         resolve: {
           alias: {
             ...nuxt.options.alias,
