@@ -73,7 +73,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       viteNodePlugin(ctx),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.client,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ],
     appType: 'custom',
