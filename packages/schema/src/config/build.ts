@@ -133,6 +133,27 @@ export default defineUntypedSchema({
    */
   optimization: {
     /**
+     * Functions to inject a key for.
+     *
+     * As long as the number of arguments passed to the function is less than `argumentLength`, an
+     * additional magic string will be injected that can be used to deduplicate requests between server
+     * and client. You will need to take steps to handle this additional key.
+     *
+     * The key will be unique based on the location of the function being invoked within the file.
+     *
+     * @type {Array<{ name: string, argumentLength: number }>}
+     */
+    keyedComposables: {
+      $resolve: (val) => [
+        { name: 'useState', argumentLength: 2 },
+        { name: 'useFetch', argumentLength: 3 },
+        { name: 'useAsyncData', argumentLength: 3 },
+        { name: 'useLazyAsyncData', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 },
+      ].concat(val).filter(Boolean)
+    },
+
+    /**
      * Tree shake code from specific builds.
      */
     treeShake: {
