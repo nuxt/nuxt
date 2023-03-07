@@ -35,9 +35,18 @@
     "./package.json": "./package.json"
   },
   "imports": {
-    "#app": "./dist/app/index.mjs",
-    "#head": "./dist/head/runtime/index.mjs",
-    "#pages": "./dist/pages/runtime/index.mjs"
+    "#app": {
+      "types": "./dist/app/index.d.ts",
+      "import": "./dist/app/index.mjs"
+    },
+    "#head": {
+      "types": "./dist/head/runtime/index.d.ts",
+      "import": "./dist/head/runtime/index.mjs"
+    },
+    "#pages": {
+      "types": "./dist/pages/runtime/index.d.ts",
+      "import": "./dist/pages/runtime/index.mjs"
+    }
   },
   "files": [
     "app.d.ts",
