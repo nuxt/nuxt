@@ -170,7 +170,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: fileURLToPath((await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!)
+    filePath: normalize(fileURLToPath((await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!))
   })
 
   addComponent({
