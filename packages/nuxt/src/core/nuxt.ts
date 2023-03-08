@@ -1,4 +1,3 @@
-import { existsSync, readdirSync } from 'node:fs'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
