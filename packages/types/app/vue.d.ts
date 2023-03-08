@@ -5,21 +5,16 @@
 import type Vue from 'vue'
 import type { MetaInfo } from 'vue-meta'
 import type { Route } from 'vue-router'
-import type { RecordPropsDefinition, PropsDefinition, ComponentOptions } from 'vue/types/options'
+import type { RecordPropsDefinition, ComponentOptions } from 'vue/types/options'
 import type { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
 import type { NuxtRuntimeConfig } from '../config/runtime'
 import type { Context, Middleware, Transition, NuxtApp } from './index'
 
-// https://github.com/vuejs/vue/blob/dev/types/options.d.ts#L63-L66
-type DefaultData<V> = object | ((this: V) => object)
-type DefaultProps = Record<string, any>
-type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
-type DefaultComputed = { [key: string]: any }
-type DefaultAsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
+type AsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
 
 declare module 'vue/types/options' {
   interface ComponentOptions<V extends Vue> {
-    asyncData?: DefaultAsyncData<V>
+    asyncData?: AsyncData<V>
     fetch?(ctx: Context): Promise<void> | void
     fetchKey?: string | ((getKey: (id: string) => number) => string)
     fetchDelay?: number
