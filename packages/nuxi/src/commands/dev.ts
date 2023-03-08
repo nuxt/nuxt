@@ -51,7 +51,7 @@ export default defineNuxtCommand({
       overrides: {
         dev: true,
         logLevel: args['log-level'],
-        ...(options.config || {})
+        ...(options.overrides || {})
       }
     })
 
@@ -98,7 +98,7 @@ export default defineNuxtCommand({
           ready: false,
           overrides: {
             logLevel: args['log-level'],
-            ...(options.config || {})
+            ...(options.overrides || {})
           }
         })
 
