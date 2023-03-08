@@ -5,7 +5,7 @@
     "skipLibCheck": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "strict": true,
     "noImplicitAny": true,
     "allowJs": true,
