@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join } from 'pathe'
+import { resolve, join, relative } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
@@ -226,6 +226,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await scanHandlers(nitro)
       await writeTypes(nitro)
     }
+    // Exclude nitro output dir from typescript
+    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 

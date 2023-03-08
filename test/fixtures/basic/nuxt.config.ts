@@ -173,6 +173,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
