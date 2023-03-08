@@ -79,11 +79,11 @@ export default class PostcssConfig {
           })
         },
 
-        // https://github.com/postcss/postcss-url
+        // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-url
         'postcss-url': {},
 
-        // https://github.com/csstools/postcss-preset-env
-        'postcss-preset-env': this.postcssLoaderOptions.preset || {},
+        // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-preset-env
+        'postcss-preset-env': this.postcssOptions.preset || {},
 
         cssnano: dev
           ? false
