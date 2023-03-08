@@ -18,7 +18,6 @@ export default defineUntypedSchema({
     mode: {
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
-    logLevel: 'info',
     define: {
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
