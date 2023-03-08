@@ -17,3 +17,5 @@ export { preloadComponents, prefetchComponents, preloadRouteComponents } from '.
 export { isPrerendered, loadPayload, preloadPayload } from './payload'
 export type { MetaObject } from './head'
 export { useHead, useSeoMeta, useServerSeoMeta } from './head'
+export type { ReloadNuxtAppOptions } from './chunk'
+export { reloadNuxtApp } from './chunk'

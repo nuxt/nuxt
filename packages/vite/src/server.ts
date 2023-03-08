@@ -5,6 +5,7 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule, resolvePath } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import type { ViteBuildContext, ViteOptions } from './vite'
+import { createViteLogger } from './utils/logger'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
@@ -118,6 +119,8 @@ export async function buildServer (ctx: ViteBuildContext) {
       })
     ]
   } as ViteOptions)
+
+  serverConfig.customLogger = createViteLogger(serverConfig)
 
   if (ctx.nuxt.options.experimental.inlineSSRStyles) {
     const chunksWithInlinedCSS = new Set<string>()
