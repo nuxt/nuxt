@@ -301,7 +301,7 @@ describe('pages', () => {
     await page.locator('#log-hello').click()
     expect(lastLog === 'world').toBeTruthy()
   })
-  
+
   it('client-fallback', async () => {
     const classes = [
       'clientfallback-non-stateful-setup',
