@@ -159,15 +159,11 @@ export default defineNuxtCommand({
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load)
-    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
-    watcher.on('all', (event, _file) => {
-      if (!currentNuxt) { return }
-      const file = normalize(_file)
-      const buildDir = withTrailingSlash(normalize(currentNuxt.options.buildDir))
-      if (file.startsWith(buildDir)) { return }
-      const relativePath = relative(rootDir, file)
-      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
-        dLoad(true, `${relativePath} updated`)
+    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
+    watcher.on('all', (_event, _file) => {
+      const file = relative(rootDir, _file)
+      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
+        dLoad(true, `${file} updated`)
       }
     })
 
