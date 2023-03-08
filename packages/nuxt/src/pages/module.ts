@@ -43,6 +43,7 @@ export default defineNuxtModule({
       })
       addComponent({
         name: 'NuxtPage',
+        priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder')
       })
       return
@@ -146,12 +147,15 @@ export default defineNuxtModule({
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
-    const getSources = (pages: NuxtPage[]): string[] => pages.flatMap(p =>
-      [relative(nuxt.options.srcDir, p.file), ...getSources(p.children || [])]
-    )
+    const getSources = (pages: NuxtPage[]): string[] => pages
+      .filter(p => Boolean(p.file))
+      .flatMap(p =>
+        [relative(nuxt.options.srcDir, p.file as string), ...getSources(p.children || [])]
+      )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', async (manifest) => {
+      if (nuxt.options.dev) { return }
       const pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', pages)
 
@@ -253,6 +257,7 @@ export default defineNuxtModule({
     // Add <NuxtPage>
     addComponent({
       name: 'NuxtPage',
+      priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
     })
 

@@ -22,7 +22,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type NuxtPage = {
   name?: string
   path: string
-  file: string
+  file?: string
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: string
@@ -61,7 +61,7 @@ export interface NuxtHooks {
   'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
 
   // Nuxt
-  /** 
+  /**
    * Called after Nuxt initialization, when the Nuxt instance is ready to work.
    * @param nuxt The configured Nuxt object
    * @returns Promise
@@ -73,6 +73,16 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'close': (nuxt: Nuxt) => HookResult
+  /**
+   * Called to restart the current Nuxt instance.
+   * @returns Promise
+   */
+  'restart': (options?: {
+    /**
+     * Try to restart the whole process if supported
+     */
+    hard?: boolean
+  }) => HookResult
 
   /**
    * Called during Nuxt initialization, before installing user modules.

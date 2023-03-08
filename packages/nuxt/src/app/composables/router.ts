@@ -142,7 +142,7 @@ export const setPageLayout = (layout: string) => {
     useState('_layout').value = layout
   }
   const nuxtApp = useNuxtApp()
-  if (process.dev && nuxtApp.isHydrating && useState('_layout').value !== layout) {
+  if (process.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && useState('_layout').value !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()

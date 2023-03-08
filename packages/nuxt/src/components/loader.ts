@@ -1,11 +1,10 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL } from 'ufo'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import { distDir } from '../dirs'
+import { isVueTemplate } from './helpers'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -14,33 +13,6 @@ interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-}
-
-function isVueTemplate (id: string) {
-  // Bare `.vue` file (in Vite)
-  if (id.endsWith('.vue')) {
-    return true
-  }
-
-  const { search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-  if (!search) {
-    return false
-  }
-
-  const query = parseQuery(search)
-
-  // Macro
-  if (query.macro) {
-    return true
-  }
-
-  // Non-Vue or Styles
-  if (!('vue' in query) || query.type === 'style') {
-    return false
-  }
-
-  // Query `?vue&type=template` (in webpack or external template)
-  return true
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
@@ -86,7 +58,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             return identifier
           }
 
-          const isClientOnly = component.mode === 'client'
+          const isClientOnly = component.mode === 'client' && component.pascalName !== 'NuxtClientFallback'
           if (isClientOnly) {
             imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
             identifier += '_client'

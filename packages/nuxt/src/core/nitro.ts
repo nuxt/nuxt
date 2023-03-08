@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join } from 'pathe'
+import { resolve, join, relative } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from 'unhead'
+import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
@@ -86,7 +86,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
         : {
             dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-            maxAge: 30 * 24 * 60 * 60,
+            maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir
           },
       ...nuxt.options._layers
@@ -226,6 +226,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await scanHandlers(nitro)
       await writeTypes(nitro)
     }
+    // Exclude nitro output dir from typescript
+    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 

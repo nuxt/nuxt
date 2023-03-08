@@ -10,7 +10,7 @@ import type { H3Event } from 'h3'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
-const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
@@ -60,6 +60,7 @@ export interface NuxtSSRContext extends SSRContext {
 interface _NuxtApp {
   vueApp: App<Element>
   globalName: string
+  versions: Record<string, string>
 
   hooks: Hookable<RuntimeNuxtHooks>
   hook: _NuxtApp['hooks']['hook']
@@ -120,6 +121,10 @@ export function createNuxtApp (options: CreateOptions) {
   const nuxtApp: NuxtApp = {
     provide: undefined,
     globalName: 'nuxt',
+    versions: {
+      get nuxt () { return __NUXT_VERSION__ },
+      get vue () { return nuxtApp.vueApp.version }
+    },
     payload: reactive({
       data: {},
       state: {},

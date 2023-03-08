@@ -1,4 +1,4 @@
-import type { UseHeadInput } from '@vueuse/head'
+import type { UseHeadInput } from '@unhead/vue'
 import type { HeadAugmentations } from 'nuxt/schema'
 
 export * from './composables'
