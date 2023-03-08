@@ -1,5 +1,6 @@
-import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
+import { resolve as importMetaResolve } from 'import-meta-resolve'
 import { normalize, dirname } from 'pathe'
 
 export function getModulePaths (paths?: string | string[]): string[] {
@@ -21,10 +22,13 @@ export function resolveModule (id: string, paths?: string | string[]) {
   return normalize(_require.resolve(id, { paths: getModulePaths(paths) }))
 }
 
-export function tryResolveModule (id: string, paths?: string | string[]) {
+export async function tryResolveModule (id: string, root = import.meta.url) {
+  if (!root.startsWith('file:')) {
+    root = pathToFileURL(root).href
+  }
   try {
-    return resolveModule(id, paths)
-  } catch { return null }
+    return await importMetaResolve(id, root)
+  } catch { }
 }
 
 export function requireModule (id: string, paths?: string | string[]) {
@@ -35,9 +39,12 @@ export function tryRequireModule (id: string, paths?: string | string[]) {
   try { return requireModule(id, paths) } catch { return null }
 }
 
-export function importModule (id: string, paths?: string | string[]) {
-  const resolvedPath = resolveModule(id, paths)
-  return import(pathToFileURL(resolvedPath).href)
+export async function importModule (id: string, root = import.meta.url) {
+  if (!root.startsWith('file:')) {
+    root = pathToFileURL(root).href
+  }
+  const resolvedPath = await importMetaResolve(id, root)
+  return import(resolvedPath)
 }
 
 export function getNearestPackage (id: string, paths?: string | string[]) {

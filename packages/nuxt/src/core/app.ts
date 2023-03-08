@@ -1,4 +1,5 @@
 import { promises as fsp } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { dirname, resolve, join } from 'pathe'
 import { defu } from 'defu'
 import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule, resolvePath, resolveAlias } from '@nuxt/kit'
@@ -67,7 +68,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')
+    app.mainComponent = fileURLToPath((await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!)
   }
 
   // Resolve root component

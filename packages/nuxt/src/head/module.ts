@@ -8,7 +8,7 @@ export default defineNuxtModule({
   meta: {
     name: 'meta'
   },
-  setup (options, nuxt) {
+  async setup (options, nuxt) {
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
     // Transpile @unhead/vue
@@ -33,7 +33,7 @@ export default defineNuxtModule({
     // Opt-out feature allowing dependencies using @vueuse/head to work
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = tryResolveModule('@unhead/vue') || '@unhead/vue'
+      nuxt.options.alias['@vueuse/head'] = await tryResolveModule('@unhead/vue') || '@unhead/vue'
       addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head-polyfill.plugin') })
     }
 
