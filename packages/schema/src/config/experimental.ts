@@ -119,6 +119,14 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: true
+    configSchema: true,
+
+    /**
+     * The head module uses this polyfill as a compatible layer for modules, plugins or user code relying on the old
+     * `@vueuse/head` API.
+     *
+     * This can be enabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
+     */
+    polyfillVueUseHead: true
   }
 })
