@@ -170,33 +170,6 @@ export default defineNuxtCommand({
       if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
         dLoad(true, `${relativePath} updated`)
       }
-
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const isFileChange = ['add', 'unlink'].includes(event)
-      const pagesDir = resolve(currentNuxt.options.srcDir, currentNuxt.options.dir.pages)
-      const reloadDirs = ['components', 'composables', 'utils'].map(d => resolve(currentNuxt.options.srcDir, d))
-
-      if (isDirChange) {
-        if (reloadDirs.includes(file)) {
-          return dLoad(true, `Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (isFileChange) {
-        if (file.match(/(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-          return dLoad(true, `\`${relativePath}\` ${event === 'add' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (file.startsWith(pagesDir)) {
-        const hasPages = existsSync(pagesDir) ? readdirSync(pagesDir).length > 0 : false
-        if (currentNuxt && !currentNuxt.options.pages && hasPages) {
-          return dLoad(true, 'Pages enabled')
-        }
-        if (currentNuxt && currentNuxt.options.pages && !hasPages) {
-          return dLoad(true, 'Pages disabled')
-        }
-      }
     })
 
     await load(false)
