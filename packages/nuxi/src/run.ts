@@ -9,5 +9,5 @@ export async function runCommand (command: string, argv = process.argv.slice(2),
   if (!cmd) {
     throw new Error(`Invalid command ${command}`)
   }
-  await cmd.invoke(args, options.config)
+  await cmd.invoke(args, options)
 }
