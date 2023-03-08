@@ -14,6 +14,12 @@ export interface ReloadNuxtAppOptions {
    */
   force?: boolean
   /**
+   * Whether to dump the current Nuxt state to sessionStorage (as `nuxt:reload:state`).
+   *
+   * @default {false}
+   */
+  persistState?: boolean
+  /**
    * The path to reload. If this is different from the current window location it will
    * trigger a navigation and add an entry in the browser history.
    *
@@ -36,10 +42,12 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
       sessionStorage.setItem('nuxt:reload', JSON.stringify({ path, expires: Date.now() + (options.ttl ?? 10000) }))
     } catch {}
 
-    try {
-      // TODO: handle serializing/deserializing complex states as JSON: https://github.com/nuxt/nuxt/pull/19205
-      sessionStorage.setItem('nuxt:reload:state', JSON.stringify({ state: useNuxtApp().payload.state }))
-    } catch {}
+    if (options.persistState) {
+      try {
+        // TODO: handle serializing/deserializing complex states as JSON: https://github.com/nuxt/nuxt/pull/19205
+        sessionStorage.setItem('nuxt:reload:state', JSON.stringify({ state: useNuxtApp().payload.state }))
+      } catch {}
+    }
 
     if (window.location.pathname !== path) {
       window.location.href = path

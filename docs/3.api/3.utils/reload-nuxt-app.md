@@ -18,6 +18,7 @@ interface ReloadNuxtAppOptions {
   ttl?: number
   force?: boolean
   path?: string
+  persistState?: boolean
 }
 ```
 
@@ -26,6 +27,15 @@ interface ReloadNuxtAppOptions {
 **Type**: `ReloadNuxtAppOptions`
 
 An object accepting the following properties:
+
+- `path` (optional)
+
+  **Type**: `string`
+
+  **Default**: `window.location.pathname`
+
+  The path to reload (defaulting to the current path). If this is different from the current window location it
+  will trigger a navigation and add an entry in the browser history.
 
 - `ttl` (optional)
 
@@ -45,12 +55,11 @@ An object accepting the following properties:
   This option allows bypassing reload loop protection entirely, forcing a reload even if one has occurred within
   the previously specified TTL.
 
-- `path` (optional)
+- `persistState` (optional)
 
-  **Type**: `string`
+  **Type**: `boolean`
 
-  **Default**: `window.location.pathname`
+  **Default**: `false`
 
-  The path to reload (defaulting to the current path). If this is different from the current window location it
-  will trigger a navigation and add an entry in the browser history.
-
+  Whether to dump the current Nuxt state to sessionStorage (as `nuxt:reload:state`). By default this will have no
+  effect on reload unless `experimental.restoreState` is also set, or unless you handle restoring the state yourself.

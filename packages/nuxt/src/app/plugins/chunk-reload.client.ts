@@ -16,7 +16,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (chunkErrors.has(error)) {
       const isHash = 'href' in to && (to.href as string).startsWith('#')
       const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
-      reloadNuxtApp({ path })
+      reloadNuxtApp({ path, persistState: true })
     }
   })
 })
