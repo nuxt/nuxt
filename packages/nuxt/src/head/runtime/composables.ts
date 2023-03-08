@@ -1,5 +1,5 @@
-import type { HeadEntryOptions, UseHeadInput, ActiveHeadEntry } from '@vueuse/head'
-import { useSeoMeta as _useSeoMeta } from '@vueuse/head'
+import type { HeadEntryOptions, UseHeadInput, ActiveHeadEntry } from '@unhead/vue'
+import { useSeoMeta as _useSeoMeta } from '@unhead/vue'
 import type { HeadAugmentations } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 

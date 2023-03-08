@@ -418,10 +418,10 @@ importers:
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^11.0.1
       '@types/hash-sum': ^1.0.0
-      '@unhead/ssr': ^1.1.16
+      '@unhead/ssr': ^1.1.20
+      '@unhead/vue': ^1.1.20
       '@vue/reactivity': ^3.2.47
       '@vue/shared': ^3.2.47
-      '@vueuse/head': ^1.1.15
       chokidar: ^3.5.3
       cookie-es: ^0.5.0
       defu: ^6.1.2
@@ -449,7 +449,6 @@ importers:
       unbuild: ^1.1.2
       unctx: ^2.1.2
       unenv: ^1.2.1
-      unhead: ^1.1.16
       unimport: ^3.0.2
       unplugin: ^1.1.0
       untyped: ^1.2.2
@@ -464,10 +463,10 @@ importers:
       '@nuxt/telemetry': 2.1.10
       '@nuxt/ui-templates': 1.1.1
       '@nuxt/vite-builder': link:../vite
-      '@unhead/ssr': 1.1.16
+      '@unhead/ssr': 1.1.20
+      '@unhead/vue': 1.1.20_vue@3.2.47
       '@vue/reactivity': 3.2.47
       '@vue/shared': 3.2.47
-      '@vueuse/head': 1.1.15_vue@3.2.47
       chokidar: 3.5.3
       cookie-es: 0.5.0
       defu: 6.1.2
@@ -494,7 +493,6 @@ importers:
       ufo: 1.1.1
       unctx: 2.1.2
       unenv: 1.2.1
-      unhead: 1.1.16
       unimport: 3.0.2
       unplugin: 1.1.0
       untyped: 1.2.2
@@ -2304,11 +2302,11 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unhead/dom/1.1.16:
-    resolution: {integrity: sha512-4JlwF4pNVynZsxT5687ntvS2yafGtWg7Y76IAPmLSOVrZ6fpYqF/vUn5+eCbMb0Og4C9ECrkbD9NSIqAiQ/0/Q==}
+  /@unhead/dom/1.1.20:
+    resolution: {integrity: sha512-LKd3Wq1myQmhea/5ysa9LsWWYFgtRhJ8D75PQfsIz9SOvjAUs6gNJi2Tv9adXr5gfFGXd0s2EMTLk/0IPTBwdg==}
     dependencies:
-      '@unhead/schema': 1.1.16
-      '@unhead/shared': 1.1.16
+      '@unhead/schema': 1.1.20
+      '@unhead/shared': 1.1.20
     dev: false
 
   /@unhead/schema/1.1.16:
@@ -2316,29 +2314,37 @@ packages:
     dependencies:
       hookable: 5.4.2
       zhead: 2.0.4
+    dev: true
 
-  /@unhead/shared/1.1.16:
-    resolution: {integrity: sha512-Fien3han5vZ4sIaH89Tk9o7eensIDEdRynbwnik+WNo0PTfmaN/LCa3EYsacOdNYeZ3eMjjYpmQt6r+FJCqzSA==}
+  /@unhead/schema/1.1.20:
+    resolution: {integrity: sha512-XAMPCJjE+AhOW+HCYgxwNT7KX1Ch0y/byduJvM3kdwk4oA5lHRxF7M+s98FTZPpGJmlJr07CdW3l3w+qxmaJLQ==}
     dependencies:
-      '@unhead/schema': 1.1.16
+      hookable: 5.4.2
+      zhead: 2.0.4
     dev: false
 
-  /@unhead/ssr/1.1.16:
-    resolution: {integrity: sha512-SCay47uCx7jHL30iX/D0chxOLLY5m2/WCU5bepCQlzFO25OFC6cEEYtG6/BQOIRVnyN8a2KvOU38jgL9xQZN9A==}
+  /@unhead/shared/1.1.20:
+    resolution: {integrity: sha512-8fJ1hB8bRw7JM9Lq98OSmLeDmajHHA9ymg8y7aDBC/R5lq+/WWSMtmXs+JNs4rsl+1gHPdl4YbjdEHp6OvcnpA==}
     dependencies:
-      '@unhead/schema': 1.1.16
-      '@unhead/shared': 1.1.16
+      '@unhead/schema': 1.1.20
     dev: false
 
-  /@unhead/vue/1.1.16_vue@3.2.47:
-    resolution: {integrity: sha512-EbE0kqJHDmebF+X6fL7HqGnbTa+b6h6SzIvE+D0i0/IwhD2lXRrPcBy0XyLV9CLBpAbLVG4OByxnBX+7Kk/vUA==}
+  /@unhead/ssr/1.1.20:
+    resolution: {integrity: sha512-h+5rH4dMe+SorWJv2JiBVE8uchdXFbuSUfXtKBw/VmlBE69DXlZMEcIa2BDmp12wRiU9W8MtWOSvvPuBQ2Hm3g==}
+    dependencies:
+      '@unhead/schema': 1.1.20
+      '@unhead/shared': 1.1.20
+    dev: false
+
+  /@unhead/vue/1.1.20_vue@3.2.47:
+    resolution: {integrity: sha512-I6TaAcO+B+czD/W6I6HQ2EFu/aJ7r0/EEz4Ltlg/YrdKL1beqh2nDY+R1Xz43EqKS0yvxGTlJHJ9cBmtSP2b0g==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.1.16
-      '@unhead/shared': 1.1.16
+      '@unhead/schema': 1.1.20
+      '@unhead/shared': 1.1.20
       hookable: 5.4.2
-      unhead: 1.1.16
+      unhead: 1.1.20
       vue: 3.2.47
     dev: false
 
@@ -2793,18 +2799,6 @@ packages:
       - '@vue/composition-api'
       - vue
     dev: true
-
-  /@vueuse/head/1.1.15_vue@3.2.47:
-    resolution: {integrity: sha512-LJqvb7dpSqnsdn6YWUxv97vWCnn/s6IfBrE4ih5kRlh8XQXr/HjXJ8IyIxxp0X7QDr3FhOsjRDpJSiQbDYbBdQ==}
-    peerDependencies:
-      vue: '>=2.7 || >=3'
-    dependencies:
-      '@unhead/dom': 1.1.16
-      '@unhead/schema': 1.1.16
-      '@unhead/ssr': 1.1.16
-      '@unhead/vue': 1.1.16_vue@3.2.47
-      vue: 3.2.47
-    dev: false
 
   /@vueuse/integrations/9.12.0_focus-trap@7.3.1:
     resolution: {integrity: sha512-bu0hOQAqg7A8S33RHpr49LuzVQJ4tK4oyimEfhPFGUVqmz/MMcwPH8Lde+MbVXvfYh2hrtwNv9S38pCmonRx4w==}
@@ -8199,12 +8193,12 @@ packages:
       node-fetch-native: 1.0.2
       pathe: 1.1.0
 
-  /unhead/1.1.16:
-    resolution: {integrity: sha512-m2cPqEkgwHnA/di9P17TRS21p4aAJw4QolwTyXM+gzrlnFPe8gqOYuwEVnLRMS/NgoNWH7iPDOGyf5bbbrnTaw==}
+  /unhead/1.1.20:
+    resolution: {integrity: sha512-fic5YOINP2BD5PvyF05FIayIRaRYjujhuJ2uo2dIpLItAIBHYmBsTEkljsrwC+EULNfeC3Rf4UHxmr8u0EewCA==}
     dependencies:
-      '@unhead/dom': 1.1.16
-      '@unhead/schema': 1.1.16
-      '@unhead/shared': 1.1.16
+      '@unhead/dom': 1.1.20
+      '@unhead/schema': 1.1.20
+      '@unhead/shared': 1.1.20
       hookable: 5.4.2
     dev: false
 

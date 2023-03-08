@@ -355,7 +355,7 @@ describe('nuxt links', () => {
 })
 
 describe('head tags', () => {
-  it('should render tags', async () => {
+  it('SSR should render tags', async () => {
     const headHtml = await $fetch('/head')
 
     expect(headHtml).toContain('<title>Using a dynamic component - Title Template Fn Change</title>')
@@ -375,6 +375,19 @@ describe('head tags', () => {
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
     expect(indexHtml).toContain('<title>Basic fixture</title>')
+  })
+
+  it('SPA should render appHead tags', async () => {
+    const headHtml = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+
+    expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
+    expect(headHtml).toContain('<meta charset="utf-8">')
+    expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
+  })
+
+  it('legacy vueuse/head works', async () => {
+    const headHtml = await $fetch('/vueuse-head')
+    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
 
   it('should render http-equiv correctly', async () => {

@@ -147,6 +147,14 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: true
+    configSchema: true,
+
+    /**
+     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
+     * `@vueuse/head` API.
+     *
+     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
+     */
+    polyfillVueUseHead: true
   }
 })

@@ -18,7 +18,11 @@ export default defineNuxtConfig({
     head: {
       charset: 'utf-8',
       link: [undefined],
-      meta: [{ name: 'viewport', content: 'width=1024, initial-scale=1' }, { charset: 'utf-8' }]
+      meta: [
+        { name: 'viewport', content: 'width=1024, initial-scale=1' },
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Nuxt Fixture' }
+      ]
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
