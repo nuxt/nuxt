@@ -1,7 +1,7 @@
 import * as vite from 'vite'
 import { join, resolve } from 'pathe'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import type { InlineConfig, SSROptions, UserConfig } from 'vite'
+import type { Nuxt } from '@nuxt/schema'
+import type { InlineConfig, SSROptions } from 'vite'
 import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
 import type { Options as VueOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
@@ -16,6 +16,7 @@ import virtual from './plugins/virtual'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
+import { logLevelMap } from './utils/logger'
 
 export interface ViteOptions extends InlineConfig {
   vue?: VueOptions
@@ -151,10 +152,4 @@ export async function bundle (nuxt: Nuxt) {
 
   await buildClient(ctx)
   await buildServer(ctx)
-}
-
-const logLevelMap: Record<NuxtOptions['logLevel'], UserConfig['logLevel']> = {
-  silent: 'silent',
-  info: 'info',
-  verbose: 'info'
 }
