@@ -2,6 +2,7 @@ import { statSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate, updateTemplates } from '@nuxt/kit'
 import { distDir } from '../dirs'
+import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
 import { componentsPluginTemplate, componentsTemplate, componentsIslandsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
@@ -198,6 +199,10 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents
         }))
       }
+      config.plugins.push(clientFallbackAutoIdPlugin.vite({
+        sourcemap: nuxt.options.sourcemap[mode],
+        rootDir: nuxt.options.rootDir
+      }))
       config.plugins.push(loaderPlugin.vite({
         sourcemap: nuxt.options.sourcemap[mode],
         getComponents,
@@ -216,6 +221,10 @@ export default defineNuxtModule<ComponentsOptions>({
             getComponents
           }))
         }
+        config.plugins.push(clientFallbackAutoIdPlugin.webpack({
+          sourcemap: nuxt.options.sourcemap[mode],
+          rootDir: nuxt.options.rootDir
+        }))
         config.plugins.push(loaderPlugin.webpack({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents,

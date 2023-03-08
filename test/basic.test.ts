@@ -280,6 +280,37 @@ describe('pages', () => {
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
   })
+
+  it('client-fallback', async () => {
+    const classes = [
+      'clientfallback-non-stateful-setup',
+      'clientfallback-non-stateful',
+      'clientfallback-stateful-setup',
+      'clientfallback-stateful'
+    ]
+    const html = await $fetch('/client-fallback')
+    // ensure failed components are not rendered server-side
+    expect(html).not.toContain('This breaks in server-side setup.')
+    classes.forEach(c => expect(html).not.toContain(c))
+    // ensure not failed component not be rendered
+    expect(html).not.toContain('Sugar Counter 12 x 0 = 0')
+    // ensure NuxtClientFallback is being rendered with its fallback tag and attributes
+    expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
+    // ensure Fallback slot is being rendered server side
+    expect(html).toContain('Hello world !')
+
+    // ensure not failed component are correctly rendered
+    expect(html).not.toContain('<p></p>')
+    expect(html).toContain('hi')
+
+    await expectNoClientErrors('/client-fallback')
+
+    const page = await createPage('/client-fallback')
+    await page.waitForLoadState('networkidle')
+    // ensure components reactivity once mounted
+    await page.locator('#increment-count').click()
+    expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
+  })
 })
 
 describe('nuxt links', () => {

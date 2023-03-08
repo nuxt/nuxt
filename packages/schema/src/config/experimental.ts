@@ -127,6 +127,12 @@ export default defineUntypedSchema({
       }
     },
 
+    /**
+     * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
+     * if there's an error in SSR.
+     */
+    clientFallback: false,
+
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
 

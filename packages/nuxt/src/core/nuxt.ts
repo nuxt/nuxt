@@ -220,6 +220,23 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
 
+  // Add <NuxtClientFallback>
+  if (nuxt.options.experimental.clientFallback) {
+    addComponent({
+      name: 'NuxtClientFallback',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
+      mode: 'client'
+    })
+
+    addComponent({
+      name: 'NuxtClientFallback',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
+      mode: 'server'
+    })
+  }
+
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {
     addComponent({
