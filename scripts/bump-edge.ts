@@ -21,10 +21,11 @@ async function main () {
   const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
 
   const commits = await getGitDiff(latestTag)
-  const bumpType = determineSemverChange(parseCommits(commits, config), config)
+  let bumpType = determineSemverChange(parseCommits(commits, config), config)
+  if (bumpType === 'major') { bumpType = 'minor' } // 🙈
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
-    const newVersion = inc(pkg.data.version, bumpType || 'prerelease')
+    const newVersion = inc(pkg.data.version, bumpType || 'patch')
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`)
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
     workspace.rename(pkg.data.name, newname)
