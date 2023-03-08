@@ -440,10 +440,14 @@ describe('errors', () => {
   // TODO: need to create test for webpack
   it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
     const { page, consoleLogs } = await renderPage('/')
+    await page.getByText('Increment state').click()
+    await page.getByText('Increment state').click()
     await page.getByText('Chunk error').click()
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
     expect(await page.innerText('div')).toContain('Chunk error page')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('div')).toContain('State: 3')
   })
 })
 

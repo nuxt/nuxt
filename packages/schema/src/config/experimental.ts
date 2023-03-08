@@ -31,13 +31,41 @@ export default defineUntypedSchema({
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *
-     * You can set this to `reload` to perform a hard reload of the new route
+     * By default, Nuxt will also perform a hard reload of the new route
      * when a chunk fails to load when navigating to a new route.
      *
+     * You can disable automatic handling by setting this to `false`, or handle
+     * chunk errors manually by setting it to `manual`.
+     *
      * @see https://github.com/nuxt/nuxt/pull/19038
-     * @type {boolean | 'reload'}
+     * @type {false | 'manual' | 'automatic'}
      */
-    emitRouteChunkError: false,
+    emitRouteChunkError: {
+      $resolve: val => {
+        if (val === true) {
+          return 'manual'
+        }
+        if (val === 'reload') {
+          return 'automatic'
+        }
+        return val ?? 'automatic'
+      },
+    },
+
+    /**
+     * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
+     * after a chunk error or manual `reloadNuxtApp()` call.
+     *
+     * To avoid hydration errors, it will be applied only after the Vue app has been mounted,
+     * meaning there may be a flicker on initial load.
+     *
+     * Consider carefully before enabling this as it can cause unexpected behavior, and
+     * consider providing explicit keys to `useState` as auto-generated keys may not match
+     * across builds.
+     *
+     * @type {boolean}
+     */
+    restoreState: false,
 
     /**
      * Use vite-node for on-demand server chunk loading

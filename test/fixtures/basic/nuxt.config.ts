@@ -169,7 +169,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
-    emitRouteChunkError: 'reload',
+    restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
     reactivityTransform: true,

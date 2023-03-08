@@ -1,8 +1,11 @@
-import { defineNuxtPlugin } from '#app/nuxt'
+import { joinURL } from 'ufo'
+import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
+import { reloadNuxtApp } from '#app/composables/chunk'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
+  const config = useRuntimeConfig()
 
   const chunkErrors = new Set()
 
@@ -10,16 +13,10 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('app:chunkError', ({ error }) => { chunkErrors.add(error) })
 
   router.onError((error, to) => {
-    if (!chunkErrors.has(error)) { return }
-
-    let handledPath: Record<string, any> = {}
-    try {
-      handledPath = JSON.parse(localStorage.getItem('nuxt:reload') || '{}')
-    } catch {}
-
-    if (handledPath?.path !== to.fullPath || handledPath?.expires < Date.now()) {
-      localStorage.setItem('nuxt:reload', JSON.stringify({ path: to.fullPath, expires: Date.now() + 10000 }))
-      window.location.href = to.fullPath
+    if (chunkErrors.has(error)) {
+      const isHash = 'href' in to && (to.href as string).startsWith('#')
+      const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
+      reloadNuxtApp({ path, persistState: true })
     }
   })
 })
