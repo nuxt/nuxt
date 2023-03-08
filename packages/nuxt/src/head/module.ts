@@ -1,18 +1,22 @@
 import { resolve } from 'pathe'
-import { addComponent, addPlugin, defineNuxtModule } from '@nuxt/kit'
+import { addComponent, addPlugin, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
 export default defineNuxtModule({
   meta: {
-    name: 'meta'
+    name: 'meta',
+    configKey: 'head'
+  },
+  defaults: {
+    polyfillVueUseHead: true
   },
   setup (options, nuxt) {
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
-    // Transpile @nuxt/meta and @vueuse/head
-    nuxt.options.build.transpile.push('@vueuse/head')
+    // Transpile @unhead/vue & unhead, this results in a smaller bundle
+    nuxt.options.build.transpile.push('@unhead/vue')
 
     // Add #head alias
     nuxt.options.alias['#head'] = runtimeDir
@@ -30,8 +34,14 @@ export default defineNuxtModule({
         kebabName: componentName
       })
     }
+    // Allow dependencies using @vueuse/head to work
+    if (options.polyfillVueUseHead) {
+      // backwards compatibility
+      nuxt.options.alias['@vueuse/head'] = tryResolveModule('@unhead/vue') || '@unhead/vue'
+      addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head-polyfill.plugin') })
+    }
 
-    // Add library specific plugin
-    addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head.plugin') })
+    // Add library-specific plugin
+    addPlugin({ src: resolve(runtimeDir, 'lib/unhead.plugin') })
   }
 })
