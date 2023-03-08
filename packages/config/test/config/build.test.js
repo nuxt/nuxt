@@ -29,4 +29,10 @@ describe('config: build', () => {
     expect(filenames.app(env)).toEqual('[name].modern.js')
     expect(filenames.chunk(env)).toEqual('[name].modern.js')
   })
+
+  test('should return default postcss config', () => {
+    const { postcss } = buildConfig()
+    const expectedOptions = { postcssOptions: { preset: { stage: 2 } } }
+    expect(postcss).toEqual(expectedOptions)
+  })
 })
