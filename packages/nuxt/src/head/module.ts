@@ -6,16 +6,12 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 
 export default defineNuxtModule({
   meta: {
-    name: 'meta',
-    configKey: 'head'
-  },
-  defaults: {
-    polyfillVueUseHead: true
+    name: 'meta'
   },
   setup (options, nuxt) {
     const runtimeDir = nuxt.options.alias['#head'] || resolve(distDir, 'head/runtime')
 
-    // Transpile @unhead/vue & unhead, this results in a smaller bundle
+    // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 
     // Add #head alias
@@ -34,8 +30,8 @@ export default defineNuxtModule({
         kebabName: componentName
       })
     }
-    // Allow dependencies using @vueuse/head to work
-    if (options.polyfillVueUseHead) {
+    // Opt-out feature allowing dependencies using @vueuse/head to work
+    if (!nuxt.options.optimization.skipVueUseHeadPolyfill) {
       // backwards compatibility
       nuxt.options.alias['@vueuse/head'] = tryResolveModule('@unhead/vue') || '@unhead/vue'
       addPlugin({ src: resolve(runtimeDir, 'lib/vueuse-head-polyfill.plugin') })
