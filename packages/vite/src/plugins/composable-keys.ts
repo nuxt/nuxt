@@ -7,20 +7,24 @@ import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import type { CallExpression } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
+import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 
 export interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
+  composables: Array<{ name: string, argumentLength: number }>
 }
 
-const keyedFunctions = [
-  'useState', 'useFetch', 'useAsyncData', 'useLazyAsyncData', 'useLazyFetch'
-]
-const KEYED_FUNCTIONS_RE = new RegExp(`(${keyedFunctions.join('|')})`)
 const stringTypes = ['Literal', 'TemplateLiteral']
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
+  const composableMeta = Object.fromEntries(options.composables.map(({ name, ...meta }) => [name, meta]))
+
+  const maxLength = Math.max(...options.composables.map(({ argumentLength }) => argumentLength))
+  const keyedFunctions = new Set(options.composables.map(({ name }) => name))
+  const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...keyedFunctions].map(f => escapeRE(f)).join('|')})\\b`)
+
   return {
     name: 'nuxt:composable-keys',
     enforce: 'post',
@@ -44,24 +48,28 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node: CallExpression = _node as CallExpression
           const name = 'name' in node.callee && node.callee.name
-          if (!name || !keyedFunctions.includes(name) || node.arguments.length >= 4) { return }
+          if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
           imports = imports || detectImportNames(script)
           if (imports.has(name)) { return }
 
+          const meta = composableMeta[name]
+
+          if (node.arguments.length >= meta.argumentLength) { return }
+
           switch (name) {
             case 'useState':
-              if (node.arguments.length >= 2 || stringTypes.includes(node.arguments[0]?.type)) { return }
+              if (stringTypes.includes(node.arguments[0]?.type)) { return }
               break
 
             case 'useFetch':
             case 'useLazyFetch':
-              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[1]?.type)) { return }
+              if (stringTypes.includes(node.arguments[1]?.type)) { return }
               break
 
             case 'useAsyncData':
             case 'useLazyAsyncData':
-              if (node.arguments.length >= 3 || stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
+              if (stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
               break
           }
 

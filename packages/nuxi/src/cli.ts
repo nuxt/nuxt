@@ -9,7 +9,7 @@ import { showHelp } from './utils/help'
 import { showBanner } from './utils/banner'
 
 async function _main () {
-  const _argv = process.argv.slice(2)
+  const _argv = (process.env.__CLI_ARGV__ ? JSON.parse(process.env.__CLI_ARGV__) : process.argv).slice(2)
   const args = mri(_argv, {
     boolean: [
       'no-clear'

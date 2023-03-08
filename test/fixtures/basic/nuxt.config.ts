@@ -11,6 +11,7 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
+  typescript: { strict: true },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -47,6 +48,14 @@ export default defineNuxtConfig({
         '/random/c'
       ]
     }
+  },
+  optimization: {
+    keyedComposables: [
+      {
+        name: 'useKeyedComposable',
+        argumentLength: 1
+      }
+    ]
   },
   runtimeConfig: {
     baseURL: '',
@@ -109,6 +118,10 @@ export default defineNuxtConfig({
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
       })
+    },
+    function (_, nuxt) {
+      nuxt.options.optimization.treeShake.composables.server[nuxt.options.rootDir] = ['useClientOnlyComposable', 'setTitleToPink']
+      nuxt.options.optimization.treeShake.composables.client[nuxt.options.rootDir] = ['useServerOnlyComposable']
     }
   ],
   vite: {
@@ -161,8 +174,7 @@ export default defineNuxtConfig({
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true,
-    configSchema: true
+    payloadExtraction: true
   },
   appConfig: {
     fromNuxtConfig: true,
