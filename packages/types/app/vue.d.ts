@@ -18,19 +18,8 @@ type DefaultComputed = { [key: string]: any }
 type DefaultAsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
 
 declare module 'vue/types/options' {
-  interface ComponentOptions<
-    V extends Vue,
-    /* eslint-disable no-unused-vars,@typescript-eslint/no-unused-vars */
-    Data = DefaultData<V>,
-    Methods = DefaultMethods<V>,
-    Computed = DefaultComputed,
-    PropsDef = PropsDefinition<DefaultProps>,
-    Props = DefaultProps,
-    /* eslint-enable no-unused-vars,@typescript-eslint/no-unused-vars */
-    AsyncData = DefaultAsyncData<V>
-  > {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    asyncData?: AsyncData
+  interface ComponentOptions<V extends Vue> {
+    asyncData?: DefaultAsyncData<V>
     fetch?(ctx: Context): Promise<void> | void
     fetchKey?: string | ((getKey: (id: string) => number) => string)
     fetchDelay?: number
