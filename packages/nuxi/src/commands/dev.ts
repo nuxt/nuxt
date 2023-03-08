@@ -22,7 +22,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]',
     description: 'Run nuxt development server'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     overrideEnv('development')
 
     const { listen } = await import('listhen')
@@ -48,8 +48,7 @@ export default defineNuxtCommand({
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
-      overrides: { dev: true },
-      config: args.config,
+      overrides: { dev: true, ...(options.config || {}) }
     })
 
     const listener = await listen(serverHandler, {
@@ -89,7 +88,7 @@ export default defineNuxtCommand({
           await distWatcher.close()
         }
 
-        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false, config: args.config })
+        currentNuxt = await loadNuxt({ rootDir, dev: true, ready: false, overrides: options.config })
         currentNuxt.hooks.hookOnce('restart', () => load(true))
 
         if (!isRestart) {
