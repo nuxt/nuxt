@@ -39,7 +39,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt 3
   if (majorVersion === 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir) as typeof import('nuxt')
+    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
