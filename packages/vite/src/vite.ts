@@ -1,7 +1,7 @@
 import * as vite from 'vite'
 import { join, resolve } from 'pathe'
-import type { Nuxt } from '@nuxt/schema'
-import type { InlineConfig, SSROptions } from 'vite'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { InlineConfig, SSROptions, UserConfig } from 'vite'
 import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
 import type { Options as VueOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
@@ -41,6 +41,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
+        logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         resolve: {
           alias: {
             ...nuxt.options.alias,
@@ -59,10 +60,14 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
+        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
         build: {
           copyPublicDir: false,
           rollupOptions: {
             output: {
+              sourcemapIgnoreList: (relativeSourcePath) => {
+                return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)
+              },
               sanitizeFileName: sanitizeFilePath,
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
@@ -75,7 +80,11 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         plugins: [
-          composableKeysPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client, rootDir: nuxt.options.rootDir }),
+          composableKeysPlugin.vite({
+            sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+            rootDir: nuxt.options.rootDir,
+            composables: nuxt.options.optimization.keyedComposables
+          }),
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
             preventAssignment: true
@@ -142,4 +151,10 @@ export async function bundle (nuxt: Nuxt) {
 
   await buildClient(ctx)
   await buildServer(ctx)
+}
+
+const logLevelMap: Record<NuxtOptions['logLevel'], UserConfig['logLevel']> = {
+  silent: 'silent',
+  info: 'info',
+  verbose: 'info'
 }

@@ -21,11 +21,16 @@
       "types": "./schema.d.ts",
       "import": "./schema.mjs"
     },
+    "./kit": {
+      "types": "./kit.d.ts",
+      "import": "./kit.mjs"
+    },
     "./app": "./dist/app/index.mjs",
     "./package.json": "./package.json"
   },
   "imports": {
     "#app": "./dist/app/index.mjs",
+    "#head": "./dist/head/runtime/index.mjs",
     "#pages": "./dist/pages/runtime/index.mjs"
   },
   "files": [
@@ -34,6 +39,7 @@
     "types.d.ts",
     "dist",
     "config.*",
+    "kit.*",
     "schema.*"
   ],
   "scripts": {
@@ -46,11 +52,10 @@
     "@nuxt/telemetry": "^2.1.10",
     "@nuxt/ui-templates": "^1.1.1",
     "@nuxt/vite-builder": "3.2.3",
-    "@unhead/ssr": "^1.1.14",
-    "@unhead/vue": "^1.1.14",
-    "@unhead/addons": "^1.1.14",
+    "@unhead/ssr": "^1.1.16",
     "@vue/reactivity": "^3.2.47",
     "@vue/shared": "^3.2.47",
+    "@vueuse/head": "^1.1.15",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
@@ -77,7 +82,8 @@
     "ufo": "^1.1.1",
     "unctx": "^2.1.2",
     "unenv": "^1.2.1",
-    "unimport": "^2.2.4",
+    "unhead": "^1.1.16",
+    "unimport": "^3.0.2",
     "unplugin": "^1.1.0",
     "untyped": "^1.2.2",
     "vue": "^3.2.47",

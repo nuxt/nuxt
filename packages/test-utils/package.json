@@ -24,7 +24,7 @@
     "pathe": "^1.1.0"
   },
   "devDependencies": {
-    "playwright": "^1.31.1",
+    "playwright": "^1.31.2",
     "unbuild": "latest",
     "vitest": "^0.29.2"
   },

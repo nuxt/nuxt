@@ -1,3 +1,7 @@
+---
+navigation: false
+---
+
 # Nuxt Docs
 
 This repository contains the documentation of Nuxt hosted on nuxt.com.
