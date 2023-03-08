@@ -211,6 +211,11 @@ export default class PostcssConfig {
         defaults(postcssOptions, this.defaultPostcssOptions)
       } else {
         // Keep the order of default plugins
+        if (postcssOptions.preset || postcssLoaderOptions.preset) {
+          postcssOptions.plugins['postcss-preset-env'] = merge({}, postcssOptions.preset || postcssLoaderOptions.preset)
+        }
+        delete postcssOptions.preset
+
         postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
         this.loadPlugins(postcssOptions)
       }
