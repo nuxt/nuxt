@@ -3,8 +3,8 @@ import { useHead, createHead, createServerHead } from '@unhead/vue'
 import { polyfillAsVueUseHead } from '@unhead/vue/polyfill'
 import { renderSSRHead } from '@unhead/ssr'
 import type { VueHeadClient } from '@unhead/vue'
-import { defineNuxtPlugin } from '#app/nuxt'
 import type { HeadAugmentations, CreateHeadOptions } from 'nuxt/schema'
+import { defineNuxtPlugin } from '#app/nuxt'
 // @ts-expect-error untyped
 import { appHead } from '#build/nuxt.config.mjs'
 

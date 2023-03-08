@@ -3,12 +3,12 @@ import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
 import type { ReactiveHead } from '@unhead/vue'
-import { useHead } from '@unhead/vue'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import type { HeadAugmentations } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
+import { useHead } from '#app/composables/head'
 
 const pKey = '_islandPromises'
 

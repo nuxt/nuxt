@@ -22,6 +22,9 @@
       "#app/*": [
         "./packages/nuxt/src/app/*"
       ],
+      "#head": [
+        "./packages/nuxt/src/head/runtime/index"
+      ],
       "#internal/nitro": [
         "./node_modules/nitropack/dist/runtime"
       ],
