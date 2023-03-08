@@ -214,8 +214,9 @@ export default class PostcssConfig {
           postcssOptions.plugins = {
             ...postcssOptions.plugins || {},
             'postcss-preset-env': merge({}, postcssOptions.preset || postcssLoaderOptions.preset)
+          }
+          delete postcssOptions.preset
         }
-        delete postcssOptions.preset
 
         // Keep the order of default plugins
         postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
