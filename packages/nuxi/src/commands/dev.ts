@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { resolve, relative, normalize } from 'pathe'
+import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
