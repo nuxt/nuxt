@@ -192,7 +192,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return false
         }
 
-        return to.value === '' || hasProtocol(to.value, true)
+        return to.value === '' || hasProtocol(to.value, { acceptRelative: true })
       })
 
       // Prefetching
