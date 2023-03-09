@@ -56,7 +56,7 @@ export default defineUntypedSchema({
   /**
    * Nitro development-only server handlers.
    *
-   * @see https://nitro.unjs.io/guide/introduction/routing
+   * @see https://nitro.unjs.io/guide/routing
    *
    * @type {typeof import('nitropack')['NitroDevEventHandler'][]}
    */
