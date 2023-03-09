@@ -62,7 +62,7 @@ export default defineUntypedSchema({
       jsxFragment: 'Fragment',
       tsconfigRaw: '{}'
     },
-    clearScreen: false,
+    clearScreen: true,
     build: {
       assetsDir: {
         $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app')).buildAssetsDir)
