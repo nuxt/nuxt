@@ -22,7 +22,6 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
           cache: "pnpm"
 
       - name: Install dependencies
