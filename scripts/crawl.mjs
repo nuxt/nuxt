@@ -10,7 +10,7 @@ const logger = consola.withTag('crawler')
 const baseURL = withoutTrailingSlash(process.env.BASE_URL || 'https://nuxt.com')
 const startingURL = baseURL + '/'
 
-const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif']
+const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif', 'zip']
 const urlsToOmit = ['http://localhost:3000']
 
 // TODO: remove when migrating to Nuxt 3/Docus
