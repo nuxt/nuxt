@@ -1,19 +1,6 @@
 import type { Head, MergeHead } from '@unhead/schema'
 
-export interface HeadAugmentations extends MergeHead {
-  // runtime type modifications
-  base?: {}
-  link?: {}
-  meta?: {}
-  style?: {}
-  script?: {}
-  noscript?: {}
-  htmlAttrs?: {}
-  bodyAttrs?: {}
-}
-
-export type MetaObjectRaw = Head<HeadAugmentations>
-export type MetaObject = MetaObjectRaw
+export type MetaObjectRaw = Head<MergeHead>
 
 export type AppHeadMetaObject = MetaObjectRaw & {
   /**
