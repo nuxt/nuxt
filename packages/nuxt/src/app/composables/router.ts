@@ -82,7 +82,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
   const isExternal = hasProtocol(toPath, true)
   if (isExternal && !options?.external) {
-    throw new Error('Navigating to external URL is not allowed by default. Use `nagivateTo (url, { external: true })`.')
+    throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
   if (isExternal && parseURL(toPath).protocol === 'script:') {
     throw new Error('Cannot navigate to an URL with script protocol.')
@@ -142,7 +142,7 @@ export const setPageLayout = (layout: string) => {
     useState('_layout').value = layout
   }
   const nuxtApp = useNuxtApp()
-  if (process.dev && nuxtApp.isHydrating && useState('_layout').value !== layout) {
+  if (process.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && useState('_layout').value !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()

@@ -4,9 +4,7 @@ description: useHead customizes the head properties of individual pages of your 
 
 # `useHead`
 
-Nuxt provides the `useHead` composable to add and customize the head properties of individual pages of your Nuxt app.
-
-`useHead` is powered by [@vueuse/head](https://github.com/vueuse/head), you can find more in-depth documentation [here](https://unhead.harlanzw.com/)
+The `useHead` composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/).
 
 ::ReadMore{link="/docs/getting-started/seo-meta"}
 ::
@@ -17,7 +15,7 @@ Nuxt provides the `useHead` composable to add and customize the head properties 
 useHead(meta: MaybeComputedRef<MetaObject>): void
 ```
 
-Below are the non-reactive types for `useHead`. See [zhead](https://github.com/harlan-zw/zhead/tree/main/packages/schema/src) for more detailed types.
+Below are the non-reactive types for `useHead`.
 
 ```ts
 interface MetaObject {
@@ -33,6 +31,8 @@ interface MetaObject {
   bodyAttrs?: BodyAttributes
 }
 ```
+
+See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/schema/src/schema.ts) for more detailed types.
 
 ::alert{type=info}
 The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `reactive` properties. `meta` parameter can also accept a function returning an object to make the entire object reactive.

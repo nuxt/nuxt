@@ -4,9 +4,7 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
-
-// eslint-disable-next-line import/no-restricted-paths
-import { useHead } from '#head'
+import { useHead } from './head'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 

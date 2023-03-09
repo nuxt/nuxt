@@ -11,7 +11,12 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
+import { showError, clearError, useError } from '#app/composables/error'
+import { useRequestEvent } from '#app/composables/ssr'
+import { useState } from '#app/composables/state'
+import { navigateTo } from '#app/composables/router'
+
 // @ts-ignore
 import _routes from '#build/routes'
 // @ts-ignore
@@ -171,7 +176,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })])
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
-      if (!isEqual(currentURL, initialURL)) {
+      if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
         const event = await callWithNuxt(nuxtApp, useRequestEvent)
         const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
         await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])

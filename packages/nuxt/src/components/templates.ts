@@ -1,6 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
-import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from '@nuxt/schema'
 import { genDynamicImport, genExport, genImport, genObjectFromRawEntries } from 'knitwork'
+import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 export interface ComponentsTemplateContext {
   nuxt: Nuxt
@@ -31,7 +31,7 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
     const globalComponents = options.getComponents().filter(c => c.global === true)
 
     return `import { defineAsyncComponent } from 'vue'
-import { defineNuxtPlugin } from '#app'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 const components = ${genObjectFromRawEntries(globalComponents.map((c) => {
   const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -68,11 +68,11 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
         const identifier = `__nuxt_component_${num}`
         imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
         imports.add(genImport(c.filePath, [{ name: c.export, as: identifier }]))
-        definitions.push(`export const ${c.pascalName} =  /*#__PURE__*/  createClientOnly(${identifier})`)
+        definitions.push(`export const ${c.pascalName} = /* #__PURE__ */ createClientOnly(${identifier})`)
       } else {
         definitions.push(genExport(c.filePath, [{ name: c.export, as: c.pascalName }]))
       }
-      definitions.push(`export const Lazy${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
+      definitions.push(`export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
       return definitions
     })
     return [
@@ -96,7 +96,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       (c) => {
         const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
         const comment = createImportMagicComments(c)
-        return `export const ${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+        return `export const ${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
       }
     ).join('\n')
   }

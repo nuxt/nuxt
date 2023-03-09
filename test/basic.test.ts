@@ -1,21 +1,26 @@
 import { fileURLToPath } from 'node:url'
-import { promises as fsp } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
-import { isWindows } from 'std-env'
-import { join, normalize } from 'pathe'
-// eslint-disable-next-line import/order
+import { isCI, isWindows } from 'std-env'
+import { normalize } from 'pathe'
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, fixturesDir, expectWithPolling, renderPage, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
 
-const fixturePath = join(fixturesDir, 'basic')
+const isWebpack = process.env.TEST_BUILDER === 'webpack'
+
 await setup({
-  rootDir: fixturePath,
+  rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
+  dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
-  setupTimeout: (isWindows ? 240 : 120) * 1000
+  setupTimeout: (isWindows ? 240 : 120) * 1000,
+  nuxtConfig: {
+    builder: isWebpack ? 'webpack' : 'vite',
+    buildDir: process.env.NITRO_BUILD_DIR,
+    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
+  }
 })
 
 describe('server api', () => {
@@ -41,6 +46,13 @@ describe('route rules', () => {
   })
 })
 
+describe('modules', () => {
+  it('should auto-register modules in ~/modules', async () => {
+    const result = await $fetch('/auto-registered-module')
+    expect(result).toEqual('handler added by auto-registered module')
+  })
+})
+
 describe('pages', () => {
   it('render index', async () => {
     const html = await $fetch('/')
@@ -54,9 +66,10 @@ describe('pages', () => {
     expect(html).toContain('RuntimeConfig | testConfig: 123')
     expect(html).toContain('needsFallback:')
     // composables auto import
-    expect(html).toContain('Composable | foo: auto imported from ~/components/foo.ts')
-    expect(html).toContain('Composable | bar: auto imported from ~/components/useBar.ts')
-    expect(html).toContain('Composable | template: auto imported from ~/components/template.ts')
+    expect(html).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(html).toContain('Composable | bar: auto imported from ~/utils/useBar.ts')
+    expect(html).toContain('Composable | template: auto imported from ~/composables/template.ts')
+    expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
     // should apply attributes to client-only components
@@ -68,6 +81,15 @@ describe('pages', () => {
     expect(html).toContain('global component via suffix')
 
     await expectNoClientErrors('/')
+  })
+
+  // TODO: support jsx with webpack
+  it.runIf(!isWebpack)('supports jsx', async () => {
+    const html = await $fetch('/jsx')
+
+    // should import JSX/TSX components with custom elements
+    expect(html).toContain('TSX component')
+    expect(html).toContain('<custom-component>custom</custom-component>')
   })
 
   it('respects aliases in page metadata', async () => {
@@ -83,6 +105,18 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status } = await fetch('/forbidden')
     expect(status).toEqual(404)
+
+    const page = await createPage('/navigate-to-forbidden')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should throw a 404 error').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
+
+    await page.goto(url('/navigate-to-forbidden'))
+    await page.waitForLoadState('networkidle')
+    await page.getByText('should be caught by catchall').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+
+    await page.close()
   })
 
   it('render 404', async () => {
@@ -92,7 +126,7 @@ describe('pages', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('[...slug].vue')
-    expect(html).toContain('404 at not-found')
+    expect(html).toContain('catchall at not-found')
 
     // Middleware still runs after validation: https://github.com/nuxt/nuxt/issues/15650
     expect(html).toContain('Middleware ran: true')
@@ -236,6 +270,8 @@ describe('pages', () => {
     await page.locator('button#show-all').click()
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isVisible()))
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
+
+    await page.close()
   })
 
   it('/client-only-explicit-import', async () => {
@@ -248,10 +284,117 @@ describe('pages', () => {
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
   })
+
+  it('client-fallback', async () => {
+    const classes = [
+      'clientfallback-non-stateful-setup',
+      'clientfallback-non-stateful',
+      'clientfallback-stateful-setup',
+      'clientfallback-stateful'
+    ]
+    const html = await $fetch('/client-fallback')
+    // ensure failed components are not rendered server-side
+    expect(html).not.toContain('This breaks in server-side setup.')
+    classes.forEach(c => expect(html).not.toContain(c))
+    // ensure not failed component not be rendered
+    expect(html).not.toContain('Sugar Counter 12 x 0 = 0')
+    // ensure NuxtClientFallback is being rendered with its fallback tag and attributes
+    expect(html).toContain('<span class="break-in-ssr">this failed to render</span>')
+    // ensure Fallback slot is being rendered server side
+    expect(html).toContain('Hello world !')
+
+    // ensure not failed component are correctly rendered
+    expect(html).not.toContain('<p></p>')
+    expect(html).toContain('hi')
+
+    await expectNoClientErrors('/client-fallback')
+
+    const page = await createPage('/client-fallback')
+    await page.waitForLoadState('networkidle')
+    // ensure components reactivity once mounted
+    await page.locator('#increment-count').click()
+    expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
+
+    await page.close()
+  })
+})
+
+describe('nuxt links', () => {
+  it('handles trailing slashes', async () => {
+    const html = await $fetch('/nuxt-link/trailing-slash')
+    const data: Record<string, string[]> = {}
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      data[selector] = []
+      for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
+        data[selector].push(match[1])
+      }
+    }
+    expect(data).toMatchInlineSnapshot(`
+      {
+        "link-with-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash/?with-state=true",
+          "/nuxt-link/trailing-slash/?without-state=true",
+        ],
+        "link-without-trailing-slash": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "nuxt-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+        "router-link": [
+          "/",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash/",
+          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
+          "/nuxt-link/trailing-slash",
+          "/nuxt-link/trailing-slash?with-state=true",
+          "/nuxt-link/trailing-slash?without-state=true",
+        ],
+      }
+    `)
+  })
+
+  it('preserves route state', async () => {
+    const page = await createPage('/nuxt-link/trailing-slash')
+    await page.waitForLoadState('networkidle')
+
+    for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
+      await page.locator(`.${selector}[href*=with-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).toContain('bar')
+
+      await page.locator(`.${selector}[href*=without-state]`).click()
+      await page.waitForLoadState('networkidle')
+      expect(await page.getByTestId('window-state').innerText()).not.toContain('bar')
+    }
+
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
-  it('should render tags', async () => {
+  it('SSR should render tags', async () => {
     const headHtml = await $fetch('/head')
 
     expect(headHtml).toContain('<title>Using a dynamic component - Title Template Fn Change</title>')
@@ -271,6 +414,19 @@ describe('head tags', () => {
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
     expect(indexHtml).toContain('<title>Basic fixture</title>')
+  })
+
+  it('SPA should render appHead tags', async () => {
+    const headHtml = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+
+    expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
+    expect(headHtml).toContain('<meta charset="utf-8">')
+    expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
+  })
+
+  it('legacy vueuse/head works', async () => {
+    const headHtml = await $fetch('/vueuse-head')
+    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
 
   it('should render http-equiv correctly', async () => {
@@ -296,9 +452,17 @@ describe('legacy async data', () => {
 
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
-    const { headers } = await fetch('/navigate-to/', { redirect: 'manual' })
+    const { headers, status } = await fetch('/navigate-to/', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(301)
+  })
+
+  it('respects redirects + headers in middleware', async () => {
+    const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
+    expect(res.headers.get('location')).toEqual('/navigate-some-path')
+    expect(res.status).toEqual(307)
+    expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
   })
 })
 
@@ -323,6 +487,21 @@ describe('errors', () => {
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
     expect(await res.text()).toContain('This is a custom error')
+  })
+
+  // TODO: need to create test for webpack
+  it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
+    const { page, consoleLogs } = await renderPage('/')
+    await page.getByText('Increment state').click()
+    await page.getByText('Increment state').click()
+    await page.getByText('Chunk error').click()
+    await page.waitForURL(url('/chunk-error'))
+    expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
+    expect(await page.innerText('div')).toContain('Chunk error page')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('div')).toContain('State: 3')
+
+    await page.close()
   })
 })
 
@@ -439,11 +618,41 @@ describe('reactivity transform', () => {
   })
 })
 
+describe('composable tree shaking', () => {
+  it('should work', async () => {
+    const html = await $fetch('/tree-shake')
+
+    expect(html).toContain('Tree Shake Example')
+
+    const page = await createPage('/tree-shake')
+    // check page doesn't have any errors or warnings in the console
+    await page.waitForLoadState('networkidle')
+    // ensure scoped classes are correctly assigned between client and server
+    expect(await page.$eval('h1', e => getComputedStyle(e).color)).toBe('rgb(255, 192, 203)')
+
+    await expectNoClientErrors('/tree-shake')
+
+    await page.close()
+  })
+})
+
 describe('server tree shaking', () => {
   it('should work', async () => {
     const html = await $fetch('/client')
 
     expect(html).toContain('This page should not crash when rendered')
+    expect(html).toContain('fallback for ClientOnly')
+    expect(html).not.toContain('rendered client-side')
+    expect(html).not.toContain('id="client-side"')
+
+    const page = await createPage('/client')
+    await page.waitForLoadState('networkidle')
+    // ensure scoped classes are correctly assigned between client and server
+    expect(await page.$eval('.red', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+    expect(await page.$eval('.blue', e => getComputedStyle(e).color)).toBe('rgb(0, 0, 255)')
+    expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
+
+    await page.close()
   })
 })
 
@@ -533,7 +742,7 @@ describe('deferred app suspense resolve', () => {
       await page.waitForLoadState('networkidle')
 
       // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
       expect(hydrationLogs.length).toBe(3)
@@ -561,7 +770,7 @@ describe('page key', () => {
 
         // Wait for all pending micro ticks to be cleared,
         // so we are not resolved too early when there are repeated page loading
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
         expect(logs.filter(l => l.includes('Child Setup')).length).toBe(1)
       })
@@ -580,7 +789,7 @@ describe('page key', () => {
 
         // Wait for all pending micro ticks to be cleared,
         // so we are not resolved too early when there are repeated page loading
-        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
         expect(logs.filter(l => l.includes('Child Setup')).length).toBe(2)
       })
@@ -601,7 +810,7 @@ describe('layout change not load page twice', () => {
 
       // Wait for all pending micro ticks to be cleared,
       // so we are not resolved too early when there are repeated page loading
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)))
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       expect(logs.filter(l => l.includes('Layout2 Page Setup')).length).toBe(1)
     })
@@ -623,7 +832,7 @@ describe('automatically keyed composables', () => {
   })
 })
 
-describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inlining component styles', () => {
+describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of [
@@ -649,6 +858,8 @@ describe.skipIf(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)('inl
     const page = await createPage('/styles')
     await page.waitForLoadState('networkidle')
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+
+    await page.close()
   })
 
   it.todo('renders client-only styles only', async () => {
@@ -670,28 +881,34 @@ describe('prefetching', () => {
   })
 })
 
-describe.runIf(process.env.NUXT_TEST_DEV)('detecting invalid root nodes', () => {
-  it('should detect invalid root nodes in pages', async () => {
-    for (const path of ['1', '2', '3', '4']) {
-      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
-      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning').map(w => w.text).join('\n')
-      expect(consoleLogsWarns).toContain('does not have a single root node and will cause errors when navigating between routes')
-    }
+// TODO: make test less flakey on Windows
+describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes', () => {
+  it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
+    const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await expectWithPolling(
+      () => consoleLogs
+        .map(w => w.text).join('\n')
+        .includes('does not have a single root node and will cause errors when navigating between routes'),
+      true
+    )
+
+    await page.close()
   })
 
-  it('should not complain if there is no transition', async () => {
-    for (const path of ['fine']) {
-      const { consoleLogs } = await renderPage(joinURL('/invalid-root', path))
+  it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
+    const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
-      const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
+    const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
+    expect(consoleLogsWarns.length).toEqual(0)
 
-      expect(consoleLogsWarns.length).toEqual(0)
-    }
+    await page.close()
   })
 })
 
 // TODO: dynamic paths in dev
-describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
+describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -701,7 +918,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
   })
 
   // webpack injects CSS differently
-  it.skipIf(process.env.TEST_WITH_WEBPACK)('adds relative paths to CSS', async () => {
+  it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
@@ -730,7 +947,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
         url.startsWith('/foo/_other/') ||
         url === '/foo/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -747,7 +964,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
         url.startsWith('./_nuxt/') ||
         url === './public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -775,7 +992,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV)('dynamic paths', () => {
         url.startsWith('https://example.com/_cdn/') ||
         url === 'https://example.com/public.svg' ||
         // TODO: webpack does not yet support dynamic static paths
-        (process.env.TEST_WITH_WEBPACK && url === '/public.svg')
+        (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
   })
@@ -809,7 +1026,7 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
 
-    if (process.env.NUXT_TEST_DEV) {
+    if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
     }
 
@@ -836,7 +1053,7 @@ describe('component islands', () => {
       })
     }))
 
-    if (process.env.NUXT_TEST_DEV) {
+    if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
@@ -850,7 +1067,8 @@ describe('component islands', () => {
       key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
     }))
 
-    if (!(process.env.NUXT_TEST_DEV || process.env.TEST_WITH_WEBPACK)) {
+    // TODO: fix rendering of styles in webpack
+    if (!isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [],
@@ -862,7 +1080,7 @@ describe('component islands', () => {
           ],
         }
       `)
-    } else if (process.env.NUXT_TEST_DEV) {
+    } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
@@ -898,17 +1116,17 @@ describe('component islands', () => {
   })
 })
 
-describe.runIf(process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK)('vite plugins', () => {
+describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
     expect(await $fetch('/vite-plugin-without-path')).toBe('vite-plugin without path')
     expect(await $fetch('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
-    expect(await $fetch('/app.config')).toContain('404')
+    expect(await $fetch('/app.config')).toContain('catchall at')
   })
 })
 
-describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () => {
+describe.skipIf(isDev() || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
@@ -927,7 +1145,7 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = process.env.NUXT_TEST_DEV && !process.env.TEST_WITH_WEBPACK ? '?import' : ''
+    const importSuffix = isDev() && !isWebpack ? '?import' : ''
 
     // We are manually prefetching other payloads
     expect(requests).toContain('/random/c/_payload.js')
@@ -960,7 +1178,9 @@ describe.skipIf(process.env.NUXT_TEST_DEV || isWindows)('payload rendering', () 
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
-    // expect(requests.filter(p => p.includes('_payload')).length).toBe(process.env.NUXT_TEST_DEV ? 1 : 0)
+    // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
+
+    await page.close()
   })
 })
 
@@ -985,64 +1205,3 @@ describe.skipIf(isWindows)('useAsyncData', () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
   })
 })
-
-// HMR should be at the last
-// TODO: fix HMR on Windows
-if (isDev() && !isWindows) {
-  describe('hmr', () => {
-    it('should work', async () => {
-      const { page, pageErrors, consoleLogs } = await renderPage('/')
-
-      expect(await page.title()).toBe('Basic fixture')
-      expect((await page.$('.sugar-counter').then(r => r!.textContent()))!.trim())
-        .toEqual('Sugar Counter 12 x 2 = 24  Inc')
-
-      // reactive
-      await page.$('.sugar-counter button').then(r => r!.click())
-      expect((await page.$('.sugar-counter').then(r => r!.textContent()))!.trim())
-        .toEqual('Sugar Counter 13 x 2 = 26  Inc')
-
-      // modify file
-      let indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      indexVue = indexVue
-        .replace('<Title>Basic fixture</Title>', '<Title>Basic fixture HMR</Title>')
-        .replace('<h1>Hello Nuxt 3!</h1>', '<h1>Hello Nuxt 3! HMR</h1>')
-      indexVue += '<style scoped>\nh1 { color: red }\n</style>'
-      await fsp.writeFile(join(fixturePath, 'pages/index.vue'), indexVue)
-
-      await expectWithPolling(
-        () => page.title(),
-        'Basic fixture HMR'
-      )
-
-      // content HMR
-      const h1 = await page.$('h1')
-      expect(await h1!.textContent()).toBe('Hello Nuxt 3! HMR')
-
-      // style HMR
-      const h1Color = await h1!.evaluate(el => window.getComputedStyle(el).getPropertyValue('color'))
-      expect(h1Color).toMatchInlineSnapshot('"rgb(255, 0, 0)"')
-
-      // ensure no errors
-      const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-      const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warn')
-      expect(pageErrors).toEqual([])
-      expect(consoleLogErrors).toEqual([])
-      expect(consoleLogWarnings).toEqual([])
-    }, 60_000)
-
-    it('should detect new routes', async () => {
-      const html = await $fetch('/some-404')
-      expect(html).toContain('404 at some-404')
-
-      // write new page route
-      const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
-
-      await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3') ? 'ok' : 'fail'),
-        'ok'
-      )
-    })
-  })
-}
