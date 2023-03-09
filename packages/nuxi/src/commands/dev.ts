@@ -1,7 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { existsSync, readdirSync } from 'node:fs'
-import { resolve, relative, normalize } from 'pathe'
+import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
@@ -160,42 +159,11 @@ export default defineNuxtCommand({
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load)
-    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
-    watcher.on('all', (event, _file) => {
-      if (!currentNuxt) { return }
-      const file = normalize(_file)
-      const buildDir = withTrailingSlash(normalize(currentNuxt.options.buildDir))
-      if (file.startsWith(buildDir)) { return }
-      const relativePath = relative(rootDir, file)
-      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
-        dLoad(true, `${relativePath} updated`)
-      }
-
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const isFileChange = ['add', 'unlink'].includes(event)
-      const pagesDir = resolve(currentNuxt.options.srcDir, currentNuxt.options.dir.pages)
-      const reloadDirs = ['components', 'composables', 'utils'].map(d => resolve(currentNuxt.options.srcDir, d))
-
-      if (isDirChange) {
-        if (reloadDirs.includes(file)) {
-          return dLoad(true, `Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (isFileChange) {
-        if (file.match(/(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-          return dLoad(true, `\`${relativePath}\` ${event === 'add' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (file.startsWith(pagesDir)) {
-        const hasPages = existsSync(pagesDir) ? readdirSync(pagesDir).length > 0 : false
-        if (currentNuxt && !currentNuxt.options.pages && hasPages) {
-          return dLoad(true, 'Pages enabled')
-        }
-        if (currentNuxt && currentNuxt.options.pages && !hasPages) {
-          return dLoad(true, 'Pages disabled')
-        }
+    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
+    watcher.on('all', (_event, _file) => {
+      const file = relative(rootDir, _file)
+      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
+        dLoad(true, `${file} updated`)
       }
     })
 

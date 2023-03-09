@@ -111,10 +111,12 @@ describe('pages', () => {
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
 
-    page.goto(url('/navigate-to-forbidden'))
+    await page.goto(url('/navigate-to-forbidden'))
     await page.waitForLoadState('networkidle')
     await page.getByText('should be caught by catchall').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+
+    await page.close()
   })
 
   it('render 404', async () => {
@@ -268,6 +270,8 @@ describe('pages', () => {
     await page.locator('button#show-all').click()
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isVisible()))
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
+
+    await page.close()
   })
 
   it('/client-only-explicit-import', async () => {
@@ -310,6 +314,8 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
+
+    await page.close()
   })
 })
 
@@ -382,6 +388,8 @@ describe('nuxt links', () => {
       await page.waitForLoadState('networkidle')
       expect(await page.getByTestId('window-state').innerText()).not.toContain('bar')
     }
+
+    await page.close()
   })
 })
 
@@ -492,6 +500,8 @@ describe('errors', () => {
     expect(await page.innerText('div')).toContain('Chunk error page')
     await page.waitForLoadState('networkidle')
     expect(await page.innerText('div')).toContain('State: 3')
+
+    await page.close()
   })
 })
 
@@ -621,6 +631,8 @@ describe('composable tree shaking', () => {
     expect(await page.$eval('h1', e => getComputedStyle(e).color)).toBe('rgb(255, 192, 203)')
 
     await expectNoClientErrors('/tree-shake')
+
+    await page.close()
   })
 })
 
@@ -639,6 +651,8 @@ describe('server tree shaking', () => {
     expect(await page.$eval('.red', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
     expect(await page.$eval('.blue', e => getComputedStyle(e).color)).toBe('rgb(0, 0, 255)')
     expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
+
+    await page.close()
   })
 })
 
@@ -844,6 +858,8 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     const page = await createPage('/styles')
     await page.waitForLoadState('networkidle')
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+
+    await page.close()
   })
 
   it.todo('renders client-only styles only', async () => {
@@ -876,6 +892,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
         .includes('does not have a single root node and will cause errors when navigating between routes'),
       true
     )
+
+    await page.close()
   })
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
@@ -884,6 +902,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
+
+    await page.close()
   })
 })
 
@@ -1159,6 +1179,8 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
+
+    await page.close()
   })
 })
 
