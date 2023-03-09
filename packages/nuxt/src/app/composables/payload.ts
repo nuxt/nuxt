@@ -12,17 +12,17 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}) {
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
-  if (cache[url]) {
-    return cache[url]
+  if (cache[payloadURL]) {
+    return cache[payloadURL]
   }
-  cache[url] = _importPayload(payloadURL).then((payload) => {
+  cache[payloadURL] = _importPayload(payloadURL).then((payload) => {
     if (!payload) {
-      delete cache[url]
+      delete cache[payloadURL]
       return null
     }
     return payload
   })
-  return cache[url]
+  return cache[payloadURL]
 }
 
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
