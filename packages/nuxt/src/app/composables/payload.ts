@@ -41,7 +41,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   if (u.search) {
     throw new Error('Payload URL cannot contain search params: ' + url)
   }
-  if (u.host !== 'localhost' || hasProtocol(u.pathname, true)) {
+  if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
