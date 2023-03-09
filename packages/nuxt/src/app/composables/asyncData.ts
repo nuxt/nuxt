@@ -321,7 +321,11 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function pick (obj: Record<string, any>, keys: string[]) {
+function pick (obj: Record<string, any>, keys: string | string[]) {
+  if (typeof keys === 'string') {
+    return obj[keys]
+  }
+
   const newObj = {}
   for (const key of keys) {
     (newObj as any)[key] = obj[key]

@@ -25,7 +25,7 @@ type UseFetchOptions = {
   immediate?: boolean
   default?: () => DataT
   transform?: (input: DataT) => DataT
-  pick?: string[]
+  pick?: string | string[]
   watch?: WatchSource[]
 }
 
@@ -57,7 +57,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAsyncData` is used.
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
-  * `pick`: Only pick specified keys in this array from the `handler` function result.
+  * `pick`: Only pick specified keys in this array from the `handler` function result. If string is provided, that key will be returned as the root.
   * `watch`: watch reactive sources to auto-refresh.
   * `transform`: A function that can be used to alter `handler` function result after resolving.
   * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)

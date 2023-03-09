@@ -23,7 +23,7 @@ type AsyncDataOptions<DataT> = {
   lazy?: boolean
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
-  pick?: string[]
+  pick?: string | string[]
   watch?: WatchSource[]
   immediate?: boolean
 }
@@ -52,7 +52,7 @@ type AsyncData<DataT, ErrorT> = {
   * _default_: a factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option
   * _server_: whether to fetch the data on the server (defaults to `true`)
   * _transform_: a function that can be used to alter `handler` function result after resolving
-  * _pick_: only pick specified keys in this array from the `handler` function result
+  * _pick_: only pick specified keys in this array from the `handler` function result. If string is provided, that key will be returned as the root.
   * _watch_: watch reactive sources to auto-refresh
   * _immediate_: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 
