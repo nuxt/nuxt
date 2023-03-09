@@ -148,6 +148,17 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
+    // Restart dev server when component directories are added/removed
+    nuxt.hook('builder:watch', (event, path) => {
+      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
+      const fullPath = resolve(nuxt.options.srcDir, path)
+
+      if (isDirChange && componentDirs.some(dir => dir.path === fullPath)) {
+        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        return nuxt.callHook('restart')
+      }
+    })
+
     // Scan components and add to plugin
     nuxt.hook('app:templates', async () => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
