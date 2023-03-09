@@ -161,10 +161,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Register user and then ad-hoc modules
   modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
 
-  nuxt.hooks.hookOnce('builder:watch', (event, path) => {
-    if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
-  })
-
   // Add <NuxtWelcome>
   addComponent({
     name: 'NuxtWelcome',
@@ -284,6 +280,29 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('modules:done')
+
+  nuxt.hooks.hook('builder:watch', (event, path) => {
+    // Local module patterns
+    if (watchedPaths.has(path)) {
+      return nuxt.callHook('restart', { hard: true })
+    }
+
+    // User provided patterns
+    for (const pattern of nuxt.options.watch) {
+      if (typeof pattern === 'string') {
+        if (pattern === path) { return nuxt.callHook('restart') }
+        continue
+      }
+      if (pattern.test(path)) { return nuxt.callHook('restart') }
+    }
+
+    // Core Nuxt files: app.vue, error.vue and app.config.ts
+    const isFileChange = ['add', 'unlink'].includes(event)
+    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+      console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart')
+    }
+  })
 
   // Normalize windows transpile paths added by modules
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)

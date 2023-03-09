@@ -23,7 +23,7 @@ export const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>
 
 export function createViteLogger (config: vite.InlineConfig): vite.Logger {
   const loggedErrors = new WeakSet<any>()
-  const canClearScreen = hasTTY && !isCI
+  const canClearScreen = hasTTY && !isCI && config.clearScreen
   const clearScreen = canClearScreen ? clear : () => {}
 
   function output (type: vite.LogType, msg: string, options: vite.LogErrorOptions = {}) {

@@ -346,6 +346,18 @@ export default defineUntypedSchema({
   },
 
   /**
+   * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
+   *
+   * It is an array of strings or regular expressions, which will be matched against the file path
+   * relative to the project `srcDir`.
+   *
+   * @type {Array<string | RegExp>}
+   */
+  watch: {
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
+  },
+
+  /**
    * The watchers property lets you overwrite watchers configuration in your `nuxt.config`.
    */
   watchers: {
