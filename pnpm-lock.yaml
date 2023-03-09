@@ -30,7 +30,7 @@ importers:
       '@types/rimraf': ^3
       '@types/semver': ^7.3.13
       '@unocss/reset': ^0.50.4
-      case-police: ^0.5.13
+      case-police: ^0.5.14
       changelogen: ^0.5.1
       crawler: ^1.4.0
       eslint: ^8.35.0
@@ -44,7 +44,7 @@ importers:
       nuxt: workspace:*
       ofetch: ^1.0.1
       pathe: ^1.1.0
-      rimraf: ^4.3.0
+      rimraf: ^4.4.0
       semver: ^7.3.8
       std-env: ^3.3.2
       typescript: ^4.9.5
@@ -66,7 +66,7 @@ importers:
       '@types/rimraf': 3.0.2
       '@types/semver': 7.3.13
       '@unocss/reset': 0.50.4
-      case-police: 0.5.13
+      case-police: 0.5.14
       changelogen: 0.5.1
       crawler: 1.4.0
       eslint: 8.35.0
@@ -80,7 +80,7 @@ importers:
       nuxt: link:packages/nuxt
       ofetch: 1.0.1
       pathe: 1.1.0
-      rimraf: 4.3.0
+      rimraf: 4.4.0
       semver: 7.3.8
       std-env: 3.3.2
       typescript: 4.9.5
@@ -418,8 +418,8 @@ importers:
       '@nuxt/vite-builder': workspace:*
       '@types/fs-extra': ^11.0.1
       '@types/hash-sum': ^1.0.0
-      '@unhead/ssr': ^1.1.21
-      '@unhead/vue': ^1.1.21
+      '@unhead/ssr': ^1.1.22
+      '@unhead/vue': ^1.1.22
       '@vue/reactivity': ^3.2.47
       '@vue/shared': ^3.2.47
       chokidar: ^3.5.3
@@ -463,8 +463,8 @@ importers:
       '@nuxt/telemetry': 2.1.10
       '@nuxt/ui-templates': 1.1.1
       '@nuxt/vite-builder': link:../vite
-      '@unhead/ssr': 1.1.21
-      '@unhead/vue': 1.1.21_vue@3.2.47
+      '@unhead/ssr': 1.1.22
+      '@unhead/vue': 1.1.22_vue@3.2.47
       '@vue/reactivity': 3.2.47
       '@vue/shared': 3.2.47
       chokidar: 3.5.3
@@ -509,7 +509,7 @@ importers:
     specifiers:
       '@types/lodash.template': ^4
       '@types/semver': ^7.3.13
-      '@unhead/schema': ^1.1.21
+      '@unhead/schema': ^1.1.22
       '@vitejs/plugin-vue': ^4.0.0
       '@vitejs/plugin-vue-jsx': ^3.0.0
       c12: ^1.1.2
@@ -545,7 +545,7 @@ importers:
     devDependencies:
       '@types/lodash.template': 4.5.1
       '@types/semver': 7.3.13
-      '@unhead/schema': 1.1.21
+      '@unhead/schema': 1.1.22
       '@vitejs/plugin-vue': 4.0.0_vite@4.1.4
       '@vitejs/plugin-vue-jsx': 3.0.0_vite@4.1.4
       nitropack: 2.2.3
@@ -2302,41 +2302,41 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@unhead/dom/1.1.21:
-    resolution: {integrity: sha512-69kip2vrJIoAD7NKQXS9VhNeTyzRp90vIRFsaOM6L6emWlBc3NmMVdmFUrEcBmGNnGBN6/+vAESPGGG+vvQSIQ==}
+  /@unhead/dom/1.1.22:
+    resolution: {integrity: sha512-teutFdu4Frn1iRwacqvDz1Cxbygu6kgeI4N8T3Tu1YTMFIOnmqEklJdQGsY6ozR6MrcCV7CP6p89J5yJdPpnig==}
     dependencies:
-      '@unhead/schema': 1.1.21
-      '@unhead/shared': 1.1.21
+      '@unhead/schema': 1.1.22
+      '@unhead/shared': 1.1.22
     dev: false
 
-  /@unhead/schema/1.1.21:
-    resolution: {integrity: sha512-JfOX2TGlxWY/ZRpEeOJohzDn0MWGjgvsI8O7nwqpOEIr/hu/sMz7Y4+3UYVAKkbHUAIi7edXtiDKLvKvfC7wtg==}
+  /@unhead/schema/1.1.22:
+    resolution: {integrity: sha512-587TasZqBD3BTzXRxE0p8DNyzcZ8Dc+6ssAzsER5fZTcymZwskgIQ9sYNkCUy4GpjnA1wCSRmKKpblLErBuWdg==}
     dependencies:
       hookable: 5.4.2
       zhead: 2.0.4
 
-  /@unhead/shared/1.1.21:
-    resolution: {integrity: sha512-LuWYzcrt6TouUeQ4Qr5En1VluTUBLD7an60FGCp2U/Nzl8go4RQBZ9LLMKkWaLKjv5LqnGTuH3MfL8e0xcrUVQ==}
+  /@unhead/shared/1.1.22:
+    resolution: {integrity: sha512-fTbyltjNUzT8+Sq7lE2F9B/8AoPUdsKqnC+qZgdKnmKWy4QWT9TtfWUPT58wt4NhFMRhZjV5iKBW2m3AHZ8aIg==}
     dependencies:
-      '@unhead/schema': 1.1.21
+      '@unhead/schema': 1.1.22
     dev: false
 
-  /@unhead/ssr/1.1.21:
-    resolution: {integrity: sha512-QZ/6oeVGQzm1GWixqf0LVj/XiJrbN5W2USNcp5xfmXc7hdsI0r+6r1lEWJVwNRfohGRSwpP5lZMuB84JJH7RfA==}
+  /@unhead/ssr/1.1.22:
+    resolution: {integrity: sha512-Okt1IRXAPgeZJaZnq3vNugwlbVD9hxvwBH/I5U0YV/dNC4pGk10um4xF/TU2LXANHYCQvLCPJJjbtrotzcNJyQ==}
     dependencies:
-      '@unhead/schema': 1.1.21
-      '@unhead/shared': 1.1.21
+      '@unhead/schema': 1.1.22
+      '@unhead/shared': 1.1.22
     dev: false
 
-  /@unhead/vue/1.1.21_vue@3.2.47:
-    resolution: {integrity: sha512-zX4tIoHAhF7SRe2N89b1bylo2yWY6ClQ5PRdaZzaK5FcwTi6i7RCYC/feQdP9U5TxZLLmdBw3aqBxx4s1m6tyQ==}
+  /@unhead/vue/1.1.22_vue@3.2.47:
+    resolution: {integrity: sha512-c9yuRL15ec7kO0cUyXEXYTUN15LQX7nemV6zk3ILzElDwnJWENYkvVSG65abkDW/cdGlfZs3s7djGzoFdWEJiA==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.1.21
-      '@unhead/shared': 1.1.21
+      '@unhead/schema': 1.1.22
+      '@unhead/shared': 1.1.22
       hookable: 5.4.2
-      unhead: 1.1.21
+      unhead: 1.1.22
       vue: 3.2.47
     dev: false
 
@@ -3383,8 +3383,8 @@ packages:
   /caniuse-lite/1.0.30001454:
     resolution: {integrity: sha512-4E63M5TBbgDoA9dQoFRdjL6iAmzTrz3rwYWoKDlvnvyvBxjCZ0rrUoX3THhEMie0/RYuTCeMbeTYLGAWgnLwEg==}
 
-  /case-police/0.5.13:
-    resolution: {integrity: sha512-wri4U26/zUmjzQpgcilOAv36f4GGRS+8PfJppaR1mHE4qjKCWhTivTqQ8jsDmyZOv5gvw0i/CkCZRANRbLMFEQ==}
+  /case-police/0.5.14:
+    resolution: {integrity: sha512-+m4+xJJlqkA6nVYATw+Y2/STB58H5EI9eTUYdMB+okP34wuHe6xrZYVosiZanS5qrYQwVW2/9znT5VRFis5D8w==}
     hasBin: true
     dev: true
 
@@ -7347,8 +7347,8 @@ packages:
     dependencies:
       glob: 7.2.3
 
-  /rimraf/4.3.0:
-    resolution: {integrity: sha512-5qVDXPbByA1qSJEWMv1qAwKsoS22vVpsL2QyxCKBw4gf6XiFo1K3uRLY6uSOOBFDwnqAZtnbILqWKKlzh8bkGg==}
+  /rimraf/4.4.0:
+    resolution: {integrity: sha512-X36S+qpCUR0HjXlkDe4NAOhS//aHH0Z+h8Ckf2auGJk3PTnx5rLmrHkwNdbVQuCSUhOyFrlRvFEllZOYE+yZGQ==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
@@ -8185,12 +8185,12 @@ packages:
       node-fetch-native: 1.0.2
       pathe: 1.1.0
 
-  /unhead/1.1.21:
-    resolution: {integrity: sha512-+ZFPAfHDVEpYpS8ucz0jjreIsgcMnR/NEiDuGXV3w6uWGzP9Tcyyi8Z5k5zhSVCEksSP98C2cbfhWa0CGFK4zA==}
+  /unhead/1.1.22:
+    resolution: {integrity: sha512-yDkW3u7473IvpQEySAMw7X0o3FZgTk/e+QM8YpnYk5BnmgJ2HcY8rwu+B6LzQm8d14aZ7QFxVO8F8tMzxTe9Jg==}
     dependencies:
-      '@unhead/dom': 1.1.21
-      '@unhead/schema': 1.1.21
-      '@unhead/shared': 1.1.21
+      '@unhead/dom': 1.1.22
+      '@unhead/schema': 1.1.22
+      '@unhead/shared': 1.1.22
       hookable: 5.4.2
     dev: false
 
