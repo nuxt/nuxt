@@ -111,7 +111,7 @@ describe('pages', () => {
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
 
-    page.goto(url('/navigate-to-forbidden'))
+    await page.goto(url('/navigate-to-forbidden'))
     await page.waitForLoadState('networkidle')
     await page.getByText('should be caught by catchall').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
