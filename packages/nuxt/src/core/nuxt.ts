@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -166,7 +165,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: normalize(fileURLToPath((await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!))
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
   })
 
   addComponent({

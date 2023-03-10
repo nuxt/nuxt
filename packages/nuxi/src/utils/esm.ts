@@ -1,29 +1,28 @@
 import { pathToFileURL } from 'node:url'
-import { resolve as importMetaResolve } from 'import-meta-resolve'
-import { interopDefault } from 'mlly'
+import { interopDefault, resolvePath } from 'mlly'
 
-export async function tryResolveModule (id: string, root = import.meta.url) {
-  if (!root.startsWith('file:')) {
-    root = pathToFileURL(root).href
+export async function tryResolveModule (id: string, url = import.meta.url) {
+  if (!url.startsWith('file:')) {
+    url = pathToFileURL(url).href
   }
   try {
-    return await importMetaResolve(id, root)
+    return await resolvePath(id, { url })
   } catch { }
 }
 
-export async function importModule (id: string, root = import.meta.url) {
-  if (!root.startsWith('file:')) {
-    root = pathToFileURL(root).href
+export async function importModule (id: string, url = import.meta.url) {
+  if (!url.startsWith('file:')) {
+    url = pathToFileURL(url).href
   }
-  const resolvedPath = await importMetaResolve(id, root)
-  return import(resolvedPath).then(interopDefault)
+  const resolvedPath = await resolvePath(id, { url })
+  return import(pathToFileURL(resolvedPath).href).then(interopDefault)
 }
 
-export function tryImportModule (id: string, root = import.meta.url) {
-  if (!root.startsWith('file:')) {
-    root = pathToFileURL(root).href
+export function tryImportModule (id: string, url = import.meta.url) {
+  if (!url.startsWith('file:')) {
+    url = pathToFileURL(url).href
   }
   try {
-    return importModule(id, root).catch(() => undefined)
+    return importModule(id, url).catch(() => undefined)
   } catch { }
 }
