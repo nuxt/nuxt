@@ -1,8 +1,9 @@
 import { promises as fsp } from 'node:fs'
+import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { Nuxt, NuxtModule, ModuleOptions, ModuleSetupReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
 import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
@@ -67,7 +68,27 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Call setup
-    await definition.setup?.call(null as any, _options, nuxt)
+    const mark = performance.mark()
+    const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
+    const perf = performance.measure(`nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`, mark.name)
+    const setupTime = Math.round((perf.duration * 100)) / 100
+
+    // Measure setup time
+    if (setupTime > 5000) {
+      logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+    } else if (nuxt.options.debug) {
+      logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+    }
+
+    // Check if module is ignored
+    if (res === false) { return false }
+
+    // Return module install result
+    return defu(res, <ModuleSetupReturn> {
+      timings: {
+        setup: setupTime
+      }
+    })
   }
 
   // Define getters for options and meta
