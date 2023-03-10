@@ -365,7 +365,7 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^1.1.2
-      h3: ^1.5.0
+      h3: ^1.6.0
       jiti: ^1.17.2
       listhen: ^1.0.3
       mlly: ^1.2.0
@@ -396,7 +396,7 @@ importers:
       execa: 7.0.0
       flat: 5.0.2
       giget: 1.1.2
-      h3: 1.5.0
+      h3: 1.6.0
       jiti: 1.17.2
       listhen: 1.0.3
       mlly: 1.2.0
@@ -430,7 +430,7 @@ importers:
       estree-walker: ^3.0.3
       fs-extra: ^11.1.0
       globby: ^13.1.3
-      h3: ^1.5.0
+      h3: ^1.6.0
       hash-sum: ^2.0.0
       hookable: ^5.5.0
       jiti: ^1.17.2
@@ -475,7 +475,7 @@ importers:
       estree-walker: 3.0.3
       fs-extra: 11.1.0
       globby: 13.1.3
-      h3: 1.5.0
+      h3: 1.6.0
       hash-sum: 2.0.0
       hookable: 5.5.1
       jiti: 1.17.2
@@ -600,7 +600,7 @@ importers:
       externality: ^1.0.0
       fs-extra: ^11.1.0
       get-port-please: ^3.0.1
-      h3: ^1.5.0
+      h3: ^1.6.0
       knitwork: ^1.0.0
       magic-string: ^0.30.0
       mlly: ^1.2.0
@@ -639,7 +639,7 @@ importers:
       externality: 1.0.0
       fs-extra: 11.1.0
       get-port-please: 3.0.1
-      h3: 1.5.0
+      h3: 1.6.0
       knitwork: 1.0.0
       magic-string: 0.30.0
       mlly: 1.2.0
@@ -5251,8 +5251,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/1.5.0:
-    resolution: {integrity: sha512-M+T6P4iOB0ipkC/ZCdw2w8iTF7yY6phmkILOwlrtcPuVv+KW9BilOspYlvnblpKx1nnNl+3iBsZIvZ8pvKM8Nw==}
+  /h3/1.6.0:
+    resolution: {integrity: sha512-MthVCNIGkFnywJcwaPe7BWB5Y5BQJmtddu0ABnn3TAjkCqa/EzPafIfwv+wajWxjepRGrVsmu4X0ld5IGtLDHQ==}
     dependencies:
       cookie-es: 0.5.0
       defu: 6.1.2
@@ -6350,7 +6350,7 @@ packages:
       fs-extra: 11.1.0
       globby: 13.1.3
       gzip-size: 7.0.0
-      h3: 1.5.0
+      h3: 1.6.0
       hookable: 5.5.1
       http-proxy: 1.18.1
       is-primitive: 3.0.1
@@ -8392,7 +8392,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 1.2.2
-      h3: 1.5.0
+      h3: 1.6.0
       ioredis: 5.3.1
       listhen: 1.0.3
       lru-cache: 7.16.0
