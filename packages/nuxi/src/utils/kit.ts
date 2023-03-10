@@ -1,4 +1,4 @@
-import { importModule } from './cjs'
+import { importModule } from './esm'
 
 export const loadKit = async (rootDir: string): Promise<typeof import('@nuxt/kit')> => {
   try {

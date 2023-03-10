@@ -10,7 +10,7 @@ import type { H3Event } from 'h3'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
-const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
@@ -197,11 +197,11 @@ export function createNuxtApp (options: CreateOptions) {
     window.addEventListener('nuxt.preloadError', (event) => {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
-  }
 
-  // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
-  // as well as when mounting the app and in the `app:mounted` hook
-  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
+    // as well as when mounting the app and in the `app:mounted` hook
+    nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+  }
 
   // Expose runtime config
   const runtimeConfig = process.server

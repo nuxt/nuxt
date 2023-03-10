@@ -18,6 +18,9 @@
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    <button @click="someValue++">
+      Increment state
+    </button>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
     <Spin>Test</Spin>
@@ -36,6 +39,8 @@ import { importedValue, importedRE } from '~/some-exports'
 setupDevtoolsPlugin({}, () => {}) as any
 
 const config = useRuntimeConfig()
+
+const someValue = useState('val', () => 1)
 
 definePageMeta({
   alias: '/some-alias',

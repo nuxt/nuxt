@@ -40,7 +40,7 @@ export async function expectNoClientErrors (path: string) {
     return
   }
 
-  const { pageErrors, consoleLogs } = (await renderPage(path))!
+  const { page, pageErrors, consoleLogs } = (await renderPage(path))!
 
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
   const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
@@ -48,6 +48,8 @@ export async function expectNoClientErrors (path: string) {
   expect(pageErrors).toEqual([])
   expect(consoleLogErrors).toEqual([])
   expect(consoleLogWarnings).toEqual([])
+
+  await page.close()
 }
 
 type EqualityVal = string | number | boolean | null | undefined | RegExp
@@ -84,5 +86,6 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
     await callback(page, logs)
   } finally {
     done = true
+    await page.close()
   }
 }
