@@ -222,7 +222,7 @@ export default class PostcssConfig {
 
   config () {
     /* istanbul ignore if */
-    if (!this.postcssOptions) {
+    if (!this.postcssLoaderOptions) {
       return false
     }
 
