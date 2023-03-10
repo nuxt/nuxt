@@ -68,8 +68,9 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Call setup
-    const perf = performance.measure(`nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`)
+    const mark = performance.mark()
     const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
+    const perf = performance.measure(`nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`, mark.name)
     const setupTime = Math.round((perf.duration * 100)) / 100
 
     // Measure setup time
