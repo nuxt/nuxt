@@ -74,7 +74,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
 
     // Measure setup time
     if (setupTime > 5000) {
-      logger.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup`)
+      logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
     }
 
     // Check if module is ignored
