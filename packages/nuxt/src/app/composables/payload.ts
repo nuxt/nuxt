@@ -1,6 +1,6 @@
 import { joinURL, hasProtocol } from 'ufo'
+import { useHead } from '@unhead/vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { useHead } from './head'
 
 interface LoadPayloadOptions {
   fresh?: boolean
