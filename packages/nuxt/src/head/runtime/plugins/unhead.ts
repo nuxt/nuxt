@@ -1,10 +1,11 @@
-import { createHead, useHead } from '@unhead/vue'
+import { createHead as createClientHead, createServerHead } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 import { defineNuxtPlugin } from '#app/nuxt'
 // @ts-expect-error untyped
 import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  const createHead = process.server ? createServerHead : createClientHead
   const head = createHead()
   head.push(appHead)
 
@@ -24,9 +25,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.hooks.hook('page:finish', unpauseDom)
     nuxtApp.hooks.hook('app:mounted', unpauseDom)
   }
-
-  // support backwards compatibility, remove at some point
-  nuxtApp._useHead = useHead
 
   if (process.server) {
     nuxtApp.ssrContext!.renderMeta = async () => {

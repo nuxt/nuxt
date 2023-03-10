@@ -416,6 +416,22 @@ describe('head tags', () => {
     expect(indexHtml).toContain('<title>Basic fixture</title>')
   })
 
+  it('SSR script setup should render tags', async () => {
+    const headHtml = await $fetch('/head-script-setup')
+
+    // useHead - title & titleTemplate are working
+    expect(headHtml).toContain('<title>head script setup - Nuxt Playground</title>')
+    // useSeoMeta - template params
+    expect(headHtml).toContain('<meta property="og:title" content="head script setup - Nuxt Playground">')
+    // useSeoMeta - refs
+    expect(headHtml).toContain('<meta name="description" content="head script setup description for Nuxt Playground">')
+    // useServerHead - shorthands
+    expect(headHtml).toContain('>/* Custom styles */</style>')
+    // useHeadSafe - removes dangerous content
+    expect(headHtml).toContain('<script id="xss-script"></script>')
+    expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
+  })
+
   it('SPA should render appHead tags', async () => {
     const headHtml = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
 

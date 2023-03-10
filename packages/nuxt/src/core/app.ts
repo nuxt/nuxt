@@ -67,7 +67,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')
+    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
   }
 
   // Resolve root component
