@@ -10,7 +10,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
 
   // Call module
-  const res = await nuxtModule(inlineOptions, nuxt)
+  const res = await nuxtModule(inlineOptions, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
@@ -22,6 +22,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({
     meta: await nuxtModule.getMeta?.(),
+    timings: res.timings,
     entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
   })
 }

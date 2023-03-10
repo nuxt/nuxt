@@ -15,9 +15,6 @@ const commonPresets: InlinePreset[] = [
 const appPreset = defineUnimportPreset({
   from: '#app',
   imports: [
-    'useHead',
-    'useSeoMeta',
-    'useServerSeoMeta',
     'useAsyncData',
     'useLazyAsyncData',
     'useNuxtData',
