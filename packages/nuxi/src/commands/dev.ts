@@ -58,7 +58,10 @@ export default defineNuxtCommand({
       showURL: false,
       clipboard: args.clipboard,
       open: args.open || args.o,
-      port: args.port || args.p || process.env.NUXT_PORT || config.devServer.port,
+      port: {
+        port: args.port || args.p || process.env.NUXT_PORT || config.devServer.port,
+        portRange: [3000, 3100]
+      },
       hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
