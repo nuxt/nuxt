@@ -1,4 +1,5 @@
 import { promises as fsp } from 'node:fs'
+import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
@@ -67,13 +68,12 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Call setup
-    const setupStart = process.hrtime()
+    const perf = performance.measure(`nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`)
     const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
-    const setupEnd = process.hrtime(setupStart)
+    const setupTime = Math.round((perf.duration * 100)) / 100
 
     // Measure setup time
-    const setupTime = Math.round((setupEnd[0] * 1000000000 + setupEnd[1]) / 10000) / 100 /* round by two digits */
-    if (setupTime > 1000) {
+    if (setupTime > 5000) {
       logger.warn(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup`)
     }
 
