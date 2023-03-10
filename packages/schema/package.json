@@ -4,7 +4,6 @@
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
