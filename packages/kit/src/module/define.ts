@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { Nuxt, NuxtModule, ModuleOptions, ModuleSetupReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
 import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
@@ -81,7 +81,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     if (res === false) { return false }
 
     // Return module install result
-    return defu(res, <ModuleReturn> {
+    return defu(res, <ModuleSetupReturn> {
       timings: {
         setup: setupTime
       }

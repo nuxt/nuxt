@@ -27,7 +27,7 @@ export interface ModuleMeta {
 export type ModuleOptions = Record<string, any>
 
 /** Optional result for nuxt modules */
-export interface ModuleReturn {
+export interface ModuleSetupReturn {
   /**
    * Timing information for the initial setup
    */
@@ -39,7 +39,7 @@ export interface ModuleReturn {
 }
 
 type Awaitable<T> = T | Promise<T>
-type _ModuleReturn = Awaitable<void | false | ModuleReturn>
+type _ModuleSetupReturn = Awaitable<void | false | ModuleSetupReturn>
 
 /** Input module passed to defineNuxtModule. */
 export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
@@ -47,11 +47,11 @@ export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
   defaults?: T | ((nuxt: Nuxt) => T)
   schema?: T
   hooks?: Partial<NuxtHooks>
-  setup?: (this: void, resolvedOptions: T, nuxt: Nuxt) => _ModuleReturn
+  setup?: (this: void, resolvedOptions: T, nuxt: Nuxt) => _ModuleSetupReturn
 }
 
 export interface NuxtModule<T extends ModuleOptions = ModuleOptions> {
-  (this: void, inlineOptions: T, nuxt: Nuxt): _ModuleReturn
+  (this: void, inlineOptions: T, nuxt: Nuxt): _ModuleSetupReturn
   getOptions?: (inlineOptions?: T, nuxt?: Nuxt) => Promise<T>
   getMeta?: () => Promise<ModuleMeta>
 }
