@@ -30,6 +30,12 @@ export default defineNuxtModule({
         kebabName: componentName
       })
     }
+
+    // allow @unhead/vue server composables to be tree-shaken from the client bundle
+    nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
+      'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
+    ]
+
     // Opt-out feature allowing dependencies using @vueuse/head to work
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
