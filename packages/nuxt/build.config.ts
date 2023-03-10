@@ -16,6 +16,11 @@ export default defineBuildConfig({
       'pages'
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm' } as BuildEntry))
   ],
+  hooks: {
+    'mkdist:entry:options' (_ctx, _entry, mkdistOptions) {
+      mkdistOptions.addRelativeDeclarationExtensions = true
+    }
+  },
   dependencies: [
     'nuxi',
     'vue-router',
