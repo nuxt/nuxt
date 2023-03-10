@@ -1,9 +1,9 @@
 import chokidar from 'chokidar'
-import type { Nuxt } from '@nuxt/schema'
 import { importModule, isIgnored } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
 import { createApp, generateApp as _generateApp } from './app'
+import type { Nuxt } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -61,7 +61,7 @@ function watch (nuxt: Nuxt) {
 async function bundle (nuxt: Nuxt) {
   try {
     const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await importModule(nuxt.options.builder, { paths: nuxt.options.rootDir })
+      ? await importModule(nuxt.options.builder, { paths: [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url] })
       : nuxt.options.builder
 
     return bundle(nuxt)

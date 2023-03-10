@@ -26,10 +26,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(108000)
+    expect(stats.client.totalBytes).toBeLessThan(105700)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/composables.js",
+        "_nuxt/_plugin-vue_export-helper.js",
         "_nuxt/entry.js",
         "_nuxt/error-404.js",
         "_nuxt/error-500.js",
@@ -40,10 +40,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(90000)
+    expect(stats.server.totalBytes).toBeLessThan(94000)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2700000)
+    expect(modules.totalBytes).toBeLessThan(2713000)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -53,8 +53,8 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
       [
         "@babel/parser",
         "@unhead/dom",
+        "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/vue",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
@@ -70,6 +70,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "estree-walker",
         "h3",
         "hookable",
+        "iron-webcrypto",
         "node-fetch-native",
         "ofetch",
         "ohash",
@@ -79,8 +80,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "source-map",
         "source-map-support",
         "ufo",
+        "uncrypto",
         "unctx",
         "unenv",
+        "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",

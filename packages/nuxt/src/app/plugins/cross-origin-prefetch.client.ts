@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { parseURL } from 'ufo'
-import { defineNuxtPlugin, useHead } from '#app'
+import { useHead } from '@unhead/vue'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const externalURLs = ref(new Set<string>())
