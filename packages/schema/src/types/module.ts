@@ -39,7 +39,7 @@ export interface ModuleReturn {
 }
 
 type Awaitable<T> = T | Promise<T>
-export type _ModuleReturn = Awaitable<void | false | ModuleReturn>
+type _ModuleReturn = Awaitable<void | false | ModuleReturn>
 
 /** Input module passed to defineNuxtModule. */
 export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
