@@ -10,8 +10,8 @@
 
 <script setup lang="ts">
 defineProps<{
-      count: number
-  }>()
+  count: number
+}>()
 
 const { data } = await useFetch('/api/very-long-request')
 </script>
