@@ -7,7 +7,7 @@ export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
    *
-   * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
     $resolve: async (val, get) => {
@@ -17,6 +17,7 @@ export default defineUntypedSchema({
       const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
+        rspack: '@nuxt/rspack-builder'
       }
       return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
     }

@@ -101,7 +101,7 @@ export default defineUntypedSchema({
      */
     inlineSSRStyles: {
       async $resolve(val, get) {
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder' || (await get('builder')) === '@nuxt/rspack-builder') {
           return false
         }
         // Enabled by default for vite prod with ssr
