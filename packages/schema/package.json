@@ -4,8 +4,14 @@
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
     "schema"
@@ -16,7 +22,7 @@
   "devDependencies": {
     "@types/lodash.template": "^4",
     "@types/semver": "^7.3.13",
-    "@unhead/schema": "^1.1.16",
+    "@unhead/schema": "^1.1.22",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitejs/plugin-vue-jsx": "^3.0.0",
     "nitropack": "^2.2.3",
@@ -27,8 +33,8 @@
     "c12": "^1.1.2",
     "create-require": "^1.1.1",
     "defu": "^6.1.2",
-    "hookable": "^5.4.2",
-    "jiti": "^1.17.1",
+    "hookable": "^5.5.0",
+    "jiti": "^1.17.2",
     "pathe": "^1.1.0",
     "pkg-types": "^1.0.2",
     "postcss-import-resolver": "^2.0.0",

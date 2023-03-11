@@ -2,13 +2,13 @@ import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { AppConfig, RuntimeValue } from '@nuxt/schema'
-
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+
+import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import NuxtPage from '~~/../../../packages/nuxt/src/pages/runtime/page'
-import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
+import type { NavigateToOptions } from '#app/composables/router'
+import { NuxtPage } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }

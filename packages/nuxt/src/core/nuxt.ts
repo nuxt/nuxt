@@ -2,6 +2,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -16,12 +17,12 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import { TreeShakePlugin } from './plugins/tree-shake'
+import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
+import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
-import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -79,22 +80,31 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(ImportProtectionPlugin.vite(config))
   addWebpackPlugin(ImportProtectionPlugin.webpack(config))
 
-  // Add unctx transform
   nuxt.hook('modules:done', () => {
+    // Add unctx transform
     addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+
+    // Add composable tree-shaking optimisations
+    const serverTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+      sourcemap: nuxt.options.sourcemap.server,
+      composables: nuxt.options.optimization.treeShake.composables.server
+    }
+    if (Object.keys(serverTreeShakeOptions.composables).length) {
+      addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
+      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
+    }
+    const clientTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+      sourcemap: nuxt.options.sourcemap.client,
+      composables: nuxt.options.optimization.treeShake.composables.client
+    }
+    if (Object.keys(clientTreeShakeOptions.composables).length) {
+      addVitePlugin(TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
+      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
+    }
   })
 
   if (!nuxt.options.dev) {
-    const removeFromServer = ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount']
-    const removeFromClient = ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered']
-
-    // Add tree-shaking optimisations for SSR - build time only
-    addVitePlugin(TreeShakePlugin.vite({ sourcemap: nuxt.options.sourcemap.server, treeShake: removeFromServer }), { client: false })
-    addVitePlugin(TreeShakePlugin.vite({ sourcemap: nuxt.options.sourcemap.client, treeShake: removeFromClient }), { server: false })
-    addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap.server, treeShake: removeFromServer }), { client: false })
-    addWebpackPlugin(TreeShakePlugin.webpack({ sourcemap: nuxt.options.sourcemap.client, treeShake: removeFromClient }), { server: false })
-
     // DevOnly component tree-shaking - build time only
     addVitePlugin(DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
@@ -151,15 +161,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Register user and then ad-hoc modules
   modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
 
-  nuxt.hooks.hookOnce('builder:watch', (event, path) => {
-    if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
-  })
-
   // Add <NuxtWelcome>
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')!
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
   })
 
   addComponent({
@@ -210,6 +216,23 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
 
+  // Add <NuxtClientFallback>
+  if (nuxt.options.experimental.clientFallback) {
+    addComponent({
+      name: 'NuxtClientFallback',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
+      mode: 'client'
+    })
+
+    addComponent({
+      name: 'NuxtClientFallback',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
+      mode: 'server'
+    })
+  }
+
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {
     addComponent({
@@ -230,8 +253,12 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add experimental page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'reload') {
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
+  }
+  // Add experimental session restoration support
+  if (nuxt.options.experimental.restoreState) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
   }
 
   // Track components used to render for webpack
@@ -253,6 +280,29 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('modules:done')
+
+  nuxt.hooks.hook('builder:watch', (event, path) => {
+    // Local module patterns
+    if (watchedPaths.has(path)) {
+      return nuxt.callHook('restart', { hard: true })
+    }
+
+    // User provided patterns
+    for (const pattern of nuxt.options.watch) {
+      if (typeof pattern === 'string') {
+        if (pattern === path) { return nuxt.callHook('restart') }
+        continue
+      }
+      if (pattern.test(path)) { return nuxt.callHook('restart') }
+    }
+
+    // Core Nuxt files: app.vue, error.vue and app.config.ts
+    const isFileChange = ['add', 'unlink'].includes(event)
+    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+      console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart')
+    }
+  })
 
   // Normalize windows transpile paths added by modules
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)

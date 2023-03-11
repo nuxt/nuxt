@@ -11,14 +11,27 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  typescript: { strict: true },
+  typescript: {
+    strict: true,
+    tsConfig: {
+      compilerOptions: {
+        // TODO: For testing (future) support for Node16-style module resolution.
+        // See https://github.com/nuxt/nuxt/issues/18426 and https://github.com/nuxt/nuxt/pull/18431
+        // moduleResolution: 'Node16'
+      }
+    }
+  },
   app: {
     pageTransition: true,
     layoutTransition: true,
     head: {
       charset: 'utf-8',
       link: [undefined],
-      meta: [{ name: 'viewport', content: 'width=1024, initial-scale=1' }, { charset: 'utf-8' }]
+      meta: [
+        { name: 'viewport', content: 'width=1024, initial-scale=1' },
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Nuxt Fixture' }
+      ]
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
@@ -48,6 +61,14 @@ export default defineNuxtConfig({
         '/random/c'
       ]
     }
+  },
+  optimization: {
+    keyedComposables: [
+      {
+        name: 'useKeyedComposable',
+        argumentLength: 1
+      }
+    ]
   },
   runtimeConfig: {
     baseURL: '',
@@ -110,6 +131,10 @@ export default defineNuxtConfig({
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
       })
+    },
+    function (_, nuxt) {
+      nuxt.options.optimization.treeShake.composables.server[nuxt.options.rootDir] = ['useClientOnlyComposable', 'setTitleToPink']
+      nuxt.options.optimization.treeShake.composables.client[nuxt.options.rootDir] = ['useServerOnlyComposable']
     }
   ],
   vite: {
@@ -157,7 +182,8 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
-    emitRouteChunkError: 'reload',
+    clientFallback: true,
+    restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
     reactivityTransform: true,

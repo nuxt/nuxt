@@ -6,11 +6,12 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
-// eslint-disable-next-line import/no-restricted-paths
-import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
 
-const nuxtAppCtx = getContext<NuxtApp>('nuxt-app')
+// eslint-disable-next-line import/no-restricted-paths
+import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
@@ -197,11 +198,11 @@ export function createNuxtApp (options: CreateOptions) {
     window.addEventListener('nuxt.preloadError', (event) => {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
-  }
 
-  // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
-  // as well as when mounting the app and in the `app:mounted` hook
-  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
+    // as well as when mounting the app and in the `app:mounted` hook
+    nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+  }
 
   // Expose runtime config
   const runtimeConfig = process.server
@@ -303,10 +304,10 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt, fn)
+    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
   } else {
     // In client side we could assume nuxt app is singleton
-    nuxtAppCtx.set(nuxt)
+    nuxtAppCtx.set(nuxt as NuxtApp)
     return fn()
   }
 }

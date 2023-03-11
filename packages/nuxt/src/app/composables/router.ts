@@ -1,12 +1,16 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
+import type { Ref } from 'vue'
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
+
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { useState } from './state'
 import { setResponseStatus } from './ssr'
+
+import type { PageMeta } from '#app'
 
 export const useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -80,7 +84,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
-  const isExternal = hasProtocol(toPath, true)
+  const isExternal = hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
@@ -148,11 +152,11 @@ export const setPageLayout = (layout: string) => {
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || process.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
-      to.meta.layout = layout
+      to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
       unsubscribe()
     })
   }
   if (!inMiddleware) {
-    useRoute().meta.layout = layout
+    useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
 }

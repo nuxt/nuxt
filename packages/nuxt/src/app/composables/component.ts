@@ -1,10 +1,10 @@
 import { getCurrentInstance, reactive, toRefs } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
+import { useHead } from '@unhead/vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
-import { useHead } from './head'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
