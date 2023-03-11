@@ -194,14 +194,28 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents: ({ app, nuxt }) => {
     return `
+import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 
+type MergedAppConfig<Resolved extends Record<string, any>, Custom extends Record<string, any>> = {
+  [K in keyof Resolved]: K extends keyof Custom
+    ? Custom[K] extends Record<string, any>
+      ? Resolved[K] extends Record<string, any>
+        ? MergedAppConfig<Resolved[K], Custom[K]>
+        : Exclude<Custom[K], undefined>
+      : Exclude<Custom[K], undefined>
+    : Resolved[K]
+}
+
 declare module 'nuxt/schema' {
-  interface AppConfig extends ResolvedAppConfig { }
+  interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
+}
+declare module '@nuxt/schema' {
+  interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
 }
 `
   }

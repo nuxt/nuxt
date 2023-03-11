@@ -246,13 +246,12 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
-      fromLayer: boolean,
-      fromNuxtConfig: boolean,
+      fromLayer: boolean
+      fromNuxtConfig: boolean
       nested: {
         val: number
-      },
-      userConfig: number
-      [key: string]: any
+      }
+      userConfig: 123 | 456
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })
