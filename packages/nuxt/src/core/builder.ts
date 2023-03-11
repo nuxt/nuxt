@@ -2,8 +2,9 @@ import chokidar from 'chokidar'
 import { importModule, isIgnored } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
-import { createApp, generateApp as _generateApp } from './app'
 import type { Nuxt } from 'nuxt/schema'
+
+import { createApp, generateApp as _generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
