@@ -1,5 +1,5 @@
-import type { AppConfig } from '@nuxt/schema'
 import { reactive } from 'vue'
+import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
 // @ts-ignore
 import __appConfig from '#build/app.config.mjs'
@@ -65,7 +65,7 @@ if (process.dev) {
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
-      const newConfig = newModule._getAppConfig()
+      const newConfig = newModule?._getAppConfig()
       applyHMR(newConfig)
     })
   }

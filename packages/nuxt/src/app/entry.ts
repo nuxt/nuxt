@@ -4,7 +4,7 @@ import { $fetch } from 'ofetch'
 // @ts-ignore
 import { baseURL } from '#build/paths.mjs'
 import type { CreateOptions } from '#app'
-import { createNuxtApp, applyPlugins, normalizePlugins } from '#app'
+import { createNuxtApp, applyPlugins, normalizePlugins } from '#app/nuxt'
 import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'

@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
-import defu from 'defu'
+import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
 
@@ -164,8 +164,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
-   * If set to `false` and combined with `static` target, generated pages will simply display
-   * a loading screen with no content.
+   * If set to `false` generated pages will have no content.
    */
   ssr: {
     $resolve: (val) => val ?? true,
@@ -219,6 +218,11 @@ export default defineUntypedSchema({
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
      */
     middleware: 'middleware',
+
+    /**
+     * The modules directory, each file in which will be auto-registered as a Nuxt module.
+     */
+    modules: 'modules',
 
     /**
      * The directory which will be processed to auto-generate your application page routes.
@@ -342,6 +346,18 @@ export default defineUntypedSchema({
   },
 
   /**
+   * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
+   *
+   * It is an array of strings or regular expressions, which will be matched against the file path
+   * relative to the project `srcDir`.
+   *
+   * @type {Array<string | RegExp>}
+   */
+  watch: {
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
+  },
+
+  /**
    * The watchers property lets you overwrite watchers configuration in your `nuxt.config`.
    */
   watchers: {
@@ -423,14 +439,17 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
-    $resolve: async (val: RuntimeConfig, get) => defu(val, {
-      public: {},
-      app: {
-        baseURL: (await get('app')).baseURL,
-        buildAssetsDir: (await get('app')).buildAssetsDir,
-        cdnURL: (await get('app')).cdnURL,
-      }
-    })
+    $resolve: async (val: RuntimeConfig, get) => {
+      provideFallbackValues(val)
+      return defu(val, {
+        public: {},
+        app: {
+          baseURL: (await get('app')).baseURL,
+          buildAssetsDir: (await get('app')).buildAssetsDir,
+          cdnURL: (await get('app')).cdnURL,
+        }
+      })
+    }
   },
 
   /**
@@ -445,3 +464,13 @@ export default defineUntypedSchema({
 
   $schema: {}
 })
+
+function provideFallbackValues (obj: Record<string, any>) {
+  for (const key in obj) {
+    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+      obj[key] = ''
+    } else if (typeof obj[key] === 'object') {
+      provideFallbackValues(obj[key])
+    }
+  }
+}

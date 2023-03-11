@@ -11,6 +11,7 @@ Nuxt's goal is to make web development intuitive and performant, with a great de
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
+  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Open%20Documentation-18181B?logo=nuxt.js" alt="Website"></a>
   <a href="https://volta.net/nuxt/nuxt?utm_source=nuxt_readme"><img src="https://user-images.githubusercontent.com/904724/209143798-32345f6c-3cf8-4e06-9659-f4ace4a6acde.svg" alt="Volta board"></a>
  </p>
 
@@ -114,7 +115,7 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 
 ## Nuxt 2
 
-You can find the code for Nuxt 2 on the [`2.x-dev` branch](https://github.com/nuxt/nuxt/tree/2.x-dev) and the documentation at [nuxtjs.org](https://nuxtjs.org).
+You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [nuxtjs.org](https://nuxtjs.org).
 
 ## Follow us
 

@@ -1,5 +1,6 @@
 import { hasProtocol } from 'ufo'
-import { defineNuxtPlugin, useNuxtApp, useRouter } from '#app'
+import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { useRouter } from '#app/composables/router'
 // @ts-ignore
 import layouts from '#build/layouts'
 // @ts-ignore

@@ -30,6 +30,7 @@ export default defineBuildConfig({
     'rollup-plugin-visualizer',
     'vite',
     '@vitejs/plugin-vue',
+    '@vitejs/plugin-vue-jsx',
     'mini-css-extract-plugin',
     'terser-webpack-plugin',
     'css-minimizer-webpack-plugin',

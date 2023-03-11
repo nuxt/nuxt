@@ -1,4 +1,3 @@
-import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { resolveSchema, generateTypes } from 'untyped'
@@ -6,6 +5,8 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { resolvePath } from 'mlly'
+import { filename } from 'pathe/utils'
+import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 
 export interface TemplateContext {
   nuxt: Nuxt
@@ -17,7 +18,7 @@ export const vueShim: NuxtTemplate = {
   getContents: () =>
     [
       'declare module \'*.vue\' {',
-      '  import { DefineComponent } from \'@vue/runtime-core\'',
+      '  import { DefineComponent } from \'vue\'',
       '  const component: DefineComponent<{}, {}, any>',
       '  export default component',
       '}'
@@ -53,7 +54,7 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(path).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -72,7 +73,7 @@ export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(path).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -102,7 +103,7 @@ declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
 
@@ -111,7 +112,7 @@ export { }
   }
 }
 
-const adHocModules = ['router', 'pages', 'imports', 'meta', 'components']
+const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
 export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
@@ -125,8 +126,8 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
-      "import { NuxtModule } from '@nuxt/schema'",
-      "declare module '@nuxt/schema' {",
+      "import { NuxtModule } from 'nuxt/schema'",
+      "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
@@ -199,7 +200,7 @@ ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from $
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 
-declare module '@nuxt/schema' {
+declare module 'nuxt/schema' {
   interface AppConfig extends ResolvedAppConfig { }
 }
 `
@@ -217,7 +218,7 @@ const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
-export default defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
+export default /* #__PURE__ */ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
 `
   }
 }

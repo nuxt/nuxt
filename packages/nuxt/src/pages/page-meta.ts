@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL, stringifyQuery } from 'ufo'
+import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findStaticImports, findExports, parseStaticImport } from 'mlly'
 import type { CallExpression, Identifier, Expression } from 'estree'
@@ -16,7 +16,7 @@ export interface PageMetaPluginOptions {
 }
 
 const CODE_EMPTY = `
-const __nuxt_page_meta = {}
+const __nuxt_page_meta = null
 export default __nuxt_page_meta
 `
 
@@ -119,7 +119,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         const parsed = parseStaticImport(i)
         for (const name of [
           parsed.defaultImport,
-          ...Object.keys(parsed.namedImports || {}),
+          ...Object.values(parsed.namedImports || {}),
           parsed.namespacedImport
         ].filter(Boolean) as string[]) {
           importMap.set(name, i)
@@ -138,7 +138,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
           const meta = node.arguments[0] as Expression & { start: number, end: number }
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || '{}'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
           function addImport (name: string | false) {
             if (name && importMap.has(name)) {
@@ -191,8 +191,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
 function rewriteQuery (id: string) {
-  const query = stringifyQuery({ macro: 'true', ...parseMacroQuery(id) })
-  return id.replace(/\?.+$/, '?' + query)
+  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(/^\?/, '').replace(/&macro=true/, ''))
 }
 
 function parseMacroQuery (id: string) {

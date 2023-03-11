@@ -1,14 +1,14 @@
 import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
-import type { AppConfig } from '@nuxt/schema'
-
+import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+
+import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import NuxtPage from '~~/../../../packages/nuxt/src/pages/runtime/page'
-import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
+import type { NavigateToOptions } from '#app/composables/router'
+import { NuxtPage } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -17,6 +17,9 @@ describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
     expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    // @ts-expect-error not a valid method
+    expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
     expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
@@ -49,6 +52,10 @@ describe('API routes', () => {
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    // @ts-expect-error not a valid method
+    useFetch('/api/hey', { method: 'PATCH' })
     expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | null>>()
     expectTypeOf(useFetch('/api/union').data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | null>>()
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | null>>()
@@ -124,8 +131,27 @@ describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
+    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
+  })
+  it('provides hints on overriding these values', () => {
+    const val = defineNuxtConfig({
+      runtimeConfig: {
+        public: {
+          // @ts-expect-error
+          testConfig: 'test',
+          ids: [1, 2]
+        }
+      }
+    })
+    expectTypeOf(val.runtimeConfig!.public!.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'>>()
+    expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
+    expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
+    expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
+    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number | undefined>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
+    expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<any>()
   })
 })
 
@@ -173,9 +199,7 @@ describe('composables', () => {
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
-    // @ts-expect-error
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
-    // @ts-expect-error
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
 
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
@@ -209,6 +233,13 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+
+    // Default values: #14437
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{bar: number} | null>>()
+    expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
+    expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
   })
 })
 
@@ -221,8 +252,9 @@ describe('app config', () => {
         val: number
       },
       userConfig: number
+      [key: string]: any
     }
-    expectTypeOf<AppConfig>().toMatchTypeOf<ExpectedMergedAppConfig>()
+    expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })
 })
 

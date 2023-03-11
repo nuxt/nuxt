@@ -3,5 +3,5 @@
 </template>
 
 <script setup>
-await navigateTo('/', { replace: true })
+await navigateTo('/', { replace: true, redirectCode: 301 })
 </script>

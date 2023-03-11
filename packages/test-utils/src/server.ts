@@ -7,6 +7,7 @@ import * as _kit from '@nuxt/kit'
 import { useTestContext } from './context'
 
 // @ts-ignore type cast
+// eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 export async function startServer () {
@@ -30,12 +31,13 @@ export async function startServer () {
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
-        const res = await $fetch('/')
+        const res = await $fetch(ctx.nuxt!.options.app.baseURL)
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
       } catch {}
     }
+    ctx.serverProcess.kill()
     throw new Error('Timeout waiting for dev server!')
   } else {
     ctx.serverProcess = execa('node', [
