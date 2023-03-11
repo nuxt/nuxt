@@ -117,14 +117,7 @@ export default defineUntypedSchema({
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
      */
-    payloadExtraction: {
-      async $resolve(enabled, get) {
-        if (enabled === null || enabled === undefined) {
-          console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-        }
-        return enabled ?? false
-      }
-    },
+    payloadExtraction: undefined,
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
