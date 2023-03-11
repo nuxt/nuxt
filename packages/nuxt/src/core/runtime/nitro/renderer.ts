@@ -159,7 +159,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
-const ROOT_NODE_REGEX = /^<div id="__nuxt">([\s\S]*)<\/div>$/
+const ROOT_NODE_REGEX = new RegExp(`<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
