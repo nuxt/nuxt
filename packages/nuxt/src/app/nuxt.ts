@@ -303,10 +303,10 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt, fn)
+    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
   } else {
     // In client side we could assume nuxt app is singleton
-    nuxtAppCtx.set(nuxt)
+    nuxtAppCtx.set(nuxt as NuxtApp)
     return fn()
   }
 }

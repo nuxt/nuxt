@@ -1,4 +1,5 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
+import type { Ref } from 'vue'
 import type {
   NavigationGuard,
   RouteLocation
@@ -11,6 +12,8 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
+
+import type { PageMeta } from '#app'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { showError, clearError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'
@@ -118,7 +121,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   router.beforeEach(async (to, from) => {
     to.meta = reactive(to.meta)
     if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-      to.meta.layout = initialLayout.value
+      to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
     }
     nuxtApp._processingMiddleware = true
 
