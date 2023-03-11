@@ -16,35 +16,35 @@
     },
     "./config": {
       "types": "./config.d.ts",
-      "import": "./config.mjs",
+      "import": "./config.js",
       "require": "./config.cjs"
     },
     "./schema": {
       "types": "./schema.d.ts",
-      "import": "./schema.mjs"
+      "import": "./schema.js"
     },
     "./kit": {
       "types": "./kit.d.ts",
-      "import": "./kit.mjs"
+      "import": "./kit.js"
     },
     "./app": {
       "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.mjs"
+      "import": "./dist/app/index.js"
     },
     "./package.json": "./package.json"
   },
   "imports": {
     "#app": {
       "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.mjs"
+      "import": "./dist/app/index.js"
     },
     "#head": {
       "types": "./dist/head/runtime/index.d.ts",
-      "import": "./dist/head/runtime/index.mjs"
+      "import": "./dist/head/runtime/index.js"
     },
     "#pages": {
       "types": "./dist/pages/runtime/index.d.ts",
-      "import": "./dist/pages/runtime/index.mjs"
+      "import": "./dist/pages/runtime/index.js"
     }
   },
   "files": [
