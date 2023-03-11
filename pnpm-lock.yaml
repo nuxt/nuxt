@@ -450,7 +450,7 @@ importers:
       unctx: ^2.1.2
       unenv: ^1.2.2
       unimport: ^3.0.2
-      unplugin: ^1.2.0
+      unplugin: ^1.3.0
       untyped: ^1.2.2
       vue: 3.2.47
       vue-bundle-renderer: ^1.0.2
@@ -494,7 +494,7 @@ importers:
       unctx: 2.1.2
       unenv: 1.2.2
       unimport: 3.0.2
-      unplugin: 1.2.0
+      unplugin: 1.3.0
       untyped: 1.2.2
       vue: 3.2.47
       vue-bundle-renderer: 1.0.2
@@ -617,7 +617,7 @@ importers:
       strip-literal: ^1.0.1
       ufo: ^1.1.1
       unbuild: ^1.1.2
-      unplugin: ^1.2.0
+      unplugin: ^1.3.0
       vite: ^4.1.4
       vite-node: ^0.29.2
       vite-plugin-checker: ^0.5.6
@@ -655,7 +655,7 @@ importers:
       std-env: 3.3.2
       strip-literal: 1.0.1
       ufo: 1.1.1
-      unplugin: 1.2.0
+      unplugin: 1.3.0
       vite: 4.1.4
       vite-node: 0.29.2
       vite-plugin-checker: 0.5.6_vite@4.1.4
@@ -705,7 +705,7 @@ importers:
       time-fix-plugin: ^2.0.7
       ufo: ^1.1.1
       unbuild: ^1.1.2
-      unplugin: ^1.2.0
+      unplugin: ^1.3.0
       url-loader: ^4.1.1
       vue: 3.2.47
       vue-bundle-renderer: ^1.0.2
@@ -746,7 +746,7 @@ importers:
       style-resources-loader: 1.5.0_webpack@5.76.1
       time-fix-plugin: 2.0.7_webpack@5.76.1
       ufo: 1.1.1
-      unplugin: 1.2.0
+      unplugin: 1.3.0
       url-loader: 4.1.1_eet6kv3yv7cvpox6iemkekejzy
       vue-bundle-renderer: 1.0.2
       vue-loader: 17.0.1_vue@3.2.47+webpack@5.76.1
@@ -8293,7 +8293,7 @@ packages:
       pkg-types: 1.0.2
       scule: 1.0.0
       strip-literal: 1.0.1
-      unplugin: 1.2.0
+      unplugin: 1.3.0
     transitivePeerDependencies:
       - rollup
 
@@ -8402,8 +8402,8 @@ packages:
       webpack-virtual-modules: 0.5.0
     dev: false
 
-  /unplugin/1.2.0:
-    resolution: {integrity: sha512-7lJXQY4CxOK4jZyVskZuuNBqBSOlxezKqBpfQEpH+Odk2Ban3moKAlvzs9rZuZoZp6/1FEhvY9TZXav2FRhaBg==}
+  /unplugin/1.3.0:
+    resolution: {integrity: sha512-l4Udjxg2+vCuKRgIA2T8fHd7UwKWaLizh7t+3C72zjnN0+ZS+odzATFenymOUgcGqG1dkCSYE34h9wBbMXrKrA==}
     dependencies:
       acorn: 8.8.2
       chokidar: 3.5.3

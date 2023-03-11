@@ -83,7 +83,7 @@
     "unctx": "^2.1.2",
     "unenv": "^1.2.2",
     "unimport": "^3.0.2",
-    "unplugin": "^1.2.0",
+    "unplugin": "^1.3.0",
     "untyped": "^1.2.2",
     "vue": "^3.2.47",
     "vue-bundle-renderer": "^1.0.2",
