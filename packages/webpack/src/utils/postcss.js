@@ -67,6 +67,10 @@ export default class PostcssConfig {
     return alias
   }
 
+  /**
+   * Returns the default PostCSS options used by Nuxt.
+   * @returns {{ plugins: {"postcss-import": {resolve: Function}, "postcss-preset-env": {}, "postcss-url": {}, cssnano: (boolean|{preset: [string,{minifyFontValues: {removeQuotes: boolean}}]})}, order: string}}
+   */
   get defaultPostcssOptions () {
     const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
@@ -83,7 +87,7 @@ export default class PostcssConfig {
         'postcss-url': {},
 
         // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-preset-env
-        'postcss-preset-env': this.postcssOptions.preset || {},
+        'postcss-preset-env': { stage: 2 },
 
         cssnano: dev
           ? false
@@ -176,15 +180,17 @@ export default class PostcssConfig {
     }
     // The plugins and preset are merged, with priority to the inner `postcssOptions`
     if (postcssOptions.plugins) {
-      postcssOptions.postcssOptions.plugins = merge(postcssOptions.postcssOptions.plugins, postcssOptions.plugins)
+      postcssOptions.postcssOptions.plugins = merge(
+        postcssOptions.postcssOptions.plugins || {},
+        postcssOptions.plugins)
       delete postcssOptions.plugins
     }
     // The preset is merged, with priority to the inner `postcssOptions`
     if (postcssOptions.preset) {
-      postcssOptions.postcssOptions.preset = {
-        ...postcssOptions.preset || {},
-        ...postcssOptions.postcssOptions.preset || {}
-      }
+      postcssOptions.postcssOptions.preset = merge(
+        postcssOptions.preset,
+        postcssOptions.postcssOptions.preset || {}
+      )
       delete postcssOptions.preset
     }
     // The `postcssOptions.order` is used only if there is no `postcssOptions.postcssOptions.order`
@@ -203,11 +209,15 @@ export default class PostcssConfig {
     return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
+  /**
+   * Load plugins from postcssOptions
+   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function}}} postcssOptions
+   */
   loadPlugins (postcssOptions) {
-    const { plugins } = postcssOptions
+    const { plugins, order } = postcssOptions.postcssOptions
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
-      postcssOptions.plugins = this.sortPlugins(postcssOptions)
+      postcssOptions.postcssOptions.plugins = this.sortPlugins({ plugins, order })
         .map((p) => {
           const plugin = this.buildContext.nuxt.resolver.requireModule(p, { paths: [__dirname] })
           const opts = plugins[p]
@@ -238,30 +248,34 @@ export default class PostcssConfig {
      * Normalized postcss options
      * @type {{postcssOptions: {plugins?: unknown, order?: string, preset?: unknown}}}
      */
-    let postcssOptions = this.normalize(cloneDeep(this.postcssLoaderOptions))
+    const postcssOptions = this.normalize(cloneDeep(this.postcssLoaderOptions))
 
-    if (Array.isArray(postcssOptions.plugins)) {
-      defaults(postcssOptions, this.defaultPostcssOptions)
+    if (Array.isArray(postcssOptions.postcssOptions.plugins)) {
+      defaults(postcssOptions.postcssOptions.plugins, this.defaultPostcssOptions.plugins)
     } else {
       // Merge all plugins and use preset for setting up postcss-preset-env
-      if (postcssOptions.preset) {
-        postcssOptions.plugins = {
-          ...merge({}, this.postcssLoaderOptions.plugins, this.postcssOptions.plugins),
-          'postcss-preset-env': merge({}, postcssOptions.preset)
+      if (postcssOptions.postcssOptions.preset) {
+        if (!postcssOptions.postcssOptions.plugins) {
+          postcssOptions.postcssOptions.plugins = {}
         }
-        delete postcssOptions.preset
+        postcssOptions.postcssOptions.plugins['postcss-preset-env'] = defaults(
+          postcssOptions.postcssOptions.preset,
+          this.defaultPostcssOptions.plugins['postcss-preset-env']
+        )
+
+        delete postcssOptions.postcssOptions.preset
       }
 
       // Keep the order of default plugins
-      postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
+      postcssOptions.postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions.postcssOptions)
       this.loadPlugins(postcssOptions)
     }
 
-    delete postcssOptions.order
+    delete postcssOptions.postcssOptions.order
 
     return {
       sourceMap: this.cssSourceMap,
-      postcssOptions
+      ...postcssOptions
     }
   }
 }
