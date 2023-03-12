@@ -315,17 +315,14 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * Returns the current Nuxt instance.
  */
 export function useNuxtApp () {
+  const vm = getCurrentInstance()
+  if (vm) { return vm.appContext.app.$nuxt as NuxtApp }
   const nuxtAppInstance = nuxtAppCtx.tryUse()
 
   if (!nuxtAppInstance) {
-    const vm = getCurrentInstance()
-    if (!vm) {
-      throw new Error('nuxt instance unavailable')
-    }
-    return vm.appContext.app.$nuxt as NuxtApp
+    throw new Error('nuxt instance unavailable')
   }
-
-  return nuxtAppInstance
+  return nuxtAppInstance as NuxtApp
 }
 
 export function useRuntimeConfig (): RuntimeConfig {
