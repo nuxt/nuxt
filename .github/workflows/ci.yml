@@ -45,6 +45,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Build
         run: pnpm build
 
@@ -132,12 +135,6 @@ jobs:
 
       - name: Build (stub)
         run: pnpm build:stub
-
-      - name: Typecheck
-        run: pnpm typecheck
-        env:
-          TEST_ENV: ${{ matrix.env }}
-          TEST_BUILDER: ${{ matrix.builder }}
 
       - name: Test (unit)
         run: pnpm test:unit
