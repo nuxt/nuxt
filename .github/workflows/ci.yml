@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Typecheck
+      - name: Build (stub)
         run: pnpm build:stub
 
       - name: Typecheck
