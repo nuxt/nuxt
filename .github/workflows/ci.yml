@@ -46,6 +46,9 @@ jobs:
         run: pnpm install
 
       - name: Typecheck
+        run: pnpm build:stub
+
+      - name: Typecheck
         run: pnpm typecheck
 
       - name: Build
