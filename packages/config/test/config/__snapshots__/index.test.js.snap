@@ -110,11 +110,7 @@ Object {
     "parallel": false,
     "plugins": Array [],
     "postcss": Object {
-      "postcssOptions": Object {
-        "preset": Object {
-          "stage": 2,
-        },
-      },
+      "postcssOptions": Object {},
     },
     "profile": false,
     "publicPath": "/_nuxt/",
@@ -502,11 +498,7 @@ Object {
     "parallel": false,
     "plugins": Array [],
     "postcss": Object {
-      "postcssOptions": Object {
-        "preset": Object {
-          "stage": 2,
-        },
-      },
+      "postcssOptions": Object {},
     },
     "profile": false,
     "publicPath": "/_nuxt/",

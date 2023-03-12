@@ -85,12 +85,9 @@ export default () => ({
   },
   transpile: [], // Name of NPM packages to be transpiled
   postcss: {
-    postcssOptions: {
-      preset: {
-        // https://cssdb.org/#staging-process
-        stage: 2
-      }
-    }
+    // Use the default postcss config: stage 2
+    // https://cssdb.org/#staging-process
+    postcssOptions: {}
   },
   html: {
     minify: {
