@@ -67,7 +67,7 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
-  [key: string]: any
+  [key: string]: unknown
 
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   _asyncData: Record<string, {
