@@ -22,7 +22,7 @@
   "devDependencies": {
     "@types/lodash.template": "^4",
     "@types/semver": "^7.3.13",
-    "@unhead/schema": "^1.1.22",
+    "@unhead/schema": "^1.1.23",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitejs/plugin-vue-jsx": "^3.0.0",
     "nitropack": "^2.2.3",
@@ -30,7 +30,7 @@
     "vite": "~4.1.4"
   },
   "dependencies": {
-    "c12": "^1.1.2",
+    "c12": "^1.2.0",
     "create-require": "^1.1.1",
     "defu": "^6.1.2",
     "hookable": "^5.5.0",
