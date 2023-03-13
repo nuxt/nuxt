@@ -26,7 +26,5 @@ export default defineUntypedSchema({
   /** @private */
   _installedModules: [],
   /** @private */
-  _modules: [],
-  /** @private */
-  _appConfigFiles: []
+  _modules: []
 })

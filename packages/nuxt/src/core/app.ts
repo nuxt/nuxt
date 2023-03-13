@@ -134,9 +134,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Extend app
   await nuxt.callHook('app:resolve', app)
 
-  // Expose resolved app config files to nitro
-  nuxt.options._appConfigFiles = app.configs
-
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
