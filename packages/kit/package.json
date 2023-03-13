@@ -4,8 +4,14 @@
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],

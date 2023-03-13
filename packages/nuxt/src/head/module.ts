@@ -6,7 +6,7 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 
 export default defineNuxtModule({
   meta: {
-    name: 'head'
+    name: 'meta'
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')

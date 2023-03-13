@@ -2,13 +2,13 @@ import { expectTypeOf } from 'expect-type'
 import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { AppConfig, RuntimeValue } from '@nuxt/schema'
-
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+
+import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import NuxtPage from '~~/../../../packages/nuxt/src/pages/runtime/page'
-import type { NavigateToOptions } from '~~/../../../packages/nuxt/dist/app/composables/router'
-import { defineNuxtConfig } from '~~/../../../packages/nuxt/config'
+import type { NavigateToOptions } from '#app/composables/router'
+import { NuxtPage } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -199,9 +199,7 @@ describe('composables', () => {
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
-    // @ts-expect-error
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
-    // @ts-expect-error
     expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
 
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
@@ -235,19 +233,25 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+
+    // Default values: #14437
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{bar: number} | null>>()
+    expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
+    expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
   })
 })
 
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
-      fromLayer: boolean,
-      fromNuxtConfig: boolean,
+      fromLayer: boolean
+      fromNuxtConfig: boolean
       nested: {
         val: number
-      },
-      userConfig: number
-      [key: string]: any
+      }
+      userConfig: 123 | 456
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })
