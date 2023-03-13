@@ -52,4 +52,13 @@ export default defineUntypedSchema({
    * @type {boolean}
    */
   pages: undefined,
+
+  /**
+   * Manually disable nuxt telemetry.
+   *
+   * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
+   *
+   * @type {typeof import('@nuxt/telemetry').ModuleOptions}
+  */
+  telemetry: undefined
 })
