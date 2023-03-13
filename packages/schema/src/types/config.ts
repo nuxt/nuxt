@@ -86,11 +86,13 @@ export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
 }>
 
 /** Normalized Nuxt options available as `nuxt.options.*` */
-export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'telemetry'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | { bundle: (nuxt: Nuxt) => Promise<void> }
   _layers: NuxtConfigLayer[]
   $schema: SchemaDefinition
+  // TODO: hotfix: resolve upstream
+  telemetry?: ConfigSchema['telemetry']
 }
 
 export interface ViteConfig extends ViteUserConfig {
