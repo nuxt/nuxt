@@ -80,10 +80,8 @@ async function bundle (nuxt: Nuxt) {
 }
 
 async function loadBuilder (nuxt: Nuxt, builder: string) {
-  for (const root of [nuxt.options.rootDir, import.meta.url]) {
-    const builderPath = await tryResolveModule(builder, root)
-    if (builderPath) {
-      return import(builderPath)
-    }
+  const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
+  if (builderPath) {
+    return import(builderPath)
   }
 }
