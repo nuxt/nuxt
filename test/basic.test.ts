@@ -1035,6 +1035,9 @@ describe('app config', () => {
     }
 
     expect(html).toContain(JSON.stringify(expectedAppConfig))
+
+    const serverAppConfig = await $fetch('/api/app-config')
+    expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })
 
