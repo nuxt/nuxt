@@ -4367,10 +4367,10 @@ caniuse-lite@^1.0.30001248, caniuse-lite@^1.0.30001400, caniuse-lite@^1.0.300014
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001450.tgz#022225b91200589196b814b51b1bbe45144cf74f"
   integrity sha512-qMBmvmQmFXaSxexkjjfMvD5rnDL0+m+dUMZKoDYsGG8iZN29RuYh9eRoMvKsT6uMAWlyUUGDEQGJJYjzCIO9ew==
 
-caniuse-lite@^1.0.30001464:
-  version "1.0.30001464"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001464.tgz#888922718df48ce5e33dcfe1a2af7d42676c5eb7"
-  integrity sha512-oww27MtUmusatpRpCGSOneQk2/l5czXANDSFvsc7VuOQ86s3ANhZetpwXNf1zY/zdfP63Xvjz325DAdAoES13g==
+caniuse-lite@^1.0.30001465:
+  version "1.0.30001465"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001465.tgz#c1b715bbb4ff6fdc20a4827e0afe9f4374fca217"
+  integrity sha512-HvjgL3MYAJjceTDCcjRnQGjwUz/5qec9n7JPOzUursUoOTIsYCSDOb1l7RsnZE8mjbxG78zVRCKfrBXyvChBag==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -4991,10 +4991,10 @@ core-js-compat@^3.25.1:
   dependencies:
     browserslist "^4.21.4"
 
-core-js-compat@^3.29.0:
-  version "3.29.0"
-  resolved "https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.29.0.tgz#1b8d9eb4191ab112022e7f6364b99b65ea52f528"
-  integrity sha512-ScMn3uZNAFhK2DGoEfErguoiAHhV2Ju+oJo/jK08p7B3f3UhocUrCCkTvnZaiS+edl5nlIoiBXKcwMc6elv4KQ==
+core-js-compat@^3.29.1:
+  version "3.29.1"
+  resolved "https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.29.1.tgz#15c0fb812ea27c973c18d425099afa50b934b41b"
+  integrity sha512-QmchCua884D8wWskMX8tW5ydINzd8oSJVx38lx/pVkFGqztxt73GYre3pm/hyYq8bPf+MW5In4I/uRShFDsbrA==
   dependencies:
     browserslist "^4.21.5"
 
