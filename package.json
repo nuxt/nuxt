@@ -38,8 +38,7 @@
     "unbuild": "^1.1.2",
     "vite": "^4.1.4",
     "vue": "3.2.47",
-    "magic-string": "^0.30.0",
-    "nitropack": "npm:nitropack-edge@2.3.0-27971249.591f9aa"
+    "magic-string": "^0.30.0"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
