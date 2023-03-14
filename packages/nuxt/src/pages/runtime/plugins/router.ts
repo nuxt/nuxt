@@ -1,8 +1,6 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type {
-  RouteLocation
-} from 'vue-router'
+import type { RouteLocation, Router } from 'vue-router'
 import {
   createRouter,
   createWebHistory,
@@ -12,7 +10,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 
-import type { PageMeta, RouteMiddleware } from '#app'
+import type { PageMeta, RouteMiddleware, Plugin } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { showError, clearError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'
@@ -200,4 +198,4 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   })
 
   return { provide: { router } }
-})
+}) as Plugin<{ router: Router }>
