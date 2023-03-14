@@ -222,7 +222,7 @@ export interface NuxtHooks {
    * @param nitro The created nitro object
    * @returns Promise
    */
-  'nitro:build:assets': (nitro: Nitro) => HookResult
+  'nitro:build:public-assets': (nitro: Nitro) => HookResult
   /**
    * Allows extending the routes to be pre-rendered.
    * @param ctx Nuxt context
