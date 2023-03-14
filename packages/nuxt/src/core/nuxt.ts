@@ -276,6 +276,9 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   for (const m of modulesToInstall) {
+    if (!m) {
+      continue
+    }
     if (Array.isArray(m)) {
       await installModule(m[0], m[1])
     } else {
