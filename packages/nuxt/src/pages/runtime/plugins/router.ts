@@ -1,7 +1,6 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type {
-  NavigationGuard,
   RouteLocation
 } from 'vue-router'
 import {
@@ -13,7 +12,7 @@ import {
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
 
-import type { PageMeta } from '#app'
+import type { PageMeta, RouteMiddleware } from '#app'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { showError, clearError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'
@@ -125,7 +124,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     }
     nuxtApp._processingMiddleware = true
 
-    type MiddlewareDef = string | NavigationGuard
+    type MiddlewareDef = string | RouteMiddleware
     const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
     for (const component of to.matched) {
       const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]

@@ -67,7 +67,7 @@ const NuxtServerComponent = defineComponent({
         nuxtApp[pKey] = nuxtApp[pKey] || {}
         if (!nuxtApp[pKey][hashId.value]) {
           nuxtApp[pKey][hashId.value] = _fetchComponent().finally(() => {
-            delete nuxtApp[pKey][hashId.value]
+            delete nuxtApp[pKey]![hashId.value]
           })
         }
         const res: NuxtIslandResponse = await nuxtApp[pKey][hashId.value]

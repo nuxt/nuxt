@@ -7,7 +7,7 @@ interface LoadPayloadOptions {
   hash?: string
 }
 
-export function loadPayload (url: string, opts: LoadPayloadOptions = {}) {
+export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
   if (process.server) { return null }
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
