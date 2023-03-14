@@ -196,7 +196,9 @@ export default defineUntypedSchema({
    * ```
    * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
-  modules: [],
+  modules: {
+    $resolve: val => [].concat(val).filter(Boolean)
+  },
 
   /**
    * Customize default directory structure used by Nuxt.
