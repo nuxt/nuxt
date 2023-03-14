@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
-import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
@@ -101,7 +101,6 @@ interface _NuxtApp {
 
   // Nuxt injections
   $config: RuntimeConfig
-  $router: Router
 
   isHydrating?: boolean
   deferHydration: () => () => void | Promise<void>
@@ -133,7 +132,7 @@ interface _NuxtApp {
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
-export interface Plugin<Injections extends Record<string, any> = Record<string, any>> {
+export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
 }
@@ -313,7 +312,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
   return plugins as Plugin[]
 }
 
-export function defineNuxtPlugin<T extends Record<string, any>> (plugin: Plugin<T>) {
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T>) {
   plugin[NuxtPluginIndicator] = true
   return plugin
 }
