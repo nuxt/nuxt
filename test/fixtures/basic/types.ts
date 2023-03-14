@@ -127,6 +127,15 @@ describe('modules', () => {
   })
 })
 
+describe('nuxtApp', () => {
+  it('types injections provided by plugins', () => {
+    expectTypeOf(useNuxtApp().$asyncPlugin).toEqualTypeOf<() => string>()
+  })
+  it('marks unknown injections as unknown', () => {
+    expectTypeOf(useNuxtApp().doesNotExist).toEqualTypeOf<unknown>()
+  })
+})
+
 describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()

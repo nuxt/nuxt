@@ -1,15 +1,17 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
 import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
-import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
+import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import type { RouteMiddleware } from '../../app'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -67,14 +69,39 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
-  [key: string]: any
+  [key: string]: unknown
 
+  /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
+  /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>
     pending: Ref<boolean>
     error: Ref<any>
   } | undefined>
+
+  /** @internal */
+  _middleware: {
+    global: RouteMiddleware[]
+    named: Record<string, RouteMiddleware>
+  }
+
+  /** @internal */
+  _observer?: { observe: (element: Element, callback: () => void) => () => void }
+  /** @internal */
+  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any>>
+
+  /** @internal */
+  _appConfig: AppConfig
+  /** @internal */
+  _route: RouteLocationNormalizedLoaded
+
+  /** @internal */
+  _islandPromises?: Record<string, Promise<any>>
+
+  // Nuxt injections
+  $config: RuntimeConfig
+  $router: Router
 
   isHydrating?: boolean
   deferHydration: () => () => void | Promise<void>
