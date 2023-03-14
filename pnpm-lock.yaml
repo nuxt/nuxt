@@ -437,7 +437,7 @@ importers:
       knitwork: ^1.0.0
       magic-string: ^0.30.0
       mlly: ^1.2.0
-      nitropack: ^2.3.1
+      nitropack: ~2.3.1
       nuxi: workspace:*
       ofetch: ^1.0.1
       ohash: ^1.0.0
@@ -517,7 +517,7 @@ importers:
       defu: ^6.1.2
       hookable: ^5.5.0
       jiti: ^1.17.2
-      nitropack: ^2.3.1
+      nitropack: ~2.3.1
       pathe: ^1.1.0
       pkg-types: ^1.0.2
       postcss-import-resolver: ^2.0.0
