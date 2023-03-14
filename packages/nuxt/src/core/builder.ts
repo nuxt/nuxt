@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
@@ -82,6 +83,6 @@ async function bundle (nuxt: Nuxt) {
 async function loadBuilder (nuxt: Nuxt, builder: string) {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
   if (builderPath) {
-    return import(builderPath)
+    return import(pathToFileURL(builderPath).href)
   }
 }
