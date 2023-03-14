@@ -4,10 +4,26 @@ description: The recommended way to provide head data with user input.
 
 # `useHeadSafe`
 
-The useHeadSafe composable is a wrapper around the [useHead](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
+The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
 
-::ReadMore{link="https://unhead.harlanzw.com/guide/composables/use-head-safe"}
-::
+## Usage
+
+You can pass all the same values as `useHead`
+```ts
+useHeadSafe({
+  script: [
+    { id: 'xss-script', innerHTML: 'alert("xss")' }
+  ],
+  meta: [
+    { 'http-equiv': 'refresh', content: '0;javascript:alert(1)' }
+  ]
+})
+// Will safely generate
+// <script id="xss-script"></script>
+// <meta content="0;javascript:alert(1)">
+```
+
+Read more on [unhead documentation](https://unhead.harlanzw.com/guide/composables/use-head-safe).
 
 ## Type
 
