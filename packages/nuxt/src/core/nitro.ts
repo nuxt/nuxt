@@ -252,6 +252,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
       if (!nuxt.options._generate) {
         logger.restoreAll()
