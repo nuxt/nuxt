@@ -3,7 +3,7 @@ import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter, Router } from 'vue-router'
 
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
@@ -130,9 +130,11 @@ describe('modules', () => {
 describe('nuxtApp', () => {
   it('types injections provided by plugins', () => {
     expectTypeOf(useNuxtApp().$asyncPlugin).toEqualTypeOf<() => string>()
+    expectTypeOf(useNuxtApp().$router).toEqualTypeOf<Router>()
   })
   it('marks unknown injections as unknown', () => {
     expectTypeOf(useNuxtApp().doesNotExist).toEqualTypeOf<unknown>()
+    expectTypeOf(useNuxtApp().$random).toEqualTypeOf<unknown>()
   })
 })
 
