@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.2.3",
+  "version": "3.3.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
