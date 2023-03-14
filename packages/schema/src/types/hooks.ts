@@ -218,7 +218,7 @@ export interface NuxtHooks {
    */
   'nitro:build:before': (nitro: Nitro) => HookResult
   /**
-   * Called after copying public assets into `nitro.options.output.publicDir`. Allows modifying public assets before Nitro server is built.
+   * Called after copying public assets. Allows modifying public assets before Nitro server is built.
    * @param nitro The created nitro object
    * @returns Promise
    */
