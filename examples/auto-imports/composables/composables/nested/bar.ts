@@ -1,3 +1,3 @@
-export function useNestedBar() {
+export function useNestedBar () {
   return 'bar'
 }
