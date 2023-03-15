@@ -24,7 +24,9 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Set response code and message
   event.node.res.statusCode = (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500
   if (errorObject.statusMessage) {
-    event.node.res.statusMessage = errorObject.statusMessage
+    // Allowed characters: horizontal tabs, spaces or visible ascii characters: https://www.rfc-editor.org/rfc/rfc7230#section-3.1.2
+    // eslint-disable-next-line no-control-regex
+    event.node.res.statusMessage = errorObject.statusMessage.replace(/[^\x09\x20-\x7E]/g, '')
   }
   // Console output
   if (error.unhandled || error.fatal) {
