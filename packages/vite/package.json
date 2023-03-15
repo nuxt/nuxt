@@ -39,7 +39,7 @@
     "externality": "^1.0.0",
     "fs-extra": "^11.1.0",
     "get-port-please": "^3.0.1",
-    "h3": "^1.6.0",
+    "h3": "^1.6.1",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
