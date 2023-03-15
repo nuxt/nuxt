@@ -1,6 +1,6 @@
 import { execa } from 'execa'
 import { resolve } from 'pathe'
-import { tryResolveModule } from '../utils/cjs'
+import { tryResolveModule } from '../utils/esm'
 
 import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'
@@ -31,7 +31,7 @@ export default defineNuxtCommand({
     await nuxt.close()
 
     // Prefer local install if possible
-    const hasLocalInstall = tryResolveModule('typescript', rootDir) && tryResolveModule('vue-tsc/package.json', rootDir)
+    const hasLocalInstall = await tryResolveModule('typescript', rootDir) && await tryResolveModule('vue-tsc/package.json', rootDir)
     if (hasLocalInstall) {
       await execa('vue-tsc', ['--noEmit'], { preferLocal: true, stdio: 'inherit', cwd: rootDir })
     } else {

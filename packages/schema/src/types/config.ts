@@ -3,7 +3,7 @@ import type { ConfigSchema } from '../../schema/config'
 import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
-import type { AppHeadMetaObject } from './meta'
+import type { AppHeadMetaObject } from './head'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
 export type { SchemaDefinition } from 'untyped'
@@ -136,7 +136,7 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 
 // -- App Config --
 
-export interface CustomAppConfig extends Record<string, any> { }
+export interface CustomAppConfig { }
 
 export interface AppConfigInput extends CustomAppConfig {
   /** @deprecated reserved */
@@ -156,4 +156,4 @@ export interface NuxtAppConfig {
   keepalive: boolean | KeepAliveProps
 }
 
-export interface AppConfig extends CustomAppConfig { }
+export interface AppConfig { }

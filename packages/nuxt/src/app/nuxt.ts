@@ -1,14 +1,17 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
+import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import type { RuntimeConfig, AppConfigInput } from 'nuxt/schema'
+import type { RouteMiddleware } from '../../app'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -66,14 +69,38 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
-  [key: string]: any
+  [key: string]: unknown
 
+  /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
+  /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>
     pending: Ref<boolean>
     error: Ref<any>
   } | undefined>
+
+  /** @internal */
+  _middleware: {
+    global: RouteMiddleware[]
+    named: Record<string, RouteMiddleware>
+  }
+
+  /** @internal */
+  _observer?: { observe: (element: Element, callback: () => void) => () => void }
+  /** @internal */
+  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any>>
+
+  /** @internal */
+  _appConfig: AppConfig
+  /** @internal */
+  _route: RouteLocationNormalizedLoaded
+
+  /** @internal */
+  _islandPromises?: Record<string, Promise<any>>
+
+  // Nuxt injections
+  $config: RuntimeConfig
 
   isHydrating?: boolean
   deferHydration: () => () => void | Promise<void>
@@ -105,7 +132,7 @@ interface _NuxtApp {
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
-export interface Plugin<Injections extends Record<string, any> = Record<string, any>> {
+export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
 }
@@ -197,11 +224,11 @@ export function createNuxtApp (options: CreateOptions) {
     window.addEventListener('nuxt.preloadError', (event) => {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
-  }
 
-  // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
-  // as well as when mounting the app and in the `app:mounted` hook
-  nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
+    // as well as when mounting the app and in the `app:mounted` hook
+    nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+  }
 
   // Expose runtime config
   const runtimeConfig = process.server
@@ -285,7 +312,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
   return plugins as Plugin[]
 }
 
-export function defineNuxtPlugin<T extends Record<string, any>> (plugin: Plugin<T>) {
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T>) {
   plugin[NuxtPluginIndicator] = true
   return plugin
 }
@@ -303,10 +330,10 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt, fn)
+    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
   } else {
     // In client side we could assume nuxt app is singleton
-    nuxtAppCtx.set(nuxt)
+    nuxtAppCtx.set(nuxt as NuxtApp)
     return fn()
   }
 }
