@@ -494,16 +494,16 @@ describe('errors', () => {
     const error = await res.json()
     delete error.stack
     expect(error).toMatchObject({
-      message: 'This is a custom error💀',
+      message: 'This is a custom error',
       statusCode: 422,
-      statusMessage: 'This is a custom error💀',
+      statusMessage: 'This is a custom error',
       url: '/error'
     })
   })
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(await res.text()).toContain('This is a custom error💀')
+    expect(await res.text()).toContain('This is a custom error')
   })
 
   // TODO: need to create test for webpack
