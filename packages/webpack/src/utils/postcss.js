@@ -86,7 +86,7 @@ export default class PostcssConfig {
         // https://github.com/postcss/postcss-url
         'postcss-url': {},
 
-        // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-preset-env
+        // https://github.com/csstools/postcss-plugins/tree/main/plugin-packs/postcss-preset-env
         'postcss-preset-env': {},
 
         cssnano: dev
