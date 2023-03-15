@@ -176,7 +176,7 @@ export default class PostcssConfig {
         consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move' +
           'the settings to `postcss.postcssOptions`')
       }
-      postcssOptions = { postcssOptions: {} }
+      postcssOptions = { postcssOptions }
     }
     // The plugins and preset are merged, with priority to the inner `postcssOptions`
     if (postcssOptions.plugins) {
