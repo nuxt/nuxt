@@ -73,10 +73,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   if (res.status && res.status !== 200) {
-    setResponseStatus(event, res.status)
-  }
-
-  if (res.statusText) {
+    setResponseStatus(event, res.status, res.statusText)
+  } else {
     // @ts-expect-error Fixed in next h3 version
     setResponseStatus(event, undefined, res.statusText)
   }
