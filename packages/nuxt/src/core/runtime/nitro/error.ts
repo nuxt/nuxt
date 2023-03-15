@@ -1,7 +1,7 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { setResponseHeader, getRequestHeaders } from 'h3'
+import { setResponseHeader, getRequestHeaders, setResponseStatus, send } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
 
@@ -22,12 +22,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   // Set response code and message
-  event.node.res.statusCode = (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500
-  if (errorObject.statusMessage) {
-    // Allowed characters: horizontal tabs, spaces or visible ascii characters: https://www.rfc-editor.org/rfc/rfc7230#section-3.1.2
-    // eslint-disable-next-line no-control-regex
-    event.node.res.statusMessage = errorObject.statusMessage.replace(/[^\x09\x20-\x7E]/g, '')
-  }
+  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
+
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
@@ -42,8 +38,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // JSON response
   if (isJsonRequest(event)) {
-    event.node.res.setHeader('Content-Type', 'application/json')
-    event.node.res.end(JSON.stringify(errorObject))
+    await send(event, JSON.stringify(errorObject), 'application/json')
     return
   }
 
@@ -67,8 +62,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    event.node.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
-    event.node.res.end(template(errorObject))
+    await send(event, template(errorObject), 'text/html;charset=UTF-8')
     return
   }
 
@@ -76,13 +70,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     setResponseHeader(event, header, value)
   }
 
-  if (res.status && res.status !== 200) {
-    event.node.res.statusCode = res.status
-  }
-
-  if (res.statusText) {
-    event.node.res.statusMessage = res.statusText
-  }
+  setResponseStatus(event, res.status, res.statusText)
 
   event.node.res.end(await res.text())
 }
