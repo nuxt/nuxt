@@ -1,7 +1,7 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { setResponseHeader, getRequestHeaders, setResponseStatus, send } from 'h3'
+import { setResponseHeader, getRequestHeaders, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
 
@@ -38,7 +38,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // JSON response
   if (isJsonRequest(event)) {
-    await send(event, JSON.stringify(errorObject), 'application/json')
+    setResponseHeader(event, 'Content-Type', 'application/json')
+    event.node.res.end(JSON.stringify(errorObject))
     return
   }
 
@@ -62,7 +63,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    await send(event, template(errorObject), 'text/html;charset=UTF-8')
+    setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
+    event.node.res.end(template(errorObject))
     return
   }
 
