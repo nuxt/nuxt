@@ -26,7 +26,7 @@
     "globby": "^13.1.3",
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
-    "jiti": "^1.17.2",
+    "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
     "lodash.template": "^4.5.0",
     "mlly": "^1.2.0",
@@ -39,7 +39,7 @@
     "untyped": "^1.2.2"
   },
   "devDependencies": {
-    "@types/lodash.template": "^4",
+    "@types/lodash.template": "^4.5.1",
     "@types/semver": "^7.3.13",
     "unbuild": "latest"
   },
