@@ -6,15 +6,35 @@ import type Vue from 'vue'
 import type { MetaInfo } from 'vue-meta'
 import type { Route } from 'vue-router'
 import type { RecordPropsDefinition, ComponentOptions } from 'vue/types/options'
-import type { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
+import type { ComponentOptionsMixin } from 'vue/types/v3-component-options'
+import type { CombinedVueInstance } from 'vue/types/vue'
 import type { NuxtRuntimeConfig } from '../config/runtime'
 import type { Context, Middleware, Transition, NuxtApp } from './index'
 
-type AsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
+// https://github.com/vuejs/vue/blob/dev/types/options.d.ts#L63-L66
+type DefaultData<V> = object | ((this: V) => object)
+type DefaultProps = Record<string, any>
+type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
+type DefaultComputed = { [key: string]: any }
+type DefaultAsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
 
 declare module 'vue/types/options' {
-  interface ComponentOptions<V extends Vue> {
-    asyncData?: AsyncData<V>
+  interface ComponentOptions<
+    V extends Vue,
+    /* eslint-disable no-unused-vars,@typescript-eslint/no-unused-vars */
+    Data = DefaultData<V>,
+    Methods = DefaultMethods<V>,
+    Computed = DefaultComputed,
+    PropsDef = PropsDefinition<DefaultProps>,
+    Props = DefaultProps,
+    RawBindings = {},
+    Mixin extends ComponentOptionsMixin = ComponentOptionsMixin,
+    Extends extends ComponentOptionsMixin = ComponentOptionsMixin,
+    /* eslint-enable no-unused-vars,@typescript-eslint/no-unused-vars */
+    AsyncData = DefaultAsyncData<V>
+  > {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    asyncData?: AsyncData
     fetch?(ctx: Context): Promise<void> | void
     fetchKey?: string | ((getKey: (id: string) => number) => string)
     fetchDelay?: number
