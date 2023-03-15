@@ -74,7 +74,7 @@
     "ufo": "^1.1.1",
     "unbuild": "^1.1.2",
     "vite": "^4.1.4",
-    "vitest": "^0.29.2",
+    "vitest": "^0.29.3",
     "vue-tsc": "^1.2.0"
   },
   "packageManager": "pnpm@7.29.3",
