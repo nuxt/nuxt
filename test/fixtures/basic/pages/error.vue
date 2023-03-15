@@ -11,7 +11,7 @@ const { data, error } = await useAsyncData(() => {
 }, { server: true })
 
 if (error.value) {
-  throw createError({ statusCode: 422, fatal: true, statusMessage: 'This is a custom error' })
+  throw createError({ statusCode: 422, fatal: true, statusMessage: 'This is a custom error💀' })
 }
 
 const state = ref({ attr: 'Hello World' })
