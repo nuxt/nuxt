@@ -83,7 +83,7 @@ export default class PostcssConfig {
           })
         },
 
-        // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-url
+        // https://github.com/postcss/postcss-url
         'postcss-url': {},
 
         // https://github.com/csstools/postcss-plugins/plugin-packs/postcss-preset-env
