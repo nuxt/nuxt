@@ -72,11 +72,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     setResponseHeader(event, header, value)
   }
 
-  if (res.status && res.status !== 200) {
-    setResponseStatus(event, res.status, res.statusText)
-  } else {
-    setResponseStatus(event, undefined, res.statusText)
-  }
+  setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
   event.node.res.end(await res.text())
 }
