@@ -27,18 +27,18 @@ importers:
       '@nuxtjs/eslint-config-typescript': ^12.0.0
       '@types/crawler': ^1.2.2
       '@types/node': ^18.15.3
-      '@types/rimraf': ^3
+      '@types/rimraf': ^3.0.2
       '@types/semver': ^7.3.13
       '@unocss/reset': ^0.50.4
       case-police: ^0.5.14
       changelogen: ^0.5.1
       crawler: ^1.4.0
       eslint: ^8.36.0
-      eslint-plugin-jsdoc: ^40.0.2
+      eslint-plugin-jsdoc: ^40.0.3
       execa: ^7.1.1
       expect-type: ^0.15.0
       globby: ^13.1.3
-      jiti: ^1.17.2
+      jiti: ^1.18.2
       markdownlint-cli: ^0.33.0
       nuxi: workspace:*
       nuxt: workspace:*
@@ -70,11 +70,11 @@ importers:
       changelogen: 0.5.1
       crawler: 1.4.0
       eslint: 8.36.0
-      eslint-plugin-jsdoc: 40.0.2_eslint@8.36.0
+      eslint-plugin-jsdoc: 40.0.3_eslint@8.36.0
       execa: 7.1.1
       expect-type: 0.15.0
       globby: 13.1.3
-      jiti: 1.17.2
+      jiti: 1.18.2
       markdownlint-cli: 0.33.0
       nuxi: link:packages/nuxi
       nuxt: link:packages/nuxt
@@ -301,7 +301,7 @@ importers:
   packages/kit:
     specifiers:
       '@nuxt/schema': workspace:*
-      '@types/lodash.template': ^4
+      '@types/lodash.template': ^4.5.1
       '@types/semver': ^7.3.13
       c12: ^1.2.0
       consola: ^2.15.3
@@ -309,7 +309,7 @@ importers:
       globby: ^13.1.3
       hash-sum: ^2.0.0
       ignore: ^5.2.4
-      jiti: ^1.17.2
+      jiti: ^1.18.2
       knitwork: ^1.0.0
       lodash.template: ^4.5.0
       mlly: ^1.2.0
@@ -329,7 +329,7 @@ importers:
       globby: 13.1.3
       hash-sum: 2.0.0
       ignore: 5.2.4
-      jiti: 1.17.2
+      jiti: 1.18.2
       knitwork: 1.0.0
       lodash.template: 4.5.0
       mlly: 1.2.0
@@ -349,7 +349,7 @@ importers:
     specifiers:
       '@nuxt/kit': workspace:*
       '@nuxt/schema': workspace:*
-      '@types/clear': ^0
+      '@types/clear': ^0.1.2
       '@types/flat': ^5.0.2
       '@types/mri': ^1.1.1
       '@types/semver': ^7.3.13
@@ -365,8 +365,8 @@ importers:
       flat: ^5.0.2
       fsevents: ~2.3.2
       giget: ^1.1.2
-      h3: ^1.6.0
-      jiti: ^1.17.2
+      h3: ^1.6.1
+      jiti: ^1.18.2
       listhen: ^1.0.4
       mlly: ^1.2.0
       mri: ^1.2.0
@@ -396,8 +396,8 @@ importers:
       execa: 7.1.1
       flat: 5.0.2
       giget: 1.1.2
-      h3: 1.6.0
-      jiti: 1.17.2
+      h3: 1.6.1
+      jiti: 1.18.2
       listhen: 1.0.4
       mlly: 1.2.0
       mri: 1.2.0
@@ -430,10 +430,10 @@ importers:
       estree-walker: ^3.0.3
       fs-extra: ^11.1.0
       globby: ^13.1.3
-      h3: ^1.6.0
+      h3: ^1.6.1
       hash-sum: ^2.0.0
       hookable: ^5.5.0
-      jiti: ^1.17.2
+      jiti: ^1.18.2
       knitwork: ^1.0.0
       magic-string: ^0.30.0
       mlly: ^1.2.0
@@ -475,10 +475,10 @@ importers:
       estree-walker: 3.0.3
       fs-extra: 11.1.0
       globby: 13.1.3
-      h3: 1.6.0
+      h3: 1.6.1
       hash-sum: 2.0.0
       hookable: 5.5.1
-      jiti: 1.17.2
+      jiti: 1.18.2
       knitwork: 1.0.0
       magic-string: 0.30.0
       mlly: 1.2.0
@@ -507,7 +507,7 @@ importers:
 
   packages/schema:
     specifiers:
-      '@types/lodash.template': ^4
+      '@types/lodash.template': ^4.5.1
       '@types/semver': ^7.3.13
       '@unhead/schema': ^1.1.23
       '@vitejs/plugin-vue': ^4.0.0
@@ -516,7 +516,7 @@ importers:
       create-require: ^1.1.1
       defu: ^6.1.2
       hookable: ^5.5.0
-      jiti: ^1.17.2
+      jiti: ^1.18.2
       nitropack: ~2.3.1
       pathe: ^1.1.0
       pkg-types: ^1.0.2
@@ -533,7 +533,7 @@ importers:
       create-require: 1.1.1
       defu: 6.1.2
       hookable: 5.5.1
-      jiti: 1.17.2
+      jiti: 1.18.2
       pathe: 1.1.0
       pkg-types: 1.0.2
       postcss-import-resolver: 2.0.0
@@ -560,7 +560,7 @@ importers:
       defu: ^6.1.2
       execa: ^7.1.1
       get-port-please: ^3.0.1
-      jiti: ^1.17.2
+      jiti: ^1.18.2
       ofetch: ^1.0.1
       pathe: ^1.1.0
       playwright: ^1.31.2
@@ -573,7 +573,7 @@ importers:
       defu: 6.1.2
       execa: 7.1.1
       get-port-please: 3.0.1
-      jiti: 1.17.2
+      jiti: 1.18.2
       ofetch: 1.0.1
       pathe: 1.1.0
     devDependencies:
@@ -600,7 +600,7 @@ importers:
       externality: ^1.0.0
       fs-extra: ^11.1.0
       get-port-please: ^3.0.1
-      h3: ^1.6.0
+      h3: ^1.6.1
       knitwork: ^1.0.0
       magic-string: ^0.30.0
       mlly: ^1.2.0
@@ -639,7 +639,7 @@ importers:
       externality: 1.0.0
       fs-extra: 11.1.0
       get-port-please: 3.0.1
-      h3: 1.6.0
+      h3: 1.6.1
       knitwork: 1.0.0
       magic-string: 0.30.0
       mlly: 1.2.0
@@ -677,7 +677,7 @@ importers:
       '@types/webpack-bundle-analyzer': ^4.6.0
       '@types/webpack-dev-middleware': ^5.3.0
       '@types/webpack-hot-middleware': ^2.25.6
-      '@types/webpack-virtual-modules': ^0
+      '@types/webpack-virtual-modules': ^0.1.1
       autoprefixer: ^10.4.14
       css-loader: ^6.7.3
       css-minimizer-webpack-plugin: ^4.2.2
@@ -1457,13 +1457,13 @@ packages:
     engines: {node: '>=10.0.0'}
     dev: false
 
-  /@es-joy/jsdoccomment/0.36.1:
-    resolution: {integrity: sha512-922xqFsTpHs6D0BUiG4toiyPOMc8/jafnWKxz1KWgS4XzKPy2qXf1Pe6UFuNSCQqt6tOuhAWXBNuuyUhJmw9Vg==}
+  /@es-joy/jsdoccomment/0.37.0:
+    resolution: {integrity: sha512-hjK0wnsPCYLlF+HHB4R/RbUjOWeLW2SlarB67+Do5WsKILOkmIZvvPJFbtWSmbypxcjpoECLAMzoao0D4Bg5ZQ==}
     engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     dependencies:
       comment-parser: 1.3.1
       esquery: 1.5.0
-      jsdoc-type-pratt-parser: 3.1.0
+      jsdoc-type-pratt-parser: 4.0.0
     dev: true
 
   /@esbuild/android-arm/0.16.17:
@@ -2032,7 +2032,7 @@ packages:
       git-url-parse: 13.1.0
       inquirer: 9.1.4
       is-docker: 3.0.0
-      jiti: 1.17.2
+      jiti: 1.18.2
       mri: 1.2.0
       nanoid: 4.0.1
       node-fetch: 3.3.1
@@ -3766,7 +3766,7 @@ packages:
       defu: 6.1.2
       dotenv: 16.0.3
       giget: 1.1.2
-      jiti: 1.17.2
+      jiti: 1.18.2
       mlly: 1.2.0
       pathe: 1.1.0
       pkg-types: 1.0.2
@@ -4882,13 +4882,13 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc/40.0.2_eslint@8.36.0:
-    resolution: {integrity: sha512-EjcpQX64+d02kKMlBZbTc7xIkCOa0A9TF2AlB/3NlM7Xl8bywwvJ5Wo7ickEn/EzfauMbZcCCKSZItAH+6Xakg==}
+  /eslint-plugin-jsdoc/40.0.3_eslint@8.36.0:
+    resolution: {integrity: sha512-4QXkuo4yVFJWsZIvdgFMBs6ZWVGDBZGO06kcgM060/96G8+6Fr7JZWy+Wg0I1C0+qxxfpB+aIepdE29vYxX2kA==}
     engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
     dependencies:
-      '@es-joy/jsdoccomment': 0.36.1
+      '@es-joy/jsdoccomment': 0.37.0
       comment-parser: 1.3.1
       debug: 4.3.4
       escape-string-regexp: 4.0.0
@@ -5669,13 +5669,13 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3/1.6.0:
-    resolution: {integrity: sha512-MthVCNIGkFnywJcwaPe7BWB5Y5BQJmtddu0ABnn3TAjkCqa/EzPafIfwv+wajWxjepRGrVsmu4X0ld5IGtLDHQ==}
+  /h3/1.6.1:
+    resolution: {integrity: sha512-mvolshMiyV3Q62vtWe75RjqH//Fvq+9zdndSr61ShE4MCE6fzBMWe9nPUSvckxjnznGwEQri7Ghc7jtvMxeYFg==}
     dependencies:
       cookie-es: 0.5.0
       defu: 6.1.2
       destr: 1.2.2
-      iron-webcrypto: 0.5.0
+      iron-webcrypto: 0.6.0
       radix3: 1.0.0
       ufo: 1.1.1
       uncrypto: 0.1.2
@@ -5941,8 +5941,8 @@ packages:
     resolution: {integrity: sha512-fOCG6lhoKKakwv+C6KdsOnGvgXnmgfmp0myi3bcNwj3qfwPAxRKWEuFhvEFF7ceYIz6+1jRZ+yguLFAmUNPEfw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  /iron-webcrypto/0.5.0:
-    resolution: {integrity: sha512-9m0tDUIo+GPwDYi1CNlAW3ToIFTS9y88lf41KsEwbBsL4PKNjhrNDGoA0WlB6WWaJ6pgp+FOP1+6ls0YftivyA==}
+  /iron-webcrypto/0.6.0:
+    resolution: {integrity: sha512-WYgEQttulX/+JTv1BTJFYY3OsAb+ZnCuA53IjppZMyiRsVdGeEuZ/k4fJrg77Rzn0pp9/PgWtXUF+5HndDA5SQ==}
 
   /is-array-buffer/3.0.2:
     resolution: {integrity: sha512-y+FyyR/w8vfIRq4eQcM1EYgSTnmHXPqaF+IgzgraytCFq5Xh8lllDVmAZolPJiZttZLeFSINPYMaEJ7/vWUa1w==}
@@ -6183,8 +6183,8 @@ packages:
       supports-color: 8.1.1
     dev: false
 
-  /jiti/1.17.2:
-    resolution: {integrity: sha512-Xf0nU8+8wuiQpLcqdb2HRyHqYwGk2Pd+F7kstyp20ZuqTyCmB9dqpX2NxaxFc1kovraa2bG6c1RL3W7XfapiZg==}
+  /jiti/1.18.2:
+    resolution: {integrity: sha512-QAdOptna2NYiSSpv0O/BwoHBSmz4YhpzJHyi+fnMRTXFjp7B8i/YG5Z8IfusxB1ufjcD2Sre1F3R+nX3fvy7gg==}
     hasBin: true
 
   /js-sdsl/4.3.0:
@@ -6209,8 +6209,8 @@ packages:
     resolution: {integrity: sha512-UVU9dibq2JcFWxQPA6KCqj5O42VOmAY3zQUfEKxU0KpTGXwNoCjkX1e13eHNvw/xPynt6pU0rZ1htjWTNTSXsg==}
     dev: true
 
-  /jsdoc-type-pratt-parser/3.1.0:
-    resolution: {integrity: sha512-MgtD0ZiCDk9B+eI73BextfRrVQl0oyzRG8B2BjORts6jbunj4ScKPcyXGTbB6eXL4y9TzxCm6hyeLq/2ASzNdw==}
+  /jsdoc-type-pratt-parser/4.0.0:
+    resolution: {integrity: sha512-YtOli5Cmzy3q4dP26GraSOeAhqecewG04hoO8DY56CH4KJ9Fvv5qKWUCCo3HZob7esJQHCv6/+bnTy72xZZaVQ==}
     engines: {node: '>=12.0.0'}
     dev: true
 
@@ -6722,7 +6722,7 @@ packages:
       esbuild: 0.17.11
       fs-extra: 11.1.0
       globby: 13.1.3
-      jiti: 1.17.2
+      jiti: 1.18.2
       mlly: 1.2.0
       mri: 1.2.0
       pathe: 1.1.0
@@ -6816,11 +6816,11 @@ packages:
       fs-extra: 11.1.0
       globby: 13.1.3
       gzip-size: 7.0.0
-      h3: 1.6.0
+      h3: 1.6.1
       hookable: 5.5.1
       http-proxy: 1.18.1
       is-primitive: 3.0.1
-      jiti: 1.17.2
+      jiti: 1.18.2
       klona: 2.0.6
       knitwork: 1.0.0
       listhen: 1.0.4
@@ -8680,7 +8680,7 @@ packages:
       esbuild: 0.17.11
       globby: 13.1.3
       hookable: 5.5.1
-      jiti: 1.17.2
+      jiti: 1.18.2
       magic-string: 0.30.0
       mkdist: 1.1.2_typescript@4.9.5
       mlly: 1.2.0
@@ -8703,7 +8703,7 @@ packages:
     dependencies:
       '@antfu/utils': 0.5.2
       defu: 6.1.2
-      jiti: 1.17.2
+      jiti: 1.18.2
     dev: true
 
   /uncrypto/0.1.2:
@@ -8887,7 +8887,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 1.2.2
-      h3: 1.6.0
+      h3: 1.6.1
       ioredis: 5.3.1
       listhen: 1.0.4
       lru-cache: 7.18.3
