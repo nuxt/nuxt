@@ -122,7 +122,7 @@ export default defineNuxtCommand({
         await currentNuxt.ready()
 
         const unsub = currentNuxt.hooks.hook('restart', async (options) => {
-          unsub()
+          unsub() // we use this instead of `hookOnce` for Nuxt Bridge support
           if (options?.hard && process.send) {
             await listener.close().catch(() => {})
             await currentNuxt.close().catch(() => {})
