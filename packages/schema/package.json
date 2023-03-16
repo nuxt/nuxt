@@ -23,11 +23,11 @@
     "@types/lodash.template": "^4.5.1",
     "@types/semver": "^7.3.13",
     "@unhead/schema": "^1.1.23",
-    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-vue": "^4.1.0",
     "@vitejs/plugin-vue-jsx": "^3.0.0",
     "nitropack": "~2.3.1",
     "unbuild": "latest",
-    "vite": "~4.1.4"
+    "vite": "~4.2.0"
   },
   "dependencies": {
     "c12": "^1.2.0",
