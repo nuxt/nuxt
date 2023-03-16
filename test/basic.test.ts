@@ -1059,6 +1059,44 @@ describe('component islands', () => {
     `)
   })
 
+  it('render async component', async () => {
+    const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/LongAsyncComponent', {
+      props: JSON.stringify({
+        count: 3
+      })
+    }))
+
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div><p>hello world !!!</p></div>",
+        "state": {},
+      }
+    `)
+  })
+
+  it('render .server async component', async () => {
+    const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/AsyncServerComponent', {
+      props: JSON.stringify({
+        count: 2
+      })
+    }))
+
+    expect(result).toMatchInlineSnapshot(`
+    {
+      "head": {
+        "link": [],
+        "style": [],
+      },
+      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div></div>",
+      "state": {},
+    }
+  `)
+  })
+
   it('renders pure components', async () => {
     const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/PureComponent', {
       props: JSON.stringify({

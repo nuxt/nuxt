@@ -1,6 +1,6 @@
 <template>
   <div>
-    This is a .server (1000ms) async component
+    This is a .server (20ms) async component
     {{ data }}
     <div id="async-server-component-count">
       {{ count }}
