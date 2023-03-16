@@ -3,6 +3,7 @@
  * Documentation: https://nuxtjs.org/api/configuration-build
  */
 
+import 'less'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { TransformOptions, PluginItem } from '@babel/core'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
