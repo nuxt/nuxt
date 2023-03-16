@@ -9,6 +9,8 @@ import WebpackBaseConfig from './base'
 
 const nativeFileExtensions = [
   '.json',
+  '.cjs',
+  '.mjs',
   '.js'
 ]
 
@@ -123,7 +125,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
-      externals: [].concat(config.externals || [])
+      externals: ['node-fetch-native'].concat(config.externals || [])
     })
 
     // https://webpack.js.org/configuration/externals/#externals
