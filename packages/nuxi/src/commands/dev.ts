@@ -101,7 +101,8 @@ export default defineNuxtCommand({
           }
         })
 
-        currentNuxt.hooks.hookOnce('restart', async (options) => {
+        // Nuxt 2 does not have `.hooks` at this point
+        currentNuxt.hooks?.hookOnce('restart', async (options) => {
           if (options?.hard && process.send) {
             await listener.close().catch(() => {})
             await currentNuxt.close().catch(() => {})
