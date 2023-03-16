@@ -71,8 +71,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
     const mark = performance.mark(key)
     const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
-    const perf = performance.measure(key, mark.name)
-    const setupTime = Math.round((perf.duration * 100)) / 100
+    const perf = performance.measure(key, mark?.name) // TODO: remove when Node 14 reaches EOL
+    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
     // Measure setup time
     if (setupTime > 5000) {
