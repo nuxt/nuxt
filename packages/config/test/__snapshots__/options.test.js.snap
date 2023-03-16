@@ -139,9 +139,6 @@ Object {
     "plugins": Array [],
     "postcss": Object {
       "postcssOptions": Object {},
-      "preset": Object {
-        "stage": 2,
-      },
     },
     "profile": false,
     "publicPath": "/_nuxt/",
