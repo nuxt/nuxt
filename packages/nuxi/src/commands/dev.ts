@@ -101,19 +101,6 @@ export default defineNuxtCommand({
           }
         })
 
-        // Nuxt 2 does not have `.hooks` at this point
-        currentNuxt.hooks?.hookOnce('restart', async (options) => {
-          if (options?.hard && process.send) {
-            await listener.close().catch(() => {})
-            await currentNuxt.close().catch(() => {})
-            await watcher.close().catch(() => {})
-            await distWatcher.close().catch(() => {})
-            process.send({ type: 'nuxt:restart' })
-          } else {
-            await load(true)
-          }
-        })
-
         if (!isRestart) {
           showURL()
         }
@@ -133,6 +120,19 @@ export default defineNuxtCommand({
         }
 
         await currentNuxt.ready()
+
+        const unsub = currentNuxt.hooks.hook('restart', async (options) => {
+          unsub()
+          if (options?.hard && process.send) {
+            await listener.close().catch(() => {})
+            await currentNuxt.close().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
+            process.send({ type: 'nuxt:restart' })
+          } else {
+            await load(true)
+          }
+        })
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
         const address = (listener.server.address() || {}) as AddressInfo
