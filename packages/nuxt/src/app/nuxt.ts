@@ -13,7 +13,7 @@ import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 
-const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
+export const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
