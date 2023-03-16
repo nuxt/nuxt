@@ -9,7 +9,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",

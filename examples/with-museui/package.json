@@ -1,13 +1,13 @@
 {
 	"name": "example-with-museui",
 	"dependencies": {
-		"nuxt": "latest",
+		"nuxt": "2.x",
 		"muse-ui": "latest"
 	},
 	"scripts": {
 		"dev": "nuxt",
 		"build": "nuxt build",
 		"start": "nuxt start",
-    "post-update": "yarn upgrade --latest"
+		"post-update": "yarn upgrade --latest"
 	}
 }

@@ -5,10 +5,10 @@
 		"build": "nuxt build",
 		"start": "nuxt start",
 		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec",
-    "post-update": "yarn upgrade --latest"
+		"post-update": "yarn upgrade --latest"
 	},
 	"devDependencies": {
-    "@vue/test-utils": "^1.0.0",
+		"@vue/test-utils": "^1.0.0",
 		"browser-env": "^3.2.1",
 		"require-extension-hooks": "^0.3.2",
 		"require-extension-hooks-babel": "^0.1.1",
@@ -17,6 +17,6 @@
 		"tape": "^4.8.0"
 	},
 	"dependencies": {
-		"nuxt": "latest"
+		"nuxt": "2.x"
 	}
 }
