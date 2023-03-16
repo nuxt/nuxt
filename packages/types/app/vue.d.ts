@@ -76,7 +76,7 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
     Computed,
     PropNames[],
     Record<PropNames, any>,
-    SetupBindings,
+    Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
     Mixin,
     Extends,
     AsyncData
@@ -111,7 +111,7 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
     Computed,
     RecordPropsDefinition<Props>,
     Props,
-    SetupBindings,
+    Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
     Mixin,
     Extends,
     AsyncData
@@ -170,7 +170,7 @@ declare module 'vue/types/vue' {
       Methods,
       Computed,
       Record<PropNames, any>,
-      SetupBindings,
+      Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
       Mixin,
       Extends
     >
@@ -203,7 +203,7 @@ declare module 'vue/types/vue' {
         Methods,
         Computed,
         Props,
-        SetupBindings,
+        Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
         Mixin,
         Extends
       >
