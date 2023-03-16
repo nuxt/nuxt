@@ -5,8 +5,9 @@
 import type Vue from 'vue'
 import type { MetaInfo } from 'vue-meta'
 import type { Route } from 'vue-router'
-import type { RecordPropsDefinition, PropsDefinition, ComponentOptions } from 'vue/types/options'
-import type { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
+import type { RecordPropsDefinition, ComponentOptions } from 'vue/types/options'
+import type { ComponentOptionsMixin } from 'vue/types/v3-component-options'
+import type { CombinedVueInstance } from 'vue/types/vue'
 import type { NuxtRuntimeConfig } from '../config/runtime'
 import type { Context, Middleware, Transition, NuxtApp } from './index'
 
@@ -26,6 +27,9 @@ declare module 'vue/types/options' {
     Computed = DefaultComputed,
     PropsDef = PropsDefinition<DefaultProps>,
     Props = DefaultProps,
+    RawBindings = {},
+    Mixin extends ComponentOptionsMixin = ComponentOptionsMixin,
+    Extends extends ComponentOptionsMixin = ComponentOptionsMixin,
     /* eslint-enable no-unused-vars,@typescript-eslint/no-unused-vars */
     AsyncData = DefaultAsyncData<V>
   > {
@@ -60,7 +64,10 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
   Methods,
   Computed,
   PropNames extends string,
-  AsyncData
+  SetupBindings,
+  Mixin extends ComponentOptionsMixin,
+  Extends extends ComponentOptionsMixin,
+  AsyncData extends DefaultAsyncData<V> = DefaultAsyncData<V>
 > = object &
   ComponentOptions<
     V,
@@ -69,15 +76,21 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
     Computed,
     PropNames[],
     Record<PropNames, any>,
-    DataDef<AsyncData, PropNames, V>
+    Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
+    Mixin,
+    Extends,
+    AsyncData
   > &
   ThisType<
     CombinedVueInstance<
       V,
-      Merged<Data, Awaited<AsyncData>>,
+      Merged<Data, Awaited<ReturnType<AsyncData>>>,
       Methods,
       Computed,
-      Readonly<Record<PropNames, any>>
+      Readonly<Record<PropNames, any>>,
+      SetupBindings,
+      Mixin,
+      Extends
     >
   >
 export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
@@ -86,7 +99,10 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
   Methods,
   Computed,
   Props,
-  AsyncData
+  SetupBindings,
+  Mixin extends ComponentOptionsMixin,
+  Extends extends ComponentOptionsMixin,
+  AsyncData extends DefaultAsyncData<V>
 > = object &
   ComponentOptions<
     V,
@@ -95,11 +111,24 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
     Computed,
     RecordPropsDefinition<Props>,
     Props,
-    DataDef<AsyncData, Props, V>
-> &
+    Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
+    Mixin,
+    Extends,
+    AsyncData
+  > &
   ThisType<
-    CombinedVueInstance<V, Merged<Data, Awaited<AsyncData>>, Methods, Computed, Readonly<Props>>
+    CombinedVueInstance<
+      V,
+      Merged<Data, Awaited<ReturnType<AsyncData>>>,
+      Methods,
+      Computed,
+      Readonly<Props>,
+      SetupBindings,
+      Mixin,
+      Extends
+    >
   >
+
 
 declare module 'vue/types/vue' {
   interface Vue {
@@ -113,25 +142,70 @@ declare module 'vue/types/vue' {
     }
   }
   interface VueConstructor<V extends Vue> {
-    extend<Data, Methods, Computed, PropNames extends string, AsyncData>(
+    /** extend with array props */
+    extend<
+      Data,
+      Methods,
+      Computed,
+      PropNames extends string = never,
+      SetupBindings = {},
+      Mixin extends ComponentOptionsMixin = ComponentOptionsMixin,
+      Extends extends ComponentOptionsMixin = ComponentOptionsMixin,
+      AsyncData extends DefaultAsyncData<V> = DefaultAsyncData<V>
+    >(
       options?: ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
         V,
         Data,
         Methods,
         Computed,
         PropNames,
+        SetupBindings,
+        Mixin,
+        Extends,
         AsyncData
       >
-    ): ExtendedVue<V, Data, Methods, Computed, Record<PropNames, any>>
-    extend<Data, Methods, Computed, Props, AsyncData>(
+    ): ExtendedVue<
+      V,
+      Data,
+      Methods,
+      Computed,
+      Record<PropNames, any>,
+      Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
+      Mixin,
+      Extends
+    >
+
+    /** extend with object props */
+    extend<
+      Data,
+      Methods,
+      Computed,
+      Props,
+      SetupBindings = {},
+      Mixin extends ComponentOptionsMixin = ComponentOptionsMixin,
+      Extends extends ComponentOptionsMixin = ComponentOptionsMixin,
+      AsyncData extends DefaultAsyncData<V> = DefaultAsyncData<V>
+    >(
       options?: ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
         V,
         Data,
         Methods,
         Computed,
         Props,
+        SetupBindings,
+        Mixin,
+        Extends,
         AsyncData
       >
-    ): ExtendedVue<V, Data, Methods, Computed, Props>
+    ): ExtendedVue<
+        V,
+        Data,
+        Methods,
+        Computed,
+        Props,
+        Merged<SetupBindings, Awaited<ReturnType<AsyncData>>>,
+        Mixin,
+        Extends
+      >
   }
 }

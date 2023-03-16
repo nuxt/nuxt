@@ -10,7 +10,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "nuxt-buefy": "latest"
   }
 }
