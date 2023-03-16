@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
@@ -24,6 +25,9 @@
       ],
       "#internal/nitro": [
         "./node_modules/nitropack/dist/runtime"
+      ],
+      "#internal/nitro/app": [
+        "./node_modules/nitropack/dist/runtime/app"
       ],
       "#internal/nitro/utils": [
         "./node_modules/nitropack/dist/runtime/utils"
