@@ -1,6 +1,7 @@
 // We set __webpack_public_path via this import with webpack builder
 import { createSSRApp, createApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
+import type { HookCallback } from 'hookable'
 // @ts-ignore
 import { baseURL } from '#build/paths.mjs'
 import type { CreateOptions } from '#app'
@@ -30,16 +31,21 @@ if (process.server) {
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 
-    try {
-      await applyPlugins(nuxt, plugins)
-      await nuxt.hooks.callHook('app:created', vueApp)
-    } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+    async function contextCaller (hooks: HookCallback[], args: any[]) {
+      for (const hook of hooks) {
+        nuxtAppCtx.set(nuxt)
+        await hook(...args)
+        nuxtAppCtx.unset()
+      }
     }
 
-    // From this point on, we can retrieve Nuxt context from `getCurrentInstance()`
-    nuxtAppCtx.unset()
+    try {
+      await applyPlugins(nuxt, plugins)
+      await nuxt.hooks.callHookWith(contextCaller, 'app:created', vueApp)
+    } catch (err) {
+      await nuxt.hooks.callHookWith(contextCaller, 'app:error', err)
+      nuxt.payload.error = (nuxt.payload.error || err) as any
+    }
 
     return vueApp
   }
