@@ -1,3 +1,4 @@
+/// <reference types="less" />
 /**
  * NuxtOptionsBuild
  * Documentation: https://nuxtjs.org/api/configuration-build

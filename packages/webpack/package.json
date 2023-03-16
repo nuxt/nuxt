@@ -8,13 +8,13 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.21.0",
+    "@babel/core": "^7.21.3",
     "@nuxt/babel-preset-app": "2.16.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/utils": "2.16.2",
     "babel-loader": "^8.3.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001465",
+    "caniuse-lite": "^1.0.30001466",
     "consola": "^2.15.3",
     "css-loader": "^5.2.7",
     "cssnano": "^5.1.15",

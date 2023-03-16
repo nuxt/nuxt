@@ -5,7 +5,7 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",
