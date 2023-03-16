@@ -10,6 +10,6 @@
     "nuxt-start": "latest"
   },
   "devDependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   }
 }

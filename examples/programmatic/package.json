@@ -1,7 +1,7 @@
 {
   "name": "example-programmatic",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "node scripts/dev",
