@@ -12,6 +12,6 @@
     "jsdom": "^11.0.0"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   }
 }

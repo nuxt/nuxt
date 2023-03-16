@@ -2,7 +2,7 @@
   "name": "example-global-css",
   "dependencies": {
     "bulma": "^0.5.1",
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",
