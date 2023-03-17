@@ -24,11 +24,11 @@
     "vue-template-compiler": "^2.7.14",
     "vuex": "^3.6.2"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "web-types": "web-types/web-types.json"
 }
