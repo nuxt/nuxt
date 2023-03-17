@@ -1,16 +1,14 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import { configDefaults } from 'vitest/config'
-import { isWindows, isCI } from 'std-env'
+import { isWindows } from 'std-env'
 
 export default defineConfig({
   resolve: {
-    alias: isCI
-      ? {}
-      : {
-          '#app': resolve('./packages/nuxt/src/app/index.ts'),
-          '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
-        }
+    alias: {
+      '#app': resolve('./packages/nuxt/dist/app/index'),
+      '@nuxt/test-utils': resolve('./packages/test-utils/dist/index')
+    }
   },
   test: {
     globalSetup: 'test/setup.ts',
