@@ -33,9 +33,7 @@ if (process.server) {
 
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        nuxtAppCtx.set(nuxt)
-        await hook(...args)
-        nuxtAppCtx.unset()
+        await nuxtAppCtx.call(nuxt, () => hook(...args))
       }
     }
 
