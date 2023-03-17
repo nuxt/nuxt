@@ -2,7 +2,7 @@
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { Hookable } from 'hookable'
+import type { Hookable, HookCallback } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
@@ -187,6 +187,18 @@ export function createNuxtApp (options: CreateOptions) {
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
+
+  if (process.server) {
+    async function contextCaller (hooks: HookCallback[], args: any[]) {
+      for (const hook of hooks) {
+        await nuxtAppCtx.call(nuxtApp, () => hook(...args))
+      }
+    }
+    // Patch callHook to preserve NuxtApp context on server
+    // TODO: Refactor after https://github.com/unjs/hookable/issues/74
+    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, ...args)
+  }
+
   nuxtApp.callHook = nuxtApp.hooks.callHook
 
   nuxtApp.provide = (name: string, value: any) => {
