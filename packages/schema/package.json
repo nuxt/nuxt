@@ -24,7 +24,7 @@
     "@types/semver": "^7.3.13",
     "@unhead/schema": "^1.1.23",
     "@vitejs/plugin-vue": "^4.1.0",
-    "@vitejs/plugin-vue-jsx": "^3.0.0",
+    "@vitejs/plugin-vue-jsx": "^3.0.1",
     "nitropack": "~2.3.1",
     "unbuild": "latest",
     "vite": "~4.2.0"
@@ -41,7 +41,7 @@
     "scule": "^1.0.0",
     "std-env": "^3.3.2",
     "ufo": "^1.1.1",
-    "unimport": "^3.0.2",
+    "unimport": "^3.0.3",
     "untyped": "^1.2.2"
   },
   "engines": {

@@ -35,7 +35,7 @@
     "scule": "^1.0.0",
     "semver": "^7.3.8",
     "unctx": "^2.1.2",
-    "unimport": "^3.0.2",
+    "unimport": "^3.0.3",
     "untyped": "^1.2.2"
   },
   "devDependencies": {
