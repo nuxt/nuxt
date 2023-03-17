@@ -1,5 +1,5 @@
 export default defineEventHandler(async () => {
-  await timeout(1000)
+  await timeout(20)
   return 'that was very long ...'
 })
 function timeout (ms: number) {
