@@ -1068,7 +1068,9 @@ describe('component islands', () => {
         count: 3
       })
     }))
-
+    if (isDev()) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
@@ -1087,7 +1089,9 @@ describe('component islands', () => {
         count: 2
       })
     }))
-
+    if (isDev()) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
     expect(result).toMatchInlineSnapshot(`
     {
       "head": {
