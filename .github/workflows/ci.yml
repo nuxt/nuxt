@@ -54,15 +54,38 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Test (types)
-        run: pnpm test:types
-
       - name: Cache dist
         uses: actions/upload-artifact@v3
         with:
           retention-days: 3
           name: dist
           path: packages/*/dist
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - build
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
+
+      - name: Test (types)
+        run: pnpm test:types
 
   lint:
     runs-on: ubuntu-latest
@@ -84,6 +107,8 @@ jobs:
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
+    needs:
+      - build
 
     strategy:
       fail-fast: false
@@ -136,8 +161,11 @@ jobs:
         # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
         run: pnpm playwright install chromium
 
-      - name: Build (stub)
-        run: pnpm build:stub
+      - name: Restore dist cache
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
 
       - name: Test (unit)
         run: pnpm test:unit
