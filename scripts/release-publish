@@ -13,9 +13,9 @@ for dir in packages/* distributions/* ; do
   pushd $dir > /dev/null
   # if package is nuxt then publish with tag 2x
   if [ "$dir" = "distributions/nuxt" ]; then
-    echo npm publish --tag 2x -q
+    npm publish --tag 2x -q
   else
-    echo npm publish -q
+    npm publish -q
   fi
   popd > /dev/null
 done
