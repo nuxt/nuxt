@@ -2,6 +2,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -22,7 +23,6 @@ import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
-import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -243,6 +243,10 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add prerender payload support
+  if (nuxt.options._generate && nuxt.options.experimental.payloadExtraction === undefined) {
+    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }

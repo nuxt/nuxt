@@ -16,14 +16,15 @@ export default defineNuxtPlugin((nuxtApp) => {
     let pauseDOMUpdates = true
     const unpauseDom = () => {
       pauseDOMUpdates = false
-      // triggers dom update
+      // trigger the debounced DOM update
       head.hooks.callHook('entries:updated', head)
     }
     head.hooks.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
     nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
     // wait for new page before unpausing dom updates (triggered after suspense resolved)
     nuxtApp.hooks.hook('page:finish', unpauseDom)
-    nuxtApp.hooks.hook('app:mounted', unpauseDom)
+    // unpause the DOM once the mount suspense is resolved
+    nuxtApp.hooks.hook('app:suspense:resolve', unpauseDom)
   }
 
   if (process.server) {

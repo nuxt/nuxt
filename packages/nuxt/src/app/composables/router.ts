@@ -1,12 +1,16 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
+import type { Ref } from 'vue'
 import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
+
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { useState } from './state'
 import { setResponseStatus } from './ssr'
+
+import type { PageMeta } from '#app'
 
 export const useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -49,10 +53,16 @@ interface AddRouteMiddleware {
 
 export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
   const nuxtApp = useNuxtApp()
-  if (options.global || typeof name === 'function') {
-    nuxtApp._middleware.global.push(typeof name === 'function' ? name : middleware)
+  const global = options.global || typeof name !== 'string'
+  const mw = typeof name !== 'string' ? name : middleware
+  if (!mw) {
+    console.warn('[nuxt] No route middleware passed to `addRouteMiddleware`.', name)
+    return
+  }
+  if (global) {
+    nuxtApp._middleware.global.push(mw)
   } else {
-    nuxtApp._middleware.named[name] = middleware
+    nuxtApp._middleware.named[name] = mw
   }
 }
 
@@ -148,11 +158,11 @@ export const setPageLayout = (layout: string) => {
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || process.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
-      to.meta.layout = layout
+      to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
       unsubscribe()
     })
   }
   if (!inMiddleware) {
-    useRoute().meta.layout = layout
+    useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
 }
