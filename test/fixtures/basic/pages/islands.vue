@@ -30,15 +30,14 @@ const count = ref(0)
       Show
     </button>
 
+    <p>async .server component</p>
     <AsyncServerComponent :count="count" />
     <div>
-      Async component (1000ms):
-      <div>
-        <NuxtIsland name="LongAsyncComponent" :props="{ count }" />
-        <button @click="count++">
-          add +1 to count
-        </button>
-      </div>
+      Async island component (20ms):
+      <NuxtIsland name="LongAsyncComponent" :props="{ count }" />
+      <button @click="count++">
+        add +1 to count
+      </button>
     </div>
   </div>
 </template>
