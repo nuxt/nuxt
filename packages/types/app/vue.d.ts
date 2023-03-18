@@ -38,7 +38,7 @@ declare module 'vue/types' {
     EmitsNames extends string = string,
     AsyncData extends DefaultAsyncData = DefaultAsyncData,
   >(
-    options: { functional?: never } & ComponentOptionsWithoutPropsAndAsyncData<
+    options: { functional?: never } & ComponentOptionsWithoutPropsAndWithAsyncData<
       {},
       RawBindings,
       D,
@@ -430,7 +430,7 @@ export type ComponentOptionsWithArrayPropsAndAsyncData<
     >
   >
 
-export type ComponentOptionsWithoutPropsAndAsyncData<
+export type ComponentOptionsWithoutPropsAndWithAsyncData<
   Props = {},
   RawBindings = Data,
   D = Data,
