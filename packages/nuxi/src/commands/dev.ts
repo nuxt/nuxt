@@ -101,26 +101,9 @@ export default defineNuxtCommand({
           }
         })
 
-        currentNuxt.hooks.hookOnce('restart', async (options) => {
-          if (options?.hard && process.send) {
-            await listener.close().catch(() => {})
-            await currentNuxt.close().catch(() => {})
-            await watcher.close().catch(() => {})
-            await distWatcher.close().catch(() => {})
-            process.send({ type: 'nuxt:restart' })
-          } else {
-            await load(true)
-          }
-        })
-
         if (!isRestart) {
           showURL()
         }
-
-        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
-        distWatcher.on('unlinkDir', () => {
-          dLoad(true, '.nuxt/dist directory has been removed')
-        })
 
         // Write manifest and also check if we need cache invalidation
         if (!isRestart) {
@@ -132,6 +115,24 @@ export default defineNuxtCommand({
         }
 
         await currentNuxt.ready()
+
+        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
+        distWatcher.on('unlinkDir', () => {
+          dLoad(true, '.nuxt/dist directory has been removed')
+        })
+
+        const unsub = currentNuxt.hooks.hook('restart', async (options) => {
+          unsub() // we use this instead of `hookOnce` for Nuxt Bridge support
+          if (options?.hard && process.send) {
+            await listener.close().catch(() => {})
+            await currentNuxt.close().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
+            process.send({ type: 'nuxt:restart' })
+          } else {
+            await load(true)
+          }
+        })
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
         const address = (listener.server.address() || {}) as AddressInfo
