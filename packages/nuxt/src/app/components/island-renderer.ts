@@ -13,8 +13,7 @@ export default defineComponent({
     }
   },
   setup (props) {
-    // TODO: https://github.com/vuejs/core/issues/6207
-    const component = islandComponents[props.context.name] as typeof defineAsyncComponent
+    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
     if (!component) {
       throw createError({
