@@ -712,7 +712,7 @@ importers:
       vue-loader: ^17.0.1
       webpack: ^5.76.2
       webpack-bundle-analyzer: ^4.8.0
-      webpack-dev-middleware: ^6.0.1
+      webpack-dev-middleware: ^6.0.2
       webpack-hot-middleware: ^2.25.3
       webpack-virtual-modules: ^0.5.0
       webpackbar: ^5.0.2
@@ -752,7 +752,7 @@ importers:
       vue-loader: 17.0.1_vue@3.2.47+webpack@5.76.2
       webpack: 5.76.2
       webpack-bundle-analyzer: 4.8.0
-      webpack-dev-middleware: 6.0.1_webpack@5.76.2
+      webpack-dev-middleware: 6.0.2_webpack@5.76.2
       webpack-hot-middleware: 2.25.3
       webpack-virtual-modules: 0.5.0
       webpackbar: 5.0.2_webpack@5.76.2
@@ -2511,7 +2511,7 @@ packages:
     resolution: {integrity: sha512-SklLlklFBfTyIXo1iWXxzeytjlysWfj5QfIcRJrCc7MgzuCjnZOHXviQwe81iFGq9ZkCUXAg2fpbZdHhj5lSWA==}
     deprecated: This is a stub types definition. webpack-dev-middleware provides its own type definitions, so you do not need this installed.
     dependencies:
-      webpack-dev-middleware: 6.0.1_webpack@5.76.2
+      webpack-dev-middleware: 6.0.2_webpack@5.76.2
     transitivePeerDependencies:
       - webpack
     dev: true
@@ -9369,11 +9369,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /webpack-dev-middleware/6.0.1_webpack@5.76.2:
-    resolution: {integrity: sha512-PZPZ6jFinmqVPJZbisfggDiC+2EeGZ1ZByyMP5sOFJcPPWSexalISz+cvm+j+oYPT7FIJyxT76esjnw9DhE5sw==}
+  /webpack-dev-middleware/6.0.2_webpack@5.76.2:
+    resolution: {integrity: sha512-iOddiJzPcQC6lwOIu60vscbGWth8PCRcWRCwoQcTQf9RMoOWBHg5EyzpGdtSmGMrSPd5vHEfFXmVErQEmkRngQ==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
       webpack: ^5.0.0
+    peerDependenciesMeta:
+      webpack:
+        optional: true
     dependencies:
       colorette: 2.0.19
       memfs: 3.4.13
