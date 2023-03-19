@@ -16,6 +16,7 @@ import virtual from './plugins/virtual'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
+import { logLevelMap } from './utils/logger'
 
 export interface ViteOptions extends InlineConfig {
   vue?: VueOptions
@@ -41,6 +42,7 @@ export async function bundle (nuxt: Nuxt) {
     entry,
     config: vite.mergeConfig(
       {
+        logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         resolve: {
           alias: {
             ...nuxt.options.alias,
@@ -59,10 +61,14 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
+        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
         build: {
           copyPublicDir: false,
           rollupOptions: {
             output: {
+              sourcemapIgnoreList: (relativeSourcePath) => {
+                return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)
+              },
               sanitizeFileName: sanitizeFilePath,
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
@@ -75,7 +81,11 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         plugins: [
-          composableKeysPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client, rootDir: nuxt.options.rootDir }),
+          composableKeysPlugin.vite({
+            sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+            rootDir: nuxt.options.rootDir,
+            composables: nuxt.options.optimization.keyedComposables
+          }),
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
             preventAssignment: true

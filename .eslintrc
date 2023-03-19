@@ -24,6 +24,17 @@
     "jsdoc/require-returns": "off",
     "jsdoc/require-param-type": "off",
     "no-redeclare": "off",
+    "import/order": [
+      "error",
+      {
+        "pathGroups": [
+          {
+            "pattern": "@nuxt/test-utils",
+            "group": "external"
+          }
+        ]
+      }
+    ],
     "import/no-restricted-paths": [
       "error",
       {
@@ -63,6 +74,7 @@
   },
   "settings": {
     "jsdoc": {
+      "ignoreInternal": true,
       "tagNamePreference": {
         "warning": "warning",
         "note": "note"
