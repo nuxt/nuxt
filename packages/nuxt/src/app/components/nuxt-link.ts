@@ -236,7 +236,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return () => {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
-            ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
+            ref: process.server ? undefined : (ref: any) => {
+              el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el
+            },
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
