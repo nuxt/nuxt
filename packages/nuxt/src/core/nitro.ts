@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join } from 'pathe'
+import { resolve, join, relative } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
@@ -7,11 +7,12 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from 'unhead'
+import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
+import type { Nuxt } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
-import type { Nuxt } from 'nuxt/schema'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -46,6 +47,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           as: '__publicAssetsURL',
           name: 'publicAssetsURL',
           from: resolve(distDir, 'core/runtime/nitro/paths')
+        },
+        {
+          // TODO: Remove after https://github.com/unjs/nitro/issues/1049
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'core/runtime/nitro/config'),
+          priority: -1
         }
       ],
       exclude: [...excludePattern, /[\\/]\.git[\\/]/]
@@ -78,6 +86,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.runtimeConfig.nitro
       }
     },
+    appConfig: nuxt.options.appConfig,
+    appConfigFiles: nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, 'app.config')
+    ),
     typescript: {
       generateTsConfig: false
     },
@@ -226,6 +238,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await scanHandlers(nitro)
       await writeTypes(nitro)
     }
+    // Exclude nitro output dir from typescript
+    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
@@ -237,6 +252,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
       if (!nuxt.options._generate) {
         logger.restoreAll()
