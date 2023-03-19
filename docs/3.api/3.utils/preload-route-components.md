@@ -32,7 +32,7 @@ const submit = async () => {
 }
 ```
 
-::ReadMore{link="/docs/api/composables/navigate-to"}
+::ReadMore{link="/docs/api/utils/navigate-to"}
 ::
 
 ::alert{icon=👉}

@@ -2,9 +2,10 @@ import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolve
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
+import type { ImportsOptions, ImportPresetWithDeprecation } from 'nuxt/schema'
+
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
-import type { ImportsOptions, ImportPresetWithDeprecation } from 'nuxt/schema'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -60,6 +61,17 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     await nuxt.callHook('imports:dirs', composablesDirs)
     composablesDirs = composablesDirs.map(dir => normalize(dir))
+
+    // Restart nuxt when composable directories are added/removed
+    nuxt.hook('builder:watch', (event, path) => {
+      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
+      const fullPath = resolve(nuxt.options.srcDir, path)
+
+      if (isDirChange && composablesDirs.includes(fullPath)) {
+        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        return nuxt.callHook('restart')
+      }
+    })
 
     // Support for importing from '#imports'
     addTemplate({

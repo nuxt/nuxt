@@ -10,7 +10,7 @@ const logger = consola.withTag('crawler')
 const baseURL = withoutTrailingSlash(process.env.BASE_URL || 'https://nuxt.com')
 const startingURL = baseURL + '/'
 
-const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif']
+const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif', 'zip']
 const urlsToOmit = ['http://localhost:3000']
 
 // TODO: remove when migrating to Nuxt 3/Docus
@@ -27,6 +27,8 @@ const errorsToIgnore = [
 const urls = new Set([startingURL])
 const erroredUrls = new Set()
 
+const referrers = new Map()
+
 /**
  * @param {string} path Path to check
  * @param {string | undefined} referrer The referring page
@@ -34,7 +36,7 @@ const erroredUrls = new Set()
 function queue (path, referrer) {
   if (!path) {
     const message = chalk.red(`${chalk.bold('✗')} ${referrer} linked to empty href`)
-    if (isCI) { actions.error(message) }
+    if (isCI && path?.match(/\/docs\//)) { actions.error(message) }
     logger.log(message)
     return
   }
@@ -54,6 +56,7 @@ function queue (path, referrer) {
   // Don't crawl external URLs
   if (origin !== baseURL) { return }
 
+  referrers.set(url, referrer)
   urls.add(url)
 
   crawler.queue(url)
@@ -68,12 +71,13 @@ const crawler = new Crawler({
     const { statusCode } = res.request.response
 
     if (error || ![200, 301, 302].includes(statusCode) || !$) {
-      if (errorsToIgnore.includes(parseURL(uri).pathname)) {
-        const message = chalk.gray(`${chalk.bold('✗')} ${uri} (${statusCode}) (ignored)`)
+      // TODO: normalize relative links in module readmes - https://github.com/nuxt/nuxt.com/issues/1271
+      if (errorsToIgnore.includes(parseURL(uri).pathname) || referrers.get(uri)?.match(/\/modules\//) || !uri?.match(/\/docs\//)) {
+        const message = chalk.gray(`${chalk.bold('✗')} ${uri} (${statusCode}) [<- ${referrers.get(uri)}] (ignored)`)
         logger.log(message)
         return done()
       }
-      const message = chalk.red(`${chalk.bold('✗')} ${uri} (${statusCode})`)
+      const message = chalk.red(`${chalk.bold('✗')} ${uri} (${statusCode}) [<- ${referrers.get(uri)}]`)
       if (isCI) { actions.error(message) }
       logger.log(message)
       erroredUrls.add(uri)

@@ -116,7 +116,7 @@ export { }
   }
 }
 
-const adHocModules = ['router', 'pages', 'imports', 'meta', 'components']
+const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
 export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
@@ -136,7 +136,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
       ),
-      modules.length > 0 ? `    modules?: (NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, NuxtConfig[${configKey}]]`).join(' | ')})[],` : '',
+      modules.length > 0 ? `    modules?: (NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
       '  }',
       generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
         {
@@ -198,14 +198,28 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents: ({ app, nuxt }) => {
     return `
+import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 
+type MergedAppConfig<Resolved extends Record<string, any>, Custom extends Record<string, any>> = {
+  [K in keyof Resolved]: K extends keyof Custom
+    ? Custom[K] extends Record<string, any>
+      ? Resolved[K] extends Record<string, any>
+        ? MergedAppConfig<Resolved[K], Custom[K]>
+        : Exclude<Custom[K], undefined>
+      : Exclude<Custom[K], undefined>
+    : Resolved[K]
+}
+
 declare module 'nuxt/schema' {
-  interface AppConfig extends ResolvedAppConfig { }
+  interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
+}
+declare module '@nuxt/schema' {
+  interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
 }
 `
   }
@@ -222,7 +236,7 @@ const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
-export default defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
+export default /* #__PURE__ */ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
 `
   }
 }

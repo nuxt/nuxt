@@ -22,7 +22,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type NuxtPage = {
   name?: string
   path: string
-  file: string
+  file?: string
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: string
@@ -77,7 +77,12 @@ export interface NuxtHooks {
    * Called to restart the current Nuxt instance.
    * @returns Promise
    */
-  'restart': () => HookResult
+  'restart': (options?: {
+    /**
+     * Try to restart the whole process if supported
+     */
+    hard?: boolean
+  }) => HookResult
 
   /**
    * Called during Nuxt initialization, before installing user modules.
@@ -212,6 +217,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'nitro:build:before': (nitro: Nitro) => HookResult
+  /**
+   * Called after copying public assets. Allows modifying public assets before Nitro server is built.
+   * @param nitro The created nitro object
+   * @returns Promise
+   */
+  'nitro:build:public-assets': (nitro: Nitro) => HookResult
   /**
    * Allows extending the routes to be pre-rendered.
    * @param ctx Nuxt context
