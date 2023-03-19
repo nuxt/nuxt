@@ -1,11 +1,13 @@
 import { defineComponent, createStaticVNode, computed, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import type { MetaObject } from '@nuxt/schema'
 import { appendHeader } from 'h3'
+import { useHead } from '@unhead/vue'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
-import { useHead, useNuxtApp, useRequestEvent } from '#app'
+import { useNuxtApp } from '#app/nuxt'
+import { useRequestEvent } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
 
@@ -32,7 +34,7 @@ export default defineComponent({
     const event = useRequestEvent()
 
     const html = ref<string>('')
-    const cHead = ref<MetaObject>({ link: [], style: [] })
+    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
     function _fetchComponent () {
@@ -54,7 +56,7 @@ export default defineComponent({
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][hashId.value]) {
         nuxtApp[pKey][hashId.value] = _fetchComponent().finally(() => {
-          delete nuxtApp[pKey][hashId.value]
+          delete nuxtApp[pKey]![hashId.value]
         })
       }
       const res: NuxtIslandResponse = await nuxtApp[pKey][hashId.value]

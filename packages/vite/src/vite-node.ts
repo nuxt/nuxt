@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
-import { resolve } from 'pathe'
+import { resolve, normalize } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
@@ -59,7 +59,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
       })
 
       server.watcher.on('all', (event, file) => {
-        markInvalidates(server.moduleGraph.getModulesByFile(file))
+        markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
         // Invalidate all virtual modules when a file is added or removed
         if (event === 'add' || event === 'unlink') {
           invalidateVirtualModules()

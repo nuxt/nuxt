@@ -1,0 +1,25 @@
+name: Docs
+
+on:
+  push:
+    paths:
+      - ".github/workflows/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+    branches:
+      - main
+
+jobs:
+  lint-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
+      - name: Check workflow files
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color -shellcheck=""
