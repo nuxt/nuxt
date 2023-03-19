@@ -490,6 +490,7 @@ describe('errors', () => {
       }
     })
     expect(res.status).toBe(422)
+    expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
     expect(error).toMatchObject({
