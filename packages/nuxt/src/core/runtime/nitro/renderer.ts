@@ -285,7 +285,7 @@ export default defineRenderHandler(async (event) => {
     ]),
     body: (process.env.NUXT_COMPONENT_ISLANDS && islandContext) ? [] : [_rendered.html],
     bodyAppend: normalizeChunks([
-      process.env.NUXT_NO_SCRIPTS
+      process.env.NUXT_NO_SCRIPTS || routeOptions.noScript
         ? undefined
         : (_PAYLOAD_EXTRACTION
             ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${devalue(splitPayload(ssrContext).initial)})}</script>`
