@@ -19,6 +19,10 @@ export default defineUntypedSchema({
 
   /**
    * Global route options applied to matching server routes.
+   * 
+   * It extends Nitro's `routeRules` with additionnal properties:
+   * - `routeRules`: `**boolean**`
+   * - `ssr`: `**boolean**`
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
