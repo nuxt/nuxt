@@ -21,7 +21,7 @@ type DefaultData<V> = object | ((this: V) => object)
 type DefaultProps = Record<string, any>
 type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
 type DefaultComputed = { [key: string]: any }
-type DefaultAsyncData = ((context: Context) => Promise<object | void> | object | void)
+type DefaultAsyncData = ((this: never, context: Context) => Promise<object | void> | object | void)
 
 declare module 'vue/types' {
   /**
