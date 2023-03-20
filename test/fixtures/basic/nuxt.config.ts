@@ -135,7 +135,9 @@ export default defineNuxtConfig({
     function (_, nuxt) {
       nuxt.options.optimization.treeShake.composables.server[nuxt.options.rootDir] = ['useClientOnlyComposable', 'setTitleToPink']
       nuxt.options.optimization.treeShake.composables.client[nuxt.options.rootDir] = ['useServerOnlyComposable']
-    }
+    },
+    // To test falsy module values
+    undefined
   ],
   vite: {
     logLevel: 'silent'

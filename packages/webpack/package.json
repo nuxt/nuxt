@@ -31,7 +31,7 @@
     "estree-walker": "^3.0.3",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
-    "fs-extra": "^11.1.0",
+    "fs-extra": "^11.1.1",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.30.0",
@@ -54,7 +54,7 @@
     "vue-loader": "^17.0.1",
     "webpack": "^5.76.2",
     "webpack-bundle-analyzer": "^4.8.0",
-    "webpack-dev-middleware": "^6.0.1",
+    "webpack-dev-middleware": "^6.0.2",
     "webpack-hot-middleware": "^2.25.3",
     "webpack-virtual-modules": "^0.5.0",
     "webpackbar": "^5.0.2"
