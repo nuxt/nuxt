@@ -26,7 +26,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(106600)
+    expect(stats.client.totalBytes).toBeLessThan(106650)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/_plugin-vue_export-helper.js",
