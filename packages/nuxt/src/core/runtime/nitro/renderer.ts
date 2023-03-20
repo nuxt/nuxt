@@ -160,6 +160,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -284,7 +285,7 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: (process.env.NUXT_COMPONENT_ISLANDS && islandContext) ? [] : [_rendered.html],
+    body: [_rendered.html],
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
@@ -318,7 +319,7 @@ export default defineRenderHandler(async (event) => {
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head,
-      html: ssrContext.teleports!['nuxt-island'].replace(/<!--.*-->/g, ''),
+      html: getServerComponentHTML(htmlContext.body),
       state: ssrContext.payload.state
     }
 
@@ -427,4 +428,12 @@ function splitPayload (ssrContext: NuxtSSRContext) {
     initial: { ...initial, prerenderedAt },
     payload: { data, prerenderedAt }
   }
+}
+
+/**
+ * remove the root node from the html body
+ */
+function getServerComponentHTML (body: string[]): string {
+  const match = body[0].match(ROOT_NODE_REGEX)
+  return match ? match[1] : body[0]
 }
