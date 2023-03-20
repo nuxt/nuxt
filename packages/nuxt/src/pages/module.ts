@@ -111,6 +111,7 @@ export default defineNuxtModule({
     })
 
     // Turn off Vue server renderer if all routes are prerendered
+    // This will not do anything until v3.4 as `noVueServer` defaults to `false` for now.
     if (!nuxt.options.dev && nuxt.options.experimental.noVueServer === undefined) {
       const pageRoutes = new Set<string>()
 
