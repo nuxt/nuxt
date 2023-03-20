@@ -111,7 +111,7 @@ export default defineUntypedSchema({
 
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
-     * Also available within `routeRules`.
+     * You can also disable scripts more granularly within `routeRules`.
      */
     noScripts: false,
 
