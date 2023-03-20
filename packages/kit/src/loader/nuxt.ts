@@ -1,7 +1,7 @@
+import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
-import type { RequireModuleOptions } from '../internal/cjs'
-import { importModule, tryImportModule } from '../internal/cjs'
+import { importModule, tryImportModule } from '../internal/esm'
 import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
@@ -23,8 +23,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   opts.cwd = opts.cwd || opts.rootDir
   opts.overrides = opts.overrides || opts.config || {}
 
-  const resolveOpts: RequireModuleOptions = { paths: opts.cwd }
-
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
@@ -37,15 +35,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const pkg = await readPackageJSON(nearestNuxtPkg)
   const majorVersion = parseInt((pkg.version || '').split('.')[0])
 
+  const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
+
   // Nuxt 3
   if (majorVersion === 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, resolveOpts)
+    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
 
   // Nuxt 2
-  const { loadNuxt } = await tryImportModule('nuxt-edge', resolveOpts) || await importModule('nuxt', resolveOpts)
+  const { loadNuxt } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
   const nuxt = await loadNuxt({
     rootDir: opts.cwd,
     for: opts.dev ? 'dev' : 'build',
@@ -58,15 +58,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const resolveOpts: RequireModuleOptions = { paths: nuxt.options.rootDir }
+  const rootDir = pathToFileURL(nuxt.options.rootDir).href
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt3', resolveOpts) || await importModule('nuxt', resolveOpts)
+    const { build } = await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
     return build(nuxt)
   }
 
   // Nuxt 2
-  const { build } = await tryImportModule('nuxt-edge', resolveOpts) || await importModule('nuxt', resolveOpts)
+  const { build } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
   return build(nuxt)
 }
