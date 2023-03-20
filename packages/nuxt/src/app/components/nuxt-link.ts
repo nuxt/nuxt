@@ -198,13 +198,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       // Prefetching
       const prefetched = ref(false)
       const el = process.server ? undefined : ref<HTMLElement | null>(null)
+      const elRef = process.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
+
       if (process.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
         const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
           let idleId: number
-          let unobserve: (() => void)| null = null
+          let unobserve: (() => void) | null = null
           onMounted(() => {
             const observer = useObserver()
             onNuxtReady(() => {
@@ -236,7 +238,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return () => {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
-            ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
+            ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,

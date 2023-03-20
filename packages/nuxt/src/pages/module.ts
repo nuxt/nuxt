@@ -4,11 +4,12 @@ import { join, relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
+import type { NuxtApp, NuxtPage } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { resolvePagesRoutes, normalizeRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
-import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 
 export default defineNuxtModule({
   meta: {

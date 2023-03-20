@@ -26,7 +26,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(106100)
+    expect(stats.client.totalBytes).toBeLessThan(106650)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/_plugin-vue_export-helper.js",
@@ -40,10 +40,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(94000)
+    expect(stats.server.totalBytes).toBeLessThan(93900)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2714000)
+    expect(modules.totalBytes).toBeLessThan(2693900)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -63,7 +63,6 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
-        "buffer-from",
         "cookie-es",
         "defu",
         "destr",
@@ -78,7 +77,6 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "radix3",
         "scule",
         "source-map",
-        "source-map-support",
         "ufo",
         "uncrypto",
         "unctx",

@@ -27,11 +27,6 @@ export default defineNuxtCommand({
         cwd: rootDir,
         fileName: args.dotenv
       },
-      defaults: {
-        experimental: {
-          payloadExtraction: args.prerender ? true : undefined
-        }
-      },
       overrides: {
         logLevel: args['log-level'],
         _generate: args.prerender

@@ -11,7 +11,16 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  typescript: { strict: true },
+  typescript: {
+    strict: true,
+    tsConfig: {
+      compilerOptions: {
+        // TODO: For testing (future) support for Node16-style module resolution.
+        // See https://github.com/nuxt/nuxt/issues/18426 and https://github.com/nuxt/nuxt/pull/18431
+        // moduleResolution: 'Node16'
+      }
+    }
+  },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -126,7 +135,9 @@ export default defineNuxtConfig({
     function (_, nuxt) {
       nuxt.options.optimization.treeShake.composables.server[nuxt.options.rootDir] = ['useClientOnlyComposable', 'setTitleToPink']
       nuxt.options.optimization.treeShake.composables.client[nuxt.options.rootDir] = ['useServerOnlyComposable']
-    }
+    },
+    // To test falsy module values
+    undefined
   ],
   vite: {
     logLevel: 'silent'

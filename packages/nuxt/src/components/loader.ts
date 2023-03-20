@@ -3,9 +3,10 @@ import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { isVueTemplate } from './helpers'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
