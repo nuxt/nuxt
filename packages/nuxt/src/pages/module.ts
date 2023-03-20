@@ -1,5 +1,5 @@
 import { existsSync, readdirSync } from 'node:fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
+import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates, useNitro } from '@nuxt/kit'
 import { join, relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -109,6 +109,32 @@ export default defineNuxtModule({
         global: true
       })
     })
+
+    // Turn off Vue server renderer if all routes are prerendered
+    if (!nuxt.options.dev && nuxt.options.experimental.noVueServer === undefined) {
+      const pageRoutes = new Set<string>()
+
+      nuxt.hook('nitro:init', (nitro) => {
+        nitro.hooks.hook('prerender:route', (route) => {
+          pageRoutes.delete(route.route)
+          nuxt.options.experimental.noVueServer = nuxt.options.experimental.noVueServer || !pageRoutes.size
+        })
+      })
+
+      nuxt.hook('modules:done', () => {
+        nuxt.hook('pages:extend', (pages) => {
+          const processPages = (pages: NuxtPage[], currentPath = '/') => {
+            for (const page of pages) {
+              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { pageRoutes.add(currentPath) }
+              const route = joinURL(currentPath, page.path)
+              pageRoutes.add(route)
+              if (page.children) { processPages(page.children, route) }
+            }
+          }
+          processPages(pages)
+        })
+      })
+    }
 
     // Prerender all non-dynamic page routes when generating app
     if (!nuxt.options.dev && nuxt.options._generate) {
