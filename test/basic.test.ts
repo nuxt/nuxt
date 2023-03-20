@@ -528,6 +528,12 @@ describe('navigate external', () => {
 
     expect(headers.get('location')).toEqual('https://example.com/')
   })
+
+  it('should redirect to api endpoint', async () => {
+    const { headers } = await fetch('/navigate-to-api', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/api/test')
+  })
 })
 
 describe('middlewares', () => {

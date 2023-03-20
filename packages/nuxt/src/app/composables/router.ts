@@ -90,7 +90,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
-  const isExternal = hasProtocol(toPath, { acceptRelative: true })
+  const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
