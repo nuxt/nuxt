@@ -110,33 +110,6 @@ export default defineNuxtModule({
       })
     })
 
-    // Turn off Vue server renderer if all routes are prerendered
-    // This will not do anything until v3.4 as `noVueServer` defaults to `false` for now.
-    if (!nuxt.options.dev && nuxt.options.experimental.noVueServer === undefined) {
-      const pageRoutes = new Set<string>()
-
-      nuxt.hook('nitro:init', (nitro) => {
-        nitro.hooks.hook('prerender:route', (route) => {
-          pageRoutes.delete(route.route)
-          nuxt.options.experimental.noVueServer = nuxt.options.experimental.noVueServer || !pageRoutes.size
-        })
-      })
-
-      nuxt.hook('modules:done', () => {
-        nuxt.hook('pages:extend', (pages) => {
-          const processPages = (pages: NuxtPage[], currentPath = '/') => {
-            for (const page of pages) {
-              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { pageRoutes.add(currentPath) }
-              const route = joinURL(currentPath, page.path)
-              pageRoutes.add(route)
-              if (page.children) { processPages(page.children, route) }
-            }
-          }
-          processPages(pages)
-        })
-      })
-    }
-
     // Prerender all non-dynamic page routes when generating app
     if (!nuxt.options.dev && nuxt.options._generate) {
       const prerenderRoutes = new Set<string>()

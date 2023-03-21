@@ -232,15 +232,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     handler: resolve(distDir, 'core/runtime/nitro/renderer')
   })
 
-  nitro.hooks.hook('rollup:before', (nitro) => {
-    if (nuxt.options.experimental.noVueServer) {
+  if (nuxt.options.experimental.noVueServer) {
+    nitro.hooks.hook('rollup:before', (nitro) => {
       if (nitro.options.preset === 'nitro-prerender') { return }
       nitro.options.handlers.shift()
       // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1069
       nitro.options.renderer = undefined
       nitro.options.errorHandler = '#internal/nitro/error'
-    }
-  })
+    })
+  }
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {

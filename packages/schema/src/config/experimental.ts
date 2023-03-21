@@ -117,7 +117,6 @@ export default defineUntypedSchema({
     /**
      * Disable vue server renderer endpoint within nitro.
     */
-    // TODO: set to `undefined` as default for v3.4
     noVueServer: false,
 
     /**
