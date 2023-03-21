@@ -49,7 +49,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/crawler": "^1.2.2",
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.15.5",
     "@types/rimraf": "^3.0.2",
     "@types/semver": "^7.3.13",
     "@unocss/reset": "^0.50.6",
@@ -74,7 +74,7 @@
     "ufo": "^1.1.1",
     "unbuild": "^1.1.2",
     "vite": "^4.2.1",
-    "vitest": "^0.29.5",
+    "vitest": "^0.29.7",
     "vue-tsc": "^1.2.0"
   },
   "packageManager": "pnpm@7.30.0",
