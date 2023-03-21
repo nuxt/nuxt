@@ -87,10 +87,10 @@ export async function buildServer (ctx: ViteBuildContext) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
-        input: entry,
+        input: { server: entry },
         external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
         output: {
-          entryFileNames: 'server.mjs',
+          entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
             constBindings: true
