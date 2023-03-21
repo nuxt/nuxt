@@ -1,13 +1,14 @@
 import { statSync } from 'node:fs'
 import { relative, resolve } from 'pathe'
 import { defineNuxtModule, resolveAlias, addTemplate, addPluginTemplate, updateTemplates } from '@nuxt/kit'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
 import { componentsPluginTemplate, componentsTemplate, componentsIslandsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
@@ -145,6 +146,17 @@ export default defineNuxtModule<ComponentsOptions>({
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
+      }
+    })
+
+    // Restart dev server when component directories are added/removed
+    nuxt.hook('builder:watch', (event, path) => {
+      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
+      const fullPath = resolve(nuxt.options.srcDir, path)
+
+      if (isDirChange && componentDirs.some(dir => dir.path === fullPath)) {
+        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        return nuxt.callHook('restart')
       }
     })
 

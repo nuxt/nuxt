@@ -5,8 +5,9 @@ import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import { uniqueBy } from '../core/utils'
 import type { NuxtPage } from 'nuxt/schema'
+
+import { uniqueBy } from '../core/utils'
 
 enum SegmentParserState {
   initial,

@@ -111,10 +111,12 @@ describe('pages', () => {
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
 
-    page.goto(url('/navigate-to-forbidden'))
+    await page.goto(url('/navigate-to-forbidden'))
     await page.waitForLoadState('networkidle')
     await page.getByText('should be caught by catchall').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+
+    await page.close()
   })
 
   it('render 404', async () => {
@@ -268,6 +270,8 @@ describe('pages', () => {
     await page.locator('button#show-all').click()
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isVisible()))
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
+
+    await page.close()
   })
 
   it('/client-only-explicit-import', async () => {
@@ -331,6 +335,8 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
+
+    await page.close()
   })
 })
 
@@ -403,6 +409,8 @@ describe('nuxt links', () => {
       await page.waitForLoadState('networkidle')
       expect(await page.getByTestId('window-state').innerText()).not.toContain('bar')
     }
+
+    await page.close()
   })
 })
 
@@ -427,6 +435,22 @@ describe('head tags', () => {
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
     expect(indexHtml).toContain('<title>Basic fixture</title>')
+  })
+
+  it('SSR script setup should render tags', async () => {
+    const headHtml = await $fetch('/head-script-setup')
+
+    // useHead - title & titleTemplate are working
+    expect(headHtml).toContain('<title>head script setup - Nuxt Playground</title>')
+    // useSeoMeta - template params
+    expect(headHtml).toContain('<meta property="og:title" content="head script setup - Nuxt Playground">')
+    // useSeoMeta - refs
+    expect(headHtml).toContain('<meta name="description" content="head script setup description for Nuxt Playground">')
+    // useServerHead - shorthands
+    expect(headHtml).toContain('>/* Custom styles */</style>')
+    // useHeadSafe - removes dangerous content
+    expect(headHtml).toContain('<script id="xss-script"></script>')
+    expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
   it('SPA should render appHead tags', async () => {
@@ -487,6 +511,7 @@ describe('errors', () => {
       }
     })
     expect(res.status).toBe(422)
+    expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
     expect(error).toMatchObject({
@@ -513,6 +538,8 @@ describe('errors', () => {
     expect(await page.innerText('div')).toContain('Chunk error page')
     await page.waitForLoadState('networkidle')
     expect(await page.innerText('div')).toContain('State: 3')
+
+    await page.close()
   })
 })
 
@@ -521,6 +548,12 @@ describe('navigate external', () => {
     const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('https://example.com/')
+  })
+
+  it('should redirect to api endpoint', async () => {
+    const { headers } = await fetch('/navigate-to-api', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/api/test')
   })
 })
 
@@ -642,6 +675,8 @@ describe('composable tree shaking', () => {
     expect(await page.$eval('h1', e => getComputedStyle(e).color)).toBe('rgb(255, 192, 203)')
 
     await expectNoClientErrors('/tree-shake')
+
+    await page.close()
   })
 })
 
@@ -660,6 +695,8 @@ describe('server tree shaking', () => {
     expect(await page.$eval('.red', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
     expect(await page.$eval('.blue', e => getComputedStyle(e).color)).toBe('rgb(0, 0, 255)')
     expect(await page.locator('#client-side').textContent()).toContain('This should be rendered client-side')
+
+    await page.close()
   })
 })
 
@@ -865,6 +902,8 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     const page = await createPage('/styles')
     await page.waitForLoadState('networkidle')
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+
+    await page.close()
   })
 
   it.todo('renders client-only styles only', async () => {
@@ -897,6 +936,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
         .includes('does not have a single root node and will cause errors when navigating between routes'),
       true
     )
+
+    await page.close()
   })
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
@@ -905,6 +946,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
+
+    await page.close()
   })
 })
 
@@ -1020,6 +1063,9 @@ describe('app config', () => {
     }
 
     expect(html).toContain(JSON.stringify(expectedAppConfig))
+
+    const serverAppConfig = await $fetch('/api/app-config')
+    expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })
 
@@ -1042,6 +1088,48 @@ describe('component islands', () => {
         "state": {},
       }
     `)
+  })
+
+  it('render async component', async () => {
+    const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/LongAsyncComponent', {
+      props: JSON.stringify({
+        count: 3
+      })
+    }))
+    if (isDev()) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div><p>hello world !!!</p></div>",
+        "state": {},
+      }
+    `)
+  })
+
+  it('render .server async component', async () => {
+    const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/AsyncServerComponent', {
+      props: JSON.stringify({
+        count: 2
+      })
+    }))
+    if (isDev()) {
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+    }
+    expect(result).toMatchInlineSnapshot(`
+    {
+      "head": {
+        "link": [],
+        "style": [],
+      },
+      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div></div>",
+      "state": {},
+    }
+  `)
   })
 
   it('renders pure components', async () => {
@@ -1180,6 +1268,8 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
+
+    await page.close()
   })
 })
 

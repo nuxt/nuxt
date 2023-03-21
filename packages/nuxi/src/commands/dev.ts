@@ -1,7 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { existsSync, readdirSync } from 'node:fs'
-import { resolve, relative, normalize } from 'pathe'
+import { resolve, relative } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
@@ -11,7 +10,7 @@ import { setupDotenv } from 'c12'
 import { showBanner, showVersions } from '../utils/banner'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
-import { importModule } from '../utils/cjs'
+import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
 import { writeNuxtManifest, loadNuxtManifest, cleanupNuxtDirs } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
@@ -102,26 +101,9 @@ export default defineNuxtCommand({
           }
         })
 
-        currentNuxt.hooks.hookOnce('restart', async (options) => {
-          if (options?.hard && process.send) {
-            await listener.close().catch(() => {})
-            await currentNuxt.close().catch(() => {})
-            await watcher.close().catch(() => {})
-            await distWatcher.close().catch(() => {})
-            process.send({ type: 'nuxt:restart' })
-          } else {
-            await load(true)
-          }
-        })
-
         if (!isRestart) {
           showURL()
         }
-
-        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
-        distWatcher.on('unlinkDir', () => {
-          dLoad(true, '.nuxt/dist directory has been removed')
-        })
 
         // Write manifest and also check if we need cache invalidation
         if (!isRestart) {
@@ -133,6 +115,24 @@ export default defineNuxtCommand({
         }
 
         await currentNuxt.ready()
+
+        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
+        distWatcher.on('unlinkDir', () => {
+          dLoad(true, '.nuxt/dist directory has been removed')
+        })
+
+        const unsub = currentNuxt.hooks.hook('restart', async (options) => {
+          unsub() // we use this instead of `hookOnce` for Nuxt Bridge support
+          if (options?.hard && process.send) {
+            await listener.close().catch(() => {})
+            await currentNuxt.close().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
+            process.send({ type: 'nuxt:restart' })
+          } else {
+            await load(true)
+          }
+        })
 
         await currentNuxt.hooks.callHook('listen', listener.server, listener)
         const address = (listener.server.address() || {}) as AddressInfo
@@ -160,42 +160,11 @@ export default defineNuxtCommand({
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load)
-    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
-    watcher.on('all', (event, _file) => {
-      if (!currentNuxt) { return }
-      const file = normalize(_file)
-      const buildDir = withTrailingSlash(normalize(currentNuxt.options.buildDir))
-      if (file.startsWith(buildDir)) { return }
-      const relativePath = relative(rootDir, file)
-      if (file.match(/(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
-        dLoad(true, `${relativePath} updated`)
-      }
-
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const isFileChange = ['add', 'unlink'].includes(event)
-      const pagesDir = resolve(currentNuxt.options.srcDir, currentNuxt.options.dir.pages)
-      const reloadDirs = ['components', 'composables', 'utils'].map(d => resolve(currentNuxt.options.srcDir, d))
-
-      if (isDirChange) {
-        if (reloadDirs.includes(file)) {
-          return dLoad(true, `Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (isFileChange) {
-        if (file.match(/(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/)) {
-          return dLoad(true, `\`${relativePath}\` ${event === 'add' ? 'created' : 'removed'}`)
-        }
-      }
-
-      if (file.startsWith(pagesDir)) {
-        const hasPages = existsSync(pagesDir) ? readdirSync(pagesDir).length > 0 : false
-        if (currentNuxt && !currentNuxt.options.pages && hasPages) {
-          return dLoad(true, 'Pages enabled')
-        }
-        if (currentNuxt && currentNuxt.options.pages && !hasPages) {
-          return dLoad(true, 'Pages disabled')
-        }
+    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
+    watcher.on('all', (_event, _file) => {
+      const file = relative(rootDir, _file)
+      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
+        dLoad(true, `${file} updated`)
       }
     })
 

@@ -1,5 +1,6 @@
 
 import type { H3Event } from 'h3'
+import { setResponseStatus as _setResponseStatus } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 
@@ -25,11 +26,6 @@ export function useRequestFetch (): typeof global.$fetch {
 }
 
 export function setResponseStatus (code: number, message?: string) {
-  const event = process.server && useRequestEvent()
-  if (event) {
-    event.node.res.statusCode = code
-    if (message) {
-      event.node.res.statusMessage = message
-    }
-  }
+  if (process.client) { return }
+  _setResponseStatus(useRequestEvent(), code, message)
 }

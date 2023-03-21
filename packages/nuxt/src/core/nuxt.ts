@@ -2,6 +2,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -22,7 +23,6 @@ import { DevOnlyPlugin } from './plugins/dev-only'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
-import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -161,15 +161,11 @@ async function initNuxt (nuxt: Nuxt) {
   // Register user and then ad-hoc modules
   modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
 
-  nuxt.hooks.hookOnce('builder:watch', (event, path) => {
-    if (watchedPaths.has(path)) { nuxt.callHook('restart', { hard: true }) }
-  })
-
   // Add <NuxtWelcome>
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')!
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
   })
 
   addComponent({
@@ -247,6 +243,10 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add prerender payload support
+  if (nuxt.options._generate && nuxt.options.experimental.payloadExtraction === undefined) {
+    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
@@ -284,6 +284,29 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('modules:done')
+
+  nuxt.hooks.hook('builder:watch', (event, path) => {
+    // Local module patterns
+    if (watchedPaths.has(path)) {
+      return nuxt.callHook('restart', { hard: true })
+    }
+
+    // User provided patterns
+    for (const pattern of nuxt.options.watch) {
+      if (typeof pattern === 'string') {
+        if (pattern === path) { return nuxt.callHook('restart') }
+        continue
+      }
+      if (pattern.test(path)) { return nuxt.callHook('restart') }
+    }
+
+    // Core Nuxt files: app.vue, error.vue and app.config.ts
+    const isFileChange = ['add', 'unlink'].includes(event)
+    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+      console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart')
+    }
+  })
 
   // Normalize windows transpile paths added by modules
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)

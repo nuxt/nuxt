@@ -65,6 +65,8 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       expect(pageErrors).toEqual([])
       expect(consoleLogErrors).toEqual([])
       expect(consoleLogWarnings).toEqual([])
+
+      await page.close()
     }, 60_000)
 
     it('should detect new routes', async () => {

@@ -9,9 +9,10 @@ import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
+import type { Nuxt } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
-import type { Nuxt } from 'nuxt/schema'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -46,6 +47,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           as: '__publicAssetsURL',
           name: 'publicAssetsURL',
           from: resolve(distDir, 'core/runtime/nitro/paths')
+        },
+        {
+          // TODO: Remove after https://github.com/unjs/nitro/issues/1049
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'core/runtime/nitro/config'),
+          priority: -1
         }
       ],
       exclude: [...excludePattern, /[\\/]\.git[\\/]/]
@@ -78,6 +86,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.runtimeConfig.nitro
       }
     },
+    appConfig: nuxt.options.appConfig,
+    appConfigFiles: nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, 'app.config')
+    ),
     typescript: {
       generateTsConfig: false
     },
@@ -240,6 +252,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
       if (!nuxt.options._generate) {
         logger.restoreAll()
