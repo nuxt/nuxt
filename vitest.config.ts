@@ -6,12 +6,9 @@ import { isWindows } from 'std-env'
 export default defineConfig({
   resolve: {
     alias: {
-      '#app': resolve('./packages/nuxt/src/app/index.ts'),
-      '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
+      '#app': resolve('./packages/nuxt/dist/app/index'),
+      '@nuxt/test-utils': resolve('./packages/test-utils/dist/index')
     }
-  },
-  esbuild: {
-    tsconfigRaw: '{}'
   },
   test: {
     globalSetup: 'test/setup.ts',
