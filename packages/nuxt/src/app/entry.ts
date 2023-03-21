@@ -1,4 +1,3 @@
-// We set __webpack_public_path via this import with webpack builder
 import { createSSRApp, createApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
 // @ts-ignore
@@ -9,7 +8,8 @@ import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'
 // @ts-ignore
-import RootComponent from '#build/root-component.mjs'
+// import RootComponent from '#build/root-component.mjs'
+import RootComponent from './components/nuxt-root-test.vue'
 // @ts-ignore
 import { appRootId } from '#build/nuxt.config.mjs'
 

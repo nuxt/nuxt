@@ -47,7 +47,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
       }
 
-      if (template.write) {
+      // TODO: remove when we have support for virtual modules in rspack
+      if (template.write || nuxt.options.builder === '@nuxt/rspack-builder') {
         await fsp.mkdir(dirname(fullPath), { recursive: true })
         await fsp.writeFile(fullPath, contents, 'utf8')
       }
