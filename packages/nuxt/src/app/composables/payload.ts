@@ -2,6 +2,7 @@ import { joinURL, hasProtocol } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError, isNuxtError } from './error'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -102,8 +103,12 @@ export function useNuxtPayloadTypes () {
   const _globalThis = globalThis as any
   if (!_globalThis.__nuxt_payload_types__) {
     _globalThis.__nuxt_payload_types__ = {
-      reducers: {},
-      revivers: {}
+      reducers: {
+        NuxtError: (data: any) => isNuxtError(data) && data.toJSON()
+      },
+      revivers: {
+        NuxtError: (data: any) => createError(data)
+      }
     }
   }
   return _globalThis.__nuxt_payload_types__
