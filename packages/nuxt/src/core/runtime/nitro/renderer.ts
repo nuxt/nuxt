@@ -3,7 +3,7 @@ import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
-import { stringify } from 'devalue'
+import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { joinURL } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -431,7 +431,8 @@ function renderPayloadScript (opts: { id: string, ssrContext: NuxtSSRContext, da
     opts.src ? `data-src="${opts.src}"` : ''
   ].filter(Boolean)
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
-  return `<script ${attrs.join(' ')}>${contents}</script>`
+  return `<script ${attrs.join(' ')}>${contents}</script>` +
+    `<script>window.__NUXT_CONFIG__=${uneval(opts.ssrContext.config)}</script>`
 }
 
 function splitPayload (ssrContext: NuxtSSRContext) {

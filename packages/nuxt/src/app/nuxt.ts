@@ -188,6 +188,11 @@ export async function createNuxtApp (options: CreateOptions) {
     ...options
   } as any as NuxtApp
 
+  // For backwards compatibility - TODO: remove later
+  if (process.client) {
+    window.__NUXT__ = nuxtApp.payload
+  }
+
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
 
@@ -232,7 +237,7 @@ export async function createNuxtApp (options: CreateOptions) {
     nuxtApp.ssrContext!.payload = nuxtApp.payload
 
     // Expose client runtime-config to the payload
-    nuxtApp.payload.config = {
+    nuxtApp.ssrContext!.config = {
       public: options.ssrContext!.runtimeConfig.public,
       app: options.ssrContext!.runtimeConfig.app
     }

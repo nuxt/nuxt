@@ -190,7 +190,7 @@ export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
+export const useRuntimeConfig = () => window?.__NUXT_CONFIG__ || {}
 `
 }
 

@@ -14,6 +14,7 @@ declare global {
 
   interface Window {
     __NUXT__?: Record<string, any>
+    __NUXT_CONFIG__?: Record<string, any>
   }
 }
 
