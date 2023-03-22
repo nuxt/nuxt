@@ -1,3 +1,3 @@
 export function useFoo () {
-  return 'auto imported from ~/components/foo.ts'
+  return 'auto imported from ~/composables/foo.ts'
 }

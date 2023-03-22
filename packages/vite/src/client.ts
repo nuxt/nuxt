@@ -17,6 +17,7 @@ import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
+import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
@@ -56,7 +57,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       manifest: true,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
       rollupOptions: {
-        input: ctx.entry
+        input: { entry: ctx.entry }
       }
     },
     plugins: [
@@ -73,7 +74,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       viteNodePlugin(ctx),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.client,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ],
     appType: 'custom',
@@ -81,6 +82,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       middlewareMode: true
     }
   } as ViteOptions)
+
+  clientConfig.customLogger = createViteLogger(clientConfig)
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
@@ -107,7 +110,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       port: hmrPortDefault,
       ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i)
     })
-    clientConfig.server = defu(clientConfig.server, <ServerOptions>{
+    clientConfig.server = defu(clientConfig.server, <ServerOptions> {
       https: ctx.nuxt.options.devServer.https,
       hmr: {
         protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',

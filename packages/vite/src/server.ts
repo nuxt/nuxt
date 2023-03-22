@@ -5,6 +5,7 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule, resolvePath } from '@nuxt/kit'
 import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import type { ViteBuildContext, ViteOptions } from './vite'
+import { createViteLogger } from './utils/logger'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
@@ -86,10 +87,10 @@ export async function buildServer (ctx: ViteBuildContext) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
-        input: entry,
+        input: { server: entry },
         external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
         output: {
-          entryFileNames: 'server.mjs',
+          entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
             constBindings: true
@@ -114,10 +115,12 @@ export async function buildServer (ctx: ViteBuildContext) {
       viteJsxPlugin(ctx.config.vueJsx),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.server,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly']
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ]
   } as ViteOptions)
+
+  serverConfig.customLogger = createViteLogger(serverConfig)
 
   if (ctx.nuxt.options.experimental.inlineSSRStyles) {
     const chunksWithInlinedCSS = new Set<string>()
