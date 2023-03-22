@@ -46,15 +46,19 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.js` : '_payload.js')
+  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.json` : '_payload.json')
 }
 
 async function _importPayload (payloadURL: string) {
   if (process.server) { return null }
-  const res = await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).catch((err) => {
+  try {
+    const text = await fetch(payloadURL).then(res => res.text())
+    const { revivers } = useNuxtPayloadTypes()
+    return parse(text, revivers)
+  } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
-  })
-  return res?.default || null
+  }
+  return null
 }
 
 export function isPrerendered () {
@@ -81,11 +85,7 @@ export async function getNuxtClientPayload () {
 
   const inlineData = parse(el.textContent || '', revivers)
 
-  let externalData
-  if (el.dataset.src) {
-    const text = await fetch(el.dataset.src).then(res => res.text())
-    externalData = parse(text, revivers)
-  }
+  const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
   payloadCache = {
     ...inlineData,
