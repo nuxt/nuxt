@@ -291,9 +291,9 @@ export default defineRenderHandler(async (event) => {
       process.env.NUXT_NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-          ? renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
-        ),
+            ? renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : renderPayloadScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+          ),
       _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
