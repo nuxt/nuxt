@@ -7,7 +7,7 @@ import { parse } from 'devalue'
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, parseData, renderPage, withLogs } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -43,7 +43,9 @@ describe('server api', () => {
 
 describe('route rules', () => {
   it('should enable spa mode', async () => {
-    expect(await $fetch('/route-rules/spa')).toContain('serverRendered:false')
+    const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
+    expect(script.serverRendered).toEqual(false)
+    expect(attrs['data-ssr']).toEqual('false')
   })
 })
 
@@ -463,7 +465,8 @@ describe('legacy async data', () => {
   it('should work with defineNuxtComponent', async () => {
     const html = await $fetch('/legacy/async-data')
     expect(html).toContain('<div>Hello API</div>')
-    expect(html).toContain('{hello:"Hello API"}')
+    const { script } = parseData(html)
+    expect(script.data['options:asyncdata:/legacy/async-data'].hello).toEqual('Hello API')
   })
 })
 

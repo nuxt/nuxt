@@ -1,5 +1,6 @@
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
+import { parse } from 'devalue'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
@@ -87,5 +88,17 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   } finally {
     done = true
     await page.close()
+  }
+}
+
+export function parseData (html: string) {
+  const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
+  const _attrs: Record<string, string> = {}
+  for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)+="(?<value>[^"]+)"/g)) {
+    _attrs[attr!.groups!.key] = attr!.groups!.value
+  }
+  return {
+    script: parse(script || ''),
+    attrs: _attrs
   }
 }
