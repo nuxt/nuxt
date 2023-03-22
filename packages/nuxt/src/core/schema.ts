@@ -42,9 +42,7 @@ export default defineNuxtModule({
       ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
-        await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
-        await nuxt.hooks.callHook('schema:written')
       }
     })
 
@@ -55,11 +53,7 @@ export default defineNuxtModule({
     })
 
     // Write schema after build to allow further modifications
-    nuxt.hooks.hook('build:done', async () => {
-      await nuxt.hooks.callHook('schema:beforeWrite', schema)
-      await writeSchema(schema)
-      await nuxt.hooks.callHook('schema:written')
-    })
+    nuxt.hooks.hook('build:done', () => writeSchema(schema))
 
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
@@ -72,9 +66,7 @@ export default defineNuxtModule({
       })
       const onChange = debounce(async () => {
         schema = await resolveSchema()
-        await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
-        await nuxt.hooks.callHook('schema:written')
       })
       watcher.on('all', onChange)
       nuxt.hook('close', () => watcher.close())
@@ -126,6 +118,7 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
+      await nuxt.hooks.callHook('schema:beforeWrite', schema)
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
@@ -161,6 +154,7 @@ declare module 'nuxt/schema' {
         'schema/nuxt.schema.d.ts'
       )
       await writeFile(typesPath, types, 'utf8')
+      await nuxt.hooks.callHook('schema:written')
     }
   }
 })
