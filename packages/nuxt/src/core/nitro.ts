@@ -235,7 +235,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.noVueServer) {
     nitro.hooks.hook('rollup:before', (nitro) => {
       if (nitro.options.preset === 'nitro-prerender') { return }
-      nitro.options.handlers.shift()
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      if (nuxtErrorHandler >= 0) {
+        nitro.options.handlers.splice(nuxtErrorHandler, 1)
+      }
       // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1069
       nitro.options.renderer = undefined
       nitro.options.errorHandler = '#internal/nitro/error'
