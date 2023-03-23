@@ -5,7 +5,7 @@ import { isIgnored } from '@nuxt/kit'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
-import type { Component, ComponentsDir } from 'nuxt/schema'
+import type { Component, ComponentsDir } from '@nuxt/schema'
 
 /**
  * Scan the components inside different components folders

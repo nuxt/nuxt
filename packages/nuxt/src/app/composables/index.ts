@@ -1,5 +1,5 @@
 import type { UseHeadInput } from '@unhead/vue'
-import type { HeadAugmentations } from 'nuxt/schema'
+import type { HeadAugmentations } from '@nuxt/schema'
 
 /** @deprecated Use `UseHeadInput` from `@unhead/vue` instead. This may be removed in a future minor version. */
 export type MetaObject = UseHeadInput<HeadAugmentations>

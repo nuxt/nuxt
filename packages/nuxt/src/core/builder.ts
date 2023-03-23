@@ -3,7 +3,7 @@ import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 
 import { createApp, generateApp as _generateApp } from './app'
 

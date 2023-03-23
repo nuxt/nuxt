@@ -143,7 +143,7 @@ declare module '@nuxt/schema' {
   interface CustomAppConfig extends _CustomAppConfig {}
 }
 
-declare module 'nuxt/schema' {
+declare module '@nuxt/schema' {
   interface NuxtConfig extends Omit<NuxtCustomSchema, 'appConfig'> {}
   interface NuxtOptions extends Omit<NuxtCustomSchema, 'appConfig'> {}
   interface CustomAppConfig extends _CustomAppConfig {}

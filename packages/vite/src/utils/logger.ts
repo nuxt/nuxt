@@ -2,7 +2,7 @@ import type * as vite from 'vite'
 import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import clear from 'clear'
-import type { NuxtOptions } from 'nuxt/schema'
+import type { NuxtOptions } from '@nuxt/schema'
 
 let duplicateCount = 0
 let lastType: vite.LogType | null = null

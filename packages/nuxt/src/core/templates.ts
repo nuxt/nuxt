@@ -6,7 +6,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { resolvePath } from 'mlly'
 import { filename } from 'pathe/utils'
-import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtTemplate } from '@nuxt/schema'
 
 export interface TemplateContext {
   nuxt: Nuxt
@@ -130,8 +130,8 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
-      "import { NuxtModule } from 'nuxt/schema'",
-      "declare module 'nuxt/schema' {",
+      "import { NuxtModule } from '@nuxt/schema'",
+      "declare module '@nuxt/schema' {",
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
@@ -198,7 +198,7 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents: ({ app, nuxt }) => {
     return `
-import type { CustomAppConfig } from 'nuxt/schema'
+import type { CustomAppConfig } from '@nuxt/schema'
 import type { Defu } from 'defu'
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
 
@@ -218,7 +218,7 @@ type MergedAppConfig<Resolved extends Record<string, any>, Custom extends Record
       : Resolved[K]
 }
 
-declare module 'nuxt/schema' {
+declare module '@nuxt/schema' {
   interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
 }
 declare module '@nuxt/schema' {

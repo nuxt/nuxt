@@ -5,7 +5,7 @@ import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtPage } from '@nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 

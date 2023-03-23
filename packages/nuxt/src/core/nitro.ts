@@ -9,7 +9,7 @@ import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
