@@ -232,6 +232,19 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     handler: resolve(distDir, 'core/runtime/nitro/renderer')
   })
 
+  if (nuxt.options.experimental.noVueServer) {
+    nitro.hooks.hook('rollup:before', (nitro) => {
+      if (nitro.options.preset === 'nitro-prerender') { return }
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      if (nuxtErrorHandler >= 0) {
+        nitro.options.handlers.splice(nuxtErrorHandler, 1)
+      }
+      // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1069
+      nitro.options.renderer = undefined
+      nitro.options.errorHandler = '#internal/nitro/error'
+    })
+  }
+
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
@@ -261,7 +274,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       } else {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
+          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
         }
       }
     }
