@@ -204,15 +204,18 @@ ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from $
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
+type IsAny<T> = 0 extends 1 & T ? true : false
 
 type MergedAppConfig<Resolved extends Record<string, any>, Custom extends Record<string, any>> = {
   [K in keyof Resolved]: K extends keyof Custom
     ? Custom[K] extends Record<string, any>
-      ? Resolved[K] extends Record<string, any>
-        ? MergedAppConfig<Resolved[K], Custom[K]>
+      ? IsAny<Custom[K]> extends true
+        ? Resolved[K]
+        : Resolved[K] extends Record<string, any>
+          ? MergedAppConfig<Resolved[K], Custom[K]>
+          : Exclude<Custom[K], undefined>
         : Exclude<Custom[K], undefined>
-      : Exclude<Custom[K], undefined>
-    : Resolved[K]
+      : Resolved[K]
 }
 
 declare module 'nuxt/schema' {
