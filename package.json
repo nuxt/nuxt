@@ -67,7 +67,7 @@
     "nuxt": "workspace:*",
     "ofetch": "^1.0.1",
     "pathe": "^1.1.0",
-    "rimraf": "^4.4.0",
+    "rimraf": "^4.4.1",
     "semver": "^7.3.8",
     "std-env": "^3.3.2",
     "typescript": "^5.0.2",
