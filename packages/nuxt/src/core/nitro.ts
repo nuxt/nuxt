@@ -239,7 +239,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       if (nuxtErrorHandler >= 0) {
         nitro.options.handlers.splice(nuxtErrorHandler, 1)
       }
-      // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1069
+
       nitro.options.renderer = undefined
       nitro.options.errorHandler = '#internal/nitro/error'
     })
