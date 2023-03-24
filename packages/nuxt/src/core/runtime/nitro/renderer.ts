@@ -159,6 +159,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 }
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
+const ISLAND_CACHE = (process.env.NUXT_COMPONENT_ISLANDS && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>$`)
 
@@ -184,6 +185,10 @@ export default defineRenderHandler(async (event) => {
   const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.node.req.url?.startsWith('/__nuxt_island'))
     ? await getIslandContext(event)
     : undefined
+
+  if (process.env.prerender && islandContext && ISLAND_CACHE!.has(event.node.req.url)) {
+    return ISLAND_CACHE!.get(event.node.req.url)
+  }
 
   // Request url
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
@@ -333,6 +338,9 @@ export default defineRenderHandler(async (event) => {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
+    }
+    if (process.env.prerender) {
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
     }
     return response
   }

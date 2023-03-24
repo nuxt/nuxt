@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '#app': resolve('./packages/nuxt/dist/app/index'),
-      '@nuxt/test-utils': resolve('./packages/test-utils/dist/index')
+      '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
     }
   },
   test: {
