@@ -1198,7 +1198,7 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
     expect(payload).toMatch(
-      /export default \{data:\{hey:\{[^}]*\},rand_a:\[[^\]]*\],".*":\{html:".*server-only component.*",head:\{link:\[\],style:\[\]\}\}\},prerenderedAt:\d*\}/
+      /export default \{data:\{hey:\{[^}]*\},rand_a:\[[^\]]*\]\},prerenderedAt:\d*\}/
     )
   })
 
