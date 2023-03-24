@@ -65,7 +65,7 @@
     "@nuxt/schema": "3.3.2",
     "@nuxt/telemetry": "^2.1.10",
     "@nuxt/ui-templates": "^1.1.1",
-    "@nuxt/vite-builder": "3.3.2",
+    "@nuxt/vite-builder": "3.3.1",
     "@unhead/ssr": "^1.1.23",
     "@unhead/vue": "^1.1.23",
     "@vue/reactivity": "^3.2.47",
