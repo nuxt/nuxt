@@ -317,6 +317,18 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it('/islands', async () => {
+    const page = await createPage('/islands')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#increase-pure-component').click()
+    expect(await page.getByText('"number": 101,')).toBeTruthy()
+    expect(await page.getByText(`that was very long ...
+    1`))
+    await page.locator('#count-async-server-long-async').click()
+    expect(await page.getByText(`This is a .server (20ms) async component that was very long ...
+    1`)).toBeTruthy()
+  })
 })
 
 describe('nuxt links', () => {
