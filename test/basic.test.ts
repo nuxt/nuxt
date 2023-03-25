@@ -322,12 +322,17 @@ describe('pages', () => {
     const page = await createPage('/islands')
     await page.waitForLoadState('networkidle')
     await page.locator('#increase-pure-component').click()
-    expect(await page.getByText('"number": 101,')).toBeTruthy()
-    expect(await page.getByText(`that was very long ...
-    1`))
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
     await page.locator('#count-async-server-long-async').click()
-    expect(await page.getByText(`This is a .server (20ms) async component that was very long ...
-    1`)).toBeTruthy()
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
+    ])
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
+    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
   })
 })
 
