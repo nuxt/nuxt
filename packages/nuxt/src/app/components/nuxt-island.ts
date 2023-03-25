@@ -52,7 +52,6 @@ export default defineComponent({
         }
       })
     }
-    const key = ref(0)
     async function fetchComponent () {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][hashId.value]) {
@@ -64,7 +63,6 @@ export default defineComponent({
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       html.value = res.html
-      key.value++
     }
 
     if (process.client) {
@@ -74,7 +72,7 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
-    return () => h((_, { slots }) => slots.default?.(), { key: key.value }, {
+    return () => h((_, { slots }) => slots.default?.(), null, {
       default: () => [createStaticVNode(html.value, 1)]
     })
   }
