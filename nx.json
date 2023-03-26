@@ -1,0 +1,49 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx-cloud",
+      "options": {
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "prepack",
+          "prepack:nuxi",
+          "prepack:nuxt",
+          "test:types",
+          "test:fixtures",
+          "test:unit",
+          "typecheck"
+        ],
+        "accessToken": "NWMxMmJiY2MtYWRjZS00N2Y4LTk1MWQtYzU2Y2ZkNTNkYjU4fHJlYWQtd3JpdGU="
+      }
+    }
+  },
+  "defaultBase": "main",
+  "targetDefaults": {
+    "prepack": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": ["^prepack"],
+      "outputs": ["{projectRoot}/dist", "{projectRoot}/schema"]
+    },
+    "test:types": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": [{ "projects": ["nuxi", "nuxt"], "target": "prepack" }]
+    },
+    "test:fixtures": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": [{ "projects": ["nuxi", "nuxt"], "target": "prepack" }]
+    },
+    "test:unit": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": [{ "projects": ["nuxi"], "target": "prepack" }]
+    },
+    "typecheck": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": ["^prepack"]
+    },
+    "lint": {
+      "inputs": ["{workspaceRoot}/.github/workflows/ci.yml"],
+      "dependsOn": [{ "projects": ["nuxi"], "target": "prepack" }]
+    }
+  }
+}

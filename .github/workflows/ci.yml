@@ -20,7 +20,8 @@ env:
   NODE_OPTIONS: --max-old-space-size=6144
   # install playwright binary manually (because pnpm only runs install script once)
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
-
+  # This can be enabled to get much more granular logging during the Nx Cloud DTE run
+  NX_VERBOSE_LOGGING: false
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -31,9 +32,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v3
@@ -46,14 +47,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build (stub)
-        run: pnpm build:stub
+      - name: Start CI run
+        run: npx nx-cloud start-ci-run
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Run primary tasks, letting Nx Cloud distribute and parallelize them across agents
+        run: pnpm exec nx run-many -t prepack test:types lint
 
-      - name: Build
-        run: pnpm build
+      - name: Stop all running agents if not all of our primary tasks succeed
+        if: ${{ failure() }}
+        run: npx nx-cloud stop-all-agents
 
       - name: Cache dist
         uses: actions/upload-artifact@v3
@@ -62,12 +64,12 @@ jobs:
           name: dist
           path: packages/*/dist
 
-  typecheck:
+  agents:
+    name: Nx Cloud - Agent ${{ matrix.agent }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs:
-      - build
-
+    strategy:
+      matrix:
+        agent: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v3
       - run: corepack enable
@@ -79,42 +81,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Restore dist cache
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: packages
-
-      - name: Test (types)
-        run: pnpm test:types
-
-  lint:
-    # autofix workflow will be triggered instead for PRs
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v3
-      - run: corepack enable
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build (stub)
-        run: pnpm build:stub
-
-      - name: Lint
-        run: pnpm lint
+      - name: Start Nx Agent ${{ matrix.agent }}
+        run: npx nx-cloud start-agent
+        env:
+          NX_AGENT_NAME: ${{ matrix.agent }}
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
     needs:
-      - build
+      - main
 
     strategy:
       fail-fast: false
@@ -125,8 +100,8 @@ jobs:
         payload: ['json', 'js']
         node: [16]
         exclude:
-          - env: 'dev'
-            builder: 'webpack'
+          - env: "dev"
+            builder: "webpack"
 
     timeout-minutes: 10
 
@@ -174,15 +149,16 @@ jobs:
           name: dist
           path: packages
 
-      - name: Test (unit)
-        run: pnpm test:unit
-
-      - name: Test (fixtures)
-        run: pnpm test:fixtures
+      - name: Tests (unit and fixtures)
+        run: pnpm exec nx run-many -t test:unit test:fixtures
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
           TEST_PAYLOAD: ${{ matrix.payload }}
+
+      - name: Stop all running agents
+        if: ${{ always() }}
+        run: npx nx-cloud stop-all-agents
 
   build-release:
     permissions:
@@ -193,9 +169,7 @@ jobs:
       !contains(github.event.head_commit.message, 'chore') &&
       !contains(github.event.head_commit.message, 'docs')
     needs:
-      - lint
-      - build
-      - test-fixtures
+      - main
     runs-on: ${{ matrix.os }}
 
     strategy:
