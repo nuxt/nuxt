@@ -121,16 +121,22 @@ export function useNuxtPayloadTypes () {
   return _globalThis.__nuxt_payload_types__
 }
 
-export function definePayloadType (
+export function definePayloadReducer (
   name: string,
-  reduce: (data: any) => any,
+  reduce: (data: any) => any
+) {
+  if (process.server) {
+    const types = useNuxtPayloadTypes()
+    types.reducers[name] = reduce
+  }
+}
+
+export function definePayloadReviver (
+  name: string,
   revive: (data: string) => any | undefined
 ) {
-  const types = useNuxtPayloadTypes()
   if (process.client) {
+    const types = useNuxtPayloadTypes()
     types.revivers[name] = revive
-  }
-  if (process.server) {
-    types.reducers[name] = reduce
   }
 }

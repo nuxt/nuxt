@@ -170,6 +170,7 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+              '#app': ['definePayloadReviver']
             }
           )
         },
@@ -177,6 +178,7 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+              '#app': ['definePayloadReducer']
             }
           )
         }
