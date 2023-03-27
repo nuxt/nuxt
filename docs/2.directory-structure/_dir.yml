@@ -1,0 +1,4 @@
+title: Directory Structure
+titleTemplate: '%s · Nuxt Directory Structure'
+navigation.icon: heroicons:folder-open
+image: '/socials/directory-structure.jpg'

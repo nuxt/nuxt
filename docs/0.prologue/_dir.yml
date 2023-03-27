@@ -1,0 +1,4 @@
+title: Prologue
+titleTemplate: '%s · Nuxt Concepts'
+navigation.icon: heroicons:light-bulb
+image: '/socials/key-concepts.jpg'

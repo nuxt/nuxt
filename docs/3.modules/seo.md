@@ -1,0 +1,3 @@
+---
+navigation.title: SEO
+---

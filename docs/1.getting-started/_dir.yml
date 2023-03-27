@@ -1,3 +1,4 @@
 title: Get Started
 titleTemplate: '%s · Get Started with Nuxt'
 image: '/socials/get-started.jpg'
+navigation.icon: heroicons:rocket-launch
