@@ -1,4 +1,5 @@
 import { joinURL, hasProtocol } from 'ufo'
+import { isShallow, isRef, isReactive, reactive, ref, shallowRef, toRaw } from 'vue'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -104,10 +105,16 @@ export function useNuxtPayloadTypes () {
   if (!_globalThis.__nuxt_payload_types__) {
     _globalThis.__nuxt_payload_types__ = {
       reducers: {
-        NuxtError: (data: any) => isNuxtError(data) && data.toJSON()
+        NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
+        shallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
+        ref: (data: any) => isRef(data) && data.value,
+        reactive: (data: any) => isReactive(data) && toRaw(data)
       },
       revivers: {
-        NuxtError: (data: any) => createError(data)
+        NuxtError: (data: any) => createError(data),
+        shallowRef: (data: any) => shallowRef(data),
+        ref: (data: any) => ref(data),
+        reactive: (data: any) => reactive(data)
       }
     }
   }
