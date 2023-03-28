@@ -18,8 +18,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/kit": "3.3.2",
-    "@nuxt/schema": "3.3.2",
+    "@nuxt/kit": "workspace:../kit",
+    "@nuxt/schema": "workspace:../schema",
     "@types/clear": "^0.1.2",
     "@types/flat": "^5.0.2",
     "@types/mri": "^1.1.1",
