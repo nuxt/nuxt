@@ -148,16 +148,18 @@ export default defineNuxtModule({
       )
     })
 
-    // Extract macros from pages
-    const pageMetaOptions: PageMetaPluginOptions = {
-      dev: nuxt.options.dev,
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
-      dirs: nuxt.options._layers.map(
-        layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
-      )
-    }
-    addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-    addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    nuxt.hook('modules:done', async () => {
+      const pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', pages)
+      // Extract macros from pages
+      const pageMetaOptions: PageMetaPluginOptions = {
+        dev: nuxt.options.dev,
+        sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+        pages
+      }
+      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
+      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    })
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
