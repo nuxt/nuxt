@@ -24,7 +24,7 @@
     "@nuxt/kit": "3.3.2",
     "autoprefixer": "^10.4.14",
     "css-loader": "^6.7.3",
-    "css-minimizer-webpack-plugin": "^4.2.2",
+    "css-minimizer-webpack-plugin": "^5.0.0",
     "cssnano": "^6.0.0",
     "esbuild-loader": "^3.0.1",
     "escape-string-regexp": "^5.0.0",
