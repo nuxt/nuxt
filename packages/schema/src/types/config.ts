@@ -1,6 +1,6 @@
 import type { KeepAliveProps, TransitionProps } from 'vue'
 import type { ConfigSchema } from '../../schema/config'
-import type { ServerOptions as ViteServerOptions, SSROptions as ViteSSROptions, UserConfig as ViteUserConfig } from 'vite'
+import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { AppHeadMetaObject } from './head'
