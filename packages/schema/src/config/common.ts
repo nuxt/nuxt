@@ -303,10 +303,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
