@@ -62,8 +62,6 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
-      vuePlugin(ctx.config.vue),
-      viteJsxPlugin(ctx.config.vueJsx),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
@@ -125,6 +123,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
+
+  clientConfig.plugins!.unshift(
+    vuePlugin((clientConfig as ViteOptions).vue),
+    viteJsxPlugin((clientConfig as ViteOptions).vueJsx)
+  )
 
   if (ctx.nuxt.options.dev) {
     // Dev

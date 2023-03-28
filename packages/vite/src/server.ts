@@ -111,8 +111,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      vuePlugin(ctx.config.vue),
-      viteJsxPlugin(ctx.config.vueJsx),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.server,
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
@@ -145,6 +143,11 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
+
+  serverConfig.plugins!.unshift(
+    vuePlugin((serverConfig as ViteOptions).vue),
+    viteJsxPlugin((serverConfig as ViteOptions).vueJsx)
+  )
 
   const onBuild = () => ctx.nuxt.callHook('vite:compiled')
 
