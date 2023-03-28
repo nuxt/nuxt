@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@nuxt/schema": "3.3.2",
-    "@types/cssnano": "^5.1.0",
     "unbuild": "latest",
     "vue": "3.2.47"
   },

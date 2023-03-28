@@ -64,7 +64,6 @@
     "@types/lodash-es": "^4.17.7",
     "@types/pify": "^5.0.1",
     "@types/webpack-bundle-analyzer": "^4.6.0",
-    "@types/webpack-dev-middleware": "^5.3.0",
     "@types/webpack-hot-middleware": "^2.25.6",
     "@types/webpack-virtual-modules": "^0.1.1",
     "unbuild": "latest",
