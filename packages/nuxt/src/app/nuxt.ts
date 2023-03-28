@@ -190,7 +190,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
-      for (const hook of hooks) {
+      for (const hook of [...hooks]) {
         await nuxtAppCtx.call(nuxtApp, () => hook(...args))
       }
     }
