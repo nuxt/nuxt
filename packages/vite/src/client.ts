@@ -10,9 +10,10 @@ import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
+import type { ViteConfig } from '@nuxt/schema'
 import { cacheDirPlugin } from './plugins/cache-dir'
 import { chunkErrorPlugin } from './plugins/chunk-error'
-import type { ViteBuildContext, ViteOptions } from './vite'
+import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
@@ -20,8 +21,7 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
-    entry: ctx.entry,
+  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, {
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : './',
@@ -79,7 +79,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     server: {
       middlewareMode: true
     }
-  } as ViteOptions)
+  } satisfies vite.InlineConfig)
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 
@@ -125,8 +125,8 @@ export async function buildClient (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
-    vuePlugin((clientConfig as ViteOptions).vue),
-    viteJsxPlugin((clientConfig as ViteOptions).vueJsx)
+    vuePlugin(clientConfig.vue),
+    viteJsxPlugin(clientConfig.vueJsx)
   )
 
   if (ctx.nuxt.options.dev) {
