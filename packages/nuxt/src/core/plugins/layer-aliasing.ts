@@ -16,7 +16,8 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
     '~': l.config.srcDir || l.cwd,
     '@': l.config.srcDir || l.cwd,
     '~~': l.config.rootDir || l.cwd,
-    '@@': l.config.rootDir || l.cwd
+    '@@': l.config.rootDir || l.cwd,
+    ...l.config?.alias || {}
   }]))
   const layers = Object.keys(aliases)
 
