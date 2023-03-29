@@ -20,10 +20,10 @@ import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
+import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
-import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
