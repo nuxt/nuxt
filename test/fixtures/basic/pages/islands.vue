@@ -42,9 +42,13 @@ const count = ref(0)
       <div>
         <NuxtIsland name="LongAsyncComponent" :props="{ count }">
           <div>Interactive testing slot</div>
-          <SugarCounter :multiplier="testCount" />
+          <div id="first-sugar-counter">
+            <SugarCounter :multiplier="testCount" />
+          </div>
           <template #test>
-            <div>Slot within test</div>
+            <div id="test-slot">
+              Slot with name test
+            </div>
           </template>
         </NuxtIsland>
         <button id="update-server-components" @click="count++">
@@ -52,19 +56,17 @@ const count = ref(0)
         </button>
       </div>
     </div>
-    <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
-      <div>Interactive testing slot this slot should not be teleported to the first LongAsyncComponent</div>
-      <SugarCounter :multiplier="testCount" />
-    </NuxtIsland>
     <div>
       <p>Island with props mounted client side</p>
-      <button @click="showIslandSlot = true">
+      <button id="show-island" @click="showIslandSlot = true">
         Show Interactive island
       </button>
-      <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
-        <div>Interactive testing slot post SSR</div>
-        <SugarCounter :multiplier="testCount" />
-      </NuxtIsland>
+      <div id="island-mounted-client-side">
+        <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
+          <div>Interactive testing slot post SSR</div>
+          <SugarCounter :multiplier="testCount" />
+        </NuxtIsland>
+      </div>
     </div>
   </div>
 </template>
