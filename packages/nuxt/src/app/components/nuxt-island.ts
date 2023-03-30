@@ -1,5 +1,5 @@
 import type { VNode, RendererNode } from 'vue'
-import { h, Fragment, defineComponent, createStaticVNode, computed, Static, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
+import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
 
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -36,11 +36,12 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const mounted = ref(false)
+    const key = ref(0)
     onMounted(() => { mounted.value = true })
     const html = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
-    let uid = html.value.match(SSR_UID_RE)?.[1]
+    const uid = ref(html.value.match(SSR_UID_RE)?.[1])
     function setUid () {
-      uid = html.value.match(SSR_UID_RE)?.[1]
+      uid.value = html.value.match(SSR_UID_RE)?.[1]
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
@@ -72,6 +73,11 @@ export default defineComponent({
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       html.value = res.html
+      key.value++
+      if (process.client) {
+        // must await next tick for Teleport to work correctly with static node re-rendering
+        await nextTick()
+      }
       setUid()
     }
 
@@ -89,10 +95,14 @@ export default defineComponent({
         setUid()
         return [getStaticVNode(instance.vnode)]
       }
-      const nodes = [createVNode(Fragment, null, [h(createStaticVNode(html.value, 1))], -2)]
-      if (uid) {
+      const nodes = [createVNode(Fragment, {
+        key: key.value
+      }, [h(createStaticVNode(html.value, 1))])]
+      if (uid.value) {
         for (const slot in slots) {
-          nodes.push(createVNode(Teleport, { to: process.client ? `[v-ssr-component-uid='${uid}'] [v-ssr-slot-name='${slot}']` : `uid=${uid};slot=${slot}` }, [slots[slot]?.()]))
+          nodes.push(createVNode(Teleport, { to: process.client ? `[v-ssr-component-uid='${uid.value}'] [v-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
+            default: () => [slots[slot]?.()]
+          }))
         }
       }
       return nodes
