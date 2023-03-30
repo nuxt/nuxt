@@ -449,8 +449,8 @@ function getServerComponentHTML (body: string[]): string {
 
 const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
-  const { teleports } = ssrContext
-  if (!teleports) { return html }
+  const { teleports, islandContext } = ssrContext
+  if (!islandContext || !teleports) { return html }
   for (const key in teleports) {
     const match = key.match(SSR_TELEPORT_MARKER)
     if (!match) { continue }
