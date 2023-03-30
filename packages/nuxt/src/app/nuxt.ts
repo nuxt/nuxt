@@ -309,7 +309,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
     post: []
   }
 
-  for (let plugin of _plugins) {
+  for (const plugin of _plugins) {
     if (typeof plugin !== 'function') {
       if (process.dev) { invalidPlugins.push(plugin) }
       continue
@@ -318,17 +318,18 @@ export function normalizePlugins (_plugins: Plugin[]) {
     const order = plugin.meta?.enforce || 'default'
 
     // TODO: Skip invalid plugins in next releases
+    let _plugin = plugin
     if (plugin.length > 1) {
       // Allow usage without wrapper but warn
       if (process.dev) { legacyInjectPlugins.push(plugin) }
       // @ts-expect-error deliberate invalid second argument
-      plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
+      _plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
     }
 
     // Allow usage without wrapper but warn
-    if (process.dev && !isNuxtPlugin(plugin)) { unwrappedPlugins.push(plugin) }
+    if (process.dev && !isNuxtPlugin(_plugin)) { unwrappedPlugins.push(_plugin) }
 
-    plugins[order].push(plugin)
+    plugins[order].push(_plugin)
   }
 
   if (process.dev && legacyInjectPlugins.length) {
