@@ -36,7 +36,6 @@ export default defineComponent({
     const event = useRequestEvent()
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
-    console.log(instance.vnode.el)
     const html = ref<string>(process.client ? instance.vnode.el?.outerHTML ?? '<div></div>' : '<div></div>')
     let uid = html.value.match(SSR_UID_RE)?.[1]
     function setUid () {
@@ -81,21 +80,18 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
-    if (process.client) {
-      console.log(html.value)
-    }
-
     return () => {
       if (process.server) {
         return [createStaticVNode(html.value, 1)]
       }
+
+      // bypass hydration
       if (!mounted.value && process.client) {
+        if (html.value) { return [createStaticVNode(html.value, 1)] }
         html.value = getFragmentHTML(instance.vnode.el).join('')
-        setUid()
         return [getStaticVNode(instance.vnode)]
       }
       const nodes = [createStaticVNode(html.value, 1)]
-      console.log(uid)
       if (uid) {
         for (const slot in slots) {
           nodes.push(createVNode(Teleport, { to: `[v-ssr-component-uid='${uid}'] [v-ssr-slot-name='${slot}']` }, [slots[slot]?.()]))
