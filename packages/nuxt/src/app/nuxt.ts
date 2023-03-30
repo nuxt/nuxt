@@ -132,9 +132,21 @@ interface _NuxtApp {
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
+
+export interface PluginMeta {
+  name?: string
+  enforce?: 'pre' | 'post'
+}
+
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
+  meta?: PluginMeta
+}
+
+export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
+  hooks?: Partial<RuntimeNuxtHooks>
+  setup?: Plugin<Injections>
 }
 
 export interface CreateOptions {
@@ -291,25 +303,31 @@ export function normalizePlugins (_plugins: Plugin[]) {
   const legacyInjectPlugins: Plugin[] = []
   const invalidPlugins: Plugin[] = []
 
-  const plugins = _plugins.map((plugin) => {
+  const plugins: Record<'pre' | 'default' | 'post', Plugin[]> = {
+    pre: [],
+    default: [],
+    post: []
+  }
+
+  for (let plugin of _plugins) {
     if (typeof plugin !== 'function') {
-      invalidPlugins.push(plugin)
-      return null
+      if (process.dev) { invalidPlugins.push(plugin) }
+      continue
     }
+
+    // TODO: Skip invalid plugins in next releases
     if (plugin.length > 1) {
-      legacyInjectPlugins.push(plugin)
       // Allow usage without wrapper but warn
-      // TODO: Skip invalid in next releases
-      // @ts-ignore
-      return (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
-      // return null
+      if (process.dev) { legacyInjectPlugins.push(plugin) }
+      // @ts-expect-error deliberate invalid second argument
+      plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
     }
-    if (!isNuxtPlugin(plugin)) {
-      unwrappedPlugins.push(plugin)
-      // Allow usage without wrapper but warn
-    }
-    return plugin
-  }).filter(Boolean)
+
+    // Allow usage without wrapper but warn
+    if (process.dev && !isNuxtPlugin(plugin)) { unwrappedPlugins.push(plugin) }
+
+    plugins[plugin.meta?.enforce || 'default'].push(plugin)
+  }
 
   if (process.dev && legacyInjectPlugins.length) {
     console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
@@ -321,12 +339,36 @@ export function normalizePlugins (_plugins: Plugin[]) {
     console.warn('[warn] [nuxt] You are using a plugin that has not been wrapped in `defineNuxtPlugin`. It is advised to wrap your plugins as in the future this may enable enhancements:', unwrappedPlugins.map(p => p.name || p).join(','))
   }
 
-  return plugins as Plugin[]
+  return [
+    ...plugins.pre,
+    ...plugins.default,
+    ...plugins.post
+  ]
 }
 
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T>) {
-  plugin[NuxtPluginIndicator] = true
-  return plugin
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
+  if (typeof plugin === 'function') {
+    plugin[NuxtPluginIndicator] = true
+    return plugin
+  }
+
+  const wrapper: Plugin<T> = (nuxtApp) => {
+    if (plugin.hooks) {
+      nuxtApp.hooks.addHooks(plugin.hooks)
+    }
+    if (plugin.setup) {
+      return plugin.setup(nuxtApp)
+    }
+  }
+
+  wrapper.meta = {
+    name: plugin.name,
+    enforce: plugin.enforce
+  }
+
+  wrapper[NuxtPluginIndicator] = true
+
+  return wrapper
 }
 
 export function isNuxtPlugin (plugin: unknown) {
