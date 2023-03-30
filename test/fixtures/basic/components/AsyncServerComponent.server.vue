@@ -5,7 +5,7 @@
     <div id="async-server-component-count">
       {{ count }}
     </div>
-    <slot   />
+    <slot />
   </div>
 </template>
 

@@ -24,7 +24,7 @@ export default defineComponent({
         }
       }
     }
-    console.log(uid, props.context.slotsName)
+
     if (!component) {
       throw createError({
         statusCode: 404,

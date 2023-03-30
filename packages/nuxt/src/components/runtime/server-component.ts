@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue' 
+import { defineComponent, h } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 
 export const createServerComponent = (name: string) => {
