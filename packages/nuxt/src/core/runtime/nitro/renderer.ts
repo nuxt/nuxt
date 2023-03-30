@@ -153,7 +153,8 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    slotsName: destr(context.slotsName) || []
+    slotsName: destr(context.slotsName) || [],
+    uid: destr(context.uid) || undefined
   }
 
   return ctx
@@ -456,7 +457,7 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
     if (!match) { continue }
     const [, uid, slot] = match
     if (!uid || !slot) { continue }
-    html = html.replace(new RegExp(`<div v-ssr-component-uid="${uid}">(.*)<div v-ssr-slot-name="${slot}"([^>]*)>`, 'g'), (full) => {
+    html = html.replace(new RegExp(`<div v-ssr-component-uid="${uid}">((?!v-ssr-slot-name="${slot}"|v-ssr-component-uid).)*<div v-ssr-slot-name="${slot}"([^>]*)>`), (full) => {
       return full + teleports[key]
     })
   }
