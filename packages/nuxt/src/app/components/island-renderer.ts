@@ -14,7 +14,7 @@ export default defineComponent({
       required: true
     }
   },
-  async setup (props, ctx) {
+  async setup (props) {
     const uid = randomUUID()
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
     const slots: Record<string, Function> = {}
@@ -24,9 +24,7 @@ export default defineComponent({
 
       for (const [_full, slotName] of matched) {
         slots[slotName] = () => {
-          return createVNode('div', { 'v-ssr-slot-name': slotName },
-            renderSlot(ctx.slots, slotName)
-          )
+          return createVNode('div', { 'v-ssr-slot-name': slotName, style: 'display: contents;' })
         }
       }
     }
