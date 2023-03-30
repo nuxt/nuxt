@@ -5,7 +5,7 @@ import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
 import { useHead } from '@unhead/vue'
-
+import { randomUUID } from 'uncrypto'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp } from '#app/nuxt'
@@ -39,9 +39,9 @@ export default defineComponent({
     const key = ref(0)
     onMounted(() => { mounted.value = true })
     const html = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
-    const uid = ref(html.value.match(SSR_UID_RE)?.[1])
+    const uid = ref<string>(html.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     function setUid () {
-      uid.value = html.value.match(SSR_UID_RE)?.[1]
+      uid.value = html.value.match(SSR_UID_RE)?.[1] as string
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
@@ -57,19 +57,19 @@ export default defineComponent({
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined,
-          slotsName: Object.keys(slots)
+          slotsName: JSON.stringify(Object.keys(slots))
         }
       })
     }
 
     async function fetchComponent () {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
-      if (!nuxtApp[pKey][hashId.value]) {
-        nuxtApp[pKey][hashId.value] = _fetchComponent().finally(() => {
-          delete nuxtApp[pKey]![hashId.value]
+      if (!nuxtApp[pKey][uid.value]) {
+        nuxtApp[pKey][uid.value] = _fetchComponent().finally(() => {
+          delete nuxtApp[pKey]![uid.value]
         })
       }
-      const res: NuxtIslandResponse = await nuxtApp[pKey][hashId.value]
+      const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       html.value = res.html
