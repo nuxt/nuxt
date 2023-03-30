@@ -197,6 +197,7 @@ export default defineRenderHandler(async (event) => {
   const isRenderingPayload = PAYLOAD_URL_RE.test(url)
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
+    url += !url.endsWith("/") ? "/" : "";
     event.node.req.url = url
     if (process.env.prerender && PAYLOAD_CACHE!.has(url)) {
       return PAYLOAD_CACHE!.get(url)
