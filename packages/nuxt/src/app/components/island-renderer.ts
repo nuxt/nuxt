@@ -32,6 +32,6 @@ export default defineComponent({
       })
     }
 
-    return () => [createVNode(component || 'span', { ...props.context.props, 'v-ssr-component-uid': uid }, slots)]
+    return () => createVNode(component || 'span', { ...props.context.props, 'v-ssr-component-uid': uid }, slots)
   }
 })
