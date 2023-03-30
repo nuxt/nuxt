@@ -1,5 +1,6 @@
 <template>
   <div>
+    <slot />
     {{ data }}
     <div id="long-async-component-count">
       {{ count }}
