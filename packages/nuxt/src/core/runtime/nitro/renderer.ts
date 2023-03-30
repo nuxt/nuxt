@@ -148,7 +148,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   const context = event.node.req.method === 'GET' ? getQuery(event) : await readBody(event)
 
   const ctx: NuxtIslandContext = {
-    url: event.node.req.url,
+    url: '/',
     ...context,
     id: hashId,
     name: componentName,
