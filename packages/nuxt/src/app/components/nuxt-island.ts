@@ -1,4 +1,5 @@
-import { defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, createBlock, Teleport, onMounted, createVNode } from 'vue'
+import type { VNode, RendererNode } from 'vue'
+import { defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
@@ -84,7 +85,7 @@ export default defineComponent({
       console.log(html.value)
     }
 
-    return (ctx) => {
+    return () => {
       if (process.server) {
         return [createStaticVNode(html.value, 1)]
       }
@@ -104,7 +105,9 @@ export default defineComponent({
     }
   }
 })
-function getStaticVNode (vnode) {
+
+// TODO refactor with https://github.com/nuxt/nuxt/pull/19231
+function getStaticVNode (vnode: VNode) {
   const fragment = getFragmentHTML(vnode.el)
 
   if (fragment.length === 0) {
@@ -113,7 +116,7 @@ function getStaticVNode (vnode) {
   return createStaticVNode(fragment.join(''), fragment.length)
 }
 
-function getFragmentHTML (element) {
+function getFragmentHTML (element: RendererNode | null) {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element)
@@ -123,7 +126,7 @@ function getFragmentHTML (element) {
   return []
 }
 
-function getFragmentChildren (element, blocks = []) {
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
   if (element && element.nodeName) {
     if (isEndFragment(element)) {
       return blocks
@@ -136,10 +139,10 @@ function getFragmentChildren (element, blocks = []) {
   return blocks
 }
 
-function isStartFragment (element) {
+function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element) {
+function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }

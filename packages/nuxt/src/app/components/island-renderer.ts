@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import type { defineAsyncComponent } from 'vue'
-import { renderSlot, createBlock, defineComponent, createVNode, h } from 'vue'
+import { renderSlot, createVNode, defineComponent } from 'vue'
 
 // @ts-ignore
-import { ssrRenderSlot } from 'vue/server-renderer'
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
 const SLOT_RENDER_RE = /ssrRenderSlot\(_ctx.\$slots, "([a-zA-Z]*)"/g
@@ -38,7 +37,6 @@ export default defineComponent({
       })
     }
 
-    const toRender = component.__asyncResolved ?? component
-    return () => [createVNode(toRender || 'span', { ...props.context.props, 'v-ssr-component-uid': uid }, slots)]
+    return () => [createVNode(component || 'span', { ...props.context.props, 'v-ssr-component-uid': uid }, slots)]
   }
 })
