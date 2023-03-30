@@ -315,6 +315,8 @@ export function normalizePlugins (_plugins: Plugin[]) {
       continue
     }
 
+    const order = plugin.meta?.enforce || 'default'
+
     // TODO: Skip invalid plugins in next releases
     if (plugin.length > 1) {
       // Allow usage without wrapper but warn
@@ -326,7 +328,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
     // Allow usage without wrapper but warn
     if (process.dev && !isNuxtPlugin(plugin)) { unwrappedPlugins.push(plugin) }
 
-    plugins[plugin.meta?.enforce || 'default'].push(plugin)
+    plugins[order].push(plugin)
   }
 
   if (process.dev && legacyInjectPlugins.length) {
