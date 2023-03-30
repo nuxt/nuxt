@@ -40,10 +40,13 @@ const components = ${genObjectFromRawEntries(globalComponents.map((c) => {
   return [c.pascalName, `defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`]
 }))}
 
-export default defineNuxtPlugin(nuxtApp => {
-  for (const name in components) {
-    nuxtApp.vueApp.component(name, components[name])
-    nuxtApp.vueApp.component('Lazy' + name, components[name])
+export default defineNuxtPlugin({
+  name: 'nuxt:global-components',
+  setup (nuxtApp) {
+    for (const name in components) {
+      nuxtApp.vueApp.component(name, components[name])
+      nuxtApp.vueApp.component('Lazy' + name, components[name])
+    }
   }
 })
 `
