@@ -86,9 +86,9 @@ export default defineComponent({
       }
 
       // bypass hydration
-      if (!mounted.value && process.client) {
-        if (html.value) { return [createStaticVNode(html.value, 1)] }
+      if (!mounted.value && process.client && !html.value) {
         html.value = getFragmentHTML(instance.vnode.el).join('')
+        setUid()
         return [getStaticVNode(instance.vnode)]
       }
       const nodes = [createStaticVNode(html.value, 1)]
