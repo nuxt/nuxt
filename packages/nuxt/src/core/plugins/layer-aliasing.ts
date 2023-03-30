@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 import { resolveAlias } from '@nuxt/kit'
+import { normalize } from 'pathe'
 import MagicString from 'magic-string'
 
 interface LayerAliasingOptions {
@@ -42,11 +43,16 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
     },
 
     // webpack-only transform
-    transformInclude: id => options.transform && layers.some(dir => id.startsWith(dir)),
+    transformInclude: (id) => {
+      if (!options.transform) { return false }
+      const _id = normalize(id)
+      return layers.some(dir => _id.startsWith(dir))
+    },
     transform (code, id) {
       if (!options.transform) { return }
 
-      const layer = layers.find(l => id.startsWith(l))
+      const _id = normalize(id)
+      const layer = layers.find(l => _id.startsWith(l))
       if (!layer || !code.match(ALIAS_RE)) { return }
 
       const s = new MagicString(code)
