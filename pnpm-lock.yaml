@@ -6495,11 +6495,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /mkdist@1.1.2(typescript@4.9.5):
-    resolution: {integrity: sha512-s9whPlQsr84iY3XoufsDrVlzGiDdTnMwf2+7QU6ekJPgTIgGwn7EsU8lcefWqLH6no+/4UqjDBwyIkGKfZyH9g==}
+  /mkdist@1.2.0(typescript@4.9.5):
+    resolution: {integrity: sha512-UTqu/bXmIk/+VKNVgufAeMyjUcNy1dn9Bl7wL1zZlCKVrpDgj/VllmZBeh3ZCC/2HWqUrt6frNFTKt9TRZbNvQ==}
     hasBin: true
     peerDependencies:
-      sass: ^1.58.3
+      sass: ^1.60.0
       typescript: '>=4.9.5'
     peerDependenciesMeta:
       sass:
@@ -8485,7 +8485,7 @@ packages:
       hookable: 5.5.3
       jiti: 1.18.2
       magic-string: 0.30.0
-      mkdist: 1.1.2(typescript@4.9.5)
+      mkdist: 1.2.0(typescript@4.9.5)
       mlly: 1.2.0
       mri: 1.2.0
       pathe: 1.1.0
