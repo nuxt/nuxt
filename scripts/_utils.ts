@@ -69,8 +69,10 @@ export async function loadWorkspace (dir: string) {
     }
   }
 
-  const setVersion = (name: string, newVersion: string) => {
+  const setVersion = (name: string, newVersion: string, opts: { updateDeps?: boolean } = {}) => {
     find(name).data.version = newVersion
+    if (!opts.updateDeps) { return }
+
     for (const pkg of packages) {
       pkg.updateDeps((dep) => {
         if (dep.name === name) {
