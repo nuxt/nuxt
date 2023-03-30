@@ -290,7 +290,7 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: [_rendered.html],
+    body: [replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)],
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
@@ -444,4 +444,20 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
+}
+
+const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
+function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
+  const { teleports } = ssrContext
+  if (!teleports) { return html }
+  for (const key in teleports) {
+    const match = key.match(SSR_TELEPORT_MARKER)
+    if (!match) { continue }
+    const [, uid, slot] = match
+    if (!uid || !slot) { continue }
+    html = html.replace(new RegExp(`<div v-ssr-component-uid="${uid}">(.*)<div v-ssr-slot-name="${slot}"([^>]*)>`, 'g'), (full) => {
+      return full + teleports[key]
+    })
+  }
+  return html
 }

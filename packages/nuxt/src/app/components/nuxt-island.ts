@@ -36,7 +36,7 @@ export default defineComponent({
     const event = useRequestEvent()
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
-    const html = ref<string>(process.client ? instance.vnode.el?.outerHTML ?? '<div></div>' : '<div></div>')
+    const html = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
     let uid = html.value.match(SSR_UID_RE)?.[1]
     function setUid () {
       uid = html.value.match(SSR_UID_RE)?.[1]
@@ -81,10 +81,6 @@ export default defineComponent({
       await fetchComponent()
     }
     return () => {
-      if (process.server) {
-        return [createStaticVNode(html.value, 1)]
-      }
-
       // bypass hydration
       if (!mounted.value && process.client && !html.value) {
         html.value = getFragmentHTML(instance.vnode.el).join('')
@@ -94,7 +90,7 @@ export default defineComponent({
       const nodes = [createStaticVNode(html.value, 1)]
       if (uid) {
         for (const slot in slots) {
-          nodes.push(createVNode(Teleport, { to: `[v-ssr-component-uid='${uid}'] [v-ssr-slot-name='${slot}']` }, [slots[slot]?.()]))
+          nodes.push(createVNode(Teleport, { to: process.client ? `[v-ssr-component-uid='${uid}'] [v-ssr-slot-name='${slot}']` : `uid=${uid};slot=${slot}` }, [slots[slot]?.()]))
         }
       }
       return nodes

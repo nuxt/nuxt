@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { defineAsyncComponent } from 'vue'
-import { renderSlot, createVNode, defineComponent } from 'vue'
+import { createVNode, defineComponent } from 'vue'
 
 // @ts-ignore
 import * as islandComponents from '#build/components.islands.mjs'
