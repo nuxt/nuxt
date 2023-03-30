@@ -6,6 +6,7 @@ const islandProps = ref({
   obj: { json: 'works' }
 })
 
+const showIslandSlot = ref(false)
 const routeIslandVisible = ref(false)
 const testCount = ref(0)
 const count = ref(0)
@@ -31,23 +32,39 @@ const count = ref(0)
     </button>
 
     <p>async .server component</p>
-    <AsyncServerComponent :count="count" >
-    
-      <div>WONDERFUl TEST SLOT .server</div></AsyncServerComponent>
+    <AsyncServerComponent :count="count">
+      <div id="slot-in-server">
+        Slot with in .server component
+      </div>
+    </AsyncServerComponent>
     <div>
       Async component (1000ms):
       <div>
         <NuxtIsland name="LongAsyncComponent" :props="{ count }">
-          <div>SLOT TESTING THIS IS A NICE DEFAULT SLOT </div>
+          <div>Interactive testing slot</div>
           <SugarCounter :multiplier="testCount" />
           <template #test>
-            <div>WONDERFUl TEST SLOT</div>
+            <div>Slot within test</div>
           </template>
         </NuxtIsland>
-        <button @click="count++">
+        <button id="update-server-components" @click="count++">
           add +1 to count
         </button>
       </div>
+    </div>
+    <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
+      <div>Interactive testing slot this slot should not be teleported to the first LongAsyncComponent</div>
+      <SugarCounter :multiplier="testCount" />
+    </NuxtIsland>
+    <div>
+      <p>Island with props mounted client side</p>
+      <button @click="showIslandSlot = true">
+        Show Interactive island
+      </button>
+      <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
+        <div>Interactive testing slot post SSR</div>
+        <SugarCounter :multiplier="testCount" />
+      </NuxtIsland>
     </div>
   </div>
 </template>

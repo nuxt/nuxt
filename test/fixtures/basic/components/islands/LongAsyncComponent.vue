@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div v-if="count > 2">
+      count is above 2
+    </div>
     <slot />
     {{ data }}
     <div id="long-async-component-count">
