@@ -202,12 +202,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -259,6 +259,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -270,12 +274,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -310,12 +322,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -613,12 +625,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -670,6 +682,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -681,12 +697,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -721,12 +745,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1030,12 +1054,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -1087,6 +1111,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -1098,12 +1126,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1138,12 +1174,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1441,12 +1477,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -1498,6 +1534,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -1509,12 +1549,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1549,12 +1597,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1858,12 +1906,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -1915,6 +1963,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -1926,12 +1978,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -1966,12 +2026,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -2275,12 +2335,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -2332,6 +2392,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -2343,12 +2407,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -2383,12 +2455,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -2698,12 +2770,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -2755,6 +2827,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -2766,12 +2842,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -2806,12 +2890,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -3118,12 +3202,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -3175,6 +3259,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -3186,12 +3274,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -3226,12 +3322,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -3544,12 +3640,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -3601,6 +3697,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -3612,12 +3712,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -3652,12 +3760,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -3961,12 +4069,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -4018,6 +4126,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -4029,12 +4141,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -4069,12 +4189,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -4384,12 +4504,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -4441,6 +4561,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -4452,12 +4576,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -4492,12 +4624,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -4801,12 +4933,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-media-queries-aspect-ratio-number-values\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-pseudo-class-any-link\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-attribute-case-insensitive\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Rule\\": [Function Rule],
@@ -4858,6 +4990,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           \\"margin-inline\\": [Function anonymous],
                           \\"margin-inline-end\\": [Function anonymous],
                           \\"margin-inline-start\\": [Function anonymous],
+                          \\"max-block-size\\": [Function anonymous],
+                          \\"max-inline-size\\": [Function anonymous],
+                          \\"min-block-size\\": [Function anonymous],
+                          \\"min-inline-size\\": [Function anonymous],
                           \\"padding-block\\": [Function anonymous],
                           \\"padding-block-end\\": [Function anonymous],
                           \\"padding-block-start\\": [Function anonymous],
@@ -4869,12 +5005,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-logical\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-dir-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
                         \\"postcssPlugin\\": \\"postcss-initial\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-gradients-interpolation-method\\",
+                      },
+                      Object {
+                        \\"Declaration\\": [Function Declaration],
+                        \\"postcssPlugin\\": \\"postcss-color-mix-function\\",
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
@@ -4909,12 +5053,12 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         \\"postcssPlugin\\": \\"postcss-font-variant\\",
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-is-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
-                        \\"Rule\\": [Function Rule],
                         \\"postcssPlugin\\": \\"postcss-scope-pseudo-class\\",
+                        \\"prepare\\": [Function prepare],
                       },
                       Object {
                         \\"Declaration\\": [Function Declaration],
