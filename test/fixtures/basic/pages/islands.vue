@@ -7,7 +7,7 @@ const islandProps = ref({
 })
 
 const routeIslandVisible = ref(false)
-
+const testCount = ref(0)
 const count = ref(0)
 </script>
 
@@ -31,13 +31,23 @@ const count = ref(0)
     </button>
 
     <p>async .server component</p>
-    <AsyncServerComponent :count="count" />
+    <AsyncServerComponent :count="count" >
+    
+      <div>WONDERFUl TEST SLOT .server</div></AsyncServerComponent>
     <div>
-      Async island component (20ms):
-      <NuxtIsland name="LongAsyncComponent" :props="{ count }" />
-      <button @click="count++">
-        add +1 to count
-      </button>
+      Async component (1000ms):
+      <div>
+        <NuxtIsland name="LongAsyncComponent" :props="{ count }">
+          <div>SLOT TESTING THIS IS A NICE DEFAULT SLOT </div>
+          <SugarCounter :multiplier="testCount" />
+          <template #test>
+            <div>WONDERFUl TEST SLOT</div>
+          </template>
+        </NuxtIsland>
+        <button @click="count++">
+          add +1 to count
+        </button>
+      </div>
     </div>
   </div>
 </template>

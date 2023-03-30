@@ -4,6 +4,7 @@
     <div id="long-async-component-count">
       {{ count }}
     </div>
+    <slot name="test" />
     <p>hello world !!!</p>
   </div>
 </template>
