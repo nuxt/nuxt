@@ -75,7 +75,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    expect(html.replace(/ v-ssr-component-uid="([^"]*)"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -1082,6 +1082,7 @@ describe('app config', () => {
 describe('component islands', () => {
   it('renders components with route', async () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
+    result.html = result.html.replace(/ v-ssr-component-uid="([^"]*)"/g, '')
 
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
@@ -1109,13 +1110,14 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
+    result.html = result.html.replace(/ v-ssr-component-uid="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
           "style": [],
         },
-        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div><p>hello world !!!</p></div>",
+        "html": "<div><div> count is above 2 </div><!--[--><!--]--> that was very long ... <div id="long-async-component-count">3</div><!--[--><!--]--><p>hello world !!!</p></div>",
         "state": {},
       }
     `)
@@ -1130,13 +1132,14 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
+    result.html = result.html.replace(/ v-ssr-component-uid="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
     {
       "head": {
         "link": [],
         "style": [],
       },
-      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div></div>",
+      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><!--[--><!--]--></div>",
       "state": {},
     }
   `)
@@ -1151,6 +1154,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' }
       })
     }))
+    result.html = result.html.replace(/ v-ssr-component-uid="([^"]*)"/g, '')
 
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
@@ -1178,7 +1182,7 @@ describe('component islands', () => {
             },
           ],
         }
-      `)
+    `)
     } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
@@ -1194,7 +1198,7 @@ describe('component islands', () => {
       `)
     }
 
-    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '')).toMatchInlineSnapshot(`
+    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/v-ssr-component-uid="([^"]*)"/g, '')).toMatchInlineSnapshot(`
     "<div > Was router enabled: true <br > Props: <pre >{
       number: 3487,
       str: something,
