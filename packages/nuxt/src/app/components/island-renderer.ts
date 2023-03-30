@@ -1,28 +1,24 @@
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'uncrypto'
 import type { defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent } from 'vue'
 
 // @ts-ignore
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
-const SLOT_RENDER_RE = /ssrRenderSlot\(_ctx.\$slots, "([a-zA-Z]*)"/g
 
 export default defineComponent({
   props: {
     context: {
-      type: Object as () => { name: string, props?: Record<string, any> },
+      type: Object as () => { name: string, props?: Record<string, any>, slotsName?: string[] },
       required: true
     }
   },
-  async setup (props) {
+  setup (props) {
     const uid = randomUUID()
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
     const slots: Record<string, Function> = {}
-    if (typeof component === 'object') {
-      await (component.__asyncLoader as Function)?.()
-      const matched = [...(component.__asyncResolved.ssrRender as Function).toString().matchAll(SLOT_RENDER_RE)]
-
-      for (const [_full, slotName] of matched) {
+    if (props.context.slotsName) {
+      for (const slotName of props.context.slotsName) {
         slots[slotName] = () => {
           return createVNode('div', { 'v-ssr-slot-name': slotName, style: 'display: contents;' })
         }

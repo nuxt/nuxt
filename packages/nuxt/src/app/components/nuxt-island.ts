@@ -1,5 +1,6 @@
 import type { VNode, RendererNode } from 'vue'
-import { defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
+import { h, Fragment, defineComponent, createStaticVNode, computed, Static, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
+
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
@@ -54,7 +55,8 @@ export default defineComponent({
       return $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
-          props: props.props ? JSON.stringify(props.props) : undefined
+          props: props.props ? JSON.stringify(props.props) : undefined,
+          slotsName: Object.keys(slots)
         }
       })
     }
@@ -87,7 +89,7 @@ export default defineComponent({
         setUid()
         return [getStaticVNode(instance.vnode)]
       }
-      const nodes = [createStaticVNode(html.value, 1)]
+      const nodes = [createVNode(Fragment, null, [h(createStaticVNode(html.value, 1))], -2)]
       if (uid) {
         for (const slot in slots) {
           nodes.push(createVNode(Teleport, { to: process.client ? `[v-ssr-component-uid='${uid}'] [v-ssr-slot-name='${slot}']` : `uid=${uid};slot=${slot}` }, [slots[slot]?.()]))
