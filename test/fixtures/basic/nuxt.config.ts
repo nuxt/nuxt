@@ -2,6 +2,18 @@ import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import Vue from 'vue';
+import App from './App.vue';
+
+const app = new Vue({
+  el: '#app',
+  render: h => h(App)
+});
+
+// treat 'Hero' as a custom element
+app.config.compilerOptions.isCustomElement = (tag) => {
+  return tag === 'Hero'
+}
 
 // (defined in nuxt/src/core/nitro.ts)
 declare module 'nitropack' {
