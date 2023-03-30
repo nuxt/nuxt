@@ -168,6 +168,10 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       // Clear any existing errors
       await callWithNuxt(nuxtApp, clearError)
     }
+    const event = process.server ? await callWithNuxt(nuxtApp, useRequestEvent) : undefined
+    if (event?.node.res.writableEnded) {
+      return
+    }
     if (to.matched.length === 0) {
       await callWithNuxt(nuxtApp, showError, [createError({
         statusCode: 404,
@@ -177,8 +181,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
       if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-        const event = await callWithNuxt(nuxtApp, useRequestEvent)
-        const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
+        const options = { redirectCode: event!.node.res.statusCode !== 200 ? event!.node.res.statusCode || 302 : 302 }
         await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
       }
     }
