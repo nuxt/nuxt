@@ -74,7 +74,7 @@ export async function bundle (nuxt: Nuxt) {
           composableKeysPlugin.vite({
             sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables
+            composables: nuxt?.options?.optimization?.keyedComposables ?? []
           }),
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
