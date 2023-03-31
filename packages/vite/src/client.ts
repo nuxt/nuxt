@@ -3,12 +3,11 @@ import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { ServerOptions } from 'vite'
+import type { ServerOptions, BuildOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import type { OutputOptions } from 'rollup'
 import { defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import { cacheDirPlugin } from './plugins/cache-dir'
@@ -99,7 +98,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     output: {
       chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[name].[hash].js')),
       entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[name].[hash].js'))
-    } as OutputOptions
+    } satisfies NonNullable<BuildOptions['rollupOptions']>['output']
   }) as any
 
   if (clientConfig.server && clientConfig.server.hmr !== false) {
