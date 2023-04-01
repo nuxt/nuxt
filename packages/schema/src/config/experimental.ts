@@ -158,6 +158,10 @@ export default defineUntypedSchema({
      *
      * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
      */
-    polyfillVueUseHead: true
+    polyfillVueUseHead: true,
+
+    // TODO: set to false by default in next minor release
+    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    respectNoSSRHeader: true,
   }
 })
