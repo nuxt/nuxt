@@ -111,7 +111,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // Let vue-router handle internal redirects within middleware
       // to prevent the navigation happening after response is sent
       if (isProcessingMiddleware() && !isExternal) {
-        setResponseStatus(options?.redirectCode || 302)
+        setResponseStatus(nuxtApp.ssrContext.event, options?.redirectCode || 302)
         return to
       }
       const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, router.resolve(to).fullPath || '/')

@@ -129,7 +129,8 @@ export default defineNuxtModule({
       const _types = generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
-        partial: true
+        partial: true,
+        allowExtraKeys: false
       })
       const types =
         _types +

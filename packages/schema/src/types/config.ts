@@ -94,14 +94,16 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
 }
 
 export interface ViteConfig extends ViteUserConfig {
+  /** The path to the entrypoint for the Vite build. */
+  entry?: string
   /**
-   * Options passed to @vitejs/plugin-vue
+   * Options passed to @vitejs/plugin-vue.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
    */
   vue?: VuePluginOptions
 
   /**
-   * Options passed to @vitejs/plugin-vue-jsx
+   * Options passed to @vitejs/plugin-vue-jsx.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx
    */
   vueJsx?: VueJsxPluginOptions
