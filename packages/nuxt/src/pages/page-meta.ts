@@ -11,6 +11,7 @@ import { isAbsolute, normalize } from 'pathe'
 import type { NuxtPage } from '@nuxt/schema'
 
 export interface PageMetaPluginOptions {
+  dirs: Array<string|RegExp>
   dev?: boolean
   sourcemap?: boolean
   pages?: NuxtPage[]
@@ -42,8 +43,9 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
     transformInclude (id) {
       const query = parseMacroQuery(id)
       id = normalize(id)
+      const isPagesDir = options.dirs.some(dir => typeof dir === 'string' ? id.startsWith(dir) : dir.test(id))
       const isPage = options.pages?.some(p => p.file?.startsWith(id))
-      if (!isPage && !query.macro) { return false }
+      if ((!isPage && !isPagesDir) && !query.macro) { return false }
 
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return /\.(m?[jt]sx?|vue)/.test(pathname)

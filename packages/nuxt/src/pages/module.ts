@@ -20,6 +20,29 @@ export default defineNuxtModule({
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     )
 
+    // Extract macros from pages
+    const pageMetaOptions: PageMetaPluginOptions = {
+      dev: nuxt.options.dev,
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dirs: nuxt.options._layers.map(
+        layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+      )
+    }
+
+    nuxt.hook('modules:done', async () => {
+      const pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', pages)
+
+      addVitePlugin(PageMetaPlugin.vite({
+        ...pageMetaOptions,
+        pages
+      }))
+      addWebpackPlugin(PageMetaPlugin.webpack({
+        ...pageMetaOptions,
+        pages
+      }))
+    })
+
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
     const userPreference = nuxt.options.pages
@@ -146,19 +169,6 @@ export default defineNuxtModule({
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
         { name: 'useLink', as: 'useLink', from: 'vue-router' }
       )
-    })
-
-    nuxt.hook('modules:done', async () => {
-      const pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', pages)
-      // Extract macros from pages
-      const pageMetaOptions: PageMetaPluginOptions = {
-        dev: nuxt.options.dev,
-        sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
-        pages
-      }
-      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
     })
 
     // Add prefetching support for middleware & layouts
