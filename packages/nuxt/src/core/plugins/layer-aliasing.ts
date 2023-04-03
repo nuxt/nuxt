@@ -20,7 +20,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
     '@@': l.config.rootDir || l.cwd,
     ...l.config?.alias || {}
   }]))
-  const layers = Object.keys(aliases)
+  const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
   return {
     name: 'nuxt:layer-aliasing',
