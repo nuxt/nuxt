@@ -1,4 +1,3 @@
-import { log } from 'node:console'
 import type { FetchError } from 'ofetch'
 import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest, AvailableRouterMethod } from 'nitropack'
 import type { Ref } from 'vue'
