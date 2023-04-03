@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -19,7 +19,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@babel/core": "^7.21.3",
+    "@babel/core": "^7.21.4",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "workspace:../kit",
     "autoprefixer": "^10.4.14",
@@ -52,7 +52,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^1.0.3",
     "vue-loader": "^17.0.1",
-    "webpack": "^5.76.3",
+    "webpack": "^5.77.0",
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-dev-middleware": "^6.0.2",
     "webpack-hot-middleware": "^2.25.3",
