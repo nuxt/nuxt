@@ -1,4 +1,5 @@
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
+import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { resolveModule, requireModule } from '../internal/cjs'
 import { importModule } from '../internal/esm'
@@ -10,7 +11,12 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
 
   // Call module
-  const res = await nuxtModule(inlineOptions, nuxt) ?? {}
+  const res = (
+    isNuxt2()
+      // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
+      ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
+      : await nuxtModule(inlineOptions, nuxt)
+  ) ?? {}
   if (res === false /* setup aborted */) {
     return
   }

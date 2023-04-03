@@ -100,7 +100,7 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
-      async $resolve(val, get) {
+      async $resolve (val, get) {
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -113,6 +113,11 @@ export default defineUntypedSchema({
      * Turn off rendering of Nuxt scripts and JS resource hints.
      */
     noScripts: false,
+
+    /**
+     * Disable vue server renderer endpoint within nitro.
+    */
+    noVueServer: false,
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
@@ -153,6 +158,9 @@ export default defineUntypedSchema({
      *
      * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
      */
-    polyfillVueUseHead: true
+    polyfillVueUseHead: true,
+
+    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    respectNoSSRHeader: false,
   }
 })

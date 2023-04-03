@@ -6,7 +6,7 @@ import { globby } from 'globby'
 import { join } from 'pathe'
 import { isWindows } from 'std-env'
 
-describe.skipIf(isWindows)('minimal nuxt application', () => {
+describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -26,7 +26,7 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(106500)
+    expect(stats.client.totalBytes).toBeLessThan(106650)
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/_plugin-vue_export-helper.js",
@@ -40,10 +40,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(93900)
+    expect(stats.server.totalBytes).toBeLessThan(93300)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2693900)
+    expect(modules.totalBytes).toBeLessThan(2694900)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

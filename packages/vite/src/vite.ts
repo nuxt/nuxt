@@ -1,10 +1,7 @@
 import * as vite from 'vite'
 import { join, resolve } from 'pathe'
-import type { Nuxt } from '@nuxt/schema'
-import type { InlineConfig, SSROptions } from 'vite'
+import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
-import type { Options as VueOptions } from '@vitejs/plugin-vue'
-import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
@@ -18,16 +15,9 @@ import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 
-export interface ViteOptions extends InlineConfig {
-  vue?: VueOptions
-  vueJsx?: VueJsxOptions
-  ssr?: SSROptions
-  devBundler?: 'vite-node' | 'legacy'
-}
-
 export interface ViteBuildContext {
   nuxt: Nuxt
-  config: ViteOptions
+  config: ViteConfig
   entry: string
   clientServer?: vite.ViteDevServer
   ssrServer?: vite.ViteDevServer
@@ -104,7 +94,7 @@ export async function bundle (nuxt: Nuxt) {
             ]
           }
         }
-      } as ViteOptions,
+      } satisfies ViteConfig,
       nuxt.options.vite
     )
   }
