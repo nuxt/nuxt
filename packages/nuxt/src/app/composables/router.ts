@@ -17,6 +17,9 @@ export const useRouter = () => {
 }
 
 export const useRoute = (): RouteLocationNormalizedLoaded => {
+  if (process.dev && isProcessingMiddleware()) {
+    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
+  }
   if (getCurrentInstance()) {
     return inject('_route', useNuxtApp()._route)
   }
