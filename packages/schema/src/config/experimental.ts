@@ -162,5 +162,8 @@ export default defineUntypedSchema({
 
     /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
     respectNoSSRHeader: false,
+
+    /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
+    localLayerAliases: true,
   }
 })
