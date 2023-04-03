@@ -160,8 +160,7 @@ export default defineUntypedSchema({
      */
     polyfillVueUseHead: true,
 
-    // TODO: set to false by default in next minor release
     /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
-    respectNoSSRHeader: true,
+    respectNoSSRHeader: false,
   }
 })
