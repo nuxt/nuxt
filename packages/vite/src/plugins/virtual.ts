@@ -1,5 +1,5 @@
 import { dirname, isAbsolute, join, resolve } from 'pathe'
-import type { Plugin } from 'rollup'
+import type { Plugin } from 'vite'
 
 const PREFIX = 'virtual:nuxt:'
 
