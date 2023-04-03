@@ -5,7 +5,7 @@ import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
 import devalue from '@nuxt/devalue'
 import destr from 'destr'
-import { joinURL } from 'ufo'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 
@@ -159,6 +159,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 }
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
+const ISLAND_CACHE = (process.env.NUXT_COMPONENT_ISLANDS && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>$`)
 
@@ -185,6 +186,10 @@ export default defineRenderHandler(async (event) => {
     ? await getIslandContext(event)
     : undefined
 
+  if (process.env.prerender && islandContext && ISLAND_CACHE!.has(event.node.req.url)) {
+    return ISLAND_CACHE!.get(event.node.req.url)
+  }
+
   // Request url
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
 
@@ -208,7 +213,7 @@ export default defineRenderHandler(async (event) => {
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
-      !!(event.node.req.headers['x-nuxt-no-ssr']) ||
+      event.context.nuxt?.noSSR ||
       routeOptions.ssr === false ||
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
@@ -257,7 +262,7 @@ export default defineRenderHandler(async (event) => {
     // Hint nitro to prerender payload for this route
     appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.js'))
     // Use same ssr context to generate payload for this route
-    PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
+    PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
   // Render meta
@@ -333,6 +338,9 @@ export default defineRenderHandler(async (event) => {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
+    }
+    if (process.env.prerender) {
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
     }
     return response
   }
