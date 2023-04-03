@@ -4,7 +4,7 @@ import type { Ref } from 'vue'
 import { computed, unref, reactive } from 'vue'
 import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
-import type { AsyncDataOptions, _Transform, KeysOf, AsyncData, PickFrom } from './asyncData'
+import type { AsyncDataOptions, _Transform, KeysOf, AsyncData, PickFrom, MultiWatchSources } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, M>
@@ -21,9 +21,10 @@ export interface UseFetchOptions<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>
-> extends AsyncDataOptions<ResT, DataT, PickKeys>, ComputedFetchOptions<R, M> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys>, 'watch'>, ComputedFetchOptions<R, M> {
   key?: string
   $fetch?: typeof globalThis.$fetch
+  watch?: MultiWatchSources | false
 }
 
 export function useFetch<
@@ -92,11 +93,7 @@ export function useFetch<
     transform,
     pick,
     immediate,
-    watch: [
-      _fetchOptions,
-      _request,
-      ...(watch || [])
-    ]
+    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
   let controller: AbortController
