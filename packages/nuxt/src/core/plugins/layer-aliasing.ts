@@ -14,11 +14,10 @@ const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 
 export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
   const aliases = Object.fromEntries(options.layers.map(l => [l.config.srcDir || l.cwd, {
-    '~': l.config.srcDir || l.cwd,
-    '@': l.config.srcDir || l.cwd,
-    '~~': l.config.rootDir || l.cwd,
-    '@@': l.config.rootDir || l.cwd,
-    ...l.config?.alias || {}
+    '~': l.config?.alias?.['~'] || l.config.srcDir || l.cwd,
+    '@': l.config?.alias?.['@'] || l.config.srcDir || l.cwd,
+    '~~': l.config?.alias?.['~~'] || l.config.rootDir || l.cwd,
+    '@@': l.config?.alias?.['@@'] || l.config.rootDir || l.cwd
   }]))
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
