@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -8,7 +8,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.mjs"
     },
     "./package.json": "./package.json"
   },
