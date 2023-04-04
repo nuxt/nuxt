@@ -70,6 +70,10 @@ export function useFetch<
     return unref(r)
   })
 
+  if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
+    throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+  }
+
   const {
     server,
     lazy,
@@ -111,10 +115,6 @@ export function useFetch<
     // Use fetch with request context and headers for server direct API calls
     if (process.server && !opts.$fetch && isLocalFetch) {
       _$fetch = useRequestFetch()
-    }
-
-    if (typeof _request.value === 'string' && _request.value.startsWith('//') && !opts.baseURL) {
-      throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
