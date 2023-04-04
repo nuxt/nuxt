@@ -23,6 +23,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Dedupe dependencies
+        if: ${{ contains(github.ref_name, "renovate") }}
+        run: pnpm dedupe
+
       - name: Build (stub)
         run: pnpm build:stub
 
