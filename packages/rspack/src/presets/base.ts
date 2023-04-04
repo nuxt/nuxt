@@ -1,17 +1,15 @@
 import { resolve, normalize } from 'pathe'
-// @ts-expect-error missing types
-import TimeFixPlugin from 'time-fix-plugin'
-import WebpackBar from 'webpackbar'
+// import TimeFixPlugin from 'time-fix-plugin'
+// import WebpackBar from 'webpackbar'
 import type { Configuration } from '@rspack/core'
-import type webpack from '@rspack/core'
-import { logger } from '@nuxt/kit'
-// @ts-expect-error missing types
-import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+// import type webpack from '@rspack/core'
+// import { logger } from '@nuxt/kit'
+// import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import type { WarningFilter } from '../plugins/warning-ignore'
-import WarningIgnorePlugin from '../plugins/warning-ignore'
+// import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { RspackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
@@ -49,6 +47,7 @@ function baseConfig (ctx: RspackConfigContext) {
 }
 
 function basePlugins (ctx: RspackConfigContext) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { config, options, nuxt } = ctx
 
   config.plugins = config.plugins || []
@@ -217,6 +216,7 @@ function getOutput (ctx: RspackConfigContext): Configuration['output'] {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getWarningIgnoreFilter (ctx: RspackConfigContext): WarningFilter {
   const { options } = ctx
 

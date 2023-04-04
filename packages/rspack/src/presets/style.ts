@@ -1,39 +1,39 @@
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+// import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+// import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import type { RspackConfigContext } from '../utils/config'
 import { fileName, applyPresets } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
 
 export function style (ctx: RspackConfigContext) {
   applyPresets(ctx, [
-    loaders,
-    extractCSS,
-    minimizer
+    loaders
+    // extractCSS
+    // minimizer
   ])
 }
 
-function minimizer (ctx: RspackConfigContext) {
-  const { options, config } = ctx
+// function minimizer (ctx: RspackConfigContext) {
+//   const { options, config } = ctx
 
-  // if (options.webpack.optimizeCSS && Array.isArray(config.optimization!.minimizer)) {
-  //   config.optimization!.minimizer.push(new CssMinimizerPlugin({
-  //     ...options.webpack.optimizeCSS
-  //   }))
-  // }
-}
+//   if (options.webpack.optimizeCSS && Array.isArray(config.optimization!.minimizer)) {
+//     config.optimization!.minimizer.push(new CssMinimizerPlugin({
+//       ...options.webpack.optimizeCSS
+//     }))
+//   }
+// }
 
-function extractCSS (ctx: RspackConfigContext) {
-  const { options, config } = ctx
+// function extractCSS (ctx: RspackConfigContext) {
+//   const { options, config } = ctx
 
-  // CSS extraction
-  // if (options.webpack.extractCSS) {
-  //   config.plugins!.push(new MiniCssExtractPlugin({
-  //     filename: fileName(ctx, 'css'),
-  //     chunkFilename: fileName(ctx, 'css'),
-  //     ...options.webpack.extractCSS === true ? {} : options.webpack.extractCSS
-  //   }))
-  // }
-}
+//   // CSS extraction
+//   if (options.webpack.extractCSS) {
+//     config.plugins!.push(new MiniCssExtractPlugin({
+//       filename: fileName(ctx, 'css'),
+//       chunkFilename: fileName(ctx, 'css'),
+//       ...options.webpack.extractCSS === true ? {} : options.webpack.extractCSS
+//     }))
+//   }
+// }
 
 function loaders (ctx: RspackConfigContext) {
   const { config, options } = ctx
@@ -72,25 +72,26 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx
     options.webpack.loaders.cssModules.importLoaders =
     styleLoaders.length
 
-  const cssLoaders = createCssLoadersRule(ctx, options.webpack.loaders.css)
-  const cssModuleLoaders = createCssLoadersRule(ctx, options.webpack.loaders.cssModules)
+  // const cssLoaders = createCssLoadersRule(ctx, options.webpack.loaders.css)
+  // const cssModuleLoaders = createCssLoadersRule(ctx, options.webpack.loaders.cssModules)
 
   return {
     test,
     oneOf: [
       // This matches <style module>
       {
-        resourceQuery: /module/,
-        use: cssModuleLoaders.concat(styleLoaders)
+        test: /\.css$/i,
+        type: 'css'
       },
-      // This matches plain <style> or <style scoped>
       {
-        use: cssLoaders.concat(styleLoaders)
+        test: /\.module\.css$/i,
+        type: 'css/module' // this is enabled by default for module.css,   so you don't need to specify it
       }
     ]
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createCssLoadersRule (ctx: RspackConfigContext, cssLoaderOptions: any) {
   // const { options } = ctx
 

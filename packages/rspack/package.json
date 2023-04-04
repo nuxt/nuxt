@@ -19,11 +19,11 @@
     "@babel/core": "^7.21.0",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
     "@nuxt/kit": "3.3.1",
-    "@rspack/core": "^0.1.1",
-    "@rspack/dev-client": "^0.1.1",
-    "@rspack/dev-middleware": "^0.1.1",
-    "@rspack/dev-server": "0.1.1",
-    "@rspack/postcss-loader": "^0.1.1",
+    "@rspack/core": "^0.1.5",
+    "@rspack/dev-client": "^0.1.5",
+    "@rspack/dev-middleware": "^0.1.5",
+    "@rspack/dev-server": "0.1.5",
+    "@rspack/postcss-loader": "^0.1.5",
     "autoprefixer": "^10.4.14",
     "css-minimizer-webpack-plugin": "^4.2.2",
     "cssnano": "^5.1.15",
@@ -55,7 +55,8 @@
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-hot-middleware": "^2.25.3",
     "webpack-virtual-modules": "^0.5.0",
-    "webpackbar": "^5.0.2"
+    "webpackbar": "^5.0.2",
+    "vue-rsloader": "0.0.9"
   },
   "devDependencies": {
     "@nuxt/schema": "3.3.1",

@@ -1,21 +1,22 @@
 import pify from 'pify'
 import { createCompiler } from '@rspack/core'
 import type { NodeMiddleware } from 'h3'
-import { fromNodeMiddleware, defineEventHandler, useBase } from 'h3'
-import type { OutputFileSystem } from '@rspack/dev-middleware'
+import { fromNodeMiddleware, defineEventHandler /* useBase */ } from 'h3'
+// import type { OutputFileSystem } from '@rspack/dev-middleware'
 import rspackDevMiddleware, { getRspackMemoryAssets } from '@rspack/dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
-import type { Compiler, Watching } from '@rspack/core'
+// @ts-expect-error
+import type { Compiler, Watching, Stats } from '@rspack/core'
 
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
-import { createUnplugin } from 'unplugin'
-import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
+// import { createUnplugin } from 'unplugin'
+// import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
+// import { DynamicBasePlugin } from './plugins/dynamic-base'
+// import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
-import { registerVirtualModules } from './virtual-modules'
+// import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { createRspackConfigContext, applyPresets, getRspackConfig } from './utils/config'
 
@@ -36,6 +37,7 @@ export async function bundle (nuxt: Nuxt) {
     return getRspackConfig(ctx)
   })
 
+  // @ts-ignore
   await nuxt.callHook('rspack:config', webpackConfigs)
 
   // console.log(webpackConfigs[0])
@@ -64,7 +66,7 @@ export async function bundle (nuxt: Nuxt) {
 
     // In dev, write files in memory FS
     if (nuxt.options.dev) {
-      compiler.outputFileSystem = mfs as unknown as OutputFileSystem
+      compiler.outputFileSystem = mfs as any /* as OutputFileSystem */
     }
 
     return compiler
@@ -95,6 +97,7 @@ async function createDevMiddleware (compiler: Compiler) {
   const devMiddleware = rspackDevMiddleware(compiler as any, {
     publicPath: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
     outputFileSystem: compiler.outputFileSystem as any,
+    // @ts-ignore
     stats: 'none',
     serverSideRender: true,
     ...nuxt.options.webpack.devMiddleware
@@ -103,20 +106,22 @@ async function createDevMiddleware (compiler: Compiler) {
   // @ts-ignore
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
-  // const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
-  // const hotMiddleware = webpackHotMiddleware(compiler, {
-  //   log: false,
-  //   heartbeat: 10000,
-  //   path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
-  //   ...hotMiddlewareOptions
-  // })
+  const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
+  // @ts-ignore
+  const hotMiddleware = webpackHotMiddleware(compiler, {
+    log: false,
+    heartbeat: 10000,
+    path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
+    ...hotMiddlewareOptions
+  })
 
   // Register devMiddleware on server
+  // @ts-ignore
   const devHandler = fromNodeMiddleware(getRspackMemoryAssets(compiler, devMiddleware))
-  // const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
+  const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     await devHandler(event)
-    // await hotHandler(event)
+    await hotHandler(event)
   }))
 
   return devMiddleware
@@ -127,10 +132,12 @@ async function compile (compiler: Compiler) {
 
   const { name } = compiler.options
 
+  // @ts-ignore
   await nuxt.callHook('rspack:compile', { name: name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
+    // @ts-ignore
     await nuxt.callHook('rspack:compiled', { name: name!, compiler, stats })
   })
 
@@ -166,7 +173,7 @@ async function compile (compiler: Compiler) {
   }
 
   // --- Production Build ---
-  const stats = await new Promise<webpack.Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
+  const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
     const error = new Error('Nuxt build error')

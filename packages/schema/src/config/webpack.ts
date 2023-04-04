@@ -274,18 +274,11 @@ export default defineUntypedSchema({
       order: ''
     },
 
-    /**
-     * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
-     * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
-     */
+    
     devMiddleware: {
       stats: 'none'
     },
 
-    /**
-     * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
-     * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
-     */
     hotMiddleware: {},
 
     /**

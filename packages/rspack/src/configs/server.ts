@@ -1,7 +1,7 @@
 import { isAbsolute } from 'pathe'
-import webpack from '@rspack/core'
-import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-import { logger } from '@nuxt/kit'
+// import webpack from '@rspack/core'
+// import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+// import { logger } from '@nuxt/kit'
 import type { RspackConfigContext } from '../utils/config'
 import { applyPresets, getRspackConfig } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
@@ -54,6 +54,7 @@ function serverStandalone (ctx: RspackConfigContext) {
   const external = ['#internal/nitro']
 
   if (!Array.isArray(ctx.config.externals)) { return }
+  // TODO
   ctx.config.externals.push(({ request }, cb) => {
     if (!request) {
       return cb(undefined, false)
@@ -90,9 +91,9 @@ function serverPlugins (ctx: RspackConfigContext) {
   // }
 
   // Add type-checking
-  if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-    config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-      logger
-    }))
-  }
+  // if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+  //   config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+  //     logger
+  //   }))
+  // }
 }
