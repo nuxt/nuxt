@@ -1,4 +1,4 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineUntypedSchema } from "untyped";
 
 export default defineUntypedSchema({
   /**
@@ -13,27 +13,42 @@ export default defineUntypedSchema({
   components: {
     $resolve: (val) => {
       if (Array.isArray(val)) {
-        return { dirs: val }
+        return { dirs: val };
       }
       if (val === undefined || val === true) {
-        return { dirs: [{ path: '~/components/global', global: true }, '~/components'] }
+        return {
+          dirs: [{ path: "~/components/global", global: true }, "~/components"],
+        };
       }
-      return val
-    }
+      return val;
+    },
   },
 
   /**
-   * Configure how Nuxt auto-imports composables into your application.
+   * Configure how Nuxt auto-imports composables or other functions into your application.
    *
-   * @see [Nuxt 3 documentation](https://nuxt.com/docs/guide/directory-structure/composables)
+   * @see [Composables documentation](https://nuxt.com/docs/guide/directory-structure/composables)
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
+    /**
+     * Enable implicit auto import from Vue, Nuxt and module contributed utilities.
+     * Generate global TypeScript definitions.
+     *
+     * @default true
+     */
+    autoImport: true,
+
+    /**
+     * Assign auto imported utilities to `globalThis` instead of using the default built-in type registration.
+     *
+     * @default false
+     */
     global: false,
 
     /**
      * An array of custom directories that will be auto-imported.
-     * Note that this option will not override the default directories (~/composables, ~/utils).
+     * Note that this option will not override the default directories (~/composables, ~/components, ~/utils).
      * @example
      * ```js
      * imports: {
@@ -42,7 +57,7 @@ export default defineUntypedSchema({
      * }
      * ```
      */
-    dirs: []
+    dirs: [],
   },
 
   /**
@@ -59,6 +74,6 @@ export default defineUntypedSchema({
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    *
    * @type {boolean}
-  */
-  telemetry: undefined
-})
+   */
+  telemetry: undefined,
+});
