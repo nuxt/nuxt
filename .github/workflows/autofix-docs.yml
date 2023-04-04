@@ -1,20 +1,16 @@
-name: Docs
+name: autofix.ci  # needed to securely identify the workflow
 
 on:
-  push:
+  pull_request:
     paths:
       - "docs/**"
       - ".github/workflows/docs.yml"
-    # autofix workflow will be triggered instead for PRs
-    branches:
-      - main
 
-# Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  lint-docs:
+  docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,4 +25,4 @@ jobs:
         run: pnpm install
 
       - name: Lint (docs)
-        run: pnpm lint:docs
+        run: pnpm lint:docs:fix
