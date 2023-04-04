@@ -1,5 +1,5 @@
 **/node_modules
 
-docs/content/index.md
-docs/content/**/*.nuxt.config.md
-docs/content/changelog.md
+docs/0.index.md
+docs/1.getting-started/1.introduction.md
+docs/**/*.nuxt.config.md
