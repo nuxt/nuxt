@@ -1,10 +1,12 @@
 import { defineComponent } from 'vue'
+// @ts-expect-error virtual file
+import { devPagesDir } from '#build/nuxt.config.mjs'
 
 export default defineComponent({
   name: 'NuxtPage',
   setup (_, props) {
     if (process.dev) {
-      console.warn('Create a Vue component in the `pages/` directory to enable `<NuxtPage>`')
+      console.warn(`Create a Vue component in the \`${devPagesDir}/\` directory to enable \`<NuxtPage>\``)
     }
     return () => props.slots.default?.()
   }
