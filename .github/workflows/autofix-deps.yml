@@ -20,10 +20,7 @@ jobs:
           node-version: 18
           cache: "pnpm"
 
-      - name: Install dependencies
+      - name: Dedupe dependencies
         run: pnpm dedupe
-
-      - name: Lint (docs)
-        run: pnpm lint:docs:fix
 
       - uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
