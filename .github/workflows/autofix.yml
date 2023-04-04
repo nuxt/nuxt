@@ -1,0 +1,33 @@
+name: autofix.ci  # needed to securely identify the workflow
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm build:stub
+
+      - name: Lint (code)
+        run: pnpm lint:fix
+
+      - name: Test (unit)
+        run: pnpm test:unit -u

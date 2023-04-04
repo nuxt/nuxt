@@ -12,6 +12,7 @@
     "example": "./scripts/example.sh dev",
     "example:build": "./scripts/example.sh build",
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
+    "lint:fix": "eslint --ext .vue,.ts,.js,.mjs . --fix",
     "lint:docs": "markdownlint ./docs && case-police 'docs/**/*.md'",
     "lint:docs:fix": "markdownlint ./docs --fix && case-police 'docs/**/*.md' --fix",
     "nuxi": "JITI_ESM_RESOLVE=1 nuxi",
