@@ -60,13 +60,6 @@ export function useFetch<
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
 
-  if (typeof request === 'function') {
-    const requestUrl = request() as string
-    if (requestUrl.startsWith('//')) {
-      throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
-    }
-  }
-
   const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
@@ -118,6 +111,10 @@ export function useFetch<
     // Use fetch with request context and headers for server direct API calls
     if (process.server && !opts.$fetch && isLocalFetch) {
       _$fetch = useRequestFetch()
+    }
+
+    if (typeof _request.value === 'string' && _request.value.startsWith('//') && !opts.baseURL) {
+      throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
