@@ -278,7 +278,10 @@ export const publicPathTemplate: NuxtTemplate = {
 export const nuxtConfigTemplate = {
   filename: 'nuxt.config.mjs',
   getContents: (ctx: TemplateContext) => {
-    return Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`).join('\n\n')
+    return [
+      ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`
+    ].join('\n\n')
   }
 }
 
