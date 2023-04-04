@@ -12,3 +12,5 @@ MD025: false
 MD033: false
 # Allow non blank lines around list
 MD032: false
+MD046:
+  style: fenced
