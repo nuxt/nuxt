@@ -6,7 +6,7 @@ export default defineNuxtPlugin(async (/* nuxtApp */) => {
   return {
     provide: {
       asyncPlugin: () => config1 && config1 === config2
-        ? 'Async plugin works! ' + config1.testConfig + (data.value?.baz ? 'useFetch works!' : 'useFetch does not work')
+        ? 'Async plugin works! ' + config1.public.testConfig + (data.value?.baz ? 'useFetch works!' : 'useFetch does not work')
         : 'Async plugin failed!'
     }
   }
