@@ -58,7 +58,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.
-  * `watch`: watch reactive sources to auto-refresh.
+  * `watch`: Watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
   * `transform`: A function that can be used to alter `handler` function result after resolving.
   * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 

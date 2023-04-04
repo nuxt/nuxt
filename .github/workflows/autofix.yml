@@ -1,0 +1,42 @@
+name: autofix.ci  # needed to securely identify the workflow
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Dedupe dependencies
+        if: ${{ contains(github.ref_name, 'renovate') }}
+        run: pnpm dedupe
+
+      - name: Build (stub)
+        run: pnpm build:stub
+
+      - name: Lint (code)
+        run: pnpm lint:fix
+
+      - name: Test (unit)
+        run: pnpm test:unit -u
+
+      - name: Update bundle size
+        run: pnpm vitest run bundle -u
+
+      - uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160

@@ -707,6 +707,10 @@ describe('extends support', () => {
   })
 
   describe('middlewares', () => {
+    it('works with layer aliases', async () => {
+      const html = await $fetch('/foo')
+      expect(html).toContain('from layer alias')
+    })
     it('extends foo/middleware/foo', async () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
