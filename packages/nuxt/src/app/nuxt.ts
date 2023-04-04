@@ -379,9 +379,3 @@ function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>,
 export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
 }
-
-declare module 'vue' {
-  interface ComponentCustomProperties {
-    $config: RuntimeConfig
-  }
-}
