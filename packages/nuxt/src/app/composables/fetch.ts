@@ -60,6 +60,7 @@ export function useFetch<
   if (!request) {
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
+
   const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
@@ -69,6 +70,10 @@ export function useFetch<
     }
     return unref(r)
   })
+
+  if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
+    throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+  }
 
   const {
     server,
