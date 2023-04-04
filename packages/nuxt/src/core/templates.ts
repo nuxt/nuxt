@@ -130,7 +130,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
-      "import { NuxtModule } from 'nuxt/schema'",
+      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
@@ -154,7 +154,18 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
           allowExtraKeys: false,
           indentation: 2
         }),
-      '}'
+      '}',
+      `declare module 'vue' {
+        interface ComponentCustomProperties {
+          $config: RuntimeConfig
+        }
+      }`,
+      // TODO: remove when webstorm has support for augumenting 'vue' directly
+      `declare module '@vue/runtime-dom' {
+        interface ComponentCustomProperties {
+          $config: RuntimeConfig
+        }
+      }`
     ].join('\n')
   }
 }
