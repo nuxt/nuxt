@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  autofix:
+  code:
     runs-on: ubuntu-latest
 
     steps:
