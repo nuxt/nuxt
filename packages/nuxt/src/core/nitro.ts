@@ -1,21 +1,34 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join } from 'pathe'
+import { resolve, join, relative } from 'pathe'
 import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
 import type { NitroConfig, Nitro } from 'nitropack'
-import type { Nuxt } from '@nuxt/schema'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from 'unhead'
+import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
+import type { Nuxt } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const _nitroConfig = ((nuxt.options as any).nitro || {}) as NitroConfig
+
+  const excludePaths = nuxt.options._layers
+    .flatMap(l => [
+      l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
+      l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
+    ])
+    .filter((dir): dir is string => Boolean(dir))
+    .map(dir => escapeRE(dir))
+  const excludePattern = excludePaths.length
+    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
+    : [/node_modules/]
+
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -34,15 +47,19 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           as: '__publicAssetsURL',
           name: 'publicAssetsURL',
           from: resolve(distDir, 'core/runtime/nitro/paths')
+        },
+        {
+          // TODO: Remove after https://github.com/unjs/nitro/issues/1049
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'core/runtime/nitro/config'),
+          priority: -1
         }
-      ]
+      ],
+      exclude: [...excludePattern, /[\\/]\.git[\\/]/]
     },
     esbuild: {
-      options: {
-        exclude: [
-          new RegExp(`node_modules\\/(?!${nuxt.options._layers.map(l => l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1]).filter(Boolean).map(dir => escapeRE(dir!)).join('|')})`)
-        ]
-      }
+      options: { exclude: excludePattern }
     },
     analyze: nuxt.options.build.analyze && {
       template: 'treemap',
@@ -69,11 +86,21 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.runtimeConfig.nitro
       }
     },
+    appConfig: nuxt.options.appConfig,
+    appConfigFiles: nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, 'app.config')
+    ),
     typescript: {
       generateTsConfig: false
     },
     publicAssets: [
-      { dir: resolve(nuxt.options.buildDir, 'dist/client') },
+      nuxt.options.dev
+        ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
+        : {
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 31536000 /* 1 year */,
+            baseURL: nuxt.options.app.buildAssetsDir
+          },
       ...nuxt.options._layers
         .map(layer => join(layer.config.srcDir, layer.config.dir?.public || 'public'))
         .filter(dir => existsSync(dir))
@@ -148,10 +175,27 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
     nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
+    // In case a non-normalized absolute path is called for on Windows
+    if (process.platform === 'win32') {
+      nitroConfig.virtual!['#build/dist/server/server.mjs'.replace(/\//g, '\\')] = 'export default () => {}'
+    }
   }
 
   if (!nuxt.options.experimental.inlineSSRStyles) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
+    // In case a non-normalized absolute path is called for on Windows
+    if (process.platform === 'win32') {
+      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(/\//g, '\\')] = 'export default {}'
+    }
+  }
+
+  // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
+  if (nuxt.options.experimental.respectNoSSRHeader) {
+    nitroConfig.handlers = nitroConfig.handlers || []
+    nitroConfig.handlers.push({
+      handler: resolve(distDir, 'core/runtime/nitro/no-ssr'),
+      middleware: true
+    })
   }
 
   // Register nuxt protection patterns
@@ -197,12 +241,28 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     handler: resolve(distDir, 'core/runtime/nitro/renderer')
   })
 
+  if (nuxt.options.experimental.noVueServer) {
+    nitro.hooks.hook('rollup:before', (nitro) => {
+      if (nitro.options.preset === 'nitro-prerender') { return }
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      if (nuxtErrorHandler >= 0) {
+        nitro.options.handlers.splice(nuxtErrorHandler, 1)
+      }
+
+      nitro.options.renderer = undefined
+      nitro.options.errorHandler = '#internal/nitro/error'
+    })
+  }
+
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
       await scanHandlers(nitro)
       await writeTypes(nitro)
     }
+    // Exclude nitro output dir from typescript
+    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
@@ -214,6 +274,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     } else {
       await prepare(nitro)
       await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
       if (!nuxt.options._generate) {
         logger.restoreAll()
@@ -222,7 +283,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       } else {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
+          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
         }
       }
     }

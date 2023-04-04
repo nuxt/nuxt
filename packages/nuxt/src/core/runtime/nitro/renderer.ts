@@ -5,12 +5,15 @@ import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
 import devalue from '@nuxt/devalue'
 import destr from 'destr'
-import { joinURL } from 'ufo'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
+
+import { useRuntimeConfig, defineRenderHandler, getRouteRules } from '#internal/nitro'
+import { useNitroApp } from '#internal/nitro/app'
+
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app'
+import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
 // @ts-ignore
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-ignore
@@ -156,7 +159,9 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 }
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
+const ISLAND_CACHE = (process.env.NUXT_COMPONENT_ISLANDS && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
 const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -165,8 +170,13 @@ export default defineRenderHandler(async (event) => {
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
+    ? getQuery(event) as unknown as Exclude<NuxtApp['payload']['error'], Error>
     : null
+
+  if (ssrError && ssrError.statusCode) {
+    ssrError.statusCode = parseInt(ssrError.statusCode as any)
+  }
+
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
     throw createError('Cannot directly render error page!')
   }
@@ -175,6 +185,10 @@ export default defineRenderHandler(async (event) => {
   const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.node.req.url?.startsWith('/__nuxt_island'))
     ? await getIslandContext(event)
     : undefined
+
+  if (process.env.prerender && islandContext && ISLAND_CACHE!.has(event.node.req.url)) {
+    return ISLAND_CACHE!.get(event.node.req.url)
+  }
 
   // Request url
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
@@ -199,7 +213,7 @@ export default defineRenderHandler(async (event) => {
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
-      !!(event.node.req.headers['x-nuxt-no-ssr']) ||
+      event.context.nuxt?.noSSR ||
       routeOptions.ssr === false ||
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
@@ -248,7 +262,7 @@ export default defineRenderHandler(async (event) => {
     // Hint nitro to prerender payload for this route
     appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.js'))
     // Use same ssr context to generate payload for this route
-    PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
+    PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
   // Render meta
@@ -276,7 +290,7 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: (process.env.NUXT_COMPONENT_ISLANDS && islandContext) ? [] : [_rendered.html],
+    body: [_rendered.html],
     bodyAppend: normalizeChunks([
       process.env.NUXT_NO_SCRIPTS
         ? undefined
@@ -310,7 +324,7 @@ export default defineRenderHandler(async (event) => {
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head,
-      html: ssrContext.teleports!['nuxt-island'].replace(/<!--.*-->/g, ''),
+      html: getServerComponentHTML(htmlContext.body),
       state: ssrContext.payload.state
     }
 
@@ -324,6 +338,9 @@ export default defineRenderHandler(async (event) => {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
+    }
+    if (process.env.prerender) {
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
     }
     return response
   }
@@ -372,7 +389,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-// TOOD: Move to external library
+// TODO: Move to external library
 const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
 const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {
@@ -419,4 +436,12 @@ function splitPayload (ssrContext: NuxtSSRContext) {
     initial: { ...initial, prerenderedAt },
     payload: { data, prerenderedAt }
   }
+}
+
+/**
+ * remove the root node from the html body
+ */
+function getServerComponentHTML (body: string[]): string {
+  const match = body[0].match(ROOT_NODE_REGEX)
+  return match ? match[1] : body[0]
 }

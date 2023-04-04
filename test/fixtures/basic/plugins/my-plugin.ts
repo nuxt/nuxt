@@ -1,3 +1,6 @@
+// @ts-expect-error
+import { useHead } from '#head'
+
 export default defineNuxtPlugin(() => {
   useHead({
     titleTemplate: '%s - Fixture'

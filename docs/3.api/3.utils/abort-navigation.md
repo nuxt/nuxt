@@ -49,7 +49,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const auth = useState('auth')
 
   if (!user.value.isAuthorized) {
-    abortNavigation('Insufficient permissions.')
+    return abortNavigation('Insufficient permissions.')
   }
 })
 ```
@@ -63,7 +63,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   try {
     /* code that might throw an error */
   } catch (err) {
-    abortNavigation(err)
+    return abortNavigation(err)
   }
 })
 ```

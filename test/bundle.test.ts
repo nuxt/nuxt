@@ -6,7 +6,7 @@ import { globby } from 'globby'
 import { join } from 'pathe'
 import { isWindows } from 'std-env'
 
-describe.skipIf(isWindows)('minimal nuxt application', () => {
+describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -26,10 +26,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(108000)
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"104k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/composables.js",
+        "_nuxt/_plugin-vue_export-helper.js",
         "_nuxt/entry.js",
         "_nuxt/error-404.js",
         "_nuxt/error-500.js",
@@ -40,10 +40,10 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(90000)
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"91k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2700000)
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2632k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -53,8 +53,8 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
       [
         "@babel/parser",
         "@unhead/dom",
+        "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/vue",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
@@ -63,13 +63,13 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
-        "buffer-from",
         "cookie-es",
         "defu",
         "destr",
         "estree-walker",
         "h3",
         "hookable",
+        "iron-webcrypto",
         "node-fetch-native",
         "ofetch",
         "ohash",
@@ -77,10 +77,11 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "radix3",
         "scule",
         "source-map",
-        "source-map-support",
         "ufo",
+        "uncrypto",
         "unctx",
         "unenv",
+        "unhead",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
@@ -102,4 +103,8 @@ async function analyzeSizes (pattern: string | string[], rootDir: string) {
     }
   }
   return { files, totalBytes }
+}
+
+function roundToKilobytes (bytes: number) {
+  return (Math.round(bytes / 1024) + 'k')
 }

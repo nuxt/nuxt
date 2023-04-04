@@ -1,4 +1,4 @@
-import { defineNuxtPlugin } from '#app'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.mixin({

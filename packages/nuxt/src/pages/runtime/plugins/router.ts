@@ -1,8 +1,6 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
-import type {
-  NavigationGuard,
-  RouteLocation
-} from 'vue-router'
+import type { Ref } from 'vue'
+import type { RouteLocation, Router } from 'vue-router'
 import {
   createRouter,
   createWebHistory,
@@ -11,7 +9,14 @@ import {
 } from 'vue-router'
 import { createError } from 'h3'
 import { withoutBase, isEqual } from 'ufo'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig, showError, clearError, navigateTo, useError, useState, useRequestEvent } from '#app'
+
+import type { PageMeta, RouteMiddleware, Plugin } from '../../../app/index'
+import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
+import { showError, clearError, useError } from '#app/composables/error'
+import { useRequestEvent } from '#app/composables/ssr'
+import { useState } from '#app/composables/state'
+import { navigateTo } from '#app/composables/router'
+
 // @ts-ignore
 import _routes from '#build/routes'
 // @ts-ignore
@@ -113,11 +118,11 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   router.beforeEach(async (to, from) => {
     to.meta = reactive(to.meta)
     if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-      to.meta.layout = initialLayout.value
+      to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
     }
     nuxtApp._processingMiddleware = true
 
-    type MiddlewareDef = string | NavigationGuard
+    type MiddlewareDef = string | RouteMiddleware
     const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
     for (const component of to.matched) {
       const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
@@ -171,7 +176,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       })])
     } else if (process.server) {
       const currentURL = to.fullPath || '/'
-      if (!isEqual(currentURL, initialURL)) {
+      if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
         const event = await callWithNuxt(nuxtApp, useRequestEvent)
         const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
         await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
@@ -193,4 +198,4 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   })
 
   return { provide: { router } }
-})
+}) as Plugin<{ router: Router }>
