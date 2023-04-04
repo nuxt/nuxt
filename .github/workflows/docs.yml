@@ -14,6 +14,10 @@ on:
     branches:
       - main
 
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
 jobs:
   lint-docs:
     runs-on: ubuntu-latest
@@ -29,5 +33,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint (docs)
+      - name: Lint
+        if: github.event_name == 'push'
         run: pnpm lint:docs
+
+      - name: Lint (fix)
+        if: github.event_name != 'push'
+        run: pnpm lint:docs:fix
+
+      - name: Auto-fix
+        if: github.event_name != 'push'
+        uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
