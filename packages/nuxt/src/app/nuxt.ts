@@ -244,7 +244,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  nuxtApp.provide('config', process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config))
+  nuxtApp.provide('config', process.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config)
 
   return nuxtApp
 }
