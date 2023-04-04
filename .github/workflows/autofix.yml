@@ -23,6 +23,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Dedupe dependencies
+        if: ${{ contains(github.ref_name, 'renovate') }}
+        run: pnpm dedupe
+
       - name: Build (stub)
         run: pnpm build:stub
 
@@ -31,3 +35,8 @@ jobs:
 
       - name: Test (unit)
         run: pnpm test:unit -u
+
+      - name: Update bundle size
+        run: pnpm vitest run bundle -u
+
+      - uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
