@@ -3,14 +3,18 @@ import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
   let finishTransition: undefined | (() => void)
+  let abortTransition: undefined | (() => void)
 
-  useRouter().beforeResolve(async (to) => {
+  const router = useRouter()
+
+  router.beforeResolve(async (to) => {
     if (!document.startViewTransition || to.meta.pageTransition === false) { return }
 
     await nuxtApp.callHook('page:transition:start')
 
-    const promise = new Promise<void>((resolve) => {
+    const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
+      abortTransition = reject
     })
 
     let changeRoute: () => void
@@ -20,12 +24,24 @@ export default defineNuxtPlugin((nuxtApp) => {
       changeRoute()
       return promise
     })
-    transition.finished.then(() => nuxtApp.callHook('page:transition:finish'))
+
+    transition.finished.then(() => {
+      abortTransition = undefined
+      finishTransition = undefined
+      return nuxtApp.callHook('page:transition:finish')
+    })
 
     await ready
   })
 
+  nuxtApp.hook('vue:error', () => {
+    if (!document.startViewTransition) { return }
+    abortTransition?.()
+    abortTransition = undefined
+  })
+
   nuxtApp.hook('page:finish', () => {
+    if (!document.startViewTransition) { return }
     finishTransition?.()
     finishTransition = undefined
   })
