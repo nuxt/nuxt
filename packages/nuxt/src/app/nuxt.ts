@@ -244,7 +244,30 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  nuxtApp.provide('config', process.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config
+
+  // Backward compatibility following #4254
+  const compatibilityConfig = new Proxy(runtimeConfig, {
+    get (target, prop: string) {
+      if (prop === 'public') {
+        return target.public
+      }
+      if (process.dev && !(prop in target) && prop in target.public) {
+        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public prop (\`${prop}\`) directly from runtime config. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in a future minor release.`)
+      }
+      return target[prop] ?? target.public[prop]
+    },
+    set (target, prop, value) {
+      if (process.server || prop === 'public' || prop === 'app') {
+        return false // Throws TypeError
+      }
+      target[prop] = value
+      target.public[prop] = value
+      return true
+    }
+  })
+
+  nuxtApp.provide('config', compatibilityConfig)
 
   return nuxtApp
 }
