@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 import { useTestContext } from './context'
 
 // @ts-ignore type cast
-// eslint-disable-next-line
+
 const kit: typeof _kit = _kit.default || _kit
 
 export async function startServer () {
