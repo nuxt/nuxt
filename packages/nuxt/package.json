@@ -38,10 +38,6 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
-    "#head": {
-      "types": "./dist/head/runtime/index.d.ts",
-      "import": "./dist/head/runtime/index.js"
-    },
     "#pages": {
       "types": "./dist/pages/runtime/index.d.ts",
       "import": "./dist/pages/runtime/index.js"

@@ -14,8 +14,6 @@ export default defineNuxtModule({
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 
-    // TODO: remove alias in v3.4
-    nuxt.options.alias['#head'] = nuxt.options.alias['#app']
     nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions = tsConfig.compilerOptions || {}
       delete tsConfig.compilerOptions.paths['#head']
