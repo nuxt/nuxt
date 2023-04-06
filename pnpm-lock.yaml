@@ -518,6 +518,9 @@ importers:
 
   packages/nuxt:
     dependencies:
+      '@nuxt/devalue':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -1999,6 +2002,10 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
+
+  /@nuxt/devalue@2.0.0:
+    resolution: {integrity: sha512-YBI/6o2EBz02tdEJRBK8xkt3zvOFOWlLBf7WKYGBsSYSRtjjgrqPe2skp6VLLmKx5WbHHDNcW+6oACaurxGzeA==}
+    dev: false
 
   /@nuxt/friendly-errors-webpack-plugin@2.5.2(webpack@5.78.0):
     resolution: {integrity: sha512-LLc+90lnxVbpKkMqk5z1EWpXoODhc6gRkqqXJCInJwF5xabHAE7biFvbULfvTRmtaTzAaP8IV4HQDLUgeAUTTw==}

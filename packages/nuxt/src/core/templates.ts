@@ -206,7 +206,7 @@ export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT_CONFIG__ || {}
+export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.__NUXT_CONFIG__ || {}
 `
 }
 
@@ -296,6 +296,7 @@ export const nuxtConfigTemplate = {
   getContents: (ctx: TemplateContext) => {
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`
     ].join('\n\n')
   }

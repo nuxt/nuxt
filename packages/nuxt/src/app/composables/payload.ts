@@ -4,6 +4,9 @@ import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
+// @ts-expect-error virtual import
+import { renderJsonPayloads } from '#build/nuxt.config.mjs'
+
 interface LoadPayloadOptions {
   fresh?: boolean
   hash?: string
@@ -38,6 +41,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 // --- Internal ---
 
+const extension = renderJsonPayloads ? '.json' : '.js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.search) {
@@ -47,15 +51,15 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.json` : '_payload.json')
+  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.${extension}` : `_payload.${extension}`)
 }
 
 async function _importPayload (payloadURL: string) {
   if (process.server) { return null }
   try {
-    const text = await fetch(payloadURL).then(res => res.text())
-    const { revivers } = useNuxtPayloadTypes()
-    return parse(text, revivers)
+    return renderJsonPayloads
+      ? parsePayload(await fetch(payloadURL).then(res => res.text()))
+      : await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL)
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }

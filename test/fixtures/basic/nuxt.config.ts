@@ -184,6 +184,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    renderJsonPayloads: true,
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
