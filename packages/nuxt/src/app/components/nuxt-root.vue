@@ -2,6 +2,7 @@
   <Suspense @resolve="onResolve">
     <ErrorComponent v-if="error" :error="error" />
     <IslandRenderer v-else-if="islandContext" :context="islandContext" />
+    <component :is="SingleRenderer" v-else-if="SingleRenderer" />
     <AppComponent v-else />
   </Suspense>
 </template>
@@ -20,6 +21,10 @@ const IslandRenderer = process.server
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
+
+const url = process.server ? nuxtApp.ssrContext.url : window.location.pathname
+const SingleRenderer = process.dev && process.server && url.startsWith('/__nuxt_component_test__/') && defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
+  .then(r => r.default(process.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route
 provide('_route', useRoute())

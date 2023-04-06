@@ -40,6 +40,11 @@ export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'error-component.mjs',
   getContents: ctx => genExport(ctx.app.errorComponent!, ['default'])
 }
+// TODO: Use an alias
+export const testComponentWrapperTemplate = {
+  filename: 'test-component-wrapper.mjs',
+  getContents: (ctx: TemplateContext) => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+}
 
 export const cssTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'css.mjs',

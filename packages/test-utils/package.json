@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
+    },
+    "./experimental": {
+      "types": "./dist/experimental.d.ts",
+      "import": "./dist/experimental.mjs"
     }
   },
   "files": [
@@ -26,7 +30,8 @@
     "get-port-please": "^3.0.1",
     "jiti": "^1.18.2",
     "ofetch": "^1.0.1",
-    "pathe": "^1.1.0"
+    "pathe": "^1.1.0",
+    "ufo": "^1.1.1"
   },
   "devDependencies": {
     "playwright": "^1.32.2",

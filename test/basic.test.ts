@@ -7,6 +7,7 @@ import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
+import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -1275,5 +1276,15 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+})
+
+describe.runIf(isDev())('component testing', () => {
+  it('should work', async () => {
+    const comp1 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 2 })
+    expect(comp1).toContain('12 x 2 = 24')
+
+    const comp2 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 4 })
+    expect(comp2).toContain('12 x 4 = 48')
   })
 })

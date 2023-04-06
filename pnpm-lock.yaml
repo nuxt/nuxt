@@ -754,6 +754,9 @@ importers:
       pathe:
         specifier: ^1.1.0
         version: 1.1.0
+      ufo:
+        specifier: ^1.1.1
+        version: 1.1.1
       vue:
         specifier: ^3.2.47
         version: 3.2.47
