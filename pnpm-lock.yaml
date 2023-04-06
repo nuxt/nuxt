@@ -943,8 +943,8 @@ importers:
         specifier: ^0.30.0
         version: 0.30.0
       memfs:
-        specifier: ^3.4.13
-        version: 3.4.13
+        specifier: ^3.5.0
+        version: 3.5.0
       mini-css-extract-plugin:
         specifier: ^2.7.5
         version: 2.7.5(webpack@5.78.0)
@@ -5535,7 +5535,7 @@ packages:
       cosmiconfig: 7.1.0
       deepmerge: 4.3.0
       fs-extra: 10.1.0
-      memfs: 3.4.13
+      memfs: 3.5.0
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.1.1
@@ -6702,8 +6702,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /memfs@3.4.13:
-    resolution: {integrity: sha512-omTM41g3Skpvx5dSYeZIbXKcXoAVc/AoMNwn9TKx++L/gaen/+4TTttmu8ZSch5vfVJ8uJvGbroTsIlslRg6lg==}
+  /memfs@3.5.0:
+    resolution: {integrity: sha512-yK6o8xVJlQerz57kvPROwTMgx5WtGwC2ZxDtOUsnGl49rHjYkfQoPNZPCKH73VdLE1BwBu/+Fx/NL8NYMUw2aA==}
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
@@ -9512,7 +9512,7 @@ packages:
         optional: true
     dependencies:
       colorette: 2.0.19
-      memfs: 3.4.13
+      memfs: 3.5.0
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.0.0
