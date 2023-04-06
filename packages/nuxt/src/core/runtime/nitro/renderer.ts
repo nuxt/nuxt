@@ -449,7 +449,7 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
   ].filter(Boolean)
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
   return `<script ${attrs.join(' ')}>${contents}</script>` +
-    `<script>window.__NUXT_CONFIG__=${uneval(opts.ssrContext.config)}</script>`
+    `<script>window.__NUXT__={};window.__NUXT__.config=${uneval(opts.ssrContext.config)}</script>`
 }
 
 function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }) {

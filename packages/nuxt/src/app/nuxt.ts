@@ -161,8 +161,6 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      // For backwards compatibility - TODO: remove later
-      config: process.client ? window.__NUXT_CONFIG__ : {},
       ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {

@@ -91,8 +91,6 @@ export async function getNuxtClientPayload () {
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
   payloadCache = {
-    // For backwards compatibility - TODO: remove later
-    config: window.__NUXT_CONFIG__,
     ...inlineData,
     ...externalData,
     ...window.__NUXT__
