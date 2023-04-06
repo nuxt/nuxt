@@ -4,10 +4,10 @@ import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
+import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
-import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
