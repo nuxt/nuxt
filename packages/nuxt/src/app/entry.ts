@@ -34,7 +34,7 @@ if (process.server) {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
+      await nuxt.hooks.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
 

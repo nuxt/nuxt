@@ -11,9 +11,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // Load payload into cache
-  nuxtApp.hooks.hook('link:prefetch', (url) => {
+  nuxtApp.hooks.hook('link:prefetch', async (url) => {
     if (!parseURL(url).protocol) {
-      return loadPayload(url)
+      await loadPayload(url)
     }
   })
 

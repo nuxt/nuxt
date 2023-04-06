@@ -6,7 +6,7 @@ description: "Analyze the production bundle or your Nuxt application."
 # `nuxi analyze`
 
 ```{bash}
-npx nuxi analyze [rootDir]
+npx nuxi analyze [--log-level] [rootDir]
 ```
 
 The `analyze` command builds Nuxt and analyzes the production bundle (experimental).

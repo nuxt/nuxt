@@ -8,7 +8,7 @@ export function createIsExternal (viteServer: ViteDevServer, rootDir: string) {
       /virtual:/,
       /\.ts$/,
       ...ExternalsDefaults.inline || [],
-      ...viteServer.config.ssr.noExternal as string[]
+      ...Array.isArray(viteServer.config.ssr.noExternal) ? viteServer.config.ssr.noExternal : []
     ],
     external: [
       ...viteServer.config.ssr.external || [],

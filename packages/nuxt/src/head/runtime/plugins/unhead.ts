@@ -1,10 +1,11 @@
-import { createHead, useHead } from '@vueuse/head'
+import { createHead as createClientHead, createServerHead } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 import { defineNuxtPlugin } from '#app/nuxt'
 // @ts-expect-error untyped
 import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  const createHead = process.server ? createServerHead : createClientHead
   const head = createHead()
   head.push(appHead)
 
@@ -15,26 +16,24 @@ export default defineNuxtPlugin((nuxtApp) => {
     let pauseDOMUpdates = true
     const unpauseDom = () => {
       pauseDOMUpdates = false
-      // triggers dom update
-      head.internalHooks.callHook('entries:updated', head.unhead)
+      // trigger the debounced DOM update
+      head.hooks.callHook('entries:updated', head)
     }
-    head.internalHooks.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
+    head.hooks.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
     nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
     // wait for new page before unpausing dom updates (triggered after suspense resolved)
     nuxtApp.hooks.hook('page:finish', unpauseDom)
-    nuxtApp.hooks.hook('app:mounted', unpauseDom)
+    // unpause the DOM once the mount suspense is resolved
+    nuxtApp.hooks.hook('app:suspense:resolve', unpauseDom)
   }
-
-  // useHead does not depend on a vue component context, we keep it on the nuxtApp for backwards compatibility
-  nuxtApp._useHead = useHead
 
   if (process.server) {
     nuxtApp.ssrContext!.renderMeta = async () => {
-      const meta = await renderSSRHead(head.unhead)
+      const meta = await renderSSRHead(head)
       return {
         ...meta,
         bodyScriptsPrepend: meta.bodyTagsOpen,
-        // resolves naming difference with NuxtMeta and @vueuse/head
+        // resolves naming difference with NuxtMeta and Unhead
         bodyScripts: meta.bodyTags
       }
     }

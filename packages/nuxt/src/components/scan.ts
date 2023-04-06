@@ -118,7 +118,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         kebabName,
         chunkName,
         shortPath,
-        export: 'default'
+        export: 'default',
+        // by default, give priority to scanned components
+        priority: 1
       }
 
       if (typeof dir.extendComponent === 'function') {

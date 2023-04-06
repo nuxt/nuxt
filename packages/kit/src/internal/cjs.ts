@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { join, normalize } from 'pathe'
+import { normalize } from 'pathe'
 import { interopDefault } from 'mlly'
 import jiti from 'jiti'
 
@@ -80,11 +80,6 @@ export function getRequireCacheItem (id: string) {
     return _require.cache[id]
   } catch (e) {
   }
-}
-
-/** Resolve the `package.json` file for a given module. */
-export function requireModulePkg (id: string, opts: RequireModuleOptions = {}) {
-  return requireModule(join(id, 'package.json'), opts)
 }
 
 /** @deprecated Do not use CJS utils */

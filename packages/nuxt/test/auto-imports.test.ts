@@ -54,7 +54,7 @@ describe('imports:transform', () => {
   })
 })
 
-const excludedNuxtHelpers = ['useHydration']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta']
 
 describe('imports:nuxt', () => {
   try {
@@ -62,7 +62,8 @@ describe('imports:nuxt', () => {
     const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')
 
     const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
-    for (const name of names) {
+    for (let name of names) {
+      name = name.replace(/\/\*.*\*\//, '').trim()
       if (excludedNuxtHelpers.includes(name)) {
         continue
       }

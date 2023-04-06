@@ -10,6 +10,12 @@ export interface Component {
   global?: boolean
   island?: boolean
   mode?: 'client' | 'server' | 'all'
+  /**
+   * This number allows configuring the behavior of overriding Nuxt components.
+   * If multiple components are provided with the same name, then higher priority
+   * components will be used instead of lower priority components.
+   */
+  priority?: number
 }
 
 export interface ScanDir {

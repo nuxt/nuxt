@@ -1,9 +1,11 @@
+import { pathToFileURL } from 'node:url'
 import chokidar from 'chokidar'
-import { importModule, isIgnored } from '@nuxt/kit'
+import { isIgnored, tryResolveModule } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
-import { createApp, generateApp as _generateApp } from './app'
 import type { Nuxt } from 'nuxt/schema'
+
+import { createApp, generateApp as _generateApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -61,7 +63,7 @@ function watch (nuxt: Nuxt) {
 async function bundle (nuxt: Nuxt) {
   try {
     const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await importModule(nuxt.options.builder, { paths: [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url] })
+      ? await loadBuilder(nuxt, nuxt.options.builder)
       : nuxt.options.builder
 
     return bundle(nuxt)
@@ -75,5 +77,12 @@ async function bundle (nuxt: Nuxt) {
     }
 
     throw error
+  }
+}
+
+async function loadBuilder (nuxt: Nuxt, builder: string) {
+  const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
+  if (builderPath) {
+    return import(pathToFileURL(builderPath).href)
   }
 }

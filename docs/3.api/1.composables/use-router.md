@@ -5,7 +5,7 @@ description: "The useRouter composable returns the router instance."
 
 # `useRouter`
 
-The useRouter composable returns the router instance and must be called in a setup function, plugin, or route middleware.
+The `useRouter` composable returns the router instance and must be called in a setup function, plugin, or route middleware.
 
 Within the template of a Vue component, you can access the router using `$router` instead.
 

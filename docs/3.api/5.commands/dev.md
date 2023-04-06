@@ -6,7 +6,7 @@ description: The dev command starts a development server with hot module replace
 # `nuxi dev`
 
 ```{bash}
-npx nuxi dev [rootDir] [--dotenv] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
+npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
 ```
 
 The `dev` command starts a development server with hot module replacement at [http://localhost:3000](https://localhost:3000)
