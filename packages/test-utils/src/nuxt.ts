@@ -5,7 +5,7 @@ import * as _kit from '@nuxt/kit'
 import { useTestContext } from './context'
 
 // @ts-ignore type cast
-
+// eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 const isNuxtApp = (dir: string) => {
