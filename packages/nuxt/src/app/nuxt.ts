@@ -116,7 +116,6 @@ interface _NuxtApp {
     prerenderedAt?: number
     data: Record<string, any>
     state: Record<string, any>
-    rendered?: Function
     error?: Error | {
       url: string
       statusCode: number
