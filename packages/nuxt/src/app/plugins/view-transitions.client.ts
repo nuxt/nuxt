@@ -2,13 +2,15 @@ import { useRouter } from '#app/composables/router'
 import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  if (!document.startViewTransition) { return }
+
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
 
   const router = useRouter()
 
   router.beforeResolve(async (to) => {
-    if (!document.startViewTransition || to.meta.pageTransition === false) { return }
+    if (to.meta.pageTransition === false) { return }
 
     await nuxtApp.callHook('page:transition:start')
 
@@ -20,7 +22,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     let changeRoute: () => void
     const ready = new Promise<void>(resolve => (changeRoute = resolve))
 
-    const transition = document.startViewTransition(() => {
+    const transition = document.startViewTransition!(() => {
       changeRoute()
       return promise
     })
@@ -35,13 +37,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 
   nuxtApp.hook('vue:error', () => {
-    if (!document.startViewTransition) { return }
     abortTransition?.()
     abortTransition = undefined
   })
 
   nuxtApp.hook('page:finish', () => {
-    if (!document.startViewTransition) { return }
     finishTransition?.()
     finishTransition = undefined
   })
