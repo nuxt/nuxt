@@ -104,9 +104,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build (stub)
-        run: pnpm build:stub
-
       - name: Lint
         run: pnpm lint
 
