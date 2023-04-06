@@ -21,6 +21,12 @@ export default defineUntypedSchema({
      */
     externalVue: true,
 
+    // TODO: move to `vue.runtimeCompiler` in v3.5
+    /**
+     * Include Vue compiler in runtime bundle.
+     */
+    runtimeVueCompiler: false,
+
     /**
      * Tree shakes contents of client-only components from server bundle.
      * @see https://github.com/nuxt/framework/pull/5750
@@ -158,6 +164,12 @@ export default defineUntypedSchema({
      *
      * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
      */
-    polyfillVueUseHead: true
+    polyfillVueUseHead: true,
+
+    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    respectNoSSRHeader: false,
+
+    /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
+    localLayerAliases: true,
   }
 })
