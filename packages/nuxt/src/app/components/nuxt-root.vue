@@ -37,6 +37,7 @@ onErrorCaptured((err, target, info) => {
   if (process.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
     const p = callWithNuxt(nuxtApp, showError, [err])
     onServerPrefetch(() => p)
+    return false // suppress error from breaking render
   }
 })
 

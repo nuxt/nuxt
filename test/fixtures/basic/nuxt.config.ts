@@ -184,6 +184,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),

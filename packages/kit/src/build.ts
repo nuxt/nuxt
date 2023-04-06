@@ -8,13 +8,13 @@ export interface ExtendConfigOptions {
    *
    * @default true
    */
-   dev?: boolean
-   /**
-    * Install plugin on build
-    *
-    * @default true
-    */
-   build?: boolean
+  dev?: boolean
+  /**
+   * Install plugin on build
+   *
+   * @default true
+   */
+  build?: boolean
   /**
    * Install plugin on server side
    *
@@ -41,7 +41,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
  * when applying to both client and server builds.
  */
 export function extendWebpackConfig (
-  fn: ((config: WebpackConfig)=> void),
+  fn: ((config: WebpackConfig) => void),
   options: ExtendWebpackConfigOptions = {}
 ) {
   const nuxt = useNuxt()

@@ -20,6 +20,7 @@ import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
+import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
@@ -80,13 +81,28 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(ImportProtectionPlugin.vite(config))
   addWebpackPlugin(ImportProtectionPlugin.webpack(config))
 
+  if (nuxt.options.experimental.localLayerAliases) {
+    // Add layer aliasing support for ~, ~~, @ and @@ aliases
+    addVitePlugin(LayerAliasingPlugin.vite({
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      // skip top-level layer (user's project) as the aliases will already be correctly resolved
+      layers: nuxt.options._layers.slice(1)
+    }))
+    addWebpackPlugin(LayerAliasingPlugin.webpack({
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      // skip top-level layer (user's project) as the aliases will already be correctly resolved
+      layers: nuxt.options._layers.slice(1),
+      transform: true
+    }))
+  }
+
   nuxt.hook('modules:done', () => {
     // Add unctx transform
     addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     // Add composable tree-shaking optimisations
-    const serverTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+    const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
       sourcemap: nuxt.options.sourcemap.server,
       composables: nuxt.options.optimization.treeShake.composables.server
     }
@@ -94,7 +110,7 @@ async function initNuxt (nuxt: Nuxt) {
       addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
       addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
-    const clientTreeShakeOptions : TreeShakeComposablesPluginOptions = {
+    const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
       sourcemap: nuxt.options.sourcemap.client,
       composables: nuxt.options.optimization.treeShake.composables.client
     }

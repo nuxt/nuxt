@@ -88,6 +88,8 @@ jobs:
         run: pnpm test:types
 
   lint:
+    # autofix workflow will be triggered instead for PRs
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -169,9 +171,6 @@ jobs:
 
       - name: Test (unit)
         run: pnpm test:unit
-        env:
-          TEST_ENV: ${{ matrix.env }}
-          TEST_BUILDER: ${{ matrix.builder }}
 
       - name: Test (fixtures)
         run: pnpm test:fixtures

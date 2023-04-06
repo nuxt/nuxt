@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "fixture-basic",
+  "name": "fixture-minimal",
   "scripts": {
     "build": "nuxi build"
   },
