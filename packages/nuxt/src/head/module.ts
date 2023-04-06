@@ -14,12 +14,6 @@ export default defineNuxtModule({
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 
-    nuxt.hook('prepare:types', ({ tsConfig }) => {
-      tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-      delete tsConfig.compilerOptions.paths['#head']
-      delete tsConfig.compilerOptions.paths['#head/*']
-    })
-
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
     for (const componentName of components) {
