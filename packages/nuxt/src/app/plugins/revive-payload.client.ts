@@ -1,13 +1,16 @@
-import { reactive, ref, shallowRef } from 'vue'
+import { reactive, ref, shallowRef, shallowReactive } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
 import { createError } from '#app/composables/error'
 import { callWithNuxt, defineNuxtPlugin } from '#app/nuxt'
 
 const revivers = {
   NuxtError: (data: any) => createError(data),
-  shallowRef: (data: any) => shallowRef(data),
-  ref: (data: any) => ref(data),
-  reactive: (data: any) => reactive(data)
+  EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
+  EmptyRef: (data: any) => ref(JSON.parse(data)),
+  ShallowRef: (data: any) => shallowRef(data),
+  ShallowReactive: (data: any) => shallowReactive(data),
+  Ref: (data: any) => ref(data),
+  Reactive: (data: any) => reactive(data)
 }
 
 export default defineNuxtPlugin(async (nuxtApp) => {

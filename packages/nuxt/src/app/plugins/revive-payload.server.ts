@@ -6,9 +6,12 @@ import { defineNuxtPlugin } from '#app/nuxt'
 
 const reducers = {
   NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
-  shallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
-  ref: (data: any) => isRef(data) && data.value,
-  reactive: (data: any) => isReactive(data) && toRaw(data)
+  EmptyShallowRef: (data: any) => isRef(data) && isShallow(data) && !data.value && JSON.stringify(data.value),
+  EmptyRef: (data: any) => isRef(data) && !data.value && JSON.stringify(data.value),
+  ShallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
+  ShallowReactive: (data: any) => isReactive(data) && isShallow(data) && toRaw(data),
+  Ref: (data: any) => isRef(data) && data.value,
+  Reactive: (data: any) => isReactive(data) && toRaw(data)
 }
 
 export default defineNuxtPlugin(() => {

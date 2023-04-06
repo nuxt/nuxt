@@ -1,7 +1,8 @@
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { parse } from 'devalue'
-import { isShallow, isRef, isReactive, toRaw } from 'vue'
+import { shallowReactive, shallowRef, reactive, ref } from 'vue'
+import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
@@ -92,12 +93,14 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   }
 }
 
-const isNuxtError = (err: any) => !!(err && typeof err === 'object' && ('__nuxt_error' in err))
-const reducers = {
-  NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
-  shallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
-  ref: (data: any) => isRef(data) && data.value,
-  reactive: (data: any) => isReactive(data) && toRaw(data)
+const revivers = {
+  NuxtError: (data: any) => createError(data),
+  EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
+  EmptyRef: (data: any) => ref(JSON.parse(data)),
+  ShallowRef: (data: any) => shallowRef(data),
+  ShallowReactive: (data: any) => shallowReactive(data),
+  Ref: (data: any) => ref(data),
+  Reactive: (data: any) => reactive(data)
 }
 export function parseData (html: string) {
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
@@ -106,7 +109,7 @@ export function parseData (html: string) {
     _attrs[attr!.groups!.key] = attr!.groups!.value
   }
   return {
-    script: parse(script || '', reducers),
+    script: parse(script || '', revivers),
     attrs: _attrs
   }
 }
