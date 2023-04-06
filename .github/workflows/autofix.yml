@@ -27,11 +27,11 @@ jobs:
         if: ${{ contains(github.ref_name, 'renovate') }}
         run: pnpm dedupe
 
-      - name: Lint (code)
-        run: pnpm lint:fix
-
       - name: Build (stub)
         run: pnpm build:stub
+
+      - name: Lint (code)
+        run: pnpm lint:fix
 
       - name: Test (unit)
         run: pnpm test:unit -u
