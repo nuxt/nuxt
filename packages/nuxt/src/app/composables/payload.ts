@@ -1,9 +1,8 @@
 import { joinURL, hasProtocol } from 'ufo'
-import { isShallow, isRef, isReactive, reactive, ref, shallowRef, toRaw } from 'vue'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
+import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { createError, isNuxtError } from './error'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -83,9 +82,7 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const { revivers } = useNuxtPayloadTypes()
-
-  const inlineData = parse(el.textContent || '', revivers)
+  const inlineData = parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
@@ -100,43 +97,35 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export function useNuxtPayloadTypes () {
-  const _globalThis = globalThis as any
-  if (!_globalThis.__nuxt_payload_types__) {
-    _globalThis.__nuxt_payload_types__ = {
-      reducers: {
-        NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
-        shallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
-        ref: (data: any) => isRef(data) && data.value,
-        reactive: (data: any) => isReactive(data) && toRaw(data)
-      },
-      revivers: {
-        NuxtError: (data: any) => createError(data),
-        shallowRef: (data: any) => shallowRef(data),
-        ref: (data: any) => ref(data),
-        reactive: (data: any) => reactive(data)
-      }
-    }
-  }
-  return _globalThis.__nuxt_payload_types__
+export function parsePayload (payload: string) {
+  return parse(payload, useNuxtApp()._payloadRevivers)
 }
 
+/**
+ * This is an experimental function for configuring passing rich data from server -> client.
+ */
 export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any
 ) {
   if (process.server) {
-    const types = useNuxtPayloadTypes()
-    types.reducers[name] = reduce
+    useNuxtApp().ssrContext!._payloadReducers[name] = reduce
   }
 }
 
+/**
+ * This is an experimental function for configuring passing rich data from server -> client.
+ *
+ * This function _must_ be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.
+ */
 export function definePayloadReviver (
   name: string,
   revive: (data: string) => any | undefined
 ) {
+  if (process.dev && getCurrentInstance()) {
+    console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
+  }
   if (process.client) {
-    const types = useNuxtPayloadTypes()
-    types.revivers[name] = revive
+    useNuxtApp()._payloadRevivers[name] = revive
   }
 }

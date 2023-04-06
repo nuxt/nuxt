@@ -28,7 +28,7 @@ if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
-    const nuxt = await createNuxtApp({ vueApp, ssrContext })
+    const nuxt = createNuxtApp({ vueApp, ssrContext })
 
     try {
       await applyPlugins(nuxt, plugins)
@@ -58,7 +58,7 @@ if (process.client) {
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
-    const nuxt = await createNuxtApp({ vueApp })
+    const nuxt = createNuxtApp({ vueApp })
 
     try {
       await applyPlugins(nuxt, plugins)

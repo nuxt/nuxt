@@ -13,8 +13,6 @@ import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 
-import { getNuxtClientPayload, useNuxtPayloadTypes } from './composables/payload'
-
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
@@ -60,6 +58,8 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
+  /** @internal */
+  _payloadReducers: Record<string, (data: any) => any>
 }
 
 interface _NuxtApp {
@@ -81,7 +81,6 @@ interface _NuxtApp {
     pending: Ref<boolean>
     error: Ref<any>
   } | undefined>
-  _payloadRevivers: Record<string, (data: any) => any>
 
   /** @internal */
   _middleware: {
@@ -101,6 +100,9 @@ interface _NuxtApp {
 
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>
+
+  /** @internal */
+  _payloadRevivers: Record<string, (data: any) => any>
 
   // Nuxt injections
   $config: RuntimeConfig
@@ -146,7 +148,7 @@ export interface CreateOptions {
   globalName?: NuxtApp['globalName']
 }
 
-export async function createNuxtApp (options: CreateOptions) {
+export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
     provide: undefined,
@@ -159,7 +161,9 @@ export async function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      ...(process.client ? await getNuxtClientPayload() : { serverRendered: true })
+      // For backwards compatibility - TODO: remove later
+      config: process.client ? window.__NUXT_CONFIG__ : {},
+      ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
       data: {}
@@ -185,13 +189,9 @@ export async function createNuxtApp (options: CreateOptions) {
     },
     _asyncDataPromises: {},
     _asyncData: {},
+    _payloadRevivers: {},
     ...options
   } as any as NuxtApp
-
-  // For backwards compatibility - TODO: remove later
-  if (process.client) {
-    window.__NUXT__ = nuxtApp.payload
-  }
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
@@ -227,7 +227,7 @@ export async function createNuxtApp (options: CreateOptions) {
     }
     // Expose payload types
     if (nuxtApp.ssrContext) {
-      nuxtApp.ssrContext._payloadReducers = useNuxtPayloadTypes().reducers
+      nuxtApp.ssrContext._payloadReducers = {}
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any

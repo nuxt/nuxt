@@ -1,6 +1,7 @@
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { parse } from 'devalue'
+import { isShallow, isRef, isReactive, toRaw } from 'vue'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
@@ -91,6 +92,13 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   }
 }
 
+const isNuxtError = (err: any) => !!(err && typeof err === 'object' && ('__nuxt_error' in err))
+const reducers = {
+  NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
+  shallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
+  ref: (data: any) => isRef(data) && data.value,
+  reactive: (data: any) => isReactive(data) && toRaw(data)
+}
 export function parseData (html: string) {
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
   const _attrs: Record<string, string> = {}
@@ -98,7 +106,7 @@ export function parseData (html: string) {
     _attrs[attr!.groups!.key] = attr!.groups!.value
   }
   return {
-    script: parse(script || ''),
+    script: parse(script || '', reducers),
     attrs: _attrs
   }
 }
