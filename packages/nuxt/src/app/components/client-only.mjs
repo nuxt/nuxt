@@ -1,4 +1,3 @@
-import { randomUUID } from 'uncrypto'
 import { mergeProps, ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
 
 export default defineComponent({
@@ -38,7 +37,7 @@ export function createClientOnly (component) {
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
       } else {
-        return h('div', mergeProps(ctx.$attrs ?? ctx._.attrs, { key: randomUUID() }))
+        return h('div', mergeProps(ctx.$attrs ?? ctx._.attrs, { key: 'placeholder-key' }))
       }
     }
   } else if (clone.template) {
@@ -64,7 +63,7 @@ export function createClientOnly (component) {
                   ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
                   : h(res)
               } else {
-                return h('div', mergeProps(ctx.attrs, { key: randomUUID() }))
+                return h('div', mergeProps(ctx.attrs, { key: 'placeholder-key' }))
               }
             }
       })
