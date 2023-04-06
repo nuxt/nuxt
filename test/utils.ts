@@ -100,7 +100,12 @@ const revivers = {
   ShallowRef: (data: any) => shallowRef(data),
   ShallowReactive: (data: any) => shallowReactive(data),
   Ref: (data: any) => ref(data),
-  Reactive: (data: any) => reactive(data)
+  Reactive: (data: any) => reactive(data),
+  // test fixture reviver only
+  BlinkingText: () => '<revivified-blink>'
+}
+export function parsePayload (payload: string) {
+  return parse(payload || '', revivers)
 }
 export function parseData (html: string) {
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
@@ -109,7 +114,7 @@ export function parseData (html: string) {
     _attrs[attr!.groups!.key] = attr!.groups!.value
   }
   return {
-    script: parse(script || '', revivers),
+    script: parsePayload(script || ''),
     attrs: _attrs
   }
 }
