@@ -1,3 +1,4 @@
+import { randomUUID } from 'uncrypto'
 import { mergeProps, ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
 
 export default defineComponent({
@@ -34,14 +35,10 @@ export function createClientOnly (component) {
       if (ctx.mounted$) {
         const res = component.render(ctx, ...args)
         return (res.children === null || typeof res.children === 'string')
-          ? createElementVNode(res.type, mergeProps(res.props, {
-            key: ctx.mounted$
-          }), res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
-          : h(res, {
-            key: ctx.mounted$
-          })
+          ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
+          : h(res)
       } else {
-        return h('div', ctx.$attrs ?? ctx._.attrs)
+        return h('div', mergeProps(ctx.$attrs ?? ctx._.attrs, { key: randomUUID() }))
       }
     }
   } else if (clone.template) {
@@ -64,12 +61,10 @@ export function createClientOnly (component) {
               if (mounted$.value) {
                 const res = setupState(...args)
                 return (res.children === null || typeof res.children === 'string')
-                  ? createElementVNode(res.type, mergeProps(res.props, { key: mounted$.value }), res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
-                  : h(res, {
-                    key: mounted$.value
-                  })
+                  ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
+                  : h(res)
               } else {
-                return h('div', ctx.attrs)
+                return h('div', mergeProps(ctx.attrs, { key: randomUUID() }))
               }
             }
       })
