@@ -5,7 +5,7 @@ import type { H3Event } from 'h3'
 import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
-import { joinURL } from 'ufo'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 
@@ -213,7 +213,7 @@ export default defineRenderHandler(async (event) => {
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
-      !!(event.node.req.headers['x-nuxt-no-ssr']) ||
+      event.context.nuxt?.noSSR ||
       routeOptions.ssr === false ||
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
@@ -263,7 +263,7 @@ export default defineRenderHandler(async (event) => {
     // Hint nitro to prerender payload for this route
     appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.json'))
     // Use same ssr context to generate payload for this route
-    PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
+    PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
   // Render meta

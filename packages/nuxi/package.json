@@ -1,6 +1,6 @@
 {
   "name": "nuxi",
-  "version": "3.3.1",
+  "version": "3.3.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -18,8 +18,8 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/kit": "3.3.1",
-    "@nuxt/schema": "3.3.1",
+    "@nuxt/kit": "workspace:../kit",
+    "@nuxt/schema": "workspace:../schema",
     "@types/clear": "^0.1.2",
     "@types/flat": "^5.0.2",
     "@types/mri": "^1.1.1",
@@ -35,7 +35,7 @@
     "execa": "^7.1.1",
     "flat": "^5.0.2",
     "giget": "^1.1.2",
-    "h3": "^1.6.2",
+    "h3": "^1.6.4",
     "jiti": "^1.18.2",
     "listhen": "^1.0.4",
     "mlly": "^1.2.0",

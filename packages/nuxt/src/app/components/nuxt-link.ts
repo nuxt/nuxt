@@ -265,7 +265,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         // Resolves `to` value if it's a route location object
-        // converts `'''` to `null` to prevent the attribute from being added as empty (`href=""`)
+        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         const href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
 
         // Resolves `target` value

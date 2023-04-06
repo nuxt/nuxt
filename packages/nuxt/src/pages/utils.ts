@@ -101,7 +101,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
       (token.type === SegmentTokenType.optional
         ? `:${token.value}?`
         : token.type === SegmentTokenType.dynamic
-          ? `:${token.value}`
+          ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
             : encodePath(token.value))

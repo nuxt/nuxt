@@ -9,6 +9,7 @@ The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/compo
 ## Usage
 
 You can pass all the same values as `useHead`
+
 ```ts
 useHeadSafe({
   script: [

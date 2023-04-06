@@ -126,6 +126,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt/dist',
         'nuxt3/dist',
         distDir
+      ],
+      traceInclude: [
+        // force include files used in generated code from the runtime-compiler
+        ...(nuxt.options.experimental.runtimeVueCompiler && !nuxt.options.experimental.externalVue)
+          ? [
+              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+                return targets
+              }, [])
+            ]
+          : []
       ]
     },
     alias: {
@@ -137,11 +149,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
           },
       // Vue 3 mocks
-      'estree-walker': 'unenv/runtime/mock/proxy',
-      '@babel/parser': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+      ...nuxt.options.experimental.runtimeVueCompiler || nuxt.options.experimental.externalVue
+        ? {}
+        : {
+            'estree-walker': 'unenv/runtime/mock/proxy',
+            '@babel/parser': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
+          },
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
@@ -189,6 +205,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
+  // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
+  if (nuxt.options.experimental.respectNoSSRHeader) {
+    nitroConfig.handlers = nitroConfig.handlers || []
+    nitroConfig.handlers.push({
+      handler: resolve(distDir, 'core/runtime/nitro/no-ssr'),
+      middleware: true
+    })
+  }
+
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
@@ -222,6 +247,37 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nuxt.callHook('prerender:routes', { routes })
   })
 
+  // Enable runtime compiler client side
+  if (nuxt.options.experimental.runtimeVueCompiler) {
+    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+      if (isClient) {
+        if (Array.isArray(config.resolve!.alias)) {
+          config.resolve!.alias.push({
+            find: 'vue',
+            replacement: 'vue/dist/vue.esm-bundler'
+          })
+        } else {
+          config.resolve!.alias = {
+            ...config.resolve!.alias,
+            vue: 'vue/dist/vue.esm-bundler'
+          }
+        }
+      }
+    })
+    nuxt.hook('webpack:config', (configuration) => {
+      const clientConfig = configuration.find(config => config.name === 'client')
+      if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
+      if (Array.isArray(clientConfig!.resolve!.alias)) {
+        clientConfig!.resolve!.alias.push({
+          name: 'vue',
+          alias: 'vue/dist/vue.esm-bundler'
+        })
+      } else {
+        clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
+      }
+    })
+  }
+
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()
   nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
@@ -231,6 +287,19 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     lazy: true,
     handler: resolve(distDir, 'core/runtime/nitro/renderer')
   })
+
+  if (nuxt.options.experimental.noVueServer) {
+    nitro.hooks.hook('rollup:before', (nitro) => {
+      if (nitro.options.preset === 'nitro-prerender') { return }
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      if (nuxtErrorHandler >= 0) {
+        nitro.options.handlers.splice(nuxtErrorHandler, 1)
+      }
+
+      nitro.options.renderer = undefined
+      nitro.options.errorHandler = '#internal/nitro/error'
+    })
+  }
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
@@ -261,7 +330,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       } else {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
+          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
         }
       }
     }

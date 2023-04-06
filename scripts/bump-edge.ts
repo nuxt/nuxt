@@ -26,7 +26,9 @@ async function main () {
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
     const newVersion = inc(pkg.data.version, bumpType || 'patch')
-    workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`)
+    workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`, {
+      updateDeps: true
+    })
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
     workspace.rename(pkg.data.name, newname)
   }

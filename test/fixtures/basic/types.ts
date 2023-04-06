@@ -146,6 +146,13 @@ describe('runtimeConfig', () => {
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
+
+    const injectedConfig = useNuxtApp().$config
+    expectTypeOf(injectedConfig.public.testConfig).toEqualTypeOf<number>()
+    expectTypeOf(injectedConfig.public.needsFallback).toEqualTypeOf<string>()
+    expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
+    expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<number[]>()
+    expectTypeOf(injectedConfig.unknown).toEqualTypeOf<any>()
   })
   it('provides hints on overriding these values', () => {
     const val = defineNuxtConfig({
