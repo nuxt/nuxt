@@ -74,13 +74,6 @@ export default defineUntypedSchema({
     restoreState: false,
 
     /**
-     * Split server bundle into multiple chunks and dynamically import them.
-     *
-     * @see https://github.com/nuxt/nuxt/issues/14525
-     */
-    viteServerDynamicImports: true,
-
-    /**
      * Inline styles when rendering HTML (currently vite only).
      *
      * You can also pass a function that receives the path of a Vue component
