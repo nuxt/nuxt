@@ -192,7 +192,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -615,7 +614,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -1044,7 +1042,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -1467,7 +1464,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -1896,7 +1892,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -2325,7 +2320,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -2760,7 +2754,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -3192,7 +3185,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -3630,7 +3622,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -4059,7 +4050,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -4494,7 +4484,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
@@ -4923,7 +4912,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         \\"AtRule\\": Object {
-                          \\"custom-media\\": [Function custom-media],
                           \\"media\\": [Function media],
                         },
                         \\"postcssPlugin\\": \\"postcss-media-minmax\\",
