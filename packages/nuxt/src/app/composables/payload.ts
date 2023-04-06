@@ -41,7 +41,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 // --- Internal ---
 
-const extension = renderJsonPayloads ? '.json' : '.js'
+const extension = renderJsonPayloads ? 'json' : 'js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.search) {
