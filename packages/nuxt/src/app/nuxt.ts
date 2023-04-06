@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, shallowReactive, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { Hookable, HookCallback } from 'hookable'
@@ -12,6 +12,7 @@ import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
+import type { NuxtError } from '../app/composables/error'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -124,6 +125,7 @@ interface _NuxtApp {
       description: string
       data?: any
     } | null
+    _errors: Record<string, NuxtError | null>
     [key: string]: any
   }
   static: {
@@ -156,10 +158,10 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version }
     },
-    payload: reactive({
-      data: {},
-      state: {},
-      _errors: {},
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: shallowReactive({}),
+      _errors: shallowReactive({}),
       ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
