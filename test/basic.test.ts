@@ -323,6 +323,22 @@ describe('pages', () => {
   })
 })
 
+describe('rich payloads', () => {
+  it('correctly serializes and revivifies complex types', async () => {
+    const html = await $fetch('/json-payload')
+    for (const test of [
+      'Recursive objects: true',
+      'Shallow reactive: true',
+      'Shallow ref: true',
+      'Reactive: true',
+      'Ref: true',
+      'Error: true'
+    ]) {
+      expect(html).toContain(test)
+    }
+  })
+})
+
 describe('nuxt links', () => {
   it('handles trailing slashes', async () => {
     const html = await $fetch('/nuxt-link/trailing-slash')
