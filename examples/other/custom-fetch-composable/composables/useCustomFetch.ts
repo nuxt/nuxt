@@ -1,16 +1,35 @@
-import type { FetchOptions } from 'ofetch'
-type method = 'get' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace'
+import type { UseFetchOptions } from 'nuxt/app'
 
-type UseFetchOptions = FetchOptions & { method?: method }
+export async function useCustomFetch<T>(url: string, options: UseFetchOptions<T> = {}) {
+  const userAuth = useCookie('token')
+  const config = useRuntimeConfig()
 
-export async function useCustomFetch (url: string, options: UseFetchOptions = {}) {
-  const defaults: UseFetchOptions = {
-    baseURL: 'https://api.nuxtjs.dev'
+  const defaults: UseFetchOptions<T> = {
+    baseURL: config.baseUrl ?? 'https://api.nuxtjs.dev',
+    // cache request
+    key: url,
+
+    onRequest({ options }) {
+      options.headers = options.headers ?? new Headers()
+
+      // set user token if connected
+      if (userAuth.value) {
+        options.headers['Authorization'] = `Bearer ${userAuth.value}`
+      }
+    },
+
+    onResponse({ response }) {
+      // return new myBusinessResponse(response._data)ß
+    },
+
+    onResponseError({ error }) {
+      // add you error logic here
+      // return new myBusinessError(error)
+    },
   }
 
+  // for nice deep defaults, please unjs/defu
   const params = Object.assign(defaults, options)
 
-  const { data, p, error, refresh } = await useFetch(url, {
-    ...params
-  })
+  return await useFetch(url, params)
 }
