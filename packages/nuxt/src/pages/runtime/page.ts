@@ -1,15 +1,15 @@
-import { computed, defineComponent, h, provide, reactive, onMounted, nextTick, Suspense, Transition } from 'vue'
-import type { VNode, KeepAliveProps, TransitionProps } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
+import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocation } from 'vue-router'
+import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 // @ts-ignore
-import { appPageTransition as defaultPageTransition, appKeepalive as defaultKeepaliveConfig } from '#build/nuxt.config.mjs'
+import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export default defineComponent({
   name: 'NuxtPage',

@@ -2,7 +2,7 @@ import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runti
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
+import { appendHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
@@ -10,7 +10,7 @@ import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 
-import { useRuntimeConfig, defineRenderHandler, getRouteRules } from '#internal/nitro'
+import { defineRenderHandler, getRouteRules, useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
 // eslint-disable-next-line import/no-restricted-paths

@@ -1,5 +1,5 @@
 import { createCommonJS } from 'mlly'
-import { defaults, merge, cloneDeep } from 'lodash-es'
+import { cloneDeep, defaults, merge } from 'lodash-es'
 import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 

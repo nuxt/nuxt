@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import { applyDefaults } from 'untyped'
 import type { LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
-import type { NuxtOptions, NuxtConfig } from '@nuxt/schema'
+import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { NuxtConfigSchema } from '@nuxt/schema'
 
 export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
