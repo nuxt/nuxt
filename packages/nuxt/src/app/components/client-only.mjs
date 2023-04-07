@@ -1,4 +1,4 @@
-import { ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
+import { mergeProps, ref, onMounted, defineComponent, createElementBlock, h, createElementVNode } from 'vue'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -37,7 +37,7 @@ export function createClientOnly (component) {
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
       } else {
-        return h('div', ctx.$attrs ?? ctx._.attrs)
+        return h('div', mergeProps(ctx.$attrs ?? ctx._.attrs, { key: 'placeholder-key' }))
       }
     }
   } else if (clone.template) {
@@ -63,7 +63,7 @@ export function createClientOnly (component) {
                   ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
                   : h(res)
               } else {
-                return h('div', ctx.attrs)
+                return h('div', mergeProps(ctx.attrs, { key: 'placeholder-key' }))
               }
             }
       })

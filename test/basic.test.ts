@@ -229,6 +229,7 @@ describe('pages', () => {
       '.client-only-script-setup',
       '.no-state'
     ]
+
     // ensure directives are correctly applied
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isHidden()))
       .then(results => results.forEach(isHidden => expect(isHidden).toBeTruthy()))
@@ -239,6 +240,9 @@ describe('pages', () => {
     // ensure single root node components are rendered once on client (should not be empty)
     await Promise.all(visibleSelectors.map(selector => page.locator(selector).innerHTML()))
       .then(results => results.forEach(innerHTML => expect(innerHTML).not.toBe('')))
+
+    // issue #20061
+    expect(await page.$eval('.client-only-script-setup', e => getComputedStyle(e).backgroundColor)).toBe('rgb(255, 0, 0)')
 
     // ensure multi-root-node is correctly rendered
     expect(await page.locator('.multi-root-node-count').innerHTML()).toContain('0')
