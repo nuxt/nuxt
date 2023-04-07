@@ -15,6 +15,8 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
+    // TODO: Remove in v3.5 when nitro has support for mocking traced dependencies
+    // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
@@ -72,30 +74,6 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     restoreState: false,
-
-    /**
-     * Use vite-node for on-demand server chunk loading
-     *
-     * @deprecated use `vite.devBundler: 'vite-node'`
-     */
-    viteNode: {
-      $resolve: (val) => {
-        val = process.env.EXPERIMENTAL_VITE_NODE ? true : val
-        if (val === true) {
-          console.warn('`vite-node` is now enabled by default. You can safely remove `experimental.viteNode` from your config.')
-        } else if (val === false) {
-          console.warn('`vite-node` is now enabled by default. To disable it, set `vite.devBundler` to `legacy` instead.')
-        }
-        return val ?? true
-      }
-    },
-
-    /**
-     * Split server bundle into multiple chunks and dynamically import them.
-     *
-     * @see https://github.com/nuxt/nuxt/issues/14525
-     */
-    viteServerDynamicImports: true,
 
     /**
      * Inline styles when rendering HTML (currently vite only).
