@@ -255,7 +255,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
 
   // TODO: remove in v3.5
   // Backward compatibility following #4254
