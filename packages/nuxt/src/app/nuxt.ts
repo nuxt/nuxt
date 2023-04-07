@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, shallowReactive, reactive } from 'vue'
 import type { App, onErrorCaptured, VNode, Ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { Hookable, HookCallback } from 'hookable'
@@ -12,6 +12,7 @@ import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
+import type { NuxtError } from '../app/composables/error'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -58,6 +59,8 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
+  /** @internal */
+  _payloadReducers: Record<string, (data: any) => any>
 }
 
 interface _NuxtApp {
@@ -99,6 +102,9 @@ interface _NuxtApp {
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>
 
+  /** @internal */
+  _payloadRevivers: Record<string, (data: any) => any>
+
   // Nuxt injections
   $config: RuntimeConfig
 
@@ -111,7 +117,6 @@ interface _NuxtApp {
     prerenderedAt?: number
     data: Record<string, any>
     state: Record<string, any>
-    rendered?: Function
     error?: Error | {
       url: string
       statusCode: number
@@ -120,6 +125,7 @@ interface _NuxtApp {
       description: string
       data?: any
     } | null
+    _errors: Record<string, NuxtError | undefined>
     [key: string]: any
   }
   static: {
@@ -152,11 +158,11 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version }
     },
-    payload: reactive({
-      data: {},
-      state: {},
-      _errors: {},
-      ...(process.client ? window.__NUXT__ : { serverRendered: true })
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: shallowReactive({}),
+      _errors: shallowReactive({}),
+      ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
       data: {}
@@ -182,6 +188,7 @@ export function createNuxtApp (options: CreateOptions) {
     },
     _asyncDataPromises: {},
     _asyncData: {},
+    _payloadRevivers: {},
     ...options
   } as any as NuxtApp
 
@@ -217,7 +224,11 @@ export function createNuxtApp (options: CreateOptions) {
     if (nuxtApp.ssrContext) {
       nuxtApp.ssrContext.nuxt = nuxtApp
     }
-    // Expose to server renderer to create window.__NUXT__
+    // Expose payload types
+    if (nuxtApp.ssrContext) {
+      nuxtApp.ssrContext._payloadReducers = {}
+    }
+    // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
     if (nuxtApp.ssrContext!.payload) {
       Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
@@ -225,7 +236,7 @@ export function createNuxtApp (options: CreateOptions) {
     nuxtApp.ssrContext!.payload = nuxtApp.payload
 
     // Expose client runtime-config to the payload
-    nuxtApp.payload.config = {
+    nuxtApp.ssrContext!.config = {
       public: options.ssrContext!.runtimeConfig.public,
       app: options.ssrContext!.runtimeConfig.app
     }

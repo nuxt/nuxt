@@ -118,7 +118,7 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default?.() ?? null),
       pending: ref(!hasCachedData()),
-      error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
+      error: toRef(nuxt.payload._errors, key)
     }
   }
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher

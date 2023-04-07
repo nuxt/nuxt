@@ -20,7 +20,7 @@
     "play": "pnpm nuxi dev playground",
     "play:build": "pnpm nuxi build playground",
     "play:preview": "pnpm nuxi preview playground",
-    "test:fixtures": "pnpm nuxi prepare test/fixtures/basic && JITI_ESM_RESOLVE=1 vitest run --dir test",
+    "test:fixtures": "pnpm nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && JITI_ESM_RESOLVE=1 vitest run --dir test",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:types": "pnpm nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
