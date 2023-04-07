@@ -255,17 +255,19 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server
-    ? options.ssrContext!.runtimeConfig
-    : reactive(nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
 
+  // TODO: remove in v3.5
   // Backward compatibility following #4254
   const compatibilityConfig = new Proxy(runtimeConfig, {
-    get (target, prop) {
-      if (prop === 'public') {
-        return target.public
+    get (target, prop: string) {
+      if (prop in target) {
+        return target[prop]
       }
-      return target[prop] ?? target.public[prop]
+      if (process.dev && prop in target.public) {
+        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public runtime config value (\`${prop}\`) directly from the top level. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in v3.5. Instead, you can update \`config['${prop}']\` to \`config.public['${prop}']\`.`)
+      }
+      return target.public[prop]
     },
     set (target, prop, value) {
       if (process.server || prop === 'public' || prop === 'app') {
