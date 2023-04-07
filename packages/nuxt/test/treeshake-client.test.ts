@@ -165,7 +165,7 @@ describe('treeshake client only in ssr', () => {
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
-      expect(treeshaken).toContain('import { Glob, } from \'#components\'')
+      expect(treeshaken).toContain('import {  Glob } from \'#components\'')
 
       // treeshake .client slot
       expect(treeshaken).not.toContain('ByeBye')
