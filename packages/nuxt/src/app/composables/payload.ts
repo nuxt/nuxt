@@ -59,7 +59,7 @@ async function _importPayload (payloadURL: string) {
   try {
     return renderJsonPayloads
       ? parsePayload(await fetch(payloadURL).then(res => res.text()))
-      : await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL)
+      : await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }
