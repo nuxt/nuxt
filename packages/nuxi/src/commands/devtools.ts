@@ -1,7 +1,6 @@
 import { resolve } from 'pathe'
 import { execa } from 'execa'
 import { showHelp } from '../utils/help'
-import { getNuxtVersion } from './upgrade'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -20,13 +19,6 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    const currentVersion = await getNuxtVersion(rootDir) || '[unknown]'
-
-    // Since 3.4.0, devtools is shipped with Nuxt, so we can use the local version instead of the latest
-    const pkg = currentVersion.startsWith('3.4.')
-      ? '@nuxt/devtools'
-      : '@nuxt/devtools@latest'
-
-    await execa('npx', [pkg, command, rootDir], { stdio: 'inherit', cwd: rootDir })
+    await execa('npx', ['@nuxt/devtools-wizard', command, rootDir], { stdio: 'inherit', cwd: rootDir })
   }
 })
