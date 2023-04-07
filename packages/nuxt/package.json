@@ -80,14 +80,17 @@
     "hookable": "^5.5.3",
     "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
+    "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
     "nitropack": "^2.3.2",
     "nuxi": "workspace:../nuxi",
+    "nypm": "^0.1.0",
     "ofetch": "^1.0.1",
     "ohash": "^1.0.0",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
+    "prompts": "^2.4.2",
     "scule": "^1.0.0",
     "strip-literal": "^1.0.1",
     "ufo": "^1.1.1",
@@ -104,6 +107,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.1",
     "@types/hash-sum": "^1.0.0",
+    "@types/prompts": "^2.4.4",
     "unbuild": "latest"
   },
   "peerDependencies": {
