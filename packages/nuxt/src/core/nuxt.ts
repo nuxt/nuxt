@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import { logger, resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -361,7 +361,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt DevTools is currently opt-in
   if (options.devtools === true || (options.devtools && options.devtools.enabled === true)) {
-    options._modules.push('@nuxt/devtools')
+    if (await import('./features').then(r => r.ensurePackageInstalled(process.cwd(), '@nuxt/devtools'))) {
+      options._modules.push('@nuxt/devtools')
+    } else {
+      logger.warn('Failed to install @nuxt/devtools, please install it manually, or disable devtools in nuxt.config')
+    }
   }
 
   const nuxt = createNuxt(options)
