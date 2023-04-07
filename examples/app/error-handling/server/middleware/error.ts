@@ -1,4 +1,4 @@
-import { getQuery, defineEventHandler } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 
 export default defineEventHandler((event) => {
   if ('api' in getQuery(event)) {

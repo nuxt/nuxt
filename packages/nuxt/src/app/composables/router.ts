@@ -1,6 +1,6 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
-import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocationPathRaw, RouteLocationRaw, Router } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 

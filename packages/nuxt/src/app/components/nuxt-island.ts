@@ -1,5 +1,5 @@
-import type { VNode, RendererNode } from 'vue'
-import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
+import type { RendererNode, VNode } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
 
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'

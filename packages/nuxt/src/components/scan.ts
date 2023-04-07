@@ -1,4 +1,4 @@
-import { basename, extname, join, dirname, relative } from 'pathe'
+import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
 import { isIgnored } from '@nuxt/kit'

@@ -1,4 +1,4 @@
-import { reactive, ref, shallowRef, shallowReactive } from 'vue'
+import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
 import { createError } from '#app/composables/error'
 import { callWithNuxt, defineNuxtPlugin } from '#app/nuxt'

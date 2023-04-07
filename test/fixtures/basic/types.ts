@@ -3,7 +3,7 @@ import { describe, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter, Router } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'

@@ -5,7 +5,7 @@ import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 
-import { createApp, generateApp as _generateApp } from './app'
+import { generateApp as _generateApp, createApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)

@@ -1,4 +1,4 @@
-import { isShallow, isRef, isReactive, toRaw } from 'vue'
+import { isReactive, isRef, isShallow, toRaw } from 'vue'
 import { definePayloadReducer } from '#app/composables/payload'
 import { isNuxtError } from '#app/composables/error'
 import { defineNuxtPlugin } from '#app/nuxt'

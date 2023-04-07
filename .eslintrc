@@ -12,6 +12,12 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
     "unicorn/prefer-node-protocol": "error",
     "no-console": "off",
     "vue/multi-word-component-names": "off",
