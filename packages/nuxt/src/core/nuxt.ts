@@ -359,6 +359,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options._modules.push('@nuxt/telemetry')
   }
 
+  // Nuxt DevTools is currently opt-in
+  if (options.devtools === true || (options.devtools && options.devtools.enabled === true)) {
+    options._modules.push('@nuxt/devtools')
+  }
+
   const nuxt = createNuxt(options)
 
   if (nuxt.options.debug) {

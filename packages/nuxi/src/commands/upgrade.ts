@@ -7,7 +7,7 @@ import { rmRecursive, touchFile } from '../utils/fs'
 import { cleanupNuxtDirs, nuxtVersionToGitIdentifier } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
-async function getNuxtVersion (path: string): Promise<string|null> {
+export async function getNuxtVersion (path: string): Promise<string|null> {
   try {
     const pkg = await readPackageJSON('nuxt', { url: path })
     if (!pkg.version) {

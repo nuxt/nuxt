@@ -27,5 +27,5 @@ export default {
   ...router,
   ...typescript,
   ...vite,
-  ...webpack
+  ...webpack,
 }

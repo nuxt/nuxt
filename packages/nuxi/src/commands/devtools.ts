@@ -1,6 +1,7 @@
 import { resolve } from 'pathe'
 import { execa } from 'execa'
 import { showHelp } from '../utils/help'
+import { getNuxtVersion } from './upgrade'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -19,7 +20,13 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    // Defer to feature setup
-    await execa('npx', ['@nuxt/devtools@latest', command, rootDir], { stdio: 'inherit', cwd: rootDir })
+    const currentVersion = await getNuxtVersion(rootDir) || '[unknown]'
+    // Since 3.4.0, devtools is shipped with Nuxt
+    if (!currentVersion.startsWith('3.4.')) {
+      // TODO: write to nuxt.config to set `devtools: true`
+    } else {
+      // Defer to feature setup
+      await execa('npx', ['@nuxt/devtools@latest', command, rootDir], { stdio: 'inherit', cwd: rootDir })
+    }
   }
 })
