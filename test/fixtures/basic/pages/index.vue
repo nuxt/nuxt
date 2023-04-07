@@ -4,7 +4,7 @@
       <Title>Basic fixture</Title>
     </Head>
     <h1>Hello Nuxt 3!</h1>
-    <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
+    <div>RuntimeConfig | testConfig: {{ config.public.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
     <div>Composable | template: {{ templateAutoImport }}</div>
@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
-import { importedValue, importedRE } from '~/some-exports'
+import { importedRE, importedValue } from '~/some-exports'
 
 setupDevtoolsPlugin({}, () => {}) as any
 

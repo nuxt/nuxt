@@ -1,6 +1,6 @@
-import { promises as fsp, existsSync } from 'node:fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { basename, dirname, resolve, join, normalize, isAbsolute } from 'pathe'
+import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
