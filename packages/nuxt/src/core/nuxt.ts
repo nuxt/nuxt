@@ -368,7 +368,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt DevTools is currently opt-in
   if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled(process.cwd(), '@nuxt/devtools'))) {
+    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
       options._modules.push('@nuxt/devtools')
     } else {
       logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')

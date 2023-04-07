@@ -3,8 +3,8 @@ import { isPackageExists } from 'local-pkg'
 import { logger } from '@nuxt/kit'
 import prompts from 'prompts'
 
-export async function ensurePackageInstalled (rootDir: string, name: string) {
-  if (isPackageExists(name)) {
+export async function ensurePackageInstalled (rootDir: string, name: string, searchPaths?: string[]) {
+  if (isPackageExists(name, { paths: searchPaths })) {
     return true
   }
 
