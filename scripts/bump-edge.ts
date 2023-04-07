@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
-import { getGitDiff, determineSemverChange, loadChangelogConfig, parseCommits } from 'changelogen'
+import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 import { execaSync } from 'execa'
 import { loadWorkspace } from './_utils'
 

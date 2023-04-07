@@ -1,4 +1,4 @@
-import { resolve, normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'

@@ -1,10 +1,10 @@
 // We set __webpack_public_path via this import with webpack builder
-import { createSSRApp, createApp, nextTick } from 'vue'
+import { createApp, createSSRApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
 // @ts-ignore
 import { baseURL } from '#build/paths.mjs'
 import type { CreateOptions } from '#app'
-import { createNuxtApp, applyPlugins, normalizePlugins } from '#app/nuxt'
+import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
 import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'
@@ -52,7 +52,10 @@ if (process.client) {
   }
 
   entry = async function initApp () {
-    const isSSR = Boolean(window.__NUXT__?.serverRendered)
+    const isSSR = Boolean(
+      window.__NUXT__?.serverRendered ||
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+    )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })

@@ -2,17 +2,17 @@ import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, Router } from 'vue-router'
 import {
-  createRouter,
-  createWebHistory,
   createMemoryHistory,
-  createWebHashHistory
+  createRouter,
+  createWebHashHistory,
+  createWebHistory
 } from 'vue-router'
 import { createError } from 'h3'
-import { withoutBase, isEqual } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
-import type { PageMeta, RouteMiddleware, Plugin } from '../../../app/index'
+import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { showError, clearError, useError } from '#app/composables/error'
+import { clearError, showError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'
 import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'

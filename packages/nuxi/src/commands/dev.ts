@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { resolve, relative } from 'pathe'
+import { relative, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
@@ -12,7 +12,7 @@ import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
-import { writeNuxtManifest, loadNuxtManifest, cleanupNuxtDirs } from '../utils/nuxt'
+import { cleanupNuxtDirs, loadNuxtManifest, writeNuxtManifest } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
+import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
 import { join, relative, resolve } from 'pathe'
-import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
+import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
@@ -9,7 +9,7 @@ import minimatch from 'minimatch'
 import fse from 'fs-extra'
 
 import { distDir } from '../dirs'
-import { resolvePagesRoutes, normalizeRoutes } from './utils'
+import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
 

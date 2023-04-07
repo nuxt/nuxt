@@ -60,5 +60,17 @@ export default defineUntypedSchema({
    *
    * @type {boolean}
   */
-  telemetry: undefined
+  telemetry: undefined,
+
+  /**
+   * Enable Nuxt DevTools for development.
+   * 
+   * This is an experimental feature.
+   * Breaking changes for devtools might not reflect on the version of Nuxt.
+   * 
+   * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
+   * @experimental
+   * @type {boolean | { enabled: boolean }}
+   */
+  devtools: false
 })

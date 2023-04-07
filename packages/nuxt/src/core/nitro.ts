@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join, relative } from 'pathe'
-import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
-import type { NitroConfig, Nitro } from 'nitropack'
+import { join, relative, resolve } from 'pathe'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
+import type { Nitro, NitroConfig } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -126,6 +126,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt/dist',
         'nuxt3/dist',
         distDir
+      ],
+      traceInclude: [
+        // force include files used in generated code from the runtime-compiler
+        ...(nuxt.options.experimental.runtimeVueCompiler && !nuxt.options.experimental.externalVue)
+          ? [
+              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+                return targets
+              }, [])
+            ]
+          : []
       ]
     },
     alias: {
@@ -137,11 +149,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
           },
       // Vue 3 mocks
-      'estree-walker': 'unenv/runtime/mock/proxy',
-      '@babel/parser': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-      '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+      ...nuxt.options.experimental.runtimeVueCompiler || nuxt.options.experimental.externalVue
+        ? {}
+        : {
+            'estree-walker': 'unenv/runtime/mock/proxy',
+            '@babel/parser': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
+          },
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
@@ -156,6 +172,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
       'process.env.NUXT_PAYLOAD_EXTRACTION': !!nuxt.options.experimental.payloadExtraction,
+      'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
@@ -165,6 +182,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       plugins: []
     }
   })
+
+  // Resolve user-provided paths
+  nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
 
   // Add head chunk for SPA renders
   const head = createHeadCore()
@@ -230,6 +250,37 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitro.hooks.hook('prerender:routes', (routes) => {
     nuxt.callHook('prerender:routes', { routes })
   })
+
+  // Enable runtime compiler client side
+  if (nuxt.options.experimental.runtimeVueCompiler) {
+    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+      if (isClient) {
+        if (Array.isArray(config.resolve!.alias)) {
+          config.resolve!.alias.push({
+            find: 'vue',
+            replacement: 'vue/dist/vue.esm-bundler'
+          })
+        } else {
+          config.resolve!.alias = {
+            ...config.resolve!.alias,
+            vue: 'vue/dist/vue.esm-bundler'
+          }
+        }
+      }
+    })
+    nuxt.hook('webpack:config', (configuration) => {
+      const clientConfig = configuration.find(config => config.name === 'client')
+      if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
+      if (Array.isArray(clientConfig!.resolve!.alias)) {
+        clientConfig!.resolve!.alias.push({
+          name: 'vue',
+          alias: 'vue/dist/vue.esm-bundler'
+        })
+      } else {
+        clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
+      }
+    })
+  }
 
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()

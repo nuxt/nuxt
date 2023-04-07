@@ -1,4 +1,4 @@
-import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref, toRef } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -118,7 +118,7 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default?.() ?? null),
       pending: ref(!hasCachedData()),
-      error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
+      error: toRef(nuxt.payload._errors, key)
     }
   }
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher

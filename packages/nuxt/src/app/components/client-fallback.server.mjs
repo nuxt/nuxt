@@ -1,5 +1,5 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured } from 'vue'
-import { ssrRenderVNode, ssrRenderAttrs, ssrRenderSlot } from 'vue/server-renderer'
+import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 import { createBuffer } from './utils'
 
 const NuxtClientFallbackServer = defineComponent({
