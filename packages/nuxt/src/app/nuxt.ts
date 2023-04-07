@@ -254,7 +254,7 @@ export function createNuxtApp (options: CreateOptions) {
         return target[prop]
       }
       if (process.dev && prop in target.public) {
-        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public prop (\`${prop}\`) directly from runtime config. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in a future minor release.`)
+        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public runtime config value (\`${prop}\`) directly from the top level. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in v3.5. Instead, you can update \`config['${prop}']\` to \`config.public['${prop}']\`.`)
       }
       return target.public[prop]
     },
