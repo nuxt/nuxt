@@ -2621,6 +2621,20 @@
   resolved "https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
+"@puppeteer/browsers@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-0.4.0.tgz#abaae1eddc9902e1ea441e34171229bd7644ea62"
+  integrity sha512-3iB5pWn9Sr55PKKwqFWSWjLsTKCOEhKNI+uV3BZesgXuA3IhsX8I3hW0HI+3ksMIPkh2mVYzKSpvgq3oicjG2Q==
+  dependencies:
+    debug "4.3.4"
+    extract-zip "2.0.1"
+    https-proxy-agent "5.0.1"
+    progress "2.0.3"
+    proxy-from-env "1.1.0"
+    tar-fs "2.1.1"
+    unbzip2-stream "1.4.3"
+    yargs "17.7.1"
+
 "@rollup/plugin-alias@^5.0.0":
   version "5.0.0"
   resolved "https://registry.npmjs.org/@rollup/plugin-alias/-/plugin-alias-5.0.0.tgz#70f3d504bd17d8922e35c6b61c08b40a6ec25af2"
@@ -12582,6 +12596,11 @@ process@^0.11.10:
   resolved "https://registry.npmjs.org/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
 
+progress@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
+  integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
+
 promise-all-reject-late@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/promise-all-reject-late/-/promise-all-reject-late-1.0.1.tgz#f8ebf13483e5ca91ad809ccc2fcf25f26f8643c2"
@@ -12724,11 +12743,12 @@ punycode@^2.3.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
 
-puppeteer-core@^19.8.3:
-  version "19.8.3"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-19.8.3.tgz#5925e849207c7b5de845b2336a6873129e66f5ed"
-  integrity sha512-+gPT43K3trUIr+7+tNjCg95vMgM9RkFIeeyck3SXUTBpGkrf6sxfWckncqY8MnzHfRcyapvztKNmqvJ+Ngukyg==
+puppeteer-core@^19.8.5:
+  version "19.8.5"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-19.8.5.tgz#ba02fbe5bc2f82a9270aa1b983cf29cc1d4f1573"
+  integrity sha512-zoGhim/oBQbkND6h4Xz4X7l5DkWVH9wH7z0mVty5qa/c0P1Yad47t/npVtt2xS10BiQwzztWKx7Pa2nJ5yykdw==
   dependencies:
+    "@puppeteer/browsers" "0.4.0"
     chromium-bidi "0.4.6"
     cross-fetch "3.1.5"
     debug "4.3.4"
@@ -13387,10 +13407,10 @@ sass-loader@^10.1.1:
     schema-utils "^3.0.0"
     semver "^7.3.2"
 
-sass@^1.60.0:
-  version "1.60.0"
-  resolved "https://registry.npmjs.org/sass/-/sass-1.60.0.tgz#657f0c23a302ac494b09a5ba8497b739fb5b5a81"
-  integrity sha512-updbwW6fNb5gGm8qMXzVO7V4sWf7LMXnMly/JEyfbfERbVH46Fn6q02BX7/eHTdKpE7d+oTkMMQpFWNUMfFbgQ==
+sass@^1.61.0:
+  version "1.61.0"
+  resolved "https://registry.npmjs.org/sass/-/sass-1.61.0.tgz#d1f6761bb833887b8fdab32a24e052c40531d02b"
+  integrity sha512-PDsN7BrVkNZK2+dj/dpKQAWZavbAQ87IXqVvw2+oEYI+GwlTWkvbQtL7F2cCNbMqJEYKPh1EcjSxsnqIb/kyaQ==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
@@ -15591,6 +15611,19 @@ yargs@16.2.0, yargs@^16.2.0:
     string-width "^4.2.0"
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
+
+yargs@17.7.1:
+  version "17.7.1"
+  resolved "https://registry.npmjs.org/yargs/-/yargs-17.7.1.tgz#34a77645201d1a8fc5213ace787c220eabbd0967"
+  integrity sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==
+  dependencies:
+    cliui "^8.0.1"
+    escalade "^3.1.1"
+    get-caller-file "^2.0.5"
+    require-directory "^2.1.1"
+    string-width "^4.2.3"
+    y18n "^5.0.5"
+    yargs-parser "^21.1.1"
 
 yargs@^17.3.1, yargs@^17.6.2:
   version "17.6.2"
