@@ -74,6 +74,7 @@
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
     "destr": "^1.2.2",
+    "devalue": "^4.3.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",

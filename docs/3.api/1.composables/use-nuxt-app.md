@@ -84,9 +84,7 @@ await nuxtApp.callHook('my-plugin:init')
 
 ### `payload`
 
-`payload` exposes data and state variables from server side to client side and makes them available in the `window.__NUXT__` object that is accessible from the browser.
-
-`payload` exposes the following keys on the client side after they are stringified and passed from the server side:
+`payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - **serverRendered** (boolean) - Indicates if response is server-side-rendered.
 - **data** (object) - When you fetch the data from an API endpoint using either `useFetch` or `useAsyncData`, resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
@@ -114,6 +112,24 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 })
 ```
+
+::alert
+Normally `payload` must contain only plain JavaScript objects. But by setting `experimental.renderJsonPayloads`, it is possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
+
+You can also add your own types. In future you will be able to add your own types easily with [object-syntax plugins](https://github.com/nuxt/nuxt/issues/14628). For now, you must add your plugin which calls both `definePayloadReducer` and `definePayloadReviver` via a custom module:
+
+```ts
+export default defineNuxtConfig({
+  modules: [
+    function (_options, nuxt) {
+      // TODO: support directly via object syntax plugins: https://github.com/nuxt/nuxt/issues/14628
+      nuxt.hook('modules:done', () => {
+        nuxt.options.plugins.unshift('~/plugins/custom-type-plugin')
+      })
+    },
+  ]
+})
+::
 
 ### `isHydrating`
 
