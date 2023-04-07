@@ -183,6 +183,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   })
 
+  // Resolve user-provided paths
+  nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
+
   // Add head chunk for SPA renders
   const head = createHeadCore()
   head.push(nuxt.options.app.head)
