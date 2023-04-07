@@ -15,11 +15,19 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
+    // TODO: Remove in v3.5 when nitro has support for mocking traced dependencies
+    // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
+
+    // TODO: move to `vue.runtimeCompiler` in v3.5
+    /**
+     * Include Vue compiler in runtime bundle.
+     */
+    runtimeVueCompiler: false,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
@@ -68,30 +76,6 @@ export default defineUntypedSchema({
     restoreState: false,
 
     /**
-     * Use vite-node for on-demand server chunk loading
-     *
-     * @deprecated use `vite.devBundler: 'vite-node'`
-     */
-    viteNode: {
-      $resolve: (val) => {
-        val = process.env.EXPERIMENTAL_VITE_NODE ? true : val
-        if (val === true) {
-          console.warn('`vite-node` is now enabled by default. You can safely remove `experimental.viteNode` from your config.')
-        } else if (val === false) {
-          console.warn('`vite-node` is now enabled by default. To disable it, set `vite.devBundler` to `legacy` instead.')
-        }
-        return val ?? true
-      }
-    },
-
-    /**
-     * Split server bundle into multiple chunks and dynamically import them.
-     *
-     * @see https://github.com/nuxt/nuxt/issues/14525
-     */
-    viteServerDynamicImports: true,
-
-    /**
      * Inline styles when rendering HTML (currently vite only).
      *
      * You can also pass a function that receives the path of a Vue component
@@ -113,6 +97,10 @@ export default defineUntypedSchema({
      * Turn off rendering of Nuxt scripts and JS resource hints.
      */
     noScripts: false,
+
+    // TODO: enable by default in v3.5
+    /** Render JSON payloads with support for revivifying complex types. */
+    renderJsonPayloads: false,
 
     /**
      * Disable vue server renderer endpoint within nitro.
