@@ -3,8 +3,10 @@ import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlug
 import { join, relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import { joinURL } from 'ufo'
+import { joinURL, withoutLeadingSlash } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
+import minimatch from 'minimatch'
+import fse from 'fs-extra'
 
 import { distDir } from '../dirs'
 import { resolvePagesRoutes, normalizeRoutes } from './utils'
@@ -182,6 +184,29 @@ export default defineNuxtModule({
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+        }
+      }
+    })
+
+    nuxt.hook('build:manifest', async (manifest) => {
+      const pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', pages)
+      const routes: string[] = []
+
+      for (const [glob, rules] of Object.entries({ ...nuxt.options.routeRules, ...nuxt.options.nitro?.routeRules })) {
+        if (rules.noScripts) {
+          for (const page of pages) {
+            if (page.file && await minimatch(page.path, glob) && !pages.some(p => p.file === page.file && p !== page)) {
+              routes.push(relative(nuxt.options.srcDir, page.file))
+            }
+          }
+        }
+      }
+
+      for (const file of routes) {
+        if (routes.some(fileName => manifest[fileName] && manifest[file].resourceType === 'script')) {
+          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+          manifest[file].file = ''
         }
       }
     })
