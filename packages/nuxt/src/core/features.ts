@@ -24,7 +24,8 @@ export async function ensurePackageInstalled (rootDir: string, name: string) {
   logger.info(`Installing ${name}...`)
   try {
     await addDependency(name, {
-      cwd: rootDir
+      cwd: rootDir,
+      dev: true
     })
     logger.success(`Installed ${name}`)
     return true
