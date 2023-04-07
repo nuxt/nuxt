@@ -18,16 +18,8 @@ export default defineUntypedSchema({
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
-     * @deprecated This can now be configured with `vue.externalLib`
      */
-    externalVue: {
-      $resolve: (val) => {
-        if (val !== undefined) {
-          console.warn('Your setting for `experimental.externalVue` should be moved to `vue.externalLib`.')
-        }
-        return val ?? true
-      }
-    },
+    externalVue: true,
 
     // TODO: move to `vue.runtimeCompiler` in v3.5
     /**

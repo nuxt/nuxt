@@ -8,14 +8,6 @@ export default defineUntypedSchema({
    */
   vue: {
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when building your server.
-     *
-     * @see https://github.com/nuxt/nuxt/issues/13632
-     */
-    externalLib: {
-      $resolve: async (val, get) => val ?? (await get('experimental.externalVue')) ?? true
-    },
-    /**
      * Options for the Vue compiler that will be passed at build time.
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
