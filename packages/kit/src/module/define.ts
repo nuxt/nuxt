@@ -3,11 +3,11 @@ import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleSetupReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleOptions, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
-import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
-import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
-import { templateUtils, compileTemplate } from '../internal/template'
+import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
+import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
+import { compileTemplate, templateUtils } from '../internal/template'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing

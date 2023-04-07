@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
-import { importedValue, importedRE } from '~/some-exports'
+import { importedRE, importedValue } from '~/some-exports'
 
 setupDevtoolsPlugin({}, () => {}) as any
 

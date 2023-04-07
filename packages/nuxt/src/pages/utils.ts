@@ -1,7 +1,7 @@
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
-import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } from 'knitwork'
+import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'

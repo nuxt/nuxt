@@ -1,7 +1,7 @@
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { parse } from 'devalue'
-import { shallowReactive, shallowRef, reactive, ref } from 'vue'
+import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 

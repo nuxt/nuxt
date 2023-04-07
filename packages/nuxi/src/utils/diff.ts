@@ -1,6 +1,6 @@
 import flatten from 'flat'
 import { detailedDiff } from 'deep-object-diff'
-import { green, red, blue, cyan } from 'colorette'
+import { blue, cyan, green, red } from 'colorette'
 
 function normalizeDiff (diffObj: any, type: 'added' | 'deleted' | 'updated', ignore: string[]) {
   return Object.entries(flatten(diffObj) as Record<string, any>)

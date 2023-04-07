@@ -1,5 +1,5 @@
 import type { defineAsyncComponent } from 'vue'
-import { defineComponent, createVNode } from 'vue'
+import { createVNode, defineComponent } from 'vue'
 
 // @ts-ignore
 import * as islandComponents from '#build/components.islands.mjs'

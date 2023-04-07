@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
 import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
-import { useNuxt, tryUseNuxt } from './context'
+import { tryUseNuxt, useNuxt } from './context'
 
 /**
  * Renders given template using lodash template during build into the project buildDir

@@ -1,4 +1,4 @@
-import { joinURL, hasProtocol } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'

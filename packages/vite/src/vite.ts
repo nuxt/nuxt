@@ -1,7 +1,7 @@
 import * as vite from 'vite'
 import { join, resolve } from 'pathe'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
-import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
+import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'

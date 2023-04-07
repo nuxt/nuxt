@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { generateRoutesFromFiles } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
