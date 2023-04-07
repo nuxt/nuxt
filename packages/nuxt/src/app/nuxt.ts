@@ -125,7 +125,7 @@ interface _NuxtApp {
       description: string
       data?: any
     } | null
-    _errors: Record<string, NuxtError | null>
+    _errors: Record<string, NuxtError | undefined>
     [key: string]: any
   }
   static: {
