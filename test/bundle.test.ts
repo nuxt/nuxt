@@ -40,7 +40,6 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-
     expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"91k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
