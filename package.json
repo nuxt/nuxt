@@ -12,14 +12,15 @@
     "example": "./scripts/example.sh dev",
     "example:build": "./scripts/example.sh build",
     "lint": "eslint --ext .vue,.ts,.js,.mjs .",
-    "lint:docs": "markdownlint ./docs/content/1.docs && case-police 'docs/content/1.docs/**/*.md'",
-    "lint:docs:fix": "markdownlint ./docs/content/1.docs --fix && case-police 'docs/content/1.docs/**/*.md' --fix",
+    "lint:fix": "eslint --ext .vue,.ts,.js,.mjs . --fix",
+    "lint:docs": "markdownlint ./docs && case-police 'docs/**/*.md'",
+    "lint:docs:fix": "markdownlint ./docs --fix && case-police 'docs/**/*.md' --fix",
     "nuxi": "JITI_ESM_RESOLVE=1 nuxi",
     "nuxt": "JITI_ESM_RESOLVE=1 nuxi",
     "play": "pnpm nuxi dev playground",
     "play:build": "pnpm nuxi build playground",
     "play:preview": "pnpm nuxi preview playground",
-    "test:fixtures": "pnpm nuxi prepare test/fixtures/basic && JITI_ESM_RESOLVE=1 vitest run --dir test",
+    "test:fixtures": "pnpm nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && JITI_ESM_RESOLVE=1 vitest run --dir test",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:types": "pnpm nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",
@@ -77,7 +78,7 @@
     "vitest": "^0.29.8",
     "vue-tsc": "^1.2.0"
   },
-  "packageManager": "pnpm@8.1.0",
+  "packageManager": "pnpm@8.1.1",
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   }

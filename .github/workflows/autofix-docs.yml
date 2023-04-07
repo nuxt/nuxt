@@ -1,0 +1,30 @@
+name: autofix.ci  # needed to securely identify the workflow
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint (docs)
+        run: pnpm lint:docs:fix
+
+      - uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160

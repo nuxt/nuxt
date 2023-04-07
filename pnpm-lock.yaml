@@ -119,7 +119,7 @@ importers:
         version: 4.2.1(@types/node@18.15.11)
       vitest:
         specifier: ^0.29.8
-        version: 0.29.8(playwright@1.32.1)
+        version: 0.29.8(playwright@1.32.2)
       vue-tsc:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.0.3)
@@ -128,7 +128,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -137,7 +137,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -146,7 +146,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -161,13 +161,13 @@ importers:
         version: link:../../../packages/nuxt
       vitest:
         specifier: latest
-        version: 0.29.8(playwright@1.32.1)
+        version: 0.29.8(playwright@1.32.2)
 
   examples/app-config:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../packages/nuxt
@@ -176,7 +176,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -185,7 +185,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -194,7 +194,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -203,7 +203,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -212,7 +212,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -221,7 +221,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -230,7 +230,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -239,7 +239,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -248,7 +248,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -257,7 +257,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -272,7 +272,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -281,7 +281,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -290,7 +290,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -299,7 +299,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -308,7 +308,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -317,7 +317,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -326,7 +326,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -335,7 +335,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -344,7 +344,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -353,7 +353,7 @@ importers:
     devDependencies:
       '@nuxt/ui':
         specifier: ^0.3.3
-        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0)
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0)
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -409,8 +409,8 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2
       unimport:
-        specifier: ^3.0.4
-        version: 3.0.4(rollup@3.20.2)
+        specifier: ^3.0.6
+        version: 3.0.6(rollup@3.20.2)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -536,6 +536,9 @@ importers:
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
+      '@types/node':
+        specifier: ^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+        version: 18.15.11
       '@unhead/ssr':
         specifier: ^1.1.25
         version: 1.1.25
@@ -560,6 +563,9 @@ importers:
       destr:
         specifier: ^1.2.2
         version: 1.2.2
+      devalue:
+        specifier: ^4.3.0
+        version: 4.3.0
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
@@ -630,8 +636,8 @@ importers:
         specifier: ^1.2.2
         version: 1.2.2
       unimport:
-        specifier: ^3.0.4
-        version: 3.0.4(rollup@3.20.2)
+        specifier: ^3.0.6
+        version: 3.0.6(rollup@3.20.2)
       unplugin:
         specifier: ^1.3.1
         version: 1.3.1
@@ -697,8 +703,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       unimport:
-        specifier: ^3.0.4
-        version: 3.0.4(rollup@3.20.2)
+        specifier: ^3.0.6
+        version: 3.0.6(rollup@3.20.2)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -757,19 +763,22 @@ importers:
       pathe:
         specifier: ^1.1.0
         version: 1.1.0
+      ufo:
+        specifier: ^1.1.1
+        version: 1.1.1
       vue:
         specifier: ^3.2.47
         version: 3.2.47
     devDependencies:
       playwright:
-        specifier: ^1.32.1
-        version: 1.32.1
+        specifier: ^1.32.2
+        version: 1.32.2
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
       vitest:
         specifier: ^0.29.8
-        version: 0.29.8(playwright@1.32.1)
+        version: 0.29.8(playwright@1.32.2)
 
   packages/vite:
     dependencies:
@@ -896,7 +905,7 @@ importers:
         version: 7.21.4
       '@nuxt/friendly-errors-webpack-plugin':
         specifier: ^2.5.2
-        version: 2.5.2(webpack@5.77.0)
+        version: 2.5.2(webpack@5.78.0)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -905,16 +914,16 @@ importers:
         version: 10.4.14(postcss@8.4.21)
       css-loader:
         specifier: ^6.7.3
-        version: 6.7.3(webpack@5.77.0)
+        version: 6.7.3(webpack@5.78.0)
       css-minimizer-webpack-plugin:
         specifier: ^5.0.0
-        version: 5.0.0(webpack@5.77.0)
+        version: 5.0.0(webpack@5.78.0)
       cssnano:
         specifier: ^6.0.0
         version: 6.0.0(postcss@8.4.21)
       esbuild-loader:
         specifier: ^3.0.1
-        version: 3.0.1(webpack@5.77.0)
+        version: 3.0.1(webpack@5.78.0)
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
@@ -923,10 +932,10 @@ importers:
         version: 3.0.3
       file-loader:
         specifier: ^6.2.0
-        version: 6.2.0(webpack@5.77.0)
+        version: 6.2.0(webpack@5.78.0)
       fork-ts-checker-webpack-plugin:
         specifier: ^8.0.0
-        version: 8.0.0(typescript@5.0.3)(webpack@5.77.0)
+        version: 8.0.0(typescript@5.0.3)(webpack@5.78.0)
       fs-extra:
         specifier: ^11.1.1
         version: 11.1.1
@@ -940,11 +949,11 @@ importers:
         specifier: ^0.30.0
         version: 0.30.0
       memfs:
-        specifier: ^3.4.13
-        version: 3.4.13
+        specifier: ^3.5.0
+        version: 3.5.0
       mini-css-extract-plugin:
         specifier: ^2.7.5
-        version: 2.7.5(webpack@5.77.0)
+        version: 2.7.5(webpack@5.78.0)
       mlly:
         specifier: ^1.2.0
         version: 1.2.0
@@ -964,17 +973,17 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0(postcss@8.4.21)
       postcss-loader:
-        specifier: ^7.1.0
-        version: 7.1.0(postcss@8.4.21)(webpack@5.77.0)
+        specifier: ^7.2.4
+        version: 7.2.4(@types/node@18.15.11)(postcss@8.4.21)(ts-node@10.9.1)(typescript@5.0.3)(webpack@5.78.0)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.4.21)
       style-resources-loader:
         specifier: ^1.5.0
-        version: 1.5.0(webpack@5.77.0)
+        version: 1.5.0(webpack@5.78.0)
       time-fix-plugin:
         specifier: ^2.0.7
-        version: 2.0.7(webpack@5.77.0)
+        version: 2.0.7(webpack@5.78.0)
       ufo:
         specifier: ^1.1.1
         version: 1.1.1
@@ -983,22 +992,22 @@ importers:
         version: 1.3.1
       url-loader:
         specifier: ^4.1.1
-        version: 4.1.1(file-loader@6.2.0)(webpack@5.77.0)
+        version: 4.1.1(file-loader@6.2.0)(webpack@5.78.0)
       vue-bundle-renderer:
         specifier: ^1.0.3
         version: 1.0.3
       vue-loader:
         specifier: ^17.0.1
-        version: 17.0.1(vue@3.2.47)(webpack@5.77.0)
+        version: 17.0.1(vue@3.2.47)(webpack@5.78.0)
       webpack:
-        specifier: ^5.77.0
-        version: 5.77.0
+        specifier: ^5.78.0
+        version: 5.78.0
       webpack-bundle-analyzer:
         specifier: ^4.8.0
         version: 4.8.0
       webpack-dev-middleware:
         specifier: ^6.0.2
-        version: 6.0.2(webpack@5.77.0)
+        version: 6.0.2(webpack@5.78.0)
       webpack-hot-middleware:
         specifier: ^2.25.3
         version: 2.25.3
@@ -1007,7 +1016,7 @@ importers:
         version: 0.5.0
       webpackbar:
         specifier: ^5.0.2
-        version: 5.0.2(webpack@5.77.0)
+        version: 5.0.2(webpack@5.78.0)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -1391,6 +1400,13 @@ packages:
     resolution: {integrity: sha512-9CB/MKf/wdvbfkUdfrj+OkEwZ5b7rws0eogJ4293h+7b6KX5toPwym+VQKmILafNB9YiehqY0DlNrDcDhdWHSQ==}
     dependencies:
       mime: 3.0.0
+
+  /@cspotcode/source-map-support@0.8.1:
+    resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.9
+    dev: false
 
   /@discoveryjs/json-ext@0.5.7:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
@@ -1909,6 +1925,13 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
 
+  /@jridgewell/trace-mapping@0.3.9:
+    resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+    dependencies:
+      '@jridgewell/resolve-uri': 3.1.0
+      '@jridgewell/sourcemap-codec': 1.4.14
+    dev: false
+
   /@mapbox/node-pre-gyp@1.0.10:
     resolution: {integrity: sha512-4ySo4CjzStuprMwk35H5pPbkymjv1SF3jGLj6rAHp/xT/RF7TL7bd9CTm1xDY49K2qF7jmR/g7k+SkLETP6opA==}
     hasBin: true
@@ -1954,7 +1977,7 @@ packages:
     resolution: {integrity: sha512-YBI/6o2EBz02tdEJRBK8xkt3zvOFOWlLBf7WKYGBsSYSRtjjgrqPe2skp6VLLmKx5WbHHDNcW+6oACaurxGzeA==}
     dev: false
 
-  /@nuxt/friendly-errors-webpack-plugin@2.5.2(webpack@5.77.0):
+  /@nuxt/friendly-errors-webpack-plugin@2.5.2(webpack@5.78.0):
     resolution: {integrity: sha512-LLc+90lnxVbpKkMqk5z1EWpXoODhc6gRkqqXJCInJwF5xabHAE7biFvbULfvTRmtaTzAaP8IV4HQDLUgeAUTTw==}
     engines: {node: '>=8.0.0', npm: '>=5.0.0'}
     peerDependencies:
@@ -1964,7 +1987,7 @@ packages:
       consola: 2.15.3
       error-stack-parser: 2.1.4
       string-width: 4.2.3
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /@nuxt/telemetry@2.1.10:
@@ -1997,14 +2020,14 @@ packages:
     resolution: {integrity: sha512-PjVETP7+iZXAs5Q8O4ivl4t6qjWZMZqwiTVogUXHoHGZZcw7GZW3u3tzfYfE1HbzyYJfr236IXqQ02MeR8Fz2w==}
     dev: false
 
-  /@nuxt/ui@0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.77.0):
+  /@nuxt/ui@0.3.3(nuxt@packages+nuxt)(rollup@3.20.2)(vite@3.2.5)(vue@3.2.47)(webpack@5.78.0):
     resolution: {integrity: sha512-KkPAJ+7snNj3lbvzgc6UD5exVsLGExJPP1WwPIdMfXBAUUytXV5CTftpySxcAclN8j+B/GIbcjagBOpJkr7KGQ==}
     dependencies:
       '@iconify-json/carbon': 1.1.16
       '@nuxt/kit': link:packages/kit
       '@nuxtjs/color-mode': 3.2.0
       '@unocss/core': 0.45.30
-      '@unocss/nuxt': 0.45.30(rollup@3.20.2)(vite@3.2.5)(webpack@5.77.0)
+      '@unocss/nuxt': 0.45.30(rollup@3.20.2)(vite@3.2.5)(webpack@5.78.0)
       '@unocss/preset-attributify': 0.45.30
       '@unocss/preset-icons': 0.45.30
       '@unocss/preset-mini': 0.45.30
@@ -2238,6 +2261,22 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: false
 
+  /@tsconfig/node10@1.0.9:
+    resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
+    dev: false
+
+  /@tsconfig/node12@1.0.11:
+    resolution: {integrity: sha512-cqefuRsh12pWyGsIoBKJA9luFu3mRxCA+ORZvA4ktLSzIuCUtWVxGIuXigEwO5/ywWFMZ2QEGKWvkZG1zDMTag==}
+    dev: false
+
+  /@tsconfig/node14@1.0.3:
+    resolution: {integrity: sha512-ysT8mhdixWK6Hw3i1V2AeRqZ5WfXg1G43mqoYlM2nc6388Fq5jcXyr5mRsqViLx/GJYdoL0bfXD8nmF+Zn/Iow==}
+    dev: false
+
+  /@tsconfig/node16@1.0.3:
+    resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
+    dev: false
+
   /@types/chai-subset@1.3.3:
     resolution: {integrity: sha512-frBecisrNGz+F4T6bcc+NLeolfiojh5FxW2klu669+8BARtyQv2C/GkNW6FUodVe4BroGMP/wER/YDGc7rEllw==}
     dependencies:
@@ -2419,7 +2458,7 @@ packages:
     dependencies:
       '@types/node': 18.15.2
       tapable: 2.2.1
-      webpack: 5.77.0
+      webpack: 5.78.0
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -2432,7 +2471,7 @@ packages:
     dependencies:
       '@types/connect': 3.4.35
       tapable: 2.2.1
-      webpack: 5.77.0
+      webpack: 5.78.0
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -2695,7 +2734,7 @@ packages:
       sirv: 2.0.2
     dev: true
 
-  /@unocss/nuxt@0.45.30(rollup@3.20.2)(vite@3.2.5)(webpack@5.77.0):
+  /@unocss/nuxt@0.45.30(rollup@3.20.2)(vite@3.2.5)(webpack@5.78.0):
     resolution: {integrity: sha512-m2CEbLLoqE/WacdEGEDXR9R3FbTbSTPV5gPL0Myv0jrHRSRt1MkULZ/IfPgA/A/QiOzcSIUTVXW1dSlOFh5ngQ==}
     dependencies:
       '@nuxt/kit': link:packages/kit
@@ -2709,7 +2748,7 @@ packages:
       '@unocss/preset-wind': 0.45.30
       '@unocss/reset': 0.45.30
       '@unocss/vite': 0.45.30(rollup@3.20.2)(vite@3.2.5)
-      '@unocss/webpack': 0.45.30(rollup@3.20.2)(webpack@5.77.0)
+      '@unocss/webpack': 0.45.30(rollup@3.20.2)(webpack@5.78.0)
       unocss: 0.45.30(@unocss/webpack@0.45.30)(rollup@3.20.2)(vite@3.2.5)
     transitivePeerDependencies:
       - rollup
@@ -2829,7 +2868,7 @@ packages:
       - rollup
     dev: true
 
-  /@unocss/webpack@0.45.30(rollup@3.20.2)(webpack@5.77.0):
+  /@unocss/webpack@0.45.30(rollup@3.20.2)(webpack@5.78.0):
     resolution: {integrity: sha512-ke3B+YHmd2O6fxSUoHn24lfiQl1gsc8EQp5n4cqsy92IVw+lmGrVj6V3EyIN5aykrxgEqiZc9NLhPoADWoai7g==}
     peerDependencies:
       webpack: ^4 || ^5
@@ -2840,7 +2879,7 @@ packages:
       '@unocss/core': 0.45.30
       magic-string: 0.30.0
       unplugin: 0.10.2
-      webpack: 5.77.0
+      webpack: 5.78.0
       webpack-sources: 3.2.3
     transitivePeerDependencies:
       - rollup
@@ -3411,6 +3450,10 @@ packages:
       delegates: 1.0.0
       readable-stream: 3.6.2
 
+  /arg@4.1.3:
+    resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
+    dev: false
+
   /argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
@@ -3960,6 +4003,21 @@ packages:
   /core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
+  /cosmiconfig-typescript-loader@4.3.0(@types/node@18.15.11)(cosmiconfig@8.1.3)(ts-node@10.9.1)(typescript@5.0.3):
+    resolution: {integrity: sha512-NTxV1MFfZDLPiBMjxbHRwSh5LaLcPMwNdCutmnHJCKoVnlvldPWlllonKwrsRJ5pYZBIBGRWWU2tfvzxgeSW5Q==}
+    engines: {node: '>=12', npm: '>=6'}
+    peerDependencies:
+      '@types/node': '*'
+      cosmiconfig: '>=7'
+      ts-node: '>=10'
+      typescript: '>=3'
+    dependencies:
+      '@types/node': 18.15.11
+      cosmiconfig: 8.1.3
+      ts-node: 10.9.1(@types/node@18.15.11)(typescript@5.0.3)
+      typescript: 5.0.3
+    dev: false
+
   /cosmiconfig@7.1.0:
     resolution: {integrity: sha512-AdmX6xUzdNASswsFtmwSt7Vj8po9IuqXm0UXz7QKPuEUmPB4XyjGfaAr2PSuELMwkRMVH1EpIkX5bTZGRB3eCA==}
     engines: {node: '>=10'}
@@ -3971,8 +4029,8 @@ packages:
       yaml: 1.10.2
     dev: false
 
-  /cosmiconfig@8.1.0:
-    resolution: {integrity: sha512-0tLZ9URlPGU7JsKq0DQOQ3FoRsYX8xDZ7xMiATQfaiGMz7EHowNkbU9u1coAOmnh9p/1ySpm0RB3JNWRXM5GCg==}
+  /cosmiconfig@8.1.3:
+    resolution: {integrity: sha512-/UkO2JKI18b5jVMJUp0lvKFMpa/Gye+ZgZjKD+DGEN9y7NRcf/nK1A0sp67ONmKtnDCNMS44E6jrk0Yc3bDuUw==}
     engines: {node: '>=14'}
     dependencies:
       import-fresh: 3.3.0
@@ -4026,7 +4084,7 @@ packages:
       postcss: 8.4.21
     dev: false
 
-  /css-loader@6.7.3(webpack@5.77.0):
+  /css-loader@6.7.3(webpack@5.78.0):
     resolution: {integrity: sha512-qhOH1KlBMnZP8FzRO6YCH9UHXQhVMcEGLyNdb7Hv2cpcmJbW0YrddO+tG1ab5nT41KpHIYGsbeHqxB9xPu1pKQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
@@ -4040,10 +4098,10 @@ packages:
       postcss-modules-values: 4.0.0(postcss@8.4.21)
       postcss-value-parser: 4.2.0
       semver: 7.3.8
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
-  /css-minimizer-webpack-plugin@5.0.0(webpack@5.77.0):
+  /css-minimizer-webpack-plugin@5.0.0(webpack@5.78.0):
     resolution: {integrity: sha512-1wZ/PYvg+ZKwi5FX6YrvbB31jMAdurS+CmRQLwWCVSlfzJC85l/a6RVICqUHFa+jXyhilfnCyjafzJGbmz5tcA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -4074,7 +4132,7 @@ packages:
       schema-utils: 4.0.0
       serialize-javascript: 6.0.1
       source-map: 0.6.1
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /css-select@1.2.0:
@@ -4337,6 +4395,15 @@ packages:
   /detect-libc@2.0.1:
     resolution: {integrity: sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==}
     engines: {node: '>=8'}
+
+  /devalue@4.3.0:
+    resolution: {integrity: sha512-n94yQo4LI3w7erwf84mhRUkUJfhLoCZiLyoOZ/QFsDbcWNZePrLwbQpvZBUG2TNxwV3VjCKPxkiiQA6pe3TrTA==}
+    dev: false
+
+  /diff@4.0.2:
+    resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
+    engines: {node: '>=0.3.1'}
+    dev: false
 
   /diff@5.1.0:
     resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
@@ -4710,7 +4777,7 @@ packages:
     dev: true
     optional: true
 
-  /esbuild-loader@3.0.1(webpack@5.77.0):
+  /esbuild-loader@3.0.1(webpack@5.78.0):
     resolution: {integrity: sha512-aZfGybqTeuyCd4AsVvWOOfkhIuN+wfZFjMyh3gyQEU1Uvsl8L6vye9HqP93iRa0iTA+6Jclap514PJIC3cLnMA==}
     peerDependencies:
       webpack: ^4.40.0 || ^5.0.0
@@ -4718,7 +4785,7 @@ packages:
       esbuild: 0.17.15
       get-tsconfig: 4.4.0
       loader-utils: 2.0.4
-      webpack: 5.77.0
+      webpack: 5.78.0
       webpack-sources: 1.4.3
     dev: false
 
@@ -5362,7 +5429,7 @@ packages:
     dependencies:
       flat-cache: 3.0.4
 
-  /file-loader@6.2.0(webpack@5.77.0):
+  /file-loader@6.2.0(webpack@5.78.0):
     resolution: {integrity: sha512-qo3glqyTa61Ytg4u73GultjHGjdRyig3tG6lPtyX/jOEJvHif9uB0/OCI2Kif6ctF3caQTW2G5gym21oAsI4pw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -5370,7 +5437,7 @@ packages:
     dependencies:
       loader-utils: 2.0.4
       schema-utils: 3.1.1
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /file-uri-to-path@1.0.0:
@@ -5436,7 +5503,7 @@ packages:
     resolution: {integrity: sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw==}
     dev: true
 
-  /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.0.3)(webpack@5.77.0):
+  /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.0.3)(webpack@5.78.0):
     resolution: {integrity: sha512-mX3qW3idpueT2klaQXBzrIM/pHw+T0B/V9KHEvNrqijTq9NFnMZU6oreVxDYcf33P8a5cW+67PjodNHthGnNVg==}
     engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
     peerDependencies:
@@ -5449,14 +5516,14 @@ packages:
       cosmiconfig: 7.1.0
       deepmerge: 4.3.0
       fs-extra: 10.1.0
-      memfs: 3.4.13
+      memfs: 3.5.0
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.1.1
       semver: 7.3.8
       tapable: 2.2.1
       typescript: 5.0.3
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /form-data@2.3.3:
@@ -6562,6 +6629,10 @@ packages:
     dependencies:
       semver: 6.3.0
 
+  /make-error@1.3.6:
+    resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
+    dev: false
+
   /markdown-it@13.0.1:
     resolution: {integrity: sha512-lTlxriVoy2criHP0JKRhO2VDG9c2ypWCsT237eDiLqi09rmbKoUetyGHq2uOIRoRS//kfoJckS0eUzzkDR+k2Q==}
     hasBin: true
@@ -6612,8 +6683,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /memfs@3.4.13:
-    resolution: {integrity: sha512-omTM41g3Skpvx5dSYeZIbXKcXoAVc/AoMNwn9TKx++L/gaen/+4TTttmu8ZSch5vfVJ8uJvGbroTsIlslRg6lg==}
+  /memfs@3.5.0:
+    resolution: {integrity: sha512-yK6o8xVJlQerz57kvPROwTMgx5WtGwC2ZxDtOUsnGl49rHjYkfQoPNZPCKH73VdLE1BwBu/+Fx/NL8NYMUw2aA==}
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
@@ -6680,14 +6751,14 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /mini-css-extract-plugin@2.7.5(webpack@5.77.0):
+  /mini-css-extract-plugin@2.7.5(webpack@5.78.0):
     resolution: {integrity: sha512-9HaR++0mlgom81s95vvNjxkg52n2b5s//3ZTI1EtzFb98awsLSivs2LMsVqnQ3ay0PVhqWcGNyDaTE961FOcjQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: ^5.0.0
     dependencies:
       schema-utils: 4.0.0
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /minimatch@3.0.8:
@@ -6883,7 +6954,7 @@ packages:
       std-env: 3.3.2
       ufo: 1.1.1
       unenv: 1.2.2
-      unimport: 3.0.4(rollup@3.20.2)
+      unimport: 3.0.6(rollup@3.20.2)
       unstorage: 1.4.1
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -7287,19 +7358,19 @@ packages:
       mlly: 1.2.0
       pathe: 1.1.0
 
-  /playwright-core@1.32.1:
-    resolution: {integrity: sha512-KZYUQC10mXD2Am1rGlidaalNGYk3LU1vZqqNk0gT4XPty1jOqgup8KDP8l2CUlqoNKhXM5IfGjWgW37xvGllBA==}
+  /playwright-core@1.32.2:
+    resolution: {integrity: sha512-zD7aonO+07kOTthsrCR3YCVnDcqSHIJpdFUtZEMOb6//1Rc7/6mZDRdw+nlzcQiQltOOsiqI3rrSyn/SlyjnJQ==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
 
-  /playwright@1.32.1:
-    resolution: {integrity: sha512-GnEizysWMvoqHC3I9l8+4/ZxeLwLNdJJG76xdKGxzOcIZDcw5RSk/FKrFb5CuA+zcLpjIM2p9eR9Z4CuUDkWXg==}
+  /playwright@1.32.2:
+    resolution: {integrity: sha512-jHVnXJke0PXpuPszKtk9y1zZSlzO5+2a+aockT/AND0oeXx46FiJEFrafthurglLygVZA+1gEbtUM1C7qtTV+Q==}
     engines: {node: '>=14'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.32.1
+      playwright-core: 1.32.2
     dev: true
 
   /pluralize@8.0.0:
@@ -7395,18 +7466,30 @@ packages:
       resolve: 1.22.1
     dev: false
 
-  /postcss-loader@7.1.0(postcss@8.4.21)(webpack@5.77.0):
-    resolution: {integrity: sha512-vTD2DJ8vJD0Vr1WzMQkRZWRjcynGh3t7NeoLg+Sb1TeuK7etiZfL/ZwHbaVa3M+Qni7Lj/29voV9IggnIUjlIw==}
+  /postcss-loader@7.2.4(@types/node@18.15.11)(postcss@8.4.21)(ts-node@10.9.1)(typescript@5.0.3)(webpack@5.78.0):
+    resolution: {integrity: sha512-F88rpxxNspo5hatIc+orYwZDtHFaVFOSIVAx+fBfJC1GmhWbVmPWtmg2gXKE1OxJbneOSGn8PWdIwsZFcruS+w==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
       postcss: ^7.0.0 || ^8.0.1
+      ts-node: '>=10'
+      typescript: '>=4'
       webpack: ^5.0.0
+    peerDependenciesMeta:
+      ts-node:
+        optional: true
+      typescript:
+        optional: true
     dependencies:
-      cosmiconfig: 8.1.0
+      cosmiconfig: 8.1.3
+      cosmiconfig-typescript-loader: 4.3.0(@types/node@18.15.11)(cosmiconfig@8.1.3)(ts-node@10.9.1)(typescript@5.0.3)
       klona: 2.0.6
       postcss: 8.4.21
       semver: 7.3.8
-      webpack: 5.77.0
+      ts-node: 10.9.1(@types/node@18.15.11)(typescript@5.0.3)
+      typescript: 5.0.3
+      webpack: 5.78.0
+    transitivePeerDependencies:
+      - '@types/node'
     dev: false
 
   /postcss-merge-longhand@6.0.0(postcss@8.4.21):
@@ -8375,7 +8458,7 @@ packages:
     dependencies:
       acorn: 8.8.2
 
-  /style-resources-loader@1.5.0(webpack@5.77.0):
+  /style-resources-loader@1.5.0(webpack@5.78.0):
     resolution: {integrity: sha512-fIfyvQ+uvXaCBGGAgfh+9v46ARQB1AWdaop2RpQw0PBVuROsTBqGvx8dj0kxwjGOAyq3vepe4AOK3M6+Q/q2jw==}
     engines: {node: '>=8.9'}
     peerDependencies:
@@ -8385,7 +8468,7 @@ packages:
       loader-utils: 2.0.4
       schema-utils: 2.7.1
       tslib: 2.5.0
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /stylehacks@6.0.0(postcss@8.4.21):
@@ -8479,7 +8562,7 @@ packages:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
-  /terser-webpack-plugin@5.3.7(webpack@5.77.0):
+  /terser-webpack-plugin@5.3.7(webpack@5.78.0):
     resolution: {integrity: sha512-AfKwIktyP7Cu50xNjXF/6Qb5lBNzYaWpU6YfoX3uZicTx0zTy0stDDCsvjDapKsSDvOeWo5MEq4TmdBy2cNoHw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -8500,7 +8583,7 @@ packages:
       schema-utils: 3.1.1
       serialize-javascript: 6.0.1
       terser: 5.16.6
-      webpack: 5.77.0
+      webpack: 5.78.0
 
   /terser@5.16.6:
     resolution: {integrity: sha512-IBZ+ZQIA9sMaXmRZCUMDjNH0D5AQQfdn4WUjHL0+1lF4TP1IHRJbrhb6fNaXWikrYQTSkb7SLxkeXAiy1p7mbg==}
@@ -8519,12 +8602,12 @@ packages:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
     dev: false
 
-  /time-fix-plugin@2.0.7(webpack@5.77.0):
+  /time-fix-plugin@2.0.7(webpack@5.78.0):
     resolution: {integrity: sha512-uVFet1LQToeUX0rTcSiYVYVoGuBpc8gP/2jnlUzuHMHe+gux6XLsNzxLUweabMwiUj5ejhoIMsUI55nVSEa/Vw==}
     peerDependencies:
       webpack: '>=4.0.0'
     dependencies:
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /tiny-glob@0.2.9:
@@ -8598,6 +8681,37 @@ packages:
 
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+
+  /ts-node@10.9.1(@types/node@18.15.11)(typescript@5.0.3):
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.3
+      '@types/node': 18.15.11
+      acorn: 8.8.2
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.0.3
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: false
 
   /tsconfig-paths@3.14.2:
     resolution: {integrity: sha512-o/9iXgCYc5L/JxCHPe3Hvh8Q/2xm5Z+p18PESBU6Ff33695QnCHBEjcytY2q19ua7Mbl/DavtBOLq+oG0RCL+g==}
@@ -8798,8 +8912,8 @@ packages:
       hookable: 5.5.3
     dev: false
 
-  /unimport@3.0.4(rollup@3.20.2):
-    resolution: {integrity: sha512-eoof/HLiNJcIkVpnqc7sJbzKSLx39J6xTaP7E4ElgVQKeq2t9fPTkvJKcA55IJTaRPkEkDq8kcc/IZPmrypnFg==}
+  /unimport@3.0.6(rollup@3.20.2):
+    resolution: {integrity: sha512-GYxGJ1Bri1oqx8VFDjdgooGzeK7jBk3bvhXmamTIpu3nONOcUMGwZbX7X0L5RA7OWMXpR4vzpSQP7pXUzJg1/Q==}
     dependencies:
       '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
       escape-string-regexp: 5.0.0
@@ -8845,7 +8959,7 @@ packages:
       '@unocss/transformer-directives': 0.45.30
       '@unocss/transformer-variant-group': 0.45.30
       '@unocss/vite': 0.45.30(rollup@3.20.2)(vite@3.2.5)
-      '@unocss/webpack': 0.45.30(rollup@3.20.2)(webpack@5.77.0)
+      '@unocss/webpack': 0.45.30(rollup@3.20.2)(webpack@5.78.0)
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -8952,7 +9066,7 @@ packages:
     dependencies:
       punycode: 2.3.0
 
-  /url-loader@4.1.1(file-loader@6.2.0)(webpack@5.77.0):
+  /url-loader@4.1.1(file-loader@6.2.0)(webpack@5.78.0):
     resolution: {integrity: sha512-3BTV812+AVHHOJQO8O5MkWgZ5aosP7GnROJwvzLS9hWDj00lZ6Z0wNak423Lp9PBZN05N+Jk/N5Si8jRAlGyWA==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -8962,11 +9076,11 @@ packages:
       file-loader:
         optional: true
     dependencies:
-      file-loader: 6.2.0(webpack@5.77.0)
+      file-loader: 6.2.0(webpack@5.78.0)
       loader-utils: 2.0.4
       mime-types: 2.1.35
       schema-utils: 3.1.1
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /util-deprecate@1.0.2:
@@ -8982,6 +9096,10 @@ packages:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
     dev: true
+
+  /v8-compile-cache-lib@3.0.1:
+    resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
+    dev: false
 
   /validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
@@ -9139,7 +9257,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest@0.29.8(playwright@1.32.1):
+  /vitest@0.29.8(playwright@1.32.2):
     resolution: {integrity: sha512-JIAVi2GK5cvA6awGpH0HvH/gEG9PZ0a/WoxdiV3PmqK+3CjQMf8c+J/Vhv4mdZ2nRyXFw66sAg6qz7VNkaHfDQ==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -9185,7 +9303,7 @@ packages:
       local-pkg: 0.4.3
       pathe: 1.1.0
       picocolors: 1.0.0
-      playwright: 1.32.1
+      playwright: 1.32.2
       source-map: 0.6.1
       std-env: 3.3.2
       strip-literal: 1.0.1
@@ -9287,7 +9405,7 @@ packages:
       - supports-color
     dev: true
 
-  /vue-loader@17.0.1(vue@3.2.47)(webpack@5.77.0):
+  /vue-loader@17.0.1(vue@3.2.47)(webpack@5.78.0):
     resolution: {integrity: sha512-/OOyugJnImKCkAKrAvdsWMuwoCqGxWT5USLsjohzWbMgOwpA5wQmzQiLMzZd7DjhIfunzAGIApTOgIylz/kwcg==}
     peerDependencies:
       '@vue/compiler-sfc': '*'
@@ -9303,7 +9421,7 @@ packages:
       hash-sum: 2.0.0
       loader-utils: 2.0.4
       vue: 3.2.47
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /vue-router@4.1.6(vue@3.2.47):
@@ -9381,7 +9499,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /webpack-dev-middleware@6.0.2(webpack@5.77.0):
+  /webpack-dev-middleware@6.0.2(webpack@5.78.0):
     resolution: {integrity: sha512-iOddiJzPcQC6lwOIu60vscbGWth8PCRcWRCwoQcTQf9RMoOWBHg5EyzpGdtSmGMrSPd5vHEfFXmVErQEmkRngQ==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -9391,11 +9509,11 @@ packages:
         optional: true
     dependencies:
       colorette: 2.0.19
-      memfs: 3.4.13
+      memfs: 3.5.0
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.0.0
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /webpack-hot-middleware@2.25.3:
@@ -9424,8 +9542,8 @@ packages:
   /webpack-virtual-modules@0.5.0:
     resolution: {integrity: sha512-kyDivFZ7ZM0BVOUteVbDFhlRt7Ah/CSPwJdi8hBpkK7QLumUqdLtVfm/PX/hkcnrvr0i77fO5+TjZ94Pe+C9iw==}
 
-  /webpack@5.77.0:
-    resolution: {integrity: sha512-sbGNjBr5Ya5ss91yzjeJTLKyfiwo5C628AFjEa6WSXcZa4E+F57om3Cc8xLb1Jh0b243AWuSYRf3dn7HVeFQ9Q==}
+  /webpack@5.78.0:
+    resolution: {integrity: sha512-gT5DP72KInmE/3azEaQrISjTvLYlSM0j1Ezhht/KLVkrqtv10JoP/RXhwmX/frrutOPuSq3o5Vq0ehR/4Vmd1g==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     peerDependencies:
@@ -9455,7 +9573,7 @@ packages:
       neo-async: 2.6.2
       schema-utils: 3.1.1
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.7(webpack@5.77.0)
+      terser-webpack-plugin: 5.3.7(webpack@5.78.0)
       watchpack: 2.4.0
       webpack-sources: 3.2.3
     transitivePeerDependencies:
@@ -9463,7 +9581,7 @@ packages:
       - esbuild
       - uglify-js
 
-  /webpackbar@5.0.2(webpack@5.77.0):
+  /webpackbar@5.0.2(webpack@5.78.0):
     resolution: {integrity: sha512-BmFJo7veBDgQzfWXl/wwYXr/VFus0614qZ8i9znqcl9fnEdiVkdbi0TedLQ6xAK92HZHDJ0QmyQ0fmuZPAgCYQ==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -9473,7 +9591,7 @@ packages:
       consola: 2.15.3
       pretty-time: 1.1.0
       std-env: 3.3.2
-      webpack: 5.77.0
+      webpack: 5.78.0
     dev: false
 
   /whatwg-url@5.0.0:
@@ -9608,6 +9726,11 @@ packages:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  /yn@3.1.1:
+    resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
+    engines: {node: '>=6'}
+    dev: false
 
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}

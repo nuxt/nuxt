@@ -109,6 +109,12 @@ export default defineNuxtConfig({
       addWebpackPlugin(plugin.webpack())
     },
     function (_options, nuxt) {
+      // TODO: support directly via object syntax plugins: https://github.com/nuxt/nuxt/issues/14628
+      nuxt.hook('modules:done', () => {
+        nuxt.options.plugins.unshift('~/plugins/custom-type-registration')
+      })
+    },
+    function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
       const stripLayout = (page: NuxtPage): NuxtPage => ({
         ...page,
@@ -184,6 +190,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    renderJsonPayloads: true,
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,

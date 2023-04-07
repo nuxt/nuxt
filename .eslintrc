@@ -29,6 +29,10 @@
       {
         "pathGroups": [
           {
+            "pattern": "@nuxt/test-utils/experimental",
+            "group": "external"
+          },
+          {
             "pattern": "@nuxt/test-utils",
             "group": "external"
           }

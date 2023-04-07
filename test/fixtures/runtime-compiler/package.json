@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "fixture-runtime-compiler",
+  "scripts": {
+    "build": "nuxi build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  }
+}
