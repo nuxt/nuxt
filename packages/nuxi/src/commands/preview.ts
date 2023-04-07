@@ -19,9 +19,11 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
     const { loadNuxtConfig } = await loadKit(rootDir)
     const config = await loadNuxtConfig({ cwd: rootDir })
-    const serverOutputDir = config.nitro.output?.dir || '.output'
 
-    const nitroJSONPaths = [`${serverOutputDir}/nitro.json`, 'nitro.json'].map(p => resolve(rootDir, p))
+    const resolvedOutputDir = resolve(config.srcDir || rootDir, config.nitro.srcDir || 'server', config.nitro.output?.dir || '.output', 'nitro.json')
+    const defaultOutput = resolve(rootDir, '.output', 'nitro.json') // for backwards compatibility
+
+    const nitroJSONPaths = [resolvedOutputDir, defaultOutput]
     const nitroJSONPath = nitroJSONPaths.find(p => existsSync(p))
     if (!nitroJSONPath) {
       consola.error('Cannot find `nitro.json`. Did you run `nuxi build` first? Search path:\n', nitroJSONPaths)
