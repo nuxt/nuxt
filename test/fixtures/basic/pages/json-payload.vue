@@ -8,12 +8,14 @@ if (process.server) {
   state.value.shallowRef = shallowRef(false)
   state.value.reactive = reactive({ ref: r })
   state.value.error = createError({ message: 'error' })
+  state.value.date = new Date()
 }
 </script>
 
 <template>
   <div>
     <pre>{{ state }}</pre>
+    Date: {{ state.date instanceof Date }} <br>
     Error: {{ isNuxtError(state.error) }} <hr>
     Shallow reactive: {{ isReactive(state.shallowReactive) && isShallow(state.shallowReactive) }} <br>
     Shallow ref: {{ isShallow(state.shallowRef) }} <br>

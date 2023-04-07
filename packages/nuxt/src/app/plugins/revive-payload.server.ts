@@ -6,6 +6,7 @@ import { defineNuxtPlugin } from '#app/nuxt'
 
 const reducers = {
   NuxtError: (data: any) => isNuxtError(data) && data.toJSON(),
+  Date: (data: any) => data instanceof Date && data.valueOf(),
   EmptyShallowRef: (data: any) => isRef(data) && isShallow(data) && !data.value && JSON.stringify(data.value),
   EmptyRef: (data: any) => isRef(data) && !data.value && JSON.stringify(data.value),
   ShallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,

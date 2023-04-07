@@ -330,6 +330,7 @@ describe('rich payloads', () => {
   it('correctly serializes and revivifies complex types', async () => {
     const html = await $fetch('/json-payload')
     for (const test of [
+      'Date: true',
       'Recursive objects: true',
       'Shallow reactive: true',
       'Shallow ref: true',

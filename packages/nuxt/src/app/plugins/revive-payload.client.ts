@@ -5,6 +5,7 @@ import { callWithNuxt, defineNuxtPlugin } from '#app/nuxt'
 
 const revivers = {
   NuxtError: (data: any) => createError(data),
+  Date: (data: any) => new Date(data),
   EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
   EmptyRef: (data: any) => ref(JSON.parse(data)),
   ShallowRef: (data: any) => shallowRef(data),
