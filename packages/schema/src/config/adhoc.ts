@@ -69,8 +69,8 @@ export default defineUntypedSchema({
    * Breaking changes for devtools might not reflect on the version of Nuxt.
    * 
    * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
-   * @experiemental
-   * @type {boolean | { enabled: boolean }}}
+   * @experimental
+   * @type {boolean | { enabled: boolean }}
    */
   devtools: false
 })
