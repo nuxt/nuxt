@@ -5,7 +5,7 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
-import { isMatch } from 'micromatch'
+import micromatch from 'micromatch'
 import fse from 'fs-extra'
 
 import { distDir } from '../dirs'
@@ -196,7 +196,7 @@ export default defineNuxtModule({
       for (const [glob, rules] of Object.entries({ ...nuxt.options.routeRules, ...nuxt.options.nitro?.routeRules })) {
         if (rules.noScripts) {
           for (const page of pages) {
-            if (page.file && await isMatch(page.path, glob) && !pages.some(p => p.file === page.file && p !== page)) {
+            if (page.file && await micromatch.isMatch(page.path, glob) && !pages.some(p => p.file === page.file && p !== page)) {
               routes.push(relative(nuxt.options.srcDir, page.file))
             }
           }
