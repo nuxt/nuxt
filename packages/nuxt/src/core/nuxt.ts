@@ -281,6 +281,13 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
   }
 
+  if (nuxt.options.experimental.renderJsonPayloads) {
+    nuxt.hook('modules:done', () => {
+      nuxt.options.plugins.unshift(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+      nuxt.options.plugins.unshift(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+    })
+  }
+
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))

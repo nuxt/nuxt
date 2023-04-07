@@ -38,10 +38,6 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
-    "#head": {
-      "types": "./dist/head/runtime/index.d.ts",
-      "import": "./dist/head/runtime/index.js"
-    },
     "#pages": {
       "types": "./dist/pages/runtime/index.d.ts",
       "import": "./dist/pages/runtime/index.js"
@@ -74,6 +70,7 @@
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
     "destr": "^1.2.2",
+    "devalue": "^4.3.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",
