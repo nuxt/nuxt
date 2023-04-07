@@ -190,6 +190,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    polyfillVueUseHead: true,
     renderJsonPayloads: true,
     respectNoSSRHeader: true,
     clientFallback: true,
