@@ -371,7 +371,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     if (await import('./features').then(r => r.ensurePackageInstalled(process.cwd(), '@nuxt/devtools'))) {
       options._modules.push('@nuxt/devtools')
     } else {
-      logger.warn('Failed to install @nuxt/devtools, please install it manually, or disable devtools in nuxt.config')
+      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
     }
   }
 
