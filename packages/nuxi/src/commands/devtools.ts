@@ -21,12 +21,12 @@ export default defineNuxtCommand({
     }
 
     const currentVersion = await getNuxtVersion(rootDir) || '[unknown]'
-    // Since 3.4.0, devtools is shipped with Nuxt
-    if (!currentVersion.startsWith('3.4.')) {
-      // TODO: write to nuxt.config to set `devtools: true`
-    } else {
-      // Defer to feature setup
-      await execa('npx', ['@nuxt/devtools@latest', command, rootDir], { stdio: 'inherit', cwd: rootDir })
-    }
+
+    // Since 3.4.0, devtools is shipped with Nuxt, so we can use the local version instead of the latest
+    const pkg = currentVersion.startsWith('3.4.')
+      ? '@nuxt/devtools'
+      : '@nuxt/devtools@latest'
+
+    await execa('npx', [pkg, command, rootDir], { stdio: 'inherit', cwd: rootDir })
   }
 })
