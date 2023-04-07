@@ -1,7 +1,7 @@
 import type { TSConfig } from 'pkg-types'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
-import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
+import type { ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -9,7 +9,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
-import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Schema, SchemaDefinition } from 'untyped'
 
 export type HookResult = Promise<void> | void
@@ -22,7 +22,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export type NuxtPage = {
   name?: string
   path: string
-  file: string
+  file?: string
   meta?: Record<string, any>
   alias?: string[] | string
   redirect?: string
@@ -61,7 +61,7 @@ export interface NuxtHooks {
   'kit:compatibility': (compatibility: NuxtCompatibility, issues: NuxtCompatibilityIssues) => HookResult
 
   // Nuxt
-  /** 
+  /**
    * Called after Nuxt initialization, when the Nuxt instance is ready to work.
    * @param nuxt The configured Nuxt object
    * @returns Promise
@@ -73,6 +73,16 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'close': (nuxt: Nuxt) => HookResult
+  /**
+   * Called to restart the current Nuxt instance.
+   * @returns Promise
+   */
+  'restart': (options?: {
+    /**
+     * Try to restart the whole process if supported
+     */
+    hard?: boolean
+  }) => HookResult
 
   /**
    * Called during Nuxt initialization, before installing user modules.
@@ -208,6 +218,12 @@ export interface NuxtHooks {
    */
   'nitro:build:before': (nitro: Nitro) => HookResult
   /**
+   * Called after copying public assets. Allows modifying public assets before Nitro server is built.
+   * @param nitro The created nitro object
+   * @returns Promise
+   */
+  'nitro:build:public-assets': (nitro: Nitro) => HookResult
+  /**
    * Allows extending the routes to be pre-rendered.
    * @param ctx Nuxt context
    * @returns Promise
@@ -266,14 +282,14 @@ export interface NuxtHooks {
    * @param viteBuildContext The vite build context object
    * @returns Promise
    */
-  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteInlineConfig }) => HookResult
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteConfig }) => HookResult
   /**
    * Allows to extend Vite default config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
    */
-  'vite:extendConfig': (viteInlineConfig: ViteInlineConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server

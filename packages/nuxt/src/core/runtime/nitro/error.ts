@@ -1,7 +1,7 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { setResponseHeader, getRequestHeaders } from 'h3'
+import { setResponseHeader, getRequestHeaders, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
 
@@ -22,10 +22,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   // Set response code and message
-  event.node.res.statusCode = (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500
-  if (errorObject.statusMessage) {
-    event.node.res.statusMessage = errorObject.statusMessage
-  }
+  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
+
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
@@ -40,7 +38,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // JSON response
   if (isJsonRequest(event)) {
-    event.node.res.setHeader('Content-Type', 'application/json')
+    setResponseHeader(event, 'Content-Type', 'application/json')
     event.node.res.end(JSON.stringify(errorObject))
     return
   }
@@ -65,7 +63,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    event.node.res.setHeader('Content-Type', 'text/html;charset=UTF-8')
+    setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
     event.node.res.end(template(errorObject))
     return
   }
@@ -74,13 +72,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     setResponseHeader(event, header, value)
   }
 
-  if (res.status && res.status !== 200) {
-    event.node.res.statusCode = res.status
-  }
-
-  if (res.statusText) {
-    event.node.res.statusMessage = res.statusText
-  }
+  setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
   event.node.res.end(await res.text())
 }

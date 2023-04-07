@@ -1,7 +1,7 @@
 import { execa } from 'execa'
 import consola from 'consola'
 import { resolve } from 'pathe'
-import { tryResolveModule } from '../utils/cjs'
+import { tryResolveModule } from '../utils/esm'
 import { defineNuxtCommand } from './index'
 
 const MODULE_BUILDER_PKG = '@nuxt/module-builder'
@@ -15,7 +15,7 @@ export default defineNuxtCommand({
   async invoke (args) {
     // Find local installed version
     const rootDir = resolve(args._[0] || '.')
-    const hasLocal = tryResolveModule(`${MODULE_BUILDER_PKG}/package.json`, rootDir)
+    const hasLocal = await tryResolveModule(`${MODULE_BUILDER_PKG}/package.json`, rootDir)
 
     const execArgs = Object.entries({
       '--stub': args.stub

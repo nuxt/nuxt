@@ -7,6 +7,8 @@ const islandProps = ref({
 })
 
 const routeIslandVisible = ref(false)
+
+const count = ref(0)
 </script>
 
 <template>
@@ -27,6 +29,16 @@ const routeIslandVisible = ref(false)
     <button v-else @click="routeIslandVisible = true">
       Show
     </button>
+
+    <p>async .server component</p>
+    <AsyncServerComponent :count="count" />
+    <div>
+      Async island component (20ms):
+      <NuxtIsland name="LongAsyncComponent" :props="{ count }" />
+      <button @click="count++">
+        add +1 to count
+      </button>
+    </div>
   </div>
 </template>
 

@@ -3,7 +3,7 @@ import type { ConfigSchema } from '../../schema/config'
 import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
-import type { AppHeadMetaObject } from './meta'
+import type { AppHeadMetaObject } from './head'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
 export type { SchemaDefinition } from 'untyped'
@@ -94,14 +94,16 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
 }
 
 export interface ViteConfig extends ViteUserConfig {
+  /** The path to the entrypoint for the Vite build. */
+  entry?: string
   /**
-   * Options passed to @vitejs/plugin-vue
+   * Options passed to @vitejs/plugin-vue.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
    */
   vue?: VuePluginOptions
 
   /**
-   * Options passed to @vitejs/plugin-vue-jsx
+   * Options passed to @vitejs/plugin-vue-jsx.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx
    */
   vueJsx?: VueJsxPluginOptions
@@ -135,7 +137,10 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 }
 
 // -- App Config --
-export interface AppConfigInput extends Record<string, any> {
+
+export interface CustomAppConfig { }
+
+export interface AppConfigInput extends CustomAppConfig {
   /** @deprecated reserved */
   private?: never
   /** @deprecated reserved */

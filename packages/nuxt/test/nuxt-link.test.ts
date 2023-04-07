@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from 'vitest'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 
@@ -15,7 +15,20 @@ vi.mock('vue', async () => {
 
 // Mocks Nuxt `useRouter()`
 vi.mock('../src/app/composables/router', () => ({
-  useRouter: () => ({ resolve: ({ to }: { to: string }) => ({ href: to }) })
+  useRouter: () => ({
+    resolve: (route: string | RouteLocation & { to?: string }): Partial<RouteLocation> & { href?: string } => {
+      if (typeof route === 'string') {
+        return { href: route, path: route }
+      }
+      return route.to
+        ? { href: route.to }
+        : {
+            path: route.path || `/${route.name?.toString()}` || undefined,
+            query: route.query || undefined,
+            hash: route.hash || undefined
+          }
+    }
+  })
 }))
 
 // Helpers for test visibility
@@ -25,9 +38,9 @@ const INTERNAL = 'RouterLink'
 // Renders a `<NuxtLink />`
 const nuxtLink = (
   props: NuxtLinkProps = {},
-  NuxtLinkOptions: Partial<NuxtLinkOptions> = {}
+  nuxtLinkOptions: Partial<NuxtLinkOptions> = {}
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
-  const component = defineNuxtLink({ componentName: 'NuxtLink', ...NuxtLinkOptions })
+  const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
   const [type, _props, slots] = (component.setup as unknown as (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) =>
     () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
@@ -197,6 +210,30 @@ describe('nuxt-link:propsOrAttributes', () => {
       it('forwards `ariaCurrentValue` prop', () => {
         expect(nuxtLink({ to: '/to', ariaCurrentValue: 'page' }).props.ariaCurrentValue).toBe('page')
         expect(nuxtLink({ to: '/to', ariaCurrentValue: 'step' }).props.ariaCurrentValue).toBe('step')
+      })
+    })
+
+    describe('trailingSlashBehavior', () => {
+      it('append slash', () => {
+        const appendSlashOptions: NuxtLinkOptions = { trailingSlash: 'append' }
+
+        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: { path: '/to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to?param=1' }, appendSlashOptions).props.to).toEqual('/to/?param=1')
+      })
+
+      it('remove slash', () => {
+        const removeSlashOptions: NuxtLinkOptions = { trailingSlash: 'remove' }
+
+        expect(nuxtLink({ to: '/to' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: { name: 'to' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: { path: '/to/' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ href: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to/?param=1' }, removeSlashOptions).props.to).toEqual('/to?param=1')
       })
     })
   })

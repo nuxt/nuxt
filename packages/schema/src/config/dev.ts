@@ -7,15 +7,14 @@ export default defineUntypedSchema({
      *
      * @example
      * ```
-     * import { fileURLToPath } from 'node:url'
-     * export default {
-     *   server: {
+     * export default defineNuxtConfig({
+     *   devServer: {
      *     https: {
-     *       key: fs.readFileSync(fileURLToPath(new URL('./server.key', import.meta.url))),
-     *       cert: fs.readFileSync(fileURLToPath(new URL('./server.crt', import.meta.url)))
+     *       key: './server.key',
+     *       cert: './server.crt'
      *     }
      *   }
-     * }
+     * })
      * ```
      *
      *

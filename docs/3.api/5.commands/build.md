@@ -6,7 +6,7 @@ description: "Build your Nuxt application."
 # `nuxi build`
 
 ```{bash}
-npx nuxi build [rootDir] [--prerender] [--dotenv]
+npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]
 ```
 
 The `build` command creates a `.output` directory with all your application, server and dependencies ready for production.

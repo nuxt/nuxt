@@ -24,5 +24,13 @@ export * from './logger'
 
 // Internal Utils
 // TODO
-export * from './internal/cjs'
+export {
+  resolveModule,
+  requireModule,
+  importModule,
+  tryImportModule,
+  tryRequireModule
+} from './internal/cjs'
+export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
+export { tryResolveModule } from './internal/esm'
 export * from './internal/template'

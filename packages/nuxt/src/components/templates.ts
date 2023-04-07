@@ -92,13 +92,13 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       // .server components without a corresponding .client component will need to be rendered as an island
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
-    return islands.map(
+    return ['import { defineAsyncComponent } from \'vue\'', ...islands.map(
       (c) => {
         const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
         const comment = createImportMagicComments(c)
         return `export const ${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
       }
-    ).join('\n')
+    )].join('\n')
   }
 }
 

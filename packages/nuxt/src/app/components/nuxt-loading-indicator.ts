@@ -32,7 +32,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     nuxtApp.hook('page:start', indicator.start)
     nuxtApp.hook('page:finish', indicator.finish)
-    onBeforeUnmount(() => indicator.clear)
+    onBeforeUnmount(indicator.clear)
 
     return () => h('div', {
       class: 'nuxt-loading-indicator',

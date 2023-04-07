@@ -5,30 +5,24 @@ on:
     paths:
       - "docs/**"
       - ".github/workflows/docs.yml"
+    # autofix workflow will be triggered instead for PRs
     branches:
       - main
-  pull_request:
-    paths:
-      - "docs/**"
-      - ".github/workflows/docs.yml"
-    branches:
-      - main
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
 
 jobs:
   lint-docs:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [14]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "pnpm"
 
       - name: Install dependencies

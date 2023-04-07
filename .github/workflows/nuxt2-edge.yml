@@ -7,6 +7,7 @@ on:
 
 jobs:
   nightly:
+    if: github.repository_owner == 'nuxt'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

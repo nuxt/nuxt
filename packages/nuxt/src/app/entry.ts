@@ -34,7 +34,7 @@ if (process.server) {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
+      await nuxt.hooks.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
 
@@ -52,7 +52,10 @@ if (process.client) {
   }
 
   entry = async function initApp () {
-    const isSSR = Boolean(window.__NUXT__?.serverRendered)
+    const isSSR = Boolean(
+      window.__NUXT__?.serverRendered ||
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+    )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })

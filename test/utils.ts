@@ -1,5 +1,8 @@
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
+import { parse } from 'devalue'
+import { shallowReactive, shallowRef, reactive, ref } from 'vue'
+import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
 export async function renderPage (path = '/') {
@@ -40,7 +43,7 @@ export async function expectNoClientErrors (path: string) {
     return
   }
 
-  const { pageErrors, consoleLogs } = (await renderPage(path))!
+  const { page, pageErrors, consoleLogs } = (await renderPage(path))!
 
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
   const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
@@ -48,6 +51,8 @@ export async function expectNoClientErrors (path: string) {
   expect(pageErrors).toEqual([])
   expect(consoleLogErrors).toEqual([])
   expect(consoleLogWarnings).toEqual([])
+
+  await page.close()
 }
 
 type EqualityVal = string | number | boolean | null | undefined | RegExp
@@ -84,5 +89,32 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
     await callback(page, logs)
   } finally {
     done = true
+    await page.close()
+  }
+}
+
+const revivers = {
+  NuxtError: (data: any) => createError(data),
+  EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
+  EmptyRef: (data: any) => ref(JSON.parse(data)),
+  ShallowRef: (data: any) => shallowRef(data),
+  ShallowReactive: (data: any) => shallowReactive(data),
+  Ref: (data: any) => ref(data),
+  Reactive: (data: any) => reactive(data),
+  // test fixture reviver only
+  BlinkingText: () => '<revivified-blink>'
+}
+export function parsePayload (payload: string) {
+  return parse(payload || '', revivers)
+}
+export function parseData (html: string) {
+  const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
+  const _attrs: Record<string, string> = {}
+  for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)+="(?<value>[^"]+)"/g)) {
+    _attrs[attr!.groups!.key] = attr!.groups!.value
+  }
+  return {
+    script: parsePayload(script || ''),
+    attrs: _attrs
   }
 }

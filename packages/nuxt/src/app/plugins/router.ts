@@ -30,6 +30,8 @@ interface Route {
   redirectedFrom: Route | undefined
   /** Merged `meta` properties from all of the matched route records. */
   meta: Record<string, any>
+  /** compatibility type for vue-router */
+  matched: never[]
 }
 
 function getRouteFromPath (fullPath: string | Partial<Route>) {

@@ -18,9 +18,6 @@ export default defineUntypedSchema({
     mode: {
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
-    logLevel:{
-      $resolve: async (val, get) => val ?? (await get('dev') ? 'warn' : 'info')
-    },
     define: {
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
@@ -65,7 +62,7 @@ export default defineUntypedSchema({
       jsxFragment: 'Fragment',
       tsconfigRaw: '{}'
     },
-    clearScreen: false,
+    clearScreen: true,
     build: {
       assetsDir: {
         $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app')).buildAssetsDir)

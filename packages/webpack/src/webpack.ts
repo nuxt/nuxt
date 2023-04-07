@@ -46,7 +46,8 @@ export async function bundle (nuxt: Nuxt) {
     }
     config.plugins!.push(composableKeysPlugin.webpack({
       sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server'],
-      rootDir: nuxt.options.rootDir
+      rootDir: nuxt.options.rootDir,
+      composables: nuxt.options.optimization.keyedComposables
     }))
 
     // Create compiler

@@ -1,5 +1,4 @@
-import { fileURLToPath } from 'node:url'
-import { defineNuxtModule, addPlugin, useNuxt } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addPlugin, useNuxt } from 'nuxt/kit'
 
 export default defineNuxtModule({
   defaults: {
@@ -11,11 +10,13 @@ export default defineNuxtModule({
     configKey: 'sampleModule'
   },
   setup () {
-    addPlugin(fileURLToPath(new URL('./runtime/plugin', import.meta.url)))
+    const resolver = createResolver(import.meta.url)
+
+    addPlugin(resolver.resolve('./runtime/plugin'))
     useNuxt().hook('app:resolve', (app) => {
       app.middleware.push({
         name: 'unctx-test',
-        path: fileURLToPath(new URL('./runtime/middleware', import.meta.url)),
+        path: resolver.resolve('./runtime/middleware'),
         global: true
       })
     })

@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-// eslint-disable-next-line import/order
 import { setup, $fetch } from '@nuxt/test-utils'
 
 import { expectWithPolling, renderPage } from './utils'
@@ -66,6 +65,8 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       expect(pageErrors).toEqual([])
       expect(consoleLogErrors).toEqual([])
       expect(consoleLogWarnings).toEqual([])
+
+      await page.close()
     }, 60_000)
 
     it('should detect new routes', async () => {

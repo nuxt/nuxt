@@ -1,1 +1,1 @@
-export const templateAutoImport = 'auto imported from ~/components/template.ts'
+export const templateAutoImport = 'auto imported from ~/composables/template.ts'

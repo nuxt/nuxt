@@ -1,6 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
+import { isTest } from 'std-env'
 
 export default defineUntypedSchema({
   /**
@@ -39,6 +40,23 @@ export default defineUntypedSchema({
   },
 
   /**
+   * Log level when building logs.
+   *
+   * Defaults to 'silent' when running in CI or when a TTY is not available.
+   * This option is then used as 'silent' in Vite and 'none' in Webpack
+   *
+   * @type {'silent' | 'info' | 'verbose'}
+   */
+  logLevel: {
+    $resolve: (val) => {
+      if (val && !['silent', 'info', 'verbose'].includes(val)) {
+        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+      }
+      return val ?? (isTest ? 'silent' : 'info')
+    }
+  },
+
+  /**
    * Shared build configuration.
    */
   build: {
@@ -51,7 +69,7 @@ export default defineUntypedSchema({
      *
      * @example
      * ```js
-      transpile: [({ isLegacy }) => isLegacy && 'ky']
+     transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
@@ -81,7 +99,7 @@ export default defineUntypedSchema({
      */
     templates: [],
 
-        /**
+    /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
@@ -95,7 +113,7 @@ export default defineUntypedSchema({
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
      *
      */
-      analyze: {
+    analyze: {
       $resolve: async (val, get) => {
         if (val !== true) {
           return val ?? false
@@ -105,6 +123,64 @@ export default defineUntypedSchema({
           template: 'treemap',
           projectRoot: rootDir,
           filename: join(rootDir, '.nuxt/stats', '{name}.html')
+        }
+      }
+    },
+  },
+
+  /**
+   * Build time optimization configuration.
+   */
+  optimization: {
+    /**
+     * Functions to inject a key for.
+     *
+     * As long as the number of arguments passed to the function is less than `argumentLength`, an
+     * additional magic string will be injected that can be used to deduplicate requests between server
+     * and client. You will need to take steps to handle this additional key.
+     *
+     * The key will be unique based on the location of the function being invoked within the file.
+     *
+     * @type {Array<{ name: string, argumentLength: number }>}
+     */
+    keyedComposables: {
+      $resolve: (val) => [
+        { name: 'useState', argumentLength: 2 },
+        { name: 'useFetch', argumentLength: 3 },
+        { name: 'useAsyncData', argumentLength: 3 },
+        { name: 'useLazyAsyncData', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 },
+      ].concat(val).filter(Boolean)
+    },
+
+    /**
+     * Tree shake code from specific builds.
+     */
+    treeShake: {
+      /**
+       * Tree shake composables from the server or client builds.
+       *
+       * @example
+       * ```js
+       * treeShake: { client: { myPackage: ['useServerOnlyComposable'] } }
+       * ```
+       */
+      composables: {
+        server: {
+          $resolve: async (val, get) => defu(val || {},
+            await get('dev') ? {} : {
+              vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+              '#app': ['definePayloadReviver']
+            }
+          )
+        },
+        client: {
+          $resolve: async (val, get) => defu(val || {},
+            await get('dev') ? {} : {
+              vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+              '#app': ['definePayloadReducer']
+            }
+          )
         }
       }
     },

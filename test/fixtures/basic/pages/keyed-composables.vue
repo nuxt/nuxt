@@ -32,6 +32,11 @@ const { data: useFetchTest2 } = await useLocalFetch()
 const useLocalLazyFetch = () => useLazyFetch(() => '/api/counter')
 const { data: useLazyFetchTest1 } = await useLocalLazyFetch()
 const { data: useLazyFetchTest2 } = await useLocalLazyFetch()
+
+const useKeyedComposable = (arg?: string) => arg
+const useLocalKeyedComposable = () => useKeyedComposable()
+const useMyAsyncDataTest1 = useLocalKeyedComposable()
+const useMyAsyncDataTest2 = useLocalKeyedComposable()
 </script>
 
 <template>
@@ -41,6 +46,7 @@ const { data: useLazyFetchTest2 } = await useLocalLazyFetch()
     {{ useLazyAsyncDataTest1 === useLazyAsyncDataTest2 }}
     {{ useFetchTest1 === useFetchTest2 }}
     {{ useLazyFetchTest1 === useLazyFetchTest2 }}
+    {{ !!useMyAsyncDataTest1 && useMyAsyncDataTest1 === useMyAsyncDataTest2 }}
   </div>
 </template>
 

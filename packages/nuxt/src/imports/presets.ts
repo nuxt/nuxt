@@ -15,9 +15,6 @@ const commonPresets: InlinePreset[] = [
 const appPreset = defineUnimportPreset({
   from: '#app',
   imports: [
-    'useHead',
-    'useSeoMeta',
-    'useServerSeoMeta',
     'useAsyncData',
     'useLazyAsyncData',
     'useNuxtData',
@@ -26,6 +23,7 @@ const appPreset = defineUnimportPreset({
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',
+    'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
     'useFetch',
@@ -57,7 +55,9 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered'
+    'isPrerendered',
+    'definePayloadReducer',
+    'definePayloadReviver'
   ]
 })
 

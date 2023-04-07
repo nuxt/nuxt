@@ -15,11 +15,19 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
+    // TODO: Remove in v3.5 when nitro has support for mocking traced dependencies
+    // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
+
+    // TODO: move to `vue.runtimeCompiler` in v3.5
+    /**
+     * Include Vue compiler in runtime bundle.
+     */
+    runtimeVueCompiler: false,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
@@ -31,37 +39,41 @@ export default defineUntypedSchema({
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *
-     * You can set this to `reload` to perform a hard reload of the new route
+     * By default, Nuxt will also perform a hard reload of the new route
      * when a chunk fails to load when navigating to a new route.
      *
-     * @see https://github.com/nuxt/nuxt/pull/19038
-     * @type {boolean | 'reload'}
-     */
-    emitRouteChunkError: false,
-
-    /**
-     * Use vite-node for on-demand server chunk loading
+     * You can disable automatic handling by setting this to `false`, or handle
+     * chunk errors manually by setting it to `manual`.
      *
-     * @deprecated use `vite.devBundler: 'vite-node'`
+     * @see https://github.com/nuxt/nuxt/pull/19038
+     * @type {false | 'manual' | 'automatic'}
      */
-    viteNode: {
-      $resolve: (val) => {
-        val = process.env.EXPERIMENTAL_VITE_NODE ? true : val
+    emitRouteChunkError: {
+      $resolve: val => {
         if (val === true) {
-          console.warn('`vite-node` is now enabled by default. You can safely remove `experimental.viteNode` from your config.')
-        } else if (val === false) {
-          console.warn('`vite-node` is now enabled by default. To disable it, set `vite.devBundler` to `legacy` instead.')
+          return 'manual'
         }
-        return val ?? true
-      }
+        if (val === 'reload') {
+          return 'automatic'
+        }
+        return val ?? 'automatic'
+      },
     },
 
     /**
-     * Split server bundle into multiple chunks and dynamically import them.
+     * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
+     * after a chunk error or manual `reloadNuxtApp()` call.
      *
-     * @see https://github.com/nuxt/nuxt/issues/14525
+     * To avoid hydration errors, it will be applied only after the Vue app has been mounted,
+     * meaning there may be a flicker on initial load.
+     *
+     * Consider carefully before enabling this as it can cause unexpected behavior, and
+     * consider providing explicit keys to `useState` as auto-generated keys may not match
+     * across builds.
+     *
+     * @type {boolean}
      */
-    viteServerDynamicImports: true,
+    restoreState: false,
 
     /**
      * Inline styles when rendering HTML (currently vite only).
@@ -72,7 +84,7 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
-      async $resolve(val, get) {
+      async $resolve (val, get) {
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -86,18 +98,25 @@ export default defineUntypedSchema({
      */
     noScripts: false,
 
+    // TODO: enable by default in v3.5
+    /** Render JSON payloads with support for revivifying complex types. */
+    renderJsonPayloads: false,
+
+    /**
+     * Disable vue server renderer endpoint within nitro.
+    */
+    noVueServer: false,
+
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
      */
-    payloadExtraction: {
-      async $resolve(enabled, get) {
-        enabled = enabled ?? false
-        if (enabled) {
-          console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-        }
-        return enabled
-      }
-    },
+    payloadExtraction: undefined,
+
+    /**
+     * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
+     * if there's an error in SSR.
+     */
+    clientFallback: false,
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
@@ -115,10 +134,24 @@ export default defineUntypedSchema({
     componentIslands: false,
 
     /**
-     * Enable experimental config schema support
+     * Config schema support
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: false
+    configSchema: true,
+
+    /**
+     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
+     * `@vueuse/head` API.
+     *
+     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
+     */
+    polyfillVueUseHead: true,
+
+    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    respectNoSSRHeader: false,
+
+    /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
+    localLayerAliases: true,
   }
 })

@@ -1,5 +1,6 @@
 import type { Head, MergeHead } from '@unhead/schema'
 
+/** @deprecated Extend types from `@unhead/schema` directly. This may be removed in a future minor version. */
 export interface HeadAugmentations extends MergeHead {
   // runtime type modifications
   base?: {}

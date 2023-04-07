@@ -194,9 +194,11 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
+   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
-  modules: [],
+  modules: {
+    $resolve: val => [].concat(val).filter(Boolean)
+  },
 
   /**
    * Customize default directory structure used by Nuxt.
@@ -218,6 +220,11 @@ export default defineUntypedSchema({
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
      */
     middleware: 'middleware',
+
+    /**
+     * The modules directory, each file in which will be auto-registered as a Nuxt module.
+     */
+    modules: 'modules',
 
     /**
      * The directory which will be processed to auto-generate your application page routes.
@@ -296,10 +303,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
@@ -338,6 +345,18 @@ export default defineUntypedSchema({
       '.output',
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
+  },
+
+  /**
+   * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
+   *
+   * It is an array of strings or regular expressions, which will be matched against the file path
+   * relative to the project `srcDir`.
+   *
+   * @type {Array<string | RegExp>}
+   */
+  watch: {
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
   },
 
   /**

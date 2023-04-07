@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir, rm } from 'node:fs/promises'
+import { writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { defu } from 'defu'
@@ -7,7 +7,6 @@ import { debounce } from 'perfect-debounce'
 import { defineNuxtModule, createResolver } from '@nuxt/kit'
 import {
   resolveSchema as resolveUntypedSchema,
-  generateMarkdown,
   generateTypes
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
@@ -39,9 +38,12 @@ export default defineNuxtModule({
     })
 
     // Register module types
-    nuxt.hook('prepare:types', (ctx) => {
+    nuxt.hook('prepare:types', async (ctx) => {
       ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
+      if (nuxt.options._prepare) {
+        await writeSchema(schema)
+      }
     })
 
     // Resolve schema after all modules initialized
@@ -51,11 +53,7 @@ export default defineNuxtModule({
     })
 
     // Write schema after build to allow further modifications
-    nuxt.hooks.hook('build:done', async () => {
-      await nuxt.hooks.callHook('schema:beforeWrite', schema)
-      await writeSchema(schema)
-      await nuxt.hooks.callHook('schema:written')
-    })
+    nuxt.hooks.hook('build:done', () => writeSchema(schema))
 
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
@@ -68,9 +66,7 @@ export default defineNuxtModule({
       })
       const onChange = debounce(async () => {
         schema = await resolveSchema()
-        await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
-        await nuxt.hooks.callHook('schema:written')
       })
       watcher.on('all', onChange)
       nuxt.hook('close', () => watcher.close())
@@ -122,13 +118,7 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
-      // Avoid writing empty schema
-      const isEmptySchema = !schema.properties || Object.keys(schema.properties).length === 0
-      if (isEmptySchema) {
-        await rm(resolve(nuxt.options.buildDir, 'schema'), { recursive: true }).catch(() => { })
-        return
-      }
-
+      await nuxt.hooks.callHook('schema:beforeWrite', schema)
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
@@ -136,33 +126,36 @@ export default defineNuxtModule({
         JSON.stringify(schema, null, 2),
         'utf8'
       )
-      const markdown = '# Nuxt Custom Config Schema' + generateMarkdown(schema)
-      await writeFile(
-        resolve(nuxt.options.buildDir, 'schema/nuxt.schema.md'),
-        markdown,
-        'utf8'
-      )
       const _types = generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
-        partial: true
+        partial: true,
+        allowExtraKeys: false
       })
       const types =
         _types +
         `
 export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
+type _CustomAppConfig = CustomAppConfig
+
+declare module '@nuxt/schema' {
+  interface NuxtConfig extends Omit<NuxtCustomSchema, 'appConfig'> {}
+  interface NuxtOptions extends Omit<NuxtCustomSchema, 'appConfig'> {}
+  interface CustomAppConfig extends _CustomAppConfig {}
+}
 
 declare module 'nuxt/schema' {
-  interface NuxtConfig extends NuxtCustomSchema {}
-  interface NuxtOptions extends NuxtCustomSchema {}
-  interface AppConfigInput extends CustomAppConfig {}
-  interface AppConfig extends CustomAppConfig {}
-}`
+  interface NuxtConfig extends Omit<NuxtCustomSchema, 'appConfig'> {}
+  interface NuxtOptions extends Omit<NuxtCustomSchema, 'appConfig'> {}
+  interface CustomAppConfig extends _CustomAppConfig {}
+}
+`
       const typesPath = resolve(
         nuxt.options.buildDir,
         'schema/nuxt.schema.d.ts'
       )
       await writeFile(typesPath, types, 'utf8')
+      await nuxt.hooks.callHook('schema:written')
     }
   }
 })
