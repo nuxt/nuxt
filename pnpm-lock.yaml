@@ -629,6 +629,9 @@ importers:
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
+      radix3:
+        specifier: ^1.0.1
+        version: 1.0.1
       scule:
         specifier: ^1.0.0
         version: 1.0.0
