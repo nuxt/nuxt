@@ -208,7 +208,7 @@ export default defineNuxtModule({
       }
 
       for (const file of routes) {
-        if (manifest[file].resourceType !== 'script') { continue }
+        if (!manifest[file] || manifest[file].resourceType !== 'script') { continue }
         if (routes.some(fileName => fileName in manifest)) {
           manifest[file].file = ''
         }
