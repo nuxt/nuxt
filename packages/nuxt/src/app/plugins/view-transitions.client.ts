@@ -9,10 +9,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const router = useRouter()
 
-  router.beforeResolve(async (to) => {
+  router.beforeResolve((to) => {
     if (to.meta.pageTransition === false) { return }
-
-    await nuxtApp.callHook('page:transition:start')
 
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
@@ -30,10 +28,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     transition.finished.then(() => {
       abortTransition = undefined
       finishTransition = undefined
-      return nuxtApp.callHook('page:transition:finish')
     })
 
-    await ready
+    return ready
   })
 
   nuxtApp.hook('vue:error', () => {
