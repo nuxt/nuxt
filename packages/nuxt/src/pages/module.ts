@@ -209,8 +209,8 @@ export default defineNuxtModule({
       }
 
       for (const file of routes) {
-        if (routes.some(fileName => manifest[fileName] && manifest[file].resourceType === 'script')) {
-          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+        if (manifest[file].resourceType !== 'script') { continue }
+        if (routes.some(fileName => fileName in manifest)) {
           manifest[file].file = ''
         }
       }
