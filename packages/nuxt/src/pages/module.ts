@@ -3,10 +3,9 @@ import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, 
 import { join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import { joinURL, withoutLeadingSlash } from 'ufo'
+import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import fse from 'fs-extra'
 
 import defu from 'defu'
 import type { NitroRouteRules } from 'nitropack'

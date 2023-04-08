@@ -297,7 +297,7 @@ export default defineRenderHandler(async (event) => {
     ]),
     body: [_rendered.html],
     bodyAppend: normalizeChunks([
-      process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
+      (process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts)
         ? undefined
         : (_PAYLOAD_EXTRACTION
             ? process.env.NUXT_JSON_PAYLOADS
@@ -307,7 +307,7 @@ export default defineRenderHandler(async (event) => {
               ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
               : renderPayloadScript({ ssrContext, data: ssrContext.payload })
           ),
-      _rendered.renderScripts(),
+      routeOptions.noScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])
