@@ -47,6 +47,11 @@ describe('route rules', () => {
     expect(script.serverRendered).toEqual(false)
     expect(attrs['data-ssr']).toEqual('false')
   })
+
+  it('test noScript routeRules', async () => {
+    const page = await createPage('/no-scripts')
+    expect(await page.locator('script').all()).toHaveLength(0)
+  })
 })
 
 describe('modules', () => {
