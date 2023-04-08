@@ -4,7 +4,7 @@ import { relative, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
-import consola from 'consola'
+import { consola } from 'consola'
 import { withTrailingSlash } from 'ufo'
 import { setupDotenv } from 'c12'
 import { showBanner, showVersions } from '../utils/banner'
@@ -62,9 +62,9 @@ export default defineNuxtCommand({
       hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
-            cert: args['ssl-cert'] || (config.devServer.https && config.devServer.https.cert) || undefined,
-            key: args['ssl-key'] || (config.devServer.https && config.devServer.https.key) || undefined
-          }
+          cert: args['ssl-cert'] || (config.devServer.https && config.devServer.https.cert) || undefined,
+          key: args['ssl-key'] || (config.devServer.https && config.devServer.https.key) || undefined
+        }
         : false
     })
 

@@ -3,7 +3,7 @@ import { dirname, relative } from 'node:path'
 import { execa } from 'execa'
 import { setupDotenv } from 'c12'
 import { resolve } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { loadKit } from '../utils/kit'
 
 import { defineNuxtCommand } from './index'

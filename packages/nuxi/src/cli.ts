@@ -1,7 +1,7 @@
 import mri from 'mri'
 import { red } from 'colorette'
-import type { ConsolaReporter } from 'consola'
-import consola from 'consola'
+import type { Consola } from 'consola'
+import { consola } from 'consola'
 import { checkEngines } from './utils/engines'
 import type { Command, NuxtCommand } from './commands'
 import { commands } from './commands'
@@ -45,7 +45,8 @@ consola.wrapAll()
 
 // Filter out unwanted logs
 // TODO: Use better API from consola for intercepting logs
-const wrapReporter = (reporter: ConsolaReporter) => <ConsolaReporter> {
+// TODO: export type from Consola
+const wrapReporter = (reporter: Consola['_reporters'][0]) => <Consola['_reporters'][0]> {
   log (logObj, ctx) {
     if (!logObj.args || !logObj.args.length) { return }
     const msg = logObj.args[0]
@@ -62,7 +63,6 @@ const wrapReporter = (reporter: ConsolaReporter) => <ConsolaReporter> {
     return reporter.log(logObj, ctx)
   }
 }
-// @ts-expect-error
 consola._reporters = consola._reporters.map(wrapReporter)
 
 process.on('unhandledRejection', err => consola.error('[unhandledRejection]', err))
