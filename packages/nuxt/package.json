@@ -83,7 +83,6 @@
     "knitwork": "^1.0.0",
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
-    "micromatch": "^4.0.5",
     "mlly": "^1.2.0",
     "nitropack": "^2.3.2",
     "nuxi": "workspace:../nuxi",

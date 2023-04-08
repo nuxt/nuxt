@@ -602,9 +602,6 @@ importers:
       magic-string:
         specifier: ^0.30.0
         version: 0.30.0
-      micromatch:
-        specifier: ^4.0.5
-        version: 4.0.5
       mlly:
         specifier: ^1.2.0
         version: 1.2.0
