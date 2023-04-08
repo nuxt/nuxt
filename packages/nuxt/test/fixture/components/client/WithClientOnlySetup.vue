@@ -51,8 +51,8 @@
 import { Treeshaken } from 'somepath'
 import HelloWorld from '../HelloWorld.vue'
 import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'
-import { Glob, ClientImport } from '#components'
-import { Both, AreTreeshaken } from '#imports'
+import { ClientImport, Glob } from '#components'
+import { AreTreeshaken, Both } from '#imports'
 
 const hello = 'world'
 const ByeBye = defineAsyncComponent(() => import('./../some-glob.global.vue'))

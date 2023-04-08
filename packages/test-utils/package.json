@@ -24,7 +24,7 @@
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
-    "consola": "^2.15.3",
+    "consola": "^3.0.0-3",
     "defu": "^6.1.2",
     "execa": "^7.1.1",
     "get-port-please": "^3.0.1",

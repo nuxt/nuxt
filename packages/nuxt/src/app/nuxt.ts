@@ -1,13 +1,13 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, shallowReactive, reactive } from 'vue'
-import type { App, onErrorCaptured, VNode, Ref } from 'vue'
+import { getCurrentInstance, reactive, shallowReactive } from 'vue'
+import type { App, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { Hookable, HookCallback } from 'hookable'
+import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
-import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
+import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'

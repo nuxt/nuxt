@@ -1,6 +1,6 @@
 import { parseURL } from 'ufo'
 import { defineNuxtPlugin } from '#app/nuxt'
-import { loadPayload, isPrerendered } from '#app/composables/payload'
+import { isPrerendered, loadPayload } from '#app/composables/payload'
 import { useRouter } from '#app/composables/router'
 
 export default defineNuxtPlugin((nuxtApp) => {

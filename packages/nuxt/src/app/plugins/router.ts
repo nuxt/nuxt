@@ -1,5 +1,5 @@
-import { reactive, h, isReadonly } from 'vue'
-import { parseURL, stringifyParsedURL, parseQuery, stringifyQuery, withoutBase, isEqual, joinURL } from 'ufo'
+import { h, isReadonly, reactive } from 'vue'
+import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'

@@ -1,7 +1,7 @@
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
-import { resolveModule, requireModule } from '../internal/cjs'
+import { requireModule, resolveModule } from '../internal/cjs'
 import { importModule } from '../internal/esm'
 import { resolveAlias } from '../resolve'
 

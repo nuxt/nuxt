@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, dirname } from 'pathe'
-import consola from 'consola'
+import { dirname, resolve } from 'pathe'
+import { consola } from 'consola'
 import { loadKit } from '../utils/kit'
 import { templates } from '../utils/templates'
 import { defineNuxtCommand } from './index'

@@ -1,7 +1,7 @@
 import pify from 'pify'
 import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
-import { fromNodeMiddleware, defineEventHandler } from 'h3'
+import { defineEventHandler, fromNodeMiddleware } from 'h3'
 import type { OutputFileSystem } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
@@ -16,7 +16,7 @@ import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
 import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
-import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
+import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
 
 // TODO: Support plugins
 // const plugins: string[] = []
