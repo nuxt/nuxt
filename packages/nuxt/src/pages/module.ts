@@ -5,10 +5,7 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
-import defu from 'defu'
-import type { NitroRouteRules } from 'nitropack'
 import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
@@ -185,32 +182,6 @@ export default defineNuxtModule({
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
-        }
-      }
-    })
-
-    const routeRulesMatcher = toRouteMatcher(
-      createRadixRouter({ routes: { ...nuxt.options.routeRules, ...nuxt.options.nitro?.routeRules } })
-    )
-    const getRouteRules = (path: string) =>
-      defu({}, ...routeRulesMatcher.matchAll(path).reverse()) as NitroRouteRules
-
-    nuxt.hook('build:manifest', async (manifest) => {
-      const pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', pages)
-      const routes: string[] = []
-
-      for (const page of pages) {
-        const rules = getRouteRules(page.path)
-        if (rules.noScripts && page.file && !pages.some(p => p.file === page.file && p !== page)) {
-          routes.push(relative(nuxt.options.srcDir, page.file))
-        }
-      }
-
-      for (const file of routes) {
-        if (!manifest[file] || manifest[file].resourceType !== 'script') { continue }
-        if (routes.some(fileName => fileName in manifest)) {
-          manifest[file].file = ''
         }
       }
     })
