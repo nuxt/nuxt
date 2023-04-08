@@ -55,7 +55,7 @@
     "create-require": "^1.1.1",
     "cross-spawn": "^7.0.3",
     "esbuild": "^0.17.15",
-    "eslint": "^8.37.0",
+    "eslint": "^8.38.0",
     "eslint-multiplexer": "^2.0.0",
     "eslint-plugin-jest": "^27.2.1",
     "execa": "^5.1.1",
@@ -85,7 +85,7 @@
     "sass": "^1.61.0",
     "sass-loader": "^10.1.1",
     "sort-package-json": "^2.4.1",
-    "typescript": "~5.0.3",
+    "typescript": "~5.0.4",
     "vue-jest": "^4.0.1"
   }
 }
