@@ -4776,10 +4776,10 @@ caniuse-lite@^1.0.30001464:
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001473.tgz#3859898b3cab65fc8905bb923df36ad35058153c"
   integrity sha512-ewDad7+D2vlyy+E4UJuVfiBsU69IL+8oVmTuZnH5Q6CIUbxNfI50uVpRHbUPDD6SUaN2o0Lh4DhTrvLG/Tn1yg==
 
-caniuse-lite@^1.0.30001476:
-  version "1.0.30001476"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001476.tgz#759906c53eae17133217d75b482f9dc5c02f7898"
-  integrity sha512-JmpktFppVSvyUN4gsLS0bShY2L9ZUslHLE72vgemBkS43JD2fOvKTKs+GtRwuxrtRGnwJFW0ye7kWRRlLJS9vQ==
+caniuse-lite@^1.0.30001477:
+  version "1.0.30001477"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001477.tgz#a2ffb2276258233034bbb869d4558b02658a511e"
+  integrity sha512-lZim4iUHhGcy5p+Ri/G7m84hJwncj+Kz7S5aD4hoQfslKZJgt0tHc/hafVbqHC5bbhHb+mrW2JOUHkI5KH7toQ==
 
 caseless@~0.12.0:
   version "0.12.0"
