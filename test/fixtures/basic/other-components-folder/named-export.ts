@@ -1,3 +1,7 @@
 export const namedExport = defineComponent({
-  setup: () => () => h('div', 'This is a custom component with a named export.')
+  async setup () {
+    await nextTick()
+    useRuntimeConfig()
+    return () => h('div', 'This is a custom component with a named export.')
+  }
 })

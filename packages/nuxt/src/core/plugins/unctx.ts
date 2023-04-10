@@ -1,26 +1,39 @@
-import { normalize } from 'pathe'
+import { pathToFileURL } from 'node:url'
+import { parseQuery, parseURL } from 'ufo'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
-import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 
-export const UnctxTransformPlugin = (nuxt: Nuxt) => {
+export const UnctxTransformPlugin = () => {
   const transformer = createTransformer({
-    asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware']
+    asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+    objectDefinitions: {
+      defineComponent: ['setup'],
+      defineNuxtComponent: ['setup']
+    }
   })
-
-  let app: NuxtApp | undefined
-  nuxt.hook('app:resolve', (_app) => { app = _app })
 
   return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
     name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
-      if (id.includes('macro=true')) { return true }
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const query = parseQuery(search)
 
-      id = normalize(id).replace(/\?.*$/, '')
-      return app?.plugins.some(i => i.src === id) || app?.middleware.some(m => m.path === id)
+      // Vue files
+      if (
+        pathname.endsWith('.vue') ||
+        'macro' in query ||
+        ('vue' in query && (query.type === 'template' || query.type === 'script' || 'setup' in query))
+      ) {
+        return true
+      }
+
+      // JavaScript files
+      if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
+        return true
+      }
     },
     transform (code, id) {
       // TODO: needed for webpack - update transform in unctx/unplugin?
