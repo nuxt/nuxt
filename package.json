@@ -27,7 +27,7 @@
     "test:unit": "JITI_ESM_RESOLVE=1 vitest run --dir packages",
     "typecheck": "tsc --noEmit"
   },
-  "resolutions": {
+  "overrides": {
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/test-utils": "workspace:*",
