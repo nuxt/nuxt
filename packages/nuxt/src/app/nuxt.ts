@@ -1,17 +1,18 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
-import type { App, onErrorCaptured, VNode, Ref } from 'vue'
+import { getCurrentInstance, reactive, shallowReactive } from 'vue'
+import type { App, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { Hookable, HookCallback } from 'hookable'
+import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
-import type { RuntimeConfig, AppConfigInput, AppConfig } from 'nuxt/schema'
+import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
+import type { NuxtError } from '../app/composables/error'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -41,6 +42,7 @@ export interface RuntimeNuxtHooks {
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
+  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
@@ -58,6 +60,8 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
+  /** @internal */
+  _payloadReducers: Record<string, (data: any) => any>
 }
 
 interface _NuxtApp {
@@ -99,6 +103,9 @@ interface _NuxtApp {
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>
 
+  /** @internal */
+  _payloadRevivers: Record<string, (data: any) => any>
+
   // Nuxt injections
   $config: RuntimeConfig
 
@@ -111,7 +118,6 @@ interface _NuxtApp {
     prerenderedAt?: number
     data: Record<string, any>
     state: Record<string, any>
-    rendered?: Function
     error?: Error | {
       url: string
       statusCode: number
@@ -120,6 +126,7 @@ interface _NuxtApp {
       description: string
       data?: any
     } | null
+    _errors: Record<string, NuxtError | undefined>
     [key: string]: any
   }
   static: {
@@ -164,11 +171,11 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version }
     },
-    payload: reactive({
-      data: {},
-      state: {},
-      _errors: {},
-      ...(process.client ? window.__NUXT__ : { serverRendered: true })
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: shallowReactive({}),
+      _errors: shallowReactive({}),
+      ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
       data: {}
@@ -194,6 +201,7 @@ export function createNuxtApp (options: CreateOptions) {
     },
     _asyncDataPromises: {},
     _asyncData: {},
+    _payloadRevivers: {},
     ...options
   } as any as NuxtApp
 
@@ -229,7 +237,11 @@ export function createNuxtApp (options: CreateOptions) {
     if (nuxtApp.ssrContext) {
       nuxtApp.ssrContext.nuxt = nuxtApp
     }
-    // Expose to server renderer to create window.__NUXT__
+    // Expose payload types
+    if (nuxtApp.ssrContext) {
+      nuxtApp.ssrContext._payloadReducers = {}
+    }
+    // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
     if (nuxtApp.ssrContext!.payload) {
       Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
@@ -237,7 +249,7 @@ export function createNuxtApp (options: CreateOptions) {
     nuxtApp.ssrContext!.payload = nuxtApp.payload
 
     // Expose client runtime-config to the payload
-    nuxtApp.payload.config = {
+    nuxtApp.ssrContext!.config = {
       public: options.ssrContext!.runtimeConfig.public,
       app: options.ssrContext!.runtimeConfig.app
     }
@@ -250,22 +262,25 @@ export function createNuxtApp (options: CreateOptions) {
     })
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
-    // as well as when mounting the app and in the `app:mounted` hook
-    nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    // as well as when mounting the app.
+    const unreg = nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
+    nuxtApp.hook('app:mounted', unreg)
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server
-    ? options.ssrContext!.runtimeConfig
-    : reactive(nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
 
+  // TODO: remove in v3.5
   // Backward compatibility following #4254
   const compatibilityConfig = new Proxy(runtimeConfig, {
-    get (target, prop) {
-      if (prop === 'public') {
-        return target.public
+    get (target, prop: string) {
+      if (prop in target) {
+        return target[prop]
       }
-      return target[prop] ?? target.public[prop]
+      if (process.dev && prop in target.public) {
+        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public runtime config value (\`${prop}\`) directly from the top level. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in v3.5. Instead, you can update \`config['${prop}']\` to \`config.public['${prop}']\`.`)
+      }
+      return target.public[prop]
     },
     set (target, prop, value) {
       if (process.server || prop === 'public' || prop === 'app') {

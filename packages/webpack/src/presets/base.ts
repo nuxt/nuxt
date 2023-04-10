@@ -1,4 +1,4 @@
-import { resolve, normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
@@ -159,7 +159,7 @@ export function baseTranspile (ctx: WebpackConfigContext) {
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
     /vue-demi/,
-    /(^|\/)nuxt\/(dist\/)?app($|\/)/
+    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/
   ]
 
   for (let pattern of options.build.transpile) {

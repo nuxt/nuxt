@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
+    },
+    "./experimental": {
+      "types": "./dist/experimental.d.ts",
+      "import": "./dist/experimental.mjs"
     }
   },
   "files": [
@@ -20,18 +24,19 @@
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
-    "consola": "^2.15.3",
+    "consola": "^3.0.0-3",
     "defu": "^6.1.2",
     "execa": "^7.1.1",
     "get-port-please": "^3.0.1",
     "jiti": "^1.18.2",
     "ofetch": "^1.0.1",
-    "pathe": "^1.1.0"
+    "pathe": "^1.1.0",
+    "ufo": "^1.1.1"
   },
   "devDependencies": {
-    "playwright": "^1.32.1",
+    "playwright": "^1.32.2",
     "unbuild": "latest",
-    "vitest": "^0.29.8"
+    "vitest": "^0.30.0"
   },
   "peerDependencies": {
     "vue": "^3.2.47"

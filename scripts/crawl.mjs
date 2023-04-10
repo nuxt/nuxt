@@ -1,5 +1,5 @@
 import Crawler from 'crawler'
-import consola from 'consola'
+import { consola } from 'consola'
 import { parseURL, withoutTrailingSlash } from 'ufo'
 import chalk from 'chalk'
 import * as actions from '@actions/core'

@@ -1,4 +1,4 @@
-import { defineComponent, createElementBlock } from 'vue'
+import { createElementBlock, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'NuxtClientFallback',

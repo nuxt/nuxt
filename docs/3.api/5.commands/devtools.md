@@ -1,6 +1,6 @@
 ---
 title: "nuxi devtools"
-description: The devtools command allows you to enable or disable Nuxt Devtools on a per-project basis.
+description: The devtools command allows you to enable or disable Nuxt DevTools on a per-project basis.
 ---
 
 # `nuxi devtools`

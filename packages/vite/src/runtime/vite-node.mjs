@@ -1,8 +1,8 @@
 import { performance } from 'node:perf_hooks'
 import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
-import consola from 'consola'
-import { viteNodeOptions, viteNodeFetch } from './vite-node-shared.mjs'
+import { consola } from 'consola'
+import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
 let render

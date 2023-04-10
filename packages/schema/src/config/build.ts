@@ -170,6 +170,7 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+              '#app': ['definePayloadReviver']
             }
           )
         },
@@ -177,10 +178,25 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+              '#app': ['definePayloadReducer']
             }
           )
         }
       }
     },
+
+    /**
+     * Options passed directly to the transformer from `unctx` that preserves async context
+     * after `await`.
+     *
+     * @type {import('unctx').TransformerOptions}
+     */
+    asyncTransforms: {
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      objectDefinitions: {
+        defineNuxtComponent: ['asyncData', 'setup'],
+        definePageMeta: ['middleware', 'validate']
+      }
+    }
   }
 })

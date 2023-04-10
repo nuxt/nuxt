@@ -1,6 +1,6 @@
-import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
+import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { resolveSchema, generateTypes } from 'untyped'
+import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
@@ -39,6 +39,11 @@ export const rootComponentTemplate: NuxtTemplate<TemplateContext> = {
 export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'error-component.mjs',
   getContents: ctx => genExport(ctx.app.errorComponent!, ['default'])
+}
+// TODO: Use an alias
+export const testComponentWrapperTemplate = {
+  filename: 'test-component-wrapper.mjs',
+  getContents: (ctx: TemplateContext) => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
 }
 
 export const cssTemplate: NuxtTemplate<TemplateContext> = {
@@ -130,7 +135,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
-      "import { NuxtModule } from 'nuxt/schema'",
+      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
@@ -154,7 +159,18 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
           allowExtraKeys: false,
           indentation: 2
         }),
-      '}'
+      '}',
+      `declare module 'vue' {
+        interface ComponentCustomProperties {
+          $config: RuntimeConfig
+        }
+      }`,
+      // TODO: remove when webstorm has support for augumenting 'vue' directly
+      `declare module '@vue/runtime-dom' {
+        interface ComponentCustomProperties {
+          $config: RuntimeConfig
+        }
+      }`
     ].join('\n')
   }
 }
@@ -208,14 +224,14 @@ type IsAny<T> = 0 extends 1 & T ? true : false
 
 type MergedAppConfig<Resolved extends Record<string, any>, Custom extends Record<string, any>> = {
   [K in keyof Resolved]: K extends keyof Custom
-    ? Custom[K] extends Record<string, any>
-      ? IsAny<Custom[K]> extends true
-        ? Resolved[K]
-        : Resolved[K] extends Record<string, any>
+    ? IsAny<Custom[K]> extends true
+      ? Resolved[K]
+      : Custom[K] extends Record<string, any>
+        ? Resolved[K] extends Record<string, any>
           ? MergedAppConfig<Resolved[K], Custom[K]>
           : Exclude<Custom[K], undefined>
         : Exclude<Custom[K], undefined>
-      : Resolved[K]
+    : Resolved[K]
 }
 
 declare module 'nuxt/schema' {
@@ -278,7 +294,11 @@ export const publicPathTemplate: NuxtTemplate = {
 export const nuxtConfigTemplate = {
   filename: 'nuxt.config.mjs',
   getContents: (ctx: TemplateContext) => {
-    return Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`).join('\n\n')
+    return [
+      ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
+      `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`
+    ].join('\n\n')
   }
 }
 

@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { setup, fetch, $fetch, startServer, isDev, createPage, url } from '@nuxt/test-utils'
+import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt/test-utils'
+import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, expectWithPolling, renderPage, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, parseData, parsePayload, renderPage, withLogs } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -42,7 +43,9 @@ describe('server api', () => {
 
 describe('route rules', () => {
   it('should enable spa mode', async () => {
-    expect(await $fetch('/route-rules/spa')).toContain('serverRendered:false')
+    const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
+    expect(script.serverRendered).toEqual(false)
+    expect(attrs['data-ssr']).toEqual('false')
   })
 })
 
@@ -228,6 +231,7 @@ describe('pages', () => {
       '.client-only-script-setup',
       '.no-state'
     ]
+
     // ensure directives are correctly applied
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isHidden()))
       .then(results => results.forEach(isHidden => expect(isHidden).toBeTruthy()))
@@ -238,6 +242,9 @@ describe('pages', () => {
     // ensure single root node components are rendered once on client (should not be empty)
     await Promise.all(visibleSelectors.map(selector => page.locator(selector).innerHTML()))
       .then(results => results.forEach(innerHTML => expect(innerHTML).not.toBe('')))
+
+    // issue #20061
+    expect(await page.$eval('.client-only-script-setup', e => getComputedStyle(e).backgroundColor)).toBe('rgb(255, 0, 0)')
 
     // ensure multi-root-node is correctly rendered
     expect(await page.locator('.multi-root-node-count').innerHTML()).toContain('0')
@@ -316,6 +323,23 @@ describe('pages', () => {
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
 
     await page.close()
+  })
+})
+
+describe('rich payloads', () => {
+  it('correctly serializes and revivifies complex types', async () => {
+    const html = await $fetch('/json-payload')
+    for (const test of [
+      'Date: true',
+      'Recursive objects: true',
+      'Shallow reactive: true',
+      'Shallow ref: true',
+      'Reactive: true',
+      'Ref: true',
+      'Error: true'
+    ]) {
+      expect(html).toContain(test)
+    }
   })
 })
 
@@ -462,7 +486,8 @@ describe('legacy async data', () => {
   it('should work with defineNuxtComponent', async () => {
     const html = await $fetch('/legacy/async-data')
     expect(html).toContain('<div>Hello API</div>')
-    expect(html).toContain('{hello:"Hello API"}')
+    const { script } = parseData(html)
+    expect(script.data['options:asyncdata:/legacy/async-data'].hello).toEqual('Hello API')
   })
 })
 
@@ -707,6 +732,10 @@ describe('extends support', () => {
   })
 
   describe('middlewares', () => {
+    it('works with layer aliases', async () => {
+      const html = await $fetch('/foo')
+      expect(html).toContain('from layer alias')
+    })
     it('extends foo/middleware/foo', async () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
@@ -1196,10 +1225,28 @@ describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isDev() || isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch('/random/a/_payload.js', { responseType: 'text' })
-    expect(payload).toMatch(
-      /export default \{data:\{hey:\{[^}]*\},rand_a:\[[^\]]*\],".*":\{html:".*server-only component.*",head:\{link:\[\],style:\[\]\}\}\},prerenderedAt:\d*\}/
-    )
+    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(typeof data.prerenderedAt).toEqual('number')
+
+    const [_key, serverData] = Object.entries(data.data).find(([key]) => key.startsWith('ServerOnlyComponent'))!
+    expect(serverData).toMatchInlineSnapshot(`
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<div> server-only component </div>",
+      }
+    `)
+
+    expect(data.data).toMatchObject({
+      hey: {
+        baz: 'qux',
+        foo: 'bar'
+      },
+      rand_a: expect.arrayContaining([expect.anything()])
+    })
   })
 
   it('does not fetch a prefetched payload', async () => {
@@ -1213,10 +1260,8 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     await page.goto(url('/random/a'))
     await page.waitForLoadState('networkidle')
 
-    const importSuffix = isDev() && !isWebpack ? '?import' : ''
-
     // We are manually prefetching other payloads
-    expect(requests).toContain('/random/c/_payload.js')
+    expect(requests).toContain('/random/c/_payload.json')
 
     // We are not triggering API requests in the payload
     expect(requests).not.toContain(expect.stringContaining('/api/random'))
@@ -1231,7 +1276,7 @@ describe.skipIf(isDev() || isWindows)('payload rendering', () => {
     expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
 
     // We are fetching a payload we did not prefetch
-    expect(requests).toContain('/random/b/_payload.js' + importSuffix)
+    expect(requests).toContain('/random/b/_payload.json')
 
     // We are not refetching payloads we've already prefetched
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(1)
@@ -1271,5 +1316,15 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+})
+
+describe.runIf(isDev())('component testing', () => {
+  it('should work', async () => {
+    const comp1 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 2 })
+    expect(comp1).toContain('12 x 2 = 24')
+
+    const comp2 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 4 })
+    expect(comp2).toContain('12 x 4 = 48')
   })
 })

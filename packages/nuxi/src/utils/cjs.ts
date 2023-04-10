@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import { normalize, dirname } from 'pathe'
+import { dirname, normalize } from 'pathe'
 
 export function getModulePaths (paths?: string | string[]): string[] {
   return ([] as Array<string | undefined>)
