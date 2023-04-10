@@ -53,7 +53,7 @@ export const defineNuxtComponent: typeof defineComponent =
 
         return Promise.resolve(res)
           .then(() => Promise.all(promises))
-          .then(() => res || {})
+          .then(() => res)
           .finally(() => {
             promises.length = 0
           })
