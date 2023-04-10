@@ -14,7 +14,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   const vm = getCurrentInstance()!
   const { fetchKey } = vm.proxy!.$options
   const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
-  const { data } = await useAsyncData(`options:asyncdata:${key}`, () => callWithNuxt(nuxt, fn))
+  const { data } = await useAsyncData(`options:asyncdata:${key}`, () => callWithNuxt(nuxt, fn, [nuxt]))
   if (data.value && typeof data.value === 'object') {
     Object.assign(await res, toRefs(reactive(data.value)))
   } else if (process.dev) {
