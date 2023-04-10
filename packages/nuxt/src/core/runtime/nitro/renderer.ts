@@ -276,7 +276,7 @@ export default defineRenderHandler(async (event) => {
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 
-  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
@@ -309,7 +309,7 @@ export default defineRenderHandler(async (event) => {
               ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
               : renderPayloadScript({ ssrContext, data: ssrContext.payload })
           ),
-      routeOptions.noScripts ? undefined : _rendered.renderScripts(),
+      routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])

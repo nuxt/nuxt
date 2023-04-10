@@ -52,7 +52,7 @@ export default defineNuxtConfig({
   nitro: {
     routeRules: {
       '/route-rules/spa': { ssr: false },
-      '/no-scripts': { noScripts: true }
+      '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
