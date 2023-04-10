@@ -142,7 +142,7 @@ export const NuxtPluginIndicator = '__nuxt_plugin'
 
 export interface PluginMeta {
   name?: string
-  enforce?: 'pre' | 'post'
+  enforce?: 'payload' | 'pre' | 'post'
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -318,7 +318,8 @@ export function normalizePlugins (_plugins: Plugin[]) {
   const legacyInjectPlugins: Plugin[] = []
   const invalidPlugins: Plugin[] = []
 
-  const plugins: Record<'pre' | 'default' | 'post', Plugin[]> = {
+  const plugins: Record<'payload' | 'pre' | 'default' | 'post', Plugin[]> = {
+    payload: [],
     pre: [],
     default: [],
     post: []
@@ -358,6 +359,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
   }
 
   return [
+    ...plugins.payload,
     ...plugins.pre,
     ...plugins.default,
     ...plugins.post
