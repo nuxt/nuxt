@@ -184,5 +184,19 @@ export default defineUntypedSchema({
         }
       }
     },
+
+    /**
+     * Options passed directly to the transformer from `unctx` that preserves async context
+     * after `await`.
+     *
+     * @type {import('unctx').TransformerOptions}
+     */
+    asyncTransforms: {
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      objectDefinitions: {
+        defineNuxtComponent: ['asyncData', 'setup'],
+        definePageMeta: ['middleware', 'validate']
+      }
+    }
   }
 })
