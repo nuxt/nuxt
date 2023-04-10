@@ -343,6 +343,7 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
       '.output',
+      '.git',
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },

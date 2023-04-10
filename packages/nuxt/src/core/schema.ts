@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
-import chokidar from 'chokidar'
+import { subscribe } from '@parcel/watcher'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
 import { createResolver, defineNuxtModule } from '@nuxt/kit'
@@ -57,19 +57,16 @@ export default defineNuxtModule({
 
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
-      const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
-        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*')
-      ))
-      const watcher = chokidar.watch(filesToWatch, {
-        ...nuxt.options.watchers.chokidar,
-        ignoreInitial: true
-      })
       const onChange = debounce(async () => {
         schema = await resolveSchema()
         await writeSchema(schema)
       })
-      watcher.on('all', onChange)
-      nuxt.hook('close', () => watcher.close())
+      for (const layer of nuxt.options._layers) {
+        const subscription = await subscribe(layer.config.rootDir, onChange, {
+          ignore: ['!nuxt.schema.*']
+        })
+        nuxt.hook('close', () => subscription.unsubscribe())
+      }
     }
 
     // --- utils ---
