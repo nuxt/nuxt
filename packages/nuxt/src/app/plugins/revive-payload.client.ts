@@ -15,7 +15,7 @@ const revivers = {
 
 export default defineNuxtPlugin({
   name: 'nuxt:revive-payload:client',
-  enforce: 'payload',
+  enforce: 'pre',
   async setup (nuxtApp) {
     for (const reviver in revivers) {
       definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])

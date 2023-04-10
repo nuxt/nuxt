@@ -293,8 +293,8 @@ async function initNuxt (nuxt: Nuxt) {
   // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
     nuxt.hooks.hook('modules:done', () => {
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'), { append: true })
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'), { append: true })
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
     })
   }
 
