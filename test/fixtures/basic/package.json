@@ -5,6 +5,6 @@
     "build": "nuxi build"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "workspace:*"
   }
 }
