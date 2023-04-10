@@ -1,5 +1,5 @@
 import { hasProtocol } from 'ufo'
-import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { defineNuxtPlugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-ignore
 import layouts from '#build/layouts'
@@ -8,8 +8,7 @@ import { namedMiddleware } from '#build/middleware'
 
 export default defineNuxtPlugin({
   name: 'nuxt:prefetch',
-  setup () {
-    const nuxtApp = useNuxtApp()
+  setup (nuxtApp) {
     const router = useRouter()
 
     // Force layout prefetch on route changes
