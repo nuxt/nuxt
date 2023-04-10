@@ -437,9 +437,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@parcel/watcher':
-        specifier: ^2.1.0
-        version: 2.1.0
       '@types/clear':
         specifier: ^0.1.2
         version: 0.1.2
@@ -455,6 +452,9 @@ importers:
       c12:
         specifier: ^1.2.0
         version: 1.2.0
+      chokidar:
+        specifier: ^3.5.3
+        version: 3.5.3
       clear:
         specifier: ^0.1.0
         version: 0.1.0
@@ -1903,6 +1903,7 @@ packages:
       micromatch: 4.0.5
       node-addon-api: 3.2.1
       node-gyp-build: 4.6.0
+    dev: false
 
   /@pkgr/utils@2.3.1:
     resolution: {integrity: sha512-wfzX8kc1PMyUILA+1Z/EqoE4UCXGy0iRGMhPwdfae1+f0OXlLqCk+By+aMzgJBzR9AzS4CDizioG6Ss1gvAFJw==}
@@ -6843,6 +6844,7 @@ packages:
 
   /node-addon-api@3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
+    dev: false
 
   /node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}

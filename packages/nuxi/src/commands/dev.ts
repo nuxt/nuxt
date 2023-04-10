@@ -1,9 +1,7 @@
 import type { AddressInfo } from 'node:net'
 import type { RequestListener } from 'node:http'
-import { mkdir } from 'node:fs/promises'
 import { relative, resolve } from 'pathe'
-import type { AsyncSubscription } from '@parcel/watcher'
-import { subscribe } from '@parcel/watcher'
+import chokidar from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import type { Nuxt } from '@nuxt/schema'
 import { consola } from 'consola'
@@ -71,7 +69,7 @@ export default defineNuxtCommand({
     })
 
     let currentNuxt: Nuxt
-    let distSubscription: AsyncSubscription
+    let distWatcher: chokidar.FSWatcher
 
     const showURL = () => {
       listener.showURL({
@@ -89,8 +87,8 @@ export default defineNuxtCommand({
         if (currentNuxt) {
           await currentNuxt.close()
         }
-        if (distSubscription) {
-          await distSubscription.unsubscribe()
+        if (distWatcher) {
+          await distWatcher.close()
         }
 
         currentNuxt = await loadNuxt({
@@ -118,24 +116,18 @@ export default defineNuxtCommand({
 
         await currentNuxt.ready()
 
-        const distDir = resolve(currentNuxt.options.buildDir, 'dist')
-        await mkdir(distDir, { recursive: true })
-        distSubscription = await subscribe(distDir, (err, events) => {
-          if (err) { return }
-          for (const event of events) {
-            if (event.type === 'delete') {
-              dLoad(true, '.nuxt/dist directory has been removed')
-            }
-          }
-        }, { ignore: ['**/*'] })
+        distWatcher = chokidar.watch(resolve(currentNuxt.options.buildDir, 'dist'), { ignoreInitial: true, depth: 0 })
+        distWatcher.on('unlinkDir', () => {
+          dLoad(true, '.nuxt/dist directory has been removed')
+        })
 
         const unsub = currentNuxt.hooks.hook('restart', async (options) => {
           unsub() // we use this instead of `hookOnce` for Nuxt Bridge support
           if (options?.hard && process.send) {
             await listener.close().catch(() => {})
             await currentNuxt.close().catch(() => {})
-            await watcher.unsubscribe().catch(() => {})
-            await distSubscription.unsubscribe().catch(() => {})
+            await watcher.close().catch(() => {})
+            await distWatcher.close().catch(() => {})
             process.send({ type: 'nuxt:restart' })
           } else {
             await load(true)
@@ -168,15 +160,13 @@ export default defineNuxtCommand({
     // Watch for config changes
     // TODO: Watcher service, modules, and requireTree
     const dLoad = debounce(load)
-    const watcher = await subscribe(rootDir, (err, events) => {
-      if (err) { return }
-      for (const event of events) {
-        const file = relative(rootDir, event.path)
-        if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
-          dLoad(true, `${file} updated`)
-        }
+    const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
+    watcher.on('all', (_event, _file) => {
+      const file = relative(rootDir, _file)
+      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
+        dLoad(true, `${file} updated`)
       }
-    }, { ignore: ['**/*'] })
+    })
 
     await load(false)
 
