@@ -67,8 +67,8 @@ importers:
         specifier: ^8.38.0
         version: 8.38.0
       eslint-plugin-jsdoc:
-        specifier: ^40.1.2
-        version: 40.1.2(eslint@8.38.0)
+        specifier: ^40.2.1
+        version: 40.2.1(eslint@8.38.0)
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -406,8 +406,8 @@ importers:
         specifier: ^7.3.8
         version: 7.3.8
       unctx:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       unimport:
         specifier: ^3.0.6
         version: 3.0.6(rollup@3.20.2)
@@ -636,11 +636,11 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       unctx:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       unenv:
-        specifier: ^1.2.2
-        version: 1.2.2
+        specifier: ^1.3.0
+        version: 1.3.0
       unimport:
         specifier: ^3.0.6
         version: 3.0.6(rollup@3.20.2)
@@ -3587,7 +3587,7 @@ packages:
       convert-gitmoji: 0.1.3
       execa: 7.1.1
       mri: 1.2.0
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       ofetch: 1.0.1
       open: 9.1.0
       pathe: 1.1.0
@@ -4871,8 +4871,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc@40.1.2(eslint@8.38.0):
-    resolution: {integrity: sha512-U4Kt42OVjF0EXOWPEc8pjanT8O1ULvILwgA5k87CnhrCKG4xaJ8Sjsb6CWgDtaemOywN06u86duKU1yMaBp7IQ==}
+  /eslint-plugin-jsdoc@40.2.1(eslint@8.38.0):
+    resolution: {integrity: sha512-d7PsUMNqrbCROSAeJd2dhTS/DapYEJ7vo27g12u4nh/bLQHHcqXNbXwhANf/D5/gUDNwinU3ZmmM4f2alQ1ncA==}
     engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
@@ -5474,7 +5474,7 @@ packages:
       defu: 6.1.2
       https-proxy-agent: 5.0.1
       mri: 1.2.0
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       pathe: 1.1.0
       tar: 6.1.13
     transitivePeerDependencies:
@@ -6753,7 +6753,7 @@ packages:
       mime: 3.0.0
       mlly: 1.2.0
       mri: 1.2.0
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       ofetch: 1.0.1
       ohash: 1.0.0
       pathe: 1.1.0
@@ -6770,7 +6770,7 @@ packages:
       source-map-support: 0.5.21
       std-env: 3.3.2
       ufo: 1.1.1
-      unenv: 1.2.2
+      unenv: 1.3.0
       unimport: 3.0.6(rollup@3.20.2)
       unstorage: 1.4.1
     transitivePeerDependencies:
@@ -6798,8 +6798,8 @@ packages:
     resolution: {integrity: sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==}
     dev: true
 
-  /node-fetch-native@1.0.2:
-    resolution: {integrity: sha512-KIkvH1jl6b3O7es/0ShyCgWLcfXxlBrLBbP3rOr23WArC66IMcU4DeZEeYEOwnopYhawLTn7/y+YtmASe8DFVQ==}
+  /node-fetch-native@1.1.0:
+    resolution: {integrity: sha512-nl5goFCig93JZ9FIV8GHT9xpNqXbxQUzkOmKIMKmncsBH9jhg7qKex8hirpymkBFmNQ114chEEG5lS4wgK2I+Q==}
 
   /node-fetch@2.6.9:
     resolution: {integrity: sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==}
@@ -6938,7 +6938,7 @@ packages:
     resolution: {integrity: sha512-icBz2JYfEpt+wZz1FRoGcrMigjNKjzvufE26m9+yUiacRQRHwnNlGRPiDnW4op7WX/MR6aniwS8xw8jyVelF2g==}
     dependencies:
       destr: 1.2.2
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       ufo: 1.1.1
 
   /ohash@1.0.0:
@@ -8705,8 +8705,8 @@ packages:
   /uncrypto@0.1.2:
     resolution: {integrity: sha512-kuZwRKV615lEw/Xx3Iz56FKk3nOeOVGaVmw0eg+x4Mne28lCotNFbBhDW7dEBCBKyKbRQiCadEZeNAFPVC5cgw==}
 
-  /unctx@2.1.2:
-    resolution: {integrity: sha512-KK18aLRKe3OlbPyHbXAkIWSU3xK8GInomXfA7fzDMGFXQ1crX1UWrCzKesVXeUyHIayHUrnTvf87IPCKMyeKTg==}
+  /unctx@2.2.0:
+    resolution: {integrity: sha512-th8S0zg9m35lirV7FYI6AYMKHfmLoEGC87yjuS4MGLS/OZ3Pv1Qx+HyXtnlwteL2YL47xN1ADDKoFWYw3VZoEA==}
     dependencies:
       acorn: 8.8.2
       estree-walker: 3.0.3
@@ -8721,12 +8721,12 @@ packages:
       busboy: 1.6.0
     dev: true
 
-  /unenv@1.2.2:
-    resolution: {integrity: sha512-SYqIFLFC4wYtLyxD6RyAfoK/dkgvW85BfNdiYvroyfrL4cyLkoigSldSBBiUTgtxwb4pcE0zexw502DghVWeuA==}
+  /unenv@1.3.0:
+    resolution: {integrity: sha512-NTAVceoRPD5brWx6ej+zVCP6aw1LXsx6VjmpaJKE3nZqrycZ6nB1MrKOVZ65hcSVlzCb8QdZAEY162awdD5juA==}
     dependencies:
       defu: 6.1.2
       mime: 3.0.0
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       pathe: 1.1.0
 
   /unhead@1.1.25:
@@ -8843,7 +8843,7 @@ packages:
       listhen: 1.0.4
       lru-cache: 7.18.3
       mri: 1.2.0
-      node-fetch-native: 1.0.2
+      node-fetch-native: 1.1.0
       ofetch: 1.0.1
       ufo: 1.1.1
     transitivePeerDependencies:
