@@ -21,7 +21,7 @@
     "eventsource-polyfill": "^0.9.6",
     "extract-css-chunks-webpack-plugin": "^4.9.0",
     "file-loader": "^6.2.0",
-    "glob": "^8.1.0",
+    "glob": "^10.0.0",
     "hard-source-webpack-plugin": "^0.13.1",
     "hash-sum": "^2.0.0",
     "html-webpack-plugin": "^4.5.1",
