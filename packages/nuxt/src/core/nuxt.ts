@@ -98,8 +98,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   nuxt.hook('modules:done', () => {
     // Add unctx transform
-    addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(UnctxTransformPlugin().vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(UnctxTransformPlugin().webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
