@@ -58,7 +58,7 @@
     "changelogen": "^0.5.2",
     "crawler": "^1.4.0",
     "eslint": "^8.38.0",
-    "eslint-plugin-jsdoc": "^40.1.2",
+    "eslint-plugin-jsdoc": "^40.2.1",
     "execa": "^7.1.1",
     "expect-type": "^0.15.0",
     "globby": "^13.1.3",
