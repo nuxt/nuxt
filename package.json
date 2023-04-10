@@ -78,7 +78,7 @@
     "node-fetch-native": "^1.1.0",
     "puppeteer-core": "^19.8.5",
     "request": "^2.88.2",
-    "rimraf": "^4.4.1",
+    "rimraf": "^5.0.0",
     "rollup": "3.20.2",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-license": "^3.0.1",
