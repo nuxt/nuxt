@@ -281,6 +281,12 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
   }
 
+  // Add experimental automatic view transition api support
+  if (nuxt.options.experimental.viewTransition) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+  }
+
+  // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
     nuxt.hook('modules:done', () => {
       nuxt.options.plugins.unshift(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))

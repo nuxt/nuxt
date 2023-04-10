@@ -122,6 +122,13 @@ export default defineUntypedSchema({
     crossOriginPrefetch: false,
 
     /**
+     * Enable View Transition API integration with client-side router.
+     *
+     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     */
+    viewTransition: false,
+
+    /**
      * Write early hints when using node server.
      *
      * @note nginx does not support 103 Early hints in the current version.
