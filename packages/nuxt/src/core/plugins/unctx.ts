@@ -10,7 +10,8 @@ export const UnctxTransformPlugin = () => {
     asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
     objectDefinitions: {
       defineComponent: ['setup'],
-      defineNuxtComponent: ['setup']
+      defineNuxtComponent: ['setup'],
+      definePageMeta: ['middleware', 'validate']
     }
   })
 
