@@ -23,6 +23,7 @@ export default defineBuildConfig({
     'vue-bundle-renderer',
     '@unhead/schema',
     'vue',
+    'unctx',
     'hookable',
     'nitropack',
     'webpack',

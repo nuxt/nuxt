@@ -1,21 +1,19 @@
 import { pathToFileURL } from 'node:url'
 import { parseQuery, parseURL } from 'ufo'
+import type { TransformerOptions } from 'unctx/transform'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 
-export const UnctxTransformPlugin = () => {
-  const transformer = createTransformer({
-    asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
-    objectDefinitions: {
-      defineComponent: ['setup'],
-      defineNuxtComponent: ['setup'],
-      definePageMeta: ['middleware', 'validate']
-    }
-  })
+interface UnctxTransformPluginOptions {
+  sourcemap?: boolean
+  transformerOptions: TransformerOptions
+}
 
-  return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
+export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPluginOptions) => {
+  const transformer = createTransformer(options.transformerOptions)
+  return {
     name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
@@ -38,7 +36,7 @@ export const UnctxTransformPlugin = () => {
     },
     transform (code, id) {
       // TODO: needed for webpack - update transform in unctx/unplugin?
-      if (code.startsWith(TRANSFORM_MARKER)) { return }
+      if (code.startsWith(TRANSFORM_MARKER) || !transformer.shouldTransform(code)) { return }
       const result = transformer.transform(code)
       if (result) {
         return {
@@ -49,5 +47,5 @@ export const UnctxTransformPlugin = () => {
         }
       }
     }
-  }))
-}
+  }
+})
