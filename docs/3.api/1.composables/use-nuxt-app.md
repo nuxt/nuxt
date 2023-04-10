@@ -120,6 +120,10 @@ You can also add your own types, with a special object-syntax plugin:
 
 ```ts
 export default defineNuxtPlugin({
+  /**
+   * This tells Nuxt to run this plugin before we revive the Nuxt payload. You will not have access
+   * the router or other Nuxt-injected properties in this kind of plugin.
+   */
   enforce: 'payload',
   setup (nuxtApp) {
     definePayloadReducer('BlinkingText', data => data === '<blink>' && '_')
