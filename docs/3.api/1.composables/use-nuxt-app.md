@@ -127,6 +127,7 @@ export default defineNuxtPlugin({
   }
 })
 ```
+
 ::
 
 ### `isHydrating`
