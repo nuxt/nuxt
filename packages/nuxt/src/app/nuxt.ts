@@ -383,21 +383,11 @@ const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
 }
 
 export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
-  if (typeof plugin === 'object') {
-    return defineNuxtPlugin({
-      ...plugin,
-      order: -40
-    })
-  }
-
-  return defineNuxtPlugin({
-    setup: plugin,
-    order: -40
-  })
+  return defineNuxtPlugin(plugin, { order: -40 })
 }
 
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Plugin<T> {
-  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }) }
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
+  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
 
   const wrapper: Plugin<T> = (nuxtApp) => {
     if (plugin.hooks) {
@@ -409,8 +399,9 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   }
 
   wrapper.meta = {
-    name: plugin.name || plugin.setup?.name,
+    name: meta?.name || plugin.name || plugin.setup?.name,
     order:
+      meta?.order ||
       plugin.order ||
       orderMap[plugin.enforce || 'default'] ||
       orderMap.default
