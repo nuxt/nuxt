@@ -276,6 +276,8 @@ export default defineRenderHandler(async (event) => {
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     island: Boolean(islandContext),
@@ -285,7 +287,7 @@ export default defineRenderHandler(async (event) => {
       process.env.NUXT_JSON_PAYLOADS
         ? _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null
         : _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null,
-      _rendered.renderResourceHints(),
+      NO_SCRIPTS ? null : _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
       ssrContext.styles
@@ -297,7 +299,7 @@ export default defineRenderHandler(async (event) => {
     ]),
     body: [_rendered.html],
     bodyAppend: normalizeChunks([
-      process.env.NUXT_NO_SCRIPTS
+      NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
             ? process.env.NUXT_JSON_PAYLOADS
@@ -307,7 +309,7 @@ export default defineRenderHandler(async (event) => {
               ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
               : renderPayloadScript({ ssrContext, data: ssrContext.payload })
           ),
-      _rendered.renderScripts(),
+      routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])
