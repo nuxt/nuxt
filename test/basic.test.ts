@@ -46,6 +46,7 @@ describe('route rules', () => {
     const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
     expect(script.serverRendered).toEqual(false)
     expect(attrs['data-ssr']).toEqual('false')
+    await expectNoClientErrors('/route-rules/spa')
   })
 
   it('test noScript routeRules', async () => {
