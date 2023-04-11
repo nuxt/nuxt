@@ -16,15 +16,7 @@ export default defineComponent({
   setup (props) {
     const uid = props.context.uid ?? randomUUID()
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
-    const slots: Record<string, Function> = {}
-    if (props.context.slotsName) {
-      for (const slotName of props.context.slotsName) {
-        slots[slotName] = () => {
-          return createVNode('div', { 'v-ssr-slot-name': slotName, style: 'display: contents;' })
-        }
-      }
-    }
-
+ 
     if (!component) {
       throw createError({
         statusCode: 404,
@@ -32,6 +24,6 @@ export default defineComponent({
       })
     }
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'v-ssr-component-uid': uid }, slots)
+    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': uid })
   }
 })

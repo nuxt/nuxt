@@ -457,7 +457,7 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
     if (!match) { continue }
     const [, uid, slot] = match
     if (!uid || !slot) { continue }
-    html = html.replace(new RegExp(`<div v-ssr-component-uid="${uid}">((?!v-ssr-slot-name="${slot}"|v-ssr-component-uid).)*<div v-ssr-slot-name="${slot}"([^>]*)>`), (full) => {
+    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}">((?!ssr-slot-name="${slot}"|nuxt-ssr-component-uid).)*<div ssr-slot-name="${slot}"([^>]*)>`), (full) => {
       return full + teleports[key]
     })
   }

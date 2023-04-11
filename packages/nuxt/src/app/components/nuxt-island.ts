@@ -12,7 +12,7 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
-const SSR_UID_RE = /v-ssr-component-uid="([^"]*)"/
+const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 
 export default defineComponent({
   name: 'NuxtIsland',
@@ -45,6 +45,10 @@ export default defineComponent({
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
+    const slotProps = computed(() => {
+
+      return {}
+    })
 
     function _fetchComponent () {
       const url = `/__nuxt_island/${props.name}:${hashId.value}`
@@ -100,7 +104,7 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
-          nodes.push(createVNode(Teleport, { to: process.client ? `[v-ssr-component-uid='${uid.value}'] [v-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
+          nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
             default: () => [slots[slot]?.()]
           }))
         }

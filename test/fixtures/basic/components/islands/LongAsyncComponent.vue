@@ -8,7 +8,7 @@
     <div id="long-async-component-count">
       {{ count }}
     </div>
-    <slot name="test" />
+    <slot name="test" :count="count" />
     <p>hello world !!!</p>
   </div>
 </template>
