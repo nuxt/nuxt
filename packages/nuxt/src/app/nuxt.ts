@@ -147,12 +147,12 @@ export interface PluginMeta {
    * This allows more granular control over plugin order and should only be used by advanced users.
    * It overrides the value of `enforce` and is used to sort plugins.
    */
-  priority?: number
+  order?: number
 }
 
 export interface ResolvedPluginMeta {
   name?: string
-  priority: number
+  order: number
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -351,7 +351,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
     plugins.push(_plugin)
   }
 
-  plugins.sort((a, b) => (a.meta?.priority || priorityMap.default) - (b.meta?.priority || priorityMap.default))
+  plugins.sort((a, b) => (a.meta?.order || orderMap.default) - (b.meta?.order || orderMap.default))
 
   if (process.dev && legacyInjectPlugins.length) {
     console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
@@ -376,7 +376,7 @@ export function normalizePlugins (_plugins: Plugin[]) {
 // +20: post (user) <-- post mapped to this
 // +30: post-all (nuxt)
 
-const priorityMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
+const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
   pre: -20,
   default: 0,
   post: 20
@@ -386,13 +386,13 @@ export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: 
   if (typeof plugin === 'object') {
     return defineNuxtPlugin({
       ...plugin,
-      priority: -40
+      order: -40
     })
   }
 
   return defineNuxtPlugin({
     setup: plugin,
-    priority: -40
+    order: -40
   })
 }
 
@@ -410,10 +410,10 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   wrapper.meta = {
     name: plugin.name || plugin.setup?.name,
-    priority:
-      plugin.priority ||
-      priorityMap[plugin.enforce || 'default'] ||
-      priorityMap.default
+    order:
+      plugin.order ||
+      orderMap[plugin.enforce || 'default'] ||
+      orderMap.default
   }
 
   wrapper[NuxtPluginIndicator] = true
