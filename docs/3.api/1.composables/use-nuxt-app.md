@@ -118,7 +118,7 @@ Normally `payload` must contain only plain JavaScript objects. But by setting `e
 
 You can also add your own types, with a special plugin helper:
 
-```ts
+```ts [plugins/custom-payload.ts]
   /**
    * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
    * You will not have access to the router or other Nuxt-injected properties.
