@@ -44,6 +44,10 @@ export async function build (nuxt: Nuxt) {
 }
 
 function watch (nuxt: Nuxt) {
+  if (nuxt.options.debug) {
+    console.time('[nuxt] builder:chokidar:watch')
+  }
+
   const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     cwd: nuxt.options.srcDir,
@@ -54,6 +58,10 @@ function watch (nuxt: Nuxt) {
       'node_modules'
     ]
   })
+
+  if (nuxt.options.debug) {
+    watcher.on('ready', () => console.timeEnd('[nuxt] builder:chokidar:watch'))
+  }
 
   watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
   nuxt.hook('close', () => watcher.close())
