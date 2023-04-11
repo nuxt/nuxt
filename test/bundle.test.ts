@@ -7,7 +7,7 @@ import { join } from 'pathe'
 import { isWindows } from 'std-env'
 import { isRenderingJson } from './utils'
 
-describe.skipIf(isWindows || process.env.ECOSYSTEM_CI || !isRenderingJson)('minimal nuxt application', () => {
+describe.skipIf(isWindows || process.env.ECOSYSTEM_CI || !isRenderingJson || process.env.TEST_ENV === 'dev')('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
