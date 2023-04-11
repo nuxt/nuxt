@@ -55,7 +55,46 @@ export default defineComponent({
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
     const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
-    const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+    const layout = computed(() => {
+      const layoutName = unref(props.name) ?? route.meta.layout as string ?? 'default'
+
+      if (typeof layoutName === 'string') {
+        const layoutPath = layoutName.replace(/-/g, '/')
+
+        // Check if layout exists for example `desktop-default` will translate to `layouts/desktop/default`
+        if (layoutPath in layouts) {
+          return layoutPath
+        }
+
+        // Check if layout exists for example `desktop` or `desktop-index` will translate to ` `layouts/desktop/index`
+        if ((layoutPath + '/index') in layouts) {
+          return layoutPath + '/index'
+        }
+
+        // If the directory inside layouts has has a dash in the name such as `desktop-base` we need to check for that
+        if (layoutName.includes('-')) {
+          const layoutPath = layoutName.replace(/-/g, '/')
+
+          // Check if layout exists for example `desktop-base`  will translate to `layouts/desktop/base`
+          if (layoutPath in layouts) {
+            return layoutPath
+          }
+
+          // Check if layout exists for example `desktop-base` will translate to `layouts/desktop-base/base`
+          const layoutPathLast = layoutName.split('-').pop()
+          if (layoutName + '/' + layoutPathLast in layouts) {
+            return layoutName + '/' + layoutPathLast
+          }
+
+          // Check if layout exists for example `desktop-base` will translate to `layouts/desktop-base/index`
+          if (layoutName + '/index' in layouts) {
+            return layoutName + '/index'
+          }
+        }
+      }
+
+      return layoutName
+    })
 
     let vnode: VNode
     let _layout: string | false
