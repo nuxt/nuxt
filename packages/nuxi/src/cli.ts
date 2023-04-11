@@ -54,6 +54,11 @@ const wrapReporter = (reporter: ConsolaReporter) => ({
       if (msg.startsWith('[Vue Router warn]: No match found for location with path')) {
         return
       }
+      // Suppress warning about native Node.js fetch
+      if (msg.includes('ExperimentalWarning: The Fetch API is an experimental feature')) {
+        return
+      }
+      // TODO: resolve upstream in Vite
       // Hide sourcemap warnings related to node_modules
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) {
         return
