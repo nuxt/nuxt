@@ -186,7 +186,7 @@ export default defineNuxtConfig({
   },
   experimental: {
     polyfillVueUseHead: true,
-    renderJsonPayloads: true,
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,

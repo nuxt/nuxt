@@ -1,9 +1,12 @@
+import { Script, createContext } from 'node:vm'
 import { expect } from 'vitest'
 import type { Page } from 'playwright'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
+
+export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -108,6 +111,14 @@ export function parsePayload (payload: string) {
   return parse(payload || '', revivers)
 }
 export function parseData (html: string) {
+  if (!isRenderingJson) {
+    const { script } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
+    const _script = new Script(script)
+    return {
+      script: _script.runInContext(createContext({ window: {} })),
+      attrs: {}
+    }
+  }
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
   const _attrs: Record<string, string> = {}
   for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)+="(?<value>[^"]+)"/g)) {
