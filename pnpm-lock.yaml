@@ -52,8 +52,8 @@ importers:
         specifier: ^7.3.13
         version: 7.3.13
       '@unocss/reset':
-        specifier: ^0.51.2
-        version: 0.51.2
+        specifier: ^0.51.3
+        version: 0.51.3
       case-police:
         specifier: ^0.5.14
         version: 0.5.14
@@ -67,8 +67,8 @@ importers:
         specifier: ^8.38.0
         version: 8.38.0
       eslint-plugin-jsdoc:
-        specifier: ^40.2.1
-        version: 40.2.1(eslint@8.38.0)
+        specifier: ^40.3.0
+        version: 40.3.0(eslint@8.38.0)
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -100,8 +100,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       semver:
-        specifier: ^7.3.8
-        version: 7.3.8
+        specifier: ^7.4.0
+        version: 7.4.0
       std-env:
         specifier: ^3.3.2
         version: 3.3.2
@@ -119,7 +119,7 @@ importers:
         version: 4.2.1(@types/node@18.15.11)
       vitest:
         specifier: ^0.30.0
-        version: 0.30.0(playwright@1.32.2)
+        version: 0.30.0(playwright@1.32.3)
       vue-tsc:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.0.4)
@@ -161,7 +161,7 @@ importers:
         version: link:../../../packages/nuxt
       vitest:
         specifier: latest
-        version: 0.30.0(playwright@1.32.2)
+        version: 0.30.0(playwright@1.32.3)
 
   examples/app-config:
     devDependencies:
@@ -403,8 +403,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       semver:
-        specifier: ^7.3.8
-        version: 7.3.8
+        specifier: ^7.4.0
+        version: 7.4.0
       unctx:
         specifier: ^2.2.0
         version: 2.2.0
@@ -510,8 +510,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       semver:
-        specifier: ^7.3.8
-        version: 7.3.8
+        specifier: ^7.4.0
+        version: 7.4.0
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
@@ -783,14 +783,14 @@ importers:
         version: 3.2.47
     devDependencies:
       playwright:
-        specifier: ^1.32.2
-        version: 1.32.2
+        specifier: ^1.32.3
+        version: 1.32.3
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
       vitest:
         specifier: ^0.30.0
-        version: 0.30.0(playwright@1.32.2)
+        version: 0.30.0(playwright@1.32.3)
 
   packages/vite:
     dependencies:
@@ -1737,7 +1737,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.3.8
+      semver: 7.4.0
       tar: 6.1.13
     transitivePeerDependencies:
       - encoding
@@ -2332,7 +2332,7 @@ packages:
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
       regexpp: 3.2.0
-      semver: 7.3.8
+      semver: 7.4.0
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2406,7 +2406,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.3.8
+      semver: 7.4.0
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2427,7 +2427,7 @@ packages:
       eslint: 8.38.0
       eslint-scope: 5.1.1
       eslint-utils: 3.0.0(eslint@8.38.0)
-      semver: 7.3.8
+      semver: 7.4.0
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2614,8 +2614,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset@0.51.2:
-    resolution: {integrity: sha512-HWn3qSdYT+VE1IiMgsXz5bE9pQF5SXWr7EIjFj2seb+YQkaf266vaUNUM5ln/uD6mWWwuo3TZSrA5+Vz4darkw==}
+  /@unocss/reset@0.51.3:
+    resolution: {integrity: sha512-hdm9pKj7ih6MLOSjGJisvh0TMnPmyGDMXQDcgGZJATgVuTJtBmXE74nsIgBVRCfjwqDDqmzG2TB0PlpiTFM9mg==}
     dev: true
 
   /@unocss/scope@0.45.30:
@@ -3477,7 +3477,7 @@ packages:
   /builtins@5.0.1:
     resolution: {integrity: sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==}
     dependencies:
-      semver: 7.3.8
+      semver: 7.4.0
     dev: true
 
   /bundle-name@3.0.0:
@@ -3596,7 +3596,7 @@ packages:
       pathe: 1.1.0
       pkg-types: 1.0.2
       scule: 1.0.0
-      semver: 7.3.8
+      semver: 7.4.0
       yaml: 2.2.1
     transitivePeerDependencies:
       - supports-color
@@ -3793,7 +3793,7 @@ packages:
       js-string-escape: 1.0.1
       lodash: 4.17.21
       md5-hex: 3.0.1
-      semver: 7.3.8
+      semver: 7.4.0
       well-known-symbols: 2.0.0
     dev: true
 
@@ -3917,7 +3917,7 @@ packages:
       postcss-modules-scope: 3.0.0(postcss@8.4.21)
       postcss-modules-values: 4.0.0(postcss@8.4.21)
       postcss-value-parser: 4.2.0
-      semver: 7.3.8
+      semver: 7.4.0
       webpack: 5.78.0
     dev: false
 
@@ -4874,8 +4874,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc@40.2.1(eslint@8.38.0):
-    resolution: {integrity: sha512-d7PsUMNqrbCROSAeJd2dhTS/DapYEJ7vo27g12u4nh/bLQHHcqXNbXwhANf/D5/gUDNwinU3ZmmM4f2alQ1ncA==}
+  /eslint-plugin-jsdoc@40.3.0(eslint@8.38.0):
+    resolution: {integrity: sha512-EhCqpzRkxoT2DUB4AnrU0ggBYvTh3bWrLZzQTupq6vSVE6XzNwJVKsOHa41GCoevnsWMBNmoDVjXWGqckjuG1g==}
     engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
@@ -4886,7 +4886,7 @@ packages:
       escape-string-regexp: 4.0.0
       eslint: 8.38.0
       esquery: 1.5.0
-      semver: 7.3.8
+      semver: 7.4.0
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
@@ -4906,7 +4906,7 @@ packages:
       is-core-module: 2.11.0
       minimatch: 3.1.2
       resolve: 1.22.1
-      semver: 7.3.8
+      semver: 7.4.0
     dev: true
 
   /eslint-plugin-node@11.1.0(eslint@8.38.0):
@@ -4952,7 +4952,7 @@ packages:
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.24
       safe-regex: 2.1.1
-      semver: 7.3.8
+      semver: 7.4.0
       strip-indent: 3.0.0
     dev: true
 
@@ -4967,7 +4967,7 @@ packages:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 6.0.11
-      semver: 7.3.8
+      semver: 7.4.0
       vue-eslint-parser: 9.1.0(eslint@8.38.0)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
@@ -5318,7 +5318,7 @@ packages:
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.1.1
-      semver: 7.3.8
+      semver: 7.4.0
       tapable: 2.2.1
       typescript: 5.0.4
       webpack: 5.78.0
@@ -6766,7 +6766,7 @@ packages:
       rollup: 3.20.2
       rollup-plugin-visualizer: 5.9.0(rollup@3.20.2)
       scule: 1.0.0
-      semver: 7.3.8
+      semver: 7.4.0
       serve-placeholder: 2.0.1
       serve-static: 1.15.0
       source-map-support: 0.5.21
@@ -7182,19 +7182,19 @@ packages:
       mlly: 1.2.0
       pathe: 1.1.0
 
-  /playwright-core@1.32.2:
-    resolution: {integrity: sha512-zD7aonO+07kOTthsrCR3YCVnDcqSHIJpdFUtZEMOb6//1Rc7/6mZDRdw+nlzcQiQltOOsiqI3rrSyn/SlyjnJQ==}
+  /playwright-core@1.32.3:
+    resolution: {integrity: sha512-SB+cdrnu74ZIn5Ogh/8278ngEh9NEEV0vR4sJFmK04h2iZpybfbqBY0bX6+BLYWVdV12JLLI+JEFtSnYgR+mWg==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
 
-  /playwright@1.32.2:
-    resolution: {integrity: sha512-jHVnXJke0PXpuPszKtk9y1zZSlzO5+2a+aockT/AND0oeXx46FiJEFrafthurglLygVZA+1gEbtUM1C7qtTV+Q==}
+  /playwright@1.32.3:
+    resolution: {integrity: sha512-h/ylpgoj6l/EjkfUDyx8cdOlfzC96itPpPe8BXacFkqpw/YsuxkpPyVbzEq4jw+bAJh5FLgh31Ljg2cR6HV3uw==}
     engines: {node: '>=14'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.32.2
+      playwright-core: 1.32.3
     dev: true
 
   /pluralize@8.0.0:
@@ -7308,7 +7308,7 @@ packages:
       cosmiconfig-typescript-loader: 4.3.0(@types/node@18.15.11)(cosmiconfig@8.1.3)(ts-node@10.9.1)(typescript@5.0.4)
       klona: 2.0.6
       postcss: 8.4.21
-      semver: 7.3.8
+      semver: 7.4.0
       ts-node: 10.9.1(@types/node@18.15.11)(typescript@5.0.4)
       typescript: 5.0.4
       webpack: 5.78.0
@@ -7991,8 +7991,8 @@ packages:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
     hasBin: true
 
-  /semver@7.3.8:
-    resolution: {integrity: sha512-NB1ctGL5rlHrPJtFDVIVzTyQylMLu9N9VICA6HSFJo8MCGVTMW6gfpicwKmmK/dAjTOrqu5l63JJOpDSrAis3A==}
+  /semver@7.4.0:
+    resolution: {integrity: sha512-RgOxM8Mw+7Zus0+zcLEUn8+JfoLpj/huFTItQy2hsM4khuC1HYRDp0cU482Ewn/Fcy6bCjufD8vAj7voC66KQw==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -9075,7 +9075,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest@0.30.0(playwright@1.32.2):
+  /vitest@0.30.0(playwright@1.32.3):
     resolution: {integrity: sha512-2WW4WeTHtrLFeoiuotWvEW6khozx1NvMGYoGsNz2btdddEbqvEdPJIouIdoiC5i61Rl1ctZvm9cn2R9TcPQlzw==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -9124,7 +9124,7 @@ packages:
       magic-string: 0.30.0
       pathe: 1.1.0
       picocolors: 1.0.0
-      playwright: 1.32.2
+      playwright: 1.32.3
       source-map: 0.6.1
       std-env: 3.3.2
       strip-literal: 1.0.1
@@ -9152,7 +9152,7 @@ packages:
     engines: {vscode: ^1.52.0}
     dependencies:
       minimatch: 3.1.2
-      semver: 7.3.8
+      semver: 7.4.0
       vscode-languageserver-protocol: 3.16.0
     dev: false
 
@@ -9220,7 +9220,7 @@ packages:
       espree: 9.5.1
       esquery: 1.5.0
       lodash: 4.17.21
-      semver: 7.3.8
+      semver: 7.4.0
     transitivePeerDependencies:
       - supports-color
     dev: true
