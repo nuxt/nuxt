@@ -142,13 +142,23 @@ export const NuxtPluginIndicator = '__nuxt_plugin'
 
 export interface PluginMeta {
   name?: string
-  enforce?: 'payload' | 'pre' | 'post'
+  enforce?: 'pre' | 'default' | 'post'
+  /**
+   * This allows more granular control over plugin order and should only be used by advanced users.
+   * It overrides the value of `enforce` and is used to sort plugins.
+   */
+  priority?: number
+}
+
+export interface ResolvedPluginMeta {
+  name?: string
+  priority: number
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
-  meta?: PluginMeta
+  meta?: ResolvedPluginMeta
 }
 
 export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
@@ -318,20 +328,13 @@ export function normalizePlugins (_plugins: Plugin[]) {
   const legacyInjectPlugins: Plugin[] = []
   const invalidPlugins: Plugin[] = []
 
-  const plugins: Record<'payload' | 'pre' | 'default' | 'post', Plugin[]> = {
-    payload: [],
-    pre: [],
-    default: [],
-    post: []
-  }
+  const plugins: Plugin[] = []
 
   for (const plugin of _plugins) {
     if (typeof plugin !== 'function') {
       if (process.dev) { invalidPlugins.push(plugin) }
       continue
     }
-
-    const order = plugin.meta?.enforce || 'default'
 
     // TODO: Skip invalid plugins in next releases
     let _plugin = plugin
@@ -345,8 +348,10 @@ export function normalizePlugins (_plugins: Plugin[]) {
     // Allow usage without wrapper but warn
     if (process.dev && !isNuxtPlugin(_plugin)) { unwrappedPlugins.push(_plugin) }
 
-    plugins[order].push(_plugin)
+    plugins.push(_plugin)
   }
+
+  plugins.sort((a, b) => (a.meta?.priority || priorityMap.default) - (b.meta?.priority || priorityMap.default))
 
   if (process.dev && legacyInjectPlugins.length) {
     console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
@@ -358,19 +363,41 @@ export function normalizePlugins (_plugins: Plugin[]) {
     console.warn('[warn] [nuxt] You are using a plugin that has not been wrapped in `defineNuxtPlugin`. It is advised to wrap your plugins as in the future this may enable enhancements:', unwrappedPlugins.map(p => p.name || p).join(','))
   }
 
-  return [
-    ...plugins.payload,
-    ...plugins.pre,
-    ...plugins.default,
-    ...plugins.post
-  ]
+  return plugins
 }
 
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
-  if (typeof plugin === 'function') {
-    plugin[NuxtPluginIndicator] = true
-    return plugin
+// -50: pre-all (nuxt)
+// -40: custom payload revivers (user)
+// -30: payload reviving (nuxt)
+// -20: pre (user) <-- pre mapped to this
+// -10: default (nuxt)
+// 0: default (user) <-- default behavior
+// +10: post (nuxt)
+// +20: post (user) <-- post mapped to this
+// +30: post-all (nuxt)
+
+const priorityMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
+  pre: -20,
+  default: 0,
+  post: 20
+}
+
+export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
+  if (typeof plugin === 'object') {
+    return defineNuxtPlugin({
+      ...plugin,
+      priority: -40
+    })
   }
+
+  return defineNuxtPlugin({
+    setup: plugin,
+    priority: -40
+  })
+}
+
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Required<Plugin<T>> {
+  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }) }
 
   const wrapper: Plugin<T> = (nuxtApp) => {
     if (plugin.hooks) {
@@ -382,13 +409,16 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   }
 
   wrapper.meta = {
-    name: plugin.name,
-    enforce: plugin.enforce
+    name: plugin.name || plugin.setup?.name,
+    priority:
+      plugin.priority ||
+      priorityMap[plugin.enforce || 'default'] ||
+      priorityMap.default
   }
 
   wrapper[NuxtPluginIndicator] = true
 
-  return wrapper
+  return wrapper as Required<Plugin<T>>
 }
 
 export function isNuxtPlugin (plugin: unknown) {

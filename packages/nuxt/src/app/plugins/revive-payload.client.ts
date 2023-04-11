@@ -15,7 +15,7 @@ const revivers = {
 
 export default defineNuxtPlugin({
   name: 'nuxt:revive-payload:client',
-  enforce: 'pre',
+  priority: -30,
   async setup (nuxtApp) {
     for (const reviver in revivers) {
       definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])
