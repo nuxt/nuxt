@@ -3454,10 +3454,10 @@
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.3.4.tgz#83a68179178cb3da4b2b7c5c59ac660dbdff8ef5"
-  integrity sha512-yh2sbosCxk5FfwjXYXdY9rUffaJqYEFjsod5sCD4oosRn2x8LfBLEzQH0scdo5n7z8VkBUThpYzbkI6DVAWimA==
+"@vue/test-utils@^1.3.5":
+  version "1.3.5"
+  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.3.5.tgz#7beba75901c3a08a48b5657b63de02094dc40719"
+  integrity sha512-ezdlDNoxi5m/eP5Chg34AjnmNplrik4fyzB2DB9Yqa32OpywV8IvHqK9eCf+nIVsHFBejjV00agPFYRH2/D3Hg==
   dependencies:
     dom-event-types "^1.0.0"
     lodash "^4.17.15"
@@ -13468,6 +13468,13 @@ semver@^6.0.0, semver@^6.1.0, semver@^6.1.1, semver@^6.1.2, semver@^6.3.0:
   version "6.3.0"
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
+
+semver@^7.4.0:
+  version "7.4.0"
+  resolved "https://registry.npmjs.org/semver/-/semver-7.4.0.tgz#8481c92feffc531ab1e012a8ffc15bdd3a0f4318"
+  integrity sha512-RgOxM8Mw+7Zus0+zcLEUn8+JfoLpj/huFTItQy2hsM4khuC1HYRDp0cU482Ewn/Fcy6bCjufD8vAj7voC66KQw==
+  dependencies:
+    lru-cache "^6.0.0"
 
 send@0.18.0:
   version "0.18.0"
