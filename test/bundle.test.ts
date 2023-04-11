@@ -5,8 +5,9 @@ import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
 import { isWindows } from 'std-env'
+import { isRenderingJson } from './utils'
 
-describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+describe.skipIf(isWindows || process.env.ECOSYSTEM_CI || !isRenderingJson)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -40,7 +41,7 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"93k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2650k"')

@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive, shallowReactive } from 'vue'
+import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -181,10 +181,10 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version }
     },
-    payload: shallowReactive({
-      data: shallowReactive({}),
-      state: shallowReactive({}),
-      _errors: shallowReactive({}),
+    payload: reactive({
+      data: {},
+      state: {},
+      _errors: {},
       ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {

@@ -18,6 +18,7 @@
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    Some value: {{ someValue }}
     <button @click="someValue++">
       Increment state
     </button>
