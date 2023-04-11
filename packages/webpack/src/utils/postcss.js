@@ -211,7 +211,7 @@ export default class PostcssConfig {
 
   /**
    * Load plugins from postcssOptions
-   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function}}} postcssOptions
+   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function }}} postcssOptions
    */
   loadPlugins (postcssOptions) {
     const { plugins, order } = postcssOptions.postcssOptions
@@ -252,6 +252,14 @@ export default class PostcssConfig {
 
     if (Array.isArray(postcssOptions.postcssOptions.plugins)) {
       defaults(postcssOptions.postcssOptions.plugins, this.defaultPostcssOptions.plugins)
+    } else if (typeof postcssOptions.postcssOptions === 'function') {
+      const postcssOptionsFn = postcssOptions.postcssOptions
+      postcssOptions.postcssOptions = (loaderContext) => {
+        const result = this.normalize(postcssOptionsFn(loaderContext))
+        if (result) {
+          return result.postcssOptions
+        }
+      }
     } else {
       // Merge all plugins and use preset for setting up postcss-preset-env
       if (postcssOptions.postcssOptions.preset) {
