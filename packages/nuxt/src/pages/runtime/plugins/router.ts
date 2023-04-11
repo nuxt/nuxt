@@ -45,157 +45,161 @@ function createCurrentLocation (
   return path + search + hash
 }
 
-export default defineNuxtPlugin(async (nuxtApp) => {
-  let routerBase = useRuntimeConfig().app.baseURL
-  if (routerOptions.hashMode && !routerBase.includes('#')) {
-    // allow the user to provide a `#` in the middle: `/base/#/app`
-    routerBase += '#'
-  }
-
-  const history = routerOptions.history?.(routerBase) ?? (process.client
-    ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
-    : createMemoryHistory(routerBase)
-  )
-
-  const routes = routerOptions.routes?.(_routes) ?? _routes
-
-  const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
-  const router = createRouter({
-    ...routerOptions,
-    history,
-    routes
-  })
-  nuxtApp.vueApp.use(router)
-
-  const previousRoute = shallowRef(router.currentRoute.value)
-  router.afterEach((_to, from) => {
-    previousRoute.value = from
-  })
-
-  Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
-    get: () => previousRoute.value
-  })
-
-  // Allows suspending the route object until page navigation completes
-  const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
-  const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-  nuxtApp.hook('page:finish', syncCurrentRoute)
-  router.afterEach((to, from) => {
-    // We won't trigger suspense if the component is reused between routes
-    // so we need to update the route manually
-    if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
-      syncCurrentRoute()
-    }
-  })
-
-  // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
-  const route = {} as RouteLocation
-  for (const key in _route.value) {
-    (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
-  }
-
-  nuxtApp._route = reactive(route)
-
-  nuxtApp._middleware = nuxtApp._middleware || {
-    global: [],
-    named: {}
-  }
-
-  const error = useError()
-
-  try {
-    if (process.server) {
-      await router.push(initialURL)
+export default defineNuxtPlugin({
+  name: 'nuxt:router',
+  enforce: 'pre',
+  async setup (nuxtApp) {
+    let routerBase = useRuntimeConfig().app.baseURL
+    if (routerOptions.hashMode && !routerBase.includes('#')) {
+      // allow the user to provide a `#` in the middle: `/base/#/app`
+      routerBase += '#'
     }
 
-    await router.isReady()
-  } catch (error: any) {
-    // We'll catch 404s here
-    await callWithNuxt(nuxtApp, showError, [error])
-  }
+    const history = routerOptions.history?.(routerBase) ?? (process.client
+      ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
+      : createMemoryHistory(routerBase)
+    )
 
-  const initialLayout = useState('_layout')
-  router.beforeEach(async (to, from) => {
-    to.meta = reactive(to.meta)
-    if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-      to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
-    }
-    nuxtApp._processingMiddleware = true
+    const routes = routerOptions.routes?.(_routes) ?? _routes
 
-    type MiddlewareDef = string | RouteMiddleware
-    const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
-    for (const component of to.matched) {
-      const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
-      if (!componentMiddleware) { continue }
-      if (Array.isArray(componentMiddleware)) {
-        for (const entry of componentMiddleware) {
-          middlewareEntries.add(entry)
-        }
-      } else {
-        middlewareEntries.add(componentMiddleware)
+    const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
+    const router = createRouter({
+      ...routerOptions,
+      history,
+      routes
+    })
+    nuxtApp.vueApp.use(router)
+
+    const previousRoute = shallowRef(router.currentRoute.value)
+    router.afterEach((_to, from) => {
+      previousRoute.value = from
+    })
+
+    Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
+      get: () => previousRoute.value
+    })
+
+    // Allows suspending the route object until page navigation completes
+    const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
+    const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
+    nuxtApp.hook('page:finish', syncCurrentRoute)
+    router.afterEach((to, from) => {
+      // We won't trigger suspense if the component is reused between routes
+      // so we need to update the route manually
+      if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+        syncCurrentRoute()
       }
+    })
+
+    // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
+    const route = {} as RouteLocation
+    for (const key in _route.value) {
+      (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
     }
 
-    for (const entry of middlewareEntries) {
-      const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+    nuxtApp._route = reactive(route)
 
-      if (!middleware) {
-        if (process.dev) {
-          throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
-        }
-        throw new Error(`Unknown route middleware: '${entry}'.`)
-      }
-
-      const result = await callWithNuxt(nuxtApp, middleware, [to, from])
-      if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
-        if (result === false || result instanceof Error) {
-          const error = result || createError({
-            statusCode: 404,
-            statusMessage: `Page Not Found: ${initialURL}`
-          })
-          await callWithNuxt(nuxtApp, showError, [error])
-          return false
-        }
-      }
-      if (result || result === false) { return result }
+    nuxtApp._middleware = nuxtApp._middleware || {
+      global: [],
+      named: {}
     }
-  })
 
-  router.afterEach(async (to) => {
-    delete nuxtApp._processingMiddleware
+    const error = useError()
 
-    if (process.client && !nuxtApp.isHydrating && error.value) {
-      // Clear any existing errors
-      await callWithNuxt(nuxtApp, clearError)
-    }
-    if (to.matched.length === 0) {
-      await callWithNuxt(nuxtApp, showError, [createError({
-        statusCode: 404,
-        fatal: false,
-        statusMessage: `Page not found: ${to.fullPath}`
-      })])
-    } else if (process.server) {
-      const currentURL = to.fullPath || '/'
-      if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-        const event = await callWithNuxt(nuxtApp, useRequestEvent)
-        const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
-        await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
-      }
-    }
-  })
-
-  nuxtApp.hooks.hookOnce('app:created', async () => {
     try {
-      await router.replace({
-        ...router.resolve(initialURL),
-        name: undefined, // #4920, #$4982
-        force: true
-      })
+      if (process.server) {
+        await router.push(initialURL)
+      }
+
+      await router.isReady()
     } catch (error: any) {
-      // We'll catch middleware errors or deliberate exceptions here
+      // We'll catch 404s here
       await callWithNuxt(nuxtApp, showError, [error])
     }
-  })
 
-  return { provide: { router } }
+    const initialLayout = useState('_layout')
+    router.beforeEach(async (to, from) => {
+      to.meta = reactive(to.meta)
+      if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
+        to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
+      }
+      nuxtApp._processingMiddleware = true
+
+      type MiddlewareDef = string | RouteMiddleware
+      const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
+      for (const component of to.matched) {
+        const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
+        if (!componentMiddleware) { continue }
+        if (Array.isArray(componentMiddleware)) {
+          for (const entry of componentMiddleware) {
+            middlewareEntries.add(entry)
+          }
+        } else {
+          middlewareEntries.add(componentMiddleware)
+        }
+      }
+
+      for (const entry of middlewareEntries) {
+        const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+
+        if (!middleware) {
+          if (process.dev) {
+            throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
+          }
+          throw new Error(`Unknown route middleware: '${entry}'.`)
+        }
+
+        const result = await callWithNuxt(nuxtApp, middleware, [to, from])
+        if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+          if (result === false || result instanceof Error) {
+            const error = result || createError({
+              statusCode: 404,
+              statusMessage: `Page Not Found: ${initialURL}`
+            })
+            await callWithNuxt(nuxtApp, showError, [error])
+            return false
+          }
+        }
+        if (result || result === false) { return result }
+      }
+    })
+
+    router.afterEach(async (to) => {
+      delete nuxtApp._processingMiddleware
+
+      if (process.client && !nuxtApp.isHydrating && error.value) {
+        // Clear any existing errors
+        await callWithNuxt(nuxtApp, clearError)
+      }
+      if (to.matched.length === 0) {
+        await callWithNuxt(nuxtApp, showError, [createError({
+          statusCode: 404,
+          fatal: false,
+          statusMessage: `Page not found: ${to.fullPath}`
+        })])
+      } else if (process.server) {
+        const currentURL = to.fullPath || '/'
+        if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
+          const event = await callWithNuxt(nuxtApp, useRequestEvent)
+          const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
+          await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
+        }
+      }
+    })
+
+    nuxtApp.hooks.hookOnce('app:created', async () => {
+      try {
+        await router.replace({
+          ...router.resolve(initialURL),
+          name: undefined, // #4920, #$4982
+          force: true
+        })
+      } catch (error: any) {
+        // We'll catch middleware errors or deliberate exceptions here
+        await callWithNuxt(nuxtApp, showError, [error])
+      }
+    })
+
+    return { provide: { router } }
+  }
 }) as Plugin<{ router: Router }>

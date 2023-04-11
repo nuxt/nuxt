@@ -195,6 +195,7 @@ export default defineUntypedSchema({
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
       objectDefinitions: {
         defineNuxtComponent: ['asyncData', 'setup'],
+        defineNuxtPlugin: ['setup'],
         definePageMeta: ['middleware', 'validate']
       }
     }

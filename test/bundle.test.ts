@@ -26,7 +26,7 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"104k"')
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"105k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/_plugin-vue_export-helper.js",
@@ -40,7 +40,7 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"91k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2650k"')
