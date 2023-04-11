@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
-import { green } from 'colorette'
+import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
@@ -21,7 +21,7 @@ export default async (ssrContext) => {
   render = (updates.has(viteNodeOptions.entryPath) || !render) ? (await runner.executeFile(viteNodeOptions.entryPath)).default : render
   if (updates.size) {
     const time = Math.round((performance.now() - start) * 1000) / 1000
-    console.log(green('✔'), `Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
+    consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
   }
 
   const result = await render(ssrContext)
@@ -52,9 +52,9 @@ function createRunner () {
             stack
           })
         } catch (formatError) {
-          console.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
+          consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
-          console.error(message, errorData)
+          consola.error(message, errorData)
           throw createError({
             statusMessage: 'Vite Error',
             message,
