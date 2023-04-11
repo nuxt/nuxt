@@ -124,12 +124,12 @@ const getSPARenderer = lazyCachedFunction(async () => {
     ssrContext!.payload = {
       _errors: {},
       serverRendered: false,
-      config: {
-        public: config.public,
-        app: config.app
-      },
       data: {},
       state: {}
+    }
+    ssrContext.config = {
+      public: config.public,
+      app: config.app
     }
     ssrContext!.renderMeta = ssrContext!.renderMeta ?? getStaticRenderedHead
     return Promise.resolve(result)
