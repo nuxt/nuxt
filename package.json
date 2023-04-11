@@ -19,6 +19,7 @@
     "play:build": "nuxi build playground",
     "play:preview": "nuxi preview playground",
     "test:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && vitest run --dir test",
+    "text:fixtures:payload": "TEST_PAYLOAD=js pnpm test:fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:types": "nuxi prepare test/fixtures/basic && cd test/fixtures/basic && npx vue-tsc --noEmit",

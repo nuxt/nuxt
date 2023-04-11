@@ -7,7 +7,7 @@ import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, expectWithPolling, parseData, parsePayload, renderPage, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, isRenderingJson, parseData, parsePayload, renderPage, withLogs } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -45,7 +45,9 @@ describe('route rules', () => {
   it('should enable spa mode', async () => {
     const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
     expect(script.serverRendered).toEqual(false)
-    expect(attrs['data-ssr']).toEqual('false')
+    if (isRenderingJson) {
+      expect(attrs['data-ssr']).toEqual('false')
+    }
     await expectNoClientErrors('/route-rules/spa')
   })
 
@@ -1229,7 +1231,7 @@ describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isDev() || isWindows)('payload rendering', () => {
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
