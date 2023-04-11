@@ -48,6 +48,7 @@ describe('route rules', () => {
     if (isRenderingJson) {
       expect(attrs['data-ssr']).toEqual('false')
     }
+    await expectNoClientErrors('/route-rules/spa')
   })
 
   it('test noScript routeRules', async () => {
