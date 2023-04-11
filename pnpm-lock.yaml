@@ -603,8 +603,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       nitropack:
-        specifier: ^2.3.2
-        version: 2.3.2
+        specifier: ^2.3.3
+        version: 2.3.3
       nuxi:
         specifier: workspace:*
         version: link:../nuxi
@@ -734,8 +734,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1(vite@4.2.1)(vue@3.2.47)
       nitropack:
-        specifier: ^2.3.2
-        version: 2.3.2
+        specifier: ^2.3.3
+        version: 2.3.3
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
@@ -1926,6 +1926,19 @@ packages:
     dependencies:
       rollup: 3.20.2
       slash: 4.0.0
+    dev: true
+
+  /@rollup/plugin-alias@5.0.0(rollup@3.20.2):
+    resolution: {integrity: sha512-l9hY5chSCjuFRPsnRm16twWBiSApl2uYFLsepQYwtBuAxNMQ/1dJqADld40P0Jkqm65GRTLy/AC6hnpVebtLsA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      rollup: 3.20.2
+      slash: 4.0.0
 
   /@rollup/plugin-commonjs@24.0.1(rollup@3.20.2):
     resolution: {integrity: sha512-15LsiWRZk4eOGqvrJyu3z3DaBu5BhXIMeWnijSRvd8irrrg9SHpQ1pH+BUK4H6Z9wL9yOxZJMTLU+Au86XHxow==}
@@ -1970,8 +1983,8 @@ packages:
       '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
       rollup: 3.20.2
 
-  /@rollup/plugin-node-resolve@15.0.1(rollup@3.20.2):
-    resolution: {integrity: sha512-ReY88T7JhJjeRVbfCyNj+NXAG3IIsVMsX9b5/9jC98dRP8/yxlZdz7mHZbHk5zHr24wZZICS5AcXsFZAXYUQEg==}
+  /@rollup/plugin-node-resolve@15.0.2(rollup@3.20.2):
+    resolution: {integrity: sha512-Y35fRGUjC3FaurG722uhUuG8YHOJRJQbI6/CkbRkdPotSpDj9NtIN85z1zrcyDcCQIW4qp5mgG72U+gJ0TAFEg==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.78.0||^3.0.0
@@ -2000,8 +2013,8 @@ packages:
       magic-string: 0.30.0
       rollup: 3.20.2
 
-  /@rollup/plugin-terser@0.4.0(rollup@3.20.2):
-    resolution: {integrity: sha512-Ipcf3LPNerey1q9ZMjiaWHlNPEHNU/B5/uh9zXLltfEQ1lVSLLeZSgAtTPWGyw8Ip1guOeq+mDtdOlEj/wNxQw==}
+  /@rollup/plugin-terser@0.4.1(rollup@3.20.2):
+    resolution: {integrity: sha512-aKS32sw5a7hy+fEXVy+5T95aDIwjpGHCTv833HXVtyKMDoVS7pBr5K3L9hEQoNqbJFjfANPrNpIXlTQ7is00eA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^2.x || ^3.x
@@ -6713,20 +6726,20 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack@2.3.2:
-    resolution: {integrity: sha512-bps3OvC3JocB3Hl6/FUaQpbLw1Xsr6KXV3hTDnh54N0B0uAGWN9aF1LVHKBpWSS5JJvjwd+ZewOUFsPRM2NJ9Q==}
+  /nitropack@2.3.3:
+    resolution: {integrity: sha512-1g/4zdwWo+tWSvno57rhRXeGk6jNbG5W1yRNtOywInT1nyoEG1ksOwQ3W3JHGB2E1GNjZwAVi611UVOVL+JgYw==}
     engines: {node: ^14.16.0 || ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
     hasBin: true
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.0
       '@netlify/functions': 1.4.0
-      '@rollup/plugin-alias': 4.0.3(rollup@3.20.2)
+      '@rollup/plugin-alias': 5.0.0(rollup@3.20.2)
       '@rollup/plugin-commonjs': 24.0.1(rollup@3.20.2)
       '@rollup/plugin-inject': 5.0.3(rollup@3.20.2)
       '@rollup/plugin-json': 6.0.0(rollup@3.20.2)
-      '@rollup/plugin-node-resolve': 15.0.1(rollup@3.20.2)
+      '@rollup/plugin-node-resolve': 15.0.2(rollup@3.20.2)
       '@rollup/plugin-replace': 5.0.2(rollup@3.20.2)
-      '@rollup/plugin-terser': 0.4.0(rollup@3.20.2)
+      '@rollup/plugin-terser': 0.4.1(rollup@3.20.2)
       '@rollup/plugin-wasm': 6.1.2(rollup@3.20.2)
       '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
       '@vercel/nft': 0.22.6
@@ -6734,7 +6747,7 @@ packages:
       c12: 1.2.0
       chalk: 5.2.0
       chokidar: 3.5.3
-      consola: 2.15.3
+      consola: 3.0.1
       cookie-es: 0.5.0
       defu: 6.1.2
       destr: 1.2.2
@@ -8670,7 +8683,7 @@ packages:
       '@rollup/plugin-alias': 4.0.3(rollup@3.20.2)
       '@rollup/plugin-commonjs': 24.0.1(rollup@3.20.2)
       '@rollup/plugin-json': 6.0.0(rollup@3.20.2)
-      '@rollup/plugin-node-resolve': 15.0.1(rollup@3.20.2)
+      '@rollup/plugin-node-resolve': 15.0.2(rollup@3.20.2)
       '@rollup/plugin-replace': 5.0.2(rollup@3.20.2)
       '@rollup/pluginutils': 5.0.2(rollup@3.20.2)
       chalk: 5.2.0
