@@ -83,7 +83,7 @@
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
-    "nitropack": "^2.3.2",
+    "nitropack": "^2.3.3",
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.1.0",
     "ofetch": "^1.0.1",
