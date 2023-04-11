@@ -54,6 +54,7 @@ const wrapReporter = (reporter: ConsolaReporter) => ({
       if (msg.startsWith('[Vue Router warn]: No match found for location with path')) {
         return
       }
+      // TODO: resolve upstream in Vite
       // Hide sourcemap warnings related to node_modules
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) {
         return
