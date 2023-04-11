@@ -331,7 +331,9 @@ export default defineUntypedSchema({
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
-  ignorePrefix: '-',
+  ignorePrefix: {
+    $resolve: (val) => val ?? '-',
+  },
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
