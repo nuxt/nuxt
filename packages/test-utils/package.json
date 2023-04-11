@@ -34,7 +34,7 @@
     "ufo": "^1.1.1"
   },
   "devDependencies": {
-    "playwright": "^1.32.2",
+    "playwright": "^1.32.3",
     "unbuild": "latest",
     "vitest": "^0.30.0"
   },
