@@ -41,7 +41,7 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI || !isRenderingJson)('mini
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"93k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2650k"')
