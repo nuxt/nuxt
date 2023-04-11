@@ -396,7 +396,7 @@ export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: 
   })
 }
 
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Required<Plugin<T>> {
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Plugin<T> {
   if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }) }
 
   const wrapper: Plugin<T> = (nuxtApp) => {
@@ -418,7 +418,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   wrapper[NuxtPluginIndicator] = true
 
-  return wrapper as Required<Plugin<T>>
+  return wrapper
 }
 
 export function isNuxtPlugin (plugin: unknown) {
