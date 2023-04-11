@@ -52,8 +52,8 @@ importers:
         specifier: ^7.3.13
         version: 7.3.13
       '@unocss/reset':
-        specifier: ^0.51.3
-        version: 0.51.3
+        specifier: ^0.51.4
+        version: 0.51.4
       case-police:
         specifier: ^0.5.14
         version: 0.5.14
@@ -2614,8 +2614,8 @@ packages:
     resolution: {integrity: sha512-m6+M3E2cTPhX+2aKocRfDqQt7ebEtjJHH8sVYpX8xJoN0vOqjSNmUYc6AIkwUYljx4QbEC3thcQSbqel82RbXQ==}
     dev: true
 
-  /@unocss/reset@0.51.3:
-    resolution: {integrity: sha512-hdm9pKj7ih6MLOSjGJisvh0TMnPmyGDMXQDcgGZJATgVuTJtBmXE74nsIgBVRCfjwqDDqmzG2TB0PlpiTFM9mg==}
+  /@unocss/reset@0.51.4:
+    resolution: {integrity: sha512-3FnajZSOrQ4qSbpkY1IGRIFYw8I9E98SBXvjMnHqSl8k4YPbBP29W3YrgSVBMOnPNRL67hRcTaMF3nmbnBuWtQ==}
     dev: true
 
   /@unocss/scope@0.45.30:
