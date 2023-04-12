@@ -520,6 +520,12 @@ describe('navigate', () => {
     expect(headers.get('location')).toEqual('/')
     expect(status).toEqual(302)
   })
+
+  it('supports directly aborting navigation on SSR', async () => {
+    const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
+
+    expect(status).toEqual(404)
+  })
 })
 
 describe('errors', () => {

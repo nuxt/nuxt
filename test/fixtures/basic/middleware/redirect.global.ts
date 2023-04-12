@@ -12,6 +12,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === '/navigate-to-external') {
     return navigateTo('/', { external: true })
   }
+  if (to.path === '/navigate-to-false') {
+    return false
+  }
   const pluginPath = nuxtApp.$path()
   if (process.server && !/redirect|navigate/.test(pluginPath) && to.path !== pluginPath) {
     throw new Error('plugin did not run before middleware')

@@ -100,8 +100,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     throw new Error('Cannot navigate to an URL with script protocol.')
   }
 
+  const inMiddleware = isProcessingMiddleware()
+
   // Early redirect on client-side
-  if (process.client && !isExternal && isProcessingMiddleware()) {
+  if (process.client && !isExternal && inMiddleware) {
     return to
   }
 
@@ -110,15 +112,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (process.server) {
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
-      const fullPath = isExternal ? toPath : router.resolve(to).fullPath || '/'
+      const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
       const redirect = () => nuxtApp.callHook('app:redirected')
         .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
-        .then(() => createError({ statusCode: options?.redirectCode || 302 }))
+        .then(() => inMiddleware ? /* abort route navigation with fabricated error */ createError({ statusCode: options?.redirectCode || 302 }) : undefined)
 
       // We wait to perform the redirect in case any other middleware will intercept the redirect
       // and redirect further.
-      if (!isExternal && isProcessingMiddleware()) {
+      if (!isExternal && inMiddleware) {
         router.beforeEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
         return to
       }
