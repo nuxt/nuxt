@@ -105,8 +105,9 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
+          console.log(slotProps.value[slot])
           nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
-            default: () => [slots[slot]?.(slotProps.value[slot])]
+            default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
           }))
         }
       }
@@ -162,7 +163,7 @@ function getSlotProps (html: string) {
   for (const slot of slotsDivs) {
     const [_, slotName, json] = slot
     const slotData = destr(decodeHtmlEntities(json))
-    data[slotName] = mergeProps(slotData._default, slotData)
+    data[slotName] = slotData
   }
   return data
 }

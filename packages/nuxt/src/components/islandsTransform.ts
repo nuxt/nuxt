@@ -29,12 +29,14 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       s.replaceAll(/<slot ([^/|>]*)(\/)?>/g, (_, attrs: string, selfClosing: string) => {
         let slotName = 'default'
         const bindings: Record<string, string> = {}
+        let vfor: [string, string] | undefined
         const parsedAttrs = attrs.replaceAll(ATTRS_RE, (matched, name, value) => {
           name = name.trim()
-          if (name.startsWith('v-')) {
+          if (name.startsWith('v-') && name !== 'v-for') {
             return matched
-          }
-          if (name !== 'name') {
+          } else if (name === 'v-for') {
+            vfor = value.split('in').map((v: string) => v.trim())
+          } else if (name !== 'name') {
             if (name === 'v-bind') {
               bindings._bind = value
             } else {
@@ -45,7 +47,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           }
           return ''
         })
-        const ssrScopeData = getBindings(bindings)
+        const ssrScopeData = getBindings(bindings, vfor)
         return `<div ${parsedAttrs} nuxt-ssr-slot-name="${slotName}" ${ssrScopeData} ${selfClosing}>`
       })
       s.replaceAll('</slot>', '</div>')
@@ -64,9 +66,13 @@ function isBinding (attr: string): boolean {
   return attr.startsWith(':')
 }
 
-function getBindings (bindings: Record<string, string>): string {
+function getBindings (bindings: Record<string, string>, vfor?: [string, string]): string {
   if (Object.keys(bindings).length === 0) { return '' }
-
   const content = Object.entries(bindings).map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
-  return `:nuxt-ssr-slot-data="JSON.stringify({ ${content} })"`
+
+  if (!vfor) {
+    return `:nuxt-ssr-slot-data="JSON.stringify([{ ${content} }])"`
+  } else {
+    return `:nuxt-ssr-slot-data="JSON.stringify(${vfor[1]}.map((${vfor[0]}) => ({${content}})))"`
+  }
 }
