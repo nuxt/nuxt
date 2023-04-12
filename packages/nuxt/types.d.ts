@@ -11,8 +11,10 @@ declare global {
 declare module 'nitropack' {
   interface NitroRouteConfig {
     ssr?: boolean
+    experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    experimentalNoScripts?: boolean
   }
 }

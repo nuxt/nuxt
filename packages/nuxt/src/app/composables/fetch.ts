@@ -1,10 +1,10 @@
 import type { FetchError } from 'ofetch'
-import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest, AvailableRouterMethod } from 'nitropack'
+import type { AvailableRouterMethod, NitroFetchOptions, NitroFetchRequest, TypedInternalResponse } from 'nitropack'
 import type { Ref } from 'vue'
-import { computed, unref, reactive } from 'vue'
+import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
-import type { AsyncDataOptions, _Transform, KeysOf, AsyncData, PickFrom, MultiWatchSources } from './asyncData'
+import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, M>

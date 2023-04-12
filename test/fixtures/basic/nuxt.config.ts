@@ -51,7 +51,8 @@ export default defineNuxtConfig({
   ],
   nitro: {
     routeRules: {
-      '/route-rules/spa': { ssr: false }
+      '/route-rules/spa': { ssr: false },
+      '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
@@ -184,6 +185,8 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    polyfillVueUseHead: true,
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
