@@ -5,6 +5,19 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
+import VueRouter from 'unplugin-vue-router/vite'
+import type {
+  EditableTreeNode,
+  Options as _UVROptions
+} from 'unplugin-vue-router'
+
+// TODO: conditional types extension
+// declare module '@nuxt/schema' {
+//   export interface NuxtHooks {
+//     'pages:_new_extend': (page: EditableTreeNode) => void;
+//     'pages:_beforeWrite': (rootPage: EditableTreeNode) => void;
+//   }
+// }
 
 import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
@@ -16,6 +29,8 @@ export default defineNuxtModule({
     name: 'pages'
   },
   setup (_options, nuxt) {
+    const useExperimentalTypedPages = nuxt.options.experimental.typedPages
+
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     )
@@ -67,6 +82,33 @@ export default defineNuxtModule({
       return
     }
 
+    let rootPage: EditableTreeNode | undefined
+    if (useExperimentalTypedPages) {
+      console.log('📄 Adding pages module')
+
+      addVitePlugin(
+        VueRouter({
+          routesFolder: pagesDirs,
+          // FIXME: find the root of the project
+          dts: resolve(nuxt.options.srcDir, '.nuxt/typed-router.d.ts'),
+          logs: true,
+          extendRoute (route) {
+            // TODO: refactor names, add _legacy
+            return nuxt.callHook('pages:_new_extend', route)
+          },
+          async beforeWriteFiles (_rootPage) {
+            await nuxt.callHook('pages:_beforeWrite', _rootPage)
+            await nuxt.callHook('pages:extend', [..._rootPage])
+            rootPage = _rootPage
+          }
+        }),
+        {
+          prepend: true
+        }
+      )
+      // FIXME: add webpack plugin as well
+    }
+
     const runtimeDir = resolve(distDir, 'pages/runtime')
 
     // Add $router types
@@ -78,7 +120,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:sources', (sources) => {
       const routerImports = sources.find(s => s.from === '#app' && s.imports.includes('onBeforeRouteLeave'))
       if (routerImports) {
-        routerImports.from = 'vue-router'
+        routerImports.from = useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
       }
     })
 
@@ -91,6 +133,7 @@ export default defineNuxtModule({
       ].filter(Boolean)
 
       const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
+      // TODO: can we remove this since the template is now just a re-export?
       if (event !== 'change' && path.match(pathPattern)) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
@@ -114,21 +157,43 @@ export default defineNuxtModule({
     if (!nuxt.options.dev && nuxt.options._generate) {
       const prerenderRoutes = new Set<string>()
       nuxt.hook('modules:done', () => {
-        nuxt.hook('pages:extend', (pages) => {
+        // TODO: this should be doable within the unplugin
+        if (useExperimentalTypedPages) {
           prerenderRoutes.clear()
-          const processPages = (pages: NuxtPage[], currentPath = '/') => {
-            for (const page of pages) {
-              // Add root of optional dynamic paths and catchalls
-              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { prerenderRoutes.add(currentPath) }
-              // Skip dynamic paths
-              if (page.path.includes(':')) { continue }
-              const route = joinURL(currentPath, page.path)
-              prerenderRoutes.add(route)
-              if (page.children) { processPages(page.children, route) }
+          if (!rootPage) {
+            // FIXME:
+            throw new Error('Can this ever happen?')
+          }
+
+          // FIXME: this requires some code on the unplugin side
+          for (const page of rootPage) {
+            // if page has no children (is leaf) and has an optional param or a catch all param at the end, add
+            if (!page.isPassThrough &&
+              // does it no required params
+              !page.params.some(p => !p.optional)
+              // && any optional param is located at the end
+            ) {
+              prerenderRoutes.add(page.fullPath)
             }
           }
-          processPages(pages)
-        })
+        } else {
+          // Legacy pages:extend
+          nuxt.hook('pages:extend', (pages) => {
+            prerenderRoutes.clear()
+            const processPages = (pages: NuxtPage[], currentPath = '/') => {
+              for (const page of pages) {
+                // Add root of optional dynamic paths and catchalls
+                if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { prerenderRoutes.add(currentPath) }
+                // Skip dynamic paths
+                if (page.path.includes(':')) { continue }
+                const route = joinURL(currentPath, page.path)
+                prerenderRoutes.add(route)
+                if (page.children) { processPages(page.children, route) }
+              }
+            }
+            processPages(pages)
+          })
+        }
       })
       nuxt.hook('nitro:build:before', (nitro) => {
         for (const route of nitro.options.prerender.routes || []) {
@@ -144,7 +209,11 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: 'vue-router' }
+        {
+          name: 'useLink',
+          as: 'useLink',
+          from: useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
+        }
       )
     })
 
@@ -157,6 +226,7 @@ export default defineNuxtModule({
       )
     }
     nuxt.hook('modules:done', () => {
+      // TODO: fix broken definePageMeta() with unplugin-vue-router
       addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
       addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
     })
@@ -176,10 +246,25 @@ export default defineNuxtModule({
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', async (manifest) => {
       if (nuxt.options.dev) { return }
-      const pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', pages)
+      console.log('👉 build:manifest')
+      // const pages = await resolvePagesRoutes()
+      // await nuxt.callHook('pages:extend', pages)
 
-      const sourceFiles = getSources(pages)
+      // TODO: do we need the paths to be relative or can they be absolute?
+      // NOTE: they used to be relative to the project root
+      let sourceFiles: string[]
+      sourceFiles = [...(rootPage || [])]
+        .map(p => p.components.get('default'))
+        .filter((v: unknown): v is string => !!v)
+        .map(p => relative(nuxt.options.srcDir, p))
+
+      // unplugin-vue-router already generates the routes before this hook
+      if (!useExperimentalTypedPages) {
+        const pages = await resolvePagesRoutes()
+        await nuxt.callHook('pages:extend', pages)
+        sourceFiles = getSources(pages)
+      }
+
       for (const key in manifest) {
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
@@ -192,10 +277,15 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       async getContents () {
-        const pages = await resolvePagesRoutes()
-        await nuxt.callHook('pages:extend', pages)
-        const { routes, imports } = normalizeRoutes(pages)
-        return [...imports, `export default ${routes}`].join('\n')
+        if (useExperimentalTypedPages) {
+          console.log('👉 routes.mjs')
+          return "export { routes as default } from 'vue-router/auto/routes';"
+        } else {
+          const pages = await resolvePagesRoutes()
+          await nuxt.callHook('pages:extend', pages)
+          const { routes, imports } = normalizeRoutes(pages)
+          return [...imports, `export default ${routes}`].join('\n')
+        }
       }
     })
 
@@ -214,6 +304,8 @@ export default defineNuxtModule({
     nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
     nuxt.options.vite.resolve.dedupe.push('vue-router')
 
+    // TODO: Do we need to provide a fallback for this? Or can we just expose
+    // `router.options` from the router instance itself
     // Add router options template
     addTemplate({
       filename: 'router.options.mjs',

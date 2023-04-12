@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 
 export default defineNuxtConfig({
   experimental: {
-    typedPages: true,
+    typedPages: true
   },
 
   hooks: {
@@ -17,4 +17,4 @@ export default defineNuxtConfig({
       console.log('⚙️ page', page.fullPath)
     }
   }
-});
+})

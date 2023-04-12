@@ -362,7 +362,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     pagesModule,
     metaModule,
     componentsModule
-  );
+  )
   options._modules.push([importsModule, {
     transform: {
       include: options._layers
