@@ -164,12 +164,17 @@ export default defineNuxtPlugin({
       }
     })
 
-    router.afterEach(async (to) => {
+    router.onError(() => { delete nuxtApp._processingMiddleware })
+
+    router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
       if (process.client && !nuxtApp.isHydrating && error.value) {
         // Clear any existing errors
         await callWithNuxt(nuxtApp, clearError)
+      }
+      if (process.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+        return
       }
       if (to.matched.length === 0) {
         await callWithNuxt(nuxtApp, showError, [createError({

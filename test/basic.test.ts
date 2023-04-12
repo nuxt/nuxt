@@ -513,6 +513,13 @@ describe('navigate', () => {
     expect(res.status).toEqual(307)
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
   })
+
+  it('should not overwrite headers', async () => {
+    const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(302)
+  })
 })
 
 describe('errors', () => {
