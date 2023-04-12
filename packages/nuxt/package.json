@@ -85,7 +85,7 @@
     "mlly": "^1.2.0",
     "nitropack": "^2.3.3",
     "nuxi": "workspace:../nuxi",
-    "nypm": "^0.1.0",
+    "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
     "ohash": "^1.0.0",
     "pathe": "^1.1.0",

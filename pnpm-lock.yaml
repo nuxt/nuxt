@@ -609,8 +609,8 @@ importers:
         specifier: workspace:*
         version: link:../nuxi
       nypm:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.2.0
+        version: 0.2.0
       ofetch:
         specifier: ^1.0.1
         version: 1.0.1
@@ -6912,9 +6912,11 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nypm@0.1.0:
-    resolution: {integrity: sha512-q+/Hl9SWeLsH5moeaZEZFFYqmosoCYN/WU4vckznuCEw95EBG/z4NT1eOkABhh3pvQdHkc3QsiBWHBfIGptBMw==}
+  /nypm@0.2.0:
+    resolution: {integrity: sha512-auBv78LkHyU9TywBE91N+RTkanVyFLsVayZaHW+YYvJDJ3u2PCwLaYB3eecPQD9tgCIXGuH871HlHTdKSf6rtw==}
     engines: {node: ^14.16.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
+    dependencies:
+      execa: 7.1.1
     dev: false
 
   /oauth-sign@0.9.0:
