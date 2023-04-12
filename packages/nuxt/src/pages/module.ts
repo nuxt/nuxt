@@ -69,7 +69,14 @@ export default defineNuxtModule({
     })
 
     if (!nuxt.options.pages) {
-      addPlugin(resolve(distDir, 'app/plugins/router'))
+      addPlugin(
+        resolve(
+          distDir,
+          useExperimentalTypedPages
+            ? 'app/plugins/router-typed'
+            : 'app/plugins/router'
+        )
+      )
       addTemplate({
         filename: 'pages.mjs',
         getContents: () => 'export { useRoute } from \'#app\''
