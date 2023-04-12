@@ -30,7 +30,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
-    ],
+    ].concat(nuxt.options.experimental.typedPages ? './typed-router.d.ts' : []),
     exclude: [
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
