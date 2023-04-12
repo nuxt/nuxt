@@ -9,6 +9,7 @@ import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
 /* eslint-disable import/no-restricted-paths */
 import pagesModule from '../pages/module'
+import typedPagesModule from '../pages/module-typed'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
@@ -358,7 +359,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
-  options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push(
+    options.experimental.typedPages ? typedPagesModule : pagesModule,
+    metaModule,
+    componentsModule
+  );
   options._modules.push([importsModule, {
     transform: {
       include: options._layers

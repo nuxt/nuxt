@@ -161,5 +161,8 @@ export default defineUntypedSchema({
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
+
+    /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
+    typedPages: false
   }
 })
