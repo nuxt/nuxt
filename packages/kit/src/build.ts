@@ -32,7 +32,14 @@ export interface ExtendConfigOptions {
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
 }
 
-export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
+export interface ExtendViteConfigOptions extends ExtendConfigOptions {
+  /**
+   * Prepends the plugin to the array with `unshit()` instead of `push()`. In practice this shouldn't be necessary, but
+   * it's needed by unplugin-vue-router until vue exposes an API to parse files.
+   * @internal
+   */
+  prepend?: boolean
+}
 
 /**
  * Extend webpack config
@@ -119,11 +126,12 @@ export function addWebpackPlugin (plugin: WebpackPluginInstance | WebpackPluginI
  */
 export function addVitePlugin (plugin: VitePlugin | VitePlugin[], options?: ExtendViteConfigOptions) {
   extendViteConfig((config) => {
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     config.plugins = config.plugins || []
     if (Array.isArray(plugin)) {
-      config.plugins.push(...plugin)
+      config.plugins[method](...plugin)
     } else {
-      config.plugins.push(plugin)
+      config.plugins[method](plugin)
     }
   }, options)
 }
