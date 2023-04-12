@@ -9,7 +9,6 @@ import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
 /* eslint-disable import/no-restricted-paths */
 import pagesModule from '../pages/module'
-import typedPagesModule from '../pages/module-typed'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
@@ -360,7 +359,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
   options._modules.push(
-    options.experimental.typedPages ? typedPagesModule : pagesModule,
+    pagesModule,
     metaModule,
     componentsModule
   );
