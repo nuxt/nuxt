@@ -13,7 +13,6 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
-import { useRequestEvent } from '#app/composables/ssr'
 import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
@@ -185,9 +184,7 @@ export default defineNuxtPlugin({
       } else if (process.server) {
         const currentURL = to.fullPath || '/'
         if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-          const event = await callWithNuxt(nuxtApp, useRequestEvent)
-          const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
-          await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
+          await callWithNuxt(nuxtApp, navigateTo, [currentURL])
         }
       }
     })
