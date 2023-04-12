@@ -544,6 +544,7 @@ describe('errors', () => {
     const { page, consoleLogs } = await renderPage('/')
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
+    expect(await page.innerText('div')).toContain('Some value: 3')
     await page.getByText('Chunk error').click()
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')

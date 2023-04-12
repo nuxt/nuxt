@@ -5,8 +5,16 @@ import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
 import { isWindows } from 'std-env'
+import { isRenderingJson } from './utils'
 
-describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
+// We only want to run this test for:
+// - ubuntu
+// - vite
+// - in our own CI
+// - using JS (default) payload rendering
+// - production build
+
+describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.env.ECOSYSTEM_CI || !isRenderingJson || process.env.TEST_ENV === 'dev')('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -40,7 +48,7 @@ describe.skipIf(isWindows || process.env.ECOSYSTEM_CI)('minimal nuxt application
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"93k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92.5k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2650k"')
@@ -107,5 +115,5 @@ async function analyzeSizes (pattern: string | string[], rootDir: string) {
 }
 
 function roundToKilobytes (bytes: number) {
-  return (Math.round(bytes / 1024) + 'k')
+  return (bytes / 1024).toFixed(bytes > (100 * 1024) ? 0 : 1) + 'k'
 }
