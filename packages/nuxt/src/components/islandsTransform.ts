@@ -26,7 +26,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       if (!code.includes('<slot ')) { return }
 
       const s = new MagicString(code)
-      s.replaceAll(/<slot ([^>]*)\/?>/g, (_, attrs: string) => {
+      s.replaceAll(/<slot ([^/|>]*)(\/)?>/g, (_, attrs: string, selfClosing: string) => {
         let slotName = 'default'
         const bindings: Record<string, string> = {}
         const parsedAttrs = attrs.replaceAll(ATTRS_RE, (matched, name, value) => {
@@ -46,8 +46,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           return ''
         })
         const ssrScopeData = getBindings(bindings)
-
-        return `<div ssr-slot-name="${slotName}" ${ssrScopeData} ${parsedAttrs}>`
+        return `<div ${parsedAttrs} nuxt-ssr-slot-name="${slotName}" ${ssrScopeData} ${selfClosing}>`
       })
       s.replaceAll('</slot>', '</div>')
 
@@ -55,7 +54,6 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         return {
           code: s.toString(),
           map: s.generateMap({ source: id, includeContent: true })
-
         }
       }
     }
@@ -70,5 +68,5 @@ function getBindings (bindings: Record<string, string>): string {
   if (Object.keys(bindings).length === 0) { return '' }
 
   const content = Object.entries(bindings).map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
-  return `:ssr-slot-data="JSON.stringify({ ${content} })"`
+  return `:nuxt-ssr-slot-data="JSON.stringify({ ${content} })"`
 }

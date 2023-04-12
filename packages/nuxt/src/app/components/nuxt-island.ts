@@ -1,5 +1,6 @@
+import destr from 'destr'
 import type { VNode, RendererNode } from 'vue'
-import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
+import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode, mergeProps } from 'vue'
 
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -8,6 +9,7 @@ import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+import { decodeHtmlEntities } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 
@@ -46,8 +48,7 @@ export default defineComponent({
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
     const slotProps = computed(() => {
-
-      return {}
+      return getSlotProps(html.value)
     })
 
     function _fetchComponent () {
@@ -104,8 +105,8 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
-          nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
-            default: () => [slots[slot]?.()]
+          nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
+            default: () => [slots[slot]?.(slotProps.value[slot])]
           }))
         }
       }
@@ -153,4 +154,15 @@ function isStartFragment (element: RendererNode) {
 
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
+function getSlotProps (html: string) {
+  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
+  const data:Record<string, any> = {}
+  for (const slot of slotsDivs) {
+    const [_, slotName, json] = slot
+    const slotData = destr(decodeHtmlEntities(json))
+    data[slotName] = mergeProps(slotData._default, slotData)
+  }
+  return data
 }

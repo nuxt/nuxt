@@ -16,7 +16,7 @@ export default defineComponent({
   setup (props) {
     const uid = props.context.uid ?? randomUUID()
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
- 
+
     if (!component) {
       throw createError({
         statusCode: 404,

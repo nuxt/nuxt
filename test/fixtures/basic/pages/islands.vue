@@ -45,9 +45,9 @@ const count = ref(0)
           <div id="first-sugar-counter">
             <SugarCounter :multiplier="testCount" />
           </div>
-          <template #test>
+          <template #test="scoped">
             <div id="test-slot">
-              Slot with name test
+              Slot with name test - scoped data {{ scoped }}
             </div>
           </template>
         </NuxtIsland>
