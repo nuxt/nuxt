@@ -82,7 +82,7 @@
     "rollup": "3.20.2",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-license": "^3.0.1",
-    "sass": "^1.61.0",
+    "sass": "^1.62.0",
     "sass-loader": "^10.1.1",
     "sort-package-json": "^2.4.1",
     "typescript": "~5.0.4",
