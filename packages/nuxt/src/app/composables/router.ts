@@ -86,7 +86,7 @@ export interface NavigateToOptions {
   external?: boolean
 }
 
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | NuxtError> | RouteLocationRaw => {
+export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | RouteLocationRaw => {
   if (!to) {
     to = '/'
   }
@@ -116,7 +116,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
       const redirect = () => nuxtApp.callHook('app:redirected')
         .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
-        .then(() => inMiddleware ? /* abort route navigation with fabricated error */ createError({ statusCode: options?.redirectCode || 302 }) : undefined)
+        .then(() => inMiddleware ? /* abort route navigation */ false : undefined)
 
       // We wait to perform the redirect in case any other middleware will intercept the redirect
       // and redirect further.
