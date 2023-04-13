@@ -130,6 +130,11 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('returns 500 when there is an infinite redirect', async () => {
+    const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
+    expect(status).toEqual(500)
+  })
+
   it('render 404', async () => {
     const html = await $fetch('/not-found')
 
