@@ -8,7 +8,7 @@ import {
   createWebHistory
 } from 'vue-router'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -181,11 +181,8 @@ export default defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })])
-      } else if (process.server) {
-        const currentURL = to.fullPath || '/'
-        if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-          await callWithNuxt(nuxtApp, navigateTo, [currentURL])
-        }
+      } else if (process.server && to.redirectedFrom) {
+        await callWithNuxt(nuxtApp, navigateTo, [to.fullPath || '/'])
       }
     })
 
