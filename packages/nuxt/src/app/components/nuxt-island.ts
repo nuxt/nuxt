@@ -1,6 +1,6 @@
 import destr from 'destr'
 import type { VNode, RendererNode } from 'vue'
-import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode, mergeProps } from 'vue'
+import { nextTick, h, Fragment, defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, Teleport, onMounted, createVNode } from 'vue'
 
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -105,7 +105,6 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
-          console.log(slotProps.value[slot])
           nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
             default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
           }))

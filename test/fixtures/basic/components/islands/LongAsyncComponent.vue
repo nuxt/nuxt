@@ -10,6 +10,7 @@
     </div>
     <slot name="test" :count="count" />
     <p>hello world !!!</p>
+    <slot name="hello" v-for="t in ['test', 'hello']" :t="t"></slot>
   </div>
 </template>
 
@@ -17,6 +18,5 @@
 defineProps<{
   count: number
 }>()
-
 const { data } = await useFetch('/api/very-long-request')
 </script>

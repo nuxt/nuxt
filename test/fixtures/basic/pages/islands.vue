@@ -50,6 +50,11 @@ const count = ref(0)
               Slot with name test - scoped data {{ scoped }}
             </div>
           </template>
+          <template #hello="scoped">
+            <div id="test-slot">
+              Slot with name hello - scoped data {{ scoped }}
+            </div>
+          </template>
         </NuxtIsland>
         <button id="update-server-components" @click="count++">
           add +1 to count
