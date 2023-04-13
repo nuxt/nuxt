@@ -2601,10 +2601,10 @@
   resolved "https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
-"@puppeteer/browsers@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-0.4.0.tgz#abaae1eddc9902e1ea441e34171229bd7644ea62"
-  integrity sha512-3iB5pWn9Sr55PKKwqFWSWjLsTKCOEhKNI+uV3BZesgXuA3IhsX8I3hW0HI+3ksMIPkh2mVYzKSpvgq3oicjG2Q==
+"@puppeteer/browsers@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-0.4.1.tgz#fae81939adb743420cc2466f3aa37481f7081712"
+  integrity sha512-4IICvy1McAkT/HyNZHIs7sp8ngBX1dmO0TPQ+FWq9ATQMqI8p+Ulm5A3kS2wYDh5HDHHkYrrETOu6rlj64VuTw==
   dependencies:
     debug "4.3.4"
     extract-zip "2.0.1"
@@ -12723,12 +12723,12 @@ punycode@^2.3.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
 
-puppeteer-core@^19.8.5:
-  version "19.8.5"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-19.8.5.tgz#ba02fbe5bc2f82a9270aa1b983cf29cc1d4f1573"
-  integrity sha512-zoGhim/oBQbkND6h4Xz4X7l5DkWVH9wH7z0mVty5qa/c0P1Yad47t/npVtt2xS10BiQwzztWKx7Pa2nJ5yykdw==
+puppeteer-core@^19.9.0:
+  version "19.9.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-19.9.0.tgz#b4fdf6a7ce6b595a7a45ed6436d07cdde688433e"
+  integrity sha512-IJYfCE0oFpi5dTvNFqOwo8Dey6zzx7hANy7z6K2bjpCux9oPOSOIubq40awNhaHlfi8soYtgU4qabnzMXB7xBQ==
   dependencies:
-    "@puppeteer/browsers" "0.4.0"
+    "@puppeteer/browsers" "0.4.1"
     chromium-bidi "0.4.6"
     cross-fetch "3.1.5"
     debug "4.3.4"
