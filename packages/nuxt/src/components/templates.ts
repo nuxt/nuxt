@@ -27,18 +27,21 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
 
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
-  getContents () {
+  getContents ({ options }) {
     return `import { defineNuxtPlugin } from '#app/nuxt'
 import { lazyGlobalComponents } from '#components'
 
 export default defineNuxtPlugin({
-  name: 'nuxt:global-components',
+  name: 'nuxt:global-components',` +
+      (options.getComponents().filter(c => c.global).length
+        ? `
   setup (nuxtApp) {
     for (const name in lazyGlobalComponents) {
       nuxtApp.vueApp.component(name, lazyGlobalComponents[name])
       nuxtApp.vueApp.component('Lazy' + name, lazyGlobalComponents[name])
     }
-  }
+  }`
+        : '') + `
 })
 `
   }
