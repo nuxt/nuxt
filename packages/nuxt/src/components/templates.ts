@@ -29,14 +29,14 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
   filename: 'components.plugin.mjs',
   getContents () {
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { globalComponents } from '#components'
+import { lazyGlobalComponents } from '#components'
 
 export default defineNuxtPlugin({
   name: 'nuxt:global-components',
   setup (nuxtApp) {
-    for (const name in globalComponents) {
-      nuxtApp.vueApp.component(name, globalComponents[name])
-      nuxtApp.vueApp.component('Lazy' + name, globalComponents[name])
+    for (const name in lazyGlobalComponents) {
+      nuxtApp.vueApp.component(name, lazyGlobalComponents[name])
+      nuxtApp.vueApp.component('Lazy' + name, lazyGlobalComponents[name])
     }
   }
 })
