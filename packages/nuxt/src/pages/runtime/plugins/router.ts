@@ -13,7 +13,6 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
-import { useRequestEvent } from '#app/composables/ssr'
 import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
@@ -164,12 +163,17 @@ export default defineNuxtPlugin({
       }
     })
 
-    router.afterEach(async (to) => {
+    router.onError(() => { delete nuxtApp._processingMiddleware })
+
+    router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
       if (process.client && !nuxtApp.isHydrating && error.value) {
         // Clear any existing errors
         await callWithNuxt(nuxtApp, clearError)
+      }
+      if (process.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+        return
       }
       if (to.matched.length === 0) {
         await callWithNuxt(nuxtApp, showError, [createError({
@@ -180,9 +184,7 @@ export default defineNuxtPlugin({
       } else if (process.server) {
         const currentURL = to.fullPath || '/'
         if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-          const event = await callWithNuxt(nuxtApp, useRequestEvent)
-          const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
-          await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
+          await callWithNuxt(nuxtApp, navigateTo, [currentURL])
         }
       }
     })
