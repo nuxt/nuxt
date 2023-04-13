@@ -1,10 +1,12 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
+import { pathToFileURL } from 'node:url'
 import { dirname, resolve } from 'pathe'
-import { subscribe } from '@parcel/watcher'
+import chokidar from 'chokidar'
+import { interopDefault } from 'mlly'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
   resolveSchema as resolveUntypedSchema
@@ -61,12 +63,31 @@ export default defineNuxtModule({
         schema = await resolveSchema()
         await writeSchema(schema)
       })
-      for (const layer of nuxt.options._layers) {
-        const subscription = await subscribe(layer.config.rootDir, onChange, {
-          ignore: ['!nuxt.schema.*']
-        })
-        nuxt.hook('close', () => subscription.unsubscribe())
+
+      if (nuxt.options.experimental.parcelWatcher) {
+        const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
+        if (watcherPath) {
+          const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+          for (const layer of nuxt.options._layers) {
+            const subscription = await subscribe(layer.config.rootDir, onChange, {
+              ignore: ['!nuxt.schema.*']
+            })
+            nuxt.hook('close', () => subscription.unsubscribe())
+          }
+          return
+        }
+        console.warn('[nuxt] falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
+
+      const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
+        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*')
+      ))
+      const watcher = chokidar.watch(filesToWatch, {
+        ...nuxt.options.watchers.chokidar,
+        ignoreInitial: true
+      })
+      watcher.on('all', onChange)
+      nuxt.hook('close', () => watcher.close())
     }
 
     // --- utils ---

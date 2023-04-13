@@ -536,9 +536,6 @@ importers:
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
-      '@parcel/watcher':
-        specifier: ^2.1.0
-        version: 2.1.0
       '@types/node':
         specifier: ^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
         version: 18.15.11
@@ -554,6 +551,9 @@ importers:
       '@vue/shared':
         specifier: ^3.2.47
         version: 3.2.47
+      chokidar:
+        specifier: ^3.5.3
+        version: 3.5.3
       cookie-es:
         specifier: ^0.5.0
         version: 0.5.0
@@ -663,6 +663,9 @@ importers:
         specifier: ^4.1.6
         version: 4.1.6(vue@3.2.47)
     devDependencies:
+      '@parcel/watcher':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@types/fs-extra':
         specifier: ^11.0.1
         version: 11.0.1
@@ -1906,7 +1909,7 @@ packages:
       micromatch: 4.0.5
       node-addon-api: 3.2.1
       node-gyp-build: 4.6.0
-    dev: false
+    dev: true
 
   /@pkgr/utils@2.3.1:
     resolution: {integrity: sha512-wfzX8kc1PMyUILA+1Z/EqoE4UCXGy0iRGMhPwdfae1+f0OXlLqCk+By+aMzgJBzR9AzS4CDizioG6Ss1gvAFJw==}
@@ -6818,7 +6821,7 @@ packages:
 
   /node-addon-api@3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
-    dev: false
+    dev: true
 
   /node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}

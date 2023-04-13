@@ -161,5 +161,13 @@ export default defineUntypedSchema({
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
+
+    /**
+     * Use `@parcel/watcher` instead of `chokidar` as the watching service for Nuxt. This may improve performance
+     * in large projects or on Windows platforms.
+     *
+     * @see https://github.com/parcel-bundler/watcher
+     */
+    parcelWatcher: false
   }
 })
