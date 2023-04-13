@@ -13,6 +13,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // the path will be the same in this new route and vue-router should send a 500 response
     return navigateTo('/redirect-infinite?test=true')
   }
+  if (to.path === '/navigate-to-external') {
+    return navigateTo('/', { external: true })
+  }
+  if (to.path === '/navigate-to-false') {
+    return false
+  }
   const pluginPath = nuxtApp.$path()
   if (process.server && !/redirect|navigate/.test(pluginPath) && to.path !== pluginPath) {
     throw new Error('plugin did not run before middleware')
