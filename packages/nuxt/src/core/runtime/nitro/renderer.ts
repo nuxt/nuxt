@@ -247,6 +247,8 @@ export default defineRenderHandler(async (event) => {
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
+  if (event.node.res.headersSent || event.node.res.writableEnded) { return }
+
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
     throw ssrContext.payload.error
