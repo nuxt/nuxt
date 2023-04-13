@@ -1,4 +1,4 @@
-export default defineNuxtPlugin((nuxtApp) => {
+export default definePayloadPlugin((nuxtApp) => {
   definePayloadReducer('BlinkingText', data => data === '<original-blink>' && '_')
   definePayloadReviver('BlinkingText', () => '<revivified-blink>')
   if (process.server) {

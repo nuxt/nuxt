@@ -7,7 +7,7 @@ import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
-import { expectNoClientErrors, expectWithPolling, parseData, parsePayload, renderPage, withLogs } from './utils'
+import { expectNoClientErrors, expectWithPolling, isRenderingJson, parseData, parsePayload, renderPage, withLogs } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -45,7 +45,15 @@ describe('route rules', () => {
   it('should enable spa mode', async () => {
     const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
     expect(script.serverRendered).toEqual(false)
-    expect(attrs['data-ssr']).toEqual('false')
+    if (isRenderingJson) {
+      expect(attrs['data-ssr']).toEqual('false')
+    }
+    await expectNoClientErrors('/route-rules/spa')
+  })
+
+  it('test noScript routeRules', async () => {
+    const page = await createPage('/no-scripts')
+    expect(await page.locator('script').all()).toHaveLength(0)
   })
 })
 
@@ -120,6 +128,11 @@ describe('pages', () => {
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
 
     await page.close()
+  })
+
+  it('returns 500 when there is an infinite redirect', async () => {
+    const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
+    expect(status).toEqual(500)
   })
 
   it('render 404', async () => {
@@ -505,6 +518,19 @@ describe('navigate', () => {
     expect(res.status).toEqual(307)
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
   })
+
+  it('should not overwrite headers', async () => {
+    const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(302)
+  })
+
+  it('supports directly aborting navigation on SSR', async () => {
+    const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
+
+    expect(status).toEqual(404)
+  })
 })
 
 describe('errors', () => {
@@ -536,6 +562,7 @@ describe('errors', () => {
     const { page, consoleLogs } = await renderPage('/')
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
+    expect(await page.innerText('div')).toContain('Some value: 3')
     await page.getByText('Chunk error').click()
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
@@ -1223,7 +1250,7 @@ describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isDev() || isWindows)('payload rendering', () => {
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)

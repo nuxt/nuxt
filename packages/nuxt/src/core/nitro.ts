@@ -37,6 +37,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     imports: {
+      autoImports: nuxt.options.imports.autoImport,
       imports: [
         {
           as: '__buildAssetsURL',

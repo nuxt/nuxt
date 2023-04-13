@@ -98,8 +98,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   nuxt.hook('modules:done', () => {
     // Add unctx transform
-    addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    const options = {
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      transformerOptions: nuxt.options.optimization.asyncTransforms
+    }
+    addVitePlugin(UnctxTransformPlugin.vite(options))
+    addWebpackPlugin(UnctxTransformPlugin.webpack(options))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
@@ -288,9 +292,9 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
-    nuxt.hook('modules:done', () => {
-      nuxt.options.plugins.unshift(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
-      nuxt.options.plugins.unshift(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+    nuxt.hooks.hook('modules:done', () => {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
     })
   }
 

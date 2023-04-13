@@ -156,8 +156,10 @@ export default defineNuxtModule({
         layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
       )
     }
-    addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-    addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    nuxt.hook('modules:done', () => {
+      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
+      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    })
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
