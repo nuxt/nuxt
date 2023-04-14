@@ -54,7 +54,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           return ''
         })
         const ssrScopeData = getBindings(bindings, vfor)
-        return `<div ${parsedAttrs} nuxt-ssr-slot-name="${slotName}" ${ssrScopeData} ${selfClosing}>`
+        return `<div ${parsedAttrs} style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${ssrScopeData} ${selfClosing ?? ''}>`
       })
       s.replaceAll('</slot>', '</div>')
 
