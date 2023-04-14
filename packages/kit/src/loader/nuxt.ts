@@ -18,6 +18,35 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   config?: LoadNuxtConfigOptions['overrides']
 }
 
+export async function importNuxtPackage<T = any> (rootDir = process.cwd()): Promise<{ version: 2 | 3, package: T }> {
+  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt', 'nuxt-edge']
+    .map(pkg => resolvePackageJSON(pkg, { url: rootDir }).catch(() => null)))
+    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
+
+  if (!nearestNuxtPkg) {
+    throw new Error(`Cannot find any Nuxt version from ${rootDir}`)
+  }
+
+  const pkg = await readPackageJSON(nearestNuxtPkg)
+  const majorVersion = parseInt((pkg.version || '').split('.')[0])
+
+  rootDir = pathToFileURL(rootDir).href
+
+  // Nuxt 3
+  if (majorVersion === 3) {
+    return {
+      version: majorVersion,
+      package: await importModule((pkg as any)._name || pkg.name, rootDir)
+    }
+  }
+
+  // Nuxt 2
+  return {
+    version: 2,
+    package: await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
+  }
+}
+
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
   opts.cwd = opts.cwd || opts.rootDir
@@ -26,35 +55,21 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt', 'nuxt-edge']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
-    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
-  if (!nearestNuxtPkg) {
-    throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
-  }
-  const pkg = await readPackageJSON(nearestNuxtPkg)
-  const majorVersion = parseInt((pkg.version || '').split('.')[0])
-
-  const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
+  const { version, package: pkg } = await importNuxtPackage(opts.cwd)
 
   // Nuxt 3
-  if (majorVersion === 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
-    const nuxt = await loadNuxt(opts)
-    return nuxt
+  if (version === 3) {
+    return await (pkg as typeof import('nuxt')).loadNuxt(opts) as Nuxt
   }
 
   // Nuxt 2
-  const { loadNuxt } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
-  const nuxt = await loadNuxt({
+  return await pkg.loadNuxt({
     rootDir: opts.cwd,
     for: opts.dev ? 'dev' : 'build',
     configOverrides: opts.overrides,
     ready: opts.ready,
     envConfig: opts.dotenv // TODO: Backward format conversion
-  })
-
-  return nuxt as Nuxt
+  }) as Nuxt
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
