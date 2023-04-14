@@ -16,11 +16,11 @@ import { clearError, showError, useError } from '#app/composables/error'
 import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import _routes from '#build/routes'
-// @ts-ignore
+// @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37

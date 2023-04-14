@@ -15,14 +15,14 @@ import { useNitroApp } from '#internal/nitro/app'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
 
 export interface NuxtRenderHTMLContext {
@@ -61,18 +61,18 @@ export interface NuxtRenderResponse {
 
 interface ClientManifest {}
 
-// @ts-ignore
+// @ts-expect-error
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-// @ts-ignore
+// @ts-expect-error
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
-// @ts-ignore
+// @ts-expect-error
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
-// @ts-ignore
+// @ts-expect-error
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
@@ -304,13 +304,13 @@ export default defineRenderHandler(async (event) => {
       NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-            ? process.env.NUXT_JSON_PAYLOADS
-              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-              : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-            : process.env.NUXT_JSON_PAYLOADS
-              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
-              : renderPayloadScript({ ssrContext, data: ssrContext.payload })
-          ),
+          ? process.env.NUXT_JSON_PAYLOADS
+            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : process.env.NUXT_JSON_PAYLOADS
+            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+            : renderPayloadScript({ ssrContext, data: ssrContext.payload })
+        ),
       routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts

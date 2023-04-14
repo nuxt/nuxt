@@ -15,7 +15,6 @@ async function _main () {
       'no-clear'
     ]
   })
-  // @ts-ignore
   const command = args._.shift() || 'usage'
 
   showBanner(command === 'dev' && args.clear !== false && !args.help)
@@ -30,7 +29,6 @@ async function _main () {
   // Check Node.js version in background
   setTimeout(() => { checkEngines().catch(() => {}) }, 1000)
 
-  // @ts-ignore default.default is hotfix for #621
   const cmd = await commands[command as Command]() as NuxtCommand
   if (args.h || args.help) {
     showHelp(cmd.meta)
