@@ -267,6 +267,8 @@ describe('composables', () => {
     useFetch('/api/hey', {
       headers: useRequestHeaders(['test'])
     })
+    const { test } = useRequestHeaders(['test'])
+    expectTypeOf(test).toEqualTypeOf<string | undefined>()
   })
 })
 
