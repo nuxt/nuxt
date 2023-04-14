@@ -14,6 +14,11 @@ overrides:
   vue: 3.2.47
   magic-string: ^0.30.0
 
+patchedDependencies:
+  '@vue/runtime-core@3.2.47':
+    hash: 7vnwqcgljheoubz6gac6egqoqy
+    path: patches/@vue__runtime-core@3.2.47.patch
+
 importers:
 
   .:
@@ -2881,16 +2886,17 @@ packages:
     dependencies:
       '@vue/shared': 3.2.47
 
-  /@vue/runtime-core@3.2.47:
+  /@vue/runtime-core@3.2.47(patch_hash=7vnwqcgljheoubz6gac6egqoqy):
     resolution: {integrity: sha512-RZxbLQIRB/K0ev0K9FXhNbBzT32H9iRtYbaXb0ZIz2usLms/D55dJR2t6cIEUn6vyhS3ALNvNthI+Q95C+NOpA==}
     dependencies:
       '@vue/reactivity': 3.2.47
       '@vue/shared': 3.2.47
+    patched: true
 
   /@vue/runtime-dom@3.2.47:
     resolution: {integrity: sha512-ArXrFTjS6TsDei4qwNvgrdmHtD930KgSKGhS5M+j8QxXrDJYLqYw4RRcDy1bz1m1wMmb6j+zGLifdVHtkXA7gA==}
     dependencies:
-      '@vue/runtime-core': 3.2.47
+      '@vue/runtime-core': 3.2.47(patch_hash=7vnwqcgljheoubz6gac6egqoqy)
       '@vue/shared': 3.2.47
       csstype: 2.6.21
 

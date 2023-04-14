@@ -1,0 +1,185 @@
+diff --git a/dist/runtime-core.cjs.js b/dist/runtime-core.cjs.js
+index 84429959941bce07d6c336b7027a438b2dfea45e..b24adcb1561a5de585ea57543a8fdd0bde02506f 100644
+--- a/dist/runtime-core.cjs.js
++++ b/dist/runtime-core.cjs.js
+@@ -1333,7 +1333,8 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotSc
+     }
+ }
+ let hasWarned = false;
+-function createSuspenseBoundary(vnode, parent, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++function createSuspenseBoundary(vnode, parentSuspense, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++    var _a;
+     /* istanbul ignore if */
+     if (!hasWarned) {
+         hasWarned = true;
+@@ -1341,13 +1342,22 @@ function createSuspenseBoundary(vnode, parent, parentComponent, container, hidde
+         console[console.info ? 'info' : 'log'](`<Suspense> is an experimental feature and its API will likely change.`);
+     }
+     const { p: patch, m: move, um: unmount, n: next, o: { parentNode, remove } } = rendererInternals;
++    // if set `suspensible: true`, set the current suspense as a dep of parent suspense
++    let parentSuspenseId;
++    const isSuspensible = ((_a = vnode.props) === null || _a === void 0 ? void 0 : _a.suspensible) != null && vnode.props.suspensible !== false;
++    if (isSuspensible) {
++        if (parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingBranch) {
++            parentSuspenseId = parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingId;
++            parentSuspense.deps++;
++        }
++    }
+     const timeout = vnode.props ? shared.toNumber(vnode.props.timeout) : undefined;
+     {
+         assertNumber(timeout, `Suspense timeout`);
+     }
+     const suspense = {
+         vnode,
+-        parent,
++        parent: parentSuspense,
+         parentComponent,
+         isSVG,
+         container,
+@@ -1422,6 +1432,17 @@ function createSuspenseBoundary(vnode, parent, parentComponent, container, hidde
+                 queuePostFlushCb(effects);
+             }
+             suspense.effects = [];
++            // resolve parent suspense if all async deps are resolved
++            if (isSuspensible) {
++                if (parentSuspense &&
++                    parentSuspense.pendingBranch &&
++                    parentSuspenseId === parentSuspense.pendingId) {
++                    parentSuspense.deps--;
++                    if (parentSuspense.deps === 0) {
++                        parentSuspense.resolve();
++                    }
++                }
++            }
+             // invoke @resolve event
+             triggerEvent(vnode, 'onResolve');
+         },
+diff --git a/dist/runtime-core.cjs.prod.js b/dist/runtime-core.cjs.prod.js
+index 34d0fa4c547388b179d4ba9d69ff72401ee5ba8d..3907d683e1aa33c1abe1cf37fa4afa250672214e 100644
+--- a/dist/runtime-core.cjs.prod.js
++++ b/dist/runtime-core.cjs.prod.js
+@@ -807,12 +807,22 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotSc
+         }
+     }
+ }
+-function createSuspenseBoundary(vnode, parent, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++function createSuspenseBoundary(vnode, parentSuspense, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++    var _a;
+     const { p: patch, m: move, um: unmount, n: next, o: { parentNode, remove } } = rendererInternals;
++    // if set `suspensible: true`, set the current suspense as a dep of parent suspense
++    let parentSuspenseId;
++    const isSuspensible = ((_a = vnode.props) === null || _a === void 0 ? void 0 : _a.suspensible) != null && vnode.props.suspensible !== false;
++    if (isSuspensible) {
++        if (parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingBranch) {
++            parentSuspenseId = parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingId;
++            parentSuspense.deps++;
++        }
++    }
+     const timeout = vnode.props ? shared.toNumber(vnode.props.timeout) : undefined;
+     const suspense = {
+         vnode,
+-        parent,
++        parent: parentSuspense,
+         parentComponent,
+         isSVG,
+         container,
+@@ -879,6 +889,17 @@ function createSuspenseBoundary(vnode, parent, parentComponent, container, hidde
+                 queuePostFlushCb(effects);
+             }
+             suspense.effects = [];
++            // resolve parent suspense if all async deps are resolved
++            if (isSuspensible) {
++                if (parentSuspense &&
++                    parentSuspense.pendingBranch &&
++                    parentSuspenseId === parentSuspense.pendingId) {
++                    parentSuspense.deps--;
++                    if (parentSuspense.deps === 0) {
++                        parentSuspense.resolve();
++                    }
++                }
++            }
+             // invoke @resolve event
+             triggerEvent(vnode, 'onResolve');
+         },
+diff --git a/dist/runtime-core.d.ts b/dist/runtime-core.d.ts
+index f0f922d21d13252909815059d26da67a5b7290cb..10a40056e4fff8cae70b989bbc463b2cb57340e1 100644
+--- a/dist/runtime-core.d.ts
++++ b/dist/runtime-core.d.ts
+@@ -609,7 +609,7 @@ export declare function createSlots(slots: Record<string, SSRSlot>, dynamicSlots
+  */
+ export declare function createStaticVNode(content: string, numberOfNodes: number): VNode;
+ 
+-declare function createSuspenseBoundary(vnode: VNode, parent: SuspenseBoundary | null, parentComponent: ComponentInternalInstance | null, container: RendererElement, hiddenContainer: RendererElement, anchor: RendererNode | null, isSVG: boolean, slotScopeIds: string[] | null, optimized: boolean, rendererInternals: RendererInternals, isHydrating?: boolean): SuspenseBoundary;
++declare function createSuspenseBoundary(vnode: VNode, parentSuspense: SuspenseBoundary | null, parentComponent: ComponentInternalInstance | null, container: RendererElement, hiddenContainer: RendererElement, anchor: RendererNode | null, isSVG: boolean, slotScopeIds: string[] | null, optimized: boolean, rendererInternals: RendererInternals, isHydrating?: boolean): SuspenseBoundary;
+ 
+ /**
+  * @private
+@@ -1731,6 +1731,12 @@ export declare interface SuspenseProps {
+     onPending?: () => void;
+     onFallback?: () => void;
+     timeout?: string | number;
++    /**
++     * Allow suspense to be captured by parent suspense
++     *
++     * @default false
++     */
++    suspensible?: boolean;
+ }
+ 
+ export declare const Teleport: {
+diff --git a/dist/runtime-core.esm-bundler.js b/dist/runtime-core.esm-bundler.js
+index f641a235c1893c76ed08b02359075714eeb82b1b..703e012c19c015e9092a3d5822a2398e18baab78 100644
+--- a/dist/runtime-core.esm-bundler.js
++++ b/dist/runtime-core.esm-bundler.js
+@@ -1342,7 +1342,8 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotSc
+     }
+ }
+ let hasWarned = false;
+-function createSuspenseBoundary(vnode, parent, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++function createSuspenseBoundary(vnode, parentSuspense, parentComponent, container, hiddenContainer, anchor, isSVG, slotScopeIds, optimized, rendererInternals, isHydrating = false) {
++    var _a;
+     /* istanbul ignore if */
+     if ((process.env.NODE_ENV !== 'production') && !false && !hasWarned) {
+         hasWarned = true;
+@@ -1350,13 +1351,22 @@ function createSuspenseBoundary(vnode, parent, parentComponent, container, hidde
+         console[console.info ? 'info' : 'log'](`<Suspense> is an experimental feature and its API will likely change.`);
+     }
+     const { p: patch, m: move, um: unmount, n: next, o: { parentNode, remove } } = rendererInternals;
++    // if set `suspensible: true`, set the current suspense as a dep of parent suspense
++    let parentSuspenseId;
++    const isSuspensible = ((_a = vnode.props) === null || _a === void 0 ? void 0 : _a.suspensible) != null && vnode.props.suspensible !== false;
++    if (isSuspensible) {
++        if (parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingBranch) {
++            parentSuspenseId = parentSuspense === null || parentSuspense === void 0 ? void 0 : parentSuspense.pendingId;
++            parentSuspense.deps++;
++        }
++    }
+     const timeout = vnode.props ? toNumber(vnode.props.timeout) : undefined;
+     if ((process.env.NODE_ENV !== 'production')) {
+         assertNumber(timeout, `Suspense timeout`);
+     }
+     const suspense = {
+         vnode,
+-        parent,
++        parent: parentSuspense,
+         parentComponent,
+         isSVG,
+         container,
+@@ -1431,6 +1441,17 @@ function createSuspenseBoundary(vnode, parent, parentComponent, container, hidde
+                 queuePostFlushCb(effects);
+             }
+             suspense.effects = [];
++            // resolve parent suspense if all async deps are resolved
++            if (isSuspensible) {
++                if (parentSuspense &&
++                    parentSuspense.pendingBranch &&
++                    parentSuspenseId === parentSuspense.pendingId) {
++                    parentSuspense.deps--;
++                    if (parentSuspense.deps === 0) {
++                        parentSuspense.resolve();
++                    }
++                }
++            }
+             // invoke @resolve event
+             triggerEvent(vnode, 'onResolve');
+         },

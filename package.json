@@ -40,6 +40,9 @@
       "vite": "^4.2.1",
       "vue": "3.2.47",
       "magic-string": "^0.30.0"
+    },
+    "patchedDependencies": {
+      "@vue/runtime-core@3.2.47": "patches/@vue__runtime-core@3.2.47.patch"
     }
   },
   "devDependencies": {
