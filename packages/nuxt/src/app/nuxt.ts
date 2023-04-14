@@ -96,8 +96,6 @@ interface _NuxtApp {
   _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any>>
 
   /** @internal */
-  _appConfig: AppConfig
-  /** @internal */
   _route: RouteLocationNormalizedLoaded
 
   /** @internal */
