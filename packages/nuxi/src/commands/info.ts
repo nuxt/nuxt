@@ -7,6 +7,7 @@ import destr from 'destr'
 import { splitByCase } from 'scule'
 import clipboardy from 'clipboardy'
 import type { NuxtModule } from '@nuxt/schema'
+import type { packageManagerLocks } from '../utils/packageManagers'
 import { getPackageManager, getPackageManagerVersion } from '../utils/packageManagers'
 import { findup } from '../utils/fs'
 import { defineNuxtCommand } from './index'
@@ -51,11 +52,10 @@ export default defineNuxtCommand({
             ? 'vite' /* nuxt-vite */
             : 'webpack')
 
-    let packageManager = getPackageManager(rootDir)
+    let packageManager: keyof typeof packageManagerLocks | 'unknown' | null = getPackageManager(rootDir)
     if (packageManager) {
       packageManager += '@' + getPackageManagerVersion(packageManager)
     } else {
-      // @ts-expect-error
       packageManager = 'unknown'
     }
 

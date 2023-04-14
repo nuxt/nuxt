@@ -2,8 +2,8 @@ import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
-import { findStaticImports, findExports, parseStaticImport } from 'mlly'
-import type { CallExpression, Identifier, Expression } from 'estree'
+import { findExports, findStaticImports, parseStaticImport } from 'mlly'
+import type { CallExpression, Expression, Identifier } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
@@ -58,7 +58,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           return {
             code: s.toString(),
             map: options.sourcemap
-              ? s.generateMap({ source: id, includeContent: true })
+              ? s.generateMap({ hires: true })
               : undefined
           }
         }

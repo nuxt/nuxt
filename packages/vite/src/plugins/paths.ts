@@ -34,7 +34,7 @@ export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

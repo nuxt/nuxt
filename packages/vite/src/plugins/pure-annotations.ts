@@ -29,7 +29,7 @@ export const pureAnnotationsPlugin = createUnplugin((options: PureAnnotationsOpt
         return true
       }
     },
-    transform (code, id) {
+    transform (code) {
       if (!FUNCTION_RE_SINGLE.test(code)) { return }
 
       const s = new MagicString(code)
@@ -43,7 +43,7 @@ export const pureAnnotationsPlugin = createUnplugin((options: PureAnnotationsOpt
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }
