@@ -3,14 +3,16 @@ import { createApp, createSSRApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
 import type { $Fetch, NitroFetchRequest } from 'nitropack'
 
+// This file must be imported first for webpack as we set __webpack_public_path__ there
+// @ts-expect-error virtual file
+import { baseURL } from '#build/paths.mjs'
+
 import type { CreateOptions } from '#app'
 import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
 import _plugins from '#build/plugins'
-// @ts-expect-error virtual file
-import { baseURL } from '#build/paths.mjs'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
