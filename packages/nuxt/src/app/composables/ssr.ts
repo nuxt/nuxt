@@ -4,7 +4,7 @@ import { setResponseStatus as _setResponseStatus } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 
-export function useRequestHeaders<K extends string = string> (include: K[]): Record<Lowercase<K>, string | undefined>
+export function useRequestHeaders<K extends string = string> (include: K[]): { [key in Lowercase<K>]?: string }
 export function useRequestHeaders (): Readonly<Record<string, string | undefined>>
 export function useRequestHeaders (include?: any[]) {
   if (process.client) { return {} }
