@@ -9,6 +9,7 @@ interface ServerOnlyComponentTransformPluginOptions {
 }
 
 const ATTRS_RE = /([^=]*)="([^"]*)"/g
+const SCRIPT_RE = /<script[^>]*>/g
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {
   return {
@@ -26,6 +27,11 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       if (!code.includes('<slot ')) { return }
 
       const s = new MagicString(code)
+
+      s.replace(SCRIPT_RE, (full) => {
+        return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\''
+      })
+
       s.replaceAll(/<slot ([^/|>]*)(\/)?>/g, (_, attrs: string, selfClosing: string) => {
         let slotName = 'default'
         const bindings: Record<string, string> = {}
@@ -73,6 +79,6 @@ function getBindings (bindings: Record<string, string>, vfor?: [string, string])
   if (!vfor) {
     return `:nuxt-ssr-slot-data="JSON.stringify([${data}])"`
   } else {
-    return `:nuxt-ssr-slot-data="JSON.stringify(${vfor[1]}.map((${vfor[0]}) => (${data})))"`
+    return `:nuxt-ssr-slot-data="JSON.stringify(__vforToArray(${vfor[1]}).map((${vfor[0]}) => (${data})))"`
   }
 }

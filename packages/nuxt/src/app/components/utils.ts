@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue'
 import type { Component } from 'vue'
 // eslint-disable-next-line
-import { isString, isPromise, isArray } from '@vue/shared'
+import { isString, isPromise, isArray, isObject } from '@vue/shared'
 
 const Fragment = defineComponent({
   name: 'FragmentWrapper',
@@ -67,4 +67,38 @@ export function decodeHtmlEntities (html: string) {
     const num = parseInt(numStr, 10)
     return String.fromCharCode(num)
   })
+}
+
+/**
+ * helper for NuxtIsland to generate a correct array for scoped data
+ */
+export function vforToArray (source: any): any[] {
+  if (isArray(source)) {
+    return source
+  } else if (isString(source)) {
+    return source.split('')
+  } else if (typeof source === 'number') {
+    if (process.dev && !Number.isInteger(source)) {
+      console.warn(`The v-for range expect an integer value but got ${source}.`)
+    }
+    const array = []
+    for (let i = 0; i < source; i++) {
+      array[i] = i
+    }
+  } else if (isObject(source)) {
+    if (source[Symbol.iterator as any]) {
+      return Array.from(source as Iterable<any>, item =>
+        item
+      )
+    } else {
+      const keys = Object.keys(source)
+      const array = new Array(keys.length)
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i]
+        array[i] = source[key]
+      }
+      return array
+    }
+  }
+  return []
 }
