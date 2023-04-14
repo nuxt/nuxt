@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import { downloadTemplate, startShell } from 'giget'
 import { relative } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { defineNuxtCommand } from './index'
 
 const rpath = (p: string) => relative(process.cwd(), p)

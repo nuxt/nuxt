@@ -58,7 +58,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           return {
             code: s.toString(),
             map: options.sourcemap
-              ? s.generateMap({ source: id, includeContent: true })
+              ? s.generateMap({ hires: true })
               : undefined
           }
         }

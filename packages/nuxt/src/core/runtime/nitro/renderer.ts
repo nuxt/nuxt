@@ -15,14 +15,14 @@ import { useNitroApp } from '#internal/nitro/app'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
 
 export interface NuxtRenderHTMLContext {
@@ -61,18 +61,18 @@ export interface NuxtRenderResponse {
 
 interface ClientManifest {}
 
-// @ts-ignore
+// @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-// @ts-ignore
+// @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
-// @ts-ignore
+// @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
-// @ts-ignore
+// @ts-expect-error file will be produced after app build
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
@@ -124,12 +124,12 @@ const getSPARenderer = lazyCachedFunction(async () => {
     ssrContext!.payload = {
       _errors: {},
       serverRendered: false,
-      config: {
-        public: config.public,
-        app: config.app
-      },
       data: {},
       state: {}
+    }
+    ssrContext.config = {
+      public: config.public,
+      app: config.app
     }
     ssrContext!.renderMeta = ssrContext!.renderMeta ?? getStaticRenderedHead
     return Promise.resolve(result)
@@ -249,6 +249,8 @@ export default defineRenderHandler(async (event) => {
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
+  if (event.node.res.headersSent || event.node.res.writableEnded) { return }
+
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
     throw ssrContext.payload.error
@@ -278,6 +280,8 @@ export default defineRenderHandler(async (event) => {
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     island: Boolean(islandContext),
@@ -287,7 +291,7 @@ export default defineRenderHandler(async (event) => {
       process.env.NUXT_JSON_PAYLOADS
         ? _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null
         : _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null,
-      _rendered.renderResourceHints(),
+      NO_SCRIPTS ? null : _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
       ssrContext.styles
@@ -299,7 +303,7 @@ export default defineRenderHandler(async (event) => {
     ]),
     body: [replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)],
     bodyAppend: normalizeChunks([
-      process.env.NUXT_NO_SCRIPTS
+      NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
             ? process.env.NUXT_JSON_PAYLOADS
@@ -309,7 +313,7 @@ export default defineRenderHandler(async (event) => {
               ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
               : renderPayloadScript({ ssrContext, data: ssrContext.payload })
           ),
-      _rendered.renderScripts(),
+      routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])

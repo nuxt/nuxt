@@ -121,6 +121,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
+        payload: ['json', 'js']
         node: [16]
         exclude:
           - env: 'dev'
@@ -180,6 +181,7 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
+          TEST_PAYLOAD: ${{ matrix.payload }}
 
   build-release:
     if: |

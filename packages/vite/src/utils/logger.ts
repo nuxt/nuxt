@@ -27,6 +27,12 @@ export function createViteLogger (config: vite.InlineConfig): vite.Logger {
   const clearScreen = canClearScreen ? clear : () => {}
 
   function output (type: vite.LogType, msg: string, options: vite.LogErrorOptions = {}) {
+    if (typeof msg === 'string' && !process.env.DEBUG) {
+      // TODO: resolve upstream in Vite
+      // Hide sourcemap warnings related to node_modules
+      if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) { return }
+    }
+
     const sameAsLast = lastType === type && lastMsg === msg
     if (sameAsLast) {
       duplicateCount += 1

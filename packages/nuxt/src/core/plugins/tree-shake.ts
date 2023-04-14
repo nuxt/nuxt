@@ -35,7 +35,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
         return true
       }
     },
-    transform (code, id) {
+    transform (code) {
       if (!code.match(COMPOSABLE_RE)) { return }
 
       const s = new MagicString(code)
@@ -48,7 +48,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

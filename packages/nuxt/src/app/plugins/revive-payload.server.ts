@@ -14,8 +14,11 @@ const reducers = {
   Reactive: (data: any) => isReactive(data) && toRaw(data)
 }
 
-export default defineNuxtPlugin(() => {
-  for (const reducer in reducers) {
-    definePayloadReducer(reducer, reducers[reducer as keyof typeof reducers])
+export default defineNuxtPlugin({
+  name: 'nuxt:revive-payload:server',
+  setup () {
+    for (const reducer in reducers) {
+      definePayloadReducer(reducer, reducers[reducer as keyof typeof reducers])
+    }
   }
 })

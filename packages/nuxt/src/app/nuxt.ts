@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive, shallowReactive } from 'vue'
+import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -42,6 +42,7 @@ export interface RuntimeNuxtHooks {
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
+  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
@@ -138,9 +139,31 @@ interface _NuxtApp {
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
+
+export interface PluginMeta {
+  name?: string
+  enforce?: 'pre' | 'default' | 'post'
+  /**
+   * This allows more granular control over plugin order and should only be used by advanced users.
+   * It overrides the value of `enforce` and is used to sort plugins.
+   */
+  order?: number
+}
+
+export interface ResolvedPluginMeta {
+  name?: string
+  order: number
+}
+
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
   (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
+  meta?: ResolvedPluginMeta
+}
+
+export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
+  hooks?: Partial<RuntimeNuxtHooks>
+  setup?: Plugin<Injections>
 }
 
 export interface CreateOptions {
@@ -158,10 +181,10 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version }
     },
-    payload: shallowReactive({
-      data: shallowReactive({}),
-      state: shallowReactive({}),
-      _errors: shallowReactive({}),
+    payload: reactive({
+      data: {},
+      state: {},
+      _errors: {},
       ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
@@ -216,7 +239,6 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Inject $nuxt
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
-  // @ts-expect-error
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   if (process.server) {
@@ -305,25 +327,30 @@ export function normalizePlugins (_plugins: Plugin[]) {
   const legacyInjectPlugins: Plugin[] = []
   const invalidPlugins: Plugin[] = []
 
-  const plugins = _plugins.map((plugin) => {
+  const plugins: Plugin[] = []
+
+  for (const plugin of _plugins) {
     if (typeof plugin !== 'function') {
-      invalidPlugins.push(plugin)
-      return null
+      if (process.dev) { invalidPlugins.push(plugin) }
+      continue
     }
+
+    // TODO: Skip invalid plugins in next releases
+    let _plugin = plugin
     if (plugin.length > 1) {
-      legacyInjectPlugins.push(plugin)
       // Allow usage without wrapper but warn
-      // TODO: Skip invalid in next releases
-      // @ts-ignore
-      return (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
-      // return null
+      if (process.dev) { legacyInjectPlugins.push(plugin) }
+      // @ts-expect-error deliberate invalid second argument
+      _plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
     }
-    if (!isNuxtPlugin(plugin)) {
-      unwrappedPlugins.push(plugin)
-      // Allow usage without wrapper but warn
-    }
-    return plugin
-  }).filter(Boolean)
+
+    // Allow usage without wrapper but warn
+    if (process.dev && !isNuxtPlugin(_plugin)) { unwrappedPlugins.push(_plugin) }
+
+    plugins.push(_plugin)
+  }
+
+  plugins.sort((a, b) => (a.meta?.order || orderMap.default) - (b.meta?.order || orderMap.default))
 
   if (process.dev && legacyInjectPlugins.length) {
     console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
@@ -335,12 +362,53 @@ export function normalizePlugins (_plugins: Plugin[]) {
     console.warn('[warn] [nuxt] You are using a plugin that has not been wrapped in `defineNuxtPlugin`. It is advised to wrap your plugins as in the future this may enable enhancements:', unwrappedPlugins.map(p => p.name || p).join(','))
   }
 
-  return plugins as Plugin[]
+  return plugins
 }
 
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T>) {
-  plugin[NuxtPluginIndicator] = true
-  return plugin
+// -50: pre-all (nuxt)
+// -40: custom payload revivers (user)
+// -30: payload reviving (nuxt)
+// -20: pre (user) <-- pre mapped to this
+// -10: default (nuxt)
+// 0: default (user) <-- default behavior
+// +10: post (nuxt)
+// +20: post (user) <-- post mapped to this
+// +30: post-all (nuxt)
+
+const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
+  pre: -20,
+  default: 0,
+  post: 20
+}
+
+export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
+  return defineNuxtPlugin(plugin, { order: -40 })
+}
+
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
+  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
+
+  const wrapper: Plugin<T> = (nuxtApp) => {
+    if (plugin.hooks) {
+      nuxtApp.hooks.addHooks(plugin.hooks)
+    }
+    if (plugin.setup) {
+      return plugin.setup(nuxtApp)
+    }
+  }
+
+  wrapper.meta = {
+    name: meta?.name || plugin.name || plugin.setup?.name,
+    order:
+      meta?.order ||
+      plugin.order ||
+      orderMap[plugin.enforce || 'default'] ||
+      orderMap.default
+  }
+
+  wrapper[NuxtPluginIndicator] = true
+
+  return wrapper
 }
 
 export function isNuxtPlugin (plugin: unknown) {

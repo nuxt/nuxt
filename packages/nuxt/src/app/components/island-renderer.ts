@@ -2,7 +2,7 @@ import { randomUUID } from 'uncrypto'
 import type { defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent } from 'vue'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
 

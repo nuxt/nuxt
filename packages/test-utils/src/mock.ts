@@ -1,4 +1,4 @@
-import consola from 'consola'
+import { consola } from 'consola'
 import { useTestContext } from './context'
 
 export function mockFn () {

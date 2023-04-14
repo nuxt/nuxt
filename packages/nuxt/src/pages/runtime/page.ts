@@ -8,7 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export default defineComponent({
@@ -73,8 +73,7 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
     ...prop,
     onAfterLeave: _toArray(prop.onAfterLeave)
   }))
-  // @ts-ignore
-  return defu(..._props)
+  return defu(..._props as [TransitionProps, TransitionProps])
 }
 
 const RouteProvider = defineComponent({

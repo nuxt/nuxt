@@ -7,7 +7,6 @@ import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
-import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
@@ -82,6 +81,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         /(nuxt|nuxt3)\/(dist|src|app)/
       ]
     },
+    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
@@ -110,7 +110,6 @@ export async function buildServer (ctx: ViteBuildContext) {
       hmr: false
     },
     plugins: [
-      cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.server,
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']

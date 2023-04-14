@@ -29,7 +29,7 @@ export type MultiWatchSources = (WatchSource<unknown> | object)[]
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
-  PickKeys extends KeysOf<DataT> =KeysOf<DataT>,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
 > {
   server?: boolean
   lazy?: boolean
@@ -270,7 +270,7 @@ export function useLazyAsyncData<
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys>]
-  // @ts-ignore
+  // @ts-expect-error we pass an extra argument to prevent a key being injected
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 

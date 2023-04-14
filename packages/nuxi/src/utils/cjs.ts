@@ -4,11 +4,9 @@ import { dirname, normalize } from 'pathe'
 export function getModulePaths (paths?: string | string[]): string[] {
   return ([] as Array<string | undefined>)
     .concat(
-      // @ts-expect-error global object
       global.__NUXT_PREPATHS__,
       paths,
       process.cwd(),
-      // @ts-expect-error global object
       global.__NUXT_PATHS__
     )
     .filter(Boolean) as string[]
@@ -30,7 +28,7 @@ export function tryRequireModule (id: string, paths?: string | string[]) {
 
 export function getNearestPackage (id: string, paths?: string | string[]) {
   while (dirname(id) !== id) {
-    try { return requireModule(id + '/package.json', paths) } catch { }
+    try { return requireModule(id + '/package.json', paths) } catch {}
     id = dirname(id)
   }
   return null

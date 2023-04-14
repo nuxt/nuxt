@@ -95,6 +95,7 @@ export default defineUntypedSchema({
 
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
      */
     noScripts: false,
 
@@ -120,6 +121,13 @@ export default defineUntypedSchema({
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     *
+     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     */
+    viewTransition: false,
 
     /**
      * Write early hints when using node server.

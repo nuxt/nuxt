@@ -1,6 +1,6 @@
 import { buildNuxt } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { clearDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'

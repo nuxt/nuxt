@@ -51,7 +51,8 @@ export default defineNuxtConfig({
   ],
   nitro: {
     routeRules: {
-      '/route-rules/spa': { ssr: false }
+      '/route-rules/spa': { ssr: false },
+      '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
@@ -107,12 +108,6 @@ export default defineNuxtConfig({
       }))
       addVitePlugin(plugin.vite())
       addWebpackPlugin(plugin.webpack())
-    },
-    function (_options, nuxt) {
-      // TODO: support directly via object syntax plugins: https://github.com/nuxt/nuxt/issues/14628
-      nuxt.hook('modules:done', () => {
-        nuxt.options.plugins.unshift('~/plugins/custom-type-registration')
-      })
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
@@ -191,7 +186,7 @@ export default defineNuxtConfig({
   },
   experimental: {
     polyfillVueUseHead: true,
-    renderJsonPayloads: true,
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
