@@ -61,18 +61,18 @@ export interface NuxtRenderResponse {
 
 interface ClientManifest {}
 
-// @ts-expect-error
+// @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-// @ts-expect-error
+// @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
-// @ts-expect-error
+// @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
-// @ts-expect-error
+// @ts-expect-error file will be produced after app build
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
@@ -304,13 +304,13 @@ export default defineRenderHandler(async (event) => {
       NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-          ? process.env.NUXT_JSON_PAYLOADS
-            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-            : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : process.env.NUXT_JSON_PAYLOADS
-            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
-            : renderPayloadScript({ ssrContext, data: ssrContext.payload })
-        ),
+            ? process.env.NUXT_JSON_PAYLOADS
+              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+              : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : process.env.NUXT_JSON_PAYLOADS
+              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+              : renderPayloadScript({ ssrContext, data: ssrContext.payload })
+          ),
       routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts

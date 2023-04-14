@@ -71,11 +71,7 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       loadPlugins(postcssOptions)
     }
 
-    // @ts-expect-error
-    delete nuxt.options.webpack.postcss.order
-
     return {
-      // @ts-expect-error
       sourceMap: nuxt.options.webpack.cssSourceMap,
       ...nuxt.options.webpack.postcss,
       postcssOptions

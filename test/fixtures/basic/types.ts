@@ -120,9 +120,9 @@ describe('layouts', () => {
 describe('modules', () => {
   it('augments schema automatically', () => {
     defineNuxtConfig({ sampleModule: { enabled: false } })
-    // @ts-expect-error
+    // @ts-expect-error we want to ensure we throw type error on invalid option
     defineNuxtConfig({ sampleModule: { other: false } })
-    // @ts-expect-error
+    // @ts-expect-error we want to ensure we throw type error on invalid key
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 })
@@ -158,7 +158,7 @@ describe('runtimeConfig', () => {
     const val = defineNuxtConfig({
       runtimeConfig: {
         public: {
-          // @ts-expect-error
+          // @ts-expect-error this should be a number
           testConfig: 'test',
           ids: [1, 2]
         }

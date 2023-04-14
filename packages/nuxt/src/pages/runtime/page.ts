@@ -73,8 +73,7 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
     ...prop,
     onAfterLeave: _toArray(prop.onAfterLeave)
   }))
-  // @ts-expect-error
-  return defu(..._props)
+  return defu(..._props as [TransitionProps, TransitionProps])
 }
 
 const RouteProvider = defineComponent({
