@@ -1173,7 +1173,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div><div> count is above 2 </div><!--[--><!--]--> that was very long ... <div id=\\"long-async-component-count\\">3</div><!--[--><!--]--><p>hello world !!!</p></div>",
+        "html": "<div><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;test&quot;},{&quot;t&quot;:&quot;hello&quot;}]\\"></div></div>",
         "state": {},
       }
     `)
@@ -1190,15 +1190,15 @@ describe('component islands', () => {
     }
     result.html = result.html.replace(/ nuxt-ssr-component-uid="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
-    {
-      "head": {
-        "link": [],
-        "style": [],
-      },
-      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><!--[--><!--]--></div>",
-      "state": {},
-    }
-  `)
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+        "state": {},
+      }
+    `)
   })
 
   it('renders pure components', async () => {
