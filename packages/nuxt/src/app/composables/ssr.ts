@@ -5,7 +5,7 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 
 export function useRequestHeaders<K extends string = string> (include: K[]): { [key in Lowercase<K>]?: string }
-export function useRequestHeaders (): Readonly<Record<string, string | undefined>>
+export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
   if (process.client) { return {} }
   const headers = useNuxtApp().ssrContext?.event.node.req.headers ?? {}
