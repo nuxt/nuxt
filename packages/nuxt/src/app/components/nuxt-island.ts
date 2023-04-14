@@ -15,6 +15,7 @@ import { useRequestEvent } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
+const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 
 export default defineComponent({
   name: 'NuxtIsland',
@@ -49,6 +50,9 @@ export default defineComponent({
     useHead(cHead)
     const slotProps = computed(() => {
       return getSlotProps(html.value)
+    })
+    const availableSlots = computed(() => {
+      return [...html.value.matchAll(SLOTNAME_RE)].map(m => m[1])
     })
 
     function _fetchComponent () {
@@ -105,9 +109,11 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
-          nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
-            default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
-          }))
+          if (availableSlots.value.includes(slot)) {
+            nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
+              default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
+            }))
+          }
         }
       }
       return nodes
