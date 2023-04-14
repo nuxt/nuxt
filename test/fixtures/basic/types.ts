@@ -259,6 +259,21 @@ describe('composables', () => {
     expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
   })
+
+  it('correctly types returns with key signatures', () => {
+    interface TestType {
+      id: string
+      content: string[]
+      [x: string]: any
+    }
+
+    const testFetch = () => Promise.resolve({}) as Promise<TestType>
+
+    const { data: notTypedData } = useAsyncData('test', testFetch)
+    expectTypeOf(notTypedData.value!.id).toEqualTypeOf<string>()
+    expectTypeOf(notTypedData.value!.content).toEqualTypeOf<string[]>()
+    expectTypeOf(notTypedData.value!.untypedKey).toEqualTypeOf<any>()
+  })
 })
 
 describe('app config', () => {
