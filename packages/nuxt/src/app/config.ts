@@ -5,9 +5,6 @@ import __appConfig from '#build/app.config.mjs'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
-// Workaround for vite HMR with virtual modules
-export const _getAppConfig = () => __appConfig as AppConfig
-
 function deepDelete (obj: any, newObj: any) {
   for (const key in obj) {
     const val = newObj[key]
@@ -59,7 +56,7 @@ if (process.dev) {
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
-      const newConfig = newModule?._getAppConfig()
+      const newConfig = newModule?.useAppConfig()
       applyHMR(newConfig)
     })
   }
