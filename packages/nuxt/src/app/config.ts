@@ -1,6 +1,5 @@
 import { reactive } from 'vue'
 import type { AppConfig } from 'nuxt/schema'
-import { useNuxtApp } from './nuxt'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
@@ -34,13 +33,8 @@ function deepAssign (obj: any, newObj: any) {
   }
 }
 
-export function useAppConfig (): AppConfig {
-  const nuxtApp = useNuxtApp()
-  if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = reactive(__appConfig) as AppConfig
-  }
-  return nuxtApp._appConfig
-}
+const appConfig = process.server ? __appConfig : reactive(__appConfig)
+export const useAppConfig = () => appConfig
 
 /**
  * Deep assign the current appConfig with the new one.
