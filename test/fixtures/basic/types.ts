@@ -259,6 +259,15 @@ describe('composables', () => {
     expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
   })
+
+  it('uses types compatible between useRequestHeaders and useFetch', () => {
+    useFetch('/api/hey', {
+      headers: useRequestHeaders()
+    })
+    useFetch('/api/hey', {
+      headers: useRequestHeaders(['test'])
+    })
+  })
 })
 
 describe('app config', () => {
