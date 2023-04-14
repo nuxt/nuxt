@@ -7,7 +7,7 @@ import { navigateTo } from '../composables/router'
 import { useState } from '../composables/state'
 import { useRequestEvent } from '../composables/ssr'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
 
 interface Route {

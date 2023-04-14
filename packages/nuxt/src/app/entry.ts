@@ -1,23 +1,27 @@
 // We set __webpack_public_path via this import with webpack builder
 import { createApp, createSSRApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
-// @ts-ignore
+import type { $Fetch, NitroFetchRequest } from 'nitropack'
+
+// This file must be imported first for webpack as we set __webpack_public_path__ there
+// @ts-expect-error virtual file
 import { baseURL } from '#build/paths.mjs'
+
 import type { CreateOptions } from '#app'
 import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
+
 import '#build/css'
-// @ts-ignore
+// @ts-expect-error virtual file
 import _plugins from '#build/plugins'
-// @ts-ignore
+// @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appRootId } from '#build/nuxt.config.mjs'
 
 if (!globalThis.$fetch) {
-  // @ts-ignore
   globalThis.$fetch = $fetch.create({
     baseURL: baseURL()
-  })
+  }) as $Fetch<unknown, NitroFetchRequest>
 }
 
 let entry: Function
@@ -45,9 +49,7 @@ if (process.server) {
 if (process.client) {
   // TODO: temporary webpack 5 HMR fix
   // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
-  // @ts-ignore
   if (process.dev && import.meta.webpackHot) {
-    // @ts-ignore
     import.meta.webpackHot.accept()
   }
 
