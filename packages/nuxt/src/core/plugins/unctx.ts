@@ -34,7 +34,7 @@ export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPlugi
         return true
       }
     },
-    transform (code, id) {
+    transform (code) {
       // TODO: needed for webpack - update transform in unctx/unplugin?
       if (code.startsWith(TRANSFORM_MARKER) || !transformer.shouldTransform(code)) { return }
       const result = transformer.transform(code)
@@ -42,7 +42,7 @@ export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPlugi
         return {
           code: TRANSFORM_MARKER + result.code,
           map: options.sourcemap
-            ? result.magicString.generateMap({ source: id, includeContent: true })
+            ? result.magicString.generateMap({ hires: true })
             : undefined
         }
       }
