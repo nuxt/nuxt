@@ -270,6 +270,21 @@ describe('composables', () => {
     const { test } = useRequestHeaders(['test'])
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
   })
+
+  it('correctly types returns with key signatures', () => {
+    interface TestType {
+      id: string
+      content: string[]
+      [x: string]: any
+    }
+
+    const testFetch = () => Promise.resolve({}) as Promise<TestType>
+
+    const { data: notTypedData } = useAsyncData('test', testFetch)
+    expectTypeOf(notTypedData.value!.id).toEqualTypeOf<string>()
+    expectTypeOf(notTypedData.value!.content).toEqualTypeOf<string[]>()
+    expectTypeOf(notTypedData.value!.untypedKey).toEqualTypeOf<any>()
+  })
 })
 
 describe('app config', () => {
