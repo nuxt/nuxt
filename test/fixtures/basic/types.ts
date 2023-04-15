@@ -260,6 +260,17 @@ describe('composables', () => {
     expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
   })
 
+  it('uses types compatible between useRequestHeaders and useFetch', () => {
+    useFetch('/api/hey', {
+      headers: useRequestHeaders()
+    })
+    useFetch('/api/hey', {
+      headers: useRequestHeaders(['test'])
+    })
+    const { test } = useRequestHeaders(['test'])
+    expectTypeOf(test).toEqualTypeOf<string | undefined>()
+  })
+
   it('correctly types returns with key signatures', () => {
     interface TestType {
       id: string
