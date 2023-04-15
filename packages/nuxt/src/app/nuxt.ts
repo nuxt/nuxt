@@ -441,7 +441,11 @@ export function useNuxtApp () {
   if (!nuxtAppInstance) {
     const vm = getCurrentInstance()
     if (!vm) {
-      throw new Error('nuxt instance unavailable')
+      if (process.dev) {
+        throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+      } else {
+        throw new Error('[nuxt] instance unavailable')
+      }
     }
     return vm.appContext.app.$nuxt as NuxtApp
   }
