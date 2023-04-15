@@ -34,7 +34,10 @@ export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOp
 export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 2 }): Promise<{ version: 2, exports: T }>
 export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions): Promise<{ version: 2 | 3, exports: T }>
 export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions = {}): Promise<{ version: 2 | 3, exports: T }> {
-  opts.cwd = resolve('.', opts.cwd || process.cwd())
+  if (!opts.cwd?.startsWith('file://')) {
+    opts.cwd = resolve('.', opts.cwd || process.cwd())
+  }
+  opts.cwd = pathToFileURL(opts.cwd).href
 
   const packages = nuxtPackages[opts.version || 'all'] || nuxtPackages.all
 
@@ -52,8 +55,6 @@ export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions
   if (opts.version && opts.version !== majorVersion) {
     throw new Error(`Nearest Nuxt version in ${opts.cwd} is ${majorVersion} which does not match the requested version: ${opts.version}.`)
   }
-
-  opts.cwd = pathToFileURL(opts.cwd).href
 
   // Nuxt 3
   if (majorVersion === 3) {
