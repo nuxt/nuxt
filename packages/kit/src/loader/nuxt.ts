@@ -30,7 +30,7 @@ const nuxtPackages = {
   all: ['nuxt3', 'nuxt', 'nuxt-edge']
 }
 
-export async function importNuxtPackage<T = typeof import('nuxt')> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 3 }): Promise<{ version: 3, exports: T }>
+export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 3 }): Promise<{ version: 3, exports: T }>
 export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 2 }): Promise<{ version: 2, exports: T }>
 export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions): Promise<{ version: 2 | 3, exports: T }>
 export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions = {}): Promise<{ version: 2 | 3, exports: T }> {
@@ -82,7 +82,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt 3
   if (version === 3) {
-    return await pkg.loadNuxt(opts) as Nuxt
+    return await (pkg as typeof import('nuxt')).loadNuxt(opts) as Nuxt
   }
 
   // Nuxt 2
