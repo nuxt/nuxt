@@ -9,7 +9,7 @@ import { createError } from '#app/composables/error'
 export default defineComponent({
   props: {
     context: {
-      type: Object as () => { name: string, props?: Record<string, any>, slotsName?: string[], uid?: string },
+      type: Object as () => { name: string, props?: Record<string, any>, uid?: string },
       required: true
     }
   },
