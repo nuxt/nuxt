@@ -42,10 +42,15 @@ export default defineComponent({
     const mounted = ref(false)
     const key = ref(0)
     onMounted(() => { mounted.value = true })
-    const html = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
-    const cleanedSlotHtml = computed(() => {
+    const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
+    const availableSlots = computed(() => {
+      return [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])
+    })
+
+    const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const cleanedHtml = html.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
+      const cleanedHtml = ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
         if (currentSlots.includes(slotName)) {
           return ''
         }
@@ -53,17 +58,13 @@ export default defineComponent({
       })
       return cleanedHtml
     })
-    const uid = ref<string>(html.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     function setUid () {
-      uid.value = html.value.match(SSR_UID_RE)?.[1] as string
+      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] as string
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
     const slotProps = computed(() => {
-      return getSlotProps(html.value)
-    })
-    const availableSlots = computed(() => {
-      return [...html.value.matchAll(SLOTNAME_RE)].map(m => m[1])
+      return getSlotProps(ssrHTML.value)
     })
 
     function _fetchComponent () {
@@ -92,7 +93,7 @@ export default defineComponent({
       const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
-      html.value = res.html
+      ssrHTML.value = res.html
       key.value++
       if (process.client) {
         // must await next tick for Teleport to work correctly with static node re-rendering
@@ -110,14 +111,14 @@ export default defineComponent({
     }
     return () => {
       // bypass hydration
-      if (!mounted.value && process.client && !html.value) {
-        html.value = getFragmentHTML(instance.vnode.el).join('')
+      if (!mounted.value && process.client && !ssrHTML.value) {
+        ssrHTML.value = getFragmentHTML(instance.vnode.el).join('')
         setUid()
         return [getStaticVNode(instance.vnode)]
       }
       const nodes = [createVNode(Fragment, {
         key: key.value
-      }, [h(createStaticVNode(cleanedSlotHtml.value, 1))])]
+      }, [h(createStaticVNode(html.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {

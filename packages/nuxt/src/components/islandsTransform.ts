@@ -3,7 +3,7 @@ import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
-import { ELEMENT_NODE, __unsafeHTML, __unsafeRenderFn, parse, walk } from 'ultrahtml'
+import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
@@ -21,19 +21,19 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
       )
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return islands.some(c => c.filePath === pathname) && !id.includes('NuxtIsland')
+      return islands.some(c => c.filePath === pathname)
     },
     async transform (code, id) {
       if (!code.includes('<slot ')) { return }
       const template = code.match(/<template>([\s\S]*)<\/template>/)
       if (!template) { return }
       const s = new MagicString(code)
+
       s.replace(SCRIPT_RE, (full) => {
         return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\''
       })
 
       const ast = parse(template[0])
-
       await walk(ast, (node) => {
         if (node.type === ELEMENT_NODE && node.name === 'slot') {
           const { attributes, children, loc, isSelfClosingTag } = node
@@ -62,10 +62,10 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->${wrapperTag}`)
               s.appendLeft(loc[1].start, '</div><!-- slot-fallback-end -->')
             } else if (children.length === 1) {
-              if (children[0].type === ELEMENT_NODE) {
+              if (vfor && children[0].type === ELEMENT_NODE) {
                 const { loc, name, attributes, isSelfClosingTag } = children[0]
                 const attrs = Object.entries(attributes).map(([attr, val]) => `${attr}="${val}"`).join(' ')
-                s.overwrite(loc[0].start, loc[0].end, `<${name} ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
+                s.overwrite(loc[0].start, loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
               }
 
               s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->`)
