@@ -155,7 +155,6 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    slotsName: destr(context.slotsName) || [],
     uid: destr(context.uid) || undefined
   }
 

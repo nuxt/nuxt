@@ -85,6 +85,7 @@ export function vforToArray (source: any): any[] {
     for (let i = 0; i < source; i++) {
       array[i] = i
     }
+    return array
   } else if (isObject(source)) {
     if (source[Symbol.iterator as any]) {
       return Array.from(source as Iterable<any>, item =>

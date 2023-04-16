@@ -16,7 +16,7 @@ import { useRequestEvent } from '#app/composables/ssr'
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
-const SLOT_FALLBACK_RE = /<!-- slot-fallback-start:(\S*) -->((?!<!-- slot-fallback-end -->)[\\s\\S])*<!-- slot-fallback-end -->/g
+const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
 export default defineComponent({
   name: 'NuxtIsland',
@@ -50,11 +50,12 @@ export default defineComponent({
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const cleanedHtml = ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
+      const cleanedHtml = ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
         if (currentSlots.includes(slotName)) {
           return ''
         }
-        return full
+
+        return content
       })
       return cleanedHtml
     })
@@ -77,8 +78,7 @@ export default defineComponent({
       return $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
-          props: props.props ? JSON.stringify(props.props) : undefined,
-          slotsName: JSON.stringify(Object.keys(slots))
+          props: props.props ? JSON.stringify(props.props) : undefined
         }
       })
     }

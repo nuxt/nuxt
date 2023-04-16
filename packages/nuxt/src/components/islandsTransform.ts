@@ -40,7 +40,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           const slotName = attributes.name ?? 'default'
           let vfor: [string, string] | undefined
           if (attributes['v-for']) {
-            vfor = attributes['v-for'].split('in').map((v: string) => v.trim()) as [string, string]
+            vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
             delete attributes['v-for']
           }
           if (attributes.name) { delete attributes.name }
@@ -59,8 +59,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             if (children.length > 1) {
               // need to wrap instead of applying v-for on each child
               const wrapperTag = `<div ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} style="display: contents;">`
-              s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->${wrapperTag}`)
-              s.appendLeft(loc[1].start, '</div><!-- slot-fallback-end -->')
+              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
+              s.appendLeft(loc[1].start, '</div><div nuxt-slot-fallback-end/>')
             } else if (children.length === 1) {
               if (vfor && children[0].type === ELEMENT_NODE) {
                 const { loc, name, attributes, isSelfClosingTag } = children[0]
@@ -68,8 +68,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
                 s.overwrite(loc[0].start, loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
               }
 
-              s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->`)
-              s.appendLeft(loc[1].start, '<!-- slot-fallback-end -->')
+              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
+              s.appendLeft(loc[1].start, '<div nuxt-slot-fallback-end/>')
             }
           }
         }
@@ -96,6 +96,6 @@ function getBindings (bindings: Record<string, string>, vfor?: [string, string])
   if (!vfor) {
     return `:nuxt-ssr-slot-data="JSON.stringify([${data}])"`
   } else {
-    return `:nuxt-ssr-slot-data="JSON.stringify(__vforToArray(${vfor[1]}).map((${vfor[0]}) => (${data})))"`
+    return `:nuxt-ssr-slot-data="JSON.stringify(__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data})))"`
   }
 }

@@ -347,6 +347,8 @@ describe('pages', () => {
     expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
     expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
 
+    // test fallback slot with v-for
+    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
     expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
     await page.locator('#update-server-components').click()
@@ -1173,7 +1175,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;test&quot;},{&quot;t&quot;:&quot;hello&quot;}]\\"></div></div>",
+        "html": "<div><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
       }
     `)
