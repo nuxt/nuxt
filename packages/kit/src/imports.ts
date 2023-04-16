@@ -11,7 +11,7 @@ export function addImports (imports: Import | Import[]) {
   })
 }
 
-export function addImportsDir (dirs: string | string[], opts: { prepend?: boolean }) {
+export function addImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:dirs', (_dirs: string[]) => {
