@@ -23,7 +23,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
         return true
       }
     },
-    transform (code, id) {
+    transform (code) {
       if (!code.match(DEVONLY_COMP_RE)) { return }
 
       const s = new MagicString(code)
@@ -36,7 +36,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

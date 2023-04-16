@@ -258,9 +258,10 @@ export default defineUntypedSchema({
     /**
      * Customize PostCSS Loader.
      * Same options as https://github.com/webpack-contrib/postcss-loader#options
+     *
+     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
-      execute: undefined,
       postcssOptions: {
         config: {
           $resolve: async (val, get) => val ?? (await get('postcss.config'))
@@ -269,9 +270,6 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
         }
       },
-      sourceMap: undefined,
-      implementation: undefined,
-      order: ''
     },
 
     /**

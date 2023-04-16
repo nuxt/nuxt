@@ -12,7 +12,7 @@ export default defineUntypedSchema({
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
-    compilerOptions: {}
+    compilerOptions: {},
   },
 
   /**

@@ -3,10 +3,10 @@ import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolveModule, resolvePath } from '@nuxt/kit'
-import { joinURL, withoutLeadingSlash, withTrailingSlash } from 'ufo'
-import type { ViteBuildContext, ViteOptions } from './vite'
+import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import type { ViteConfig } from '@nuxt/schema'
+import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
-import { cacheDirPlugin } from './plugins/cache-dir'
 import { initViteNodeServer } from './vite-node'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
@@ -17,8 +17,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
-  const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
-    entry,
+  const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, {
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : undefined,
@@ -82,6 +81,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         /(nuxt|nuxt3)\/(dist|src|app)/
       ]
     },
+    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
@@ -110,15 +110,12 @@ export async function buildServer (ctx: ViteBuildContext) {
       hmr: false
     },
     plugins: [
-      cacheDirPlugin(ctx.nuxt.options.rootDir, 'server'),
-      vuePlugin(ctx.config.vue),
-      viteJsxPlugin(ctx.config.vueJsx),
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.server,
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ]
-  } as ViteOptions)
+  } satisfies vite.InlineConfig)
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
@@ -145,6 +142,11 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
+
+  serverConfig.plugins!.unshift(
+    vuePlugin(serverConfig.vue),
+    viteJsxPlugin(serverConfig.vueJsx)
+  )
 
   const onBuild = () => ctx.nuxt.callHook('vite:compiled')
 
