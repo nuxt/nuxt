@@ -334,7 +334,8 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
-
+    // keep-fallback strategy
+    expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
     await page.close()
   })
 })
