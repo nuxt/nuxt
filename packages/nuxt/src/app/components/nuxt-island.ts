@@ -16,6 +16,7 @@ import { useRequestEvent } from '#app/composables/ssr'
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
+const SLOT_FALLBACK_RE = /<!-- slot-fallback-start:(\S*) -->((?!<!-- slot-fallback-end -->)[\\s\\S])*<!-- slot-fallback-end -->/g
 
 export default defineComponent({
   name: 'NuxtIsland',
@@ -42,6 +43,16 @@ export default defineComponent({
     const key = ref(0)
     onMounted(() => { mounted.value = true })
     const html = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    const cleanedSlotHtml = computed(() => {
+      const currentSlots = Object.keys(slots)
+      const cleanedHtml = html.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
+        if (currentSlots.includes(slotName)) {
+          return ''
+        }
+        return full
+      })
+      return cleanedHtml
+    })
     const uid = ref<string>(html.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     function setUid () {
       uid.value = html.value.match(SSR_UID_RE)?.[1] as string
@@ -106,7 +117,7 @@ export default defineComponent({
       }
       const nodes = [createVNode(Fragment, {
         key: key.value
-      }, [h(createStaticVNode(html.value, 1))])]
+      }, [h(createStaticVNode(cleanedSlotHtml.value, 1))])]
       if (uid.value) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {

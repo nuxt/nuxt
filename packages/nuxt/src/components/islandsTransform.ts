@@ -3,12 +3,12 @@ import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
+import { ELEMENT_NODE, __unsafeHTML, __unsafeRenderFn, parse, walk } from 'ultrahtml'
 
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
 }
 
-const ATTRS_RE = /([^=]*)="([^"]*)"/g
 const SCRIPT_RE = /<script[^>]*>/g
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {
@@ -23,40 +23,57 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname) && !id.includes('NuxtIsland')
     },
-    transform (code, id) {
+    async transform (code, id) {
       if (!code.includes('<slot ')) { return }
-
+      const template = code.match(/<template>([\s\S]*)<\/template>/)
+      if (!template) { return }
       const s = new MagicString(code)
-
       s.replace(SCRIPT_RE, (full) => {
         return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\''
       })
 
-      s.replaceAll(/<slot ([^/|>]*)(\/)?>/g, (_, attrs: string, selfClosing: string) => {
-        let slotName = 'default'
-        const bindings: Record<string, string> = {}
-        let vfor: [string, string] | undefined
-        const parsedAttrs = attrs.replaceAll(ATTRS_RE, (matched, name, value) => {
-          name = name.trim()
-          if (name.startsWith('v-') && name !== 'v-for') {
-            return matched
-          } else if (name === 'v-for') {
-            vfor = value.split('in').map((v: string) => v.trim())
-          } else if (name !== 'name') {
-            if (name === 'v-bind') {
-              bindings._bind = value
-            } else {
-              bindings[name] = value
-            }
-          } else {
-            slotName = value
+      const ast = parse(template[0])
+
+      await walk(ast, (node) => {
+        if (node.type === ELEMENT_NODE && node.name === 'slot') {
+          const { attributes, children, loc, isSelfClosingTag } = node
+          const slotName = attributes.name ?? 'default'
+          let vfor: [string, string] | undefined
+          if (attributes['v-for']) {
+            vfor = attributes['v-for'].split('in').map((v: string) => v.trim()) as [string, string]
+            delete attributes['v-for']
           }
-          return ''
-        })
-        const ssrScopeData = getBindings(bindings, vfor)
-        return `<div ${parsedAttrs} style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${ssrScopeData} ${selfClosing ?? ''}>`
+          if (attributes.name) { delete attributes.name }
+          if (attributes['v-bind']) {
+            attributes._bind = attributes['v-bind']
+            delete attributes['v-bind']
+          }
+          const bindings = getBindings(attributes, vfor)
+
+          if (isSelfClosingTag) {
+            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
+          } else {
+            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
+            s.overwrite(loc[1].start, loc[1].end, '</div>')
+
+            if (children.length > 1) {
+              // need to wrap instead of applying v-for on each child
+              const wrapperTag = `<div ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} style="display: contents;">`
+              s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->${wrapperTag}`)
+              s.appendLeft(loc[1].start, '</div><!-- slot-fallback-end -->')
+            } else if (children.length === 1) {
+              if (children[0].type === ELEMENT_NODE) {
+                const { loc, name, attributes, isSelfClosingTag } = children[0]
+                const attrs = Object.entries(attributes).map(([attr, val]) => `${attr}="${val}"`).join(' ')
+                s.overwrite(loc[0].start, loc[0].end, `<${name} ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
+              }
+
+              s.appendRight(loc[0].end, `<!-- slot-fallback-start:${slotName} -->`)
+              s.appendLeft(loc[1].start, '<!-- slot-fallback-end -->')
+            }
+          }
+        }
       })
-      s.replaceAll('</slot>', '</div>')
 
       if (s.hasChanged()) {
         return {

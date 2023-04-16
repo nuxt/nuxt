@@ -10,7 +10,9 @@
     </div>
     <slot name="test" :count="count" />
     <p>hello world !!!</p>
-    <slot v-for="t in ['test', 'hello']" name="hello" :t="t" />
+    <slot v-for="t in ['test', 'hello']" name="hello" :t="t">
+      <div :key="t">fallback slot</div>
+    </slot>
   </div>
 </template>
 
