@@ -32,7 +32,7 @@
     "clear": "^0.1.0",
     "cssnano": "^6.0.0",
     "defu": "^6.1.2",
-    "esbuild": "^0.17.16",
+    "esbuild": "^0.17.17",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.0",
