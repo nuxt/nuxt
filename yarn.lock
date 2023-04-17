@@ -1300,10 +1300,10 @@
   dependencies:
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-gradients-interpolation-method@^3.0.3":
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/@csstools/postcss-gradients-interpolation-method/-/postcss-gradients-interpolation-method-3.0.3.tgz#39771e0fc76246a07a5e5e262d133e0cf3920a49"
-  integrity sha512-0i6HQ8V3jcGEEhhGPAQdMemPjXTOct9qDYLIzjsgKHhrHVwhjwBVcUV70658vJJmrJJvVXgZx2qc4S6okKZJpg==
+"@csstools/postcss-gradients-interpolation-method@^3.0.4":
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/@csstools/postcss-gradients-interpolation-method/-/postcss-gradients-interpolation-method-3.0.4.tgz#c03402087c41feee0115f714cc87696e6424ba92"
+  integrity sha512-GgKoY7OlvL65UPigEdlrvMAUCR5kOQCjtue2/36TPrBNoRS6KM2KOqmjIVsxEwYYwK+L28pdnM8r10m03hhZxA==
   dependencies:
     "@csstools/css-color-parser" "^1.1.2"
     "@csstools/css-parser-algorithms" "^2.1.1"
@@ -4756,10 +4756,10 @@ caniuse-lite@^1.0.30001464:
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001473.tgz#3859898b3cab65fc8905bb923df36ad35058153c"
   integrity sha512-ewDad7+D2vlyy+E4UJuVfiBsU69IL+8oVmTuZnH5Q6CIUbxNfI50uVpRHbUPDD6SUaN2o0Lh4DhTrvLG/Tn1yg==
 
-caniuse-lite@^1.0.30001479:
-  version "1.0.30001479"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001479.tgz#ef3d6f76011e44181af411fd4896123afbc14eda"
-  integrity sha512-6nuRFim5dx8Eu2tO+KJ9PiBdPHs7WB5Hdf+klDcyefyEuOAcfhihIv7pS+JFknJLUiNQbm1AJYKm0c9QOlQS/Q==
+caniuse-lite@^1.0.30001480:
+  version "1.0.30001480"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001480.tgz#9bbd35ee44c2480a1e3a3b9f4496f5066817164a"
+  integrity sha512-q7cpoPPvZYgtyC4VaBSN0Bt+PJ4c4EYRf0DrduInOz2SkFpHD5p3LnvEpqBp7UnJn+8x1Ogl1s38saUxe+ihQQ==
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -12267,16 +12267,16 @@ postcss-place@^8.0.1:
   dependencies:
     postcss-value-parser "^4.2.0"
 
-postcss-preset-env@^8.3.1:
-  version "8.3.1"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.3.1.tgz#f7a5af0604df54da12eb0be9123c4c7fd5e01f81"
-  integrity sha512-k3Y8BXbVLBAufrla3CNmQJhMS1iRuT9LFlysYvzs1rU5E78+ShX2u0EUL6KpMi0pDJO3wZcuVYSR8cgukfoRtg==
+postcss-preset-env@^8.3.2:
+  version "8.3.2"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.3.2.tgz#9ec368e0f0df9c693d52b69d525d366fe4b1833a"
+  integrity sha512-VSAOsfxTXzO/gX5QljC8x8hN3ABbD9iqqLgqHqohBdNI5FhJptwpl96kpu+kYvvzK7BWwaHYou0IeYrp+NqmcQ==
   dependencies:
     "@csstools/postcss-cascade-layers" "^3.0.1"
     "@csstools/postcss-color-function" "^2.2.1"
     "@csstools/postcss-color-mix-function" "^1.0.1"
     "@csstools/postcss-font-format-keywords" "^2.0.2"
-    "@csstools/postcss-gradients-interpolation-method" "^3.0.3"
+    "@csstools/postcss-gradients-interpolation-method" "^3.0.4"
     "@csstools/postcss-hwb-function" "^2.2.1"
     "@csstools/postcss-ic-unit" "^2.0.2"
     "@csstools/postcss-is-pseudo-class" "^3.2.0"
@@ -13293,10 +13293,10 @@ rollup-plugin-license@^3.0.1:
     spdx-expression-validate "~2.0.0"
     spdx-satisfies "~5.0.1"
 
-rollup@3.20.3:
-  version "3.20.3"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-3.20.3.tgz#932754ecadd5a03ed98e827d6ffd060936a7c986"
-  integrity sha512-u6/O1X42CAZ79rbk+smyONJQLTpwFBL7InpRa/AVWia5lq60w5J/PUsVHCOgSolN0X9R2GjQ41fZm3x28Hk1lA==
+rollup@3.20.4:
+  version "3.20.4"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-3.20.4.tgz#cde35731c5c0c637de0b532d5d1a84bd802c128e"
+  integrity sha512-n7J4tuctZXUErM9Uc916httwqmTc63zzCr2+TLCiSCpfO/Xuk3g/marGN1IlRJZi+QF3XMYx75PxXRfZDVgaRw==
   optionalDependencies:
     fsevents "~2.3.2"
 
