@@ -32,7 +32,7 @@
     "vite": "~4.2.1"
   },
   "dependencies": {
-    "c12": "^1.2.0",
+    "c12": "^1.3.0",
     "create-require": "^1.1.1",
     "defu": "^6.1.2",
     "hookable": "^5.5.3",
