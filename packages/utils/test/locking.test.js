@@ -1,6 +1,7 @@
 import consola from 'consola'
 import fs from 'fs-extra'
 import properlock from 'proper-lockfile'
+// eslint-disable-next-line import/namespace
 import { onExit } from 'signal-exit'
 import { lockPaths, defaultLockOptions, getLockOptions, createLockPath, getLockPath, lock } from '../src/locking'
 
