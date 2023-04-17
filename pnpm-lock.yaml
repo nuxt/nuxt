@@ -67,8 +67,8 @@ importers:
         specifier: ^8.38.0
         version: 8.38.0
       eslint-plugin-jsdoc:
-        specifier: ^41.1.1
-        version: 41.1.1(eslint@8.38.0)
+        specifier: ^41.1.2
+        version: 41.1.2(eslint@8.38.0)
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -4889,8 +4889,8 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-jsdoc@41.1.1(eslint@8.38.0):
-    resolution: {integrity: sha512-dfH97DKLGtQ5dgEMzd+GSUuY+xX/yyAfjML3O0pEWmMMpylsG6Ro65s4ziYXKmixiENYK9CTQxCVRGqZUFN2Mw==}
+  /eslint-plugin-jsdoc@41.1.2(eslint@8.38.0):
+    resolution: {integrity: sha512-MePJXdGiPW7AG06CU5GbKzYtKpoHwTq1lKijjq+RwL/cQkZtBZ59Zbv5Ep0RVxSMnq6242249/n+w4XrTZ1Afg==}
     engines: {node: ^14 || ^16 || ^17 || ^18 || ^19}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0
