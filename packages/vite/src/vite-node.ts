@@ -143,7 +143,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         throw createError({ statusCode: 400 })
       }
       if (isAbsolute(moduleId) && !isFileServingAllowed(moduleId, viteServer)) {
-        throw createError({ statusCode: 404 })
+        throw createError({ statusCode: 403 /* Restricted */ })
       }
       const module = await node.fetchModule(moduleId).catch((err) => {
         const errorData = {
