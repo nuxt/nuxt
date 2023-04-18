@@ -45,6 +45,7 @@
   "devDependencies": {
     "@actions/core": "^1.10.0",
     "@nuxt/test-utils": "workspace:*",
+    "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
     "@types/crawler": "^1.2.2",
     "@types/node": "^18.15.11",

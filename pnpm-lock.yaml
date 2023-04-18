@@ -24,6 +24,9 @@ importers:
       '@nuxt/test-utils':
         specifier: workspace:*
         version: link:packages/test-utils
+      '@nuxt/webpack-builder':
+        specifier: workspace:*
+        version: link:packages/webpack
       '@nuxtjs/eslint-config-typescript':
         specifier: ^12.0.0
         version: 12.0.0(eslint@8.38.0)(typescript@5.0.4)
