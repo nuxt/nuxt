@@ -11,14 +11,6 @@ import type {
   Options as _UVROptions
 } from 'unplugin-vue-router'
 
-// TODO: conditional types extension
-// declare module '@nuxt/schema' {
-//   export interface NuxtHooks {
-//     'pages:_new_extend': (page: EditableTreeNode) => void;
-//     'pages:_beforeWrite': (rootPage: EditableTreeNode) => void;
-//   }
-// }
-
 import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
@@ -93,11 +85,11 @@ export default defineNuxtModule({
           dts: resolve(nuxt.options.srcDir, '.nuxt/typed-router.d.ts'),
           logs: true,
           extendRoute (route) {
-            // TODO: refactor names, add _legacy
-            return nuxt.callHook('pages:_new_extend', route)
+            // TODO: refactor names and types conditionally
+            return nuxt.callHook('pages:extendOne', route)
           },
           async beforeWriteFiles (_rootPage) {
-            await nuxt.callHook('pages:_beforeWrite', _rootPage)
+            await nuxt.callHook('pages:beforeWrite', _rootPage)
             await nuxt.callHook('pages:extend', [..._rootPage])
             rootPage = _rootPage
           }
@@ -407,20 +399,19 @@ import type { EditableTreeNode } from 'unplugin-vue-router'
 declare module '#build/vue-router' {
   export * from '${vueRouterPath}'
 }
-` +
-(fromAuto
-  ? `\
-
+` + (fromAuto
+        ? `\
 declare module '@nuxt/schema' {
   export interface NuxtHooks {
-    'pages:_new_extend': (page: EditableTreeNode) => void;
-    'pages:_beforeWrite': (rootPage: EditableTreeNode) => void;
+    'pages:extendOne': (page: EditableTreeNode) => HookResult;
+    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult;
   }
 }
 `
-  : '') +
-`
-export {}
+        : '') +
+`\
+// TODO: is this needed?
+// export {}
 `
     }
   })

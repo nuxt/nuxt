@@ -3,6 +3,17 @@
  * Configuration.
  */
 
-declare module '#build/vue-router' {
-  export * from 'vue-router'
+export {}
+
+// declare module '#build/vue-router' {
+//   export * from 'vue-router'
+// }
+
+// to have type errors during dev
+declare module '@nuxt/schema' {
+  export interface NuxtHooks {
+    'pages:extendOne': (page: EditableTreeNode) => HookResult;
+    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult;
+  }
 }
+

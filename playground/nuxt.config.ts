@@ -1,4 +1,8 @@
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export default defineNuxtConfig({
   experimental: {
@@ -6,15 +10,15 @@ export default defineNuxtConfig({
   },
 
   hooks: {
-    'pages:extend_legacy' (pages) {
+    'pages:extend' (pages) {
       console.log(`✅ Calling legacy pages:extend ${pages.length} pages`)
-      console.log(pages.map(page => page.fullPath))
+      console.log(pages.map(page => page.path))
     },
     'pages:beforeWrite' (rootPage) {
-      rootPage.insert('_new_extend', resolve('./pages/about.vue'))
+      rootPage.insert('_new_extend', resolve(__dirname, './pages/about.vue'))
     },
-    'pages:extend' (page) {
-      console.log('⚙️ page', page.fullPath)
+    'pages:extendOne' (page) {
+      console.log('⚙️ extendOne', page.fullPath)
     }
   }
 })
