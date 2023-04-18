@@ -1,7 +1,7 @@
 import type { TestHooks } from '../types'
 
 export default async function setupJest (hooks: TestHooks) {
-  // @ts-expect-error jest is not a dependency
+  // @ts-expect-error TODO: jest is not a dependency
   const jest = await import('jest')
 
   hooks.ctx.mockFn = jest.fn

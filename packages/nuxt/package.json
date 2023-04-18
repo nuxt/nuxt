@@ -37,10 +37,6 @@
     "#app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
-    },
-    "#pages": {
-      "types": "./dist/pages/runtime/index.d.ts",
-      "import": "./dist/pages/runtime/index.js"
     }
   },
   "files": [
@@ -64,7 +60,6 @@
     "@nuxt/vite-builder": "workspace:../vite",
     "@unhead/ssr": "^1.1.26",
     "@unhead/vue": "^1.1.26",
-    "@vue/reactivity": "^3.2.47",
     "@vue/shared": "^3.2.47",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
@@ -76,7 +71,6 @@
     "fs-extra": "^11.1.1",
     "globby": "^13.1.4",
     "h3": "^1.6.4",
-    "hash-sum": "^2.0.0",
     "hookable": "^5.5.3",
     "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
@@ -105,10 +99,14 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@types/estree": "^1.0.0",
     "@types/fs-extra": "^11.0.1",
-    "@types/hash-sum": "^1.0.0",
     "@types/prompts": "^2.4.4",
-    "unbuild": "latest"
+    "@vitejs/plugin-vue": "^4.1.0",
+    "acorn": "^8.8.2",
+    "unbuild": "latest",
+    "vite": "^4.2.1",
+    "vitest": "^0.30.1"
   },
   "peerDependencies": {
     "@types/node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
