@@ -109,7 +109,14 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       }
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+
+        try {
+          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        } catch {
+          console.error(`The file ${pathname} is not a valid page. Read more: https://nuxt.com/docs/guide/directory-structure/pages`)
+        }
+
         return result()
       }
 
