@@ -28,8 +28,8 @@
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "nitropack": "^2.3.3",
     "unbuild": "latest",
-    "unctx": "^2.2.0",
-    "vite": "~4.2.1"
+    "unctx": "^2.3.0",
+    "vite": "~4.2.2"
   },
   "dependencies": {
     "c12": "^1.3.0",
