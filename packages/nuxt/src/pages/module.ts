@@ -69,14 +69,7 @@ export default defineNuxtModule({
     })
 
     if (!nuxt.options.pages) {
-      addPlugin(
-        resolve(
-          distDir,
-          useExperimentalTypedPages
-            ? 'app/plugins/router-typed'
-            : 'app/plugins/router'
-        )
-      )
+      addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
         getContents: () => 'export { useRoute } from \'#app\''
@@ -280,6 +273,9 @@ export default defineNuxtModule({
       }
     })
 
+    // adds support to #build/vue-router
+    addBuildTimeVueRouter(useExperimentalTypedPages)
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
@@ -384,6 +380,48 @@ export default defineNuxtModule({
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
       references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'types/internal.vue-router.d.ts') })
     })
   }
 })
+
+function addBuildTimeVueRouter (fromAuto: boolean) {
+  const vueRouterPath = fromAuto ? 'vue-router/auto' : 'vue-router'
+  addTemplate({
+    filename: 'vue-router.mjs',
+    getContents () {
+      return `export * from '${vueRouterPath}';`
+    }
+  })
+  addTemplate({
+    filename: 'types/internal.vue-router.d.ts',
+    getContents () {
+      return '' +
+      (fromAuto
+        ? `\
+import type { EditableTreeNode } from 'unplugin-vue-router'
+`
+        : '') +
+
+`
+declare module '#build/vue-router' {
+  export * from '${vueRouterPath}'
+}
+` +
+(fromAuto
+  ? `\
+
+declare module '@nuxt/schema' {
+  export interface NuxtHooks {
+    'pages:_new_extend': (page: EditableTreeNode) => void;
+    'pages:_beforeWrite': (rootPage: EditableTreeNode) => void;
+  }
+}
+`
+  : '') +
+`
+export {}
+`
+    }
+  })
+}

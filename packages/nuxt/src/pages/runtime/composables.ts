@@ -1,5 +1,5 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#build/vue-router'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {

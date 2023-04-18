@@ -1,15 +1,21 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteRecordRaw, Router, RouterHistory, RouterOptions } from 'vue-router'
-import {
-  createMemoryHistory,
-  createWebHashHistory,
-  createWebHistory
-} from 'vue-router'
 import { createError } from 'h3'
 import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
+import {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory
+} from '#build/vue-router'
+import type {
+  RouteLocation,
+  RouteRecordRaw,
+  Router,
+  RouterHistory,
+  RouterOptions
+} from '#build/vue-router'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'

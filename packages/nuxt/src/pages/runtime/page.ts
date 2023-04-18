@@ -1,11 +1,11 @@
 import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
-import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
+import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#build/vue-router'
+import { RouterView } from '#build/vue-router'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 // @ts-ignore

@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
@@ -13,6 +12,7 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
+import type { RouteLocationNormalizedLoaded } from '#build/vue-router'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 

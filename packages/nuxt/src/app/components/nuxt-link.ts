@@ -1,6 +1,5 @@
 import type { ComputedRef, DefineComponent, PropType } from 'vue'
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
@@ -8,6 +7,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
+import type { RouteLocation, RouteLocationRaw } from '#build/vue-router'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 

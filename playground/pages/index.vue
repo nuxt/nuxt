@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import { definePage } from 'vue-router/auto'
+import {
+  //
+  definePage
+  // useRoute
+} from 'vue-router/auto'
+
 const route = useRoute('/')
 
 definePageMeta({
