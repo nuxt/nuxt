@@ -37,17 +37,14 @@ export default defineComponent({
     }
 
     return () => {
-      if (mounted.value) {
-        if (!ssrFailed.value || (ssrFailed.value && props.strategy === 'default')) {
-          return ctx.slots.default?.()
-        }
-      }
       if (ssrFailed.value) {
-        const slot = ctx.slots.placeholder || ctx.slots.fallback
-        if (slot) { return slot() }
-        const fallbackStr = props.placeholder || props.fallback
-        const fallbackTag = props.placeholderTag || props.fallbackTag
-        return createElementBlock(fallbackTag, null, fallbackStr)
+        if (!mounted.value || props.strategy === 'keep-fallback') {
+          const slot = ctx.slots.placeholder || ctx.slots.fallback
+          if (slot) { return slot() }
+          const fallbackStr = props.placeholder || props.fallback
+          const fallbackTag = props.placeholderTag || props.fallbackTag
+          return createElementBlock(fallbackTag, null, fallbackStr)
+        }
       }
       return ctx.slots.default?.()
     }
