@@ -1,7 +1,7 @@
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 import { stripLiteral } from 'strip-literal'
-import { isJS, isVue } from '../../../nuxt/src/core/utils'
+import { isJS, isVue } from '../../../nuxt/src/core/utils/plugins'
 
 export interface PureAnnotationsOptions {
   sourcemap: boolean
