@@ -20,7 +20,7 @@ export function isVueTemplate (id: string) {
   }
 
   // Non-Vue or Styles
-  if (!('vue' in query) || query.type === 'style') {
+  if (!('vue' in query) || query.type === 'style' || query.type === 'script') {
     return false
   }
 
