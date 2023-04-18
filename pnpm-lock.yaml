@@ -100,8 +100,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       semver:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.5.0
+        version: 7.5.0
       std-env:
         specifier: ^3.3.2
         version: 3.3.2
@@ -403,8 +403,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       semver:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.5.0
+        version: 7.5.0
       unctx:
         specifier: ^2.2.0
         version: 2.2.0
@@ -510,8 +510,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       semver:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.5.0
+        version: 7.5.0
       unbuild:
         specifier: ^1.2.0
         version: 1.2.0
@@ -540,11 +540,11 @@ importers:
         specifier: ^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
         version: 18.15.11
       '@unhead/ssr':
-        specifier: ^1.1.25
-        version: 1.1.25
+        specifier: ^1.1.26
+        version: 1.1.26
       '@unhead/vue':
-        specifier: ^1.1.25
-        version: 1.1.25(vue@3.2.47)
+        specifier: ^1.1.26
+        version: 1.1.26(vue@3.2.47)
       '@vue/reactivity':
         specifier: ^3.2.47
         version: 3.2.47
@@ -725,8 +725,8 @@ importers:
         specifier: ^7.3.13
         version: 7.3.13
       '@unhead/schema':
-        specifier: ^1.1.25
-        version: 1.1.25
+        specifier: ^1.1.26
+        version: 1.1.26
       '@vitejs/plugin-vue':
         specifier: ^4.1.0
         version: 4.1.0(vite@4.2.1)(vue@3.2.47)
@@ -1737,7 +1737,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.4.0
+      semver: 7.5.0
       tar: 6.1.13
     transitivePeerDependencies:
       - encoding
@@ -2342,7 +2342,7 @@ packages:
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
       regexpp: 3.2.0
-      semver: 7.4.0
+      semver: 7.5.0
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2416,7 +2416,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.4.0
+      semver: 7.5.0
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2437,7 +2437,7 @@ packages:
       eslint: 8.38.0
       eslint-scope: 5.1.1
       eslint-utils: 3.0.0(eslint@8.38.0)
-      semver: 7.4.0
+      semver: 7.5.0
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2451,41 +2451,41 @@ packages:
       eslint-visitor-keys: 3.4.0
     dev: true
 
-  /@unhead/dom@1.1.25:
-    resolution: {integrity: sha512-kJ5jhJFNQCyNENSw+mtmzgulA0kqUuXS3SRPl1umpofc8PH8tblSzXwqStxTj9r6E4wxJbEuygT/aHFJVioizw==}
+  /@unhead/dom@1.1.26:
+    resolution: {integrity: sha512-6I8z170OAO19h/AslASN4Xw0hqItQFMKhRJQtplQs1BZ62LsDmNKuqJiYueX39U+IfIvIV3j/q1mQwt9lgMwTw==}
     dependencies:
-      '@unhead/schema': 1.1.25
-      '@unhead/shared': 1.1.25
+      '@unhead/schema': 1.1.26
+      '@unhead/shared': 1.1.26
     dev: false
 
-  /@unhead/schema@1.1.25:
-    resolution: {integrity: sha512-ygmaxWgGTAq9CcB6zGY4+0HlGdQt/oMq+CM18tTnvOBY0Og/uPGt7roW8eH717GpTPibKRTpagSYzZYdL0tWeg==}
+  /@unhead/schema@1.1.26:
+    resolution: {integrity: sha512-l93zaizm+pu36uMssdtzSC2Y61ncZaBBouZn0pB8rVI14V0hPxeXuSNIuPh2WjAm8wfb8EnCSE3LNguoqTar7g==}
     dependencies:
       hookable: 5.5.3
       zhead: 2.0.4
 
-  /@unhead/shared@1.1.25:
-    resolution: {integrity: sha512-KptKbk4py1MFYHYwDJ/0kPOs+95dYMrWIT1fCV9lGcVAwu20wIHh+WX18s+iEWhc66xkGRxgC/xsl4wJJFPE+w==}
+  /@unhead/shared@1.1.26:
+    resolution: {integrity: sha512-gnUfNrl8w7hQHke9P0au7klcG9bHVOXqbDvya2uARA/8TyxNz87i0uakraO+P6/+zf484dw3b3MYkXq0thK2eg==}
     dependencies:
-      '@unhead/schema': 1.1.25
+      '@unhead/schema': 1.1.26
     dev: false
 
-  /@unhead/ssr@1.1.25:
-    resolution: {integrity: sha512-2S3tiajy6n3D1WY2pVkRLr74WGaHD08w0+nFaQGNy0LszPlkWUuAmYYqDCXdh03ijEl+Tjwqjn+E9w1e3QakuQ==}
+  /@unhead/ssr@1.1.26:
+    resolution: {integrity: sha512-KYJDGgVNtU2i+NHu17o2zFXqsoLukOFEz81XrWQ8nQdY5+VNjy7IiTLp1dlx3umn1ohZjHySz4LXQCT4zUApSw==}
     dependencies:
-      '@unhead/schema': 1.1.25
-      '@unhead/shared': 1.1.25
+      '@unhead/schema': 1.1.26
+      '@unhead/shared': 1.1.26
     dev: false
 
-  /@unhead/vue@1.1.25(vue@3.2.47):
-    resolution: {integrity: sha512-ujincFHftg2N2i3G/gVkMyJ7CFzVyZ8SMb5cJCWZEnDBQGjgy3uvWT6EaM0d2jnaeXiYbB+iyY0O1o/H+XlpKQ==}
+  /@unhead/vue@1.1.26(vue@3.2.47):
+    resolution: {integrity: sha512-UpxQ0KGmOoiN+Dg19zto5KTcnGV5chBmgiVJTDqUF4BPfr24vRrR65sZGdMoNV7weuD3AD/K0osk2ru+vXxRrA==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.1.25
-      '@unhead/shared': 1.1.25
+      '@unhead/schema': 1.1.26
+      '@unhead/shared': 1.1.26
       hookable: 5.5.3
-      unhead: 1.1.25
+      unhead: 1.1.26
       vue: 3.2.47
     dev: false
 
@@ -3492,7 +3492,7 @@ packages:
   /builtins@5.0.1:
     resolution: {integrity: sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==}
     dependencies:
-      semver: 7.4.0
+      semver: 7.5.0
     dev: true
 
   /bundle-name@3.0.0:
@@ -3611,7 +3611,7 @@ packages:
       pathe: 1.1.0
       pkg-types: 1.0.2
       scule: 1.0.0
-      semver: 7.4.0
+      semver: 7.5.0
       yaml: 2.2.1
     transitivePeerDependencies:
       - supports-color
@@ -3808,7 +3808,7 @@ packages:
       js-string-escape: 1.0.1
       lodash: 4.17.21
       md5-hex: 3.0.1
-      semver: 7.4.0
+      semver: 7.5.0
       well-known-symbols: 2.0.0
     dev: true
 
@@ -3932,7 +3932,7 @@ packages:
       postcss-modules-scope: 3.0.0(postcss@8.4.22)
       postcss-modules-values: 4.0.0(postcss@8.4.22)
       postcss-value-parser: 4.2.0
-      semver: 7.4.0
+      semver: 7.5.0
       webpack: 5.79.0
     dev: false
 
@@ -4902,7 +4902,7 @@ packages:
       escape-string-regexp: 4.0.0
       eslint: 8.38.0
       esquery: 1.5.0
-      semver: 7.4.0
+      semver: 7.5.0
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
@@ -4922,7 +4922,7 @@ packages:
       is-core-module: 2.11.0
       minimatch: 3.1.2
       resolve: 1.22.1
-      semver: 7.4.0
+      semver: 7.5.0
     dev: true
 
   /eslint-plugin-node@11.1.0(eslint@8.38.0):
@@ -4968,7 +4968,7 @@ packages:
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.24
       safe-regex: 2.1.1
-      semver: 7.4.0
+      semver: 7.5.0
       strip-indent: 3.0.0
     dev: true
 
@@ -4983,7 +4983,7 @@ packages:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 6.0.11
-      semver: 7.4.0
+      semver: 7.5.0
       vue-eslint-parser: 9.1.0(eslint@8.38.0)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
@@ -5334,7 +5334,7 @@ packages:
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.1.1
-      semver: 7.4.0
+      semver: 7.5.0
       tapable: 2.2.1
       typescript: 5.0.4
       webpack: 5.79.0
@@ -6783,7 +6783,7 @@ packages:
       rollup: 3.20.2
       rollup-plugin-visualizer: 5.9.0(rollup@3.20.2)
       scule: 1.0.0
-      semver: 7.4.0
+      semver: 7.5.0
       serve-placeholder: 2.0.1
       serve-static: 1.15.0
       source-map-support: 0.5.21
@@ -7327,7 +7327,7 @@ packages:
       cosmiconfig-typescript-loader: 4.3.0(@types/node@18.15.11)(cosmiconfig@8.1.3)(ts-node@10.9.1)(typescript@5.0.4)
       klona: 2.0.6
       postcss: 8.4.22
-      semver: 7.4.0
+      semver: 7.5.0
       ts-node: 10.9.1(@types/node@18.15.11)(typescript@5.0.4)
       typescript: 5.0.4
       webpack: 5.79.0
@@ -8010,8 +8010,8 @@ packages:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
     hasBin: true
 
-  /semver@7.4.0:
-    resolution: {integrity: sha512-RgOxM8Mw+7Zus0+zcLEUn8+JfoLpj/huFTItQy2hsM4khuC1HYRDp0cU482Ewn/Fcy6bCjufD8vAj7voC66KQw==}
+  /semver@7.5.0:
+    resolution: {integrity: sha512-+XC0AD/R7Q2mPSRuy2Id0+CGTZ98+8f+KvwirxOKIEyid+XSx6HbC63p+O4IndTHuX5Z+JxQ0TghCkO5Cg/2HA==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -8749,12 +8749,12 @@ packages:
       node-fetch-native: 1.1.0
       pathe: 1.1.0
 
-  /unhead@1.1.25:
-    resolution: {integrity: sha512-KtTBgtQjxICoOjA4dyxJfj5fYoYJeYFUt/J8ulaTzbvTsXM9K+ztYjI65nf2CPYYXRCRz/iEt8trqcsGlsB5TQ==}
+  /unhead@1.1.26:
+    resolution: {integrity: sha512-MshcPoPLXSGRgYtczddGvMgLUISTbt2pxihqD5kZVXKmY2FZLj1OQIY111aX45Xq47XJxjvYavvoyeUFroKQcg==}
     dependencies:
-      '@unhead/dom': 1.1.25
-      '@unhead/schema': 1.1.25
-      '@unhead/shared': 1.1.25
+      '@unhead/dom': 1.1.26
+      '@unhead/schema': 1.1.26
+      '@unhead/shared': 1.1.26
       hookable: 5.5.3
     dev: false
 
@@ -9171,7 +9171,7 @@ packages:
     engines: {vscode: ^1.52.0}
     dependencies:
       minimatch: 3.1.2
-      semver: 7.4.0
+      semver: 7.5.0
       vscode-languageserver-protocol: 3.16.0
     dev: false
 
@@ -9239,7 +9239,7 @@ packages:
       espree: 9.5.1
       esquery: 1.5.0
       lodash: 4.17.21
-      semver: 7.4.0
+      semver: 7.5.0
     transitivePeerDependencies:
       - supports-color
     dev: true
