@@ -37,7 +37,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
 
 // --- Internal ---
 
-export const normaliseModuleTranspilePath = (p: string) => {
+export const normalizeModuleTranspilePath = (p: string) => {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
