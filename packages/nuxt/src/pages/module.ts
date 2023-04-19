@@ -118,7 +118,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:sources', (sources) => {
       const routerImports = sources.find(s => s.from === '#app' && s.imports.includes('onBeforeRouteLeave'))
       if (routerImports) {
-        routerImports.from = useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
+        routerImports.from = vueRouterPath
       }
     })
 
@@ -207,11 +207,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        {
-          name: 'useLink',
-          as: 'useLink',
-          from: useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
-        }
+        { name: 'useLink', as: 'useLink', from: vueRouterPath }
       )
     })
 
@@ -300,14 +296,13 @@ declare module '@nuxt/schema' {
       filename: 'routes.mjs',
       async getContents () {
         if (useExperimentalTypedPages) {
-          console.log('👉 routes.mjs')
           return "export { routes as default } from 'vue-router/auto/routes';"
-        } else {
-          const pages = await resolvePagesRoutes()
-          await nuxt.callHook('pages:extend', pages)
-          const { routes, imports } = normalizeRoutes(pages)
-          return [...imports, `export default ${routes}`].join('\n')
         }
+
+        const pages = await resolvePagesRoutes()
+        await nuxt.callHook('pages:extend', pages)
+        const { routes, imports } = normalizeRoutes(pages)
+        return [...imports, `export default ${routes}`].join('\n')
       }
     })
 
