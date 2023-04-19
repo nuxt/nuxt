@@ -6,7 +6,7 @@ import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
-import { isVueTemplate } from './helpers'
+import { isVue } from '../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -31,7 +31,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       if (include.some(pattern => id.match(pattern))) {
         return true
       }
-      return isVueTemplate(id)
+      return isVue(id, { type: ['template', 'script'] })
     },
     transform (code) {
       const components = options.getComponents()
