@@ -1,5 +1,5 @@
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute } from 'pathe'
+import { dirname, extname } from 'pathe'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule, resolveModule } from '../internal/cjs'
@@ -23,10 +23,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   }
 
   if (typeof moduleToInstall === 'string') {
-    // When the module to install is a path to a file, we need the base directory
-    // i.e /node_modules/module/dist/module.mjs -> /node_modules/module/dist/
-    const moduleDir = isAbsolute(moduleToInstall) ? dirname(moduleToInstall) : moduleToInstall
-    nuxt.options.build.transpile.push(moduleDir)
+    nuxt.options.build.transpile.push(extname(moduleToInstall) ? dirname(moduleToInstall) : moduleToInstall)
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
