@@ -58,7 +58,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           return {
             code: s.toString(),
             map: options.sourcemap
-              ? s.generateMap({ source: id, includeContent: true })
+              ? s.generateMap({ hires: true })
               : undefined
           }
         }
@@ -109,7 +109,14 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       }
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        if (!code) {
+          s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+          console.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+        } else {
+          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        }
+
         return result()
       }
 

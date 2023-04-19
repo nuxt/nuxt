@@ -37,10 +37,6 @@
     "#app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
-    },
-    "#pages": {
-      "types": "./dist/pages/runtime/index.d.ts",
-      "import": "./dist/pages/runtime/index.js"
     }
   },
   "files": [
@@ -62,9 +58,8 @@
     "@nuxt/telemetry": "^2.2.0",
     "@nuxt/ui-templates": "^1.1.1",
     "@nuxt/vite-builder": "workspace:../vite",
-    "@unhead/ssr": "^1.1.25",
-    "@unhead/vue": "^1.1.25",
-    "@vue/reactivity": "^3.2.47",
+    "@unhead/ssr": "^1.1.26",
+    "@unhead/vue": "^1.1.26",
     "@vue/shared": "^3.2.47",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
@@ -76,7 +71,6 @@
     "fs-extra": "^11.1.1",
     "globby": "^13.1.4",
     "h3": "^1.6.4",
-    "hash-sum": "^2.0.0",
     "hookable": "^5.5.3",
     "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
@@ -87,15 +81,15 @@
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
-    "ohash": "^1.0.0",
+    "ohash": "^1.1.1",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
     "prompts": "^2.4.2",
     "scule": "^1.0.0",
     "strip-literal": "^1.0.1",
     "ufo": "^1.1.1",
-    "unctx": "^2.2.0",
-    "unenv": "^1.3.1",
+    "unctx": "^2.3.0",
+    "unenv": "^1.4.1",
     "unimport": "^3.0.6",
     "unplugin": "^1.3.1",
     "untyped": "^1.3.2",
@@ -105,13 +99,24 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@parcel/watcher": "^2.1.0",
+    "@types/estree": "^1.0.1",
     "@types/fs-extra": "^11.0.1",
-    "@types/hash-sum": "^1.0.0",
     "@types/prompts": "^2.4.4",
-    "unbuild": "latest"
+    "@vitejs/plugin-vue": "^4.1.0",
+    "acorn": "^8.8.2",
+    "unbuild": "latest",
+    "vite": "^4.2.2",
+    "vitest": "^0.30.1"
   },
   "peerDependencies": {
+    "@parcel/watcher": "^2.1.0",
     "@types/node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@parcel/watcher": {
+      "optional": true
+    }
   },
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"

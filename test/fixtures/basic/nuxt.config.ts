@@ -1,5 +1,5 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
-import type { NuxtPage } from '@nuxt/schema'
+import { addComponent, addVitePlugin, addWebpackPlugin } from 'nuxt/kit'
+import type { NuxtPage } from 'nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
@@ -143,6 +143,7 @@ export default defineNuxtConfig({
   vite: {
     logLevel: 'silent'
   },
+  telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
