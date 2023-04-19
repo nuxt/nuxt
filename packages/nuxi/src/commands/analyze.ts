@@ -2,6 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { join, resolve } from 'pathe'
 import { createApp, eventHandler, lazyEventHandler, toNodeListener } from 'h3'
 import { listen } from 'listhen'
+import type { NuxtAnalyzeMeta } from '@nuxt/schema'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
@@ -11,33 +12,66 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'analyze',
-    usage: 'npx nuxi analyze [--log-level] [--no-serve] [rootDir]',
+    usage: 'npx nuxi analyze [--log-level] [--name] [--no-serve] [rootDir]',
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
   async invoke (args) {
     overrideEnv('production')
 
+    const name = args.name || 'default'
     const rootDir = resolve(args._[0] || '.')
-    const statsDir = join(rootDir, '.nuxt/stats')
+
+    let analyzeDir = join(rootDir, '.nuxt/analyze', name)
+    let buildDir = join(analyzeDir, '.nuxt')
+    let outDir = join(analyzeDir, '.output')
+
+    const startTime = Date.now()
 
     const { loadNuxt, buildNuxt } = await loadKit(rootDir)
 
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
-        build: { analyze: true },
+        build: {
+          analyze: true
+        },
+        analyzeDir,
+        buildDir,
+        nitro: {
+          output: {
+            dir: outDir
+          }
+        },
         logLevel: args['log-level']
       }
     })
 
-    await clearDir(nuxt.options.buildDir)
+    analyzeDir = nuxt.options.analyzeDir
+    buildDir = nuxt.options.buildDir
+    outDir = nuxt.options.nitro.output?.dir || outDir
+
+    await clearDir(analyzeDir)
     await writeTypes(nuxt)
     await buildNuxt(nuxt)
 
-    console.info('Analyze results are available at: ' + statsDir)
+    const endTime = Date.now()
+
+    const meta: NuxtAnalyzeMeta = {
+      name,
+      startTime,
+      endTime,
+      analyzeDir,
+      buildDir,
+      outDir
+    }
+
+    await nuxt.callHook('build:analyze:done', meta)
+    await fsp.writeFile(join(analyzeDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf-8')
+
+    console.info('Analyze results are available at: `' + analyzeDir + '`')
     console.warn('Do not deploy analyze results! Use `nuxi build` before deploying.')
 
-    if (args.serve !== false) {
+    if (args.serve !== false && !process.env.CI) {
       const app = createApp()
 
       const serveFile = (filePath: string) => lazyEventHandler(async () => {
@@ -47,8 +81,8 @@ export default defineNuxtCommand({
 
       console.info('Starting stats server...')
 
-      app.use('/client', serveFile(join(statsDir, 'client.html')))
-      app.use('/nitro', serveFile(join(statsDir, 'nitro.html')))
+      app.use('/client', serveFile(join(analyzeDir, 'client.html')))
+      app.use('/nitro', serveFile(join(analyzeDir, 'nitro.html')))
       app.use(eventHandler(() => `<!DOCTYPE html>
         <html lang="en">
         <head>
