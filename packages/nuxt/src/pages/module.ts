@@ -23,6 +23,7 @@ export default defineNuxtModule({
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
+    const vueRouterPath = useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
 
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
@@ -277,8 +278,29 @@ export default defineNuxtModule({
       }
     })
 
-    // adds support to #vue-router
-    addBuildTimeVueRouter(useExperimentalTypedPages)
+    // adds support for #vue-router alias
+    addTemplate({
+      filename: 'vue-router.mjs',
+      getContents () {
+        return `export * from '${vueRouterPath}';`
+      }
+    })
+    addTemplate({
+      filename: 'vue-router.d.ts',
+      getContents () {
+        return [
+          useExperimentalTypedPages && 'import type { EditableTreeNode } from \'unplugin-vue-router\'',
+          `export * from '${vueRouterPath}'`,
+          useExperimentalTypedPages && `
+declare module '@nuxt/schema' {
+  export interface NuxtHooks {
+    'pages:extendOne': (page: EditableTreeNode) => HookResult;
+    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult;
+  }
+}`
+        ].filter(Boolean).join('\n')
+      }
+    })
 
     // Add routes template
     addTemplate({
@@ -390,37 +412,3 @@ export default defineNuxtModule({
     })
   }
 })
-
-function addBuildTimeVueRouter (fromAuto: boolean) {
-  const vueRouterPath = fromAuto ? 'vue-router/auto' : 'vue-router'
-  addTemplate({
-    filename: 'vue-router.mjs',
-    getContents () {
-      return `export * from '${vueRouterPath}';`
-    }
-  })
-  addTemplate({
-    filename: 'vue-router.d.ts',
-    getContents () {
-      return '' +
-        (fromAuto
-          ? `\
-import type { EditableTreeNode } from 'unplugin-vue-router'
-`
-          : '') +
-
-        `
-export * from '${vueRouterPath}'
-` + (fromAuto
-        ? `\
-declare module '@nuxt/schema' {
-  export interface NuxtHooks {
-    'pages:extendOne': (page: EditableTreeNode) => HookResult;
-    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult;
-  }
-}
-`
-        : '')
-    }
-  })
-}
