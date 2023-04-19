@@ -7,7 +7,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import type { RouteLocation, RouteLocationRaw } from '#vue-router'
+import type { RouteLocation, RouteLocationRaw, RouterLinkProps } from '#vue-router'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -24,8 +24,8 @@ export type NuxtLinkOptions = {
 
 export type NuxtLinkProps = {
   // Routing
-  to?: string | RouteLocationRaw
-  href?: string | RouteLocationRaw
+  to?: RouterLinkProps['to']
+  href?: RouterLinkProps['to']
   external?: boolean
   replace?: boolean
   custom?: boolean
