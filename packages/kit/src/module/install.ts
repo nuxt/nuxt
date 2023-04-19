@@ -24,7 +24,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   }
 
   if (typeof moduleToInstall === 'string') {
-    nuxt.options.build.transpile.push(normaliseModuleTranspilePath(moduleToInstall))
+    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
