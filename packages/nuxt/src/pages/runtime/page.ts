@@ -2,10 +2,11 @@ import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { defu } from 'defu'
 
-import type { RouterViewSlotProps } from './utils'
-import { generateRouteKey, wrapInKeepAlive } from './utils'
 import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 import { RouterView } from '#vue-router'
+
+import type { RouterViewSlotProps } from './utils'
+import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 // @ts-expect-error virtual file
