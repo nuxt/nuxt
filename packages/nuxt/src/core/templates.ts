@@ -306,12 +306,10 @@ export const nuxtConfigTemplate = {
 function _resolveId (id: string) {
   return resolvePath(id, {
     url: [
-      // @ts-ignore
-      global.__NUXT_PREPATHS__,
+      ...(typeof global.__NUXT_PREPATHS__ === 'string' ? [global.__NUXT_PREPATHS__] : global.__NUXT_PREPATHS__ || []),
       import.meta.url,
       process.cwd(),
-      // @ts-ignore
-      global.__NUXT_PATHS__
+      ...(typeof global.__NUXT_PATHS__ === 'string' ? [global.__NUXT_PATHS__] : global.__NUXT_PATHS__ || [])
     ]
   })
 }

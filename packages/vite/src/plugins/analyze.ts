@@ -4,6 +4,8 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import type { ViteBuildContext } from '../vite'
 
 export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
+  if (typeof ctx.nuxt.options.build.analyze === 'boolean') { return [] }
+
   return [
     {
       name: 'nuxt:analyze-minify',
@@ -19,11 +21,9 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
         }
       }
     },
-    // @ts-ignore
     visualizer({
-      ...ctx.nuxt.options.build.analyze as any,
-      // @ts-ignore
-      filename: ctx.nuxt.options.build.analyze.filename.replace('{name}', 'client'),
+      ...ctx.nuxt.options.build.analyze,
+      filename: 'filename' in ctx.nuxt.options.build.analyze ? ctx.nuxt.options.build.analyze.filename!.replace('{name}', 'client') : undefined,
       title: 'Client bundle stats',
       gzipSize: true
     })

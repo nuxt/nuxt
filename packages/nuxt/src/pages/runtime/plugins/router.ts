@@ -1,7 +1,7 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import {
@@ -11,17 +11,17 @@ import {
   createWebHistory
 } from '#vue-router'
 import type { RouteLocation, Router } from '#vue-router'
+
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
-import { useRequestEvent } from '#app/composables/ssr'
 import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import _routes from '#build/routes'
-// @ts-ignore
+// @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
@@ -164,12 +164,17 @@ export default defineNuxtPlugin({
       }
     })
 
-    router.afterEach(async (to) => {
+    router.onError(() => { delete nuxtApp._processingMiddleware })
+
+    router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
       if (process.client && !nuxtApp.isHydrating && error.value) {
         // Clear any existing errors
         await callWithNuxt(nuxtApp, clearError)
+      }
+      if (process.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+        return
       }
       if (to.matched.length === 0) {
         await callWithNuxt(nuxtApp, showError, [createError({
@@ -177,13 +182,8 @@ export default defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })])
-      } else if (process.server) {
-        const currentURL = to.fullPath || '/'
-        if (!isEqual(currentURL, initialURL, { trailingSlash: true })) {
-          const event = await callWithNuxt(nuxtApp, useRequestEvent)
-          const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
-          await callWithNuxt(nuxtApp, navigateTo, [currentURL, options])
-        }
+      } else if (process.server && to.redirectedFrom) {
+        await callWithNuxt(nuxtApp, navigateTo, [to.fullPath || '/'])
       }
     })
 

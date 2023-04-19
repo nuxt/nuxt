@@ -7,7 +7,7 @@ import { navigateTo } from '../composables/router'
 import { useState } from '../composables/state'
 import { useRequestEvent } from '../composables/ssr'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
 
 interface Route {
@@ -246,6 +246,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
                 statusCode: 404,
                 statusMessage: `Page Not Found: ${initialURL}`
               })
+              delete nuxtApp._processingMiddleware
               return callWithNuxt(nuxtApp, showError, [error])
             }
           }
@@ -253,9 +254,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
       })
 
-      router.afterEach(() => {
-        delete nuxtApp._processingMiddleware
-      })
+      router.afterEach(() => { delete nuxtApp._processingMiddleware })
 
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {

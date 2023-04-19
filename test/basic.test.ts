@@ -130,6 +130,11 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('returns 500 when there is an infinite redirect', async () => {
+    const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
+    expect(status).toEqual(500)
+  })
+
   it('render 404', async () => {
     const html = await $fetch('/not-found')
 
@@ -512,6 +517,19 @@ describe('navigate', () => {
     expect(res.headers.get('location')).toEqual('/navigate-some-path')
     expect(res.status).toEqual(307)
     expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
+  })
+
+  it('should not overwrite headers', async () => {
+    const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(302)
+  })
+
+  it('supports directly aborting navigation on SSR', async () => {
+    const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
+
+    expect(status).toEqual(404)
   })
 })
 

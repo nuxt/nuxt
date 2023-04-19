@@ -33,7 +33,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       }
       return isVueTemplate(id)
     },
-    transform (code, id) {
+    transform (code) {
       const components = options.getComponents()
 
       let num = 0
@@ -92,7 +92,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

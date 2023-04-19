@@ -2,7 +2,7 @@ import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
 import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
 import { useNuxtApp } from '#app/nuxt'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
