@@ -1,14 +1,13 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
+import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
-
-import type { RouteLocationNormalizedLoaded } from '#vue-router'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'

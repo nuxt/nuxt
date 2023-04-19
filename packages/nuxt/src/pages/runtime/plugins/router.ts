@@ -12,7 +12,6 @@ import {
 import type { RouteLocation, Router } from '#vue-router'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
-
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { useState } from '#app/composables/state'

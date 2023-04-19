@@ -1,7 +1,5 @@
 import type { Component } from 'vue'
-
 import type { RouteLocationRaw, Router } from '#vue-router'
-
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from './router'
 

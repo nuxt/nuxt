@@ -358,11 +358,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
-  options._modules.push(
-    pagesModule,
-    metaModule,
-    componentsModule
-  )
+  options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
       include: options._layers

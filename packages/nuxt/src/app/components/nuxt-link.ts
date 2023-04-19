@@ -1,8 +1,7 @@
 import type { ComputedRef, DefineComponent, PropType } from 'vue'
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
-import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-
 import type { RouteLocation, RouteLocationRaw, RouterLinkProps } from '#vue-router'
+import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
