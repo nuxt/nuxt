@@ -163,6 +163,20 @@ export default defineUntypedSchema({
     localLayerAliases: true,
 
     /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
-    typedPages: false
+    typedPages: false,
+
+    /**
+     * Set an alternative watcher that will be used as the watching service for Nuxt.
+     *
+     * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
+     * `@parcel/watcher` instead. This may improve performance in large projects or
+     * on Windows platforms.
+     *
+     * @see https://github.com/paulmillr/chokidar
+     * @see https://github.com/parcel-bundler/watcher
+     * @default chokidar
+     * @type {'chokidar' | 'parcel'}
+     */
+    watcher: 'chokidar'
   }
 })
