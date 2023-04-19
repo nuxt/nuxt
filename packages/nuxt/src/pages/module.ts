@@ -8,8 +8,9 @@ import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import VueRouterVite from 'unplugin-vue-router/vite'
 import VueRouterWebpack from 'unplugin-vue-router/webpack'
 import { createRoutesContext } from 'unplugin-vue-router'
+// @ts-expect-error TODO: expose subpath using named exports
 import { resolveOptions } from 'unplugin-vue-router/options'
-import type { EditableTreeNode, Options as _UVROption } from 'unplugin-vue-router'
+import type { EditableTreeNode, Options as _UVROptions } from 'unplugin-vue-router'
 
 import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
@@ -411,7 +412,7 @@ import type { EditableTreeNode } from 'unplugin-vue-router'
         `
 export * from '${vueRouterPath}'
 ` + (fromAuto
-        ? `\
+          ? `\
 declare module '@nuxt/schema' {
   export interface NuxtHooks {
     'pages:extendOne': (page: EditableTreeNode) => HookResult;
@@ -419,7 +420,7 @@ declare module '@nuxt/schema' {
   }
 }
 `
-        : '')
+          : '')
     }
   })
 }
