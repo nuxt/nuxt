@@ -3,7 +3,6 @@ import { join, resolve } from 'pathe'
 import { createApp, eventHandler, lazyEventHandler, toNodeListener } from 'h3'
 import { listen } from 'listhen'
 import type { NuxtAnalyzeMeta } from '@nuxt/schema'
-import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
@@ -51,7 +50,6 @@ export default defineNuxtCommand({
     outDir = nuxt.options.nitro.output?.dir || outDir
 
     await clearDir(analyzeDir)
-    await writeTypes(nuxt)
     await buildNuxt(nuxt)
 
     const endTime = Date.now()
