@@ -1,15 +1,14 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import { createError } from 'h3'
-import { withoutBase } from 'ufo'
-
+import type { RouteLocation, Router } from '#vue-router'
 import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
   createWebHistory
 } from '#vue-router'
-import type { RouteLocation, Router } from '#vue-router'
+import { createError } from 'h3'
+import { withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
