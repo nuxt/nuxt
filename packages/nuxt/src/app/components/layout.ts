@@ -3,11 +3,11 @@ import { Transition, computed, defineComponent, h, inject, nextTick, onMounted, 
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
-// @ts-ignore
+// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 
 // TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved

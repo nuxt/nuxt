@@ -8,8 +8,8 @@ import type { WebpackConfigContext } from '../utils/config'
 export function vue (ctx: WebpackConfigContext) {
   const { options, config } = ctx
 
-  // @ts-ignore
-  config.plugins.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
+  // @ts-expect-error de-default vue-loader
+  config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
 
   config.module!.rules!.push({
     test: /\.vue$/i,

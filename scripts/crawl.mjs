@@ -67,7 +67,6 @@ const crawler = new Crawler({
   callback (error, res, done) {
     const { $ } = res
     const { uri } = res.options
-    // @ts-ignore
     const { statusCode } = res.request.response
 
     if (error || ![200, 301, 302].includes(statusCode) || !$) {

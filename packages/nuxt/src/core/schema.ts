@@ -12,7 +12,7 @@ import {
   resolveSchema as resolveUntypedSchema
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-// @ts-ignore
+// @ts-expect-error TODO: add upstream type
 import untypedPlugin from 'untyped/babel-plugin'
 import jiti from 'jiti'
 
@@ -94,7 +94,7 @@ export default defineNuxtModule({
 
     async function resolveSchema () {
       // Global import
-      // @ts-ignore
+      // @ts-expect-error adding to globalThis for 'auto-import' support within nuxt.config file
       globalThis.defineNuxtSchema = (val: any) => val
 
       // Load schema from layers
@@ -125,9 +125,8 @@ export default defineNuxtModule({
         schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef))
       )
 
-      // @ts-expect-error
       // Merge after normalization
-      const schema = defu(...schemas)
+      const schema = defu(...schemas as [Schema, Schema])
 
       // Allow hooking to extend resolved schema
       await nuxt.hooks.callHook('schema:resolved', schema)

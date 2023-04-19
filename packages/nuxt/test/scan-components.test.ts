@@ -225,7 +225,7 @@ const srcDir = rFixture('.')
 it('components:scanComponents', async () => {
   const scannedComponents = await scanComponents(dirs, srcDir)
   for (const c of scannedComponents) {
-    // @ts-ignore
+    // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)

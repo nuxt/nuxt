@@ -1,9 +1,9 @@
 import { hasProtocol } from 'ufo'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-// @ts-ignore
+// @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
 
 export default defineNuxtPlugin({

@@ -151,6 +151,6 @@ export function useLazyFetch<
     ...opts,
     lazy: true
   },
-  // @ts-ignore
+  // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)
 }

@@ -90,7 +90,7 @@ async function createDevMiddleware (compiler: Compiler) {
     ...nuxt.options.webpack.devMiddleware
   })
 
-  // @ts-ignore
+  // @ts-expect-error need better types for `pify`
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
