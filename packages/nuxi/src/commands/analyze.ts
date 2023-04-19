@@ -11,7 +11,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'analyze',
-    usage: 'npx nuxi analyze [--log-level] [rootDir]',
+    usage: 'npx nuxi analyze [--log-level] [--no-serve] [rootDir]',
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
   async invoke (args) {
@@ -34,39 +34,42 @@ export default defineNuxtCommand({
     await writeTypes(nuxt)
     await buildNuxt(nuxt)
 
-    const app = createApp()
-
-    const serveFile = (filePath: string) => lazyEventHandler(async () => {
-      const contents = await fsp.readFile(filePath, 'utf-8')
-      return eventHandler((event) => { event.node.res.end(contents) })
-    })
-
+    console.info('Analyze results are available at: ' + statsDir)
     console.warn('Do not deploy analyze results! Use `nuxi build` before deploying.')
 
-    console.info('Starting stats server...')
+    if (args.serve !== false) {
+      const app = createApp()
 
-    app.use('/client', serveFile(join(statsDir, 'client.html')))
-    app.use('/nitro', serveFile(join(statsDir, 'nitro.html')))
-    app.use(eventHandler(() => `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="utf-8">
-    <title>Nuxt Bundle Stats (experimental)</title>
-    </head>
-      <h1>Nuxt Bundle Stats (experimental)</h1>
-      <ul>
-        <li>
-          <a href="/nitro">Nitro server bundle stats</a>
-        </li>
-        <li>
-          <a href="/client">Client bundle stats</a>
-        </li>
-      </ul>
-    </html>
-    `))
+      const serveFile = (filePath: string) => lazyEventHandler(async () => {
+        const contents = await fsp.readFile(filePath, 'utf-8')
+        return eventHandler((event) => { event.node.res.end(contents) })
+      })
 
-    await listen(toNodeListener(app))
+      console.info('Starting stats server...')
 
-    return 'wait' as const
+      app.use('/client', serveFile(join(statsDir, 'client.html')))
+      app.use('/nitro', serveFile(join(statsDir, 'nitro.html')))
+      app.use(eventHandler(() => `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <title>Nuxt Bundle Stats (experimental)</title>
+        </head>
+          <h1>Nuxt Bundle Stats (experimental)</h1>
+          <ul>
+            <li>
+              <a href="/nitro">Nitro server bundle stats</a>
+            </li>
+            <li>
+              <a href="/client">Client bundle stats</a>
+            </li>
+          </ul>
+        </html>
+      `))
+
+      await listen(toNodeListener(app))
+
+      return 'wait' as const
+    }
   }
 })
