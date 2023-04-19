@@ -1,19 +1,13 @@
 /**
- * This file adds types for `#build/vue-router` and other build-time generated files that depend on Project
- * Configuration.
+ * This file adds module hooks for typed router support.
  */
 
-export {}
-
-// declare module '#build/vue-router' {
-//   export * from 'vue-router'
-// }
-
+import type { EditableTreeNode, HookResult } from 'unplugin-vue-router/types'
 // to have type errors during dev
 declare module '@nuxt/schema' {
   export interface NuxtHooks {
-    'pages:extendOne': (page: EditableTreeNode) => HookResult;
-    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult;
+    'pages:extendOne': (page: EditableTreeNode) => HookResult
+    'pages:beforeWrite': (rootPage: EditableTreeNode) => HookResult
   }
 }
 

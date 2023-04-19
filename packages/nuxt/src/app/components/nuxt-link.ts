@@ -7,7 +7,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import type { RouteLocation, RouteLocationRaw } from '#build/vue-router'
+import type { RouteLocation, RouteLocationRaw } from '#vue-router'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 

@@ -98,6 +98,10 @@ export default defineNuxtModule({
           prepend: true
         }
       )
+      nuxt.hook('prepare:types', ({ references }) => {
+        references.push({ path: './typed-router.d.ts' })
+      })
+
       // FIXME: add webpack plugin as well
     }
 
@@ -265,7 +269,7 @@ export default defineNuxtModule({
       }
     })
 
-    // adds support to #build/vue-router
+    // adds support to #vue-router
     addBuildTimeVueRouter(useExperimentalTypedPages)
 
     // Add routes template
@@ -368,11 +372,13 @@ export default defineNuxtModule({
       filePath: resolve(distDir, 'pages/runtime/page')
     })
 
+    nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router')
+
     // Add declarations for middleware keys
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
       references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/internal.vue-router.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'vue-router.d.ts') })
     })
   }
 })
@@ -386,21 +392,19 @@ function addBuildTimeVueRouter (fromAuto: boolean) {
     }
   })
   addTemplate({
-    filename: 'types/internal.vue-router.d.ts',
+    filename: 'vue-router.d.ts',
     getContents () {
       return '' +
-      (fromAuto
-        ? `\
+        (fromAuto
+          ? `\
 import type { EditableTreeNode } from 'unplugin-vue-router'
 `
-        : '') +
+          : '') +
 
-`
-declare module '#build/vue-router' {
-  export * from '${vueRouterPath}'
-}
+        `
+export * from '${vueRouterPath}'
 ` + (fromAuto
-        ? `\
+          ? `\
 declare module '@nuxt/schema' {
   export interface NuxtHooks {
     'pages:extendOne': (page: EditableTreeNode) => HookResult;
@@ -408,11 +412,7 @@ declare module '@nuxt/schema' {
   }
 }
 `
-        : '') +
-`\
-// TODO: is this needed?
-// export {}
-`
+          : '')
     }
   })
 }

@@ -1,5 +1,5 @@
 import { createRouterPlugin } from './router-base'
-import { createRouter } from '#build/vue-router'
+import { createRouter } from '#vue-router'
 
 // @ts-ignore
 import _routes from '#build/routes'

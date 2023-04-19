@@ -8,7 +8,7 @@ import type { NuxtError } from './error'
 import { createError } from './error'
 import { useState } from './state'
 import { setResponseStatus } from './ssr'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#build/vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 
 import type { PageMeta } from '#app'
 

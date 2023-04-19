@@ -8,14 +8,14 @@ import {
   createMemoryHistory,
   createWebHashHistory,
   createWebHistory
-} from '#build/vue-router'
+} from '#vue-router'
 import type {
   RouteLocation,
   RouteRecordRaw,
   Router,
   RouterHistory,
   RouterOptions
-} from '#build/vue-router'
+} from '#vue-router'
 import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { useRequestEvent } from '#app/composables/ssr'
@@ -51,8 +51,8 @@ function createCurrentLocation (
 interface RouterFactory {
   (
     history: RouterHistory,
-    routerOptions: RouterOptions & { routes?: (routes: RouteRecordRaw[]) => RouteRecordRaw[]}
-  ): Router;
+    routerOptions: RouterOptions & { routes?: (routes: RouteRecordRaw[]) => RouteRecordRaw[] }
+  ): Router
 }
 
 export function createRouterPlugin (routerFactory: RouterFactory) {

@@ -1,8 +1,8 @@
 import type { Ref, VNode } from 'vue'
 import { Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
-import type { RouteLocationNormalizedLoaded } from '#build/vue-router'
-import { useRoute } from '~/../packages/nuxt/src/app/composables'
+import { useRoute } from '#app/composables/router'
 // @ts-ignore
 import { useRoute as useVueRouterRoute } from '#build/pages'
 // @ts-ignore

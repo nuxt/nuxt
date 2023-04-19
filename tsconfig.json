@@ -32,7 +32,7 @@
       "#internal/nitro/utils": [
         "./node_modules/nitropack/dist/runtime/utils"
       ],
-      "#build/vue-router": [
+      "#vue-router": [
         "./node_modules/vue-router"
       ]
     }
