@@ -91,8 +91,6 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'telemetry'>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | { bundle: (nuxt: Nuxt) => Promise<void> }
   _layers: NuxtConfigLayer[]
   $schema: SchemaDefinition
-  // TODO: hotfix: resolve upstream
-  telemetry?: ConfigSchema['telemetry']
 }
 
 export interface ViteConfig extends ViteUserConfig {
