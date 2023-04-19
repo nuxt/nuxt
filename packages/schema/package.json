@@ -34,7 +34,7 @@
     "vue": "3.2.47",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.1.6",
-    "webpack": "^5.79.0"
+    "webpack": "^5.80.0"
   },
   "dependencies": {
     "defu": "^6.1.2",
