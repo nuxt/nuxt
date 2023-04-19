@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
+    "@types/estree": "^1.0.0",
     "unbuild": "latest",
     "vue": "3.2.47"
   },
@@ -28,7 +29,6 @@
     "@vitejs/plugin-vue": "^4.1.0",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
-    "chokidar": "^3.5.3",
     "clear": "^0.1.0",
     "cssnano": "^6.0.0",
     "defu": "^6.1.2",
