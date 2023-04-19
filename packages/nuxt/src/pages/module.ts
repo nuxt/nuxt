@@ -412,7 +412,7 @@ import type { EditableTreeNode } from 'unplugin-vue-router'
         `
 export * from '${vueRouterPath}'
 ` + (fromAuto
-          ? `\
+        ? `\
 declare module '@nuxt/schema' {
   export interface NuxtHooks {
     'pages:extendOne': (page: EditableTreeNode) => HookResult;
@@ -420,7 +420,7 @@ declare module '@nuxt/schema' {
   }
 }
 `
-          : '')
+        : '')
     }
   })
 }
