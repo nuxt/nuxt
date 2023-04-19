@@ -81,7 +81,7 @@ export default defineNuxtModule({
       console.log('📄 Adding pages module')
       const options: _UVROptions = {
         routesFolder: pagesDirs,
-        dts: resolve(nuxt.options.buildDir, 'typed-router.d.ts'),
+        dts: resolve(nuxt.options.buildDir, 'types/typed-router.d.ts'),
         logs: true,
         extendRoute (route) {
           // TODO: refactor names and types conditionally
@@ -94,24 +94,17 @@ export default defineNuxtModule({
         }
       }
 
+      nuxt.hook('prepare:types', ({ references }) => {
+        references.push({ path: './types/typed-router.d.ts' })
+      })
+
       if (nuxt.options._prepare) {
         await createRoutesContext(resolveOptions(options)).scanPages(false)
       }
 
-      addVitePlugin(
-        VueRouterVite(options),
-        {
-          prepend: true
-        }
-      )
-      addWebpackPlugin(
-        VueRouterWebpack(options)
-      )
-      nuxt.hook('prepare:types', ({ references }) => {
-        references.push({ path: './typed-router.d.ts' })
-      })
-
-      // FIXME: add webpack plugin as well
+      addVitePlugin(VueRouterVite(options), { prepend: true })
+      // @ts-expect-error TODO: https://github.com/nuxt/nuxt/pull/20403
+      addWebpackPlugin(VueRouterWebpack(options), { prepend: true })
     }
 
     const runtimeDir = resolve(distDir, 'pages/runtime')
