@@ -6,6 +6,10 @@ import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import VueRouter from 'unplugin-vue-router/vite'
+import {
+  createRoutesContext
+} from 'unplugin-vue-router'
+import { resolveOptions } from 'unplugin-vue-router/options'
 import type {
   EditableTreeNode,
   Options as _UVROptions
@@ -20,7 +24,7 @@ export default defineNuxtModule({
   meta: {
     name: 'pages'
   },
-  setup (_options, nuxt) {
+  async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
 
     const pagesDirs = nuxt.options._layers.map(
@@ -77,23 +81,29 @@ export default defineNuxtModule({
     let rootPage: EditableTreeNode | undefined
     if (useExperimentalTypedPages) {
       console.log('📄 Adding pages module')
+      const options: _UVROptions = {
+
+        routesFolder: pagesDirs,
+        // FIXME: find the root of the project
+        dts: resolve(nuxt.options.srcDir, '.nuxt/typed-router.d.ts'),
+        logs: true,
+        extendRoute (route) {
+          // TODO: refactor names and types conditionally
+          return nuxt.callHook('pages:extendOne', route)
+        },
+        async beforeWriteFiles (_rootPage) {
+          await nuxt.callHook('pages:beforeWrite', _rootPage)
+          await nuxt.callHook('pages:extend', [..._rootPage])
+          rootPage = _rootPage
+        }
+      }
+
+      if (nuxt.options._prepare) {
+        await createRoutesContext(resolveOptions(options)).scanPages(false)
+      }
 
       addVitePlugin(
-        VueRouter({
-          routesFolder: pagesDirs,
-          // FIXME: find the root of the project
-          dts: resolve(nuxt.options.srcDir, '.nuxt/typed-router.d.ts'),
-          logs: true,
-          extendRoute (route) {
-            // TODO: refactor names and types conditionally
-            return nuxt.callHook('pages:extendOne', route)
-          },
-          async beforeWriteFiles (_rootPage) {
-            await nuxt.callHook('pages:beforeWrite', _rootPage)
-            await nuxt.callHook('pages:extend', [..._rootPage])
-            rootPage = _rootPage
-          }
-        }),
+        VueRouter(options),
         {
           prepend: true
         }
