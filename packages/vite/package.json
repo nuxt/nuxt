@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
-    "@types/estree": "^1.0.0",
+    "@types/estree": "^1.0.1",
     "unbuild": "latest",
     "vue": "3.2.47"
   },
@@ -42,7 +42,7 @@
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
-    "ohash": "^1.0.0",
+    "ohash": "^1.1.0",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
     "pkg-types": "^1.0.2",
