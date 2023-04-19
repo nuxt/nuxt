@@ -5,7 +5,8 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
-import VueRouter from 'unplugin-vue-router/vite'
+import VueRouterVite from 'unplugin-vue-router/vite'
+import VueRouterWebpack from 'unplugin-vue-router/webpack'
 import {
   createRoutesContext
 } from 'unplugin-vue-router'
@@ -103,10 +104,13 @@ export default defineNuxtModule({
       }
 
       addVitePlugin(
-        VueRouter(options),
+        VueRouterVite(options),
         {
           prepend: true
         }
+      )
+      addWebpackPlugin(
+        VueRouterWebpack(options)
       )
       nuxt.hook('prepare:types', ({ references }) => {
         references.push({ path: './typed-router.d.ts' })
