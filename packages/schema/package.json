@@ -21,6 +21,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
+    "@nuxt/telemetry": "^2.2.0",
     "@unhead/schema": "^1.1.26",
     "@vitejs/plugin-vue": "^4.1.0",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
