@@ -45,7 +45,7 @@ export const normaliseModuleTranspilePath = (p: string) => {
   } catch (e) {
     // maybe the path is absolute but does not exist, allow this to bubble up
   }
-  return p.split('node_modules/').pop()
+  return p.split('node_modules/').pop() as string
 }
 
 async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?: any) {
