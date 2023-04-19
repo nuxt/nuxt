@@ -51,7 +51,7 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
     expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92.4k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2654k"')
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2657k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -79,6 +79,7 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
         "h3",
         "hookable",
         "iron-webcrypto",
+        "klona",
         "node-fetch-native",
         "ofetch",
         "ohash",
