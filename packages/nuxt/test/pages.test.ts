@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
-import { generateRoutesFromFiles } from '../src/pages/utils'
+import { generateRoutesFromFiles, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -441,4 +441,21 @@ describe('pages:generateRouteKey', () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
+})
+
+const pathToNitroGlobTests = {
+  '/': '/',
+  '/:id': '/**',
+  '/:id()': '/**',
+  '/:id?': '/**',
+  '/some-:id?': '/**',
+  '/other/some-:id?': '/other/**',
+  '/other/some-:id()-more': '/other/**',
+  '/other/nested': '/other/nested'
+}
+
+describe('pages:pathToNitroGlob', () => {
+  it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
+    expect(pathToNitroGlob(path)).to.equal(expected)
+  })
 })

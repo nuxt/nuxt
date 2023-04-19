@@ -335,3 +335,15 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     }))
   }
 }
+
+export function pathToNitroGlob (path: string) {
+  if (!path) {
+    return null
+  }
+  // Ignore pages with multiple dynamic parameters.
+  if (path.indexOf(':') !== path.lastIndexOf(':')) {
+    return null
+  }
+
+  return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
+}

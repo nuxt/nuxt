@@ -9,11 +9,14 @@ import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 
+import type { NitroRouteConfig } from 'nitropack'
+import { defu } from 'defu'
 import { distDir } from '../dirs'
-import { normalizeRoutes, resolvePagesRoutes } from './utils'
-import type { PageMetaPluginOptions } from './page-meta'
-import { PageMetaPlugin } from './page-meta'
-import { RouteInjectionPlugin } from './route-injection'
+import { normalizeRoutes, pathToNitroGlob, resolvePagesRoutes } from './utils'
+import type { PageMetaPluginOptions } from './plugins/page-meta'
+import { PageMetaPlugin } from './plugins/page-meta'
+import { routeRuleExtractorPlugin } from './plugins/route-rules'
+import { RouteInjectionPlugin } from './plugins/route-injection'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
@@ -237,9 +240,60 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
+        { name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') },
         { name: 'useLink', as: 'useLink', from: '#vue-router' }
       )
     })
+
+    const routeContext = {
+      routeRules: {} as Record<string, NitroRouteConfig>,
+      pageMap: {} as Record<string, string>
+    }
+
+    function pagesToMap (pages: NuxtPage[], prefix = ''): Array<[id: string, route: string]> {
+      const mappedPages = [] as Array<[id: string, route: string]>
+      for (const page of pages) {
+        if (!page.file) { continue }
+        const glob = pathToNitroGlob(prefix + page.path)
+        if (!glob) { continue }
+
+        mappedPages.push([page.file, glob])
+
+        if (page.children) {
+          mappedPages.push(...pagesToMap(page.children, page.path + '/'))
+        }
+      }
+      return mappedPages
+    }
+
+    // Allow other modules to modify generated page paths before we convert them to a map
+    nuxt.hook('modules:done', () => {
+      nuxt.hook('pages:extend', (pages) => {
+        routeContext.pageMap = Object.fromEntries(pagesToMap(pages))
+      })
+    })
+
+    // add vite plugin
+    addVitePlugin(routeRuleExtractorPlugin.vite(routeContext), { client: true, server: false })
+    addWebpackPlugin(routeRuleExtractorPlugin.webpack(routeContext), { client: true, server: false })
+
+    if (!nuxt.options.dev) {
+      // Include final route rules in build
+      nuxt.hook('nitro:build:before', (nitro) => {
+        nitro.options.runtimeConfig.nitro.routeRules = defu(routeContext.routeRules, nitro.options.runtimeConfig.nitro.routeRules)
+      })
+    }
+
+    if (nuxt.options.dev) {
+      // TODO: implementation not complete
+      nuxt.hook('nitro:config', (config) => {
+        config.plugins = config.plugins || []
+        config.virtual = config.virtual || {}
+
+        config.plugins.push(resolve(runtimeDir, 'nitro-route-rules'))
+        config.virtual['#nuxt-route-rules'] = () => `export default ${JSON.stringify(routeContext.routeRules)}`
+      })
+    }
 
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
