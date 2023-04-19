@@ -1,23 +1,27 @@
 // We set __webpack_public_path via this import with webpack builder
-import { createSSRApp, createApp, nextTick } from 'vue'
+import { createApp, createSSRApp, nextTick } from 'vue'
 import { $fetch } from 'ofetch'
-// @ts-ignore
+import type { $Fetch, NitroFetchRequest } from 'nitropack'
+
+// This file must be imported first for webpack as we set __webpack_public_path__ there
+// @ts-expect-error virtual file
 import { baseURL } from '#build/paths.mjs'
+
 import type { CreateOptions } from '#app'
-import { createNuxtApp, applyPlugins, normalizePlugins } from '#app/nuxt'
+import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
+
 import '#build/css'
-// @ts-ignore
+// @ts-expect-error virtual file
 import _plugins from '#build/plugins'
-// @ts-ignore
+// @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { appRootId } from '#build/nuxt.config.mjs'
 
 if (!globalThis.$fetch) {
-  // @ts-ignore
   globalThis.$fetch = $fetch.create({
     baseURL: baseURL()
-  })
+  }) as $Fetch<unknown, NitroFetchRequest>
 }
 
 let entry: Function
@@ -34,7 +38,7 @@ if (process.server) {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
+      await nuxt.hooks.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
 
@@ -45,14 +49,15 @@ if (process.server) {
 if (process.client) {
   // TODO: temporary webpack 5 HMR fix
   // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
-  // @ts-ignore
   if (process.dev && import.meta.webpackHot) {
-    // @ts-ignore
     import.meta.webpackHot.accept()
   }
 
   entry = async function initApp () {
-    const isSSR = Boolean(window.__NUXT__?.serverRendered)
+    const isSSR = Boolean(
+      window.__NUXT__?.serverRendered ||
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+    )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })

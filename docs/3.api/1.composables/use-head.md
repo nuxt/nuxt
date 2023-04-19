@@ -4,10 +4,9 @@ description: useHead customizes the head properties of individual pages of your 
 
 # `useHead`
 
-The `useHead` composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/).
+The `useHead` composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
 
-::ReadMore{link="/docs/getting-started/seo-meta"}
-::
+:ReadMore{link="/docs/getting-started/seo-meta"}
 
 ## Type
 

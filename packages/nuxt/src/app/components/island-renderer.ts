@@ -1,6 +1,7 @@
-import { createBlock, defineComponent, h, Teleport } from 'vue'
+import type { defineAsyncComponent } from 'vue'
+import { createVNode, defineComponent } from 'vue'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
 
@@ -11,9 +12,8 @@ export default defineComponent({
       required: true
     }
   },
-  async setup (props) {
-    // TODO: https://github.com/vuejs/core/issues/6207
-    const component = islandComponents[props.context.name]
+  setup (props) {
+    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
     if (!component) {
       throw createError({
@@ -21,13 +21,6 @@ export default defineComponent({
         statusMessage: `Island component not found: ${JSON.stringify(component)}`
       })
     }
-
-    if (typeof component === 'object') {
-      await component.__asyncLoader?.()
-    }
-
-    return () => [
-      createBlock(Teleport as any, { to: 'nuxt-island' }, [h(component || 'span', props.context.props)])
-    ]
+    return () => createVNode(component || 'span', props.context.props)
   }
 })

@@ -1,7 +1,7 @@
-import type { PropType, DefineComponent, ComputedRef } from 'vue'
-import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
+import type { ComputedRef, DefineComponent, PropType } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
-import { hasProtocol, parseQuery, parseURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
+import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -198,13 +198,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       // Prefetching
       const prefetched = ref(false)
       const el = process.server ? undefined : ref<HTMLElement | null>(null)
+      const elRef = process.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
+
       if (process.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
         const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
           const nuxtApp = useNuxtApp()
           let idleId: number
-          let unobserve: (() => void)| null = null
+          let unobserve: (() => void) | null = null
           onMounted(() => {
             const observer = useObserver()
             onNuxtReady(() => {
@@ -236,7 +238,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return () => {
         if (!isExternal.value) {
           const routerLinkProps: Record<string, any> = {
-            ref: process.server ? undefined : (ref: any) => { el!.value = ref?.$el },
+            ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
@@ -263,7 +265,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         // Resolves `to` value if it's a route location object
-        // converts `'''` to `null` to prevent the attribute from being added as empty (`href=""`)
+        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         const href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
 
         // Resolves `target` value

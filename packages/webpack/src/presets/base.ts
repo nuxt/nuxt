@@ -1,4 +1,4 @@
-import { resolve, normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
@@ -88,28 +88,28 @@ function basePlugins (ctx: WebpackConfigContext) {
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
+      // @ts-expect-error TODO: this is a valid option for Webpack.ProgressPlugin and needs to be declared for WebpackBar
       stats: !ctx.isDev,
       reporter: {
-        // @ts-ignore
-        change: (_, { shortPath }) => {
-          if (!ctx.isServer) {
-            nuxt.callHook('webpack:change', shortPath)
+        reporter: {
+          change: (_, { shortPath }) => {
+            if (!ctx.isServer) {
+              nuxt.callHook('webpack:change', shortPath)
+            }
+          },
+          done: ({ state }) => {
+            if (state.hasErrors) {
+              nuxt.callHook('webpack:error')
+            } else {
+              logger.success(`${state.name} ${state.message}`)
+            }
+          },
+          allDone: () => {
+            nuxt.callHook('webpack:done')
+          },
+          progress ({ statesArray }) {
+            nuxt.callHook('webpack:progress', statesArray)
           }
-        },
-        // @ts-ignore
-        done: ({ state }) => {
-          if (state.hasErrors) {
-            nuxt.callHook('webpack:error')
-          } else {
-            logger.success(`${state.name} ${state.message}`)
-          }
-        },
-        allDone: () => {
-          nuxt.callHook('webpack:done')
-        },
-        // @ts-ignore
-        progress ({ statesArray }) {
-          nuxt.callHook('webpack:progress', statesArray)
         }
       }
     }))
@@ -158,7 +158,8 @@ export function baseTranspile (ctx: WebpackConfigContext) {
   const transpile = [
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
-    /vue-demi/
+    /vue-demi/,
+    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/
   ]
 
   for (let pattern of options.build.transpile) {

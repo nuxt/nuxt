@@ -23,6 +23,7 @@ const appPreset = defineUnimportPreset({
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',
+    'definePayloadPlugin',
     'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
@@ -55,7 +56,9 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered'
+    'isPrerendered',
+    'definePayloadReducer',
+    'definePayloadReviver'
   ]
 })
 

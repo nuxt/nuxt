@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import lodashTemplate from 'lodash.template'
-import { genSafeVariableName, genDynamicImport, genImport } from 'knitwork'
+import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
 

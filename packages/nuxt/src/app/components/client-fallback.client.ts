@@ -1,4 +1,5 @@
-import { defineComponent, createElementBlock } from 'vue'
+import { createElementBlock, defineComponent, onMounted, ref } from 'vue'
+import { useState } from '../composables/state'
 
 export default defineComponent({
   name: 'NuxtClientFallback',

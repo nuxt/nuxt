@@ -22,6 +22,9 @@ declare module 'vue' {
   interface App<HostElement> {
     $nuxt: NuxtApp
   }
+  interface ComponentCustomProperties {
+    $nuxt: NuxtApp
+  }
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Function[]
   }

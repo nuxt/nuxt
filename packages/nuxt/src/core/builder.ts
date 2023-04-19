@@ -1,10 +1,11 @@
+import { pathToFileURL } from 'node:url'
 import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 
-import { createApp, generateApp as _generateApp } from './app'
+import { generateApp as _generateApp, createApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -43,6 +44,10 @@ export async function build (nuxt: Nuxt) {
 }
 
 function watch (nuxt: Nuxt) {
+  if (nuxt.options.debug) {
+    console.time('[nuxt] builder:chokidar:watch')
+  }
+
   const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     cwd: nuxt.options.srcDir,
@@ -53,6 +58,10 @@ function watch (nuxt: Nuxt) {
       'node_modules'
     ]
   })
+
+  if (nuxt.options.debug) {
+    watcher.on('ready', () => console.timeEnd('[nuxt] builder:chokidar:watch'))
+  }
 
   watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
   nuxt.hook('close', () => watcher.close())
@@ -82,6 +91,6 @@ async function bundle (nuxt: Nuxt) {
 async function loadBuilder (nuxt: Nuxt, builder: string) {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
   if (builderPath) {
-    return import(builderPath)
+    return import(pathToFileURL(builderPath).href)
   }
 }

@@ -1,16 +1,16 @@
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'pathe'
 import chokidar from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { defineNuxtModule, createResolver } from '@nuxt/kit'
+import { createResolver, defineNuxtModule } from '@nuxt/kit'
 import {
-  resolveSchema as resolveUntypedSchema,
-  generateTypes
+  generateTypes,
+  resolveSchema as resolveUntypedSchema
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-// @ts-ignore
+// @ts-expect-error TODO: add upstream type
 import untypedPlugin from 'untyped/babel-plugin'
 import jiti from 'jiti'
 
@@ -42,9 +42,7 @@ export default defineNuxtModule({
       ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
-        await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
-        await nuxt.hooks.callHook('schema:written')
       }
     })
 
@@ -55,11 +53,7 @@ export default defineNuxtModule({
     })
 
     // Write schema after build to allow further modifications
-    nuxt.hooks.hook('build:done', async () => {
-      await nuxt.hooks.callHook('schema:beforeWrite', schema)
-      await writeSchema(schema)
-      await nuxt.hooks.callHook('schema:written')
-    })
+    nuxt.hooks.hook('build:done', () => writeSchema(schema))
 
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
@@ -72,9 +66,7 @@ export default defineNuxtModule({
       })
       const onChange = debounce(async () => {
         schema = await resolveSchema()
-        await nuxt.hooks.callHook('schema:beforeWrite', schema)
         await writeSchema(schema)
-        await nuxt.hooks.callHook('schema:written')
       })
       watcher.on('all', onChange)
       nuxt.hook('close', () => watcher.close())
@@ -84,7 +76,7 @@ export default defineNuxtModule({
 
     async function resolveSchema () {
       // Global import
-      // @ts-ignore
+      // @ts-expect-error adding to globalThis for 'auto-import' support within nuxt.config file
       globalThis.defineNuxtSchema = (val: any) => val
 
       // Load schema from layers
@@ -115,9 +107,8 @@ export default defineNuxtModule({
         schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef))
       )
 
-      // @ts-expect-error
       // Merge after normalization
-      const schema = defu(...schemas)
+      const schema = defu(...schemas as [Schema, Schema])
 
       // Allow hooking to extend resolved schema
       await nuxt.hooks.callHook('schema:resolved', schema)
@@ -126,6 +117,7 @@ export default defineNuxtModule({
     }
 
     async function writeSchema (schema: Schema) {
+      await nuxt.hooks.callHook('schema:beforeWrite', schema)
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
       await writeFile(
@@ -136,7 +128,8 @@ export default defineNuxtModule({
       const _types = generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
-        partial: true
+        partial: true,
+        allowExtraKeys: false
       })
       const types =
         _types +
@@ -161,6 +154,7 @@ declare module 'nuxt/schema' {
         'schema/nuxt.schema.d.ts'
       )
       await writeFile(typesPath, types, 'utf8')
+      await nuxt.hooks.callHook('schema:written')
     }
   }
 })

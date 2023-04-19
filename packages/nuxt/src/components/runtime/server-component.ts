@@ -1,4 +1,4 @@
-import { defineComponent, createStaticVNode, computed, h, watch } from 'vue'
+import { computed, createStaticVNode, defineComponent, h, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
@@ -67,7 +67,7 @@ const NuxtServerComponent = defineComponent({
         nuxtApp[pKey] = nuxtApp[pKey] || {}
         if (!nuxtApp[pKey][hashId.value]) {
           nuxtApp[pKey][hashId.value] = _fetchComponent().finally(() => {
-            delete nuxtApp[pKey][hashId.value]
+            delete nuxtApp[pKey]![hashId.value]
           })
         }
         const res: NuxtIslandResponse = await nuxtApp[pKey][hashId.value]

@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process'
-import consola from 'consola'
+import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { getPackageManager, packageManagerLocks } from '../utils/packageManagers'
@@ -7,7 +7,7 @@ import { rmRecursive, touchFile } from '../utils/fs'
 import { cleanupNuxtDirs, nuxtVersionToGitIdentifier } from '../utils/nuxt'
 import { defineNuxtCommand } from './index'
 
-async function getNuxtVersion (path: string): Promise<string|null> {
+async function getNuxtVersion (path: string): Promise<string | null> {
   try {
     const pkg = await readPackageJSON('nuxt', { url: path })
     if (!pkg.version) {

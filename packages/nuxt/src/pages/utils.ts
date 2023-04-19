@@ -1,7 +1,7 @@
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
-import { genImport, genDynamicImport, genArrayFromRaw, genSafeVariableName } from 'knitwork'
+import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -101,7 +101,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
       (token.type === SegmentTokenType.optional
         ? `:${token.value}?`
         : token.type === SegmentTokenType.dynamic
-          ? `:${token.value}`
+          ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
             : encodePath(token.value))
