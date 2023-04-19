@@ -20,7 +20,7 @@ export default defineNuxtCommand({
     const name = args.name || 'default'
     const rootDir = resolve(args._[0] || '.')
 
-    let analyzeDir = join(rootDir, '.nuxt/analyze', name)
+    let analyzeDir = join(rootDir, '.nuxt-analyze', name)
     let buildDir = join(analyzeDir, '.nuxt')
     let outDir = join(analyzeDir, '.output')
 
