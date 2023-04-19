@@ -83,10 +83,8 @@ export default defineNuxtModule({
     if (useExperimentalTypedPages) {
       console.log('📄 Adding pages module')
       const options: _UVROptions = {
-
         routesFolder: pagesDirs,
-        // FIXME: find the root of the project
-        dts: resolve(nuxt.options.srcDir, '.nuxt/typed-router.d.ts'),
+        dts: resolve(nuxt.options.buildDir, 'typed-router.d.ts'),
         logs: true,
         extendRoute (route) {
           // TODO: refactor names and types conditionally
