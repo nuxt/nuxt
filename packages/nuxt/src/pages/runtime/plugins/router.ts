@@ -45,7 +45,7 @@ function createCurrentLocation (
   return path + search + hash
 }
 
-export default defineNuxtPlugin({
+const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
   async setup (nuxtApp) {
@@ -202,4 +202,6 @@ export default defineNuxtPlugin({
 
     return { provide: { router } }
   }
-}) as Plugin<{ router: Router }>
+})
+
+export default plugin
