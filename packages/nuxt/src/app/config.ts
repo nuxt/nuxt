@@ -1,20 +1,25 @@
 import { reactive } from 'vue'
 import type { AppConfig } from 'nuxt/schema'
+import { useNuxtApp } from './nuxt'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
-const appConfig = process.server ? __appConfig : reactive(__appConfig)
-export const useAppConfig = () => appConfig
-
-/**
- * Deep assign the current appConfig with the new one.
- *
- * Will preserve existing properties.
- */
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
-  const _appConfig = useAppConfig()
-  deepAssign(_appConfig, appConfig)
+
+// Workaround for vite HMR with virtual modules
+export const _getAppConfig = () => __appConfig as AppConfig
+
+function deepDelete (obj: any, newObj: any) {
+  for (const key in obj) {
+    const val = newObj[key]
+    if (!(key in newObj)) {
+      delete (obj as any)[key]
+    }
+
+    if (val !== null && typeof val === 'object') {
+      deepDelete(obj[key], newObj[key])
+    }
+  }
 }
 
 function deepAssign (obj: any, newObj: any) {
@@ -29,21 +34,26 @@ function deepAssign (obj: any, newObj: any) {
   }
 }
 
+export function useAppConfig (): AppConfig {
+  const nuxtApp = useNuxtApp()
+  if (!nuxtApp._appConfig) {
+    nuxtApp._appConfig = (process.server ? __appConfig : reactive(__appConfig)) as AppConfig
+  }
+  return nuxtApp._appConfig
+}
+
+/**
+ * Deep assign the current appConfig with the new one.
+ *
+ * Will preserve existing properties.
+ */
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
+  const _appConfig = useAppConfig()
+  deepAssign(_appConfig, appConfig)
+}
+
 // HMR Support
 if (process.dev) {
-  function deepDelete (obj: any, newObj: any) {
-    for (const key in obj) {
-      const val = newObj[key]
-      if (!(key in newObj)) {
-        delete (obj as any)[key]
-      }
-
-      if (val !== null && typeof val === 'object') {
-        deepDelete(obj[key], newObj[key])
-      }
-    }
-  }
-
   function applyHMR (newConfig: AppConfig) {
     const appConfig = useAppConfig()
     if (newConfig && appConfig) {
@@ -55,7 +65,7 @@ if (process.dev) {
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
-      const newConfig = newModule?.useAppConfig()
+      const newConfig = newModule?._getAppConfig()
       applyHMR(newConfig)
     })
   }
