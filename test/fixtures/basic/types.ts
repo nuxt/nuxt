@@ -1,10 +1,9 @@
-import { expectTypeOf } from 'expect-type'
-import { describe, it } from 'vitest'
+import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
-import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
+import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -258,6 +257,17 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
     expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
+  })
+
+  it('uses types compatible between useRequestHeaders and useFetch', () => {
+    useFetch('/api/hey', {
+      headers: useRequestHeaders()
+    })
+    useFetch('/api/hey', {
+      headers: useRequestHeaders(['test'])
+    })
+    const { test } = useRequestHeaders(['test'])
+    expectTypeOf(test).toEqualTypeOf<string | undefined>()
   })
 
   it('correctly types returns with key signatures', () => {
