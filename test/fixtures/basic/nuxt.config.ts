@@ -1,5 +1,5 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
-import type { NuxtPage } from '@nuxt/schema'
+import { addComponent, addVitePlugin, addWebpackPlugin } from 'nuxt/kit'
+import type { NuxtPage } from 'nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
