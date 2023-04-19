@@ -1,5 +1,6 @@
+import { lstatSync } from 'node:fs'
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, extname } from 'pathe'
+import { dirname } from 'pathe'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule, resolveModule } from '../internal/cjs'
@@ -23,7 +24,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   }
 
   if (typeof moduleToInstall === 'string') {
-    nuxt.options.build.transpile.push(extname(moduleToInstall) ? dirname(moduleToInstall) : moduleToInstall)
+    nuxt.options.build.transpile.push(lstatSync(moduleToInstall).isFile() ? dirname(moduleToInstall) : moduleToInstall)
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []

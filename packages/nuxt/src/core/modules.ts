@@ -1,5 +1,6 @@
+import { lstatSync } from 'node:fs'
 import { useNuxt } from '@nuxt/kit'
-import { dirname, extname } from 'pathe'
+import { dirname } from 'pathe'
 
 export interface AddModuleTranspilesOptions {
   additionalModules?: string[]
@@ -16,7 +17,7 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
     .map(m => typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src)
     .filter(m => typeof m === 'string')
     // target directories instead of files
-    .map(m => extname(m) ? dirname(m) : m)
+    .map(m => lstatSync(m).isFile() ? dirname(m) : m)
     .map(m => m.split('node_modules/').pop())
 
   // Try to sanitize modules to better match imports
