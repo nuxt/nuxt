@@ -64,7 +64,7 @@ export default defineNuxtModule({
         await writeSchema(schema)
       })
 
-      if (nuxt.options.experimental.parcelWatcher) {
+      if (nuxt.options.experimental.watcher === 'parcel') {
         const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
         if (watcherPath) {
           const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')

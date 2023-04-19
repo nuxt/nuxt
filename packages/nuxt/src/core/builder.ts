@@ -52,7 +52,7 @@ const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'u
 }
 
 async function watch (nuxt: Nuxt) {
-  if (nuxt.options.experimental.parcelWatcher) {
+  if (nuxt.options.experimental.watcher === 'parcel') {
     if (nuxt.options.debug) {
       console.time('[nuxt] builder:parcel:watch')
     }
