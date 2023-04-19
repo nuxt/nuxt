@@ -143,6 +143,7 @@ export default defineNuxtConfig({
   vite: {
     logLevel: 'silent'
   },
+  telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
