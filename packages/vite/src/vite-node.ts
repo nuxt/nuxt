@@ -1,11 +1,11 @@
 import { pathToFileURL } from 'node:url'
-import os from 'node:os'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
-import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import { isFileServingAllowed } from 'vite'
+import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
@@ -181,65 +181,5 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   await fse.writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`
-  )
-}
-
-/**
- * The following code is ported from vite
- * Awaits https://github.com/vitejs/vite/pull/12894
- */
-const VOLUME_RE = /^[A-Z]:/i
-const FS_PREFIX = '/@fs/'
-const isWindows = os.platform() === 'win32'
-const postfixRE = /[?#].*$/s
-const windowsSlashRE = /\\/g
-
-function slash (p: string): string {
-  return p.replace(windowsSlashRE, '/')
-}
-
-function normalizePath (id: string): string {
-  return normalize(isWindows ? slash(id) : id)
-}
-function fsPathFromId (id: string): string {
-  const fsPath = normalizePath(
-    id.startsWith(FS_PREFIX) ? id.slice(FS_PREFIX.length) : id
-  )
-  return fsPath[0] === '/' || fsPath.match(VOLUME_RE) ? fsPath : `/${fsPath}`
-}
-
-function fsPathFromUrl (url: string): string {
-  return fsPathFromId(cleanUrl(url))
-}
-
-function cleanUrl (url: string): string {
-  return url.replace(postfixRE, '')
-}
-
-function isFileServingAllowed (
-  url: string,
-  server: ViteDevServer
-): boolean {
-  if (!server.config.server.fs.strict) { return true }
-
-  const file = fsPathFromUrl(url)
-
-  // @ts-expect-error private API
-  if (server._fsDenyGlob(file)) { return false }
-
-  if (server.moduleGraph.safeModulesPath.has(file)) { return true }
-
-  if (server.config.server.fs.allow.some(dir => isParentDirectory(dir, file))) { return true }
-
-  return false
-}
-
-function isParentDirectory (dir: string, file: string): boolean {
-  if (dir[dir.length - 1] !== '/') {
-    dir = `${dir}/`
-  }
-  return (
-    file.startsWith(dir) ||
-    (file.toLowerCase().startsWith(dir.toLowerCase()))
   )
 }
