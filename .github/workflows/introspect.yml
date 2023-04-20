@@ -11,6 +11,7 @@ on:
       - ".github/workflows/**"
     branches:
       - main
+      - "!v[0-9]*"
 
 jobs:
   lint-workflows:

@@ -1,4 +1,6 @@
+import { lstatSync } from 'node:fs'
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
+import { dirname, isAbsolute } from 'pathe'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule, resolveModule } from '../internal/cjs'
@@ -22,7 +24,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
   }
 
   if (typeof moduleToInstall === 'string') {
-    nuxt.options.build.transpile.push(moduleToInstall)
+    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
@@ -34,6 +36,17 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
 }
 
 // --- Internal ---
+
+export const normalizeModuleTranspilePath = (p: string) => {
+  try {
+    // we need to target directories instead of module file paths themselves
+    // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
+    p = isAbsolute(p) && lstatSync(p).isFile() ? dirname(p) : p
+  } catch (e) {
+    // maybe the path is absolute but does not exist, allow this to bubble up
+  }
+  return p.split('node_modules/').pop() as string
+}
 
 async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?: any) {
   const nuxt = useNuxt()

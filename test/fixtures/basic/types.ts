@@ -1,10 +1,9 @@
-import { expectTypeOf } from 'expect-type'
-import { describe, it } from 'vitest'
+import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
-import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
+import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
