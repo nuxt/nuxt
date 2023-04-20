@@ -93,7 +93,10 @@ const NuxtServerComponent = defineComponent({
     useHead(() => res.data.value!.head)
 
     if (process.client) {
-      watch(props, debounce(() => res.execute(), 100))
+      watch(props, debounce(async () => {
+        await res.execute()
+        key.value++
+      }, 100))
     }
 
     await res
