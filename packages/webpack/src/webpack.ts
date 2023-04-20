@@ -35,7 +35,7 @@ export async function bundle (nuxt: Nuxt) {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
-  webpackConfigs.forEach((config) => {
+  for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
       sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
@@ -48,7 +48,7 @@ export async function bundle (nuxt: Nuxt) {
       rootDir: nuxt.options.rootDir,
       composables: nuxt.options.optimization.keyedComposables
     }))
-  })
+  }
 
   await nuxt.callHook('webpack:configResolved', webpackConfigs)
 
