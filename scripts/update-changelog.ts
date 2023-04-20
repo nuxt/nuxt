@@ -9,7 +9,9 @@ async function main () {
   const config = await loadChangelogConfig(process.cwd(), {
   })
 
-  const commits = await getLatestCommits()
+  const commits = await getLatestCommits().then(commits => commits.filter(
+    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking)
+  ))
   const bumpType = await determineBumpType()
 
   const newVersion = inc(workspace.find('nuxt').data.version, bumpType || 'patch')
