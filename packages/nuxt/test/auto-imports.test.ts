@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'
 import * as VueFunctions from 'vue'

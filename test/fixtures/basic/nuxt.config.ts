@@ -1,5 +1,5 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
-import type { NuxtPage } from '@nuxt/schema'
+import { addComponent, addVitePlugin, addWebpackPlugin } from 'nuxt/kit'
+import type { NuxtPage } from 'nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
@@ -51,7 +51,8 @@ export default defineNuxtConfig({
   ],
   nitro: {
     routeRules: {
-      '/route-rules/spa': { ssr: false }
+      '/route-rules/spa': { ssr: false },
+      '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
@@ -142,6 +143,7 @@ export default defineNuxtConfig({
   vite: {
     logLevel: 'silent'
   },
+  telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
@@ -184,6 +186,9 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    polyfillVueUseHead: true,
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),

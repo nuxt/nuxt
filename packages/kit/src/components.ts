@@ -1,5 +1,5 @@
-import { pascalCase, kebabCase } from 'scule'
-import type { ComponentsDir, Component } from '@nuxt/schema'
+import { kebabCase, pascalCase } from 'scule'
+import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 

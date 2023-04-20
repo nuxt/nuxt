@@ -1,5 +1,5 @@
 import { execa } from 'execa'
-import consola from 'consola'
+import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { tryResolveModule } from '../utils/esm'
 import { defineNuxtCommand } from './index'

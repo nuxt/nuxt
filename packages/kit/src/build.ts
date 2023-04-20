@@ -1,5 +1,5 @@
-import type { WebpackPluginInstance, Configuration as WebpackConfig } from 'webpack'
-import type { Plugin as VitePlugin, UserConfig as ViteConfig } from 'vite'
+import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
+import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
 
 export interface ExtendConfigOptions {
@@ -8,13 +8,13 @@ export interface ExtendConfigOptions {
    *
    * @default true
    */
-   dev?: boolean
-   /**
-    * Install plugin on build
-    *
-    * @default true
-    */
-   build?: boolean
+  dev?: boolean
+  /**
+   * Install plugin on build
+   *
+   * @default true
+   */
+  build?: boolean
   /**
    * Install plugin on server side
    *
@@ -41,7 +41,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
  * when applying to both client and server builds.
  */
 export function extendWebpackConfig (
-  fn: ((config: WebpackConfig)=> void),
+  fn: ((config: WebpackConfig) => void),
   options: ExtendWebpackConfigOptions = {}
 ) {
   const nuxt = useNuxt()

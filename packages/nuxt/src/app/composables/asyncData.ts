@@ -1,4 +1,4 @@
-import { onBeforeMount, onServerPrefetch, onUnmounted, ref, getCurrentInstance, watch, unref, toRef } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -11,25 +11,27 @@ export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   : T extends Record<string, any>
   ? keyof T extends K[number]
     ? T // Exact same keys as the target, skip Pick
-    : Pick<T, K[number]>
+    : K[number] extends never
+      ? T
+      : Pick<T, K[number]>
   : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
   ? keyof T extends string
     ? keyof T
-    : string
+    : never
   : never
 >
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
 
-type MultiWatchSources = (WatchSource<unknown> | object)[]
+export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
-  PickKeys extends KeysOf<DataT> =KeysOf<DataT>,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
 > {
   server?: boolean
   lazy?: boolean
@@ -118,7 +120,7 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default?.() ?? null),
       pending: ref(!hasCachedData()),
-      error: ref(nuxt.payload._errors[key] ? createError(nuxt.payload._errors[key]) : null)
+      error: toRef(nuxt.payload._errors, key)
     }
   }
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
@@ -270,7 +272,7 @@ export function useLazyAsyncData<
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys>]
-  // @ts-ignore
+  // @ts-expect-error we pass an extra argument to prevent a key being injected
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 

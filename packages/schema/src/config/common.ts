@@ -303,10 +303,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
@@ -331,7 +331,9 @@ export default defineUntypedSchema({
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
-  ignorePrefix: '-',
+  ignorePrefix: {
+    $resolve: (val) => val ?? '-',
+  },
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
@@ -343,6 +345,7 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
       '.output',
+      '.git',
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },

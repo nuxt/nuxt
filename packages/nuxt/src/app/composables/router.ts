@@ -1,6 +1,6 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
-import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocationPathRaw, RouteLocationRaw, Router } from 'vue-router'
 import { sendRedirect } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 
@@ -8,7 +8,6 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { useState } from './state'
-import { setResponseStatus } from './ssr'
 
 import type { PageMeta } from '#app'
 
@@ -17,6 +16,9 @@ export const useRouter = () => {
 }
 
 export const useRoute = (): RouteLocationNormalizedLoaded => {
+  if (process.dev && isProcessingMiddleware()) {
+    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
+  }
   if (getCurrentInstance()) {
     return inject('_route', useNuxtApp()._route)
   }
@@ -84,7 +86,7 @@ export interface NavigateToOptions {
   external?: boolean
 }
 
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure> | RouteLocationRaw => {
+export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | RouteLocationRaw => {
   if (!to) {
     to = '/'
   }
@@ -98,8 +100,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     throw new Error('Cannot navigate to an URL with script protocol.')
   }
 
+  const inMiddleware = isProcessingMiddleware()
+
   // Early redirect on client-side
-  if (process.client && !isExternal && isProcessingMiddleware()) {
+  if (process.client && !isExternal && inMiddleware) {
     return to
   }
 
@@ -108,15 +112,19 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (process.server) {
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
-      // Let vue-router handle internal redirects within middleware
-      // to prevent the navigation happening after response is sent
-      if (isProcessingMiddleware() && !isExternal) {
-        setResponseStatus(options?.redirectCode || 302)
+      const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
+      const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
+      const redirect = () => nuxtApp.callHook('app:redirected')
+        .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
+        .then(() => inMiddleware ? /* abort route navigation */ false : undefined)
+
+      // We wait to perform the redirect in case any other middleware will intercept the redirect
+      // and redirect further.
+      if (!isExternal && inMiddleware) {
+        router.beforeEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
         return to
       }
-      const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, router.resolve(to).fullPath || '/')
-      return nuxtApp.callHook('app:redirected')
-        .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
+      return redirect()
     }
   }
 

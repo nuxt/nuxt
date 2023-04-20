@@ -1,4 +1,4 @@
-import { defineComponent, ref, onErrorCaptured } from 'vue'
+import { defineComponent, onErrorCaptured, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
 export default defineComponent({

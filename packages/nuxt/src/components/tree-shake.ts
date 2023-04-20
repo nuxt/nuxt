@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { walk } from 'estree-walker'
-import type { CallExpression, Property, Identifier, MemberExpression, Literal, ReturnStatement, VariableDeclaration, ObjectExpression, Node, Pattern, AssignmentProperty, Program } from 'estree'
+import type { AssignmentProperty, CallExpression, Identifier, Literal, MemberExpression, Node, ObjectExpression, Pattern, Program, Property, ReturnStatement, VariableDeclaration } from 'estree'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
@@ -29,7 +29,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return pathname.endsWith('.vue')
     },
-    transform (code, id) {
+    transform (code) {
       const components = options.getComponents()
 
       if (!regexpMap.has(components)) {
@@ -106,7 +106,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }
@@ -192,7 +192,7 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
  * ImportDeclarations and VariableDeclarations are ignored
  * return the name of the component if is not called
  */
-function isComponentNotCalledInSetup (codeAst: Node, name: string): string|void {
+function isComponentNotCalledInSetup (codeAst: Node, name: string): string | void {
   if (name) {
     let found = false
     walk(codeAst, {
