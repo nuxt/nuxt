@@ -18,6 +18,8 @@ async function main () {
   // Create and push a branch with bumped versions if it has not already been created
   const branchExists = execSync(`git ls-remote --heads origin v${newVersion}`).toString().trim().length > 0
   if (!branchExists) {
+    execSync('git config --global user.email "daniel@roe.dev"')
+    execSync('git config --global user.name "Daniel Roe"')
     execSync(`git checkout -b v${newVersion}`)
 
     for (const pkg of workspace.packages.filter(p => !p.data.private)) {
