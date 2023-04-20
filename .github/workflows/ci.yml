@@ -11,6 +11,7 @@ on:
       - "docs/**"
     branches:
       - main
+      - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
 env:
