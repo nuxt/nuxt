@@ -1,9 +1,7 @@
 import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
-import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
-import { execaSync } from 'execa'
-import { loadWorkspace } from './_utils'
+import { determineBumpType, loadWorkspace } from './_utils'
 
 async function main () {
   const workspace = await loadWorkspace(process.cwd())
@@ -16,13 +14,7 @@ async function main () {
   const latestNitro = nitroInfo['dist-tags'].latest
   nuxtPkg.data.dependencies.nitropack = `npm:nitropack-edge@^${latestNitro}`
 
-  const config = await loadChangelogConfig(process.cwd())
-
-  const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
-
-  const commits = await getGitDiff(latestTag)
-  let bumpType = determineSemverChange(parseCommits(commits, config), config)
-  if (bumpType === 'major') { bumpType = 'minor' } // 🙈
+  const bumpType = await determineBumpType()
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
     const newVersion = inc(pkg.data.version, bumpType || 'patch')
