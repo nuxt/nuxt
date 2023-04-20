@@ -201,7 +201,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [16]
+        node: [18]
 
     timeout-minutes: 20
 
