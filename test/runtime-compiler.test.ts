@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
-import { describe, it, expect } from 'vitest'
-import { setup, $fetch } from '@nuxt/test-utils'
+import { describe, expect, it } from 'vitest'
+import { $fetch, setup } from '@nuxt/test-utils'
 import { expectNoClientErrors, renderPage } from './utils'
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 

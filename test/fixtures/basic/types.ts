@@ -1,10 +1,9 @@
-import { expectTypeOf } from 'expect-type'
-import { describe, it } from 'vitest'
+import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
-import type { AppConfig, RuntimeValue } from '@nuxt/schema'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, useRouter as vueUseRouter, Router } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
+import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -97,7 +96,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
       expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | Promise<void | NavigationFailure>>()
+      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
@@ -120,9 +119,9 @@ describe('layouts', () => {
 describe('modules', () => {
   it('augments schema automatically', () => {
     defineNuxtConfig({ sampleModule: { enabled: false } })
-    // @ts-expect-error
+    // @ts-expect-error we want to ensure we throw type error on invalid option
     defineNuxtConfig({ sampleModule: { other: false } })
-    // @ts-expect-error
+    // @ts-expect-error we want to ensure we throw type error on invalid key
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 })
@@ -158,7 +157,7 @@ describe('runtimeConfig', () => {
     const val = defineNuxtConfig({
       runtimeConfig: {
         public: {
-          // @ts-expect-error
+          // @ts-expect-error this should be a number
           testConfig: 'test',
           ids: [1, 2]
         }
@@ -253,11 +252,37 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     // Default values: #14437
-    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{bar: number} | null>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number } | null>>()
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
     expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
+  })
+
+  it('uses types compatible between useRequestHeaders and useFetch', () => {
+    useFetch('/api/hey', {
+      headers: useRequestHeaders()
+    })
+    useFetch('/api/hey', {
+      headers: useRequestHeaders(['test'])
+    })
+    const { test } = useRequestHeaders(['test'])
+    expectTypeOf(test).toEqualTypeOf<string | undefined>()
+  })
+
+  it('correctly types returns with key signatures', () => {
+    interface TestType {
+      id: string
+      content: string[]
+      [x: string]: any
+    }
+
+    const testFetch = () => Promise.resolve({}) as Promise<TestType>
+
+    const { data: notTypedData } = useAsyncData('test', testFetch)
+    expectTypeOf(notTypedData.value!.id).toEqualTypeOf<string>()
+    expectTypeOf(notTypedData.value!.content).toEqualTypeOf<string[]>()
+    expectTypeOf(notTypedData.value!.untypedKey).toEqualTypeOf<any>()
   })
 })
 

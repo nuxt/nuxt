@@ -1,5 +1,7 @@
 declare global {
-  const __NUXT_VERSION__: string
+  var __NUXT_VERSION__: string
+  var __NUXT_PREPATHS__: string[] | string | undefined
+  var __NUXT_PATHS__: string[] | string | undefined
 }
 
 export {}

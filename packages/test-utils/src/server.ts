@@ -1,12 +1,12 @@
 import { execa } from 'execa'
 import { getRandomPort, waitForPort } from 'get-port-please'
 import type { FetchOptions } from 'ofetch'
-import { fetch as _fetch, $fetch as _$fetch } from 'ofetch'
+import { $fetch as _$fetch, fetch as _fetch } from 'ofetch'
 import * as _kit from '@nuxt/kit'
 import { resolve } from 'pathe'
 import { useTestContext } from './context'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
 // eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 

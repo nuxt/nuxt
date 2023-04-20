@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
 import { Parser } from 'acorn'
@@ -165,7 +165,7 @@ describe('treeshake client only in ssr', () => {
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
-      expect(treeshaken).toContain('import { Glob, } from \'#components\'')
+      expect(treeshaken).toContain('import {  Glob } from \'#components\'')
 
       // treeshake .client slot
       expect(treeshaken).not.toContain('ByeBye')

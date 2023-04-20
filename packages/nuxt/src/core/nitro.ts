@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { resolve, join, relative } from 'pathe'
-import { createNitro, createDevServer, build, prepare, copyPublicAssets, writeTypes, scanHandlers, prerender } from 'nitropack'
-import type { NitroConfig, Nitro } from 'nitropack'
+import { join, relative, resolve } from 'pathe'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
+import type { Nitro, NitroConfig } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -37,6 +37,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     imports: {
+      autoImports: nuxt.options.imports.autoImport,
       imports: [
         {
           as: '__buildAssetsURL',
@@ -172,6 +173,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
       'process.env.NUXT_PAYLOAD_EXTRACTION': !!nuxt.options.experimental.payloadExtraction,
+      'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
@@ -181,6 +183,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       plugins: []
     }
   })
+
+  // Resolve user-provided paths
+  nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
 
   // Add head chunk for SPA renders
   const head = createHeadCore()

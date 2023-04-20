@@ -86,7 +86,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

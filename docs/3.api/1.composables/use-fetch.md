@@ -18,7 +18,7 @@ type UseFetchOptions = {
   query?: SearchParams
   params?: SearchParams
   body?: RequestInit['body'] | Record<string, any>
-  headers?: { key: string, value: string }[]
+  headers?: Record<string, string> | [key: string, value: string][] | Headers
   baseURL?: string
   server?: boolean
   lazy?: boolean

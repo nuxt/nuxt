@@ -1,8 +1,8 @@
 import { join, normalize, relative, resolve } from 'pathe'
-import { createHooks, createDebugger } from 'hookable'
+import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
-import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
+import { addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
+import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -98,8 +98,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   nuxt.hook('modules:done', () => {
     // Add unctx transform
-    addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    const options = {
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      transformerOptions: nuxt.options.optimization.asyncTransforms
+    }
+    addVitePlugin(UnctxTransformPlugin.vite(options))
+    addWebpackPlugin(UnctxTransformPlugin.webpack(options))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
@@ -281,6 +285,19 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
   }
 
+  // Add experimental automatic view transition api support
+  if (nuxt.options.experimental.viewTransition) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+  }
+
+  // Add experimental support for custom types in JSON payload
+  if (nuxt.options.experimental.renderJsonPayloads) {
+    nuxt.hooks.hook('modules:done', () => {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+    })
+  }
+
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
@@ -357,6 +374,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
+  }
+
+  // Nuxt DevTools is currently opt-in
+  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
+    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
+      options._modules.push('@nuxt/devtools')
+    } else {
+      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+    }
   }
 
   const nuxt = createNuxt(options)

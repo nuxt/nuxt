@@ -11,4 +11,7 @@ definePageMeta({
   middleware: ['override'],
   validate: to => to.path !== '/forbidden'
 })
+if (useRoute().path.includes('navigate-some-path')) {
+  throw createError('navigate-some-path setup running')
+}
 </script>

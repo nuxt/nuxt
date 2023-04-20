@@ -1,6 +1,6 @@
-import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genString, genSafeVariableName } from 'knitwork'
+import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { resolveSchema, generateTypes } from 'untyped'
+import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
@@ -296,6 +296,7 @@ export const nuxtConfigTemplate = {
   getContents: (ctx: TemplateContext) => {
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`
     ].join('\n\n')
   }
@@ -305,12 +306,10 @@ export const nuxtConfigTemplate = {
 function _resolveId (id: string) {
   return resolvePath(id, {
     url: [
-      // @ts-ignore
-      global.__NUXT_PREPATHS__,
+      ...(typeof global.__NUXT_PREPATHS__ === 'string' ? [global.__NUXT_PREPATHS__] : global.__NUXT_PREPATHS__ || []),
       import.meta.url,
       process.cwd(),
-      // @ts-ignore
-      global.__NUXT_PATHS__
+      ...(typeof global.__NUXT_PATHS__ === 'string' ? [global.__NUXT_PATHS__] : global.__NUXT_PATHS__ || [])
     ]
   })
 }

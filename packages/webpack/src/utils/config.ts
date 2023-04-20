@@ -3,7 +3,7 @@ import type { Configuration } from 'webpack'
 import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 
-export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext>{ }
+export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext> {}
 
 type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void
 type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
@@ -63,7 +63,7 @@ export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
   const builder = {}
   const loaders: any[] = []
 
-  // @ts-ignore
+  // @ts-expect-error TODO: remove support for `build.extend` in v3.5
   const { extend } = options.build
   if (typeof extend === 'function') {
     const extendedConfig = extend.call(

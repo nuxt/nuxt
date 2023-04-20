@@ -3,14 +3,13 @@ import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { ServerOptions, BuildOptions } from 'vite'
+import type { BuildOptions, ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
-import { cacheDirPlugin } from './plugins/cache-dir'
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
@@ -51,6 +50,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
       dedupe: ['vue']
     },
+    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? true : false,
       manifest: true,
@@ -60,7 +60,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       }
     },
     plugins: [
-      cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)

@@ -3,11 +3,11 @@ import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleSetupReturn, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleOptions, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
-import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
-import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
-import { templateUtils, compileTemplate } from '../internal/template'
+import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
+import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
+import { compileTemplate, templateUtils } from '../internal/template'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -103,10 +103,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
 const NUXT2_SHIMS_KEY = '__nuxt2_shims_key__'
 function nuxt2Shims (nuxt: Nuxt) {
   // Avoid duplicate install and only apply to Nuxt2
-  // @ts-ignore
-  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY]) { return }
-  // @ts-ignore
-  nuxt[NUXT2_SHIMS_KEY] = true
+  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) { return }
+  nuxt[NUXT2_SHIMS_KEY as keyof Nuxt] = true
 
   // Allow using nuxt.hooks
   // @ts-expect-error Nuxt 2 extends hookable
@@ -120,14 +118,14 @@ function nuxt2Shims (nuxt: Nuxt) {
 
   // Support virtual templates with getContents() by writing them to .nuxt directory
   let virtualTemplates: ResolvedNuxtTemplate[]
-  // @ts-ignore Nuxt 2 hook
+  // @ts-expect-error Nuxt 2 hook
   nuxt.hook('builder:prepared', (_builder, buildOptions) => {
     virtualTemplates = buildOptions.templates.filter((t: any) => t.getContents)
     for (const template of virtualTemplates) {
       buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
     }
   })
-  // @ts-ignore Nuxt 2 hook
+  // @ts-expect-error Nuxt 2 hook
   nuxt.hook('build:templates', async (templates) => {
     const context = {
       nuxt,

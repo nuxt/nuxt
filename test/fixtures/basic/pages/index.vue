@@ -4,7 +4,7 @@
       <Title>Basic fixture</Title>
     </Head>
     <h1>Hello Nuxt 3!</h1>
-    <div>RuntimeConfig | testConfig: {{ config.testConfig }}</div>
+    <div>RuntimeConfig | testConfig: {{ config.public.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>
     <div>Composable | bar: {{ bar }}</div>
     <div>Composable | template: {{ templateAutoImport }}</div>
@@ -18,9 +18,13 @@
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    Some value: {{ someValue }}
     <button @click="someValue++">
       Increment state
     </button>
+    <NuxtLink to="/no-scripts">
+      to no script
+    </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
     <Spin>Test</Spin>
@@ -34,13 +38,18 @@
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
-import { importedValue, importedRE } from '~/some-exports'
+import { importedRE, importedValue } from '~/some-exports'
 
 setupDevtoolsPlugin({}, () => {}) as any
 
 const config = useRuntimeConfig()
 
 const someValue = useState('val', () => 1)
+
+const NestedSugarCounter = resolveComponent('NestedSugarCounter')
+if (!NestedSugarCounter) {
+  throw new Error('Component not found')
+}
 
 definePageMeta({
   alias: '/some-alias',

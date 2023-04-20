@@ -60,7 +60,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ source: id, includeContent: true }) : undefined
+          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
         }
       }
     }

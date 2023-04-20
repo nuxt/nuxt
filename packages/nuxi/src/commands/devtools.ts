@@ -19,7 +19,6 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    // Defer to feature setup
-    await execa('npx', ['@nuxt/devtools@latest', command, rootDir], { stdio: 'inherit', cwd: rootDir })
+    await execa('npx', ['@nuxt/devtools-wizard', command, rootDir], { stdio: 'inherit', cwd: rootDir })
   }
 })

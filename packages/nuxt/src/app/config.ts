@@ -1,7 +1,8 @@
 import { reactive } from 'vue'
+import { klona } from 'klona'
 import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
-// @ts-ignore
+// @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -37,7 +38,7 @@ function deepAssign (obj: any, newObj: any) {
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
   if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = reactive(__appConfig) as AppConfig
+    nuxtApp._appConfig = (process.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
   }
   return nuxtApp._appConfig
 }
