@@ -98,8 +98,6 @@ const NuxtServerComponent = defineComponent({
 
     await res
 
-    return () => createVNode(Fragment, { key: key.value }, {
-      default: () => [createStaticVNode(res.data.value!.html, 1)]
-    })
+    return () => createVNode(Fragment, { key: key.value }, [createStaticVNode(res.data.value!.html, 1)])
   }
 })
