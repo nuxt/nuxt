@@ -1,5 +1,5 @@
 import type { RendererNode } from 'vue'
-import { defineComponent, createStaticVNode, computed, ref, watch, getCurrentInstance, h } from 'vue'
+import { computed, createStaticVNode, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
