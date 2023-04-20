@@ -614,6 +614,9 @@ importers:
       jiti:
         specifier: ^1.18.2
         version: 1.18.2
+      klona:
+        specifier: ^2.0.6
+        version: 2.0.6
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
