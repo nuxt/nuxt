@@ -26,21 +26,19 @@
     "test:unit": "vitest run --dir packages",
     "typecheck": "tsc --noEmit"
   },
-  "pnpm": {
-    "overrides": {
-      "@nuxt/kit": "workspace:*",
-      "@nuxt/schema": "workspace:*",
-      "@nuxt/test-utils": "workspace:*",
-      "@nuxt/vite-builder": "workspace:*",
-      "@nuxt/webpack-builder": "workspace:*",
-      "nuxi": "workspace:*",
-      "nuxt": "workspace:*",
-      "nuxt3": "workspace:nuxt@*",
-      "unbuild": "^1.2.0",
-      "vite": "^4.2.1",
-      "vue": "3.2.47",
-      "magic-string": "^0.30.0"
-    }
+  "resolutions": {
+    "@nuxt/kit": "workspace:*",
+    "@nuxt/schema": "workspace:*",
+    "@nuxt/test-utils": "workspace:*",
+    "@nuxt/vite-builder": "workspace:*",
+    "@nuxt/webpack-builder": "workspace:*",
+    "nuxi": "workspace:*",
+    "nuxt": "workspace:*",
+    "nuxt3": "workspace:nuxt@*",
+    "unbuild": "^1.2.0",
+    "vite": "^4.3.0",
+    "vue": "3.2.47",
+    "magic-string": "^0.30.0"
   },
   "devDependencies": {
     "@actions/core": "^1.10.0",
