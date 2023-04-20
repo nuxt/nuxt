@@ -5,6 +5,7 @@
     <p>Named export <code>useC</code> : {{ c }}</p>
     <p>Named export <code>useD</code> : {{ d }}</p>
     <p>Default export <code>useFoo</code> : {{ foo }}</p>
+    <p>Star export <code>useNestedBar</code> : {{ bar }}</p>
   </NuxtExampleLayout>
 </template>
 
@@ -14,4 +15,5 @@ const b = useB()
 const c = useC()
 const d = useD()
 const foo = useFoo()
+const bar = useNestedBar()
 </script>

@@ -1,7 +1,7 @@
-import type { AppConfig } from '@nuxt/schema'
 import { reactive } from 'vue'
+import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
-// @ts-ignore
+// @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -65,7 +65,7 @@ if (process.dev) {
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
-      const newConfig = newModule._getAppConfig()
+      const newConfig = newModule?._getAppConfig()
       applyHMR(newConfig)
     })
   }

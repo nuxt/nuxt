@@ -4,7 +4,8 @@
 
 <script setup>
 definePageMeta({
-  middleware: () => {
+  middleware: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1))
     return navigateTo({ path: '/' }, { redirectCode: 307 })
   }
 })

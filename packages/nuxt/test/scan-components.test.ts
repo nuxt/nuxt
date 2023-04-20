@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
-import type { ComponentsDir } from '@nuxt/schema'
 import { expect, it, vi } from 'vitest'
+import type { ComponentsDir } from 'nuxt/schema'
+
 import { scanComponents } from '../src/components/scan'
 
 const fixtureDir = resolve(__dirname, 'fixture')
@@ -97,6 +98,7 @@ const expectedComponents = [
     pascalName: 'Isle',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/islands/Isle.vue'
   },
   {
@@ -109,6 +111,7 @@ const expectedComponents = [
     pascalName: 'Glob',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/global/Glob.vue'
   },
   {
@@ -121,7 +124,8 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
   },
   {
     mode: 'client',
@@ -133,7 +137,8 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
   },
   {
     mode: 'server',
@@ -145,7 +150,34 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
+  },
+  {
+    chunkName: 'components/client-component-with-props',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-component-with-props',
+    mode: 'all',
+    pascalName: 'ClientComponentWithProps',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/client/ComponentWithProps.vue'
+  },
+  {
+    chunkName: 'components/client-with-client-only-setup',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-with-client-only-setup',
+    mode: 'all',
+    pascalName: 'ClientWithClientOnlySetup',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/client/WithClientOnlySetup.vue'
   },
   {
     mode: 'server',
@@ -157,7 +189,8 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
   },
   {
     chunkName: 'components/some-glob',
@@ -169,6 +202,7 @@ const expectedComponents = [
     pascalName: 'SomeGlob',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/some-glob.global.vue'
   },
   {
@@ -181,6 +215,7 @@ const expectedComponents = [
     pascalName: 'Some',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/some.island.vue'
   }
 ]
@@ -190,7 +225,7 @@ const srcDir = rFixture('.')
 it('components:scanComponents', async () => {
   const scannedComponents = await scanComponents(dirs, srcDir)
   for (const c of scannedComponents) {
-    // @ts-ignore
+    // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)

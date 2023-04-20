@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { dirname } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 
 // Check if a file exists
 export async function exists (path: string) {

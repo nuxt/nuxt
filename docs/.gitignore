@@ -1,9 +1,0 @@
-schema
-**/*.configuration/nuxt.config.md
-**/*.configuration/nuxt-config.md
-static/sw.js
-
-.yarn/*
-!.yarn/releases
-!yarn.lock
-.vercel

@@ -1,23 +1,30 @@
 <template>
   <Suspense @resolve="onResolve">
     <ErrorComponent v-if="error" :error="error" />
-    <IslandRendererer v-else-if="islandContext" :context="islandContext" />
+    <IslandRenderer v-else-if="islandContext" :context="islandContext" />
+    <component :is="SingleRenderer" v-else-if="SingleRenderer" />
     <AppComponent v-else />
   </Suspense>
 </template>
 
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
-import { callWithNuxt, isNuxtError, showError, useError, useRoute, useNuxtApp } from '#app'
+import { callWithNuxt, useNuxtApp } from '#app/nuxt'
+import { isNuxtError, showError, useError } from '#app/composables/error'
+import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
-const IslandRendererer = process.server
+const IslandRenderer = process.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
+
+const url = process.server ? nuxtApp.ssrContext.url : window.location.pathname
+const SingleRenderer = process.dev && process.server && url.startsWith('/__nuxt_component_test__/') && defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
+  .then(r => r.default(process.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route
 provide('_route', useRoute())
@@ -35,6 +42,7 @@ onErrorCaptured((err, target, info) => {
   if (process.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
     const p = callWithNuxt(nuxtApp, showError, [err])
     onServerPrefetch(() => p)
+    return false // suppress error from breaking render
   }
 })
 

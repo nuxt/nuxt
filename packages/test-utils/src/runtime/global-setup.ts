@@ -1,7 +1,8 @@
 import * as _kit from '@nuxt/kit'
 import { createTest, exposeContextToEnv } from '@nuxt/test-utils'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
+// eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 const options = JSON.parse(process.env.NUXT_TEST_OPTIONS || '{}')

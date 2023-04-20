@@ -1,7 +1,7 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
-import defu from 'defu'
+import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
 
@@ -164,8 +164,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
-   * If set to `false` and combined with `static` target, generated pages will simply display
-   * a loading screen with no content.
+   * If set to `false` generated pages will have no content.
    */
   ssr: {
     $resolve: (val) => val ?? true,
@@ -195,9 +194,11 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
+   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
-  modules: [],
+  modules: {
+    $resolve: val => [].concat(val).filter(Boolean)
+  },
 
   /**
    * Customize default directory structure used by Nuxt.
@@ -219,6 +220,11 @@ export default defineUntypedSchema({
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
      */
     middleware: 'middleware',
+
+    /**
+     * The modules directory, each file in which will be auto-registered as a Nuxt module.
+     */
+    modules: 'modules',
 
     /**
      * The directory which will be processed to auto-generate your application page routes.
@@ -297,10 +303,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
@@ -325,7 +331,9 @@ export default defineUntypedSchema({
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
-  ignorePrefix: '-',
+  ignorePrefix: {
+    $resolve: (val) => val ?? '-',
+  },
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
@@ -337,8 +345,21 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
       '.output',
+      '.git',
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
+  },
+
+  /**
+   * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
+   *
+   * It is an array of strings or regular expressions, which will be matched against the file path
+   * relative to the project `srcDir`.
+   *
+   * @type {Array<string | RegExp>}
+   */
+  watch: {
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
   },
 
   /**
@@ -423,14 +444,17 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
-    $resolve: async (val: RuntimeConfig, get) => defu(val, {
-      public: {},
-      app: {
-        baseURL: (await get('app')).baseURL,
-        buildAssetsDir: (await get('app')).buildAssetsDir,
-        cdnURL: (await get('app')).cdnURL,
-      }
-    })
+    $resolve: async (val: RuntimeConfig, get) => {
+      provideFallbackValues(val)
+      return defu(val, {
+        public: {},
+        app: {
+          baseURL: (await get('app')).baseURL,
+          buildAssetsDir: (await get('app')).buildAssetsDir,
+          cdnURL: (await get('app')).cdnURL,
+        }
+      })
+    }
   },
 
   /**
@@ -445,3 +469,13 @@ export default defineUntypedSchema({
 
   $schema: {}
 })
+
+function provideFallbackValues (obj: Record<string, any>) {
+  for (const key in obj) {
+    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+      obj[key] = ''
+    } else if (typeof obj[key] === 'object') {
+      provideFallbackValues(obj[key])
+    }
+  }
+}

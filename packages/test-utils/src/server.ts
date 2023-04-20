@@ -1,12 +1,13 @@
-import { resolve } from 'node:path'
 import { execa } from 'execa'
 import { getRandomPort, waitForPort } from 'get-port-please'
 import type { FetchOptions } from 'ofetch'
-import { fetch as _fetch, $fetch as _$fetch } from 'ofetch'
+import { $fetch as _$fetch, fetch as _fetch } from 'ofetch'
 import * as _kit from '@nuxt/kit'
+import { resolve } from 'pathe'
 import { useTestContext } from './context'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
+// eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 export async function startServer () {
@@ -30,12 +31,13 @@ export async function startServer () {
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
-        const res = await $fetch('/')
+        const res = await $fetch(ctx.nuxt!.options.app.baseURL)
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
       } catch {}
     }
+    ctx.serverProcess.kill()
     throw new Error('Timeout waiting for dev server!')
   } else {
     ctx.serverProcess = execa('node', [
@@ -72,6 +74,9 @@ export function url (path: string) {
   const ctx = useTestContext()
   if (!ctx.url) {
     throw new Error('url is not available (is server option enabled?)')
+  }
+  if (path.startsWith(ctx.url)) {
+    return path
   }
   return ctx.url + path
 }

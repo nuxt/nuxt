@@ -1,9 +1,11 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { resolve } from 'node:path'
+import { defu } from 'defu'
 import * as _kit from '@nuxt/kit'
 import { useTestContext } from './context'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
+// eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 const isNuxtApp = (dir: string) => {
@@ -42,7 +44,7 @@ export async function loadFixture () {
   if (!ctx.options.dev) {
     const randomId = Math.random().toString(36).slice(2, 8)
     const buildDir = resolve(ctx.options.rootDir, '.nuxt', randomId)
-    Object.assign(ctx.options.nuxtConfig, {
+    ctx.options.nuxtConfig = defu(ctx.options.nuxtConfig, {
       buildDir,
       nitro: {
         output: {

@@ -22,6 +22,20 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
   return {
     name: 'ssr-styles',
+    resolveId: {
+      order: 'pre',
+      async handler (id, importer, options) {
+        if (!id.endsWith('.vue')) { return }
+
+        const res = await this.resolve(id, importer, { ...options, skipSelf: true })
+        if (res) {
+          return {
+            ...res,
+            moduleSideEffects: false
+          }
+        }
+      }
+    },
     generateBundle (outputOptions) {
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {

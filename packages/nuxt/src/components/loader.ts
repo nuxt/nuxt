@@ -1,12 +1,12 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL } from 'ufo'
-import type { Component, ComponentsOptions } from '@nuxt/schema'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
+import { isVue } from '../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -14,33 +14,6 @@ interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-}
-
-function isVueTemplate (id: string) {
-  // Bare `.vue` file (in Vite)
-  if (id.endsWith('.vue')) {
-    return true
-  }
-
-  const { search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-  if (!search) {
-    return false
-  }
-
-  const query = parseQuery(search)
-
-  // Macro
-  if (query.macro) {
-    return true
-  }
-
-  // Non-Vue or Styles
-  if (!('vue' in query) || query.type === 'style') {
-    return false
-  }
-
-  // Query `?vue&type=template` (in webpack or external template)
-  return true
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
@@ -58,9 +31,9 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       if (include.some(pattern => id.match(pattern))) {
         return true
       }
-      return isVueTemplate(id)
+      return isVue(id, { type: ['template', 'script'] })
     },
-    transform (code, id) {
+    transform (code) {
       const components = options.getComponents()
 
       let num = 0
@@ -86,7 +59,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             return identifier
           }
 
-          const isClientOnly = component.mode === 'client'
+          const isClientOnly = component.mode === 'client' && component.pascalName !== 'NuxtClientFallback'
           if (isClientOnly) {
             imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
             identifier += '_client'
@@ -119,7 +92,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }
@@ -133,12 +106,14 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
   const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
   if (component) { return component }
 
+  const otherModeComponent = components.find(component => id === component.pascalName)
+
   // Render client-only components on the server with <ServerPlaceholder> (a simple div)
-  if (mode === 'server' && !component) {
+  if (mode === 'server' && otherModeComponent) {
     return components.find(c => c.pascalName === 'ServerPlaceholder')
   }
 
   // Return the other-mode component in all other cases - we'll handle createClientOnly
   // and createServerComponent above
-  return components.find(component => id === component.pascalName)
+  return otherModeComponent
 }

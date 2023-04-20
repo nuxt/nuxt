@@ -1,5 +1,5 @@
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
@@ -10,7 +10,7 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'build',
-    usage: 'npx nuxi build [--prerender] [--dotenv] [rootDir]',
+    usage: 'npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
   async invoke (args) {
@@ -27,12 +27,8 @@ export default defineNuxtCommand({
         cwd: rootDir,
         fileName: args.dotenv
       },
-      defaults: {
-        experimental: {
-          payloadExtraction: args.prerender ? true : undefined
-        }
-      },
       overrides: {
+        logLevel: args['log-level'],
         _generate: args.prerender
       }
     })
@@ -52,6 +48,9 @@ export default defineNuxtCommand({
     await buildNuxt(nuxt)
 
     if (args.prerender) {
+      if (!nuxt.options.ssr) {
+        consola.warn('HTML content not prerendered because `ssr: false` was set. You can read more in `https://nuxt.com/docs/getting-started/deployment#static-hosting`.')
+      }
       // TODO: revisit later if/when nuxt build --prerender will output hybrid
       const dir = nitro?.options.output.publicDir
       const publicDir = dir ? relative(process.cwd(), dir) : '.output/public'

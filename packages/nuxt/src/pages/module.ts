@@ -1,12 +1,13 @@
 import { existsSync, readdirSync } from 'node:fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
-import { relative, resolve } from 'pathe'
-import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
+import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
+import { join, relative, resolve } from 'pathe'
+import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtApp, NuxtPage } from '@nuxt/schema'
 import { joinURL } from 'ufo'
+import type { NuxtApp, NuxtPage } from 'nuxt/schema'
+
 import { distDir } from '../dirs'
-import { resolvePagesRoutes, normalizeRoutes } from './utils'
+import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
 
@@ -21,9 +22,10 @@ export default defineNuxtModule({
 
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
+    const userPreference = nuxt.options.pages
     const isPagesEnabled = () => {
-      if (typeof nuxt.options.pages === 'boolean') {
-        return nuxt.options.pages
+      if (typeof userPreference === 'boolean') {
+        return userPreference
       }
       if (nuxt.options._layers.some(layer => existsSync(resolve(layer.config.srcDir, 'app/router.options.ts')))) {
         return true
@@ -35,6 +37,22 @@ export default defineNuxtModule({
     }
     nuxt.options.pages = isPagesEnabled()
 
+    // Restart Nuxt when pages dir is added or removed
+    const restartPaths = nuxt.options._layers.flatMap(layer => [
+      join(layer.config.srcDir, 'app/router.options.ts'),
+      join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+    ])
+    nuxt.hooks.hook('builder:watch', (event, path) => {
+      const fullPath = join(nuxt.options.srcDir, path)
+      if (restartPaths.some(path => path === fullPath || fullPath.startsWith(path + '/'))) {
+        const newSetting = isPagesEnabled()
+        if (nuxt.options.pages !== newSetting) {
+          console.info('Pages', newSetting ? 'enabled' : 'disabled')
+          return nuxt.callHook('restart')
+        }
+      }
+    })
+
     if (!nuxt.options.pages) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
@@ -43,6 +61,7 @@ export default defineNuxtModule({
       })
       addComponent({
         name: 'NuxtPage',
+        priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder')
       })
       return
@@ -137,8 +156,10 @@ export default defineNuxtModule({
         layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
       )
     }
-    addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-    addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    nuxt.hook('modules:done', () => {
+      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
+      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    })
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
@@ -146,12 +167,15 @@ export default defineNuxtModule({
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
-    const getSources = (pages: NuxtPage[]): string[] => pages.flatMap(p =>
-      [relative(nuxt.options.srcDir, p.file), ...getSources(p.children || [])]
-    )
+    const getSources = (pages: NuxtPage[]): string[] => pages
+      .filter(p => Boolean(p.file))
+      .flatMap(p =>
+        [relative(nuxt.options.srcDir, p.file as string), ...getSources(p.children || [])]
+      )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', async (manifest) => {
+      if (nuxt.options.dev) { return }
       const pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', pages)
 
@@ -185,6 +209,10 @@ export default defineNuxtModule({
     nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
     nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
     nuxt.options.vite.optimizeDeps.include.push('vue-router')
+
+    nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
+    nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+    nuxt.options.vite.resolve.dedupe.push('vue-router')
 
     // Add router options template
     addTemplate({
@@ -249,6 +277,7 @@ export default defineNuxtModule({
     // Add <NuxtPage>
     addComponent({
       name: 'NuxtPage',
+      priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
     })
 

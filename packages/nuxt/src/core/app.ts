@@ -1,8 +1,8 @@
 import { promises as fsp } from 'node:fs'
-import { dirname, resolve, join } from 'pathe'
-import defu from 'defu'
-import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
-import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule, resolvePath, resolveAlias } from '@nuxt/kit'
+import { dirname, join, resolve } from 'pathe'
+import { defu } from 'defu'
+import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
@@ -67,7 +67,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = tryResolveModule('@nuxt/ui-templates/templates/welcome.vue')
+    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
   }
 
   // Resolve root component
@@ -112,7 +112,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
           `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}`
+          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))

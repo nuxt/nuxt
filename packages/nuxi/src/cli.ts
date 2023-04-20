@@ -1,7 +1,7 @@
 import mri from 'mri'
 import { red } from 'colorette'
 import type { ConsolaReporter } from 'consola'
-import consola from 'consola'
+import { consola } from 'consola'
 import { checkEngines } from './utils/engines'
 import type { Command, NuxtCommand } from './commands'
 import { commands } from './commands'
@@ -9,13 +9,12 @@ import { showHelp } from './utils/help'
 import { showBanner } from './utils/banner'
 
 async function _main () {
-  const _argv = process.argv.slice(2)
+  const _argv = (process.env.__CLI_ARGV__ ? JSON.parse(process.env.__CLI_ARGV__) : process.argv).slice(2)
   const args = mri(_argv, {
     boolean: [
       'no-clear'
     ]
   })
-  // @ts-ignore
   const command = args._.shift() || 'usage'
 
   showBanner(command === 'dev' && args.clear !== false && !args.help)
@@ -30,7 +29,6 @@ async function _main () {
   // Check Node.js version in background
   setTimeout(() => { checkEngines().catch(() => {}) }, 1000)
 
-  // @ts-ignore default.default is hotfix for #621
   const cmd = await commands[command as Command]() as NuxtCommand
   if (args.h || args.help) {
     showHelp(cmd.meta)
@@ -45,7 +43,7 @@ consola.wrapAll()
 
 // Filter out unwanted logs
 // TODO: Use better API from consola for intercepting logs
-const wrapReporter = (reporter: ConsolaReporter) => <ConsolaReporter> {
+const wrapReporter = (reporter: ConsolaReporter) => ({
   log (logObj, ctx) {
     if (!logObj.args || !logObj.args.length) { return }
     const msg = logObj.args[0]
@@ -54,6 +52,11 @@ const wrapReporter = (reporter: ConsolaReporter) => <ConsolaReporter> {
       if (msg.startsWith('[Vue Router warn]: No match found for location with path')) {
         return
       }
+      // Suppress warning about native Node.js fetch
+      if (msg.includes('ExperimentalWarning: The Fetch API is an experimental feature')) {
+        return
+      }
+      // TODO: resolve upstream in Vite
       // Hide sourcemap warnings related to node_modules
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) {
         return
@@ -61,9 +64,9 @@ const wrapReporter = (reporter: ConsolaReporter) => <ConsolaReporter> {
     }
     return reporter.log(logObj, ctx)
   }
-}
-// @ts-expect-error
-consola._reporters = consola._reporters.map(wrapReporter)
+}) satisfies ConsolaReporter
+
+consola.options.reporters = consola.options.reporters.map(wrapReporter)
 
 process.on('unhandledRejection', err => consola.error('[unhandledRejection]', err))
 process.on('uncaughtException', err => consola.error('[uncaughtException]', err))
@@ -74,7 +77,7 @@ export function main () {
       if (result === 'error') {
         process.exit(1)
       } else if (result !== 'wait') {
-        process.exit(0)
+        process.exit()
       }
     })
     .catch((error) => {

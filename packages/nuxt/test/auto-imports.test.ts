@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { createCommonJS, findExports } from 'mlly'
 import * as VueFunctions from 'vue'
@@ -54,7 +54,7 @@ describe('imports:transform', () => {
   })
 })
 
-const excludedNuxtHelpers = ['useHydration']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta']
 
 describe('imports:nuxt', () => {
   try {
@@ -62,7 +62,8 @@ describe('imports:nuxt', () => {
     const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')
 
     const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
-    for (const name of names) {
+    for (let name of names) {
+      name = name.replace(/\/\*.*\*\//, '').trim()
       if (excludedNuxtHelpers.includes(name)) {
         continue
       }
@@ -91,6 +92,7 @@ const excludedVueHelpers = [
   'EffectScope',
   'ReactiveEffect',
   'stop',
+  'assertNumber',
   'camelize',
   'capitalize',
   'normalizeClass',
@@ -99,6 +101,7 @@ const excludedVueHelpers = [
   'toDisplayString',
   'toHandlerKey',
   'BaseTransition',
+  'BaseTransitionPropsValidators',
   'Comment',
   'Fragment',
   'KeepAlive',

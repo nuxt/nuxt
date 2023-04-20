@@ -1,33 +1,36 @@
-import type { Nuxt, NuxtApp } from '@nuxt/schema'
-import { normalize } from 'pathe'
+import type { TransformerOptions } from 'unctx/transform'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
-export const UnctxTransformPlugin = (nuxt: Nuxt) => {
-  const transformer = createTransformer({
-    asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware']
-  })
+import { isJS, isVue } from '../utils'
 
-  let app: NuxtApp | undefined
-  nuxt.hook('app:resolve', (_app) => { app = _app })
+const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 
-  return createUnplugin((options: { sourcemap?: boolean } = {}) => ({
+interface UnctxTransformPluginOptions {
+  sourcemap?: boolean
+  transformerOptions: TransformerOptions
+}
+
+export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPluginOptions) => {
+  const transformer = createTransformer(options.transformerOptions)
+  return {
     name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
-      id = normalize(id).replace(/\?.*$/, '')
-      return app?.plugins.some(i => i.src === id) || app?.middleware.some(m => m.path === id)
+      return isVue(id) || isJS(id)
     },
-    transform (code, id) {
+    transform (code) {
+      // TODO: needed for webpack - update transform in unctx/unplugin?
+      if (code.startsWith(TRANSFORM_MARKER) || !transformer.shouldTransform(code)) { return }
       const result = transformer.transform(code)
       if (result) {
         return {
-          code: result.code,
+          code: TRANSFORM_MARKER + result.code,
           map: options.sourcemap
-            ? result.magicString.generateMap({ source: id, includeContent: true })
+            ? result.magicString.generateMap({ hires: true })
             : undefined
         }
       }
     }
-  }))
-}
+  }
+})

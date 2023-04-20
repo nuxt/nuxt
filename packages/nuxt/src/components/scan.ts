@@ -1,11 +1,11 @@
-import { basename, extname, join, dirname, relative } from 'pathe'
+import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
-import type { Component, ComponentsDir } from '@nuxt/schema'
 import { isIgnored } from '@nuxt/kit'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
+import type { Component, ComponentsDir } from 'nuxt/schema'
 
 /**
  * Scan the components inside different components folders
@@ -118,7 +118,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         kebabName,
         chunkName,
         shortPath,
-        export: 'default'
+        export: 'default',
+        // by default, give priority to scanned components
+        priority: 1
       }
 
       if (typeof dir.extendComponent === 'function') {

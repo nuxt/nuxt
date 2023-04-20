@@ -1,6 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
-import defu from 'defu'
-import type { AppHeadMetaObject } from '../types/meta'
+import { defu } from 'defu'
+import type { AppHeadMetaObject } from '../types/head'
 
 export default defineUntypedSchema({
   /**
@@ -12,7 +12,7 @@ export default defineUntypedSchema({
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
-    compilerOptions: {}
+    compilerOptions: {},
   },
 
   /**

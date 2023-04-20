@@ -7,7 +7,7 @@ defineExpose({ add })
 </script>
 
 <template>
-  <div>
+  <div class="bg-red">
     <div>client only script setup component {{ props.foo }}</div>
     <button @click="add">
       {{ count }}
@@ -16,3 +16,9 @@ defineExpose({ add })
     <slot name="test" />
   </div>
 </template>
+
+<style scoped>
+.bg-red{
+  background-color: rgb(255, 0, 0);
+}
+</style>

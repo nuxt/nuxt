@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { join, normalize } from 'pathe'
+import { normalize } from 'pathe'
 import { interopDefault } from 'mlly'
 import jiti from 'jiti'
 
@@ -82,22 +82,15 @@ export function getRequireCacheItem (id: string) {
   }
 }
 
-/** Resolve the `package.json` file for a given module. */
-export function requireModulePkg (id: string, opts: RequireModuleOptions = {}) {
-  return requireModule(join(id, 'package.json'), opts)
-}
-
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: ([] as string[]).concat(
-      // @ts-ignore
+    paths: ([] as Array<string | undefined>).concat(
       global.__NUXT_PREPATHS__,
       opts.paths || [],
       process.cwd(),
-      // @ts-ignore
       global.__NUXT_PATHS__
-    ).filter(Boolean)
+    ).filter(Boolean) as string[]
   }))
 }
 
@@ -142,7 +135,7 @@ export function importModule (id: string, opts: RequireModuleOptions = {}) {
 export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
   try {
     return importModule(id, opts).catch(() => undefined)
-  } catch { }
+  } catch {}
 }
 
 /** @deprecated Do not use CJS utils */

@@ -1,10 +1,11 @@
 import { pathToFileURL } from 'node:url'
+import os from 'node:os'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
-import { resolve } from 'pathe'
+import { isAbsolute, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
-import type { ModuleNode, Plugin as VitePlugin } from 'vite'
+import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
@@ -18,12 +19,18 @@ import { transpile } from './utils/transpile'
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
+
   function markInvalidate (mod: ModuleNode) {
     if (!mod.id) { return }
     if (invalidates.has(mod.id)) { return }
     invalidates.add(mod.id)
-    for (const importer of mod.importers) {
-      markInvalidate(importer)
+    markInvalidates(mod.importers)
+  }
+
+  function markInvalidates (mods?: ModuleNode[] | Set<ModuleNode>) {
+    if (!mods) { return }
+    for (const mod of mods) {
+      markInvalidate(mod)
     }
   }
 
@@ -31,21 +38,34 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
-      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
-      // Invalidate all virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', () => {
+      function invalidateVirtualModules () {
         for (const [id, mod] of server.moduleGraph.idToModuleMap) {
           if (id.startsWith('virtual:')) {
             markInvalidate(mod)
           }
         }
-      })
-    },
-    handleHotUpdate ({ file, server }) {
-      const mods = server.moduleGraph.getModulesByFile(file) || []
-      for (const mod of mods) {
-        markInvalidate(mod)
+        for (const plugin of ctx.nuxt.options.plugins) {
+          markInvalidates(server.moduleGraph.getModulesByFile(typeof plugin === 'string' ? plugin : plugin.src))
+        }
+        for (const template of ctx.nuxt.options.build.templates) {
+          markInvalidates(server.moduleGraph.getModulesByFile(template?.src))
+        }
       }
+
+      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+
+      // Invalidate all virtual modules when templates are regenerated
+      ctx.nuxt.hook('app:templatesGenerated', () => {
+        invalidateVirtualModules()
+      })
+
+      server.watcher.on('all', (event, file) => {
+        markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
+        // Invalidate all virtual modules when a file is added or removed
+        if (event === 'add' || event === 'unlink') {
+          invalidateVirtualModules()
+        }
+      })
     }
   }
 }
@@ -122,6 +142,9 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
       }
+      if (isAbsolute(moduleId) && !isFileServingAllowed(moduleId, viteServer)) {
+        throw createError({ statusCode: 403 /* Restricted */ })
+      }
       const module = await node.fetchModule(moduleId).catch((err) => {
         const errorData = {
           code: 'VITE_ERROR',
@@ -158,5 +181,65 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   await fse.writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`
+  )
+}
+
+/**
+ * The following code is ported from vite
+ * Awaits https://github.com/vitejs/vite/pull/12894
+ */
+const VOLUME_RE = /^[A-Z]:/i
+const FS_PREFIX = '/@fs/'
+const isWindows = os.platform() === 'win32'
+const postfixRE = /[?#].*$/s
+const windowsSlashRE = /\\/g
+
+function slash (p: string): string {
+  return p.replace(windowsSlashRE, '/')
+}
+
+function normalizePath (id: string): string {
+  return normalize(isWindows ? slash(id) : id)
+}
+function fsPathFromId (id: string): string {
+  const fsPath = normalizePath(
+    id.startsWith(FS_PREFIX) ? id.slice(FS_PREFIX.length) : id
+  )
+  return fsPath[0] === '/' || fsPath.match(VOLUME_RE) ? fsPath : `/${fsPath}`
+}
+
+function fsPathFromUrl (url: string): string {
+  return fsPathFromId(cleanUrl(url))
+}
+
+function cleanUrl (url: string): string {
+  return url.replace(postfixRE, '')
+}
+
+function isFileServingAllowed (
+  url: string,
+  server: ViteDevServer
+): boolean {
+  if (!server.config.server.fs.strict) { return true }
+
+  const file = fsPathFromUrl(url)
+
+  // @ts-expect-error private API
+  if (server._fsDenyGlob(file)) { return false }
+
+  if (server.moduleGraph.safeModulesPath.has(file)) { return true }
+
+  if (server.config.server.fs.allow.some(dir => isParentDirectory(dir, file))) { return true }
+
+  return false
+}
+
+function isParentDirectory (dir: string, file: string): boolean {
+  if (dir[dir.length - 1] !== '/') {
+    dir = `${dir}/`
+  }
+  return (
+    file.startsWith(dir) ||
+    (file.toLowerCase().startsWith(dir.toLowerCase()))
   )
 }
