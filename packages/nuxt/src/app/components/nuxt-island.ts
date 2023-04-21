@@ -1,5 +1,4 @@
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
-
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
@@ -87,7 +86,7 @@ export default defineComponent({
         }
       })
     }
-
+    const key = ref(0)
     async function fetchComponent () {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
@@ -131,3 +130,35 @@ export default defineComponent({
     }
   }
 })
+
+// TODO refactor with https://github.com/nuxt/nuxt/pull/19231
+function getFragmentHTML (element: RendererNode | null) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element)
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      blocks.push(element.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks)
+  }
+  return blocks
+}
+
+function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
+}
