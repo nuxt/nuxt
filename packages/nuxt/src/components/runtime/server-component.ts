@@ -148,7 +148,7 @@ const NuxtServerComponent = defineComponent({
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [createStaticVNode(html.value, 1)])]
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
+      if (uid.value) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
