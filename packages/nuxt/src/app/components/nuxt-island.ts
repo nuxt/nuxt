@@ -47,13 +47,7 @@ export default defineComponent({
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const cleanedHtml = ssrHTML.value.replace(UID_ATTR, (full, id) => {
-        // insert uid
-        if (!id) {
-          return `nuxt-ssr-component-uid="${uid.value}"`
-        }
-        return full
-      }).replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
+      const cleanedHtml = ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
           return ''
@@ -96,7 +90,13 @@ export default defineComponent({
       const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
-      ssrHTML.value = res.html
+      ssrHTML.value = res.html.replace(UID_ATTR, (full, id) => {
+        // insert uid
+        if (!id) {
+          return `nuxt-ssr-component-uid="${randomUUID()}"`
+        }
+        return full
+      })
       key.value++
       if (process.client) {
         // must await next tick for Teleport to work correctly with static node re-rendering
@@ -116,7 +116,7 @@ export default defineComponent({
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [h(createStaticVNode(html.value, 1))])]
-      if (uid.value) {
+      if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
