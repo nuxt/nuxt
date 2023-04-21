@@ -10,6 +10,6 @@
   },
   "devDependencies": {
     "@nuxt/ui": "^0.3.3",
-    "nuxt": "^3.3.3"
+    "nuxt": "^3.0.0"
   }
 }
