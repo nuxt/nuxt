@@ -1,6 +1,6 @@
 import type { UseFetchOptions } from 'nuxt/app'
 
-export async function useCustomFetch<T>(url: string, options: UseFetchOptions<T> = {}) {
+export async function useCustomFetch<T> (url: string, options: UseFetchOptions<T> = {}) {
   const userAuth = useCookie('token')
   const config = useRuntimeConfig()
 
@@ -9,23 +9,23 @@ export async function useCustomFetch<T>(url: string, options: UseFetchOptions<T>
     // cache request
     key: url,
 
-    onRequest({ options }) {
+    onRequest ({ options }) {
       options.headers = options.headers ?? new Headers()
 
       // set user token if connected
       if (userAuth.value) {
-        options.headers['Authorization'] = `Bearer ${userAuth.value}`
+        options.headers.Authorization = `Bearer ${userAuth.value}`
       }
     },
 
-    onResponse({ response }) {
+    onResponse (__ctx) {
       // return new myBusinessResponse(response._data)ß
     },
 
-    onResponseError({ error }) {
+    onResponseError (__ctx) {
       // add you error logic here
       // return new myBusinessError(error)
-    },
+    }
   }
 
   // for nice deep defaults, please unjs/defu
