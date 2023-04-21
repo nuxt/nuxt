@@ -9482,7 +9482,7 @@ packages:
       mlly: 1.2.0
       pathe: 1.1.0
       picocolors: 1.0.0
-      vite: 4.3.0(@types/node@18.15.12)
+      vite: 4.3.1(@types/node@18.15.12)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -9685,7 +9685,7 @@ packages:
       tinybench: 2.4.0
       tinypool: 0.4.0
       tinyspy: 1.1.1
-      vite: 4.3.0(@types/node@18.15.12)
+      vite: 4.3.1(@types/node@18.15.12)
       vite-node: 0.29.8(@types/node@18.15.12)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
