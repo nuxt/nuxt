@@ -38,7 +38,6 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const mounted = ref(false)
-    const key = ref(0)
     onMounted(() => { mounted.value = true })
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
@@ -130,35 +129,3 @@ export default defineComponent({
     }
   }
 })
-
-// TODO refactor with https://github.com/nuxt/nuxt/pull/19231
-function getFragmentHTML (element: RendererNode | null) {
-  if (element) {
-    if (element.nodeName === '#comment' && element.nodeValue === '[') {
-      return getFragmentChildren(element)
-    }
-    return [element.outerHTML]
-  }
-  return []
-}
-
-function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
-  if (element && element.nodeName) {
-    if (isEndFragment(element)) {
-      return blocks
-    } else if (!isStartFragment(element)) {
-      blocks.push(element.outerHTML)
-    }
-
-    getFragmentChildren(element.nextSibling, blocks)
-  }
-  return blocks
-}
-
-function isStartFragment (element: RendererNode) {
-  return element.nodeName === '#comment' && element.nodeValue === '['
-}
-
-function isEndFragment (element: RendererNode) {
-  return element.nodeName === '#comment' && element.nodeValue === ']'
-}
