@@ -19,16 +19,15 @@ export async function useCustomFetch<T> (url: string, options: UseFetchOptions<T
     },
 
     onResponse (__ctx) {
-      // return new myBusinessResponse(response._data)ß
+      // return new myBusinessResponse(response._data)
     },
 
     onResponseError (__ctx) {
-      // add you error logic here
       // return new myBusinessError(error)
     }
   }
 
-  // for nice deep defaults, please unjs/defu
+  // for nice deep defaults, please use unjs/defu
   const params = Object.assign(defaults, options)
 
   return await useFetch(url, params)
