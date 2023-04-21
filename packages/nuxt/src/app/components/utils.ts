@@ -1,7 +1,8 @@
 import { defineComponent, h } from 'vue'
-import type { Component } from 'vue'
+import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
+import destr from 'destr'
 
 const Fragment = defineComponent({
   name: 'FragmentWrapper',
@@ -102,4 +103,47 @@ export function vforToArray (source: any): any[] {
     }
   }
   return []
+}
+
+export function getFragmentHTML (element: RendererNode | null) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element)
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      blocks.push(element.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks)
+  }
+  return blocks
+}
+
+function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
+
+export function getSlotProps (html: string) {
+  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
+  const data:Record<string, any> = {}
+  for (const slot of slotsDivs) {
+    const [_, slotName, json] = slot
+    const slotData = destr(decodeHtmlEntities(json))
+    data[slotName] = slotData
+  }
+  return data
 }
