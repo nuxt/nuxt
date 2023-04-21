@@ -107,7 +107,7 @@
     "@vitejs/plugin-vue": "^4.1.0",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.0",
+    "vite": "^4.3.1",
     "vitest": "^0.30.1"
   },
   "peerDependencies": {
