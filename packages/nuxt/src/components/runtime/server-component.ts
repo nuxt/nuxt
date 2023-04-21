@@ -91,7 +91,7 @@ const NuxtServerComponent = defineComponent({
           }
         }
       }, {
-        immediate: process.server,
+        immediate: process.server || !nuxtApp.isHydrating,
         default: () => ({
           html: '',
           head: {
@@ -115,8 +115,6 @@ const NuxtServerComponent = defineComponent({
       }, 100))
     }
 
-    await res
-
     const slotProps = computed(() => {
       return getSlotProps(res.data.value!.html)
     })
@@ -129,7 +127,7 @@ const NuxtServerComponent = defineComponent({
       const cleanedHtml = res.data.value!.html.replace(UID_ATTR, (full, id) => {
         // insert uid
         if (!id) {
-          return `nuxt-ssr-component-uid="${uid.value}"`
+          return `nuxt-ssr-component-uid="${randomUUID()}"`
         }
         return full
       }).replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
@@ -142,13 +140,20 @@ const NuxtServerComponent = defineComponent({
       return cleanedHtml
     })
     function setUid () {
-      uid.value = randomUUID()
+      uid.value = html.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
     }
+
+    await res
+
+    if (process.server || !nuxtApp.isHydrating) {
+      setUid()
+    }
+
     return () => {
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [createStaticVNode(html.value, 1)])]
-      if (uid.value) {
+      if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
