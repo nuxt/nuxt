@@ -124,12 +124,8 @@ const NuxtServerComponent = defineComponent({
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const cleanedHtml = res.data.value!.html.replace(UID_ATTR, (full, id) => {
-        // insert uid
-        if (!id) {
-          return `nuxt-ssr-component-uid="${randomUUID()}"`
-        }
-        return full
+      return res.data.value!.html.replace(UID_ATTR, () => {
+        return `nuxt-ssr-component-uid="${randomUUID()}"`
       }).replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
@@ -137,7 +133,6 @@ const NuxtServerComponent = defineComponent({
         }
         return content
       })
-      return cleanedHtml
     })
     function setUid () {
       uid.value = html.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string

@@ -47,14 +47,13 @@ export default defineComponent({
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const cleanedHtml = ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
+      return ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
           return ''
         }
         return content
       })
-      return cleanedHtml
     })
     function setUid () {
       uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
@@ -90,12 +89,8 @@ export default defineComponent({
       const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
-      ssrHTML.value = res.html.replace(UID_ATTR, (full, id) => {
-        // insert uid
-        if (!id) {
-          return `nuxt-ssr-component-uid="${randomUUID()}"`
-        }
-        return full
+      ssrHTML.value = res.html.replace(UID_ATTR, () => {
+        return `nuxt-ssr-component-uid="${randomUUID()}"`
       })
       key.value++
       if (process.client) {
