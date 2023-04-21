@@ -158,4 +158,4 @@ export interface NuxtAppConfig {
   keepalive: boolean | KeepAliveProps
 }
 
-export interface AppConfig { }
+export interface AppConfig extends CustomAppConfig { }
