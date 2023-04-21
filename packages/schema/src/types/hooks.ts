@@ -49,6 +49,7 @@ export interface GenerateAppOptions {
 
 export interface NuxtAnalyzeMeta {
   name: string
+  slug: string
   startTime: number
   endTime: number
   analyzeDir: string

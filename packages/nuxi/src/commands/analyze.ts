@@ -18,9 +18,10 @@ export default defineNuxtCommand({
     overrideEnv('production')
 
     const name = args.name || 'default'
+    const slug = name.trim().replace(/[^a-z0-9_-]/gi, '_')
     const rootDir = resolve(args._[0] || '.')
 
-    let analyzeDir = join(rootDir, '.nuxt-analyze', name.trim().replace(/[^a-z0-9_-]/gi, '_'))
+    let analyzeDir = join(rootDir, '.nuxt/analyze', slug)
     let buildDir = join(analyzeDir, '.nuxt')
     let outDir = join(analyzeDir, '.output')
 
@@ -56,6 +57,7 @@ export default defineNuxtCommand({
 
     const meta: NuxtAnalyzeMeta = {
       name,
+      slug,
       startTime,
       endTime,
       analyzeDir,

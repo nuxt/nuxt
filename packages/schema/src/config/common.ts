@@ -145,7 +145,9 @@ export default defineUntypedSchema({
    * If a relative path is specified, it will be relative to your `rootDir`.
    */
   analyzeDir: {
-    $resolve: async (val, get) => resolve(await get('rootDir'), val || '.nuxt-analyze')
+    $resolve: async (val, get) => val 
+      ? resolve(await get('rootDir'), val)
+      : resolve(await get('buildDir'), 'analyze')
   },
 
   /**

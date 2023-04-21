@@ -1,7 +1,7 @@
 import { buildNuxt } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
 import { consola } from 'consola'
-import { clearDir } from '../utils/fs'
+import { clearBuildDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
@@ -24,7 +24,7 @@ export default defineNuxtCommand({
         logLevel: args['log-level']
       }
     })
-    await clearDir(nuxt.options.buildDir)
+    await clearBuildDir(nuxt.options.buildDir)
 
     await buildNuxt(nuxt)
     await writeTypes(nuxt)
