@@ -9,7 +9,7 @@ description: The typecheck command runs vue-tsc to check types throughout your a
 npx nuxi typecheck [--log-level] [rootDir]
 ```
 
-The `typecheck` command runs [`vue-tsc`](https://github.com/johnsoncodehk/volar/tree/master/vue-language-tools/vue-tsc) to check types throughout your app.
+The `typecheck` command runs [`vue-tsc`](https://github.com/vuejs/language-tools/tree/master/packages/vue-tsc) to check types throughout your app.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
