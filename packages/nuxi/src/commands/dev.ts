@@ -12,7 +12,8 @@ import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
-import { cleanupNuxtDirs, loadNuxtManifest, writeNuxtManifest } from '../utils/nuxt'
+import { loadNuxtManifest, writeNuxtManifest } from '../utils/nuxt'
+import { clearBuildDir } from '../utils/fs'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -110,7 +111,7 @@ export default defineNuxtCommand({
           const previousManifest = await loadNuxtManifest(currentNuxt.options.buildDir)
           const newManifest = await writeNuxtManifest(currentNuxt)
           if (previousManifest && newManifest && previousManifest._hash !== newManifest._hash) {
-            await cleanupNuxtDirs(currentNuxt.options.rootDir)
+            await clearBuildDir(currentNuxt.options.buildDir)
           }
         }
 
