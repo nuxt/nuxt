@@ -11,6 +11,7 @@ on:
       - "docs/**"
     branches:
       - main
+      - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
 env:
@@ -184,6 +185,8 @@ jobs:
           TEST_PAYLOAD: ${{ matrix.payload }}
 
   build-release:
+    permissions:
+      id-token: write
     if: |
       github.event_name == 'push' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
@@ -198,7 +201,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [16]
+        node: [18]
 
     timeout-minutes: 20
 
@@ -225,3 +228,4 @@ jobs:
         run: ./scripts/release-edge.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
