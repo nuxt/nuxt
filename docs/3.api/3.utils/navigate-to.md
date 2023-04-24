@@ -29,7 +29,7 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 
 ### `to`
 
-**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/#routelocationraw) | `undefined` | `null`
+**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/RouteLocation.html) | `undefined` | `null`
 
 **Default**: `'/'`
 
