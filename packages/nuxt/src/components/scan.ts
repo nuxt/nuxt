@@ -10,7 +10,6 @@ import type { Component, ComponentsDir } from 'nuxt/schema'
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
- *
  * @param dirs all folders where components are defined
  * @param srcDir src path of your app
  * @returns {Promise} Component found promise
@@ -45,7 +44,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       /**
        * Create an array of prefixes base on the prefix config
        * Empty prefix will be an empty array
-       *
        * @example prefix: 'nuxt' -> ['nuxt']
        * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
        */
@@ -56,7 +54,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       /**
        * In case we have index as filename the component become the parent path
-       *
        * @example third-components/index.vue -> third-component
        * if not take the filename
        * @example third-components/Awesome.vue -> Awesome
@@ -74,7 +71,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       /**
        * Array of fileName parts splitted by case, / or -
-       *
        * @example third-component -> ['third', 'component']
        * @example AwesomeComponent -> ['Awesome', 'Component']
        */
