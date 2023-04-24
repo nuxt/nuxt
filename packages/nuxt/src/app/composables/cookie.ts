@@ -60,7 +60,7 @@ export function useCookie <T = string | null | undefined> (name: string, _opts?:
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
   if (process.server) {
-    return parse(useRequestEvent()?.req.headers.cookie || '', opts)
+    return parse(useRequestEvent()?.node.req.headers.cookie || '', opts)
   } else if (process.client) {
     return parse(document.cookie, opts)
   }
