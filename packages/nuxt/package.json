@@ -82,7 +82,7 @@
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
-    "ohash": "^1.1.1",
+    "ohash": "^1.1.2",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
     "prompts": "^2.4.2",
