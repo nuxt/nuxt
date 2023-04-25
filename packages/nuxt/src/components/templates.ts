@@ -95,7 +95,7 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
         definitions.push(genExport(c.filePath, [{ name: c.export, as: c.pascalName }]))
       }
       if (c.global) {
-        definitions.push(genExport('#global-components', [{ name: `Lazy${c.pascalName}`, as: c.pascalName }]))
+        definitions.push(genExport('#global-components', [{ name: `Lazy${c.pascalName}` }]))
       } else {
         definitions.push(`export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
       }
