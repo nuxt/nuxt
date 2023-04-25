@@ -111,7 +111,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   if (process.server) {
     const nuxtApp = useNuxtApp()
-    if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
+    if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
@@ -120,7 +120,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
         nuxtApp.ssrContext!._renderResponse = {
-          statusCode: sanitizeStatusCode(options?.redirectCode || 302, nuxtApp.ssrContext!.event.node.res.statusCode),
+          statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location }
         }

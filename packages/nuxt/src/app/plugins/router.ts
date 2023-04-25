@@ -5,7 +5,6 @@ import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import { useState } from '../composables/state'
-import { useRequestEvent } from '../composables/ssr'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
@@ -258,9 +257,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {
-        const event = await callWithNuxt(nuxtApp, useRequestEvent)
-        const options = { redirectCode: event.node.res.statusCode !== 200 ? event.node.res.statusCode || 302 : 302 }
-        await callWithNuxt(nuxtApp, navigateTo, [route.fullPath, options])
+        await callWithNuxt(nuxtApp, navigateTo, [route.fullPath])
       }
     })
 
