@@ -14,9 +14,7 @@ import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
 
-const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: globalThis.AsyncLocalStorage
-})
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
 type NuxtMeta = {
   htmlAttrs?: string
