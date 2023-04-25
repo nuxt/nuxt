@@ -161,9 +161,7 @@ exports[`config: options should return default nuxt config 1`] = `
     "watch": [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
-  "buildModules": [
-    [Function],
-  ],
+  "buildModules": [],
   "cli": {
     "badgeMessages": [],
     "bannerColor": "green",

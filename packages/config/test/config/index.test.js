@@ -23,6 +23,8 @@ describe('config', () => {
       NUXT_HOST: 'localhost',
       UNIX_SOCKET: '/var/run/nuxt.sock'
     }
-    expect(getDefaultNuxtConfig({ env })).toMatchSnapshot()
+    const config = getDefaultNuxtConfig({ env })
+    config.buildModules = config.buildModules.filter(p => p.name !== 'patchMD4')
+    expect(config).toMatchSnapshot()
   })
 })
