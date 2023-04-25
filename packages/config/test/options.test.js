@@ -294,7 +294,7 @@ describe('config: options', () => {
       const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
       expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
       expect(config.devModules).toBe(undefined)
-      expect(config.buildModules).toEqual(['bar', 'foo'])
+      expect(config.buildModules.filter(p => p.name !== 'patchMD4')).toEqual(['bar', 'foo'])
     })
 
     test('should deprecate build.extractCSS.allChunks', () => {

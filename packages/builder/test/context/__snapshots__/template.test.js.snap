@@ -2,114 +2,114 @@
 
 exports[`builder: buildContext should construct context 1`] = `
 TemplateContext {
-  "templateFiles": Array [
+  "templateFiles": [
     "template.js",
   ],
-  "templateVars": Object {
+  "templateVars": {
     "appPath": "./App.js",
     "buildIndicator": undefined,
-    "components": Object {
+    "components": {
       "ErrorPage": "relativeBuild(test_error_page)",
     },
-    "css": Array [
+    "css": [
       "test.css",
     ],
     "debug": "test_debug",
-    "dir": Array [
+    "dir": [
       "test_dir",
     ],
     "env": "test_env",
     "extensions": "test|ext",
-    "features": Object {
+    "features": {
       "store": true,
     },
     "fetch": undefined,
     "globalName": "test_global",
-    "globals": Array [
+    "globals": [
       "globals",
     ],
     "head": "test_head",
     "isDev": "test_dev",
     "isFullStatic": false,
     "isTest": "test_test",
-    "layoutTransition": Object {
+    "layoutTransition": {
       "name": "test_layout_trans",
     },
-    "layouts": Object {
+    "layouts": {
       "test-layout": "test.template",
     },
     "loading": "relativeBuild(test_src_dir, test-loading)",
-    "messages": Object {
+    "messages": {
       "test": "test message",
     },
     "mode": "test mode",
-    "nuxtOptions": Object {
+    "nuxtOptions": {
       "ErrorPage": "test_error_page",
-      "build": Object {
-        "splitChunks": Object {
+      "build": {
+        "splitChunks": {
           "testSC": true,
         },
       },
-      "css": Array [
+      "css": [
         "test.css",
       ],
       "debug": "test_debug",
       "dev": "test_dev",
-      "dir": Array [
+      "dir": [
         "test_dir",
       ],
       "env": "test_env",
-      "extensions": Array [
+      "extensions": [
         "test",
         "ext",
       ],
-      "features": Object {
+      "features": {
         "store": true,
       },
       "globalName": "test_global",
       "head": "test_head",
-      "layoutTransition": Object {
+      "layoutTransition": {
         "name": "test_layout_trans",
       },
-      "layouts": Object {
+      "layouts": {
         "test-layout": "test.template",
       },
       "loading": "test-loading",
-      "messages": Object {
+      "messages": {
         "test": "test message",
       },
       "mode": "test mode",
-      "pageTransition": Object {
+      "pageTransition": {
         "name": "test_trans",
       },
       "rootDir": "test_root_dir",
-      "router": Object {
+      "router": {
         "route": "test",
       },
       "srcDir": "test_src_dir",
       "store": "test_store",
       "test": "test_test",
-      "vue": Object {
+      "vue": {
         "config": "test_config",
       },
     },
-    "pageTransition": Object {
+    "pageTransition": {
       "name": "test_trans",
     },
-    "plugins": Array [
+    "plugins": [
       "plugins",
     ],
     "rootDir": "test_root_dir",
-    "router": Object {
+    "router": {
       "route": "test",
     },
-    "splitChunks": Object {
+    "splitChunks": {
       "testSC": true,
     },
     "srcDir": "test_src_dir",
     "store": "test_store",
     "uniqBy": [Function],
-    "vue": Object {
+    "vue": {
       "config": "test_config",
     },
   },
