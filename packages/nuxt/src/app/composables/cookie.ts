@@ -47,12 +47,7 @@ export function useCookie <T = string | null | undefined> (name: string, _opts?:
         writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts)
       }
     }
-    const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
-    nuxtApp.hooks.hookOnce('app:redirected', () => {
-      // don't write cookie subsequently when app:rendered is called
-      unhook()
-      return writeFinalCookieValue()
-    })
+    nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
   }
 
   return cookie as CookieRef<T>

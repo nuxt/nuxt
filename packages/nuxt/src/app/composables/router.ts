@@ -1,7 +1,7 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocationPathRaw, RouteLocationRaw, Router } from 'vue-router'
-import { sendRedirect } from 'h3'
+import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -86,7 +86,7 @@ export interface NavigateToOptions {
   external?: boolean
 }
 
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | RouteLocationRaw => {
+export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
   }
@@ -113,13 +113,22 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
-      const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
-      const redirect = () => nuxtApp.callHook('app:redirected')
-        .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
-        .then(() => inMiddleware ? /* abort route navigation */ false : undefined)
+      const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      // We wait to perform the redirect in case any other middleware will intercept the redirect
-      // and redirect further.
+      async function redirect () {
+        // TODO: consider deprecating in favour of `app:rendered` and removing
+        await nuxtApp.callHook('app:redirected')
+        const encodedLoc = location.replace(/"/g, '%22')
+        nuxtApp.ssrContext!._renderResponse = {
+          statusCode: sanitizeStatusCode(options?.redirectCode || 302, nuxtApp.ssrContext!.event.node.res.statusCode),
+          body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
+          headers: { location }
+        }
+        return inMiddleware ? /* abort route navigation */ false : undefined
+      }
+
+      // We wait to perform the redirect last in case any other middleware will intercept the redirect
+      // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
         router.beforeEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
         return to
