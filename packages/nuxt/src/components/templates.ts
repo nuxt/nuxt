@@ -1,5 +1,5 @@
 import { isAbsolute, relative } from 'pathe'
-import { genDynamicImport, genExport, genImport, genObjectFromRawEntries } from 'knitwork'
+import { genDynamicImport, genExport, genImport } from 'knitwork'
 import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 export interface ComponentsTemplateContext {
