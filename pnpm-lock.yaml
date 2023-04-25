@@ -10,7 +10,7 @@ overrides:
   nuxt: workspace:*
   nuxt3: workspace:nuxt@*
   unbuild: ^1.2.1
-  vite: ^4.3.1
+  vite: ^4.3.2
   vue: 3.2.47
   magic-string: ^0.30.0
 
@@ -115,8 +115,8 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
       vite:
-        specifier: ^4.3.1
-        version: 4.3.1(@types/node@18.16.0)
+        specifier: ^4.3.2
+        version: 4.3.2(@types/node@18.16.0)
       vitest:
         specifier: ^0.30.1
         version: 0.30.1(playwright@1.32.3)
@@ -437,8 +437,8 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
       vite:
-        specifier: ^4.3.1
-        version: 4.3.1(@types/node@18.16.0)
+        specifier: ^4.3.2
+        version: 4.3.2(@types/node@18.16.0)
       vitest:
         specifier: ^0.30.1
         version: 0.30.1(playwright@1.32.3)
@@ -704,7 +704,7 @@ importers:
         version: 2.4.4
       '@vitejs/plugin-vue':
         specifier: ^4.2.0
-        version: 4.2.0(vite@4.3.1)(vue@3.2.47)
+        version: 4.2.0(vite@4.3.2)(vue@3.2.47)
       acorn:
         specifier: ^8.8.2
         version: 8.8.2
@@ -712,8 +712,8 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
       vite:
-        specifier: ^4.3.1
-        version: 4.3.1(@types/node@18.16.0)
+        specifier: ^4.3.2
+        version: 4.3.2(@types/node@18.16.0)
       vitest:
         specifier: ^0.30.1
         version: 0.30.1(playwright@1.32.3)
@@ -756,10 +756,10 @@ importers:
         version: 1.1.26
       '@vitejs/plugin-vue':
         specifier: ^4.2.0
-        version: 4.2.0(vite@4.3.1)(vue@3.2.47)
+        version: 4.2.0(vite@4.3.2)(vue@3.2.47)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.1
-        version: 3.0.1(vite@4.3.1)(vue@3.2.47)
+        version: 3.0.1(vite@4.3.2)(vue@3.2.47)
       h3:
         specifier: ^1.6.4
         version: 1.6.4
@@ -776,8 +776,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       vite:
-        specifier: ^4.3.1
-        version: 4.3.1(@types/node@18.16.0)
+        specifier: ^4.3.2
+        version: 4.3.2(@types/node@18.16.0)
       vue:
         specifier: 3.2.47
         version: 3.2.47
@@ -847,10 +847,10 @@ importers:
         version: 5.0.2(rollup@3.20.2)
       '@vitejs/plugin-vue':
         specifier: ^4.2.0
-        version: 4.2.0(vite@4.3.1)(vue@3.2.47)
+        version: 4.2.0(vite@4.3.2)(vue@3.2.47)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.1
-        version: 3.0.1(vite@4.3.1)(vue@3.2.47)
+        version: 3.0.1(vite@4.3.2)(vue@3.2.47)
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.23)
@@ -930,14 +930,14 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       vite:
-        specifier: ^4.3.1
-        version: 4.3.1(@types/node@18.16.0)
+        specifier: ^4.3.2
+        version: 4.3.2(@types/node@18.16.0)
       vite-node:
         specifier: ^0.30.1
         version: 0.30.1(@types/node@18.16.0)
       vite-plugin-checker:
         specifier: ^0.5.6
-        version: 0.5.6(eslint@8.39.0)(typescript@5.0.4)(vite@4.3.1)(vue-tsc@1.4.4)
+        version: 0.5.6(eslint@8.39.0)(typescript@5.0.4)(vite@4.3.2)(vue-tsc@1.4.4)
       vue-bundle-renderer:
         specifier: ^1.0.3
         version: 1.0.3
@@ -2953,7 +2953,7 @@ packages:
       - encoding
       - supports-color
 
-  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.3.1)(vue@3.2.47):
+  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.3.2)(vue@3.2.47):
     resolution: {integrity: sha512-+Jb7ggL48FSPS1uhPnJbJwWa9Sr90vQ+d0InW+AhBM22n+cfuYqJZDckBc+W3QSHe1WDvewMZfa4wZOtk5pRgw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2963,19 +2963,19 @@ packages:
       '@babel/core': 7.21.4
       '@babel/plugin-transform-typescript': 7.21.0(@babel/core@7.21.4)
       '@vue/babel-plugin-jsx': 1.1.1(@babel/core@7.21.4)
-      vite: 4.3.1(@types/node@18.16.0)
+      vite: 4.3.2(@types/node@18.16.0)
       vue: 3.2.47
     transitivePeerDependencies:
       - supports-color
 
-  /@vitejs/plugin-vue@4.2.0(vite@4.3.1)(vue@3.2.47):
+  /@vitejs/plugin-vue@4.2.0(vite@4.3.2)(vue@3.2.47):
     resolution: {integrity: sha512-hYaXFvEKEwyTmwHq2ft7GGeLBvyYLwTM3E5R1jpvzxg9gO4m5PQcTVvj1wEPKoPL8PAt+KAlxo3gyJWnmwzaWQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.3.1(@types/node@18.16.0)
+      vite: 4.3.2(@types/node@18.16.0)
       vue: 3.2.47
 
   /@vitest/expect@0.30.1:
@@ -8362,6 +8362,13 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
+  /rollup@3.21.0:
+    resolution: {integrity: sha512-ANPhVcyeHvYdQMUyCbczy33nbLzI7RzrBje4uvNiTDJGIMtlKoOStmympwr9OtS1LZxiDmE2wvxHyVhoLtf1KQ==}
+    engines: {node: '>=14.18.0', npm: '>=8.0.0'}
+    hasBin: true
+    optionalDependencies:
+      fsevents: 2.3.2
+
   /run-applescript@5.0.0:
     resolution: {integrity: sha512-XcT5rBksx1QdIhlFOCtgZkB99ZEouFZ1E2Kc2LHqNW13U3/74YGdkQRmThTwxy4QIyookibDKYZOPqX//6BlAg==}
     engines: {node: '>=12'}
@@ -9412,7 +9419,7 @@ packages:
       mlly: 1.2.0
       pathe: 1.1.0
       picocolors: 1.0.0
-      vite: 4.3.1(@types/node@18.16.0)
+      vite: 4.3.2(@types/node@18.16.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -9422,7 +9429,7 @@ packages:
       - supports-color
       - terser
 
-  /vite-plugin-checker@0.5.6(eslint@8.39.0)(typescript@5.0.4)(vite@4.3.1)(vue-tsc@1.4.4):
+  /vite-plugin-checker@0.5.6(eslint@8.39.0)(typescript@5.0.4)(vite@4.3.2)(vue-tsc@1.4.4):
     resolution: {integrity: sha512-ftRyON0gORUHDxcDt2BErmsikKSkfvl1i2DoP6Jt2zDO9InfvM6tqO1RkXhSjkaXEhKPea6YOnhFaZxW3BzudQ==}
     engines: {node: '>=14.16'}
     peerDependencies:
@@ -9467,7 +9474,7 @@ packages:
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
       typescript: 5.0.4
-      vite: 4.3.1(@types/node@18.16.0)
+      vite: 4.3.2(@types/node@18.16.0)
       vscode-languageclient: 7.0.0
       vscode-languageserver: 7.0.0
       vscode-languageserver-textdocument: 1.0.8
@@ -9509,8 +9516,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vite@4.3.1(@types/node@18.16.0):
-    resolution: {integrity: sha512-EPmfPLAI79Z/RofuMvkIS0Yr091T2ReUoXQqc5ppBX/sjFRhHKiPPF/R46cTdoci/XgeQpB23diiJxq5w30vdg==}
+  /vite@4.3.2(@types/node@18.16.0):
+    resolution: {integrity: sha512-9R53Mf+TBoXCYejcL+qFbZde+eZveQLDYd9XgULILLC1a5ZwPaqgmdVpL8/uvw2BM/1TzetWjglwm+3RO+xTyw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -9537,7 +9544,7 @@ packages:
       '@types/node': 18.16.0
       esbuild: 0.17.18
       postcss: 8.4.23
-      rollup: 3.20.2
+      rollup: 3.21.0
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -9596,7 +9603,7 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.4.0
       tinypool: 0.4.0
-      vite: 4.3.1(@types/node@18.16.0)
+      vite: 4.3.2(@types/node@18.16.0)
       vite-node: 0.30.1(@types/node@18.16.0)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
