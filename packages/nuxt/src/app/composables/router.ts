@@ -130,7 +130,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.beforeEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
+        router.afterEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
         return to
       }
       return redirect()
