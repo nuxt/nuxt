@@ -9,6 +9,8 @@ jobs:
   nightly:
     if: github.repository_owner == 'nuxt'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -18,7 +20,7 @@ jobs:
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           registry-url: 'https://registry.npmjs.org'
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
@@ -48,4 +50,5 @@ jobs:
         run: ./scripts/workspace-run npm publish -q
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
 

@@ -180,7 +180,10 @@ export default defineRenderHandler(async (event) => {
   }
 
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
-    throw createError('Cannot directly render error page!')
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Page Not Found: /__nuxt_error'
+    })
   }
 
   // Check for island component rendering

@@ -574,6 +574,25 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should not allow accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toBe(404)
+    const error = await res.json()
+    delete error.stack
+    expect(error).toMatchInlineSnapshot(`
+      {
+        "message": "Page Not Found: /__nuxt_error",
+        "statusCode": 404,
+        "statusMessage": "Page Not Found: /__nuxt_error",
+        "url": "/__nuxt_error",
+      }
+    `)
+  })
+
   // TODO: need to create test for webpack
   it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
     const { page, consoleLogs } = await renderPage('/')
