@@ -14,7 +14,9 @@ import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
 
-const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
+const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
+  asyncContext: globalThis.AsyncLocalStorage
+})
 
 type NuxtMeta = {
   htmlAttrs?: string
@@ -221,7 +223,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.call(nuxtApp, () => hook(...args))
+        await nuxtAppCtx.callAsync(nuxtApp, () => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
