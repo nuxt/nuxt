@@ -77,6 +77,17 @@ export default defineNuxtCommand({
         baseURL: withTrailingSlash(currentNuxt?.options.app.baseURL) || '/'
       })
     }
+    async function hardRestart () {
+      if (process.send) {
+        await listener.close().catch(() => {})
+        await currentNuxt.close().catch(() => {})
+        await watcher.close().catch(() => {})
+        await distWatcher.close().catch(() => {})
+        process.send({ type: 'nuxt:restart' })
+      } else {
+        await load(true)
+      }
+    }
     const load = async (isRestart: boolean, reason?: string) => {
       try {
         loadingMessage = `${reason ? reason + '. ' : ''}${isRestart ? 'Restarting' : 'Starting'} nuxt...`
@@ -123,12 +134,8 @@ export default defineNuxtCommand({
 
         const unsub = currentNuxt.hooks.hook('restart', async (options) => {
           unsub() // we use this instead of `hookOnce` for Nuxt Bridge support
-          if (options?.hard && process.send) {
-            await listener.close().catch(() => {})
-            await currentNuxt.close().catch(() => {})
-            await watcher.close().catch(() => {})
-            await distWatcher.close().catch(() => {})
-            process.send({ type: 'nuxt:restart' })
+          if (options?.hard) {
+            return hardRestart()
           } else {
             await load(true)
           }
@@ -163,7 +170,10 @@ export default defineNuxtCommand({
     const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
     watcher.on('all', (_event, _file) => {
       const file = relative(rootDir, _file)
-      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.env|\.nuxtrc)$/)) {
+      if (file === '.env') {
+        return hardRestart()
+      }
+      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.nuxtrc)$/)) {
         dLoad(true, `${file} updated`)
       }
     })
