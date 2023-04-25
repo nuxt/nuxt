@@ -182,7 +182,8 @@ export default defineRenderHandler(async (event) => {
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
     throw createError({
       statusCode: 404,
-      statusMessage: process.dev ? '[nuxt] Cannot directly render error page.' : 'Page Not Found: /__nuxt_error'
+      message: process.dev ? '[nuxt] Cannot directly render error page.' : undefined,
+      statusMessage: 'Page Not Found: /__nuxt_error'
     })
   }
 
@@ -307,13 +308,13 @@ export default defineRenderHandler(async (event) => {
       NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-            ? process.env.NUXT_JSON_PAYLOADS
-              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-              : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-            : process.env.NUXT_JSON_PAYLOADS
-              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
-              : renderPayloadScript({ ssrContext, data: ssrContext.payload })
-          ),
+          ? process.env.NUXT_JSON_PAYLOADS
+            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : process.env.NUXT_JSON_PAYLOADS
+            ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+            : renderPayloadScript({ ssrContext, data: ssrContext.payload })
+        ),
       routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
