@@ -245,9 +245,9 @@ export default defineRenderHandler(async (event) => {
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
+    // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
-    // Use explicitly thrown error in preference to subsequent rendering errors
     throw _err
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
