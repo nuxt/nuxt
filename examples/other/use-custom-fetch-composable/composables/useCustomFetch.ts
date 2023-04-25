@@ -10,14 +10,11 @@ export async function useCustomFetch<T> (url: string, options: UseFetchOptions<T
     // cache request
     key: url,
 
-    onRequest ({ options }) {
-      options.headers = options.headers ?? new Headers()
-
-      // set user token if connected
-      if (userAuth.value) {
-        options.headers.Authorization = `Bearer ${userAuth.value}`
-      }
-    },
+    headers: new Headers(
+      userAuth.value // set user token if connected
+        ? { Authorization: `Bearer ${userAuth.value}` }
+        : {}
+    ),
 
     onResponse (__ctx) {
       // return new myBusinessResponse(response._data)
