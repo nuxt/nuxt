@@ -575,7 +575,11 @@ describe('errors', () => {
   })
 
   it('should not allow accessing error route directly', async () => {
-    const res = await fetch('/__nuxt_error')
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
