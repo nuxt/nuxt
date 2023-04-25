@@ -25,25 +25,50 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
   ].filter(Boolean).join(', ')
 }
 
+const emptyComponentsPlugin = `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:global-components',
+})
+`
+
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
   getContents ({ options }) {
+    const globalComponents = options.getComponents(options.mode).filter(c => c.global)
+    if (!globalComponents.length) { return emptyComponentsPlugin }
+
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { lazyGlobalComponents } from '#components'
+import { ${globalComponents.map(c => 'Lazy' + c.pascalName).join(', ')} } from '#global-components'
+const lazyGlobalComponents = [
+  ${globalComponents.map(c => `["${c.pascalName}", Lazy${c.pascalName}]`).join(',\n')}
+]
 
 export default defineNuxtPlugin({
-  name: 'nuxt:global-components',` +
-      (options.getComponents().filter(c => c.global).length
-        ? `
+  name: 'nuxt:global-components',
   setup (nuxtApp) {
-    for (const name in lazyGlobalComponents) {
-      nuxtApp.vueApp.component(name, lazyGlobalComponents[name])
-      nuxtApp.vueApp.component('Lazy' + name, lazyGlobalComponents[name])
+    for (const [name, component] of lazyGlobalComponents) {
+      nuxtApp.vueApp.component(name, component)
+      nuxtApp.vueApp.component('Lazy' + name, component)
     }
-  }`
-        : '') + `
+  }
 })
 `
+  }
+}
+
+export const lazyGlobalComponentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+  getContents ({ options }) {
+    const componentExports = options.getComponents(options.mode).filter(c => !c.island && c.global).map((c) => {
+      const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+      const comment = createImportMagicComments(c)
+
+      return `export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${c.mode === 'client' ? `createClientOnly(${exp})` : exp}))`
+    })
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+      ...componentExports
+    ].join('\n')
   }
 }
 
@@ -69,14 +94,17 @@ export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
       } else {
         definitions.push(genExport(c.filePath, [{ name: c.export, as: c.pascalName }]))
       }
-      definitions.push(`export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
+      if (c.global) {
+        definitions.push(genExport('#global-components', [{ name: `Lazy${c.pascalName}`, as: c.pascalName }]))
+      } else {
+        definitions.push(`export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
+      }
       return definitions
     })
     return [
       ...imports,
       ...components,
-      `export const lazyGlobalComponents = ${genObjectFromRawEntries(options.getComponents().filter(c => c.global).map(c => [c.pascalName, `Lazy${c.pascalName}`]))}`,
-      `export const componentNames = ${JSON.stringify(options.getComponents().filter(c => !c.island).map(c => c.pascalName))}`
+      `export const componentNames = ${JSON.stringify(options.getComponents('all').filter(c => !c.island).map(c => c.pascalName))}`
     ].join('\n')
   }
 }

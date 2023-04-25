@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentsIslandsTemplate, componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
+import { componentsIslandsTemplate, componentsPluginTemplate, componentsTemplate, componentsTypeTemplate, lazyGlobalComponentsTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -115,10 +115,10 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate({ ...componentsTypeTemplate, options: { getComponents } })
     // components.plugin.mjs
     addPluginTemplate({ ...componentsPluginTemplate, options: { getComponents } } as any)
-    // components.server.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
-    // components.client.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.client.mjs', options: { getComponents, mode: 'client' } })
+    addTemplate({ ...lazyGlobalComponentsTemplate, filename: 'global-components.server.mjs', options: { getComponents, mode: 'server' } })
+    addTemplate({ ...lazyGlobalComponentsTemplate, filename: 'global-components.client.mjs', options: { getComponents, mode: 'client' } })
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs', options: { getComponents } })
@@ -128,12 +128,14 @@ export default defineNuxtModule<ComponentsOptions>({
 
     nuxt.hook('vite:extendConfig', (config, { isClient }) => {
       const mode = isClient ? 'client' : 'server'
-        ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+      ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+      ;(config.resolve!.alias as any)['#global-components'] = resolve(nuxt.options.buildDir, `global-components.${mode}.mjs`)
     })
     nuxt.hook('webpack:config', (configs) => {
       for (const config of configs) {
         const mode = config.name === 'server' ? 'server' : 'client'
-          ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+        ;(config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+        ;(config.resolve!.alias as any)['#global-components'] = resolve(nuxt.options.buildDir, `global-components.${mode}.mjs`)
       }
     })
 
