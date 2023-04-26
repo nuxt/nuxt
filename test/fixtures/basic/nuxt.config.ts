@@ -106,8 +106,8 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return ':root { --virtual: red }' }
         }
       }))
-      addVitePlugin(plugin.vite())
-      addWebpackPlugin(plugin.webpack())
+      addVitePlugin(() => plugin.vite())
+      addWebpackPlugin(() => plugin.webpack())
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
