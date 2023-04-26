@@ -11,7 +11,7 @@
     "@nuxt/config": "2.16.3",
     "@nuxt/server": "2.16.3",
     "@nuxt/utils": "2.16.3",
-    "consola": "^2.15.3",
+    "consola": "^3.1.0",
     "fs-extra": "^10.1.0",
     "hable": "^3.0.0",
     "hash-sum": "^2.0.0",

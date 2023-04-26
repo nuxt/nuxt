@@ -14,7 +14,7 @@
     "@nuxt/webpack": "2.16.3",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
-    "consola": "^2.15.3",
+    "consola": "^3.1.0",
     "fs-extra": "^10.1.0",
     "glob": "^8.1.0",
     "hash-sum": "^2.0.0",
