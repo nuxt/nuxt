@@ -353,6 +353,15 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
     expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+    await page.close()
+  })
+
+  it('/legacy-async-data-fail', async () => {
+    const page = await createPage('/legacy-async-data-fail') 
+    const html  = await page.content()
+    expect(html).not.toContain('don\'t look at this')
+    expect(html).toContain('This is the error page')
+    expect(html).toContain('OH NNNNNNOOOOOOOOOOO')
   })
 })
 
