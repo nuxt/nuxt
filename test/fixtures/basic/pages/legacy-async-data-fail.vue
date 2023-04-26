@@ -7,7 +7,7 @@
 <script lang="ts">
 export default defineNuxtComponent({
     asyncData() {
-        throw 'OH NNNNNNOOOOOOOOOOO'
+        throw new Error('OH NNNNNNOOOOOOOOOOO')
     }
 })
 </script>
