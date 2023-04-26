@@ -5,7 +5,7 @@ import type { NuxtApp } from '../nuxt'
 import { callWithNuxt, useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
-import { createError, showError } from './error'
+import { createError } from './error'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
@@ -17,7 +17,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
   const { data, error } = await useAsyncData(`options:asyncdata:${key}`, () => callWithNuxt(nuxt, fn, [nuxt]))
   if (error.value) {
-    return showError(createError(error.value))
+    throw createError(error.value)
   }
   if (data.value && typeof data.value === 'object') {
     Object.assign(await res, toRefs(reactive(data.value)))
