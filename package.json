@@ -51,7 +51,7 @@
     "@vue/vue2-jest": "^29.2.3",
     "babel-jest": "^29.5.0",
     "chrome-launcher": "^0.15.2",
-    "consola": "^2.15.3",
+    "consola": "^3.1.0",
     "create-require": "^1.1.1",
     "cross-spawn": "^7.0.3",
     "esbuild": "^0.17.18",

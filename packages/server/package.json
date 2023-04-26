@@ -13,7 +13,7 @@
     "@nuxtjs/youch": "^4.2.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
-    "consola": "^2.15.3",
+    "consola": "^3.1.0",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
     "fs-extra": "^10.1.0",
