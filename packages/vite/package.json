@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -26,13 +26,13 @@
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@rollup/plugin-replace": "^5.0.2",
-    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue": "^4.2.0",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
     "clear": "^0.1.0",
     "cssnano": "^6.0.0",
     "defu": "^6.1.2",
-    "esbuild": "^0.17.17",
+    "esbuild": "^0.17.18",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.0",
@@ -42,7 +42,7 @@
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
-    "ohash": "^1.1.1",
+    "ohash": "^1.1.2",
     "pathe": "^1.1.0",
     "perfect-debounce": "^0.1.3",
     "pkg-types": "^1.0.2",
@@ -54,7 +54,7 @@
     "strip-literal": "^1.0.1",
     "ufo": "^1.1.1",
     "unplugin": "^1.3.1",
-    "vite": "~4.2.2",
+    "vite": "~4.3.2",
     "vite-node": "^0.30.1",
     "vite-plugin-checker": "^0.5.6",
     "vue-bundle-renderer": "^1.0.3"
@@ -63,6 +63,6 @@
     "vue": "^3.2.47"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   }
 }

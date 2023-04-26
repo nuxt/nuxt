@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -35,10 +35,10 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.30.0",
-    "memfs": "^3.5.0",
+    "memfs": "^3.5.1",
     "mini-css-extract-plugin": "^2.7.5",
     "mlly": "^1.2.0",
-    "ohash": "^1.1.1",
+    "ohash": "^1.1.2",
     "pathe": "^1.1.0",
     "pify": "^6.1.0",
     "postcss": "^8.4.23",
@@ -72,6 +72,6 @@
     "vue": "^3.2.47"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   }
 }

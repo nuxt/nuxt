@@ -1,4 +1,5 @@
 import { createElementBlock, createElementVNode, defineComponent, h, mergeProps, onMounted, ref } from 'vue'
+import type { ComponentOptions } from 'vue'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -8,7 +9,7 @@ export default defineComponent({
   setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
-    return (props) => {
+    return (props: any) => {
       if (mounted.value) { return slots.default?.() }
       const slot = slots.fallback || slots.placeholder
       if (slot) { return slot() }
@@ -21,7 +22,7 @@ export default defineComponent({
 
 const cache = new WeakMap()
 
-export function createClientOnly (component) {
+export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (cache.has(component)) {
     return cache.get(component)
   }
@@ -30,9 +31,9 @@ export function createClientOnly (component) {
 
   if (clone.render) {
     // override the component render (non script setup component)
-    clone.render = (ctx, ...args) => {
+    clone.render = (ctx: any, ...args: any[]) => {
       if (ctx.mounted$) {
-        const res = component.render(ctx, ...args)
+        const res = component.render!(ctx, ...args)
         return (res.children === null || typeof res.children === 'string')
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
@@ -56,7 +57,7 @@ export function createClientOnly (component) {
       .then((setupState) => {
         return typeof setupState !== 'function'
           ? { ...setupState, mounted$ }
-          : (...args) => {
+          : (...args: any[]) => {
               if (mounted$.value) {
                 const res = setupState(...args)
                 return (res.children === null || typeof res.children === 'string')

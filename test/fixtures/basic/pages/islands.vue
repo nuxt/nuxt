@@ -18,7 +18,7 @@ const count = ref(0)
       <NuxtIsland name="PureComponent" :props="islandProps" />
       <NuxtIsland name="PureComponent" :props="islandProps" />
     </div>
-    <button @click="islandProps.number++">
+    <button id="increase-pure-component" @click="islandProps.number++">
       Increase
     </button>
     <hr>
@@ -26,7 +26,7 @@ const count = ref(0)
     <div v-if="routeIslandVisible" class="box">
       <NuxtIsland name="RouteComponent" :context="{ url: '/test' }" />
     </div>
-    <button v-else @click="routeIslandVisible = true">
+    <button v-else id="show-route" @click="routeIslandVisible = true">
       Show
     </button>
 
@@ -35,7 +35,7 @@ const count = ref(0)
     <div>
       Async island component (20ms):
       <NuxtIsland name="LongAsyncComponent" :props="{ count }" />
-      <button @click="count++">
+      <button id="count-async-server-long-async" @click="count++">
         add +1 to count
       </button>
     </div>
