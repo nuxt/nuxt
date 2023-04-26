@@ -98,6 +98,8 @@ export default defineNuxtModule({
             if (page.name) {
               route.name = page.name
             }
+            // TODO: implement redirect support
+            // if (page.redirect) {}
             if (page.children) {
               page.children.forEach(child => addPage(route, child))
             }
