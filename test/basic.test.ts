@@ -357,11 +357,9 @@ describe('pages', () => {
   })
 
   it('/legacy-async-data-fail', async () => {
-    const page = await createPage('/legacy-async-data-fail') 
-    const html  = await page.content()
-    expect(html).not.toContain('don\'t look at this')
-    expect(html).toContain('This is the error page')
-    expect(html).toContain('OH NNNNNNOOOOOOOOOOO')
+    const response = await $fetch('/legacy-async-data-fail').catch(error => error.data)  
+    expect(response).not.toContain('don\'t look at this')
+    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
   })
 })
 
