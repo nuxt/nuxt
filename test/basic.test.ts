@@ -571,6 +571,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
