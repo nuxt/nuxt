@@ -310,6 +310,15 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  examples/other/use-custom-fetch-composable:
+    devDependencies:
+      '@nuxt/ui':
+        specifier: ^0.3.3
+        version: 0.3.3(nuxt@packages+nuxt)(rollup@3.21.0)(vite@3.2.5)(vue@3.2.47)(webpack@5.80.0)
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   examples/routing/layouts:
     devDependencies:
       '@nuxt/ui':
