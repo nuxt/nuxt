@@ -120,7 +120,7 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
     // components.client.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.client.mjs', options: { getComponents, mode: 'client' } })
-    // components-names.mjs
+    // component-names.mjs
     addTemplate({ ...componentNamesTemplate, options: { getComponents, mode: 'all' } })
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {

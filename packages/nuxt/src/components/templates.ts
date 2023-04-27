@@ -49,7 +49,7 @@ export default defineNuxtPlugin({
 }
 
 export const componentNamesTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
-  filename: 'components-names.mjs',
+  filename: 'component-names.mjs',
   getContents ({ options }) {
     return `export const componentNames = ${JSON.stringify(options.getComponents().filter(c => !c.island).map(c => c.pascalName))}`
   }

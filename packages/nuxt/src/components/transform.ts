@@ -12,7 +12,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     imports: [
       {
         name: 'componentNames',
-        from: '#build/components-names'
+        from: '#build/component-names'
       }
     ],
     virtualImports: ['#components']
