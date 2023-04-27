@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentsIslandsTemplate, componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -120,6 +120,8 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
     // components.client.mjs
     addTemplate({ ...componentsTemplate, filename: 'components.client.mjs', options: { getComponents, mode: 'client' } })
+    // components-names.mjs
+    addTemplate({ ...componentNamesTemplate, options: { getComponents, mode: 'all' } })
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs', options: { getComponents } })

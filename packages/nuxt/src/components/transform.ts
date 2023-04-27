@@ -9,7 +9,12 @@ import type { getComponentsT } from './module'
 
 export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
   const componentUnimport = createUnimport({
-    imports: [],
+    imports: [
+      {
+        name: 'componentNames',
+        from: '#build/components-names'
+      }
+    ],
     virtualImports: ['#components']
   })
 
