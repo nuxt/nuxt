@@ -3417,10 +3417,10 @@
     lodash "^4.17.15"
     pretty "^2.0.0"
 
-"@vue/vue2-jest@^29.2.3":
-  version "29.2.3"
-  resolved "https://registry.npmjs.org/@vue/vue2-jest/-/vue2-jest-29.2.3.tgz#2d5ec675a6f5aa697d5a4d21fd62ceaa53316735"
-  integrity sha512-q0mAc+ILQfegSLkD6eaopmMU2nd4rO2bzsbKtCe1y4tkvHH3UMO7g1OSYvcEffTIEEPh306NYTV02z1W2t813Q==
+"@vue/vue2-jest@^29.2.4":
+  version "29.2.4"
+  resolved "https://registry.npmjs.org/@vue/vue2-jest/-/vue2-jest-29.2.4.tgz#f17b61bbde629a2809db5ed85f88bee972ebe97b"
+  integrity sha512-oU/Ai4sufLlrhsj8GqRqfhMr6Ud4rehmwYP358/SjKcvUqOCoKa2lOBndDzG4uZVMNnQqQbKWIg7wqL3aRYPBA==
   dependencies:
     "@babel/plugin-transform-modules-commonjs" "^7.2.0"
     "@vue/component-compiler-utils" "^3.1.0"
