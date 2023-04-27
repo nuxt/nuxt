@@ -360,7 +360,6 @@ describe('pages', () => {
     const response = await fetch('/legacy-async-data-fail').then(r => r.text())
     expect(response).not.toContain('don\'t look at this')
     expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
-    await page.close()
   })
 })
 
