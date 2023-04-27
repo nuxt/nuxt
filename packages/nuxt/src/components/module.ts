@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -116,10 +116,6 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate({ ...componentsTypeTemplate, options: { getComponents } })
     // components.plugin.mjs
     addPluginTemplate({ ...componentsPluginTemplate, options: { getComponents } } as any)
-    // components.server.mjs
-    addTemplate({ ...componentsTemplate, filename: 'components.server.mjs', options: { getComponents, mode: 'server' } })
-    // components.client.mjs
-    addTemplate({ ...componentsTemplate, filename: 'components.client.mjs', options: { getComponents, mode: 'client' } })
     // component-names.mjs
     addTemplate({ ...componentNamesTemplate, options: { getComponents, mode: 'all' } })
     // components.islands.mjs
@@ -137,17 +133,6 @@ export default defineNuxtModule<ComponentsOptions>({
 
     addWebpackPlugin(unpluginServer.webpack(), { server: true, client: false })
     addWebpackPlugin(unpluginClient.webpack(), { server: false, client: true })
-
-    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-      const mode = isClient ? 'client' : 'server'
-        ; (config.resolve!.alias as any)['#components-global'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
-    })
-    nuxt.hook('webpack:config', (configs) => {
-      for (const config of configs) {
-        const mode = config.name === 'server' ? 'server' : 'client'
-          ; (config.resolve!.alias as any)['#components-global'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
-      }
-    })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
