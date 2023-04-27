@@ -353,6 +353,13 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
     expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+    await page.close()
+  })
+
+  it('/legacy-async-data-fail', async () => {
+    const response = await fetch('/legacy-async-data-fail').then(r => r.text())
+    expect(response).not.toContain('don\'t look at this')
+    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
   })
 })
 
@@ -571,6 +578,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
