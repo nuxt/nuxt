@@ -1,4 +1,4 @@
-import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
+import { addVitePlugin, addWebpackPlugin,addRspackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
 import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
@@ -83,6 +83,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Transform to inject imports in production mode
     addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addRspackPlugin(TransformPlugin.rspack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 

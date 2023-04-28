@@ -31,12 +31,12 @@ function baseConfig (ctx: RspackConfigContext) {
     entry: { app: [resolve(options.appDir, options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
     module: { rules: [] },
     plugins: [],
-    // TODO:
-    // externals: [],
-    // optimization: {
-    //   ...options.webpack.optimization,
-    //   minimizer: []
-    // },
+    externals: [],
+    // @ts-ignore
+    optimization: {
+      ...options.webpack.optimization,
+      // minimizer: []
+    },
     experiments: {},
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
@@ -147,10 +147,11 @@ function baseResolve (ctx: RspackConfigContext) {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
     alias: ctx.alias,
     modules: webpackModulesDir,
-    // fullySpecified: false,
+    fullySpecified: false,
     ...config.resolve
   }
 
+  // TODO
   // config.resolveLoader = {
   //   modules: webpackModulesDir,
   //   ...config.resolveLoader

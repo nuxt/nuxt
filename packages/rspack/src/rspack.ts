@@ -16,7 +16,7 @@ import { logger, useNuxt } from '@nuxt/kit'
 // import { DynamicBasePlugin } from './plugins/dynamic-base'
 // import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
-// import { registerVirtualModules } from './virtual-modules'
+import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { createRspackConfigContext, applyPresets, getRspackConfig } from './utils/config'
 
@@ -30,13 +30,13 @@ export async function bundle (nuxt: Nuxt) {
       template.write = true
     }
   })
+  registerVirtualModules()
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
     const ctx = createRspackConfigContext(nuxt)
     applyPresets(ctx, preset)
     return getRspackConfig(ctx)
   })
-
   // @ts-ignore
   await nuxt.callHook('rspack:config', webpackConfigs)
 
@@ -94,7 +94,8 @@ async function createDevMiddleware (compiler: Compiler) {
   logger.debug('Creating webpack middleware...')
 
   // Create webpack dev middleware
-  const devMiddleware = rspackDevMiddleware(compiler as any, {
+  // @ts-ignore
+  const devMiddleware = rspackDevMiddleware.default(compiler as any, {
     publicPath: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
     outputFileSystem: compiler.outputFileSystem as any,
     // @ts-ignore

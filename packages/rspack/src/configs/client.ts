@@ -72,7 +72,6 @@ function clientHMR (ctx: RspackConfigContext) {
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
-  // TODO: HMR
   config.plugins = config.plugins || []
   config.devServer = config.devServer || {}
   // webpack.HotModuleReplacementPlugin

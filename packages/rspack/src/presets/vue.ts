@@ -12,7 +12,7 @@ export function vue (ctx: RspackConfigContext) {
 
   config.module!.rules!.push({
     test: /\.vue$/i,
-    use: require.resolve('vue-rsloader'),
+    use: 'vue-rsloader',
     options: {
       reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
       ...options.webpack.loaders.vue

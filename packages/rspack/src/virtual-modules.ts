@@ -1,15 +1,24 @@
 import { useNuxt } from '@nuxt/kit'
-import VirtualModulesPlugin from 'webpack-virtual-modules'
+import fs from "fs-extra";
+import path from "path";
+// import VirtualModulesPlugin from 'webpack-virtual-modules'
 
 export function registerVirtualModules () {
   const nuxt = useNuxt()
 
   // Initialize virtual modules instance
-  const virtualModules = new VirtualModulesPlugin(nuxt.vfs)
+  // const virtualModules = new VirtualModulesPlugin(nuxt.vfs)
   const writeFiles = () => {
     console.log('writing files')
     for (const filePath in nuxt.vfs) {
-      virtualModules.writeModule(filePath, nuxt.vfs[filePath])
+      if (path.isAbsolute(filePath)) {
+        fs.writeFileSync(filePath, nuxt.vfs[filePath])
+      } else {
+        // const p = path.join(nuxt.options.buildDir, filePath)
+        // fs.createFileSync(p)
+        // fs.writeFileSync(p, nuxt.vfs[filePath])
+      }
+      // virtualModules.writeModule(filePath, nuxt.vfs[filePath])
     }
   }
 
@@ -23,6 +32,10 @@ export function registerVirtualModules () {
 
   nuxt.hook('rspack:config', configs => configs.forEach((config) => {
     // Support virtual modules (input)
-    config.plugins!.push(virtualModules)
+    // config.plugins!.push(virtualModules)
+    if (config.resolve && config.resolve.alias) {
+      // @ts-ignore
+      // config.resolve.alias['#build'] = path.join(nuxt.options.buildDir, '#build')
+    }
   }))
 }

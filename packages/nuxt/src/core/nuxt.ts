@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createHooks, createDebugger } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
+import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, addRspackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -79,11 +79,13 @@ async function initNuxt (nuxt: Nuxt) {
   }
   addVitePlugin(ImportProtectionPlugin.vite(config))
   addWebpackPlugin(ImportProtectionPlugin.webpack(config))
+  addRspackPlugin(ImportProtectionPlugin.rspack(config))
 
   nuxt.hook('modules:done', () => {
     // Add unctx transform
     addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addRspackPlugin(UnctxTransformPlugin(nuxt).rspack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions : TreeShakeComposablesPluginOptions = {
@@ -93,6 +95,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (Object.keys(serverTreeShakeOptions.composables).length) {
       addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
       addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
+      addRspackPlugin(TreeShakeComposablesPlugin.rspack(serverTreeShakeOptions), { client: false })
     }
     const clientTreeShakeOptions : TreeShakeComposablesPluginOptions = {
       sourcemap: nuxt.options.sourcemap.client,
@@ -101,6 +104,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (Object.keys(clientTreeShakeOptions.composables).length) {
       addVitePlugin(TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
       addWebpackPlugin(TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
+      addRspackPlugin(TreeShakeComposablesPlugin.rspack(clientTreeShakeOptions), { server: false })
     }
   })
 
@@ -108,6 +112,7 @@ async function initNuxt (nuxt: Nuxt) {
     // DevOnly component tree-shaking - build time only
     addVitePlugin(DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addRspackPlugin(DevOnlyPlugin.rspack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled

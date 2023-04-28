@@ -1,4 +1,4 @@
-import { EsbuildPlugin } from 'esbuild-loader'
+// import { EsbuildPlugin } from 'esbuild-loader'
 import type { RspackConfigContext } from '../utils/config'
 
 export function esbuild (ctx: RspackConfigContext) {
@@ -13,25 +13,25 @@ export function esbuild (ctx: RspackConfigContext) {
   // config.optimization!.minimizer!.push(new EsbuildPlugin())
 
   config.module!.rules!.push(
-    // {
-    //   test: /\.m?[jt]s$/i,
-    //   type: 'javascript/auto'
-    //   // loader: 'esbuild-loader',
-    //   // exclude: (file) => {
-    //   //   // Not exclude files outside node_modules
-    //   //   file = file.split('node_modules', 2)[1]
-    //   //   if (!file) { return false }
+    {
+      test: /\.m?[jt]s$/i,
+      type: 'javascript/auto',
+      // loader: 'esbuild-loader',
+      // exclude: (file) => {
+      //   // Not exclude files outside node_modules
+      //   file = file.split('node_modules', 2)[1]
+      //   if (!file) { return false }
 
-    //   //   return !ctx.transpile.some(module => module.test(file))
-    //   // },
-    //   // resolve: {
-    //   //   // fullySpecified: false
-    //   // },
-    //   // options: {
-    //   //   loader: 'ts',
-    //   //   target
-    //   // }
-    // },
+      //   return !ctx.transpile.some(module => module.test(file))
+      // },
+      resolve: {
+        fullySpecified: false
+      }
+      // options: {
+      //   loader: 'ts',
+      //   target
+      // }
+    }
     // {
     //   test: /\.m?[jt]sx$/,
     //   // loader: 'esbuild-loader',

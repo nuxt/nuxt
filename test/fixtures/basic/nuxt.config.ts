@@ -1,4 +1,4 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
+import { addComponent, addVitePlugin, addWebpackPlugin, addRspackPlugin } from '@nuxt/kit'
 import type { NuxtPage } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
@@ -107,6 +107,7 @@ export default defineNuxtConfig({
       }))
       addVitePlugin(plugin.vite())
       addWebpackPlugin(plugin.webpack())
+      addRspackPlugin(plugin.rspack())
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']

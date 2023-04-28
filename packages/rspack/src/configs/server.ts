@@ -54,7 +54,6 @@ function serverStandalone (ctx: RspackConfigContext) {
   const external = ['#internal/nitro']
 
   if (!Array.isArray(ctx.config.externals)) { return }
-  // TODO
   ctx.config.externals.push(({ request }, cb) => {
     if (!request) {
       return cb(undefined, false)

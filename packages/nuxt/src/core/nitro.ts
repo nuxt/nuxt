@@ -269,7 +269,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
+    nuxt.hook('rspack:compile', ({ compiler }) => { compiler.outputFileSystem = { ...fsExtra, join } as any })
     nuxt.hook('webpack:compile', ({ compiler }) => { compiler.outputFileSystem = { ...fsExtra, join } as any })
+
+    nuxt.hook('rspack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 

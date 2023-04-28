@@ -136,7 +136,13 @@ export default defineNuxtModule<ComponentsOptions>({
           ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
       }
     })
-
+    nuxt.hook('rspack:config', (configs) => {
+      for (const config of configs) {
+        const mode = config.name === 'server' ? 'server' : 'client'
+          ; (config.resolve!.alias as any)['#components'] = resolve(nuxt.options.buildDir, `components.${mode}.mjs`)
+      }
+    })
+    
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
@@ -238,6 +244,29 @@ export default defineNuxtModule<ComponentsOptions>({
           rootDir: nuxt.options.rootDir
         }))
         config.plugins.push(loaderPlugin.webpack({
+          sourcemap: nuxt.options.sourcemap[mode],
+          getComponents,
+          mode,
+          transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
+          experimentalComponentIslands: nuxt.options.experimental.componentIslands
+        }))
+      })
+    })
+    nuxt.hook('rspack:config', (configs) => {
+      configs.forEach((config) => {
+        const mode = config.name === 'client' ? 'client' : 'server'
+        config.plugins = config.plugins || []
+        if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
+          config.plugins.push(TreeShakeTemplatePlugin.rspack({
+            sourcemap: nuxt.options.sourcemap[mode],
+            getComponents
+          }))
+        }
+        config.plugins.push(clientFallbackAutoIdPlugin.rspack({
+          sourcemap: nuxt.options.sourcemap[mode],
+          rootDir: nuxt.options.rootDir
+        }))
+        config.plugins.push(loaderPlugin.rspack({
           sourcemap: nuxt.options.sourcemap[mode],
           getComponents,
           mode,

@@ -70,6 +70,41 @@ export function extendWebpackConfig (
 }
 
 /**
+ * Extend rspack config
+ *
+ * The fallback function might be called multiple times
+ * when applying to both client and server builds.
+ */
+export function extendRspackConfig (
+  fn: ((config: WebpackConfig)=> void),
+  options: ExtendWebpackConfigOptions = {}
+) {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('rspack:config', (configs: WebpackConfig[]) => {
+    if (options.server !== false) {
+      const config = configs.find(i => i.name === 'server')
+      if (config) {
+        fn(config)
+      }
+    }
+    if (options.client !== false) {
+      const config = configs.find(i => i.name === 'client')
+      if (config) {
+        fn(config)
+      }
+    }
+  })
+}
+
+/**
  * Extend Vite config
  */
 export function extendViteConfig (
@@ -105,6 +140,20 @@ export function extendViteConfig (
  */
 export function addWebpackPlugin (plugin: WebpackPluginInstance | WebpackPluginInstance[], options?: ExtendWebpackConfigOptions) {
   extendWebpackConfig((config) => {
+    config.plugins = config.plugins || []
+    if (Array.isArray(plugin)) {
+      config.plugins.push(...plugin)
+    } else {
+      config.plugins.push(plugin)
+    }
+  }, options)
+}
+
+/**
+ * Append rspack plugin to the config.
+ */
+export function addRspackPlugin (plugin: any | any[], options?: ExtendWebpackConfigOptions) {
+  extendRspackConfig((config) => {
     config.plugins = config.plugins || []
     if (Array.isArray(plugin)) {
       config.plugins.push(...plugin)
