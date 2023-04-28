@@ -23,18 +23,18 @@
   "devDependencies": {
     "@nuxt/telemetry": "^2.2.0",
     "@unhead/schema": "^1.1.26",
-    "@vitejs/plugin-vue": "^4.2.0",
+    "@vitejs/plugin-vue": "^4.2.1",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "h3": "^1.6.4",
     "ignore": "^5.2.4",
     "nitropack": "^2.3.3",
     "unbuild": "latest",
     "unctx": "^2.3.0",
-    "vite": "~4.3.2",
+    "vite": "~4.3.3",
     "vue": "3.2.47",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.1.6",
-    "webpack": "^5.80.0"
+    "webpack": "^5.81.0"
   },
   "dependencies": {
     "defu": "^6.1.2",
