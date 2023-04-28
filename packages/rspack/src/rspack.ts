@@ -12,11 +12,11 @@ import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
 // import { createUnplugin } from 'unplugin'
-// import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
-// import { DynamicBasePlugin } from './plugins/dynamic-base'
+import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
+import { DynamicBasePlugin } from './plugins/dynamic-base'
 // import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
-import { registerVirtualModules } from './virtual-modules'
+// import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { createRspackConfigContext, applyPresets, getRspackConfig } from './utils/config'
 
@@ -30,7 +30,7 @@ export async function bundle (nuxt: Nuxt) {
       template.write = true
     }
   })
-  registerVirtualModules()
+  // registerVirtualModules()
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
     const ctx = createRspackConfigContext(nuxt)
@@ -40,26 +40,24 @@ export async function bundle (nuxt: Nuxt) {
   // @ts-ignore
   await nuxt.callHook('rspack:config', webpackConfigs)
 
-  // console.log(webpackConfigs[0])
-
   // // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
     // TODO: need support for runtime __webpack_public_path__
-    // config.plugins!.push(DynamicBasePlugin.rspack({
-    //   sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
-    // }))
+    config.plugins!.push(DynamicBasePlugin.rspack({
+      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
+    }))
     // TODO: Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     // if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
     //   config.plugins!.push(new ChunkErrorPlugin())
     // }
-    // config.plugins!.push(composableKeysPlugin.rspack({
-    //   sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server'],
-    //   rootDir: nuxt.options.rootDir,
-    //   composables: nuxt.options.optimization.keyedComposables
-    // }))
+    config.plugins!.push(composableKeysPlugin.rspack({
+      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server'],
+      rootDir: nuxt.options.rootDir,
+      composables: nuxt.options.optimization.keyedComposables
+    }))
 
     // Create compiler
     const compiler = createCompiler(config)
