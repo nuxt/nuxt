@@ -40,7 +40,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -73,7 +73,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -99,7 +99,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -185,6 +185,8 @@ jobs:
           TEST_PAYLOAD: ${{ matrix.payload }}
 
   build-release:
+    permissions:
+      id-token: write
     if: |
       github.event_name == 'push' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
@@ -199,7 +201,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [16]
+        node: [20]
 
     timeout-minutes: 20
 
@@ -226,3 +228,4 @@ jobs:
         run: ./scripts/release-edge.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true

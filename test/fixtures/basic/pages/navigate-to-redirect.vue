@@ -9,4 +9,8 @@ definePageMeta({
     return navigateTo({ path: '/' }, { redirectCode: 307 })
   }
 })
+console.log('running setup')
+useNuxtApp().hook('app:rendered', () => {
+  throw new Error('this should not run')
+})
 </script>
