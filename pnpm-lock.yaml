@@ -577,7 +577,7 @@ importers:
         version: link:../vite
       '@types/node':
         specifier: ^14.18.0 || >=16.10.0
-        version: 18.16.0
+        version: 18.16.2
       '@unhead/ssr':
         specifier: ^1.1.26
         version: 1.1.26
@@ -722,7 +722,7 @@ importers:
         version: 1.2.1
       vite:
         specifier: ^4.3.3
-        version: 4.3.3(@types/node@18.16.0)
+        version: 4.3.3(@types/node@18.16.2)
       vitest:
         specifier: ^0.30.1
         version: 0.30.1(playwright@1.33.0)
@@ -2405,7 +2405,7 @@ packages:
     resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
       '@types/jsonfile': 6.1.1
-      '@types/node': 18.16.0
+      '@types/node': 18.16.2
     dev: true
 
   /@types/graceful-fs@4.1.6:
@@ -2464,9 +2464,6 @@ packages:
     resolution: {integrity: sha512-nJOuiTlsvmClSr3+a/trTSx4DTuY/VURsWGKSf/eeavh0LRMqdsK60ti0TlwM5iHiGOK3/Ibkxsbr7i9rzGreA==}
     dev: true
 
-  /@types/node@18.16.0:
-    resolution: {integrity: sha512-BsAaKhB+7X+H4GnSjGhJG9Qi8Tw+inU9nJDwmD5CgOmBLEI6ArdhikpLX7DjbjDRDTbqZzU2LSQNZg8WGPiSZQ==}
-
   /@types/node@18.16.2:
     resolution: {integrity: sha512-GQW/JL/5Fz/0I8RpeBG9lKp0+aNcXEaVL71c0D2Q0QHDTFvlYKT7an0onCUXj85anv7b4/WesqdfchLc0jtsCg==}
 
@@ -2489,7 +2486,7 @@ packages:
   /@types/prompts@2.4.4:
     resolution: {integrity: sha512-p5N9uoTH76lLvSAaYSZtBCdEXzpOOufsRjnhjVSrZGXikVGHX9+cc9ERtHRV4hvBKHyZb1bg4K+56Bd2TqUn4A==}
     dependencies:
-      '@types/node': 18.16.0
+      '@types/node': 18.16.2
       kleur: 3.0.3
     dev: true
 
@@ -2525,7 +2522,7 @@ packages:
   /@types/webpack-bundle-analyzer@4.6.0:
     resolution: {integrity: sha512-XeQmQCCXdZdap+A/60UKmxW5Mz31Vp9uieGlHB3T4z/o2OLVLtTI3bvTuS6A2OWd/rbAAQiGGWIEFQACu16szA==}
     dependencies:
-      '@types/node': 18.16.0
+      '@types/node': 18.16.2
       tapable: 2.2.1
       webpack: 5.81.0
     transitivePeerDependencies:
@@ -2990,7 +2987,7 @@ packages:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.3.3(@types/node@18.16.0)
+      vite: 4.3.3(@types/node@18.16.2)
       vue: 3.2.47
 
   /@vitest/expect@0.30.1:
@@ -9523,38 +9520,6 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
-
-  /vite@4.3.3(@types/node@18.16.0):
-    resolution: {integrity: sha512-MwFlLBO4udZXd+VBcezo3u8mC77YQk+ik+fbc0GZWGgzfbPP+8Kf0fldhARqvSYmtIWoAJ5BXPClUbMTlqFxrA==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': '>= 14'
-      less: '*'
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      '@types/node': 18.16.0
-      esbuild: 0.17.18
-      postcss: 8.4.23
-      rollup: 3.21.0
-    optionalDependencies:
-      fsevents: 2.3.2
 
   /vite@4.3.3(@types/node@18.16.2):
     resolution: {integrity: sha512-MwFlLBO4udZXd+VBcezo3u8mC77YQk+ik+fbc0GZWGgzfbPP+8Kf0fldhARqvSYmtIWoAJ5BXPClUbMTlqFxrA==}
