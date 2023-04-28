@@ -27,7 +27,7 @@ const CookieDefaults: CookieOptions<any> = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
 
-export function useCookie <T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
@@ -47,7 +47,12 @@ export function useCookie <T = string | null | undefined> (name: string, _opts?:
         writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts)
       }
     }
-    nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
+    const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
+    const writeAndUnhook = () => {
+      unhook() // don't write cookie subsequently when app:rendered is called
+      return writeFinalCookieValue()
+    }
+    nuxtApp.hooks.hookOnce('app:error', writeAndUnhook)
   }
 
   return cookie as CookieRef<T>

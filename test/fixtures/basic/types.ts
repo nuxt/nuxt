@@ -295,6 +295,10 @@ describe('app config', () => {
         val: number
       }
       userConfig: 123 | 456
+      someThing?: {
+        value?: string | false,
+      }
+      [key: string]: unknown
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })

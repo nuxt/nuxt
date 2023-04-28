@@ -180,7 +180,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
-    throw createError('Cannot directly render error page!')
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Page Not Found: /__nuxt_error'
+    })
   }
 
   // Check for island component rendering
@@ -241,9 +244,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     writeEarlyHints(event, link)
   }
 
-  const _rendered = await renderer.renderToString(ssrContext).catch((error) => {
+  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // Use explicitly thrown error in preference to subsequent rendering errors
-    throw (!ssrError && ssrContext.payload?.error) || error
+    const _err = (!ssrError && ssrContext.payload?.error) || error
+    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    throw _err
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
