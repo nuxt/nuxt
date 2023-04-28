@@ -167,7 +167,7 @@ const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
-export default defineRenderHandler(async (event) => {
+export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
@@ -252,7 +252,12 @@ export default defineRenderHandler(async (event) => {
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
-  if (event.node.res.headersSent || event.node.res.writableEnded) { return }
+  if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+
+  if (event.node.res.headersSent || event.node.res.writableEnded) {
+    // @ts-expect-error TODO: handle additional cases
+    return
+  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
