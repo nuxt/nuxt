@@ -13,8 +13,9 @@ export const showError = (_err: string | Error | Partial<NuxtError>) => {
 
   try {
     const nuxtApp = useNuxtApp()
-    nuxtApp.callHook('app:error', err)
     const error = useError()
+    const p = nuxtApp.hooks.callHook('app:error', err)
+    if (process.server) { nuxtApp.hook('app:created', () => p) }
     error.value = error.value || err
   } catch {
     throw err
