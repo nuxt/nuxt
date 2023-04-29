@@ -284,7 +284,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES
+  const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 

@@ -9,7 +9,7 @@ import { parseQuery, parseURL } from 'ufo'
 interface SSRStylePluginOptions {
   srcDir: string
   chunksWithInlinedCSS: Set<string>
-  shouldInline?: (id?: string) => boolean
+  shouldInline?: ((id?: string) => boolean) | boolean
 }
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
@@ -93,8 +93,10 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
-      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
-      if (options.shouldInline && !options.shouldInline(id)) { return }
+      if (!pathname.endsWith('.server.vue') && options.shouldInline === false) {
+        if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
+      }
+      if (typeof options.shouldInline === 'function' && !options.shouldInline(id)) { return }
 
       const relativeId = relativeToSrcDir(id)
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }

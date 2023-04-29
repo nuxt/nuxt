@@ -119,14 +119,11 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
-  if (ctx.nuxt.options.experimental.inlineSSRStyles) {
-    const chunksWithInlinedCSS = new Set<string>()
+  const chunksWithInlinedCSS = new Set<string>()
     serverConfig.plugins!.push(ssrStylesPlugin({
       srcDir: ctx.nuxt.options.srcDir,
       chunksWithInlinedCSS,
-      shouldInline: typeof ctx.nuxt.options.experimental.inlineSSRStyles === 'function'
-        ? ctx.nuxt.options.experimental.inlineSSRStyles
-        : undefined
+      shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles
     }))
 
     // Remove CSS entries for files that will have inlined styles
@@ -139,9 +136,8 @@ export async function buildServer (ctx: ViteBuildContext) {
         }
       }
     })
-  }
 
-  await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
+    await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
   serverConfig.plugins!.unshift(
     vuePlugin(serverConfig.vue),
