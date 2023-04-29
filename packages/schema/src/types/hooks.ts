@@ -317,6 +317,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
+   /**
+   * Allows to read the resolved webpack config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'webpack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
   /**
    * Called right before compilation.
    * @param options The options to be added
