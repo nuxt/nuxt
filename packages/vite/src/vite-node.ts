@@ -2,8 +2,9 @@ import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
-import { normalize, resolve } from 'pathe'
+import { isAbsolute, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
+import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
@@ -140,6 +141,9 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       const moduleId = decodeURI(event.node.req.url!).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
+      }
+      if (isAbsolute(moduleId) && !isFileServingAllowed(moduleId, viteServer)) {
+        throw createError({ statusCode: 403 /* Restricted */ })
       }
       const module = await node.fetchModule(moduleId).catch((err) => {
         const errorData = {

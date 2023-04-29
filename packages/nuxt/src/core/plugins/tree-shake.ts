@@ -1,8 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import { stripLiteral } from 'strip-literal'
-import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
+import { isJS, isVue } from '../utils'
 
 type ImportPath = string
 
@@ -22,18 +21,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
     name: 'nuxt:tree-shake-composables:transform',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      const { type } = parseQuery(search)
-
-      // vue files
-      if (pathname.endsWith('.vue') && (type === 'script' || !search)) {
-        return true
-      }
-
-      // js files
-      if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
-        return true
-      }
+      return isVue(id, { type: ['script'] }) || isJS(id)
     },
     transform (code) {
       if (!code.match(COMPOSABLE_RE)) { return }

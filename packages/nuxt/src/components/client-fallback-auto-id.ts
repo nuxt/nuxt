@@ -3,7 +3,7 @@ import type { ComponentsOptions } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { isAbsolute, relative } from 'pathe'
 import { hash } from 'ohash'
-import { isVueTemplate } from './helpers'
+import { isVue } from '../core/utils'
 interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform'],
@@ -25,7 +25,7 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
       if (include.some(pattern => id.match(pattern))) {
         return true
       }
-      return isVueTemplate(id)
+      return isVue(id, { type: ['template'] })
     },
     transform (code, id) {
       if (!CLIENT_FALLBACK_RE.test(code)) { return }

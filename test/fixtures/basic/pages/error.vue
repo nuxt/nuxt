@@ -11,6 +11,7 @@ const { data, error } = await useAsyncData(() => {
 }, { server: true })
 
 if (error.value) {
+  useCookie('some-error').value = 'was set'
   throw createError({ statusCode: 422, fatal: true, statusMessage: 'This is a custom error' })
 }
 

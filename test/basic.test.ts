@@ -337,6 +337,30 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it('/islands', async () => {
+    const page = await createPage('/islands')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#increase-pure-component').click()
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('#count-async-server-long-async').click()
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
+    ])
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
+    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+    await page.close()
+  })
+
+  it('/legacy-async-data-fail', async () => {
+    const response = await fetch('/legacy-async-data-fail').then(r => r.text())
+    expect(response).not.toContain('don\'t look at this')
+    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
+  })
 })
 
 describe('rich payloads', () => {
@@ -554,7 +578,27 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
+  })
+
+  it('should not allow accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toBe(404)
+    const error = await res.json()
+    delete error.stack
+    expect(error).toMatchInlineSnapshot(`
+      {
+        "message": "Page Not Found: /__nuxt_error",
+        "statusCode": 404,
+        "statusMessage": "Page Not Found: /__nuxt_error",
+        "url": "/__nuxt_error",
+      }
+    `)
   })
 
   // TODO: need to create test for webpack
@@ -1109,7 +1153,7 @@ describe('component islands', () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
 
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
     }
 
     expect(result).toMatchInlineSnapshot(`
@@ -1132,7 +1176,7 @@ describe('component islands', () => {
       })
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
     expect(result).toMatchInlineSnapshot(`
       {
@@ -1153,7 +1197,7 @@ describe('component islands', () => {
       })
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
+      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
     expect(result).toMatchInlineSnapshot(`
     {
