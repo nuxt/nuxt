@@ -145,6 +145,20 @@ export default defineNuxtConfig({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'schema:extend' (schemas) {
+      schemas.push({
+        appConfig: {
+          someThing: {
+            value: {
+              $default: 'default',
+              $schema: {
+                tsType: 'string | false'
+              }
+            }
+          }
+        }
+      })
+    },
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
     },

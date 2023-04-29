@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -61,6 +61,7 @@
     "@unhead/ssr": "^1.1.26",
     "@unhead/vue": "^1.1.26",
     "@vue/shared": "^3.2.47",
+    "c12": "^1.4.1",
     "chokidar": "^3.5.3",
     "cookie-es": "^0.5.0",
     "defu": "^6.1.2",
@@ -104,10 +105,10 @@
     "@types/estree": "^1.0.1",
     "@types/fs-extra": "^11.0.1",
     "@types/prompts": "^2.4.4",
-    "@vitejs/plugin-vue": "^4.2.0",
+    "@vitejs/plugin-vue": "^4.2.1",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.2",
+    "vite": "^4.3.3",
     "vitest": "^0.30.1"
   },
   "peerDependencies": {
