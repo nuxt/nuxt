@@ -587,6 +587,9 @@ importers:
       '@vue/shared':
         specifier: ^3.2.47
         version: 3.2.47
+      c12:
+        specifier: ^1.3.0
+        version: 1.4.1
       chokidar:
         specifier: ^3.5.3
         version: 3.5.3
