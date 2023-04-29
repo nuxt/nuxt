@@ -1,4 +1,5 @@
-import { computed, createStaticVNode, defineComponent, getCurrentInstance, ref, watch } from 'vue'
+import type { RendererNode } from 'vue'
+import { computed, createStaticVNode, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendHeader } from 'h3'
@@ -33,7 +34,7 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
-    const html = ref<string>(process.client ? instance.vnode.el?.outerHTML ?? '<div></div>' : '<div></div>')
+    const html = ref<string>(process.client ? getFragmentHTML(instance?.vnode?.el).join('') ?? '<div></div>' : '<div></div>')
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
@@ -51,7 +52,7 @@ export default defineComponent({
         }
       })
     }
-
+    const key = ref(0)
     async function fetchComponent () {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][hashId.value]) {
@@ -63,6 +64,7 @@ export default defineComponent({
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       html.value = res.html
+      key.value++
     }
 
     if (process.client) {
@@ -72,7 +74,40 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
-
-    return () => createStaticVNode(html.value, 1)
+    return () => h((_, { slots }) => slots.default?.(), { key: key.value }, {
+      default: () => [createStaticVNode(html.value, 1)]
+    })
   }
 })
+
+// TODO refactor with https://github.com/nuxt/nuxt/pull/19231
+function getFragmentHTML (element: RendererNode | null) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element)
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      blocks.push(element.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks)
+  }
+  return blocks
+}
+
+function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
+}

@@ -1,4 +1,4 @@
-import { useNuxt } from '@nuxt/kit'
+import { normalizeModuleTranspilePath, useNuxt } from '@nuxt/kit'
 
 export interface AddModuleTranspilesOptions {
   additionalModules?: string[]
@@ -14,7 +14,7 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   ]
     .map(m => typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src)
     .filter(m => typeof m === 'string')
-    .map(m => m.split('node_modules/').pop())
+    .map(normalizeModuleTranspilePath)
 
   // Try to sanitize modules to better match imports
   nuxt.options.build.transpile =
