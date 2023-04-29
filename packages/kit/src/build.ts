@@ -27,21 +27,15 @@ export interface ExtendConfigOptions {
    * @default true
    */
   client?: boolean
-}
-
-export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
   /**
    * Prepends the plugin to the array with `unshit()` instead of `push()`.
    */
   prepend?: boolean
 }
 
-export interface ExtendViteConfigOptions extends ExtendConfigOptions {
-  /**
-   * Prepends the plugin to the array with `unshit()` instead of `push()`.
-   */
-  prepend?: boolean
-}
+export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
+
+export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
 
 /**
  * Extend webpack config
