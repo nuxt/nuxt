@@ -48,11 +48,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       }
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
-    const writeAndUnhook = () => {
+    nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called
       return writeFinalCookieValue()
-    }
-    nuxtApp.hooks.hookOnce('app:error', writeAndUnhook)
+    })
   }
 
   return cookie as CookieRef<T>
