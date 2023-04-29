@@ -132,3 +132,39 @@ export function addVitePlugin (plugin: VitePlugin | VitePlugin[], options?: Exte
     }
   }, options)
 }
+
+interface AddBuildPluginFactory<Args extends any[]> {
+  vite?: (...args: Args) => VitePlugin | VitePlugin[]
+  webpack?: (...args: Args) => WebpackPluginInstance | WebpackPluginInstance[]
+}
+
+export function addBuildPlugin<Options extends Record<string, any>> (pluginFactory: AddBuildPluginFactory<[Options]>, pluginOptions?: Options, options?: ExtendConfigOptions): void
+export function addBuildPlugin<_Options extends never> (pluginFactory: AddBuildPluginFactory<[]>, options?: ExtendConfigOptions): void
+export function addBuildPlugin<Options extends Record<string, any>> (pluginFactory: AddBuildPluginFactory<[Options]>, pluginOptions?: Options, options?: ExtendConfigOptions) {
+
+  if (pluginFactory.vite) {
+    extendViteConfig((config) => {
+      const plugin = pluginFactory.vite!()
+
+      config.plugins = config.plugins || []
+      if (Array.isArray(plugin)) {
+        config.plugins.push(...plugin)
+      } else {
+        config.plugins.push(plugin)
+      }
+    }, options)
+  }
+
+  if (pluginFactory.webpack) {
+    extendWebpackConfig((config) => {
+      config.plugins = config.plugins || []
+      const plugin = pluginFactory.webpack!()
+
+      if (Array.isArray(plugin)) {
+        config.plugins.push(...plugin)
+      } else {
+        config.plugins.push(plugin)
+      }
+    }, options)
+  }
+}
