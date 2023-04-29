@@ -75,7 +75,9 @@ async function watch (nuxt: Nuxt) {
           ]
         })
         watcher.then((subscription) => {
-          console.timeEnd('[nuxt] builder:parcel:watch')
+          if (nuxt.options.debug) {
+            console.timeEnd('[nuxt] builder:parcel:watch')
+          }
           nuxt.hook('close', () => subscription.unsubscribe())
         })
       }

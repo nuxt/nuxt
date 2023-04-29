@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import { klona } from 'klona'
 import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
 // @ts-expect-error virtual file
@@ -37,7 +38,7 @@ function deepAssign (obj: any, newObj: any) {
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
   if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = reactive(__appConfig) as AppConfig
+    nuxtApp._appConfig = (process.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
   }
   return nuxtApp._appConfig
 }
