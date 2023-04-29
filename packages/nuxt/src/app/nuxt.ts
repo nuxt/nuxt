@@ -8,6 +8,7 @@ import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
+import type { RenderResponse } from 'nitropack'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -60,6 +61,8 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
+  /** @internal */
+  _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
 }
@@ -221,7 +224,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.call(nuxtApp, () => hook(...args))
+        await nuxtAppCtx.callAsync(nuxtApp, () => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server

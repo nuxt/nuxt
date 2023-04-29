@@ -1,8 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
-import { parseQuery, parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import { stripLiteral } from 'strip-literal'
+import { isJS, isVue } from '../../../nuxt/src/core/utils/plugins'
 
 export interface PureAnnotationsOptions {
   sourcemap: boolean
@@ -16,18 +15,7 @@ export const pureAnnotationsPlugin = createUnplugin((options: PureAnnotationsOpt
     name: 'nuxt:pure-annotations',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      const { type } = parseQuery(search)
-
-      // vue files
-      if (pathname.endsWith('.vue') && (type === 'script' || !search)) {
-        return true
-      }
-
-      // js files
-      if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
-        return true
-      }
+      return isVue(id, { type: ['script'] }) || isJS(id)
     },
     transform (code) {
       if (!FUNCTION_RE_SINGLE.test(code)) { return }
