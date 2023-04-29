@@ -11,12 +11,12 @@ export function addImports (imports: Import | Import[]) {
   })
 }
 
-export function addImportsDir (dirs: string | string[]) {
+export function addImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:dirs', (_dirs: string[]) => {
     for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
-      _dirs.push(dir)
+      _dirs[opts.prepend ? 'unshift' : 'push'](dir)
     }
   })
 }
