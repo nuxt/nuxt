@@ -96,7 +96,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
       expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | Promise<void | NavigationFailure | false>>()
+      expectTypeOf(navigateTo).toEqualTypeOf <(to: RouteLocationRaw | null | undefined, options ?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
@@ -295,6 +295,10 @@ describe('app config', () => {
         val: number
       }
       userConfig: 123 | 456
+      someThing?: {
+        value?: string | false,
+      }
+      [key: string]: unknown
     }
     expectTypeOf<AppConfig>().toEqualTypeOf<ExpectedMergedAppConfig>()
   })
