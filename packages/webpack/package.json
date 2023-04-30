@@ -43,7 +43,7 @@
     "pify": "^6.1.0",
     "postcss": "^8.4.23",
     "postcss-import": "^15.1.0",
-    "postcss-loader": "^7.2.4",
+    "postcss-loader": "^7.3.0",
     "postcss-url": "^10.1.3",
     "std-env": "^3.3.2",
     "time-fix-plugin": "^2.0.7",
