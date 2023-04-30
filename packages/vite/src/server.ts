@@ -120,24 +120,24 @@ export async function buildServer (ctx: ViteBuildContext) {
   serverConfig.customLogger = createViteLogger(serverConfig)
 
   const chunksWithInlinedCSS = new Set<string>()
-    serverConfig.plugins!.push(ssrStylesPlugin({
-      srcDir: ctx.nuxt.options.srcDir,
-      chunksWithInlinedCSS,
-      shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles
-    }))
+  serverConfig.plugins!.push(ssrStylesPlugin({
+    srcDir: ctx.nuxt.options.srcDir,
+    chunksWithInlinedCSS,
+    shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles
+  }))
 
-    // Remove CSS entries for files that will have inlined styles
-    ctx.nuxt.hook('build:manifest', (manifest) => {
-      for (const key in manifest) {
-        const entry = manifest[key]
-        const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
-        if (shouldRemoveCSS) {
-          entry.css = []
-        }
+  // Remove CSS entries for files that will have inlined styles
+  ctx.nuxt.hook('build:manifest', (manifest) => {
+    for (const key in manifest) {
+      const entry = manifest[key]
+      const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
+      if (shouldRemoveCSS) {
+        entry.css = []
       }
-    })
+    }
+  })
 
-    await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
+  await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
   serverConfig.plugins!.unshift(
     vuePlugin(serverConfig.vue),
