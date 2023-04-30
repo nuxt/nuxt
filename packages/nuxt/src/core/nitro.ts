@@ -202,6 +202,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.dev) {
+    nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
+    // In case a non-normalized absolute path is called for on Windows
+    if (process.platform === 'win32') {
+      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(/\//g, '\\')] = 'export default {}'
+    }
+  }
+
   // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
   if (nuxt.options.experimental.respectNoSSRHeader) {
     nitroConfig.handlers = nitroConfig.handlers || []
