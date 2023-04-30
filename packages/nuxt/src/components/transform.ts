@@ -21,15 +21,19 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
   function getComponentsImports (): Import[] {
     const components = getComponents(mode)
     return components.flatMap((c): Import[] => {
+      const withMode = (mode: string | undefined) => mode
+        ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}`
+        : c.filePath
+
       return [
         {
           as: c.pascalName,
-          from: c.filePath + (c.mode === 'client' ? '?component=client' : ''),
+          from: withMode(c.mode === 'client' ? 'client' : undefined),
           name: 'default'
         },
         {
           as: 'Lazy' + c.pascalName,
-          from: c.filePath + '?component=' + [c.mode === 'client' ? 'client' : '', 'async'].filter(Boolean).join(','),
+          from: withMode([c.mode === 'client' ? 'client' : '', 'async'].filter(Boolean).join(',')),
           name: 'default'
         }
       ]
@@ -43,10 +47,10 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     },
     async transform (code, id) {
       // Virtual component wrapper
-      if (id.includes('?component')) {
+      if (id.match(/[?&]nuxt_component=/)) {
         const { search } = parseURL(id)
         const query = parseQuery(search)
-        const mode = query.component
+        const mode = query.nuxt_component
         const bare = id.replace(/\?.*/, '')
         if (mode === 'async') {
           return [
