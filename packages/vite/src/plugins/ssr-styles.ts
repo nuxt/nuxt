@@ -93,12 +93,12 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
-      if (!pathname.endsWith('.server.vue') && options.shouldInline === false) {
-        if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
-      }
-      if (typeof options.shouldInline === 'function' && !options.shouldInline(id)) { return }
 
       const relativeId = relativeToSrcDir(id)
+      if ((!pathname.endsWith('.server.vue') && !relativeId.startsWith('components/islands/')) && options.shouldInline === false) { return }
+      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
+      if (typeof options.shouldInline === 'function' && !options.shouldInline(id)) { return }
+
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }
 
       let styleCtr = 0
