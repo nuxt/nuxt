@@ -1,7 +1,7 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { getRequestHeaders, setResponseHeader, setResponseStatus } from 'h3'
+import { appendResponseHeader, getRequestHeaders, setResponseHeader, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
@@ -69,7 +69,9 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   for (const [header, value] of res.headers.entries()) {
-    setResponseHeader(event, header, value)
+    // TODO: remove `appendResponseHeader` when we drop support for node 16
+    const handler = header.toLowerCase() === 'set-cookie' ? appendResponseHeader : setResponseHeader
+    handler(event, header, value)
   }
 
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)

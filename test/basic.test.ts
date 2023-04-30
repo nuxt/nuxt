@@ -116,7 +116,7 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    expect(headers.get('Set-Cookie')).toContain('set-in-plugin=true; Path=/')
 
     const page = await createPage('/navigate-to-forbidden')
     await page.waitForLoadState('networkidle')
@@ -582,7 +582,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    expect(res.headers.get('Set-Cookie')).toContain('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
