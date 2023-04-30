@@ -10,6 +10,7 @@ import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
 import { createTransformPlugin } from './transform'
+import { ssrStylesPlugin } from './ssr-styles'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
@@ -142,6 +143,25 @@ export default defineNuxtModule<ComponentsOptions>({
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+        }
+      }
+    })
+
+    const chunksWithInlinedCSS = new Set<string>()
+    addVitePlugin(ssrStylesPlugin({
+      srcDir: nuxt.options.srcDir,
+      chunksWithInlinedCSS,
+      shouldInline: nuxt.options.experimental.inlineSSRStyles,
+      getComponents
+    }), { server: true, client: false })
+
+    // Remove CSS entries for files that will have inlined styles
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const key in manifest) {
+        const entry = manifest[key]
+        const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
+        if (shouldRemoveCSS) {
+          entry.css = []
         }
       }
     })

@@ -5,11 +5,13 @@ import { dirname, relative } from 'pathe'
 import { genObjectFromRawEntries } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
+import type { Component } from '@nuxt/schema'
 
 interface SSRStylePluginOptions {
   srcDir: string
   chunksWithInlinedCSS: Set<string>
   shouldInline?: ((id?: string) => boolean) | boolean
+  getComponents(): Component[]
 }
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
@@ -19,6 +21,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const relativeToSrcDir = (path: string) => relative(options.srcDir, path)
 
   const warnCache = new Set<string>()
+  let islands: Component[]
 
   return {
     name: 'ssr-styles',
@@ -93,13 +96,18 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
-
-      const relativeId = relativeToSrcDir(id)
-      if ((!pathname.endsWith('.server.vue') && !relativeId.startsWith('components/islands/'))) {
+      if (!islands) {
+        const components = options.getComponents()
+        islands = components.filter(component =>
+          component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+        )
+      }
+      if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
       }
       if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
 
+      const relativeId = relativeToSrcDir(id)
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }
 
       let styleCtr = 0
