@@ -133,15 +133,12 @@ export function addVitePlugin (plugin: VitePlugin | VitePlugin[], options?: Exte
   }, options)
 }
 
-interface AddBuildPluginFactory<Args extends any[]> {
-  vite?: (...args: Args) => VitePlugin | VitePlugin[]
-  webpack?: (...args: Args) => WebpackPluginInstance | WebpackPluginInstance[]
+interface AddBuildPluginFactory {
+  vite?: () => VitePlugin | VitePlugin[]
+  webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
 }
 
-export function addBuildPlugin<Options extends Record<string, any>> (pluginFactory: AddBuildPluginFactory<[Options]>, pluginOptions?: Options, options?: ExtendConfigOptions): void
-export function addBuildPlugin<_Options extends never> (pluginFactory: AddBuildPluginFactory<[]>, options?: ExtendConfigOptions): void
-export function addBuildPlugin<Options extends Record<string, any>> (pluginFactory: AddBuildPluginFactory<[Options]>, pluginOptions?: Options, options?: ExtendConfigOptions) {
-
+export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
   if (pluginFactory.vite) {
     extendViteConfig((config) => {
       const plugin = pluginFactory.vite!()
