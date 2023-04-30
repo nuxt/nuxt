@@ -95,9 +95,10 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       const query = parseQuery(search)
 
       const relativeId = relativeToSrcDir(id)
-      if ((!pathname.endsWith('.server.vue') && !relativeId.startsWith('components/islands/')) && options.shouldInline === false) { return }
+      if ((!pathname.endsWith('.server.vue') && !relativeId.startsWith('components/islands/'))) {
+        if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
+      }
       if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
-      if (typeof options.shouldInline === 'function' && !options.shouldInline(id)) { return }
 
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }
 
