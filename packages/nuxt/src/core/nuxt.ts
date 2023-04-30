@@ -358,6 +358,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
+
+  // Nuxt DevTools is currently opt-in
+  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
+    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
+      options._modules.push('@nuxt/devtools')
+    } else {
+      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+    }
+  }
+
+  // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
@@ -374,15 +385,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
-  }
-
-  // Nuxt DevTools is currently opt-in
-  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
-      options._modules.push('@nuxt/devtools')
-    } else {
-      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
-    }
   }
 
   const nuxt = createNuxt(options)
