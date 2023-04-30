@@ -28,7 +28,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
       return [
         {
           as: c.pascalName,
-          from: withMode(c.mode),
+          from: withMode(c.mode === 'client' ? 'client' : undefined),
           name: 'default'
         },
         {
