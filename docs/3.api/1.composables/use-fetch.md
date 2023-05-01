@@ -114,7 +114,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   },
   onResponse({ request, response, options }) {
     // Process the response data
-    return response._data
+    localStorage.setItem('token', response._data.token)
   },
   onResponseError({ request, response, options }) {
     // Handle the response errors

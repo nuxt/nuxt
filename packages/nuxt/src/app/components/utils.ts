@@ -1,14 +1,7 @@
-import { defineComponent, h } from 'vue'
+import { h } from 'vue'
 import type { Component } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray } from '@vue/shared'
-
-const Fragment = defineComponent({
-  name: 'FragmentWrapper',
-  setup (_props, { slots }) {
-    return () => slots.default?.()
-  }
-})
 
 /**
  * Internal utility
@@ -16,7 +9,8 @@ const Fragment = defineComponent({
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
-  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
+  props = props === true ? {} : props
+  return { default: () => props ? h(component, props, slots) : slots.default?.() }
 }
 
 // eslint-disable-next-line no-use-before-define
