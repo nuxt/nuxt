@@ -69,9 +69,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
 
   for (const [header, value] of res.headers.entries()) {
-    // TODO: remove `appendResponseHeader` when we drop support for node 16
-    const handler = header.toLowerCase() === 'set-cookie' ? appendResponseHeader : setResponseHeader
-    handler(event, header, value)
+    setResponseHeader(event, header, value)
   }
 
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
