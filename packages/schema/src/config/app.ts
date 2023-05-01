@@ -13,6 +13,13 @@ export default defineUntypedSchema({
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
     compilerOptions: {},
+
+    /**
+     * Include Vue compiler in runtime bundle.
+     */
+    runtimeCompiler: {
+      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false,
+    },
   },
 
   /**
