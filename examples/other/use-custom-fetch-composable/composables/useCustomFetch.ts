@@ -15,12 +15,12 @@ export function useCustomFetch<T> (url: string, options: UseFetchOptions<T> = {}
       ? { Authorization: `Bearer ${userAuth.value}` }
       : {},
 
-    onResponse (__ctx) {
-      // return new myBusinessResponse(response._data)
+    transform (_data) {
+      // return new myBusinessResponse(_data)
     },
 
     onResponseError (__ctx) {
-      // return new myBusinessError(error)
+      // throw new myBusinessError()
     }
   }
 
