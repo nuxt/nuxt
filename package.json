@@ -61,7 +61,7 @@
     "globby": "^13.1.4",
     "h3": "^1.6.4",
     "jiti": "^1.18.2",
-    "markdownlint-cli": "^0.34.0",
+    "markdownlint-cli": "^0.33.0",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "ofetch": "^1.0.1",
