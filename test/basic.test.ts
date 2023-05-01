@@ -582,6 +582,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
     // TODO: enable when we update test to node v16
     // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
