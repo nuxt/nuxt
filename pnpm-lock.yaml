@@ -675,8 +675,8 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       unplugin-vue-router:
-        specifier: ~0.5.5
-        version: 0.5.5(rollup@3.21.0)(vue-router@4.1.6)(vue@3.2.47)
+        specifier: ~0.6.2
+        version: 0.6.2(rollup@3.21.0)(vue-router@4.1.6)(vue@3.2.47)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -9349,8 +9349,8 @@ packages:
       - vite
     dev: true
 
-  /unplugin-vue-router@0.5.5(rollup@3.21.0)(vue-router@4.1.6)(vue@3.2.47):
-    resolution: {integrity: sha512-4ymcsmCXD5vBs7I+8bZbBVgt+qGP8myIsWmLLABFj70qqOc+dXoNLwH7jMS16dnxeKb816GHz2ZhG73qzQCoJg==}
+  /unplugin-vue-router@0.6.2(rollup@3.21.0)(vue-router@4.1.6)(vue@3.2.47):
+    resolution: {integrity: sha512-tQI3UklB6AGSXenrGuJfyvuCIAUg70/M3YmSnqfFGzAXe+OxN4R+KAp+vHJY5PWRlvYWnNKw735gXFF9lMjoPA==}
     peerDependencies:
       vue-router: ^4.1.0
     peerDependenciesMeta:
