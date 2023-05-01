@@ -121,7 +121,6 @@ export default defineNuxtModule({
       }
 
       addVitePlugin(VueRouterVite(options), { prepend: true })
-      // @ts-expect-error TODO: https://github.com/nuxt/nuxt/pull/20403
       addWebpackPlugin(VueRouterWebpack(options), { prepend: true })
     }
 
