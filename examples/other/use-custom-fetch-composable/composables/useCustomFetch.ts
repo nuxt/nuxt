@@ -19,7 +19,7 @@ export function useCustomFetch<T> (url: string, options: UseFetchOptions<T> = {}
       // _ctx.response._data = new myBusinessResponse(_ctx.response._data)
     },
 
-    onResponseError (__ctx) {
+    onResponseError (_ctx) {
       // throw new myBusinessError()
     }
   }
