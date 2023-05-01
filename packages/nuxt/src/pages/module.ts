@@ -1,4 +1,5 @@
 import { existsSync, readdirSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
 import { join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
@@ -8,7 +9,6 @@ import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import VueRouterVite from 'unplugin-vue-router/vite'
 import VueRouterWebpack from 'unplugin-vue-router/webpack'
 import { createRoutesContext } from 'unplugin-vue-router'
-// @ts-expect-error TODO: expose subpath using named exports
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 
@@ -117,7 +117,14 @@ export default defineNuxtModule({
       })
 
       if (nuxt.options._prepare) {
-        await createRoutesContext(resolveOptions(options)).scanPages(false)
+        const context = createRoutesContext(resolveOptions(options))
+        await context.scanPages()
+        // TODO: could we generate this from context instead?
+        const dts = await readFile(join(nuxt.options.buildDir, 'types/typed-router.d.ts'), 'utf-8')
+        addTemplate({
+          filename: 'types/typed-router.d.ts',
+          getContents: () => dts
+        })
       }
 
       addVitePlugin(VueRouterVite(options), { prepend: true })
