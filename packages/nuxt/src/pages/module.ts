@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
-import { join, relative, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
@@ -118,9 +118,11 @@ export default defineNuxtModule({
 
       if (nuxt.options._prepare) {
         const context = createRoutesContext(resolveOptions(options))
+        const dtsFile = resolve(nuxt.options.buildDir, declarationFile)
+        await mkdir(dirname(dtsFile), { recursive: true })
         await context.scanPages()
         // TODO: could we generate this from context instead?
-        const dts = await readFile(join(nuxt.options.buildDir, 'types/typed-router.d.ts'), 'utf-8')
+        const dts = await readFile(dtsFile, 'utf-8')
         addTemplate({
           filename: 'types/typed-router.d.ts',
           getContents: () => dts
