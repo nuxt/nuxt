@@ -34,7 +34,7 @@ export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {
 
 export interface ExtendViteConfigOptions extends ExtendConfigOptions {
   /**
-   * Prepends the plugin to the array with `unshit()` instead of `push()`. In practice this shouldn't be necessary, but
+   * Prepends the plugin to the array with `unshift()` instead of `push()`. In practice this shouldn't be necessary, but
    * it's needed by unplugin-vue-router until vue exposes an API to parse files.
    * @internal
    */
