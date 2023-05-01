@@ -57,31 +57,6 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 }
 
 export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
-  const { options, config } = ctx
-
-  // TODO
-  const builder = {}
-  const loaders: any[] = []
-
-  // @ts-expect-error TODO: remove support for `build.extend` in v3.5
-  const { extend } = options.build
-  if (typeof extend === 'function') {
-    const extendedConfig = extend.call(
-      builder,
-      config,
-      { loaders, ...ctx }
-    ) || config
-
-    const pragma = /@|#/
-    const { devtool } = extendedConfig
-    if (typeof devtool === 'string' && pragma.test(devtool)) {
-      extendedConfig.devtool = devtool.replace(pragma, '')
-      logger.warn(`devtool has been normalized to ${extendedConfig.devtool} as webpack documented value`)
-    }
-
-    return extendedConfig
-  }
-
   // Clone deep avoid leaking config between Client and Server
-  return cloneDeep(config)
+  return cloneDeep(ctx.config)
 }
