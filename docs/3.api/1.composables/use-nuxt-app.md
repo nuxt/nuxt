@@ -72,7 +72,7 @@ await nuxtApp.callHook('my-plugin:init')
 - [**directive()**](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/guide/directory-structure/plugins#vue-directives).
 - [**use()**](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/guide/directory-structure/plugins#vue-plugins).
 
-:ReadMore{link="https://vuejs.org/api/application.html#application-api"}
+:ReadMore{link="<https://vuejs.org/api/application.html#application-api"}>
 
 ### `ssrContext`
 
