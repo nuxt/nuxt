@@ -15,8 +15,8 @@ export function useCustomFetch<T> (url: string, options: UseFetchOptions<T> = {}
       ? { Authorization: `Bearer ${userAuth.value}` }
       : {},
 
-    transform (_data) {
-      // return new myBusinessResponse(_data)
+    onResponse ({ response }) {
+      // response._data = new myBusinessResponse(response._data)
     },
 
     onResponseError (__ctx) {
