@@ -112,7 +112,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     plugins: [
       pureAnnotationsPlugin.vite({
         sourcemap: ctx.nuxt.options.sourcemap.server,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'definePageMeta']
+        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ]
   } satisfies vite.InlineConfig)
