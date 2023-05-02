@@ -212,7 +212,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value, async () => {
+                  unobserve = observer!.observe(el.value as Element, async () => {
                     unobserve?.()
                     unobserve = null
 

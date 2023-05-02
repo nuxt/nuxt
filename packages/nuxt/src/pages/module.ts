@@ -224,8 +224,8 @@ export default defineNuxtModule({
     }
     nuxt.hook('modules:done', () => {
       // TODO: fix broken definePageMeta() with unplugin-vue-router
-      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
+      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
     })
 
     // Add prefetching support for middleware & layouts

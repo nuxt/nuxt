@@ -5,6 +5,8 @@ on:
     paths:
       - "docs/**"
       - ".github/workflows/docs.yml"
+    branches:
+      - "renovate/**"
 
 permissions:
   contents: read
