@@ -114,8 +114,8 @@ describe('typed router integration', () => {
     router.push({ name: 'some-thing' })
     // this one does
     router.push({ name: 'fixed-keyed-child-parent' })
-    // @ts-expect-error this route needs an id
-    router.push({ name: 'random-id' })
+    // @ts-expect-error this is an invalid param
+    router.push({ name: 'random-id', params: { bob: 23 } })
     router.push({ name: 'random-id', params: { id: 4 } })
   })
 
@@ -132,8 +132,8 @@ describe('typed router integration', () => {
     navigateTo({ name: 'some-thing' })
     // this one does
     navigateTo({ name: 'fixed-keyed-child-parent' })
-    // @ts-expect-error this route needs an id
-    navigateTo({ name: 'random-id' })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'random-id', params: { bob: 23 } })
     navigateTo({ name: 'random-id', params: { id: 4 } })
   })
 
@@ -158,8 +158,8 @@ describe('typed router integration', () => {
     h(NuxtLink, { to: { name: 'some-thing' } })
     // this one does
     h(NuxtLink, { to: { name: 'fixed-keyed-child-parent' } })
-    // @ts-expect-error this route needs an id
-    h(NuxtLink, { to: { name: 'random-id' } })
+    // @ts-expect-error this is an invalid param
+    h(NuxtLink, { to: { name: 'random-id', params: { bob: 23 } } })
     h(NuxtLink, { to: { name: 'random-id', params: { id: 4 } } })
   })
 })
