@@ -15,5 +15,5 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The root directory of the app you want to enable devtools for.
 
-::ReadMore{link="<https://github.com/nuxt/devtools"}>
+::ReadMore{link="https://github.com/nuxt/devtools"}
 ::
