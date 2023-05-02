@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
