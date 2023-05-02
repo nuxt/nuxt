@@ -291,8 +291,6 @@ export default defineNuxtModule({
     nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
     nuxt.options.vite.resolve.dedupe.push('vue-router')
 
-    // TODO: Do we need to provide a fallback for this? Or can we just expose
-    // `router.options` from the router instance itself
     // Add router options template
     addTemplate({
       filename: 'router.options.mjs',
