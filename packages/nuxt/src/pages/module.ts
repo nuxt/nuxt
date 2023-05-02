@@ -151,10 +151,7 @@ export default defineNuxtModule({
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
-      dirs: nuxt.options._layers.map(
-        layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
-      )
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
     }
     nuxt.hook('modules:done', () => {
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
