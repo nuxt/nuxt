@@ -79,7 +79,7 @@ export default defineNuxtModule({
       const options: TypedRouterOptions = {
         routesFolder: [],
         dts: resolve(nuxt.options.buildDir, declarationFile),
-        logs: true,
+        logs: nuxt.options.debug,
         async beforeWriteFiles (rootPage) {
           rootPage.children.forEach(child => child.delete())
           const pages = await resolvePagesRoutes()
