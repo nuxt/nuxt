@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router/auto'
 
 import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
@@ -96,7 +96,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
       expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toEqualTypeOf <(to: RouteLocationRaw | null | undefined, options ?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
+      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
