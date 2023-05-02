@@ -53,6 +53,9 @@ if (process.client) {
     import.meta.webpackHot.accept()
   }
 
+  // eslint-disable-next-line
+  let app: Promise<any>
+
   entry = async function initApp () {
     if (app) { return app }
     const isSSR = Boolean(
@@ -82,7 +85,7 @@ if (process.client) {
     }
   }
 
-  const app = entry().catch((error: unknown) => {
+  app = entry().catch((error: unknown) => {
     console.error('Error while mounting app:', error)
   })
 }
