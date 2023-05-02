@@ -23,7 +23,6 @@ export default defineNuxtModule({
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
-    const vueRouterPath = useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'
 
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
@@ -144,7 +143,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:sources', (sources) => {
       const routerImports = sources.find(s => s.from === '#app' && s.imports.includes('onBeforeRouteLeave'))
       if (routerImports) {
-        routerImports.from = vueRouterPath
+        routerImports.from = '#vue-router'
       }
     })
 
@@ -157,7 +156,7 @@ export default defineNuxtModule({
       ].filter(Boolean)
 
       const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
-      if (!useExperimentalTypedPages && event !== 'change' && path.match(pathPattern)) {
+      if (event !== 'change' && path.match(pathPattern)) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -210,7 +209,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: vueRouterPath }
+        { name: 'useLink', as: 'useLink', from: '#vue-router' }
       )
     })
 
@@ -223,7 +222,6 @@ export default defineNuxtModule({
       )
     }
     nuxt.hook('modules:done', () => {
-      // TODO: fix broken definePageMeta() with unplugin-vue-router
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
       addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
     })
@@ -259,21 +257,18 @@ export default defineNuxtModule({
     // adds support for #vue-router alias
     addTemplate({
       filename: 'vue-router.mjs',
-      getContents: () => `export * from '${vueRouterPath}';`
+      // TODO: use `vue-router/auto` when we have support for page metadata
+      getContents: () => 'export * from \'vue-router\';'
     })
     addTemplate({
       filename: 'vue-router.d.ts',
-      getContents: () => `export * from '${vueRouterPath}'`
+      getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
     })
 
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
       async getContents () {
-        if (useExperimentalTypedPages) {
-          return "export { routes as default } from 'vue-router/auto/routes';"
-        }
-
         const pages = await resolvePagesRoutes()
         await nuxt.callHook('pages:extend', pages)
         const { routes, imports } = normalizeRoutes(pages)
