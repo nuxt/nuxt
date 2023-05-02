@@ -83,6 +83,8 @@ if (process.client) {
       await nuxt.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
+
+    return vueApp
   }
 
   app = entry().catch((error: unknown) => {
