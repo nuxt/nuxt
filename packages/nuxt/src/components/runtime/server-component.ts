@@ -1,7 +1,7 @@
-import { computed, createStaticVNode, defineComponent, h, watch } from 'vue'
+import { Fragment, computed, createStaticVNode, createVNode, defineComponent, h, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendHeader } from 'h3'
+import { appendResponseHeader } from 'h3'
 
 import { useHead } from '@unhead/vue'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
@@ -42,6 +42,7 @@ const NuxtServerComponent = defineComponent({
   },
   async setup (props) {
     const nuxtApp = useNuxtApp()
+    const key = ref(0)
     const hashId = computed(() => hash([props.name, props.props, props.context]))
 
     const event = useRequestEvent()
@@ -50,7 +51,7 @@ const NuxtServerComponent = defineComponent({
       const url = `/__nuxt_island/${props.name}:${hashId.value}`
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
-        appendHeader(event, 'x-nitro-prerender', url)
+        appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
       return $fetch<NuxtIslandResponse>(url, {
@@ -92,11 +93,14 @@ const NuxtServerComponent = defineComponent({
     useHead(() => res.data.value!.head)
 
     if (process.client) {
-      watch(props, debounce(() => res.execute(), 100))
+      watch(props, debounce(async () => {
+        await res.execute()
+        key.value++
+      }, 100))
     }
 
     await res
 
-    return () => createStaticVNode(res.data.value!.html, 1)
+    return () => createVNode(Fragment, { key: key.value }, [createStaticVNode(res.data.value!.html, 1)])
   }
 })

@@ -161,11 +161,11 @@ export default defineNuxtModule({
       const pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', pages)
 
-      addVitePlugin(PageMetaPlugin.vite({
+      addVitePlugin(() => PageMetaPlugin.vite({
         ...pageMetaOptions,
         pages
       }))
-      addWebpackPlugin(PageMetaPlugin.webpack({
+      addWebpackPlugin(() => PageMetaPlugin.webpack({
         ...pageMetaOptions,
         pages
       }))

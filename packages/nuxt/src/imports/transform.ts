@@ -1,18 +1,14 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL } from 'ufo'
 import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
 import type { ImportsOptions } from 'nuxt/schema'
+import { isJS, isVue } from '../core/utils'
 
 export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => {
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      const query = parseQuery(search)
-
       // Included
       if (options.transform?.include?.some(pattern => id.match(pattern))) {
         return true
@@ -23,18 +19,12 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
       }
 
       // Vue files
-      if (
-        id.endsWith('.vue') ||
-        'macro' in query ||
-        ('vue' in query && (query.type === 'template' || query.type === 'script' || 'setup' in query))
-      ) {
+      if (isVue(id, { type: ['script', 'template'] })) {
         return true
       }
 
       // JavaScript files
-      if (pathname.match(/\.((c|m)?j|t)sx?$/g)) {
-        return true
-      }
+      return isJS(id)
     },
     async transform (code, id) {
       id = normalize(id)

@@ -148,6 +148,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     viteJsxPlugin(serverConfig.vueJsx)
   )
 
+  await ctx.nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })
+
   const onBuild = () => ctx.nuxt.callHook('vite:compiled')
 
   // Production build
