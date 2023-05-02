@@ -114,8 +114,9 @@ describe('pages', () => {
   })
 
   it('validates routes', async () => {
-    const { status } = await fetch('/forbidden')
+    const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
 
     const page = await createPage('/navigate-to-forbidden')
     await page.waitForLoadState('networkidle')
@@ -135,8 +136,11 @@ describe('pages', () => {
     expect(status).toEqual(500)
   })
 
-  it('render 404', async () => {
-    const html = await $fetch('/not-found')
+  it('render catchall page', async () => {
+    const res = await fetch('/not-found')
+    expect(res.status).toEqual(200)
+
+    const html = await res.text()
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
@@ -353,6 +357,13 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
     expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+    await page.close()
+  })
+
+  it('/legacy-async-data-fail', async () => {
+    const response = await fetch('/legacy-async-data-fail').then(r => r.text())
+    expect(response).not.toContain('don\'t look at this')
+    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
   })
 })
 
@@ -571,7 +582,29 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    // TODO: enable when we update test to node v16
+    // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
+  })
+
+  it('should not allow accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'application/json'
+      }
+    })
+    expect(res.status).toBe(404)
+    const error = await res.json()
+    delete error.stack
+    expect(error).toMatchInlineSnapshot(`
+      {
+        "message": "Page Not Found: /__nuxt_error",
+        "statusCode": 404,
+        "statusMessage": "Page Not Found: /__nuxt_error",
+        "url": "/__nuxt_error",
+      }
+    `)
   })
 
   // TODO: need to create test for webpack

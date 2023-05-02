@@ -8,6 +8,7 @@ import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
+import type { RenderResponse } from 'nitropack'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -60,6 +61,8 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
+  /** @internal */
+  _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
 }
@@ -221,7 +224,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.call(nuxtApp, () => hook(...args))
+        await nuxtAppCtx.callAsync(nuxtApp, () => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
@@ -278,30 +281,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Expose runtime config
   const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
-
-  // TODO: remove in v3.5
-  // Backward compatibility following #4254
-  const compatibilityConfig = new Proxy(runtimeConfig, {
-    get (target, prop: string) {
-      if (prop in target) {
-        return target[prop]
-      }
-      if (process.dev && prop in target.public) {
-        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public runtime config value (\`${prop}\`) directly from the top level. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in v3.5. Instead, you can update \`config['${prop}']\` to \`config.public['${prop}']\`.`)
-      }
-      return target.public[prop]
-    },
-    set (target, prop, value) {
-      if (process.server || prop === 'public' || prop === 'app') {
-        return false // Throws TypeError
-      }
-      target[prop] = value
-      target.public[prop] = value
-      return true
-    }
-  })
-
-  nuxtApp.provide('config', compatibilityConfig)
+  nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
 }

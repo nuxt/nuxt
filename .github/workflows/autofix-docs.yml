@@ -5,6 +5,8 @@ on:
     paths:
       - "docs/**"
       - ".github/workflows/docs.yml"
+    branches:
+      - "renovate/**"
 
 permissions:
   contents: read
@@ -18,7 +20,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
