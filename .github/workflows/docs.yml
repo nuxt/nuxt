@@ -8,7 +8,6 @@ on:
     # autofix workflow will be triggered instead for PRs
     branches:
       - main
-      - "renovate/**"
       - "!v[0-9]*"
 
 # Remove default permissions of GITHUB_TOKEN for security
