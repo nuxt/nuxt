@@ -6,8 +6,6 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
-import VueRouterVite from 'unplugin-vue-router/vite'
-import VueRouterWebpack from 'unplugin-vue-router/webpack'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -77,11 +75,13 @@ export default defineNuxtModule({
 
     if (useExperimentalTypedPages) {
       const declarationFile = './types/typed-router.d.ts'
+
       const options: TypedRouterOptions = {
         routesFolder: [],
         dts: resolve(nuxt.options.buildDir, declarationFile),
         logs: true,
         async beforeWriteFiles (rootPage) {
+          rootPage.children.forEach(child => child.delete())
           const pages = await resolvePagesRoutes()
           await nuxt.callHook('pages:extend', pages)
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
@@ -115,11 +115,12 @@ export default defineNuxtModule({
         references.push({ path: declarationFile })
       })
 
+      const context = createRoutesContext(resolveOptions(options))
+      const dtsFile = resolve(nuxt.options.buildDir, declarationFile)
+      await mkdir(dirname(dtsFile), { recursive: true })
+      await context.scanPages(false)
+
       if (nuxt.options._prepare) {
-        const context = createRoutesContext(resolveOptions(options))
-        const dtsFile = resolve(nuxt.options.buildDir, declarationFile)
-        await mkdir(dirname(dtsFile), { recursive: true })
-        await context.scanPages()
         // TODO: could we generate this from context instead?
         const dts = await readFile(dtsFile, 'utf-8')
         addTemplate({
@@ -128,8 +129,12 @@ export default defineNuxtModule({
         })
       }
 
-      addVitePlugin(VueRouterVite(options), { prepend: true })
-      addWebpackPlugin(VueRouterWebpack(options), { prepend: true })
+      // Regenerate types/typed-router.d.ts when adding or removing pages
+      nuxt.hook('builder:generateApp', async (options) => {
+        if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
+          await context.scanPages()
+        }
+      })
     }
 
     const runtimeDir = resolve(distDir, 'pages/runtime')
