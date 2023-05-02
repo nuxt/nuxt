@@ -119,10 +119,11 @@ export default defineUntypedSchema({
           return val ?? false
         }
         const rootDir = await get('rootDir')
+        const analyzeDir = await get('analyzeDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(rootDir, '.nuxt/stats', '{name}.html')
+          filename: join(analyzeDir, '{name}.html')
         }
       }
     },

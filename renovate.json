@@ -13,10 +13,10 @@
         "main"
       ],
       "ignoreDeps": [
+        "markdownlint-cli",
         "nuxt",
         "nuxt3",
-        "@nuxt/kit",
-        "parse5"
+        "@nuxt/kit"
       ]
     },
     {

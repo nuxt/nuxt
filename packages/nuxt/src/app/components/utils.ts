@@ -4,20 +4,14 @@ import type { Component, RendererNode } from 'vue'
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
 
-const Fragment = defineComponent({
-  name: 'FragmentWrapper',
-  setup (_props, { slots }) {
-    return () => slots.default?.()
-  }
-})
-
 /**
  * Internal utility
  *
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
-  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
+  props = props === true ? {} : props
+  return { default: () => props ? h(component, props, slots) : slots.default?.() }
 }
 
 // eslint-disable-next-line no-use-before-define

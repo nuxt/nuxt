@@ -114,14 +114,14 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate({ ...componentsTypeTemplate, options: { getComponents } })
+    addTemplate({ ...componentsTypeTemplate })
     // components.plugin.mjs
-    addPluginTemplate({ ...componentsPluginTemplate, options: { getComponents } } as any)
+    addPluginTemplate({ ...componentsPluginTemplate } as any)
     // component-names.mjs
-    addTemplate({ ...componentNamesTemplate, options: { getComponents, mode: 'all' } })
+    addTemplate({ ...componentNamesTemplate, options: { mode: 'all' } })
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {
-      addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs', options: { getComponents } })
+      addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
     } else {
       addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export default {}' })
     }
@@ -159,7 +159,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Scan components and add to plugin
-    nuxt.hook('app:templates', async () => {
+    nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       // add server placeholder for .client components server side. issue: #7085
@@ -174,6 +174,7 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       }
       context.components = newComponents
+      app.components = newComponents
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
