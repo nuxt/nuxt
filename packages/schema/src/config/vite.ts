@@ -70,14 +70,6 @@ export default defineUntypedSchema({
       emptyOutDir: false
     },
     server: {
-      watch: {
-        ignored: {
-          $resolve: async (val, get) => [
-            await get('analyzeDir'),
-            ...val ?? []
-          ]
-        }
-      },
       fs: {
         allow: {
           $resolve: async (val, get) => [
