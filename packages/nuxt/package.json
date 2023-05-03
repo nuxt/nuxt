@@ -52,7 +52,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/devalue": "^2.0.0",
+    "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
     "@nuxt/telemetry": "^2.2.0",
