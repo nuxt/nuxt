@@ -11,11 +11,11 @@ This helps you avoid common mistakes, such as using `name` instead of `property`
 This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
 :ReadMore{link="/docs/getting-started/seo-meta"}
 
-**Simple example:**
+## Example
 
 ```vue [app.vue]
 <script setup lang="ts">
-useServerSeoMeta({
+useSeoMeta({
   title: 'My Amazing Site',
   ogTitle: 'My Amazing Site',
   description: 'This is my amazing site, let me tell you all about it.',
@@ -25,8 +25,6 @@ useServerSeoMeta({
 })
 </script>
 ```
-
-**Reactive example:**
 
 When inserting tags that are reactive, you should use the computed getter syntax (`() => value`):
 
@@ -41,4 +39,14 @@ useSeoMeta({
 </script>
 ```
 
-Read more on the [`useSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta) composable.
+## Parameters
+There are over 100+ parameters.
+
+Full list of [`parameters`](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts)
+
+# `useServerSeoMeta`
+
+In most instances, the meta doesn't need to be reactive as robots will only scan the initial load. So we recommend using `useServerSeoMeta` as a performance-focused utility that will not do anything (or return a `head` object) on the client.
+Parameters are exactly the same as with `useSeoMeta`
+
+Read more on the [`useSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta) and [`useServerSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta#useserverseometa) composable.
