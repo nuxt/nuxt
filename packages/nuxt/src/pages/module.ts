@@ -157,8 +157,8 @@ export default defineNuxtModule({
       )
     }
     nuxt.hook('modules:done', () => {
-      addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
+      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
     })
 
     // Add prefetching support for middleware & layouts
