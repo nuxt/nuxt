@@ -70,7 +70,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "jest-util": "^29.5.0",
     "jiti": "^1.18.2",
-    "jsdom": "^21.1.2",
+    "jsdom": "^22.0.0",
     "jsonfile": "^6.1.0",
     "klaw-sync": "^6.0.0",
     "lerna": "^6.6.1",
