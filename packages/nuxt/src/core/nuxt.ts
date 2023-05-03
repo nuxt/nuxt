@@ -38,16 +38,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     ready: () => initNuxt(nuxt),
     close: () => Promise.resolve(hooks.callHook('close', nuxt)),
     vfs: {},
-    app: {
-      dir: options.srcDir,
-      extensions: options.extensions,
-      plugins: [],
-      components: [],
-      layouts: {},
-      middleware: [],
-      templates: [],
-      configs: []
-    }
+    apps: {}
   }
 
   return nuxt
