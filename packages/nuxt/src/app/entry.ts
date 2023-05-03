@@ -54,10 +54,10 @@ if (process.client) {
   }
 
   // eslint-disable-next-line
-  let app: Promise<any>
+  let vueAppPromise: Promise<any>
 
   entry = async function initApp () {
-    if (app) { return app }
+    if (vueAppPromise) { return vueAppPromise }
     const isSSR = Boolean(
       window.__NUXT__?.serverRendered ||
       document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
@@ -87,7 +87,7 @@ if (process.client) {
     return vueApp
   }
 
-  app = entry().catch((error: unknown) => {
+  vueAppPromise = entry().catch((error: unknown) => {
     console.error('Error while mounting app:', error)
   })
 }
