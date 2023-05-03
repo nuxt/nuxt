@@ -1,0 +1,44 @@
+---
+description: The useSeoMeta composable lets you define your sites SEO Meta as a flat object with full TypeScript support
+---
+
+# `useSeoMeta`
+
+The `useSeoMeta` composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
+
+This helps you avoid common mistakes, such as using `name` instead of `property` as well typos with over 100+ meta tags fully typed.
+
+This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
+:ReadMore{link="/docs/getting-started/seo-meta"}
+
+**Simple example:**
+
+```vue [app.vue]
+<script setup lang="ts">
+useServerSeoMeta({
+  title: 'My Amazing Site',
+  ogTitle: 'My Amazing Site',
+  description: 'This is my amazing site, let me tell you all about it.',
+  ogDescription: 'This is my amazing site, let me tell you all about it.',
+  ogImage: 'https://example.com/image.png',
+  twitterCard: 'summary_large_image',
+})
+</script>
+```
+
+**Reactive example:**
+
+When inserting tags that are reactive, you should use the computed getter syntax (`() => value`):
+
+```vue [app.vue]
+<script setup lang="ts">
+const title = ref('My title')
+
+useSeoMeta({
+  title,
+  description: () => `description: ${title.value}`
+})
+</script>
+```
+
+Read more on the [`useSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta) composable.
