@@ -124,8 +124,8 @@ importers:
         specifier: 3.2.47
         version: 3.2.47
       vue-eslint-parser:
-        specifier: ^9.1.1
-        version: 9.1.1(eslint@8.39.0)
+        specifier: ^9.2.0
+        version: 9.2.0(eslint@8.39.0)
       vue-tsc:
         specifier: ^1.6.3
         version: 1.6.3(typescript@5.0.4)
@@ -412,8 +412,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       pkg-types:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       scule:
         specifier: ^1.0.0
         version: 1.0.0
@@ -540,8 +540,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       pkg-types:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       scule:
         specifier: ^1.0.0
         version: 1.0.0
@@ -558,8 +558,8 @@ importers:
   packages/nuxt:
     dependencies:
       '@nuxt/devalue':
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.0.2
+        version: 2.0.2
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -742,8 +742,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       pkg-types:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       postcss-import-resolver:
         specifier: ^2.0.0
         version: 2.0.0
@@ -915,8 +915,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       pkg-types:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       postcss:
         specifier: ^8.4.23
         version: 8.4.23
@@ -2007,8 +2007,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  /@nuxt/devalue@2.0.0:
-    resolution: {integrity: sha512-YBI/6o2EBz02tdEJRBK8xkt3zvOFOWlLBf7WKYGBsSYSRtjjgrqPe2skp6VLLmKx5WbHHDNcW+6oACaurxGzeA==}
+  /@nuxt/devalue@2.0.2:
+    resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
     dev: false
 
   /@nuxt/friendly-errors-webpack-plugin@2.5.2(webpack@5.81.0):
@@ -3846,7 +3846,7 @@ packages:
       ohash: 1.1.2
       pathe: 1.1.0
       perfect-debounce: 0.1.3
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       rc9: 2.1.0
     transitivePeerDependencies:
       - supports-color
@@ -3942,7 +3942,7 @@ packages:
       ofetch: 1.0.1
       open: 9.1.0
       pathe: 1.1.0
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       scule: 1.0.0
       semver: 7.5.0
       yaml: 2.2.1
@@ -5304,7 +5304,7 @@ packages:
       nth-check: 2.1.1
       postcss-selector-parser: 6.0.11
       semver: 7.5.0
-      vue-eslint-parser: 9.1.1(eslint@8.39.0)
+      vue-eslint-parser: 9.2.0(eslint@8.39.0)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
       - supports-color
@@ -7152,7 +7152,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       pathe: 1.1.0
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       ufo: 1.1.1
 
   /mri@1.2.0:
@@ -7247,7 +7247,7 @@ packages:
       ohash: 1.1.2
       pathe: 1.1.0
       perfect-debounce: 0.1.3
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       pretty-bytes: 6.1.0
       radix3: 1.0.1
       rollup: 3.21.0
@@ -7670,8 +7670,8 @@ packages:
     engines: {node: '>= 6'}
     dev: true
 
-  /pkg-types@1.0.2:
-    resolution: {integrity: sha512-hM58GKXOcj8WTqUXnsQyJYXdeAPbythQgEF3nTcEo+nkD49chjQ9IKm/QJy9xf6JakXptz86h7ecP2024rrLaQ==}
+  /pkg-types@1.0.3:
+    resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
     dependencies:
       jsonc-parser: 3.2.0
       mlly: 1.2.0
@@ -9149,7 +9149,7 @@ packages:
       mlly: 1.2.0
       mri: 1.2.0
       pathe: 1.1.0
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       pretty-bytes: 6.1.0
       rollup: 3.21.0
       rollup-plugin-dts: 5.3.0(rollup@3.21.0)(typescript@5.0.4)
@@ -9214,7 +9214,7 @@ packages:
       magic-string: 0.30.0
       mlly: 1.2.0
       pathe: 1.1.0
-      pkg-types: 1.0.2
+      pkg-types: 1.0.3
       scule: 1.0.0
       strip-literal: 1.0.1
       unplugin: 1.3.1
@@ -9667,8 +9667,8 @@ packages:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
     dev: false
 
-  /vue-eslint-parser@9.1.1(eslint@8.39.0):
-    resolution: {integrity: sha512-C2aI/r85Q6tYcz4dpgvrs4wH/MqVrRAVIdpYedrxnATDHHkb+TroeRcDpKWGZCx/OcECMWfz7tVwQ8e+Opy6rA==}
+  /vue-eslint-parser@9.2.0(eslint@8.39.0):
+    resolution: {integrity: sha512-aFXipsUbKU4TzgP9OU6cXIm2Nnp9ryKJc2mzY0s2xzwfjHg6WDT33LUAQRGR9K0NFncBgUEZ2njdrS3Lj/sOLw==}
     engines: {node: ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: '>=6.0.0'
