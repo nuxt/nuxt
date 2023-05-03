@@ -27,7 +27,7 @@ export interface ImportNuxtPackageOptions {
 const nuxtPackages = {
   2: ['nuxt-edge', 'nuxt'],
   3: ['nuxt3', 'nuxt'],
-  all: ['nuxt3', 'nuxt', 'nuxt-edge']
+  any: ['nuxt3', 'nuxt', 'nuxt-edge']
 }
 
 export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 3 }): Promise<{ version: 3, exports: T }>
@@ -39,7 +39,7 @@ export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions
   }
   opts.cwd = pathToFileURL(opts.cwd).href
 
-  const packages = nuxtPackages[opts.version || 'all'] || nuxtPackages.all
+  const packages = nuxtPackages[opts.version || 'any'] || nuxtPackages.any
 
   const nearestNuxtPkg = await Promise.all(packages
     .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
