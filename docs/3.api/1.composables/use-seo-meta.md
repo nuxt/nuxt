@@ -1,5 +1,5 @@
 ---
-description: The useSeoMeta composable lets you define your sites SEO Meta as a flat object with full TypeScript support
+description: The useSeoMeta composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
 ---
 
 # `useSeoMeta`
