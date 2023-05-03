@@ -143,7 +143,7 @@ export function useAsyncData<
     const promise = new Promise<ResT>(
       (resolve, reject) => {
         try {
-          resolve(handler(nuxt))
+          resolve(nuxt.runWithContext(() => handler(nuxt)))
         } catch (err) {
           reject(err)
         }

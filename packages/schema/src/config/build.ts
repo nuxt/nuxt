@@ -193,7 +193,7 @@ export default defineUntypedSchema({
      * @type {import('unctx').TransformerOptions}
      */
     asyncTransforms: {
-      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'runWithContext', 'useAsyncData'],
       objectDefinitions: {
         defineNuxtComponent: ['asyncData', 'setup'],
         defineNuxtPlugin: ['setup'],
