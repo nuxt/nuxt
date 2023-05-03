@@ -2,7 +2,7 @@ import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runti
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
+import { appendResponseHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
@@ -199,7 +199,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url)
+  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
     event.node.req.url = url
@@ -229,7 +229,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
+  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !islandContext
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
@@ -275,7 +275,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
     // Use same ssr context to generate payload for this route
     PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }

@@ -34,7 +34,7 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"94.0k"')
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"94.1k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
@@ -45,7 +45,7 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"66.6k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"66.7k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2654k"')
