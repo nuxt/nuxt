@@ -11,7 +11,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@babel/compat-data": "^7.21.7",
-    "@babel/core": "^7.21.5",
+    "@babel/core": "^7.21.8",
     "@babel/helper-compilation-targets": "^7.21.5",
     "@babel/helper-module-imports": "^7.21.4",
     "@babel/plugin-proposal-class-properties": "^7.18.6",

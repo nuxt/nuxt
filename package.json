@@ -33,7 +33,7 @@
     "test:unit": "jest packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.5",
+    "@babel/core": "^7.21.8",
     "@babel/preset-env": "^7.21.5",
     "@ls-lint/ls-lint": "^1.11.2",
     "@nuxtjs/eslint-config": "^12.0.0",

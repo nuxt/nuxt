@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/devalue": "^2.0.0",
+    "@nuxt/devalue": "^2.0.2",
     "@nuxt/utils": "2.16.3",
     "@nuxt/vue-app": "2.16.3",
     "@nuxt/webpack": "2.16.3",
