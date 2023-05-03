@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { appendHeader } from 'h3'
+import { appendResponseHeader } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
@@ -48,11 +48,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       }
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
-    const writeAndUnhook = () => {
+    nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called
       return writeFinalCookieValue()
-    }
-    nuxtApp.hooks.hookOnce('app:error', writeAndUnhook)
+    })
   }
 
   return cookie as CookieRef<T>
@@ -82,6 +81,6 @@ function writeClientCookie (name: string, value: any, opts: CookieSerializeOptio
 function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
     // TODO: Try to smart join with existing Set-Cookie headers
-    appendHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
+    appendResponseHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
   }
 }
