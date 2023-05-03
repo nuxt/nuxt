@@ -6,7 +6,7 @@ description: The useSeoMeta composable lets you define your site's SEO meta tags
 
 The `useSeoMeta` composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
 
-This helps you avoid common mistakes, such as using `name` instead of `property` as well typos with over 100+ meta tags fully typed.
+This helps you avoid common mistakes, such as using `name` instead of `property`, as well as typos - with over 100+ meta tags fully typed.
 
 This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
 :ReadMore{link="/docs/getting-started/seo-meta"}
