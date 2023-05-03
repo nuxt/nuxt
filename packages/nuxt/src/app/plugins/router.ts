@@ -1,7 +1,7 @@
 import { h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
-import { callWithNuxt, defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import { useState } from '../composables/state'
@@ -142,7 +142,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           window.history[replace ? 'replaceState' : 'pushState']({}, '', joinURL(baseURL, to.fullPath))
           if (!nuxtApp.isHydrating) {
             // Clear any existing errors
-            await callWithNuxt(nuxtApp, clearError)
+            await nuxtApp.runWithContext(clearError)
           }
         }
         // Run afterEach hooks
@@ -238,7 +238,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
         for (const middleware of middlewareEntries) {
-          const result = await callWithNuxt(nuxtApp, middleware, [to, from])
+          const result = await nuxtApp.runWithContext(() => middleware(to, from))
           if (process.server) {
             if (result === false || result instanceof Error) {
               const error = result || createError({
@@ -246,7 +246,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
                 statusMessage: `Page Not Found: ${initialURL}`
               })
               delete nuxtApp._processingMiddleware
-              return callWithNuxt(nuxtApp, showError, [error])
+              return nuxtApp.runWithContext(() => showError(error))
             }
           }
           if (result || result === false) { return result }
@@ -257,7 +257,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {
-        await callWithNuxt(nuxtApp, navigateTo, [route.fullPath])
+        await nuxtApp.runWithContext(() => navigateTo(route.fullPath))
       }
     })
 

@@ -1,5 +1,7 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
+import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from 'vue-router'
+import { useRoute } from 'vue-router'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
@@ -51,6 +53,14 @@ const warnRuntimeUsage = (method: string) =>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
   if (process.dev) {
+    const component = getCurrentInstance()?.type
+    try {
+      const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
+      if (isRouteComponent) {
+        // don't warn if it's being used in a route component
+        return
+      }
+    } catch {}
     warnRuntimeUsage('definePageMeta')
   }
 }

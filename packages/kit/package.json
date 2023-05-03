@@ -32,7 +32,7 @@
     "lodash.template": "^4.5.0",
     "mlly": "^1.2.0",
     "pathe": "^1.1.0",
-    "pkg-types": "^1.0.2",
+    "pkg-types": "^1.0.3",
     "scule": "^1.0.0",
     "semver": "^7.5.0",
     "unctx": "^2.3.0",

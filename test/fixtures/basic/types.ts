@@ -96,7 +96,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
       expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(navigateTo).toEqualTypeOf <(to: RouteLocationRaw | null | undefined, options ?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
+      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
@@ -313,6 +313,10 @@ describe('extends type declarations', () => {
 describe('composables inference', () => {
   it('callWithNuxt', () => {
     const bob = callWithNuxt({} as any, () => true)
+    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+  })
+  it('runWithContext', () => {
+    const bob = useNuxtApp().runWithContext(() => true)
     expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
   })
 })
