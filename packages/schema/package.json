@@ -40,7 +40,7 @@
     "defu": "^6.1.2",
     "hookable": "^5.5.3",
     "pathe": "^1.1.0",
-    "pkg-types": "^1.0.2",
+    "pkg-types": "^1.0.3",
     "postcss-import-resolver": "^2.0.0",
     "std-env": "^3.3.2",
     "ufo": "^1.1.1",
