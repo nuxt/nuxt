@@ -4,7 +4,7 @@ toc: false
 
 # useCookie
 
-This example shows how to use the useCookie API to persist small amounts of data that both client and server can use.
+This example shows how to use the useCookie API to persist small amounts of data that both the client and server can use.
 
 ::ReadMore{link="/docs/api/composables/use-cookie"}
 ::
