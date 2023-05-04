@@ -4,7 +4,7 @@ toc: false
 
 # `<NuxtLink>`
 
-This example shows different ways to navigate between page with the `<NuxtLink>` component.
+This example shows different ways to navigate between pages with the `<NuxtLink>` component.
 
 ::alert{type=info icon=💡}
 `components/MyNuxtLink.ts` defines a custom `<NuxtLink>`.
