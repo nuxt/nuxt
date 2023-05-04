@@ -3,6 +3,12 @@
 exports[`util: route util: route create createRoutes should allow snake case routes in posix system 1`] = `
 Array [
   Object {
+    "chunkName": "pages/de/index",
+    "component": "/some/nuxt/app/pages/de/index.vue",
+    "name": "de",
+    "path": "/de",
+  },
+  Object {
     "chunkName": "pages/parent/index",
     "component": "/some/nuxt/app/pages/parent/index.vue",
     "name": "parent",
@@ -39,6 +45,25 @@ Array [
     "path": "/subpage/:param?",
   },
   Object {
+    "chunkName": "pages/parent/*",
+    "component": "/some/nuxt/app/pages/parent/*.vue",
+    "name": "parent-*",
+    "path": "/parent/*",
+  },
+  Object {
+    "children": Array [
+      Object {
+        "chunkName": "pages/another_route/rout*",
+        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+        "name": "another_route-rout*",
+        "path": "",
+      },
+    ],
+    "chunkName": "pages/another_route/rout*",
+    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+    "path": "/another_route/rout*",
+  },
+  Object {
     "chunkName": "pages/index",
     "component": "/some/nuxt/app/pages/index.vue",
     "name": "index",
@@ -49,6 +74,18 @@ Array [
     "component": "/some/nuxt/app/pages/_param.vue",
     "name": "param",
     "path": "/:param",
+  },
+  Object {
+    "chunkName": "pages/*",
+    "component": "/some/nuxt/app/pages/*.vue",
+    "name": "*",
+    "path": "/*",
+  },
+  Object {
+    "chunkName": "pages/de*",
+    "component": "/some/nuxt/app/pages/de*.vue",
+    "name": "de*",
+    "path": "/de*",
   },
 ]
 `;
@@ -109,6 +146,15 @@ Array [
 exports[`util: route util: route create createRoutes should enforce trailing slashes when configured to 1`] = `
 Array [
   Object {
+    "chunkName": "pages/de/index",
+    "component": "/some/nuxt/app/pages/de/index.vue",
+    "name": "de",
+    "path": "/de/",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
     "chunkName": "pages/parent/index",
     "component": "/some/nuxt/app/pages/parent/index.vue",
     "name": "parent",
@@ -163,6 +209,34 @@ Array [
     },
   },
   Object {
+    "chunkName": "pages/parent/*",
+    "component": "/some/nuxt/app/pages/parent/*.vue",
+    "name": "parent-*",
+    "path": "/parent/*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
+    "children": Array [
+      Object {
+        "chunkName": "pages/another_route/rout*",
+        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+        "name": "another_route-rout*",
+        "path": "",
+        "pathToRegexpOptions": Object {
+          "strict": true,
+        },
+      },
+    ],
+    "chunkName": "pages/another_route/rout*",
+    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+    "path": "/another_route/rout*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
     "chunkName": "pages/index",
     "component": "/some/nuxt/app/pages/index.vue",
     "name": "index",
@@ -180,11 +254,38 @@ Array [
       "strict": true,
     },
   },
+  Object {
+    "chunkName": "pages/*",
+    "component": "/some/nuxt/app/pages/*.vue",
+    "name": "*",
+    "path": "/*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
+    "chunkName": "pages/de*",
+    "component": "/some/nuxt/app/pages/de*.vue",
+    "name": "de*",
+    "path": "/de*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
 ]
 `;
 
 exports[`util: route util: route create createRoutes should remove trailing slashes when configured to 1`] = `
 Array [
+  Object {
+    "chunkName": "pages/de/index",
+    "component": "/some/nuxt/app/pages/de/index.vue",
+    "name": "de",
+    "path": "/de",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
   Object {
     "chunkName": "pages/parent/index",
     "component": "/some/nuxt/app/pages/parent/index.vue",
@@ -240,6 +341,34 @@ Array [
     },
   },
   Object {
+    "chunkName": "pages/parent/*",
+    "component": "/some/nuxt/app/pages/parent/*.vue",
+    "name": "parent-*",
+    "path": "/parent/*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
+    "children": Array [
+      Object {
+        "chunkName": "pages/another_route/rout*",
+        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+        "name": "another_route-rout*",
+        "path": "",
+        "pathToRegexpOptions": Object {
+          "strict": true,
+        },
+      },
+    ],
+    "chunkName": "pages/another_route/rout*",
+    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+    "path": "/another_route/rout*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
     "chunkName": "pages/index",
     "component": "/some/nuxt/app/pages/index.vue",
     "name": "index",
@@ -256,6 +385,114 @@ Array [
     "pathToRegexpOptions": Object {
       "strict": true,
     },
+  },
+  Object {
+    "chunkName": "pages/*",
+    "component": "/some/nuxt/app/pages/*.vue",
+    "name": "*",
+    "path": "/*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
+    "chunkName": "pages/de*",
+    "component": "/some/nuxt/app/pages/de*.vue",
+    "name": "de*",
+    "path": "/de*",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+]
+`;
+
+exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = `
+Array [
+  Object {
+    "chunkName": "pages/de/index",
+    "component": "/some/nuxt/app/pages/de/index.vue",
+    "name": "de",
+    "path": "/de",
+  },
+  Object {
+    "chunkName": "pages/parent/index",
+    "component": "/some/nuxt/app/pages/parent/index.vue",
+    "name": "parent",
+    "path": "/parent",
+  },
+  Object {
+    "chunkName": "pages/snake_case_route",
+    "component": "/some/nuxt/app/pages/snake_case_route.vue",
+    "name": "snake_case_route",
+    "path": "/snake_case_route",
+  },
+  Object {
+    "chunkName": "pages/parent/child/index",
+    "component": "/some/nuxt/app/pages/parent/child/index.vue",
+    "name": "parent-child",
+    "path": "/parent/child",
+  },
+  Object {
+    "chunkName": "pages/parent/child/test",
+    "component": "/some/nuxt/app/pages/parent/child/test.vue",
+    "name": "parent-child-test",
+    "path": "/parent/child/test",
+  },
+  Object {
+    "chunkName": "pages/another_route/_id",
+    "component": "/some/nuxt/app/pages/another_route/_id.vue",
+    "name": "another_route-id",
+    "path": "/another_route/:id?",
+  },
+  Object {
+    "chunkName": "pages/subpage/_param",
+    "component": "/some/nuxt/app/pages/subpage/_param.vue",
+    "name": "subpage-param",
+    "path": "/subpage/:param?",
+  },
+  Object {
+    "chunkName": "pages/parent/*",
+    "component": "/some/nuxt/app/pages/parent/*.vue",
+    "name": "parent-*",
+    "path": "/parent/*",
+  },
+  Object {
+    "children": Array [
+      Object {
+        "chunkName": "pages/another_route/rout*",
+        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+        "name": "another_route-rout*",
+        "path": "",
+      },
+    ],
+    "chunkName": "pages/another_route/rout*",
+    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+    "path": "/another_route/rout*",
+  },
+  Object {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  Object {
+    "chunkName": "pages/_param",
+    "component": "/some/nuxt/app/pages/_param.vue",
+    "name": "param",
+    "path": "/:param",
+  },
+  Object {
+    "chunkName": "pages/de*",
+    "component": "/some/nuxt/app/pages/de*.vue",
+    "name": "de*",
+    "path": "/de*",
+  },
+  Object {
+    "chunkName": "pages/*",
+    "component": "/some/nuxt/app/pages/*.vue",
+    "name": "*",
+    "path": "/*",
   },
 ]
 `;

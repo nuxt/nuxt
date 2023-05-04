@@ -205,12 +205,18 @@ describe('util: route', () => {
 
   describe('util: route create', () => {
     const files = [
-      'pages/index.vue',
       'pages/_param.vue',
-      'pages/subpage/_param.vue',
+      'pages/de*.vue',
+      'pages/de/index.vue',
+      'pages/index.vue',
+      'pages/*.vue',
+      'pages/another_route/rout*.vue',
       'pages/snake_case_route.vue',
-      'pages/another_route/_id.vue',
+      'pages/subpage/_param.vue',
       'pages/parent/index.vue',
+      'pages/parent/*.vue',
+      'pages/another_route/_id.vue',
+      'pages/another_route/rout*.vue',
       'pages/parent/child/index.vue',
       'pages/parent/child/test.vue'
     ]
@@ -234,6 +240,32 @@ describe('util: route', () => {
 
     test.posix('createRoutes should remove trailing slashes when configured to', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: false })
+      expect(routesResult).toMatchSnapshot()
+    })
+  })
+
+  describe('util: route sortRoutes', () => {
+    const files = [
+      'pages/_param.vue',
+      'pages/de/index.vue',
+      'pages/index.vue',
+      'pages/*.vue',
+      'pages/another_route/rout*.vue',
+      'pages/snake_case_route.vue',
+      'pages/subpage/_param.vue',
+      'pages/de*.vue',
+      'pages/parent/index.vue',
+      'pages/parent/*.vue',
+      'pages/another_route/_id.vue',
+      'pages/another_route/rout*.vue',
+      'pages/parent/child/index.vue',
+      'pages/parent/child/test.vue'
+    ]
+    const srcDir = '/some/nuxt/app'
+    const pagesDir = 'pages'
+
+    test('sortRoutes should sort routes', () => {
+      const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
   })
