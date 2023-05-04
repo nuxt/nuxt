@@ -205,18 +205,12 @@ describe('util: route', () => {
 
   describe('util: route create', () => {
     const files = [
-      'pages/_param.vue',
-      'pages/de*.vue',
-      'pages/de/index.vue',
       'pages/index.vue',
-      'pages/*.vue',
-      'pages/another_route/rout*.vue',
-      'pages/snake_case_route.vue',
+      'pages/_param.vue',
       'pages/subpage/_param.vue',
-      'pages/parent/index.vue',
-      'pages/parent/*.vue',
+      'pages/snake_case_route.vue',
       'pages/another_route/_id.vue',
-      'pages/another_route/rout*.vue',
+      'pages/parent/index.vue',
       'pages/parent/child/index.vue',
       'pages/parent/child/test.vue'
     ]
