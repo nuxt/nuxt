@@ -311,12 +311,6 @@ Array [
     "path": "/subpage/:param?",
   },
   Object {
-    "chunkName": "pages/parent/*",
-    "component": "/some/nuxt/app/pages/parent/*.vue",
-    "name": "parent-*",
-    "path": "/parent/*",
-  },
-  Object {
     "children": Array [
       Object {
         "chunkName": "pages/another_route/rout*",
@@ -328,6 +322,12 @@ Array [
     "chunkName": "pages/another_route/rout*",
     "component": "/some/nuxt/app/pages/another_route/rout*.vue",
     "path": "/another_route/rout*",
+  },
+  Object {
+    "chunkName": "pages/parent/*",
+    "component": "/some/nuxt/app/pages/parent/*.vue",
+    "name": "parent-*",
+    "path": "/parent/*",
   },
   Object {
     "chunkName": "pages/_param",
