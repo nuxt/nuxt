@@ -5975,10 +5975,10 @@ devalue@^2.0.1:
   resolved "https://registry.npmjs.org/devalue/-/devalue-2.0.1.tgz#5d368f9adc0928e47b77eea53ca60d2f346f9762"
   integrity sha512-I2TiqT5iWBEyB8GRfTDP0hiLZ0YeDJZ+upDxjBfOC2lebO5LezQMv7QvIUTzdb64jQyAKLf1AHADtGN+jw6v8Q==
 
-devtools-protocol@0.0.1107588:
-  version "0.0.1107588"
-  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1107588.tgz#f8cac707840b97cc30b029359341bcbbb0ad8ffa"
-  integrity sha512-yIR+pG9x65Xko7bErCUSQaDLrO/P1p3JUzEk7JCU4DowPcGHkTGUGQapcfcLc4qj0UaALwZ+cr0riFgiqpixcg==
+devtools-protocol@0.0.1120988:
+  version "0.0.1120988"
+  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1120988.tgz#8fe49088919ae3b8df7235774633763f1f925066"
+  integrity sha512-39fCpE3Z78IaIPChJsP6Lhmkbf4dWXOmzLk/KFTdRkNk/0JymRIfUynDVRndV9HoDz8PyalK1UH21ST/ivwW5Q==
 
 diff-sequences@^29.4.2:
   version "29.4.2"
@@ -12637,16 +12637,16 @@ punycode@^2.3.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
 
-puppeteer-core@^20.0.0:
-  version "20.0.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-20.0.0.tgz#21fdcd77ba8829e562a9f168fcce9e413029ceec"
-  integrity sha512-mQg1pXOqomTB0ecuv6WWrd+PxSeV4uC+wiUM+UYvENuKNq9m0fG9ZXhHLK1COwZH/A5IILzJH2sfQ0ivmxobGw==
+puppeteer-core@^20.1.0:
+  version "20.1.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-20.1.0.tgz#c74e21ad642b0adb273da83b4bf444fdecc6500f"
+  integrity sha512-/xTvabzAN4mnnuYkJCuWNnnEhOb3JrBTa3sY6qVi1wybuIEk5ODRg8Z5PPiKUGiKC9iG7GWOJ5CjF3iuMuxZSA==
   dependencies:
     "@puppeteer/browsers" "1.0.0"
     chromium-bidi "0.4.7"
     cross-fetch "3.1.5"
     debug "4.3.4"
-    devtools-protocol "0.0.1107588"
+    devtools-protocol "0.0.1120988"
     extract-zip "2.0.1"
     https-proxy-agent "5.0.1"
     proxy-from-env "1.1.0"
@@ -13212,10 +13212,10 @@ rollup-plugin-license@^3.0.1:
     spdx-expression-validate "~2.0.0"
     spdx-satisfies "~5.0.1"
 
-rollup@3.21.3:
-  version "3.21.3"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-3.21.3.tgz#b3f1920a9d35a9de70f120a1d085753e41997941"
-  integrity sha512-VnPfEG51nIv2xPLnZaekkuN06q9ZbnyDcLkaBdJa/W7UddyhOfMP2yOPziYQfeY7k++fZM8FdQIummFN5y14kA==
+rollup@3.21.4:
+  version "3.21.4"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-3.21.4.tgz#61af40f1d48d0d04fb20114af73db7367f7151fa"
+  integrity sha512-N5LxpvDolOm9ueiCp4NfB80omMDqb45ShtsQw2+OT3f11uJ197dv703NZvznYHP6RWR85wfxanXurXKG3ux2GQ==
   optionalDependencies:
     fsevents "~2.3.2"
 
@@ -13903,10 +13903,15 @@ statuses@~1.5.0:
   resolved "https://registry.npmjs.org/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
 
-std-env@^3.0.1, std-env@^3.3.1, std-env@^3.3.2:
+std-env@^3.0.1, std-env@^3.3.1:
   version "3.3.2"
   resolved "https://registry.npmjs.org/std-env/-/std-env-3.3.2.tgz#af27343b001616015534292178327b202b9ee955"
   integrity sha512-uUZI65yrV2Qva5gqE0+A7uVAvO40iPo6jGhs7s8keRfHCmtg+uB2X6EiLGCI9IgL1J17xGhvoOqSz79lzICPTA==
+
+std-env@^3.3.3:
+  version "3.3.3"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-3.3.3.tgz#a54f06eb245fdcfef53d56f3c0251f1d5c3d01fe"
+  integrity sha512-Rz6yejtVyWnVjC1RFvNmYL10kgjC49EOghxWn0RFqlCHGFpQx+Xe7yW3I4ceK1SGrWIGMjD5Kbue8W/udkbMJg==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
@@ -14629,10 +14634,10 @@ ua-parser-js@^1.0.35:
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-1.0.35.tgz#c4ef44343bc3db0a3cbefdf21822f1b1fc1ab011"
   integrity sha512-fKnGuqmTBnIE+/KXSzCn4db8RTigUzw1AN0DmdU6hJovUTbYJKyqj+8Mt1c4VfRDnOVJnENmfYkIPZ946UrSAA==
 
-ufo@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.npmjs.org/ufo/-/ufo-1.1.1.tgz#e70265e7152f3aba425bd013d150b2cdf4056d7c"
-  integrity sha512-MvlCc4GHrmZdAllBc0iUDowff36Q9Ndw/UzqmEKyrfSzokTd9ZCy1i+IIk5hrYKkjoYVQyNbrw7/F8XJ2rEwTg==
+ufo@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.npmjs.org/ufo/-/ufo-1.1.2.tgz#d0d9e0fa09dece0c31ffd57bd363f030a35cfe76"
+  integrity sha512-TrY6DsjTQQgyS3E3dBaOXf0TpPD8u9FVrVYmKVegJuFw51n/YB9XPt+U6ydzFG5ZIN7+DIjPbNmXoBj9esYhgQ==
 
 uglify-js@^3.1.4, uglify-js@^3.5.1:
   version "3.17.4"
