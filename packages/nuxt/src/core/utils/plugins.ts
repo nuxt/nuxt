@@ -14,8 +14,8 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
 
   const query = parseQuery(search)
 
-  // Macro
-  if (query.macro && (!opts.type || opts.type.includes('script'))) {
+  // Macro and component wrapper
+  if ((query.macro || query.nuxt_component) && (!opts.type || opts.type.includes('script'))) {
     return true
   }
 
