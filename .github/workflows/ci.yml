@@ -67,6 +67,10 @@ jobs:
     timeout-minutes: 10
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ['bundler', 'node']
 
     steps:
       - uses: actions/checkout@v3
@@ -87,6 +91,8 @@ jobs:
 
       - name: Test (types)
         run: pnpm test:types
+        env:
+          MODULE_RESOLUTION: ${{ matrix.module }}
 
   lint:
     # autofix workflow will be triggered instead for PRs
