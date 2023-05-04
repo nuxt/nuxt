@@ -34,7 +34,7 @@
     "vue": "3.2.47",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.1.6",
-    "webpack": "^5.81.0"
+    "webpack": "^5.82.0"
   },
   "dependencies": {
     "defu": "^6.1.2",
@@ -42,8 +42,8 @@
     "pathe": "^1.1.0",
     "pkg-types": "^1.0.3",
     "postcss-import-resolver": "^2.0.0",
-    "std-env": "^3.3.2",
-    "ufo": "^1.1.1",
+    "std-env": "^3.3.3",
+    "ufo": "^1.1.2",
     "unimport": "^3.0.6",
     "untyped": "^1.3.2"
   },
