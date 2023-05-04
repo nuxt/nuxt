@@ -56,6 +56,7 @@ module.exports = {
   ],
 
   moduleNameMapper: {
+    [`consola$`]: '<rootDir>/node_modules/consola/dist/index.basic.cjs',
     [`@nuxt/(${corePackages.join('|')})(/?.*)$`]: '<rootDir>/packages/$1/src/$2'
   }
 }

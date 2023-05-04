@@ -10,13 +10,13 @@
   "dependencies": {
     "@nuxt/utils": "2.16.3",
     "chalk": "^4.1.2",
-    "consola": "^2.15.3",
+    "consola": "^3.1.0",
     "defu": "^6.1.2",
     "devalue": "^2.0.1",
     "fs-extra": "^10.1.0",
     "html-minifier": "^4.0.0",
     "node-html-parser": "^6.1.5",
-    "ufo": "^1.1.1"
+    "ufo": "^1.1.2"
   },
   "engines": {
     "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
