@@ -4,7 +4,7 @@ toc: false
 
 # useHead
 
-This example shows how to use useHead and Nuxt built-in components to bind meta data to the head of the page.
+This example shows how to use useHead and Nuxt built-in components to bind metadata to the head of the page.
 
 ::ReadMore{link="/docs/api/composables/use-head"}
 ::
