@@ -57,10 +57,27 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 }
 
 export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
-  // @ts-expect-error deprecating a property from Nuxt 2
-  if (ctx.options.build.extend) {
-    logger.warn('[nuxt] The `webpack.build.extend` property does not exist in Nuxt 3. Instead you can extend the webpack config using the `webpack:config` hook.')
+  // @ts-expect-error TODO: remove support for `build.extend` in v3.6
+  const { extend } = ctx.options.build
+  if (typeof extend === 'function') {
+    logger.warn('[nuxt] The `build.extend` and `webpack.build.extend` properties have been deprecated in Nuxt 3 for some time and will be removed in a future minor release. Instead, you can extend webpack config using the `webpack:config` hook.')
+
+    const extendedConfig = extend.call(
+      {},
+      ctx.config,
+      { loaders: [], ...ctx }
+    ) || ctx.config
+
+    const pragma = /@|#/
+    const { devtool } = extendedConfig
+    if (typeof devtool === 'string' && pragma.test(devtool)) {
+      extendedConfig.devtool = devtool.replace(pragma, '')
+      logger.warn(`devtool has been normalized to ${extendedConfig.devtool} as webpack documented value`)
+    }
+
+    return extendedConfig
   }
+
   // Clone deep avoid leaking config between Client and Server
   return cloneDeep(ctx.config)
 }
