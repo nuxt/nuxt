@@ -36,9 +36,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return abortNavigation()
   }
  
-  if (to.path !== '/edit-post') {
-    return navigateTo('/edit-post')
-  }
+  return navigateTo('/edit-post')
 })
 ```
 

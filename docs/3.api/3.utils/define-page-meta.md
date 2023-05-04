@@ -144,9 +144,7 @@ The example below shows how the middleware can be defined using a `function` dir
             return navigateTo('/login')
         }
 
-        if (to.path !== '/checkout') {
-          return navigateTo('/checkout')
-        }
+        return navigateTo('/checkout')
       }
     ],
 
