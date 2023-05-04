@@ -43,7 +43,7 @@
     "mri": "^1.2.0",
     "ohash": "^1.1.2",
     "pathe": "^1.1.0",
-    "perfect-debounce": "^0.1.3",
+    "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.0.3",
     "scule": "^1.0.0",
     "semver": "^7.5.0",
