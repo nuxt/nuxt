@@ -76,6 +76,8 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
+  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+
   [key: string]: unknown
 
   /** @internal */
@@ -193,6 +195,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {}
     },
+    runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
     isHydrating: process.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
@@ -224,7 +227,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.callAsync(nuxtApp, () => hook(...args))
+        await nuxtApp.runWithContext(() => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
@@ -288,7 +291,7 @@ export function createNuxtApp (options: CreateOptions) {
 
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
-  const { provide } = await callWithNuxt(nuxtApp, plugin, [nuxtApp]) || {}
+  const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
   if (provide && typeof provide === 'object') {
     for (const key in provide) {
       nuxtApp.provide(key, provide[key])
