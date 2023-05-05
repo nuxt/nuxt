@@ -1,11 +1,11 @@
 ---
 title: "refreshNuxtData"
-description: refreshNuxtData refetches all data from the server and updates the page.
+description: refreshNuxtData re-fetches all data from the server and updates the page.
 ---
 
 # `refreshNuxtData`
 
-`refreshNuxtData` re-fetches all data from the server and updates the page as well as invalidates the cache of `useAsyncData`, `useLazyAsyncData`, `useFetch` and `useLazyFetch`.
+`refreshNuxtData` re-fetches all data from the server and updates the page, invalidating the cache of `useAsyncData`, `useLazyAsyncData`, `useFetch`, and `useLazyFetch`.
 
 ## Type
 
@@ -19,13 +19,13 @@ refreshNuxtData(keys?: string | string[])
 
     **Type**: `String | String[]`
 
-    `refreshNuxtData` accepts a single or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All `useAsyncData` and `useFetch` are re-fetched when no `keys` are specified.
+    `refreshNuxtData` accepts a single or an array of strings as `keys` to fetch the data. This parameter is **optional**. All `useAsyncData` and `useFetch` are re-fetched when no `keys` are specified.
 
 ## Examples
 
 ### Refresh All data
 
-This example below refreshes all data being fetched using `useAsyncData` and `useFetch` on the current page.
+This example below refreshes all data fetched using `useAsyncData` and `useFetch` on the current page.
 
 ```vue [pages/some-page.vue]
 <template>
