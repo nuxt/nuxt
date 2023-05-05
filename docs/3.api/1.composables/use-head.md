@@ -4,7 +4,7 @@ description: useHead customizes the head properties of individual pages of your 
 
 # `useHead`
 
-The `useHead` composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
+The `useHead` composable function allows you to manage your head tags programmatically and reactively, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
 
 :ReadMore{link="/docs/getting-started/seo-meta"}
 
@@ -34,7 +34,7 @@ interface MetaObject {
 See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/schema/src/schema.ts) for more detailed types.
 
 ::alert{type=info}
-The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `reactive` properties. `meta` parameter can also accept a function returning an object to make the entire object reactive.
+The properties of `useHead` can be dynamic, accepting `ref`, `computed`, and `reactive` properties. `meta` parameters can also accept a function that returns an object to make it reactive.
 ::
 
 ## Parameters
@@ -49,31 +49,31 @@ An object accepting the following head metadata:
 
   **Type**: `Array<Record<string, any>>`
 
-  Each element in the array is mapped to a newly-created `<meta>` tag, where object properties are mapped to the corresponding attributes.
+  Each element in the array is mapped to a newly-created `<meta>` tag, where the object properties get mapped to the corresponding attributes.
 
 - `link`
 
   **Type**: `Array<Record<string, any>>`
 
-  Each element in the array is mapped to a newly-created `<link>` tag, where object properties are mapped to the corresponding attributes.
+  Each element in the array is mapped to a newly-created `<link>` tag, where the object properties get mapped to the corresponding attributes.
 
 - `style`
 
   **Type**: `Array<Record<string, any>>`
 
-  Each element in the array is mapped to a newly-created `<style>` tag, where object properties are mapped to the corresponding attributes.
+  Each element in the array is mapped to a newly-created `<style>` tag, where the object properties get mapped to the corresponding attributes.
 
 - `script`
 
   **Type**: `Array<Record<string, any>>`
 
-  Each element in the array is mapped to a newly-created `<script>` tag, where object properties are mapped to the corresponding attributes.
+  Each element in the array is mapped to a newly-created `<script>` tag, where the object properties get mapped to the corresponding attributes.
 
 - `noscript`
 
   **Type**: `Array<Record<string, any>>`
 
-  Each element in the array is mapped to a newly-created `<noscript>` tag, where object properties are mapped to the corresponding attributes.
+  Each element in the array is mapped to a newly-created `<noscript>` tag, where the object properties get mapped to the corresponding attributes.
 
 - `titleTemplate`
 
@@ -85,16 +85,16 @@ An object accepting the following head metadata:
 
   **Type**: `string`
 
-  Sets static page title on an individual page.
+  Sets a page's static title.
 
 - `bodyAttrs`
 
   **Type**: `Record<string, any>`
 
-  Sets attributes of the `<body>` tag. Each object property is mapped to the corresponding attribute.
+  Sets the `<body>` tag attributes. Each object property is mapped to the corresponding attribute.
 
 - `htmlAttrs`
 
   **Type**: `Record<string, any>`
 
-  Sets attributes of the `<html>` tag. Each object property is mapped to the corresponding attribute.
+  Sets the attributes of the `<html>` tag. Each object property is mapped to the corresponding attribute.
