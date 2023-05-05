@@ -44,10 +44,3 @@ useSeoMeta({
 There are over 100+ parameters.
 
 Full list of [`parameters`](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts)
-
-# `useServerSeoMeta`
-
-In most instances, the meta doesn't need to be reactive as robots will only scan the initial load. So we recommend using `useServerSeoMeta` as a performance-focused utility that will not do anything (or return a `head` object) on the client.
-Parameters are exactly the same as with `useSeoMeta`
-
-Read more on the [`useSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta) and [`useServerSeoMeta`](https://unhead.harlanzw.com/guide/composables/use-seo-meta#useserverseometa) composable.
