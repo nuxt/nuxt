@@ -26,6 +26,7 @@ type AsyncDataOptions<DataT> = {
   pick?: string[]
   watch?: WatchSource[]
   immediate?: boolean
+  forcePayloadExtraction?: boolean
 }
 
 interface RefreshOptions {
@@ -55,6 +56,7 @@ type AsyncData<DataT, ErrorT> = {
   * _pick_: only pick specified keys in this array from the `handler` function result
   * _watch_: watch reactive sources to auto-refresh
   * _immediate_: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
+  * _forcePayloadExtraction_: extract payload even if the Nuxt app is not hydrating (defaults to `false`)
 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 

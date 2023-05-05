@@ -40,6 +40,7 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
+  forcePayloadExtraction: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -109,10 +110,12 @@ export function useAsyncData<
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
+  options.forcePayloadExtraction = options.forcePayloadExtraction ?? false
+
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
-  const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  const getCachedData = () => (nuxt.isHydrating || options.forcePayloadExtraction) ? nuxt.payload.data[key] : nuxt.static.data[key]
   const hasCachedData = () => getCachedData() !== undefined
 
   // Create or use a shared asyncData entity
