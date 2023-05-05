@@ -40,6 +40,7 @@ useSeoMeta({
 ```
 
 ## Parameters
+
 There are over 100+ parameters.
 
 Full list of [`parameters`](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts)
