@@ -4,11 +4,11 @@ description: This wrapper around useAsyncData triggers navigation immediately.
 
 # `useLazyAsyncData`
 
-`useLazyAsyncData` provides a wrapper around `useAsyncData` that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+`useLazyAsyncData` provides a wrapper around `useAsyncData` that triggers navigation before the handler gets resolved by setting the `lazy` option to `true`.
 
 ## Description
 
-By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved.
+By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigation until its async handler gets resolved.
 
 > `useLazyAsyncData` has the same signature as `useAsyncData`.
 
@@ -25,19 +25,19 @@ By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigati
 
 <script setup>
 /* Navigation will occur before fetching is complete.
-  Handle pending and error states directly within your component's template
+  Handle pending and error states directly within your component's template.
 */
 const { pending, data: count } = useLazyAsyncData('count', () => $fetch('/api/count'))
 
 watch(count, (newCount) => {
-  // Because count starts out null, you won't have access
+  // Because `count` is null at the beginning, you won't have access
   // to its contents immediately, but you can watch it.
 })
 </script>
 ```
 
 ::alert{type=warning}
-`useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
+`useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your function `useLazyAsyncData`.
 ::
 
 :ReadMore{link="/docs/getting-started/data-fetching#uselazyasyncdata"}
