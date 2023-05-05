@@ -13,7 +13,7 @@ Running `nuxi devtools enable` will install the Nuxt DevTools globally and also 
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`rootDir` | `.` | The app root directory you want to enable devtools for.
+`rootDir` | `.` | The app's root directory you want to enable devtools for.
 
 ::ReadMore{link="https://github.com/nuxt/devtools"}
 ::
