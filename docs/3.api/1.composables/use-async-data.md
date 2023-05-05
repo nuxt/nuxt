@@ -45,7 +45,7 @@ type AsyncData<DataT, ErrorT> = {
 
 ## Params
 
-* **key**: a unique key to ensuring that data fetching can be properly de-duplicated across requests. If you do not provide a key, a key unique to the file name and line number of the instance of `useAsyncData` will be generated.
+* **key**: a unique key ensuring that data fetching can be properly de-duplicated across requests. If you do not provide a key, a key unique to the file name and line number of the instance of `useAsyncData` will be generated.
 * **handler**: an asynchronous function that returns a value
 * **options**:
   * _lazy_: whether to resolve the async function after loading the route instead of blocking client-side navigation (defaults to `false`)
