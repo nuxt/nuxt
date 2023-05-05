@@ -258,7 +258,7 @@ describe('util: route', () => {
     const srcDir = '/some/nuxt/app'
     const pagesDir = 'pages'
 
-    test('sortRoutes should sort routes', () => {
+    test.posix('sortRoutes should sort routes', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
