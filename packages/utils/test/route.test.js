@@ -1,4 +1,4 @@
-import { flatRoutes, createRoutes, guardDir, promisifyRoute } from '../src/route'
+import { flatRoutes, createRoutes, guardDir, promisifyRoute, sortRoutes } from '../src/route'
 
 describe('util: route', () => {
   test('should flat route with path', () => {
@@ -261,6 +261,85 @@ describe('util: route', () => {
     test.posix('sortRoutes should sort routes', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
+    })
+    test('Should sortRoutes with extendRoutes using *', () => {
+      const routes = [
+        { path: '/poetry' },
+        { path: '/reports' },
+        { path: '*' },
+        { path: '/de/about' },
+        { path: '/' },
+        { path: '/about' },
+        { path: '/de' },
+        { path: '/tech' },
+        { path: '/de/tech' },
+        { path: '/de*' },
+        { path: '/:post' },
+        { path: '/de/:post' },
+        { path: '/de/reports' },
+        { path: '/de/poetry' }
+      ]
+
+      sortRoutes(routes)
+
+      expect(routes).toEqual(
+        [
+          { path: '/about' },
+          { path: '/de' },
+          { path: '/poetry' },
+          { path: '/reports' },
+          { path: '/tech' },
+          { path: '/de/about' },
+          { path: '/de/poetry' },
+          { path: '/de/reports' },
+          { path: '/de/tech' },
+          { path: '/' },
+          { path: '/de/:post' },
+          { path: '/:post' },
+          { path: '/de*' },
+          { path: '*' }
+        ]
+      )
+    })
+
+    test('Should sortRoutes with extendRoutes using /*', () => {
+      const routes = [
+        { path: '/poetry' },
+        { path: '/reports' },
+        { path: '/*' },
+        { path: '/de/about' },
+        { path: '/about' },
+        { path: '/de' },
+        { path: '/tech' },
+        { path: '/de/tech' },
+        { path: '/de/*' },
+        { path: '/' },
+        { path: '/:post' },
+        { path: '/de/:post' },
+        { path: '/de/reports' },
+        { path: '/de/poetry' }
+      ]
+
+      sortRoutes(routes)
+
+      expect(routes).toEqual(
+        [
+          { path: '/about' },
+          { path: '/de' },
+          { path: '/poetry' },
+          { path: '/reports' },
+          { path: '/tech' },
+          { path: '/de/about' },
+          { path: '/de/poetry' },
+          { path: '/de/reports' },
+          { path: '/de/tech' },
+          { path: '/' },
+          { path: '/de/:post' },
+          { path: '/de/*' },
+          { path: '/:post' },
+          { path: '/*' }
+        ]
+      )
     })
   })
 })

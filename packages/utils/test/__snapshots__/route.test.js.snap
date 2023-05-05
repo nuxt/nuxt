@@ -293,6 +293,12 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "path": "/parent/child/test",
   },
   {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -322,12 +328,6 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "chunkName": "pages/another_route/rout*",
     "component": "/some/nuxt/app/pages/another_route/rout*.vue",
     "path": "/another_route/rout*",
-  },
-  {
-    "chunkName": "pages/index",
-    "component": "/some/nuxt/app/pages/index.vue",
-    "name": "index",
-    "path": "/",
   },
   {
     "chunkName": "pages/_param",
