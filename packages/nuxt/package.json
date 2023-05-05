@@ -71,7 +71,7 @@
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",
     "globby": "^13.1.4",
-    "h3": "^1.6.4",
+    "h3": "^1.6.5",
     "hookable": "^5.5.3",
     "jiti": "^1.18.2",
     "klona": "^2.0.6",
@@ -79,7 +79,7 @@
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.0",
-    "nitropack": "^2.3.3",
+    "nitropack": "^2.4.0",
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
@@ -108,7 +108,7 @@
     "@vitejs/plugin-vue": "^4.2.1",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.4",
+    "vite": "^4.3.5",
     "vitest": "^0.31.0"
   },
   "peerDependencies": {
