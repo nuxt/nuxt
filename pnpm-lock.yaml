@@ -9,7 +9,6 @@ overrides:
   nuxi: workspace:*
   nuxt: workspace:*
   nuxt3: workspace:nuxt@*
-  unbuild: ^1.2.1
   vite: ^4.3.4
   vue: 3.2.47
   magic-string: ^0.30.0
@@ -111,9 +110,6 @@ importers:
       ufo:
         specifier: ^1.1.2
         version: 1.1.2
-      unbuild:
-        specifier: ^1.2.1
-        version: 1.2.1
       vite:
         specifier: ^4.3.4
         version: 4.3.4(@types/node@18.16.3)
@@ -200,7 +196,7 @@ importers:
         specifier: ^2.3.3
         version: 2.3.3
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       vite:
         specifier: ^4.3.4
@@ -309,7 +305,7 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
 
   packages/nuxt:
@@ -478,7 +474,7 @@ importers:
         specifier: ^8.8.2
         version: 8.8.2
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       vite:
         specifier: ^4.3.4
@@ -539,7 +535,7 @@ importers:
         specifier: ^2.3.3
         version: 2.3.3
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       unctx:
         specifier: ^2.3.0
@@ -600,7 +596,7 @@ importers:
         specifier: ^1.33.0
         version: 1.33.0
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       vitest:
         specifier: ^0.31.0
@@ -718,7 +714,7 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       vue:
         specifier: 3.2.47
@@ -863,7 +859,7 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1
       unbuild:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       vue:
         specifier: 3.2.47

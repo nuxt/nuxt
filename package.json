@@ -33,7 +33,6 @@
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "nuxt3": "workspace:nuxt@*",
-    "unbuild": "^1.2.1",
     "vite": "^4.3.4",
     "vue": "3.2.47",
     "magic-string": "^0.30.0"
@@ -70,7 +69,6 @@
     "std-env": "^3.3.3",
     "typescript": "^5.0.4",
     "ufo": "^1.1.2",
-    "unbuild": "^1.2.1",
     "vite": "^4.3.4",
     "vitest": "^0.31.0",
     "vue": "3.2.47",
