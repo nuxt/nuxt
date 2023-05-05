@@ -16,4 +16,4 @@ The `cleanup` command removes common generated Nuxt files and caches, including:
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`rootDir` | `.` | The root directory of the project.
+`rootDir` | `.` | The project root directory.
