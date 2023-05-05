@@ -4,7 +4,8 @@
     "$fetch": true
   },
   "plugins": [
-    "jsdoc"
+    "jsdoc",
+    "no-only-tests"
   ],
   "extends": [
     "plugin:jsdoc/recommended",
@@ -18,6 +19,7 @@
         "ignoreDeclarationSort": true
       }
     ],
+    "no-only-tests/no-only-tests": "error",
     "unicorn/prefer-node-protocol": "error",
     "no-console": "off",
     "vue/multi-word-component-names": "off",
