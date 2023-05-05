@@ -1,6 +1,6 @@
 ---
 title: "defineNuxtComponent"
-description: defineNuxtComponent() is a helper function for defining type safe components with Options API.
+description: defineNuxtComponent() is a helper function for defining type-safe components with Options API.
 ---
 
 # `defineNuxtComponent`
