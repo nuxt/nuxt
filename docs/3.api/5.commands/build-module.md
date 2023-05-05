@@ -8,7 +8,7 @@ The `build-module` command runs `@nuxt/module-builder` to generate a `dist` dire
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`rootDir` | `.` | The module root directory to bundle.
+`rootDir` | `.` | The module's root directory to bundle.
 `--stub` | `false` | Stub out your module for development using [jiti](https://github.com/unjs/jiti#jiti). (**note:** This is mainly for development purposes.)
 
 ::alert
