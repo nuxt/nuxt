@@ -40,7 +40,7 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
-  forcePayloadExtraction: boolean
+  forcePayloadExtraction?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
