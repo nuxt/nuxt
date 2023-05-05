@@ -48,7 +48,7 @@ You can pass the error as a string:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  const auth = useState('auth')
+  const user = useState('user')
 
   if (!user.value.isAuthorized) {
     return abortNavigation('Insufficient permissions.')
