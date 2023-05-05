@@ -2,7 +2,7 @@
 
 This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
 
-It automatically generates a key based on URL and fetch options, provides type hints for request URLs based on server routes, and infers API response type.
+It automatically generates a key based on URL and fetch options, provides type hints for request URLs based on server routes, and infers the API response type.
 
 ## Type
 
