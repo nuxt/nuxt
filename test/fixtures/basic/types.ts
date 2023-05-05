@@ -372,4 +372,8 @@ describe('composables inference', () => {
     const bob = callWithNuxt({} as any, () => true)
     expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
   })
+  it('runWithContext', () => {
+    const bob = useNuxtApp().runWithContext(() => true)
+    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+  })
 })

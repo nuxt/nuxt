@@ -93,7 +93,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
-      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
+      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro || query.nuxt_component) { return }
       if (options.shouldInline && !options.shouldInline(id)) { return }
 
       const relativeId = relativeToSrcDir(id)

@@ -15,9 +15,7 @@ export default defineNuxtConfig({
     strict: true,
     tsConfig: {
       compilerOptions: {
-        // TODO: For testing (future) support for Node16-style module resolution.
-        // See https://github.com/nuxt/nuxt/issues/18426 and https://github.com/nuxt/nuxt/pull/18431
-        // moduleResolution: 'Node16'
+        moduleResolution: process.env.MODULE_RESOLUTION
       }
     }
   },
