@@ -91,7 +91,7 @@ An object accepting the following head metadata:
 
   **Type**: `Record<string, any>`
 
-  Sets the `<body>` tag attributes. Each object property is mapped to the corresponding attribute.
+  Sets the attributes of the `<body>` tag . Each object property is mapped to the corresponding attribute.
 
 - `htmlAttrs`
 
