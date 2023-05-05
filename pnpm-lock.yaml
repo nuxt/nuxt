@@ -61,6 +61,9 @@ importers:
       eslint-plugin-jsdoc:
         specifier: ^41.1.2
         version: 41.1.2(eslint@8.39.0)
+      eslint-plugin-no-only-tests:
+        specifier: ^3.1.0
+        version: 3.1.0
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -4391,6 +4394,11 @@ packages:
       minimatch: 3.1.2
       resolve: 1.22.1
       semver: 7.5.0
+    dev: true
+
+  /eslint-plugin-no-only-tests@3.1.0:
+    resolution: {integrity: sha512-Lf4YW/bL6Un1R6A76pRZyE1dl1vr31G/ev8UzIc/geCgFWyrKil8hVjYqWVKGB/UIGmb6Slzs9T0wNezdSVegw==}
+    engines: {node: '>=5.0.0'}
     dev: true
 
   /eslint-plugin-node@11.1.0(eslint@8.39.0):
