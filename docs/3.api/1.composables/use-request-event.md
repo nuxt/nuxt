@@ -5,7 +5,7 @@ description: "You can use useRequestEvent to access the incoming request."
 
 # `useRequestEvent`
 
-Within your pages, components, and plugins you can use `useRequestEvent` to access the incoming request.
+The `useRequestEvent` composable is usable within your pages, components, and plugins to access the incoming request.
 
 ```js
 // Get underlying request event
