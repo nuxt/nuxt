@@ -20,14 +20,14 @@ Option        | Default          | Description
 `--no-clear` | `false` | Does not clear the console after startup.
 `--port, -p` | `3000` | Port to listen.
 `--host, -h` | `localhost` | Hostname of the server.
-`--https` | `false` | Listen with `https` protocol with a self-signed certificate by default.
+`--https` | `false` | Listen with the `https` protocol with a self-signed certificate by default.
 `--ssl-cert` |`null` | Specify a certificate for https.
 `--ssl-key` |`null` | Specify the key for the https certificate.
 
-The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.
+The port and host can be set via NUXT_PORT, PORT, NUXT_HOST, and HOST environment variables.
 
 This command sets `process.env.NODE_ENV` to `development`.
 
 ::alert{type="info"}
-If you are using a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
+If you use a self-signed certificate in development, you must set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
