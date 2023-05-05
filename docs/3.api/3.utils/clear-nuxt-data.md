@@ -1,8 +1,8 @@
 # `clearNuxtData`
 
-Delete cached data, error status and pending promises of `useAsyncData` and `useFetch`.
+Delete cached data, error status, and pending promises of `useAsyncData` and `useFetch`.
 
-This method is useful if you want to invalidate the data fetching for another page.
+This method is practical for invalidating data fetching for another page.
 
 ## Type
 
@@ -12,4 +12,4 @@ clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void
 
 ## Parameters
 
-* `keys`: On or an array of keys that are used in `useAsyncData` to delete their cached data. If no keys are provided, **every data** will be invalidated.
+* `keys`: One or an array of keys used in `useAsyncData` to delete their cached data. With no keys provided, **all the data** will be invalidated.
