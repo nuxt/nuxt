@@ -1,6 +1,6 @@
 # `useRuntimeConfig`
 
-The `useRuntimeConfig` composable is used to expose config variables within your app.
+The `useRuntimeConfig` composable exposes config variables within your app.
 
 ## Usage
 
@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     // Private keys are only available on the server
     apiSecret: '123',
 
-    // Public keys that are exposed to the client
+    // Public keys, exposed to the client
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
     }
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
 ```
 
 ::alert
-Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are defined in `runtimeConfig.public`.
+Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are in `runtimeConfig.public`.
 ::
 
 ::ReadMore{link="/docs/guide/going-further/runtime-config"}
@@ -45,7 +45,7 @@ Variables that need to be accessible on the server are added directly inside `ru
 
 ## Access Runtime Config
 
-To access runtime config, we can use `useRuntimeConfig()` composable:
+To access the runtime config, we can use the `useRuntimeConfig()` composable:
 
 ```ts [server/api/test.ts]
 export default async () => {
@@ -63,11 +63,11 @@ export default async () => {
 }
 ```
 
-In this example, since `apiBase` is defined within the `public` namespace, it is universally accessible on both server and client-side, while `apiSecret` **is only accessible on the server-side**.
+In this example, since `apiBase` is defined within the `public` namespace, it is universally accessible on both the server and client side, while `apiSecret` **is only accessible on the server side**.
 
 ## Environment Variables
 
-It is possible to update runtime config values using a matching environment variable name prefixed with `NUXT_`.
+You can update runtime config values using a matching environment variable name prefixed with `NUXT_`.
 
 ::ReadMore{link="/docs/guide/going-further/runtime-config"}
 ::
@@ -82,23 +82,23 @@ NUXT_API_SECRET = "123"
 ```
 
 ::alert{type=info}
-Any environment variables set within `.env` file are accessed using `process.env` in the Nuxt app during **development** and **build/generate**.
+Any environment variables set within the `.env` file are accessed using `process.env` in the Nuxt app during **development** and **build/generate**.
 ::
 
 ::alert{type=warning}
-In **production runtime**, you should use platform environment variables and `.env` is not used.
+In **production runtime**, you should use platform environment variables, and `.env` is not used.
 ::
 
 ::alert{type=warning}
-When using git, make sure to add `.env` to the `.gitignore` file to avoid leaking secrets to the git history.
+When using Git, add `.env` to the `.gitignore` file to avoid leaking secrets to the Git history.
 ::
 
 ## `app` namespace
 
-Nuxt uses `app` namespace in runtime-config with keys including `baseURL` and `cdnURL`. You can customize their values at runtime by setting environment variables.
+Nuxt uses an `app` namespace in runtime-config with keys including `baseURL` and `cdnURL`. You can customize their values at runtime by setting environment variables.
 
 ::alert{type=info}
-This is a reserved namespace. You should not introduce additional keys inside `app`.
+This is a reserved namespace. Do not introduce additional keys inside the `app`.
 ::
 
 ### `app.baseURL`
@@ -124,7 +124,7 @@ This example shows how to set a custom CDN url and access them using `useRuntime
 
 You can use a custom CDN for serving static assets inside `.output/public` using the `NUXT_APP_CDN_URL` environment variable.
 
-And then access the new CDN url using `config.app.cdnURL`.
+And then, access the new CDN url using `config.app.cdnURL`.
 
 ```ts [server/api/foo.ts]
 export default defineEventHandler((event) => {
