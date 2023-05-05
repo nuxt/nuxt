@@ -13,7 +13,7 @@ The `build` command creates a `.output` directory with all your application, ser
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`rootDir` | `.` | The application root directory to bundle.
+`rootDir` | `.` | The application's root directory to bundle.
 `--prerender` | `false` | Pre-render every route of your application. (**note:** This is an experimental flag. The behavior might change.)
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 
