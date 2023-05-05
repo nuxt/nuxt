@@ -80,6 +80,12 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "path": "/parent/child/test",
   },
   {
+    "chunkName": "pages/index",
+    "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\another_route\\\\_id.vue",
     "name": "another_route-id",
@@ -90,12 +96,6 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\subpage\\\\_param.vue",
     "name": "subpage-param",
     "path": "/subpage/:param?",
-  },
-  {
-    "chunkName": "pages/index",
-    "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\index.vue",
-    "name": "index",
-    "path": "/",
   },
   {
     "chunkName": "pages/_param",
