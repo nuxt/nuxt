@@ -7,7 +7,7 @@ description: navigateTo is a helper function that programmatically navigates use
 
 `navigateTo` is a router helper function that allows programmatically navigating users through your Nuxt application.
 
-`navigateTo` is available on both server side and client side. It can be used within plugins, middleware or can be called directly to perform page navigation.
+`navigateTo` is available on both the server and client side. It is usable within plugins and middleware or directly called to perform page navigation.
 
 ## Type
 
@@ -22,7 +22,7 @@ interface NavigateToOptions {
 ```
 
 ::alert{type="warning"}
-Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
+Always `await` or `return` on the result of `navigateTo` when calling it.
 ::
 
 ## Parameters
@@ -49,7 +49,7 @@ An object accepting the following properties:
 
   By default, `navigateTo` pushes the given route into the Vue Router's instance on the client side.
 
-  This behavior can be changed by setting `replace` to `true`, to indicate that given route should be replaced.
+  You can change this behavior by setting `replace` to `true` to indicate a route replacement.
 
 - `redirectCode` (optional)
 
@@ -59,7 +59,7 @@ An object accepting the following properties:
 
   `navigateTo` redirects to the given path and sets the redirect code to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) by default when the redirection takes place on the server side.
 
-  This default behavior can be modified by providing different `redirectCode`. Commonly, [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) can be used for permanent redirections.
+  You can modify default behavior by providing a different `redirectCode`. Commonly [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) can be used for permanent redirections.
 
 - `external` (optional)
 
@@ -67,7 +67,7 @@ An object accepting the following properties:
 
   **Default**: `false`
 
-  Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
+  Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is prohibited by default.
 
 ## Examples
 
@@ -111,7 +111,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 ```vue
 <script setup>
 // will throw an error;
-// navigating to an external URL is not allowed by default
+//Navigating to an external URL is not allowed by default
 await navigateTo('https://nuxt.com')
 
 // will redirect successfully with the 'external' parameter set to 'true'
