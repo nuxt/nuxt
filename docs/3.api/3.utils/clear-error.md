@@ -5,7 +5,7 @@ description: "The clearError composable clears all handled errors."
 
 # `clearError`
 
-Within your pages, components, and plugins, you can use `clearError` to clear all errors and redirect the user.
+The `clearError` composable is usable within your pages, components, and plugins to clear all errors and redirect the user.
 
 **Parameters:**
 
@@ -21,7 +21,7 @@ clearError()
 clearError({ redirect: '/homepage' })
 ```
 
-Errors are set in state using [`useError()`](/docs/api/composables/use-error). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
+Errors are set in the state using [`useError()`](/docs/api/composables/use-error). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
 
 ::ReadMore{link="/docs/getting-started/error-handling"}
 ::
