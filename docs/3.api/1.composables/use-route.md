@@ -5,7 +5,7 @@ description: The useRoute composable returns the current route.
 
 # `useRoute`
 
-The `useRoute` composable returns the current route and must be called in a `setup` function, plugin, or route middleware.
+The `useRoute` composable returns the current route and must get called in a `setup` function, plugin, or route middleware.
 
 Within the template of a Vue component, you can access the route using `$route`.
 
@@ -27,15 +27,15 @@ const { data: mountain } = await useFetch(`https://api.nuxtjs.dev/mountains/${ro
 </template>
 ```
 
-If you need to access the route query parameters (for example `example` in the path `/test?example=true`), then you can use `useRoute().query` instead of `useRoute().params`.
+If you need to access the route query parameters (for example, `example` in the path `/test?example=true`), then you can use `useRoute().query` instead of `useRoute().params`.
 
 Apart from dynamic parameters and query parameters, `useRoute()` also provides the following computed references related to the current route:
 
-* **fullPath**: encoded URL associated with the current route that contains path, query and hash
+* **fullPath**: encoded URL associated with the current route that contains path, query, and hash
 * **hash**: decoded hash section of the URL that starts with a #
 * **matched**: array of normalized matched routes with current route location
 * **meta**: custom data attached to the record
-* **name**: unique name for the route record
+* **name**: a unique name for the route record
 * **path**: encoded pathname section of the URL
 * **redirectedFrom**: route location that was attempted to access before ending up on the current route location
 
