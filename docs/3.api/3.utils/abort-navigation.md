@@ -4,7 +4,7 @@ title: "abortNavigation"
 
 # `abortNavigation`
 
-`abortNavigation` is a helper function that prevents navigation from taking place and throws an error if one is set as a parameter.
+`abortNavigation` is a helper function that prevents navigation from taking place and throws an error if set as a parameter.
 
 ::alert{type="warning"}
 `abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
