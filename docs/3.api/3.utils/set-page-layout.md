@@ -1,9 +1,9 @@
 ---
-description: setPageLayout allows you to dynamically change the layout of a page. 
+description: setPageLayout allows you to change the layout of a page dynamically. 
 ---
 # `setPageLayout`
 
-`setPageLayout` allows you to dynamically change the layout of a page. It relies on access to the Nuxt context and can only be called within components' setup functions, plugins, and route middleware.
+`setPageLayout` allows you to change the layout of a page dynamically. It relies on access to the Nuxt context and is callable only within components' setup functions, plugins, and route middleware.
 
 ```ts
 export default defineNuxtRouteMiddleware((to) => {
@@ -13,5 +13,5 @@ export default defineNuxtRouteMiddleware((to) => {
 ```
 
 ::alert{icon=👉}
-If you choose to set the layout dynamically on the server side, you _must_ do so before the layout is rendered by Vue (that is, within a plugin or route middleware) to avoid a hydration mismatch.
+If you choose to set the layout dynamically on the server side, you _must_ do so before it is rendered by Vue (that is, within a plugin or route middleware) to avoid a hydration mismatch.
 ::
