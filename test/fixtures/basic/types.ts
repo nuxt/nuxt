@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router/auto'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
