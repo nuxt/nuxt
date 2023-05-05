@@ -11,8 +11,8 @@ npx nuxi add [--cwd] [--force] <TEMPLATE> <NAME>
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`TEMPLATE` | - | Specify a template of the file to be generated.
-`NAME` | - | Specify a name of the file that will be created.
+`TEMPLATE` | - | Specify a file template to generate.
+`NAME` | - | Specify the file name to create.
 `--cwd` | `.` | The directory of the target application.
 `--force` | `false` | Force override file if it already exists.
 
@@ -89,7 +89,7 @@ npx nuxi add middleware auth
 
 ## `nuxi add api`
 
-* Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or alternatively you can directly use `--get`, `--post`, etc.
+* Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or you can directly use `--get`, `--post`, etc.
 
 Example:
 
