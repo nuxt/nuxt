@@ -9,7 +9,7 @@ import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 
-import type { NitroDynamicConfig, NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { normalizeRoutes, pathToNitroGlob, resolvePagesRoutes } from './utils'
