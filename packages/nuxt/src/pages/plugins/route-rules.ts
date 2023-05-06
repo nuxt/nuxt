@@ -22,9 +22,11 @@ export const routeRuleExtractorPlugin = createUnplugin((options: RouteRuleExtrac
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(normalize(id)).href))
       return pathname in options.pageMap
     },
-    transform (code, id) {
+    async transform (code, id) {
       if (!ROUTE_RULE_RE.test(code)) { return null }
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(normalize(id)).href))
+
+      let rule = {}
 
       walk(this.parse(code, {
         sourceType: 'module',
@@ -37,15 +39,16 @@ export const routeRuleExtractorPlugin = createUnplugin((options: RouteRuleExtrac
           if (name === 'defineRouteRules') {
             const rulesString = code.slice(node.start, node.end)
             try {
-              const rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
-              options.routeRules[options.pageMap[pathname]] = rule
-              options.updateConfig()
+              rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
             } catch {
               console.error(`[nuxt] Error parsing route rules in \`${pathname}\`. They should be JSON-serializable.`)
             }
           }
         }
       })
+
+      options.routeRules[options.pageMap[pathname]] = rule
+      await options.updateConfig()
 
       return null
     }
