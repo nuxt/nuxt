@@ -9,7 +9,7 @@ import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroDynamicConfig, NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { normalizeRoutes, pathToNitroGlob, resolvePagesRoutes } from './utils'
@@ -247,7 +247,8 @@ export default defineNuxtModule({
 
     const routeContext = {
       routeRules: {} as Record<string, NitroRouteConfig>,
-      pageMap: {} as Record<string, string>
+      pageMap: {} as Record<string, string>,
+      updateConfig: (() => {}) as (() => void | Promise<void>)
     }
 
     function pagesToMap (pages: NuxtPage[], prefix = ''): Array<[id: string, route: string]> {
@@ -274,26 +275,21 @@ export default defineNuxtModule({
     })
 
     // add vite plugin
-    addVitePlugin(routeRuleExtractorPlugin.vite(routeContext), { client: true, server: false })
-    addWebpackPlugin(routeRuleExtractorPlugin.webpack(routeContext), { client: true, server: false })
+    addVitePlugin(routeRuleExtractorPlugin.vite(routeContext))
+    addWebpackPlugin(routeRuleExtractorPlugin.webpack(routeContext))
 
-    if (!nuxt.options.dev) {
-      // Include final route rules in build
-      nuxt.hook('nitro:build:before', (nitro) => {
-        nitro.options.runtimeConfig.nitro.routeRules = defu(routeContext.routeRules, nitro.options.runtimeConfig.nitro.routeRules)
+    let baseRules: { [path: string]: NitroRouteConfig } | undefined
+
+    nuxt.hook('nitro:config', (config) => {
+      baseRules = config.routeRules
+      config.routeRules = defu(routeContext.routeRules, config.routeRules)
+    })
+
+    nuxt.hook('nitro:init', (nitro) => {
+      routeContext.updateConfig = () => nitro.updateConfig({
+        routeRules: defu(routeContext.routeRules, baseRules)
       })
-    }
-
-    if (nuxt.options.dev) {
-      // TODO: implementation not complete
-      nuxt.hook('nitro:config', (config) => {
-        config.plugins = config.plugins || []
-        config.virtual = config.virtual || {}
-
-        config.plugins.push(resolve(runtimeDir, 'nitro-route-rules'))
-        config.virtual['#nuxt-route-rules'] = () => `export default ${JSON.stringify(routeContext.routeRules)}`
-      })
-    }
+    })
 
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, setup } from '@nuxt/test-utils'
+import { $fetch, fetch, setup } from '@nuxt/test-utils'
 
 import { expectWithPolling, renderPage } from './utils'
 
@@ -79,6 +79,20 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')),
+        true
+      )
+    })
+
+    it('should hot reload route rules', async () => {
+      const res = await fetch('/route-rules/inline')
+      expect(res.headers.get('x-extend')).toBe('added in routeRules')
+
+      // write new page route
+      const file = await fsp.readFile(join(fixturePath, 'pages/route-rules/inline.vue'), 'utf8')
+      await fsp.writeFile(join(fixturePath, 'pages/route-rules/inline.vue'), file.replace('added in routeRules', 'edited in dev'))
+
+      await expectWithPolling(
+        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev'),
         true
       )
     })

@@ -12,6 +12,7 @@ const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 interface RouteRuleExtractorPluginOptions {
   routeRules: Record<string, any>
   pageMap: Record<string, string>
+  updateConfig: (() => void | Promise<void>)
 }
 
 export const routeRuleExtractorPlugin = createUnplugin((options: RouteRuleExtractorPluginOptions) => {
@@ -36,7 +37,9 @@ export const routeRuleExtractorPlugin = createUnplugin((options: RouteRuleExtrac
           if (name === 'defineRouteRules') {
             const rulesString = code.slice(node.start, node.end)
             try {
-              options.routeRules[options.pageMap[pathname]] = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
+              const rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
+              options.routeRules[options.pageMap[pathname]] = rule
+              options.updateConfig()
             } catch {
               console.error(`[nuxt] Error parsing route rules in \`${pathname}\`. They should be JSON-serializable.`)
             }
