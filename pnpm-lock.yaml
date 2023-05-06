@@ -40,9 +40,15 @@ importers:
       case-police:
         specifier: ^0.6.0
         version: 0.6.0
+      chalk:
+        specifier: ^5.2.0
+        version: 5.2.0
       changelogen:
         specifier: ^0.5.3
         version: 0.5.3
+      consola:
+        specifier: ^3.1.0
+        version: 3.1.0
       crawler:
         specifier: ^1.4.0
         version: 1.4.0
