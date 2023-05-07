@@ -5,25 +5,21 @@ import { useNuxt } from './context'
 export interface ExtendConfigOptions {
   /**
    * Install plugin on dev
-   *
    * @default true
    */
   dev?: boolean
   /**
    * Install plugin on build
-   *
    * @default true
    */
   build?: boolean
   /**
    * Install plugin on server side
-   *
    * @default true
    */
   server?: boolean
   /**
    * Install plugin on client side
-   *
    * @default true
    */
   client?: boolean

@@ -5,7 +5,6 @@ import { isString, isPromise, isArray } from '@vue/shared'
 
 /**
  * Internal utility
- *
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
@@ -19,7 +18,6 @@ export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
 /**
  * create buffer retrieved from @vue/server-renderer
- *
  * @see https://github.com/vuejs/core/blob/9617dd4b2abc07a5dc40de6e5b759e851b4d0da1/packages/server-renderer/src/render.ts#L57
  * @private
  */

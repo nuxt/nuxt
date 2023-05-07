@@ -10,7 +10,6 @@ export const nuxtCtx = getContext<Nuxt>('nuxt')
  * Get access to Nuxt instance.
  *
  * Throws an error if Nuxt instance is unavailable.
- *
  * @example
  * ```js
  * const nuxt = useNuxt()
@@ -28,7 +27,6 @@ export function useNuxt (): Nuxt {
  * Get access to Nuxt instance.
  *
  * Returns null if Nuxt instance is unavailable.
- *
  * @example
  * ```js
  * const nuxt = tryUseNuxt()
