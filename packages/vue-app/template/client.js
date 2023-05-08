@@ -401,7 +401,6 @@ async function render (to, from, next, renderState) {
   try {
     <% if (features.middleware) { %>
     // Call middleware
-    await callMiddleware.call(this, Components, app.context)
     await callMiddleware.call(this, Components, app.context, undefined, renderState)
     if (nextCalled) {
       return
