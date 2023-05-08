@@ -43,9 +43,9 @@
     "@types/hash-sum": "^1.0.0",
     "@types/lodash.template": "^4.5.1",
     "@types/semver": "^7.3.13",
-    "nitropack": "^2.3.3",
+    "nitropack": "^2.4.0",
     "unbuild": "latest",
-    "vite": "^4.3.4",
+    "vite": "^4.3.5",
     "vitest": "^0.31.0",
     "webpack": "^5.82.0"
   },
