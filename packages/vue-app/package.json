@@ -13,7 +13,7 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "node-fetch-native": "^1.1.0",
+    "node-fetch-native": "^1.1.1",
     "ufo": "^1.1.2",
     "unfetch": "^5.0.0",
     "vue": "^2.7.10",
