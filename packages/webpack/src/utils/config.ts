@@ -57,20 +57,16 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 }
 
 export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
-  const { options, config } = ctx
-
-  // TODO
-  const builder = {}
-  const loaders: any[] = []
-
-  // @ts-expect-error TODO: remove support for `build.extend` in v3.5
-  const { extend } = options.build
+  // @ts-expect-error TODO: remove support for `build.extend` in v3.6
+  const { extend } = ctx.options.build
   if (typeof extend === 'function') {
+    logger.warn('[nuxt] The `build.extend` and `webpack.build.extend` properties have been deprecated in Nuxt 3 for some time and will be removed in a future minor release. Instead, you can extend webpack config using the `webpack:config` hook.')
+
     const extendedConfig = extend.call(
-      builder,
-      config,
-      { loaders, ...ctx }
-    ) || config
+      {},
+      ctx.config,
+      { loaders: [], ...ctx }
+    ) || ctx.config
 
     const pragma = /@|#/
     const { devtool } = extendedConfig
@@ -83,5 +79,5 @@ export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
   }
 
   // Clone deep avoid leaking config between Client and Server
-  return cloneDeep(config)
+  return cloneDeep(ctx.config)
 }
