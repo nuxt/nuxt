@@ -995,5 +995,6 @@ async function mountApp (__app) {
         errorHandler(err)
       }
     })
-  })
+  },
+  { aborted: false })
 }
