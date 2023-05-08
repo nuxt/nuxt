@@ -156,6 +156,7 @@ export interface PluginMeta {
 export interface ResolvedPluginMeta {
   name?: string
   order: number
+  islands: boolean
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -167,6 +168,13 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
+  /**
+   * This enable the plugin for islands components.
+   * Require `experimental.componentsIslands`.
+   *
+   * @default true
+   */
+  islands?: boolean
 }
 
 export interface CreateOptions {
@@ -298,6 +306,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   for (const plugin of plugins) {
+    if (nuxtApp.ssrContext?.islandContext && plugin.meta?.islands === false) { continue }
     await applyPlugin(nuxtApp, plugin)
   }
 }
@@ -383,7 +392,8 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
       meta?.order ||
       plugin.order ||
       orderMap[plugin.enforce || 'default'] ||
-      orderMap.default
+      orderMap.default,
+    islands: plugin.islands ?? true
   }
 
   wrapper[NuxtPluginIndicator] = true

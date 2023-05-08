@@ -1190,7 +1190,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div><p>hello world !!!</p></div>",
+        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div>  <p>hello world !!!</p></div>",
         "state": {},
       }
     `)
