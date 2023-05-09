@@ -1,6 +1,6 @@
 import { getCurrentInstance, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteLocationPathRaw, RouteLocationRaw, Router } from 'vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 
@@ -11,11 +11,11 @@ import { useState } from './state'
 
 import type { PageMeta } from '#app'
 
-export const useRouter = () => {
+export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
 }
 
-export const useRoute = (): RouteLocationNormalizedLoaded => {
+export const useRoute: typeof _useRoute = () => {
   if (process.dev && isProcessingMiddleware()) {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
   }
