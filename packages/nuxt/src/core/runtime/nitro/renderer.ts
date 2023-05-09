@@ -300,7 +300,7 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: [replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)],
+    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceServerOnlyComponentsSlots(ssrContext, _rendered.html) : _rendered.html],
     bodyAppend: normalizeChunks([
       NO_SCRIPTS
         ? undefined
