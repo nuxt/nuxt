@@ -1,5 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, resolve } from 'pathe'
+import { resolvePath } from 'mlly'
 import { isDebug, isDevelopment } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -145,7 +146,7 @@ export default defineUntypedSchema({
    * If a relative path is specified, it will be relative to your `rootDir`.
    */
   analyzeDir: {
-    $resolve: async (val, get) => val 
+    $resolve: async (val, get) => val
       ? resolve(await get('rootDir'), val)
       : resolve(await get('buildDir'), 'analyze')
   },
@@ -208,7 +209,16 @@ export default defineUntypedSchema({
    * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
-    $resolve: val => [].concat(val).filter(Boolean)
+    $resolve: async (val, get) => {
+      const modules = ([] as string[]).concat(val)
+      if (await get('experimental.moduleBuilderMode')) {
+        const path = await resolvePath("./src/module", { url: await get('rootDir'), extensions: await get('extensions') }).catch(() => null)
+        if (path) {
+          modules.push(path)
+        }
+      }
+      return modules.filter(Boolean)
+    }
   },
 
   /**

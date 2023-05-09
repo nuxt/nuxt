@@ -48,7 +48,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
       }
 
-      if (template.write) {
+      if (template.write || nuxt.options.experimental.moduleBuilderMode) {
         await fsp.mkdir(dirname(fullPath), { recursive: true })
         await fsp.writeFile(fullPath, contents, 'utf8')
       }

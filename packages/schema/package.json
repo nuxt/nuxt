@@ -39,6 +39,7 @@
   "dependencies": {
     "defu": "^6.1.2",
     "hookable": "^5.5.3",
+    "mlly": "^1.2.0",
     "pathe": "^1.1.0",
     "pkg-types": "^1.0.3",
     "postcss-import-resolver": "^2.0.0",

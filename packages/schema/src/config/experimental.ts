@@ -160,6 +160,13 @@ export default defineUntypedSchema({
     typedPages: false,
 
     /**
+     * Enable 'module builder' mode which sets up a number of features specifically for module authors.
+     */
+    moduleBuilderMode: {
+      $resolve: async (val, get) => val ?? false
+    },
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
      * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
