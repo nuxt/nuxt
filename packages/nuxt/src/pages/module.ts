@@ -141,7 +141,7 @@ export default defineNuxtModule({
 
     // Add $router types
     nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ types: 'vue-router' })
+      references.push({ types: useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router' })
     })
 
     // Add vue-router route guard imports
