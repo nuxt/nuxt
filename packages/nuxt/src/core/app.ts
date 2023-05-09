@@ -18,7 +18,6 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
 }
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
-  nuxt.apps.default = app
   // Resolve app
   await resolveApp(nuxt, app)
 
