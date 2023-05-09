@@ -43,7 +43,7 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
 import { ${components.map(c => 'Lazy' + c).join(', ')} } from '#components'
-const lazynames = [
+const lazyGlobalComponents = [
   ${components.map(c => `["${c}", Lazy${c}]`).join(',\n')}
 ]
 
