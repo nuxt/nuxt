@@ -58,7 +58,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
               'import { defineAsyncComponent } from "vue"',
               `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r.default))`
             ].join('\n'),
-            map: { mappings: '' }
+            map: null
           }
         } else if (mode === 'client') {
           return {
@@ -67,7 +67,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
               'import { createClientOnly } from "#app/components/client-only"',
               'export default createClientOnly(__component)'
             ].join('\n'),
-            map: { mappings: '' }
+            map: null
           }
         } else if (mode === 'client,async') {
           return {
@@ -76,7 +76,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
               'import { createClientOnly } from "#app/components/client-only"',
               `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`
             ].join('\n'),
-            map: { mappings: '' }
+            map: null
           }
         } else {
           throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
