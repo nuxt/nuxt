@@ -11,11 +11,16 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.mjs"
     },
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "import": "./dist/env.mjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "schema"
+    "schema",
+    "env.d.ts"
   ],
   "scripts": {
     "prepack": "unbuild"

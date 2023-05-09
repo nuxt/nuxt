@@ -14,6 +14,15 @@ export default defineUntypedSchema({
     strict: true,
 
     /**
+     * whether or not to write declaration files to add specific types based on your builder environment. It is
+     * advised to turn this off for module authors, who should support multiple possible builders.
+     */
+    builderEnv: {
+      // TODO: disable when moduleBuilderMode is enabled: https://github.com/nuxt/nuxt/pull/20748
+      $resolve: async (val, get) => val ?? true,
+    },
+
+    /**
      * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
      */
     includeWorkspace: false,

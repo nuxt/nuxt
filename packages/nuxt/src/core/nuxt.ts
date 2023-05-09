@@ -303,6 +303,22 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
+  const envMap = {
+    '@nuxt/vite-builder': 'vite/client',
+    '@nuxt/webpack-builder': 'webpack/module',
+    default: '@nuxt/schema/env'
+  }
+
+  nuxt.hook('prepare:types', ({ references }) => {
+    if (nuxt.options.typescript.builderEnv && typeof nuxt.options.builder === 'string') {
+      // Add builder-specific builder declaration
+      references.push({ types: envMap[nuxt.options.builder] ?? envMap.default })
+    } else {
+      // Add generic builder environment types
+      references.push({ types: envMap.default })
+    }
+  })
+
   // Add nuxt app debugger
   if (nuxt.options.debug) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
