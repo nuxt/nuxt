@@ -39,10 +39,12 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
     const globalComponents = app.components.filter(c => c.global)
     if (!globalComponents.length) { return emptyComponentsPlugin }
 
+    const components = [...new Set(globalComponents.map(n => n.pascalName))]
+
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { ${globalComponents.map(c => 'Lazy' + c.pascalName).join(', ')} } from '#components'
-const lazyGlobalComponents = [
-  ${globalComponents.map(c => `["${c.pascalName}", Lazy${c.pascalName}]`).join(',\n')}
+import { ${components.map(c => 'Lazy' + c).join(', ')} } from '#components'
+const lazynames = [
+  ${components.map(c => `["${c}", Lazy${c}]`).join(',\n')}
 ]
 
 export default defineNuxtPlugin({
