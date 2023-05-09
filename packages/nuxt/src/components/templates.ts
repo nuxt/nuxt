@@ -36,10 +36,15 @@ export default defineNuxtPlugin({
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
-    const globalComponents = app.components.filter(c => c.global)
-    if (!globalComponents.length) { return emptyComponentsPlugin }
+    const globalComponents = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponents.add(component.pascalName)
+      }
+    }
+    if (!globalComponents.size) { return emptyComponentsPlugin }
 
-    const components = [...new Set(globalComponents.map(n => n.pascalName))]
+    const components = [...globalComponents]
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
 import { ${components.map(c => 'Lazy' + c).join(', ')} } from '#components'
