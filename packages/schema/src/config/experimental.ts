@@ -23,12 +23,6 @@ export default defineUntypedSchema({
      */
     externalVue: true,
 
-    // TODO: move to `vue.runtimeCompiler` in v3.5
-    /**
-     * Include Vue compiler in runtime bundle.
-     */
-    runtimeVueCompiler: false,
-
     /**
      * Tree shakes contents of client-only components from server bundle.
      * @see https://github.com/nuxt/framework/pull/5750
@@ -161,5 +155,19 @@ export default defineUntypedSchema({
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
+
+    /**
+     * Set an alternative watcher that will be used as the watching service for Nuxt.
+     *
+     * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
+     * `@parcel/watcher` instead. This may improve performance in large projects or
+     * on Windows platforms.
+     *
+     * @see https://github.com/paulmillr/chokidar
+     * @see https://github.com/parcel-bundler/watcher
+     * @default chokidar
+     * @type {'chokidar' | 'parcel'}
+     */
+    watcher: 'chokidar'
   }
 })

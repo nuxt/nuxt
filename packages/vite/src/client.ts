@@ -127,6 +127,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     viteJsxPlugin(clientConfig.vueJsx)
   )
 
+  await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
+
   if (ctx.nuxt.options.dev) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)

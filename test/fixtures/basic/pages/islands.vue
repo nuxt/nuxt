@@ -27,7 +27,7 @@ const count = ref(0)
     <div v-if="routeIslandVisible" class="box">
       <NuxtIsland name="RouteComponent" :context="{ url: '/test' }" />
     </div>
-    <button v-else @click="routeIslandVisible = true">
+    <button v-else id="show-route" @click="routeIslandVisible = true">
       Show
     </button>
 

@@ -1,14 +1,8 @@
-import { defineComponent, h } from 'vue'
-import type { Component } from 'vue'
+import { h } from 'vue'
+import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-
-const Fragment = defineComponent({
-  name: 'FragmentWrapper',
-  setup (_props, { slots }) {
-    return () => slots.default?.()
-  }
-})
+import destr from 'destr'
 
 /**
  * Internal utility
@@ -16,7 +10,8 @@ const Fragment = defineComponent({
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
-  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
+  props = props === true ? {} : props
+  return { default: () => props ? h(component, props, slots) : slots.default?.() }
 }
 
 // eslint-disable-next-line no-use-before-define
@@ -102,4 +97,47 @@ export function vforToArray (source: any): any[] {
     }
   }
   return []
+}
+
+export function getFragmentHTML (element: RendererNode | null) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element)
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      blocks.push(element.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks)
+  }
+  return blocks
+}
+
+function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
+
+export function getSlotProps (html: string) {
+  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
+  const data:Record<string, any> = {}
+  for (const slot of slotsDivs) {
+    const [_, slotName, json] = slot
+    const slotData = destr(decodeHtmlEntities(json))
+    data[slotName] = slotData
+  }
+  return data
 }

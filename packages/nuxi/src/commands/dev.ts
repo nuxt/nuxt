@@ -12,7 +12,8 @@ import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
-import { cleanupNuxtDirs, loadNuxtManifest, writeNuxtManifest } from '../utils/nuxt'
+import { loadNuxtManifest, writeNuxtManifest } from '../utils/nuxt'
+import { clearBuildDir } from '../utils/fs'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -62,8 +63,8 @@ export default defineNuxtCommand({
       hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
-            cert: args['ssl-cert'] || (config.devServer.https && config.devServer.https.cert) || undefined,
-            key: args['ssl-key'] || (config.devServer.https && config.devServer.https.key) || undefined
+            cert: args['ssl-cert'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
+            key: args['ssl-key'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
           }
         : false
     })
@@ -110,7 +111,7 @@ export default defineNuxtCommand({
           const previousManifest = await loadNuxtManifest(currentNuxt.options.buildDir)
           const newManifest = await writeNuxtManifest(currentNuxt)
           if (previousManifest && newManifest && previousManifest._hash !== newManifest._hash) {
-            await cleanupNuxtDirs(currentNuxt.options.rootDir)
+            await clearBuildDir(currentNuxt.options.buildDir)
           }
         }
 

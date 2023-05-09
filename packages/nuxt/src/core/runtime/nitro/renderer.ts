@@ -2,7 +2,7 @@ import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runti
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
+import { appendResponseHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
@@ -168,7 +168,7 @@ const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
-export default defineRenderHandler(async (event) => {
+export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
@@ -181,7 +181,10 @@ export default defineRenderHandler(async (event) => {
   }
 
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
-    throw createError('Cannot directly render error page!')
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Page Not Found: /__nuxt_error'
+    })
   }
 
   // Check for island component rendering
@@ -197,7 +200,7 @@ export default defineRenderHandler(async (event) => {
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url)
+  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
     event.node.req.url = url
@@ -227,7 +230,7 @@ export default defineRenderHandler(async (event) => {
   }
 
   // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
+  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !islandContext
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
@@ -242,13 +245,20 @@ export default defineRenderHandler(async (event) => {
     writeEarlyHints(event, link)
   }
 
-  const _rendered = await renderer.renderToString(ssrContext).catch((error) => {
+  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // Use explicitly thrown error in preference to subsequent rendering errors
-    throw (!ssrError && ssrContext.payload?.error) || error
+    const _err = (!ssrError && ssrContext.payload?.error) || error
+    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    throw _err
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
-  if (event.node.res.headersSent || event.node.res.writableEnded) { return }
+  if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+
+  if (event.node.res.headersSent || event.node.res.writableEnded) {
+    // @ts-expect-error TODO: handle additional cases
+    return
+  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
@@ -266,7 +276,7 @@ export default defineRenderHandler(async (event) => {
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
     // Use same ssr context to generate payload for this route
     PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
@@ -288,8 +298,8 @@ export default defineRenderHandler(async (event) => {
     head: normalizeChunks([
       renderedMeta.headTags,
       process.env.NUXT_JSON_PAYLOADS
-        ? _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null
-        : _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null,
+        ? _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null
+        : _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
       NO_SCRIPTS ? null : _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
