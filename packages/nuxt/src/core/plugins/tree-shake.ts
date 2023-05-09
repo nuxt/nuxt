@@ -16,7 +16,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
    */
   const composableNames = Object.values(options.composables).flat()
 
-  const regexp = `(^\\s*)(${composableNames.join('|')})(?=\\([^)])`
+  const regexp = `(^\\s*)(${composableNames.join('|')})(?=\\((?!\\) \\{))`
   const COMPOSABLE_RE = new RegExp(regexp, 'm')
   const COMPOSABLE_RE_GLOBAL = new RegExp(regexp, 'gm')
 
