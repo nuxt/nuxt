@@ -838,6 +838,10 @@ describe('extends support', () => {
       const html = await $fetch('/extends')
       expect(html).toContain('test from project')
     })
+    it('has getRequestURL()', async () => {
+      const html = await $fetch('/url')
+      expect(html).toContain('path: /test')
+    })
   })
 
   describe('plugins', () => {

@@ -33,6 +33,7 @@ const appPreset = defineUnimportPreset({
     'useRequestHeaders',
     'useRequestEvent',
     'useRequestFetch',
+    'getRequestURL',
     'setResponseStatus',
     'setPageLayout',
     'onNuxtReady',
