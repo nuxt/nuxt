@@ -13,7 +13,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     overrideEnv('production')
 
     const rootDir = resolve(args._[0] || '.')
@@ -29,7 +29,8 @@ export default defineNuxtCommand({
       },
       overrides: {
         logLevel: args['log-level'],
-        _generate: args.prerender
+        _generate: args.prerender,
+        ...(options?.overrides || {})
       }
     })
 
