@@ -106,7 +106,7 @@ export async function bundle (nuxt: Nuxt) {
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: allowDirs
+            allow: [...new Set(allowDirs)]
           }
         }
       } satisfies ViteConfig,
