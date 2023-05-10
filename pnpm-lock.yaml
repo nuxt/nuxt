@@ -882,6 +882,43 @@ importers:
         specifier: workspace:*
         version: link:../packages/nuxt
 
+  test/fixtures/basic:
+    dependencies:
+      '@nuxt/webpack-builder':
+        specifier: workspace:*
+        version: link:../../../packages/webpack
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      ofetch:
+        specifier: latest
+        version: 1.0.1
+      ufo:
+        specifier: latest
+        version: 1.1.2
+      unplugin:
+        specifier: latest
+        version: 1.3.1
+      vitest:
+        specifier: latest
+        version: 0.31.0(playwright@1.33.0)
+      vue-router:
+        specifier: latest
+        version: 4.1.6(vue@3.2.47)
+
+  test/fixtures/minimal:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/runtime-compiler:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
 packages:
 
   /@actions/core@1.10.0:
@@ -927,7 +964,7 @@ packages:
       '@babel/parser': 7.21.4
       '@babel/template': 7.20.7
       '@babel/traverse': 7.21.4
-      '@babel/types': 7.21.4
+      '@babel/types': 7.21.5
       convert-source-map: 1.9.0
       debug: 4.3.4
       gensync: 1.0.0-beta.2
@@ -1074,7 +1111,6 @@ packages:
   /@babel/helper-string-parser@7.21.5:
     resolution: {integrity: sha512-5pTUx3hAJaZIdW99sJ6ZUUgWq/Y+Hja7TowEnLNMm1VivRgZQL3vpBY3qUACVsvw+yQU6+YgfBVmcbLaZtrA1w==}
     engines: {node: '>=6.9.0'}
-    dev: false
 
   /@babel/helper-validator-identifier@7.19.1:
     resolution: {integrity: sha512-awrNfaMtnHUr653GgGEs++LlAvW6w+DcPrOliSMXWCKo597CwL5Acf/wWdNkf/tfEQE3mjkeD1YOVZOUV/od1w==}
@@ -1293,7 +1329,6 @@ packages:
       '@babel/helper-string-parser': 7.21.5
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
-    dev: false
 
   /@cloudflare/kv-asset-handler@0.3.0:
     resolution: {integrity: sha512-9CB/MKf/wdvbfkUdfrj+OkEwZ5b7rws0eogJ4293h+7b6KX5toPwym+VQKmILafNB9YiehqY0DlNrDcDhdWHSQ==}
@@ -8547,7 +8582,7 @@ packages:
     dependencies:
       '@babel/core': 7.21.4
       '@babel/standalone': 7.21.3
-      '@babel/types': 7.21.4
+      '@babel/types': 7.21.5
       defu: 6.1.2
       jiti: 1.18.2
       mri: 1.2.0
