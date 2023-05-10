@@ -119,8 +119,6 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
-  await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
-
   const chunksWithInlinedCSS = new Set<string>()
   serverConfig.plugins!.push(ssrStylesPlugin({
     srcDir: ctx.nuxt.options.srcDir,
@@ -141,6 +139,8 @@ export async function buildServer (ctx: ViteBuildContext) {
       }
     }
   })
+
+  await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
   serverConfig.plugins!.unshift(
     vuePlugin(serverConfig.vue),
