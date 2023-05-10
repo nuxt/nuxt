@@ -810,7 +810,7 @@ function addHotReload ($component, depth) {
     }
     <% } %>
 
-    callMiddleware.call(this, Components, context, undefined, renderState)
+    callMiddleware.call(this, Components, context)
     .then(() => {
       <% if (features.layouts) { %>
       // If layout changed
@@ -837,7 +837,7 @@ function addHotReload ($component, depth) {
     })
     <% if (features.layouts) { %>
     .then(() => {
-      return callMiddleware.call(this, Components, context, this.layout, renderState)
+      return callMiddleware.call(this, Components, context, this.layout)
     })
     <% } %>
     .then(() => {
