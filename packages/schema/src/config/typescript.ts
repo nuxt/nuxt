@@ -1,4 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
+import { resolvePath } from 'mlly'
 
 export default defineUntypedSchema({
   /**
@@ -18,8 +19,7 @@ export default defineUntypedSchema({
      * advised to turn this off for module authors, who should support multiple possible builders.
      */
     builderEnv: {
-      // TODO: disable when moduleBuilderMode is enabled: https://github.com/nuxt/nuxt/pull/20748
-      $resolve: async (val, get) => val ?? true,
+      $resolve: async (val, get) => val ?? await resolvePath('@nuxt/module-builder', { url: await get('modulesDir') }).then(path => !path).catch(() => null) ?? true,
     },
 
     /**
