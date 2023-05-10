@@ -127,7 +127,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     chunksWithInlinedCSS,
     shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
     getComponents () {
-      return []
+      return ctx.nuxt.apps.default.components
     }
   }))
 
