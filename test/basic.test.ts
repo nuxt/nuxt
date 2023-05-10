@@ -840,7 +840,7 @@ describe('extends support', () => {
     })
     it('has getRequestURL()', async () => {
       const html = await $fetch('/url')
-      expect(html).toContain('path: /test')
+      expect(html).toContain('path: /url')
     })
   })
 
