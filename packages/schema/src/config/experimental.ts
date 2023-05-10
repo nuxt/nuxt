@@ -93,9 +93,8 @@ export default defineUntypedSchema({
      */
     noScripts: false,
 
-    // TODO: enable by default in v3.5
     /** Render JSON payloads with support for revivifying complex types. */
-    renderJsonPayloads: false,
+    renderJsonPayloads: true,
 
     /**
      * Disable vue server renderer endpoint within nitro.
