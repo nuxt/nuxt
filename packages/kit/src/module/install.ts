@@ -1,6 +1,6 @@
 import { lstatSync } from 'node:fs'
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute } from 'pathe'
+import { dirname, isAbsolute, normalize } from 'pathe'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule } from '../internal/cjs'
@@ -53,7 +53,7 @@ async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?:
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const src = resolveAlias(nuxtModule)
+    const src = normalize(resolveAlias(nuxtModule))
     try {
       // Prefer ESM resolution if possible
       nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
