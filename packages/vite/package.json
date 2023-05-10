@@ -21,7 +21,7 @@
     "@nuxt/schema": "workspace:../schema",
     "@types/estree": "^1.0.1",
     "unbuild": "latest",
-    "vue": "3.2.47"
+    "vue": "3.3.1"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
@@ -60,7 +60,7 @@
     "vue-bundle-renderer": "^1.0.3"
   },
   "peerDependencies": {
-    "vue": "^3.2.47"
+    "vue": "^3.3.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
