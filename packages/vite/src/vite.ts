@@ -1,5 +1,6 @@
+import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { join, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -27,6 +28,23 @@ export async function bundle (nuxt: Nuxt) {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+
+  let allowDirs = [
+    nuxt.options.appDir,
+    nuxt.options.workspaceDir,
+    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...nuxt.apps.default?.components.map(c => dirname(c.filePath)),
+    ...nuxt.apps.default?.plugins.map(p => dirname(p.src)),
+    ...nuxt.apps.default?.middleware.map(m => dirname(m.path)),
+    ...Object.values(nuxt.apps.default?.layouts || {}).map(l => dirname(l.file)),
+    dirname(nuxt.apps.default.rootComponent!),
+    dirname(nuxt.apps.default.errorComponent!)
+  ].filter(d => d && existsSync(d))
+
+  for (const dir of allowDirs) {
+    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
+  }
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -88,10 +106,7 @@ export async function bundle (nuxt: Nuxt) {
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: [
-              nuxt.options.appDir,
-              ...nuxt.options._layers.map(l => l.config.rootDir)
-            ]
+            allow: allowDirs
           }
         }
       } satisfies ViteConfig,
