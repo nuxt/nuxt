@@ -16,7 +16,7 @@ export default defineBuildConfig({
       }
     },
     'src/index',
-    'src/env'
+    'src/build-env'
   ],
   externals: [
     // Type imports

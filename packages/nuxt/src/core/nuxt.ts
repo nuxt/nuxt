@@ -307,7 +307,7 @@ async function initNuxt (nuxt: Nuxt) {
   const envMap = {
     '@nuxt/vite-builder': 'vite/client',
     '@nuxt/webpack-builder': 'webpack/module',
-    default: '@nuxt/schema/env'
+    default: '@nuxt/schema/build-env'
   }
 
   nuxt.hook('prepare:types', ({ references }) => {

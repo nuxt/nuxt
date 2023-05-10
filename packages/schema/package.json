@@ -11,9 +11,9 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.mjs"
     },
-    "./env": {
-      "types": "./dist/env.d.ts",
-      "import": "./dist/env.mjs"
+    "./build-env": {
+      "types": "./dist/build-env.d.ts",
+      "import": "./dist/build-env.mjs"
     },
     "./package.json": "./package.json"
   },
