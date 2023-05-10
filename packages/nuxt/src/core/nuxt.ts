@@ -305,19 +305,26 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   const envMap = {
+    // defaults from `builder` based on package name
     '@nuxt/vite-builder': 'vite/client',
     '@nuxt/webpack-builder': 'webpack/module',
-    default: '@nuxt/schema/build-env'
+    // simpler overrides from `typescript.builder` for better DX
+    vite: 'vite/client',
+    webpack: 'webpack/module',
+    // default 'merged' builder environment for module authors
+    shared: '@nuxt/schema/build-env'
   }
 
   nuxt.hook('prepare:types', ({ references }) => {
-    if (nuxt.options.typescript.builderEnv && typeof nuxt.options.builder === 'string') {
-      // Add builder-specific builder declaration
-      references.push({ types: envMap[nuxt.options.builder] ?? envMap.default })
-    } else {
-      // Add generic builder environment types
-      references.push({ types: envMap.default })
-    }
+    // Disable entirely if `typescript.builder` is false
+    if (nuxt.options.typescript.builder === false) { return }
+
+    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
+    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
+    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
+    const types = overrideEnv || defaultEnv
+
+    if (types) { references.push({ types }) }
   })
 
   // Add nuxt app debugger

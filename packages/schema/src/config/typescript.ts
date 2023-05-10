@@ -1,5 +1,4 @@
 import { defineUntypedSchema } from 'untyped'
-import { resolvePath } from 'mlly'
 
 export default defineUntypedSchema({
   /**
@@ -15,11 +14,17 @@ export default defineUntypedSchema({
     strict: true,
 
     /**
-     * whether or not to write declaration files to add specific types based on your builder environment. It is
-     * advised to turn this off for module authors, who should support multiple possible builders.
+     * Which builder types to include for your project.
+     *
+     * By default Nuxt infers this based on your `builder` option (defaulting to 'vite') but you can either turn off
+     * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
+     *
+     * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
+     *
+     * @type {'vite' | 'webpack' | 'shared' | false | undefined}
      */
-    builderEnv: {
-      $resolve: async (val, get) => val ?? await resolvePath('@nuxt/module-builder', { url: await get('modulesDir') }).then(path => !path).catch(() => null) ?? true,
+    builder: {
+      $resolve: async (val, get) => val ?? null
     },
 
     /**
