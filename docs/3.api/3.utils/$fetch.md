@@ -15,8 +15,8 @@ We recommend to use [`useFetch`](https://nuxt.com/docs/api/composables/use-fetch
 
 ```vue
 <script setup>
-// During SSR data is fetched twice, one on the server and one on the client.
-const dataTwice = await $fetch("/api/item")
+// During SSR data is fetched twice, once on the server and once on the client.
+const dataTwice = await $fetch('/api/item')
 
 // During SSR data is fetched only on the server side and transferred to the client.
 const { data } = await useAsyncData('item', () => $fetch('/api/item'))

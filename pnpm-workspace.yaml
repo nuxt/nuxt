@@ -1,4 +1,4 @@
 packages:
   - "packages/**"
   - "playground"
-  - "text/fixtures/*"
+  - "test/fixtures/*"
