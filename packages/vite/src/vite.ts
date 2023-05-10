@@ -33,12 +33,14 @@ export async function bundle (nuxt: Nuxt) {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options._layers.map(l => l.config.rootDir),
-    ...nuxt.apps.default?.components.map(c => dirname(c.filePath)),
-    ...nuxt.apps.default?.plugins.map(p => dirname(p.src)),
-    ...nuxt.apps.default?.middleware.map(m => dirname(m.path)),
-    ...Object.values(nuxt.apps.default?.layouts || {}).map(l => dirname(l.file)),
-    dirname(nuxt.apps.default.rootComponent!),
-    dirname(nuxt.apps.default.errorComponent!)
+    ...Object.values(nuxt.apps).flatMap(app => [
+      ...app.components.map(c => dirname(c.filePath)),
+      ...app.plugins.map(p => dirname(p.src)),
+      ...app.middleware.map(m => dirname(m.path)),
+      ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
+      dirname(nuxt.apps.default.rootComponent!),
+      dirname(nuxt.apps.default.errorComponent!)
+    ])
   ].filter(d => d && existsSync(d))
 
   for (const dir of allowDirs) {
