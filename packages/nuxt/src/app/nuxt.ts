@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'

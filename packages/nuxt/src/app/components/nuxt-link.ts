@@ -1,6 +1,6 @@
 import type { ComputedRef, DefineComponent, PropType } from 'vue'
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw } from '#vue-router'
 import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
@@ -24,8 +24,8 @@ export type NuxtLinkOptions = {
 
 export type NuxtLinkProps = {
   // Routing
-  to?: string | RouteLocationRaw
-  href?: string | RouteLocationRaw
+  to?: RouteLocationRaw
+  href?: RouteLocationRaw
   external?: boolean
   replace?: boolean
   custom?: boolean
@@ -81,12 +81,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     props: {
       // Routing
       to: {
-        type: [String, Object] as PropType<string | RouteLocationRaw>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
       href: {
-        type: [String, Object] as PropType<string | RouteLocationRaw>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
