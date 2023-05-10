@@ -53,9 +53,10 @@ async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?:
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
+    const src = resolveAlias(nuxtModule)
     try {
       // Prefer ESM resolution if possible
-      nuxtModule = await importModule(nuxtModule, nuxt.options.modulesDir).catch(() => null) ?? requireModule(resolveAlias(nuxtModule), { paths: nuxt.options.modulesDir })
+      nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
     } catch (error: unknown) {
       console.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
       throw error
