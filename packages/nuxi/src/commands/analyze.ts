@@ -3,6 +3,7 @@ import { join, resolve } from 'pathe'
 import { createApp, eventHandler, lazyEventHandler, toNodeListener } from 'h3'
 import { listen } from 'listhen'
 import type { NuxtAnalyzeMeta } from '@nuxt/schema'
+import { defu } from 'defu'
 import { loadKit } from '../utils/kit'
 import { clearDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
@@ -14,7 +15,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi analyze [--log-level] [--name] [--no-serve] [rootDir]',
     description: 'Build nuxt and analyze production bundle (experimental)'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     overrideEnv('production')
 
     const name = args.name || 'default'
@@ -31,7 +32,7 @@ export default defineNuxtCommand({
 
     const nuxt = await loadNuxt({
       rootDir,
-      overrides: {
+      overrides: defu(options.overrides, {
         build: {
           analyze: true
         },
@@ -43,7 +44,7 @@ export default defineNuxtCommand({
           }
         },
         logLevel: args['log-level']
-      }
+      })
     })
 
     analyzeDir = nuxt.options.analyzeDir
