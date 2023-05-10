@@ -12,7 +12,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi typecheck [--log-level] [rootDir]',
     description: 'Runs `vue-tsc` to check types throughout your app.'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
@@ -21,7 +21,8 @@ export default defineNuxtCommand({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args['log-level']
+        logLevel: args['log-level'],
+        ...(options?.overrides || {})
       }
     })
 
