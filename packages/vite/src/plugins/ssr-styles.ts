@@ -96,6 +96,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
+
       if (!islands) {
         const components = options.getComponents()
         islands = components.filter(component =>
@@ -105,7 +106,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
       }
-      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
+      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro || query.nuxt_component) { return }
 
       const relativeId = relativeToSrcDir(id)
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }

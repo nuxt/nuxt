@@ -65,7 +65,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     analyze: nuxt.options.build.analyze && {
       template: 'treemap',
       projectRoot: nuxt.options.rootDir,
-      filename: join(nuxt.options.rootDir, '.nuxt/stats', '{name}.html')
+      filename: join(nuxt.options.analyzeDir, '{name}.html')
     },
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),

@@ -113,9 +113,15 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  it('includes page metadata from pages added in pages:extend hook', async () => {
+    const res = await fetch('/page-extend')
+    expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
+  })
+
   it('validates routes', async () => {
-    const { status } = await fetch('/forbidden')
+    const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
 
     const page = await createPage('/navigate-to-forbidden')
     await page.waitForLoadState('networkidle')
@@ -135,8 +141,11 @@ describe('pages', () => {
     expect(status).toEqual(500)
   })
 
-  it('render 404', async () => {
-    const html = await $fetch('/not-found')
+  it('render catchall page', async () => {
+    const res = await fetch('/not-found')
+    expect(res.status).toEqual(200)
+
+    const html = await res.text()
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
@@ -578,7 +587,9 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('some-error=was%20set; Path=/')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    // TODO: enable when we update test to node v16
+    // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 

@@ -117,26 +117,37 @@ export default defineUntypedSchema({
   },
 
   /**
- * Used to set the modules directories for path resolving (for example, webpack's
- * `resolveLoading`, `nodeExternals` and `postcss`).
- *
- * The configuration path is relative to `options.rootDir` (default is current working directory).
- *
- * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
- *
- * @example
- * ```js
- * export default {
- *   modulesDir: ['../../node_modules']
- * }
- * ```
- */
+   * Used to set the modules directories for path resolving (for example, webpack's
+   * `resolveLoading`, `nodeExternals` and `postcss`).
+   *
+   * The configuration path is relative to `options.rootDir` (default is current working directory).
+   *
+   * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
+   *
+   * @example
+   * ```js
+   * export default {
+   *   modulesDir: ['../../node_modules']
+   * }
+   * ```
+   */
   modulesDir: {
     $default: ['node_modules'],
     $resolve: async (val, get) => [
       ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
       resolve(process.cwd(), 'node_modules')
     ]
+  },
+
+  /**
+   * The directory where Nuxt will store the generated files when running `nuxt analyze`.
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  analyzeDir: {
+    $resolve: async (val, get) => val 
+      ? resolve(await get('rootDir'), val)
+      : resolve(await get('buildDir'), 'analyze')
   },
 
   /**
@@ -346,6 +357,7 @@ export default defineUntypedSchema({
       '**/*.d.ts', // ignore type declarations
       '.output',
       '.git',
+      await get('analyzeDir'),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },
