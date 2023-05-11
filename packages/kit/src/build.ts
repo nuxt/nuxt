@@ -144,28 +144,10 @@ interface AddBuildPluginFactory {
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
   if (pluginFactory.vite) {
-    extendViteConfig((config) => {
-      const plugin = pluginFactory.vite!()
-
-      config.plugins = config.plugins || []
-      if (Array.isArray(plugin)) {
-        config.plugins.push(...plugin)
-      } else {
-        config.plugins.push(plugin)
-      }
-    }, options)
+    addVitePlugin(pluginFactory.vite, options)
   }
 
   if (pluginFactory.webpack) {
-    extendWebpackConfig((config) => {
-      config.plugins = config.plugins || []
-      const plugin = pluginFactory.webpack!()
-
-      if (Array.isArray(plugin)) {
-        config.plugins.push(...plugin)
-      } else {
-        config.plugins.push(plugin)
-      }
-    }, options)
+    addWebpackPlugin(pluginFactory.webpack, options)
   }
 }
