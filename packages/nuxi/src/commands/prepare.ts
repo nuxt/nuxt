@@ -11,7 +11,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi prepare [--log-level] [rootDir]',
     description: 'Prepare nuxt for development/build'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
@@ -20,7 +20,8 @@ export default defineNuxtCommand({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args['log-level']
+        logLevel: args['log-level'],
+        ...(options.overrides || {})
       }
     })
     await clearBuildDir(nuxt.options.buildDir)
