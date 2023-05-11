@@ -1,6 +1,6 @@
-# getRequestURL
+# useRequestURL
 
-`getRequestURL` is a helper function that returns an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side.
+`useRequestURL` is a helper function that returns an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side.
 
 ::code-group
 
@@ -10,11 +10,13 @@ const url = getRequestURL()
 </script>
 
 <template>
+  <p>URL is: {{ url }}</p>
   <p>Path is: {{ url.pathname }}</p>
 </template>
 ```
 
-```html [result]
+```html [Result in development]
+<p>URL is: http://localhost:3000/about</p>
 <p>Path is: /about</p>
 ```
 
