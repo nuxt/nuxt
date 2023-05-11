@@ -5,11 +5,13 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
 
-// Deliberately prevent reactive update when error is cleared
-// eslint-disable-next-line vue/no-setup-props-destructure
-const { error } = defineProps({
+const props = defineProps({
   error: Object
 })
+
+// Deliberately prevent reactive update when error is cleared
+// eslint-disable-next-line vue/no-setup-props-destructure
+const { error } = props
 
 // TODO: extract to a separate utility
 const stacktrace = (error.stack || '')
