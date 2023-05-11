@@ -1,13 +1,13 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtPage } from '#components'
+import { NuxtLink, NuxtPage } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -104,6 +104,63 @@ describe('middleware', () => {
       // @ts-expect-error Must return error or string
       abortNavigation(true)
     }, { global: true })
+  })
+})
+
+describe('typed router integration', () => {
+  it('allows typing useRouter', () => {
+    const router = useRouter()
+    // @ts-expect-error this named route does not exist
+    router.push({ name: 'some-thing' })
+    // this one does
+    router.push({ name: 'fixed-keyed-child-parent' })
+    // @ts-expect-error this is an invalid param
+    router.push({ name: 'random-id', params: { bob: 23 } })
+    router.push({ name: 'random-id', params: { id: 4 } })
+  })
+
+  it('allows typing useRoute', () => {
+    const route = useRoute('random-id')
+    // @ts-expect-error this param does not exist
+    const _invalid = route.params.something
+    // this param does
+    const _valid = route.params.id
+  })
+
+  it('allows typing navigateTo', () => {
+    // @ts-expect-error this named route does not exist
+    navigateTo({ name: 'some-thing' })
+    // this one does
+    navigateTo({ name: 'fixed-keyed-child-parent' })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'random-id', params: { bob: 23 } })
+    navigateTo({ name: 'random-id', params: { id: 4 } })
+  })
+
+  it('allows typing middleware', () => {
+    defineNuxtRouteMiddleware((to) => {
+      expectTypeOf(to.name).not.toBeAny()
+      // @ts-expect-error this route does not exist
+      expectTypeOf(to.name === 'bob').toMatchTypeOf<boolean>()
+      expectTypeOf(to.name === 'assets').toMatchTypeOf<boolean>()
+    })
+  })
+
+  it('respects pages:extend augmentation', () => {
+    // added via pages:extend
+    expectTypeOf(useRoute().name === 'internal-async-parent').toMatchTypeOf<boolean>()
+    // @ts-expect-error this route does not exist
+    expectTypeOf(useRoute().name === 'invalid').toMatchTypeOf<boolean>()
+  })
+
+  it('allows typing NuxtLink', () => {
+    // @ts-expect-error this named route does not exist
+    h(NuxtLink, { to: { name: 'some-thing' } })
+    // this one does
+    h(NuxtLink, { to: { name: 'fixed-keyed-child-parent' } })
+    // @ts-expect-error this is an invalid param
+    h(NuxtLink, { to: { name: 'random-id', params: { bob: 23 } } })
+    h(NuxtLink, { to: { name: 'random-id', params: { id: 4 } } })
   })
 })
 

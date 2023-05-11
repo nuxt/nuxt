@@ -32,10 +32,11 @@ By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until 
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template.
 */
-const { pending, data: posts } = useLazyFetch('/api/posts')
+const { pending, data: posts } = await useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {
-  // Because `posts` are null at the beginning, you won't have access
-  // to their contents immediately, but you can watch them.
+
+  // Because posts might start out null, you won't have access
+  // to its contents immediately, but you can watch it.
 })
 </script>
 ```
