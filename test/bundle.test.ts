@@ -34,13 +34,10 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"105k"')
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.6k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/_plugin-vue_export-helper.js",
         "_nuxt/entry.js",
-        "_nuxt/error-404.js",
-        "_nuxt/error-500.js",
         "_nuxt/error-component.js",
       ]
     `)
@@ -48,10 +45,10 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"92.4k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"61.8k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2654k"')
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2283k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -79,13 +76,14 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
         "h3",
         "hookable",
         "iron-webcrypto",
+        "klona",
         "node-fetch-native",
         "ofetch",
         "ohash",
         "pathe",
         "radix3",
         "scule",
-        "source-map",
+        "source-map-js",
         "ufo",
         "uncrypto",
         "unctx",

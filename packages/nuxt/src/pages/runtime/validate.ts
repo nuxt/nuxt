@@ -1,5 +1,5 @@
 import { createError, showError } from '#app/composables/error'
-import { callWithNuxt, useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '#app/nuxt'
 import { defineNuxtRouteMiddleware, useRouter } from '#app/composables/router'
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     if (final === to) {
       const unsub = router.afterEach(async () => {
         unsub()
-        await callWithNuxt(nuxtApp, showError, [error])
+        await nuxtApp.runWithContext(() => showError(error))
         // We pretend to have navigated to the invalid route so
         // that the user can return to the previous page with
         // the back button.

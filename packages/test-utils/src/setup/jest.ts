@@ -1,18 +1,12 @@
 import type { TestHooks } from '../types'
 
 export default async function setupJest (hooks: TestHooks) {
-  // @ts-expect-error TODO: jest is not a dependency
-  const jest = await import('jest')
+  const { jest, test, beforeEach, afterAll, afterEach } = await import('@jest/globals')
 
   hooks.ctx.mockFn = jest.fn
 
-  // TODO: add globals existing check to provide better error message
-  // @ts-expect-error jest types
   test('setup', hooks.setup, hooks.ctx.options.setupTimeout)
-  // @ts-expect-error jest types
   beforeEach(hooks.beforeEach)
-  // @ts-expect-error jest types
   afterEach(hooks.afterEach)
-  // @ts-expect-error jest types
   afterAll(hooks.afterAll)
 }

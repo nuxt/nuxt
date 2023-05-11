@@ -15,9 +15,7 @@ export default defineNuxtConfig({
     strict: true,
     tsConfig: {
       compilerOptions: {
-        // TODO: For testing (future) support for Node16-style module resolution.
-        // See https://github.com/nuxt/nuxt/issues/18426 and https://github.com/nuxt/nuxt/pull/18431
-        // moduleResolution: 'Node16'
+        moduleResolution: process.env.MODULE_RESOLUTION
       }
     }
   },
@@ -106,8 +104,8 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return ':root { --virtual: red }' }
         }
       }))
-      addVitePlugin(plugin.vite())
-      addWebpackPlugin(plugin.webpack())
+      addVitePlugin(() => plugin.vite())
+      addWebpackPlugin(() => plugin.webpack())
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
@@ -143,7 +141,22 @@ export default defineNuxtConfig({
   vite: {
     logLevel: 'silent'
   },
+  telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'schema:extend' (schemas) {
+      schemas.push({
+        appConfig: {
+          someThing: {
+            value: {
+              $default: 'default',
+              $schema: {
+                tsType: 'string | false'
+              }
+            }
+          }
+        }
+      })
+    },
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
     },
@@ -185,6 +198,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    typedPages: true,
     polyfillVueUseHead: true,
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,

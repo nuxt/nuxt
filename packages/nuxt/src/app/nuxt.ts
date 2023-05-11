@@ -1,13 +1,14 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
+import type { RenderResponse } from 'nitropack'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -61,6 +62,8 @@ export interface NuxtSSRContext extends SSRContext {
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
   /** @internal */
+  _renderResponse?: Partial<RenderResponse>
+  /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
 }
 
@@ -72,6 +75,8 @@ interface _NuxtApp {
   hooks: Hookable<RuntimeNuxtHooks>
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
+
+  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
 
   [key: string]: unknown
 
@@ -190,6 +195,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {}
     },
+    runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
     isHydrating: process.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
@@ -221,7 +227,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.call(nuxtApp, () => hook(...args))
+        await nuxtApp.runWithContext(() => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
@@ -278,37 +284,14 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Expose runtime config
   const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
-
-  // TODO: remove in v3.5
-  // Backward compatibility following #4254
-  const compatibilityConfig = new Proxy(runtimeConfig, {
-    get (target, prop: string) {
-      if (prop in target) {
-        return target[prop]
-      }
-      if (process.dev && prop in target.public) {
-        console.warn(`[nuxt] [runtimeConfig] You are trying to access a public runtime config value (\`${prop}\`) directly from the top level. This currently works (for backward compatibility with Nuxt 2) but this compatibility layer will be removed in v3.5. Instead, you can update \`config['${prop}']\` to \`config.public['${prop}']\`.`)
-      }
-      return target.public[prop]
-    },
-    set (target, prop, value) {
-      if (process.server || prop === 'public' || prop === 'app') {
-        return false // Throws TypeError
-      }
-      target[prop] = value
-      target.public[prop] = value
-      return true
-    }
-  })
-
-  nuxtApp.provide('config', compatibilityConfig)
+  nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
 }
 
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
-  const { provide } = await callWithNuxt(nuxtApp, plugin, [nuxtApp]) || {}
+  const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
   if (provide && typeof provide === 'object') {
     for (const key in provide) {
       nuxtApp.provide(key, provide[key])
@@ -424,11 +407,11 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-    return fn()
+    return nuxt.vueApp.runWithContext(fn)
   }
 }
 
