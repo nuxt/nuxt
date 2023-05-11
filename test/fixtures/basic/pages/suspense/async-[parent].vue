@@ -1,14 +1,12 @@
 <script setup lang="ts">
 console.log('[async]')
 const route = useRoute('suspense-async-parent')
-await useAsyncData(async () => {
-  await new Promise(resolve => setTimeout(resolve, 100))
-  console.log('[async] running async data')
-  return {}
-})
+await new Promise(resolve => setTimeout(resolve, 100))
+console.log('[async] running async data')
 </script>
+
 <template>
-  <div>
+  <div :id="route.path.replace(/[/-]+/g, '-')">
     Async parent: {{ route.params.parent }}
     <hr>
     <NuxtPage />
