@@ -35,8 +35,8 @@ By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until 
 const { pending, data: posts } = await useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {
 
-  // Because posts might start out null, you won't have access
-  // to its contents immediately, but you can watch it.
+  // Because `posts` are null at the beginning, you won't have access
+  // to their contents immediately, but you can watch them.
 })
 </script>
 ```
