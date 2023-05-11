@@ -62,7 +62,7 @@ This example below refreshes only data where the key matches to `count`.
 </template>
 
 <script setup>
-const { pending, data: count } = useLazyAsyncData('count', () => $fetch('/api/count'))
+const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 const refresh = () => refreshNuxtData('count')
 </script>
 ```
