@@ -14,11 +14,11 @@ export default defineNuxtCommand({
     usage: 'npx nuxi preview|start [--dotenv] [rootDir]',
     description: 'Launches nitro server for local testing after `nuxi build`.'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
     const { loadNuxtConfig } = await loadKit(rootDir)
-    const config = await loadNuxtConfig({ cwd: rootDir })
+    const config = await loadNuxtConfig({ cwd: rootDir, overrides: options?.overrides || {} })
 
     const resolvedOutputDir = resolve(config.srcDir || rootDir, config.nitro.srcDir || 'server', config.nitro.output?.dir || '.output', 'nitro.json')
     const defaultOutput = resolve(rootDir, '.output', 'nitro.json') // for backwards compatibility

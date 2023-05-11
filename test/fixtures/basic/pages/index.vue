@@ -46,6 +46,11 @@ const config = useRuntimeConfig()
 
 const someValue = useState('val', () => 1)
 
+const NestedSugarCounter = resolveComponent('NestedSugarCounter')
+if (!NestedSugarCounter) {
+  throw new Error('Component not found')
+}
+
 definePageMeta({
   alias: '/some-alias',
   other: ref('test'),

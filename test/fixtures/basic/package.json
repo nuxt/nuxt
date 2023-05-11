@@ -5,6 +5,14 @@
     "build": "nuxi build"
   },
   "dependencies": {
+    "@nuxt/webpack-builder": "workspace:*",
     "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "ofetch": "latest",
+    "ufo": "latest",
+    "unplugin": "latest",
+    "vitest": "latest",
+    "vue-router": "latest"
   }
 }

@@ -15,19 +15,13 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.5 when nitro has support for mocking traced dependencies
+    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
-
-    // TODO: move to `vue.runtimeCompiler` in v3.5
-    /**
-     * Include Vue compiler in runtime bundle.
-     */
-    runtimeVueCompiler: false,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
@@ -99,9 +93,8 @@ export default defineUntypedSchema({
      */
     noScripts: false,
 
-    // TODO: enable by default in v3.5
     /** Render JSON payloads with support for revivifying complex types. */
-    renderJsonPayloads: false,
+    renderJsonPayloads: true,
 
     /**
      * Disable vue server renderer endpoint within nitro.
@@ -161,5 +154,22 @@ export default defineUntypedSchema({
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
+
+    /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
+    typedPages: false,
+
+    /**
+     * Set an alternative watcher that will be used as the watching service for Nuxt.
+     *
+     * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
+     * `@parcel/watcher` instead. This may improve performance in large projects or
+     * on Windows platforms.
+     *
+     * @see https://github.com/paulmillr/chokidar
+     * @see https://github.com/parcel-bundler/watcher
+     * @default chokidar
+     * @type {'chokidar' | 'parcel'}
+     */
+    watcher: 'chokidar'
   }
 })

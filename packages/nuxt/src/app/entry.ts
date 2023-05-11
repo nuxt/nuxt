@@ -53,7 +53,11 @@ if (process.client) {
     import.meta.webpackHot.accept()
   }
 
+  // eslint-disable-next-line
+  let vueAppPromise: Promise<any>
+
   entry = async function initApp () {
+    if (vueAppPromise) { return vueAppPromise }
     const isSSR = Boolean(
       window.__NUXT__?.serverRendered ||
       document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
@@ -79,9 +83,11 @@ if (process.client) {
       await nuxt.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
+
+    return vueApp
   }
 
-  entry().catch((error: unknown) => {
+  vueAppPromise = entry().catch((error: unknown) => {
     console.error('Error while mounting app:', error)
   })
 }
