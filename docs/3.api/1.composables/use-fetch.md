@@ -114,7 +114,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   },
   onResponse({ request, response, options }) {
     // Process the response data
-    return response._data
+    localStorage.setItem('token', response._data.token)
   },
   onResponseError({ request, response, options }) {
     // Handle the response errors
@@ -124,6 +124,9 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 
 ::alert{type=warning}
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+::
+
+::LinkExample{link="/docs/examples/other/use-custom-fetch-composable"}
 ::
 
 :ReadMore{link="/docs/getting-started/data-fetching"}

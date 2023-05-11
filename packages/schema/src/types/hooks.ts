@@ -47,6 +47,16 @@ export interface GenerateAppOptions {
   filter?: (template: ResolvedNuxtTemplate<any>) => boolean
 }
 
+export interface NuxtAnalyzeMeta {
+  name: string
+  slug: string
+  startTime: number
+  endTime: number
+  analyzeDir: string
+  buildDir: string
+  outDir: string
+}
+
 /**
  * The listeners to Nuxt build time events
  */
@@ -130,6 +140,13 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'build:manifest': (manifest: Manifest) => HookResult
+
+  /**
+   * Called when `nuxt analyze` is finished
+   * @param meta the analyze meta object, mutations will be saved to `meta.json`
+   * @returns Promise
+   */
+  'build:analyze:done': (meta: NuxtAnalyzeMeta) => HookResult
 
   /**
    * Called before generating the app.
@@ -291,6 +308,13 @@ export interface NuxtHooks {
    */
   'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
+   * Allows to read the resolved Vite config.
+   * @param viteInlineConfig The vite inline config object
+   * @param env Server or client
+   * @returns Promise
+   */
+  'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server
    * @param env Server or client
@@ -310,6 +334,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
+   /**
+   * Allows to read the resolved webpack config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'webpack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
   /**
    * Called right before compilation.
    * @param options The options to be added
