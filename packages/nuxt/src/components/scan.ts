@@ -72,33 +72,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
 
-      /**
-       * Array of fileName parts splitted by case, / or -
-       *
-       * @example third-component -> ['third', 'component']
-       * @example AwesomeComponent -> ['Awesome', 'Component']
-       */
-      const fileNameParts = splitByCase(fileName)
-
-      let componentNameParts: string[] = []
-
-      let index = prefixParts.length - 1
-      let matched = false
-      while (index >= 0) {
-        const prefixPart = (prefixParts[index] || '').toLowerCase()
-        const fileNamePart = (fileNameParts[0] || '').toLowerCase()
-        if (prefixPart === fileNamePart && !matched) {
-          matched = true
-          componentNameParts = []
-        } else {
-          componentNameParts.push(prefixParts[index])
-        }
-        index--
-      }
-      componentNameParts = componentNameParts.reverse()
-
-      const componentName = pascalCase(componentNameParts) + pascalCase(fileNameParts)
       const suffix = (mode !== 'all' ? `-${mode}` : '')
+      const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
         console.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
@@ -145,4 +120,33 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   }
 
   return components
+}
+
+export function resolveComponentName (fileName: string, prefixParts: string[]) {
+  /**
+   * Array of fileName parts splitted by case, / or -
+   *
+   * @example third-component -> ['third', 'component']
+   * @example AwesomeComponent -> ['Awesome', 'Component']
+   */
+  const fileNameParts = splitByCase(fileName)
+
+  let componentNameParts: string[] = []
+
+  let index = prefixParts.length - 1
+  let matched = false
+  while (index >= 0) {
+    const prefixPart = (prefixParts[index] || '').toLowerCase()
+    const fileNamePart = (fileNameParts[0] || '').toLowerCase()
+    if (prefixPart === fileNamePart && !matched) {
+      matched = true
+      componentNameParts = []
+    } else {
+      componentNameParts.push(prefixParts[index])
+    }
+    index--
+  }
+  componentNameParts = componentNameParts.reverse()
+
+  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
 }
