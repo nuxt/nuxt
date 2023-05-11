@@ -8,10 +8,10 @@ import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
+import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
-import { ssrStylesPlugin } from './plugins/ssr-styles'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const _resolve = (id: string) => resolveModule(id, { paths: ctx.nuxt.options.modulesDir })
@@ -119,26 +119,26 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
-  const chunksWithInlinedCSS = new Set<string>()
-  serverConfig.plugins!.push(ssrStylesPlugin({
-    srcDir: ctx.nuxt.options.srcDir,
-    chunksWithInlinedCSS,
-    shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
-    getComponents () {
-      return ctx.nuxt.apps.default.components
-    }
-  }))
+  if (!ctx.nuxt.options.dev) {
+    const chunksWithInlinedCSS = new Set<string>()
+    serverConfig.plugins!.push(ssrStylesPlugin({
+      srcDir: ctx.nuxt.options.srcDir,
+      chunksWithInlinedCSS,
+      shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+      components: ctx.nuxt.apps.default.components
+    }))
 
-  // Remove CSS entries for files that will have inlined styles
-  ctx.nuxt.hook('build:manifest', (manifest) => {
-    for (const key in manifest) {
-      const entry = manifest[key]
-      const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
-      if (shouldRemoveCSS) {
-        entry.css = []
+    // Remove CSS entries for files that will have inlined styles
+    ctx.nuxt.hook('build:manifest', (manifest) => {
+      for (const key in manifest) {
+        const entry = manifest[key]
+        const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
+        if (shouldRemoveCSS) {
+          entry.css = []
+        }
       }
-    }
-  })
+    })
+  }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
