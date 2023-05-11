@@ -208,7 +208,7 @@ const expectedComponents = [
     priority: 1
   },
   {
-    chunkName: 'components/same-name',
+    chunkName: 'components/same-name-same',
     export: 'default',
     global: undefined,
     island: undefined,

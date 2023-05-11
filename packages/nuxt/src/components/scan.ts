@@ -131,22 +131,21 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
    */
   const fileNameParts = splitByCase(fileName)
 
-  let componentNameParts: string[] = []
+  const componentNameParts: string[] = []
 
-  let index = prefixParts.length - 1
-  let matched = false
-  while (index >= 0) {
-    const prefixPart = (prefixParts[index] || '').toLowerCase()
-    const fileNamePart = (fileNameParts[0] || '').toLowerCase()
-    if (prefixPart === fileNamePart && !matched) {
-      matched = true
-      componentNameParts = []
-    } else {
-      componentNameParts.push(prefixParts[index])
-    }
-    index--
+  const isMaybeNeedFilled = prefixParts.length > fileNameParts.length
+
+  while (prefixParts.length && (prefixParts[0] || '').toLowerCase() !== (fileNameParts[0] || '').toLowerCase()) {
+    componentNameParts.push(prefixParts.shift()!)
   }
-  componentNameParts = componentNameParts.reverse()
+
+  // #20613
+  if (prefixParts.length > 0 &&
+    isMaybeNeedFilled &&
+    [...new Set(prefixParts)].length > 1) {
+    // Item/Holder/Item.vue -> ItemHolderItem
+    return pascalCase(componentNameParts.concat(prefixParts))
+  }
 
   return pascalCase(componentNameParts) + pascalCase(fileNameParts)
 }
