@@ -106,7 +106,7 @@
     "@types/estree": "^1.0.1",
     "@types/fs-extra": "^11.0.1",
     "@types/prompts": "^2.4.4",
-    "@vitejs/plugin-vue": "^4.2.1",
+    "@vitejs/plugin-vue": "^4.2.2",
     "acorn": "^8.8.2",
     "unbuild": "latest",
     "vite": "^4.3.5",
