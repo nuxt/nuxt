@@ -247,7 +247,7 @@ it('components:scanComponents', async () => {
 const tests: Array<[string, string[], string]> = [
   ['WithClientOnlySetup', ['Client'], 'ClientWithClientOnlySetup'],
   ['Item', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
-  ['ItemHolder', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
+  ['ItemHolder', ['Item', 'Holder', 'Item'], 'ItemHolderItemHolder'],
   ['ItemHolderItem', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
   ['Item', ['Item'], 'Item'],
   ['Item', ['Item', 'Item'], 'Item'],
