@@ -372,6 +372,13 @@ describe('pages', () => {
   })
 })
 
+describe('nuxt composables', () => {
+  it('has useRequestURL()', async () => {
+    const html = await $fetch('/url')
+    expect(html).toContain('path: /url')
+  })
+})
+
 describe('rich payloads', () => {
   it('correctly serializes and revivifies complex types', async () => {
     const html = await $fetch('/json-payload')
@@ -837,10 +844,6 @@ describe('extends support', () => {
     it('allows overriding composables', async () => {
       const html = await $fetch('/extends')
       expect(html).toContain('test from project')
-    })
-    it('has useRequestURL()', async () => {
-      const html = await $fetch('/url')
-      expect(html).toContain('path: /url')
     })
   })
 
