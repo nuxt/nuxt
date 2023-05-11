@@ -30,7 +30,7 @@ By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigati
 const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 
 watch(count, (newCount) => {
-  // Because count might start out null, you won't have access
+  // Because `count` is null at the beginning, you won't have access
   // to its contents immediately, but you can watch it.
 })
 </script>
