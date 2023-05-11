@@ -891,7 +891,7 @@ describe('deferred app suspense resolve', () => {
   })
 })
 
-describe.only('nested suspense', () => {
+describe('nested suspense', () => {
   const navigations = [
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
