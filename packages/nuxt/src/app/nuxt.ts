@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { getCurrentInstance, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
@@ -75,6 +75,8 @@ interface _NuxtApp {
   hooks: Hookable<RuntimeNuxtHooks>
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
+
+  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
 
   [key: string]: unknown
 
@@ -193,6 +195,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {}
     },
+    runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
     isHydrating: process.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
@@ -224,7 +227,7 @@ export function createNuxtApp (options: CreateOptions) {
   if (process.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtAppCtx.callAsync(nuxtApp, () => hook(...args))
+        await nuxtApp.runWithContext(() => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
@@ -288,7 +291,7 @@ export function createNuxtApp (options: CreateOptions) {
 
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
   if (typeof plugin !== 'function') { return }
-  const { provide } = await callWithNuxt(nuxtApp, plugin, [nuxtApp]) || {}
+  const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
   if (provide && typeof provide === 'object') {
     for (const key in provide) {
       nuxtApp.provide(key, provide[key])
@@ -404,11 +407,11 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-    return fn()
+    return nuxt.vueApp.runWithContext(fn)
   }
 }
 

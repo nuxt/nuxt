@@ -10,7 +10,6 @@ import MagicString from 'magic-string'
 import { isAbsolute, normalize } from 'pathe'
 
 export interface PageMetaPluginOptions {
-  dirs: Array<string | RegExp>
   dev?: boolean
   sourcemap?: boolean
 }
@@ -42,11 +41,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       const query = parseMacroQuery(id)
       id = normalize(id)
 
-      const isPagesDir = options.dirs.some(dir => typeof dir === 'string' ? id.startsWith(dir) : dir.test(id))
-      if (!isPagesDir && !query.macro) { return false }
-
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return /\.(m?[jt]sx?|vue)/.test(pathname)
+      return !!query.macro
     },
     transform (code, id) {
       const query = parseMacroQuery(id)
@@ -65,26 +60,6 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       }
 
       const hasMacro = code.match(/\bdefinePageMeta\s*\(\s*/)
-
-      // Remove any references to the macro from our pages
-      if (!query.macro) {
-        if (hasMacro) {
-          walk(this.parse(code, {
-            sourceType: 'module',
-            ecmaVersion: 'latest'
-          }) as Node, {
-            enter (_node) {
-              if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-              const node = _node as CallExpression & { start: number, end: number }
-              const name = 'name' in node.callee && node.callee.name
-              if (name === 'definePageMeta') {
-                s.overwrite(node.start, node.end, 'false && {}')
-              }
-            }
-          })
-        }
-        return result()
-      }
 
       const imports = findStaticImports(code)
 

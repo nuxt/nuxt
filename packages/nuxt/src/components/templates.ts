@@ -1,8 +1,9 @@
 import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 export interface ComponentsTemplateContext {
+  app: NuxtApp
   nuxt: Nuxt
   options: {
     getComponents: (mode?: 'client' | 'server' | 'all') => Component[]
@@ -34,14 +35,21 @@ export default defineNuxtPlugin({
 
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
-  getContents ({ options }) {
-    const globalComponents = options.getComponents().filter(c => c.global)
-    if (!globalComponents.length) { return emptyComponentsPlugin }
+  getContents ({ app }) {
+    const globalComponents = new Set<string>()
+    for (const component of app.components) {
+      if (component.global) {
+        globalComponents.add(component.pascalName)
+      }
+    }
+    if (!globalComponents.size) { return emptyComponentsPlugin }
+
+    const components = [...globalComponents]
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { ${globalComponents.map(c => 'Lazy' + c.pascalName).join(', ')} } from '#components'
+import { ${components.map(c => 'Lazy' + c).join(', ')} } from '#components'
 const lazyGlobalComponents = [
-  ${globalComponents.map(c => `["${c.pascalName}", Lazy${c.pascalName}]`).join(',\n')}
+  ${components.map(c => `["${c}", Lazy${c}]`).join(',\n')}
 ]
 
 export default defineNuxtPlugin({
@@ -59,15 +67,15 @@ export default defineNuxtPlugin({
 
 export const componentNamesTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'component-names.mjs',
-  getContents ({ options }) {
-    return `export const componentNames = ${JSON.stringify(options.getComponents().filter(c => !c.island).map(c => c.pascalName))}`
+  getContents ({ app }) {
+    return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
   }
 }
 
 export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   // components.islands.mjs'
-  getContents ({ options }) {
-    const components = options.getComponents()
+  getContents ({ app }) {
+    const components = app.components
     const islands = components.filter(component =>
       component.island ||
       // .server components without a corresponding .client component will need to be rendered as an island
@@ -85,9 +93,9 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
 export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.d.ts',
-  getContents: ({ options, nuxt }) => {
+  getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
-    const componentTypes = options.getComponents().filter(c => !c.island).map(c => [
+    const componentTypes = app.components.filter(c => !c.island).map(c => [
       c.pascalName,
       `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')

@@ -113,9 +113,15 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  it('includes page metadata from pages added in pages:extend hook', async () => {
+    const res = await fetch('/page-extend')
+    expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
+  })
+
   it('validates routes', async () => {
-    const { status } = await fetch('/forbidden')
+    const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
 
     const page = await createPage('/navigate-to-forbidden')
     await page.waitForLoadState('networkidle')
@@ -135,8 +141,11 @@ describe('pages', () => {
     expect(status).toEqual(500)
   })
 
-  it('render 404', async () => {
-    const html = await $fetch('/not-found')
+  it('render catchall page', async () => {
+    const res = await fetch('/not-found')
+    expect(res.status).toEqual(200)
+
+    const html = await res.text()
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
@@ -578,7 +587,9 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('some-error=was%20set; Path=/')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    // TODO: enable when we update test to node v16
+    // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -877,6 +888,36 @@ describe('deferred app suspense resolve', () => {
   })
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
+  })
+})
+
+describe('nested suspense', () => {
+  const navigations = [
+    ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
+    ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
+  ]
+
+  it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    await page.waitForLoadState('networkidle')
+
+    const slug = nav.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // expect(text).toMatchInlineSnapshot()
+
+    // const parent = await page.waitForSelector(`#${slug}`, { state: 'attached' })
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async child: 2 - 1')
+
+    await page.close()
   })
 })
 

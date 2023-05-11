@@ -106,9 +106,11 @@ export function extendViteConfig (
 /**
  * Append webpack plugin to the config.
  */
-export function addWebpackPlugin (plugin: WebpackPluginInstance | WebpackPluginInstance[], options?: ExtendWebpackConfigOptions) {
-  const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | WebpackPluginInstance[] | (() => WebpackPluginInstance | WebpackPluginInstance[]), options?: ExtendWebpackConfigOptions) {
   extendWebpackConfig((config) => {
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+
     config.plugins = config.plugins || []
     if (Array.isArray(plugin)) {
       config.plugins[method](...plugin)
@@ -121,9 +123,11 @@ export function addWebpackPlugin (plugin: WebpackPluginInstance | WebpackPluginI
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (plugin: VitePlugin | VitePlugin[], options?: ExtendViteConfigOptions) {
-  const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options?: ExtendViteConfigOptions) {
   extendViteConfig((config) => {
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+
     config.plugins = config.plugins || []
     if (Array.isArray(plugin)) {
       config.plugins[method](...plugin)

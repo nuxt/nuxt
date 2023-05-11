@@ -1,7 +1,7 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
 import { createError } from '#app/composables/error'
-import { callWithNuxt, defineNuxtPlugin } from '#app/nuxt'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 const revivers = {
   NuxtError: (data: any) => createError(data),
@@ -20,7 +20,7 @@ export default defineNuxtPlugin({
     for (const reviver in revivers) {
       definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])
     }
-    Object.assign(nuxtApp.payload, await callWithNuxt(nuxtApp, getNuxtClientPayload, []))
+    Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
     // For backwards compatibility - TODO: remove later
     window.__NUXT__ = nuxtApp.payload
   }

@@ -14,7 +14,7 @@ const links = [
   { name: 'nuxt-link-trailing-slash' },
   { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
   { query: { 'without-state': 'true' } }
-]
+] as const
 
 const route = useRoute()
 const windowState = computed(() => {
