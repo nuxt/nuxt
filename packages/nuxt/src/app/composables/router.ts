@@ -1,4 +1,4 @@
-import { getCurrentInstance, inject, onUnmounted } from 'vue'
+import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
@@ -19,7 +19,7 @@ export const useRoute: typeof _useRoute = () => {
   if (process.dev && isProcessingMiddleware()) {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
   }
-  if (getCurrentInstance()) {
+  if (hasInjectionContext()) {
     return inject('_route', useNuxtApp()._route)
   }
   return useNuxtApp()._route
