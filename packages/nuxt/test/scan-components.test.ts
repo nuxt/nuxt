@@ -84,21 +84,6 @@ const dirs: ComponentsDir[] = [
       '**/*.d.ts'
     ],
     transpile: false
-  },
-  {
-    path: rFixture('components/same-name'),
-    enabled: true,
-    extensions: [
-      'vue'
-    ],
-    pattern: '**/*.{vue,}',
-    ignore: [
-      '**/*.stories.{js,ts,jsx,tsx}',
-      '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
-    ],
-    transpile: false,
-    island: false
   }
 ]
 
