@@ -1,6 +1,6 @@
 # getRequestURL
 
-`getRequestURL` is a helper function that return an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side rendering.
+`getRequestURL` is a helper function that returns an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side.
 
 ::code-group
 
