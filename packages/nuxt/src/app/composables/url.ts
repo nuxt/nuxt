@@ -1,11 +1,14 @@
-import { getRequestURL as getServerRequestURL } from 'h3'
+import { getRequestURL } from 'h3'
+import { joinURL } from 'ufo'
 import { useRequestEvent } from './ssr'
 import { useRuntimeConfig } from '#app'
 
-export function getRequestURL () {
+export function useRequestURL () {
   if (process.server) {
-    return getServerRequestURL(useRequestEvent())
+    const { baseURL } = useRuntimeConfig().app
+    const url = getRequestURL(useRequestEvent())
+    url.pathname = joinURL(baseURL, url.pathname)
+    return url
   }
-  const { baseURL } = useRuntimeConfig().app
-  return new URL(window.location.href.replace(baseURL, '/'))
+  return new URL(window.location.href)
 }

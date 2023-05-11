@@ -838,7 +838,7 @@ describe('extends support', () => {
       const html = await $fetch('/extends')
       expect(html).toContain('test from project')
     })
-    it('has getRequestURL()', async () => {
+    it('has useRequestURL()', async () => {
       const html = await $fetch('/url')
       expect(html).toContain('path: /url')
     })

@@ -1,5 +1,5 @@
 <script setup>
-const url = getRequestURL()
+const url = useRequestURL()
 </script>
 
 <template>
