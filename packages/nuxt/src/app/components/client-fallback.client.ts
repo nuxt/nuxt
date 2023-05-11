@@ -23,7 +23,7 @@ export default defineComponent({
       type: String
     },
     strategy: {
-      type: String as () => 'default'|'keep-fallback',
+      type: String as () => 'default' | 'keep-fallback',
       default: () => 'default'
     }
   },
