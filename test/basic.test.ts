@@ -906,7 +906,9 @@ describe.only('nested suspense', () => {
     const slug = nav.replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
-    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug).then(r => r.evaluate(r => r))
+    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
 
     // expect(text).toMatchInlineSnapshot()
 
