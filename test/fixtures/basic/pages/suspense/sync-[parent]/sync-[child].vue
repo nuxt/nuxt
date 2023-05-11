@@ -1,6 +1,6 @@
 <script setup lang="ts">
 console.log('[sync] [sync]')
-const route = useRoute()
+const route = useRoute('suspense-sync-parent-sync-child')
 </script>
 
 <template>
