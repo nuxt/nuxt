@@ -80,13 +80,22 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       const fileNameParts = splitByCase(fileName)
 
-      const componentNameParts: string[] = []
+      let componentNameParts: string[] = []
 
-      while (prefixParts.length &&
-        (prefixParts[0] || '').toLowerCase() !== (fileNameParts[0] || '').toLowerCase()
-      ) {
-        componentNameParts.push(prefixParts.shift()!)
+      let index = prefixParts.length - 1
+      let matched = false
+      while (index >= 0) {
+        const prefixPart = (prefixParts[index] || '').toLowerCase()
+        const fileNamePart = (fileNameParts[0] || '').toLowerCase()
+        if (prefixPart === fileNamePart && !matched) {
+          matched = true
+          componentNameParts = []
+        } else {
+          componentNameParts.push(prefixParts[index])
+        }
+        index--
       }
+      componentNameParts = componentNameParts.reverse()
 
       const componentName = pascalCase(componentNameParts) + pascalCase(fileNameParts)
       const suffix = (mode !== 'all' ? `-${mode}` : '')

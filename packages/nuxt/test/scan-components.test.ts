@@ -84,6 +84,21 @@ const dirs: ComponentsDir[] = [
       '**/*.d.ts'
     ],
     transpile: false
+  },
+  {
+    path: rFixture('components/same-name'),
+    enabled: true,
+    extensions: [
+      'vue'
+    ],
+    pattern: '**/*.{vue,}',
+    ignore: [
+      '**/*.stories.{js,ts,jsx,tsx}',
+      '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
+      '**/*.d.ts'
+    ],
+    transpile: false,
+    island: false
   }
 ]
 
@@ -191,6 +206,19 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1
+  },
+  {
+    chunkName: 'components/same-name',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'same-name-same',
+    mode: 'all',
+    pascalName: 'SameNameSame',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/same-name/same/Same.vue'
   },
   {
     chunkName: 'components/some-glob',
