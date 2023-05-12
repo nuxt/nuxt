@@ -146,7 +146,7 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
   let index = prefixParts.length - 1
   const matchedSuffix:string[] = []
   while (index >= 0) {
-    matchedSuffix.unshift(prefixParts[index].toLowerCase())
+    matchedSuffix.unshift((prefixParts[index] || '').toLowerCase())
     if (!fileNamePartsContent.startsWith(matchedSuffix.join(''))) {
       index--
     } else {
