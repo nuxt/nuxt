@@ -253,7 +253,11 @@ const tests: Array<[string, string[], string]> = [
   ['Item', ['Item', 'Item'], 'Item'],
   ['ItemTest', ['Item', 'Test'], 'ItemTest'],
   ['ThingItemTest', ['Item', 'Thing'], 'ItemThingItemTest'],
-  ['Item', ['Thing', 'Item'], 'ThingItem']
+  ['Item', ['Thing', 'Item'], 'ThingItem'],
+  ['ThingItemTest', ['Item', 'Thing', 'Foo'], 'ItemThingFooThingItemTest'],
+  ['ItemIn', ['Item', 'Holder', 'Item', 'In'], 'ItemHolderItemIn'],
+  ['Item', ['Item', 'Holder', 'Test'], 'ItemHolderTestItem'],
+  ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem']
 ]
 
 describe('components:resolveComponentName', () => {

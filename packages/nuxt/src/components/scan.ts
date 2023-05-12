@@ -131,21 +131,28 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
    */
   const fileNameParts = splitByCase(fileName)
 
-  const componentNameParts: string[] = []
-
-  const isMaybeNeedFilled = prefixParts.length > fileNameParts.length
-
-  while (prefixParts.length && (prefixParts[0] || '').toLowerCase() !== (fileNameParts[0] || '').toLowerCase()) {
-    componentNameParts.push(prefixParts.shift()!)
+  // e.g Item/Holder/Item/ItemHolderItem.vue -> ItemHolderItem
+  if (fileNameParts.join('').toLowerCase() === prefixParts.join('').toLowerCase()) {
+    return pascalCase(fileNameParts)
   }
 
-  // #20613
-  if (prefixParts.length > 0 &&
-    isMaybeNeedFilled &&
-    [...new Set(prefixParts)].length > 1) {
-    // Item/Holder/Item.vue -> ItemHolderItem
-    return pascalCase(componentNameParts.concat(prefixParts))
+  // e.g Item/Item/Item.vue -> Item
+  if ([...new Set(prefixParts)].length === 1 &&
+    (fileNameParts[0] || '').toLowerCase() === (prefixParts[0] || '').toLowerCase()) {
+    return pascalCase(fileNameParts)
   }
 
-  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+  const fileNamePartsContent = fileNameParts.join('').toLowerCase()
+  let index = prefixParts.length - 1
+  const matchedSuffix:string[] = []
+  while (index >= 0) {
+    matchedSuffix.unshift(prefixParts[index].toLowerCase())
+    if (!fileNamePartsContent.startsWith(matchedSuffix.join(''))) {
+      index--
+    } else {
+      prefixParts.length = index
+      break
+    }
+  }
+  return pascalCase(prefixParts) + pascalCase(fileNameParts)
 }
