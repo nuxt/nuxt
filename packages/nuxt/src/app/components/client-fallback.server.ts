@@ -24,9 +24,9 @@ const NuxtClientFallbackServer = defineComponent({
     placeholderTag: {
       type: String
     },
-    strategy: {
-      type: String as () => 'default'|'keep-fallback',
-      default: () => 'default'
+    keepFallback: {
+      type: Boolean,
+      default: () => false
     }
   },
   emits: ['ssr-error'],

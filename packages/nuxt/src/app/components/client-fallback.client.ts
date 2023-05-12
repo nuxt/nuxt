@@ -22,9 +22,9 @@ export default defineComponent({
     placeholderTag: {
       type: String
     },
-    strategy: {
-      type: String as () => 'default' | 'keep-fallback',
-      default: () => 'default'
+    keepFallback: {
+      type: Boolean,
+      default: () => false
     }
   },
   emits: ['ssr-error'],
@@ -38,7 +38,7 @@ export default defineComponent({
 
     return () => {
       if (ssrFailed.value) {
-        if (!mounted.value || props.strategy === 'keep-fallback') {
+        if (!mounted.value || props.keepFallback) {
           const slot = ctx.slots.placeholder || ctx.slots.fallback
           if (slot) { return slot() }
           const fallbackStr = props.placeholder || props.fallback
