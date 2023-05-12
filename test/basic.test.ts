@@ -891,6 +891,36 @@ describe('deferred app suspense resolve', () => {
   })
 })
 
+describe('nested suspense', () => {
+  const navigations = [
+    ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
+    ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
+  ]
+
+  it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    await page.waitForLoadState('networkidle')
+
+    const slug = nav.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // expect(text).toMatchInlineSnapshot()
+
+    // const parent = await page.waitForSelector(`#${slug}`, { state: 'attached' })
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async child: 2 - 1')
+
+    await page.close()
+  })
+})
+
 // Bug #6592
 describe('page key', () => {
   it('should not cause run of setup if navigation not change page key and layout', async () => {
