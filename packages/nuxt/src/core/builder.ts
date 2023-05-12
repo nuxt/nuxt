@@ -11,6 +11,8 @@ import { generateApp as _generateApp, createApp } from './app'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
+  nuxt.apps.default = app
+
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
 

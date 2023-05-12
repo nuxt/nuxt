@@ -111,10 +111,6 @@ declare module '#app' {
 declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
-// TODO: remove when webstorm has support for augumenting 'vue' directly
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties extends NuxtAppInjections { }
-}
 
 export { }
 `
@@ -161,12 +157,6 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
         }),
       '}',
       `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: RuntimeConfig
-        }
-      }`,
-      // TODO: remove when webstorm has support for augumenting 'vue' directly
-      `declare module '@vue/runtime-dom' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }

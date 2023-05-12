@@ -1,4 +1,4 @@
-import type { RendererNode } from 'vue'
+import type { RendererNode, Slots } from 'vue'
 import { computed, createStaticVNode, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -74,7 +74,7 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
-    return () => h((_, { slots }) => slots.default?.(), { key: key.value }, {
+    return () => h((_, { slots }) => (slots as Slots).default?.(), { key: key.value }, {
       default: () => [createStaticVNode(html.value, 1)]
     })
   }

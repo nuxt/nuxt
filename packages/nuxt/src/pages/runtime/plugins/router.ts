@@ -1,12 +1,12 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, Router } from 'vue-router'
+import type { RouteLocation, Router } from '#vue-router'
 import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
   createWebHistory
-} from 'vue-router'
+} from '#vue-router'
 import { createError } from 'h3'
 import { withoutBase } from 'ufo'
 
@@ -44,7 +44,7 @@ function createCurrentLocation (
   return path + search + hash
 }
 
-export default defineNuxtPlugin({
+const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
   async setup (nuxtApp) {
@@ -201,4 +201,6 @@ export default defineNuxtPlugin({
 
     return { provide: { router } }
   }
-}) as Plugin<{ router: Router }>
+})
+
+export default plugin
