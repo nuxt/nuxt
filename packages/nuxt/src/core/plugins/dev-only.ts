@@ -9,7 +9,7 @@ interface DevOnlyPluginOptions {
 }
 
 export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
-  const DEVONLY_COMP_RE = /<(dev-only|DevOnly)>[\s\S]*?<\/(dev-only|DevOnly)>/g
+  const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[^<]*(?:<template\s+#fallback>(?<fallback>[\s\S]*?)<\/template>)?[\s\S]*?<\/(?:dev-only|DevOnly)>/g
 
   return {
     name: 'nuxt:server-devonly:transform',
@@ -29,7 +29,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
       for (const match of strippedCode.matchAll(DEVONLY_COMP_RE) || []) {
-        s.remove(match.index!, match.index! + match[0].length)
+        s.overwrite(match.index!, match.index! + match[0].length, match.groups?.fallback || '')
       }
 
       if (s.hasChanged()) {
