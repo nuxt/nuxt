@@ -29,10 +29,6 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
-     /**
-      * Toggle auto-imports for all composables, components, directories, and all other parts of your application that Nuxt usually handles.
-      */
-    autoImport: true,
 
     global: false,
 
