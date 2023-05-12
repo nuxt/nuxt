@@ -119,14 +119,13 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
-  if (ctx.nuxt.options.experimental.inlineSSRStyles) {
+  if (!ctx.nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()
     serverConfig.plugins!.push(ssrStylesPlugin({
       srcDir: ctx.nuxt.options.srcDir,
       chunksWithInlinedCSS,
-      shouldInline: typeof ctx.nuxt.options.experimental.inlineSSRStyles === 'function'
-        ? ctx.nuxt.options.experimental.inlineSSRStyles
-        : undefined
+      shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+      components: ctx.nuxt.apps.default.components
     }))
 
     // Remove CSS entries for files that will have inlined styles
