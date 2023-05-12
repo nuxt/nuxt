@@ -32,7 +32,7 @@ export default defineUntypedSchema({
      /**
       * Toggle auto-imports for all composables, components, directories, and all other parts of your application that Nuxt usually handles.
       */
-    autoImport: false,
+    autoImport: true,
 
     global: false,
 
