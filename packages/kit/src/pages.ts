@@ -11,7 +11,7 @@ export function extendPages (cb: NuxtHooks['pages:extend']) {
     nuxt.hook('build:extendRoutes', cb)
   } else {
     nuxt.hook('pages:extend', cb)
-    nuxt.options.pages = true
+    if(!nuxt.options.pages) nuxt.options.pages = true
   }
 }
 
