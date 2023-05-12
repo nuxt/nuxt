@@ -29,7 +29,6 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
-
     global: false,
 
     /**
