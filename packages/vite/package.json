@@ -21,12 +21,12 @@
     "@nuxt/schema": "workspace:../schema",
     "@types/estree": "^1.0.1",
     "unbuild": "latest",
-    "vue": "3.3.1"
+    "vue": "3.3.2"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@rollup/plugin-replace": "^5.0.2",
-    "@vitejs/plugin-vue": "^4.2.2",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
     "clear": "^0.1.0",
@@ -60,7 +60,7 @@
     "vue-bundle-renderer": "^1.0.3"
   },
   "peerDependencies": {
-    "vue": "^3.3.1"
+    "vue": "^3.3.2"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
