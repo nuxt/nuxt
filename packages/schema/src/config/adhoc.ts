@@ -30,7 +30,7 @@ export default defineUntypedSchema({
    */
   imports: {
     /**
-     * Toggle auto-imports for all composables, components, directories, and all other parts of your application that Nuxt usually handles.
+     * Enable implicit auto import from Vue, Nuxt and module contributed utilities.
      */
     autoImport: true,
 
