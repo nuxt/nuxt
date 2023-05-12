@@ -202,7 +202,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
-  if (!nuxt.options.experimental.inlineSSRStyles) {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.dev) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {

@@ -21,12 +21,12 @@
     "@nuxt/schema": "workspace:../schema",
     "@types/estree": "^1.0.1",
     "unbuild": "latest",
-    "vue": "3.2.47"
+    "vue": "3.3.1"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@rollup/plugin-replace": "^5.0.2",
-    "@vitejs/plugin-vue": "^4.2.1",
+    "@vitejs/plugin-vue": "^4.2.2",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
     "clear": "^0.1.0",
@@ -41,7 +41,7 @@
     "h3": "^1.6.5",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.0",
-    "mlly": "^1.2.0",
+    "mlly": "^1.2.1",
     "ohash": "^1.1.2",
     "pathe": "^1.1.0",
     "perfect-debounce": "^1.0.0",
@@ -60,7 +60,7 @@
     "vue-bundle-renderer": "^1.0.3"
   },
   "peerDependencies": {
-    "vue": "^3.2.47"
+    "vue": "^3.3.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

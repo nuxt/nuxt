@@ -107,6 +107,7 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
+
     return () => {
       const nodes = [createVNode(Fragment, {
         key: key.value
