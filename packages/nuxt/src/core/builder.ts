@@ -108,7 +108,7 @@ async function watch (nuxt: Nuxt) {
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
-      if (!pending || path !== dir) {
+      if (!pending) {
         nuxt.callHook('builder:watch', event, normalize(path))
       }
       if (event === 'unlinkDir' && path in watchers) {
