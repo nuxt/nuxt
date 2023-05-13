@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
+import type { FSWatcher } from 'chokidar'
 import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
@@ -92,23 +93,38 @@ async function watch (nuxt: Nuxt) {
     console.time('[nuxt] builder:chokidar:watch')
   }
 
-  const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
-    ...nuxt.options.watchers.chokidar,
-    cwd: nuxt.options.srcDir,
-    ignoreInitial: true,
-    ignored: [
-      isIgnored,
-      '.nuxt',
-      'node_modules'
-    ]
-  })
+  let pending = 0
 
-  if (nuxt.options.debug) {
-    watcher.on('ready', () => console.timeEnd('[nuxt] builder:chokidar:watch'))
+  const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
+  for (const layer of nuxt.options._layers) {
+    if (!layer.config.srcDir || isIgnored(layer.config.srcDir)) { continue }
+    pending++
+
+    const dir = layer.config.srcDir
+    const watcher = chokidar.watch(dir, { depth: 0, ignored: [isIgnored] })
+    const watchers: Record<string, FSWatcher> = {}
+
+    watcher.on('all', (event, path) => {
+      if (!pending || path !== dir) {
+        nuxt.callHook('builder:watch', event, normalize(path))
+      }
+      if (event === 'unlinkDir' && path in watchers) {
+        watchers[path].close()
+        delete watchers[path]
+      }
+      if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !(path in watchers) && !isIgnored(path)) {
+        watchers[path] = chokidar.watch(path, { ignoreInitial: true, ignored: [isIgnored] })
+        watchers[path].on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
+        nuxt.hook('close', () => watchers[path].close())
+      }
+    })
+    watcher.on('ready', () => {
+      pending--
+      if (nuxt.options.debug && !pending) {
+        console.timeEnd('[nuxt] builder:chokidar:watch')
+      }
+    })
   }
-
-  watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
-  nuxt.hook('close', () => watcher.close())
 }
 
 async function bundle (nuxt: Nuxt) {
