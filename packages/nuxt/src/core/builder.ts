@@ -96,11 +96,14 @@ async function watch (nuxt: Nuxt) {
   let pending = 0
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
-  for (const layer of nuxt.options._layers) {
-    if (!layer.config.srcDir || isIgnored(layer.config.srcDir)) { continue }
+  const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir).filter(d => d && !isIgnored(d))
+  for (const path of nuxt.options.watch) {
+    if (typeof path !== 'string') { continue }
+    if (pathsToWatch.some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
+    pathsToWatch.push(path)
+  }
+  for (const dir of pathsToWatch) {
     pending++
-
-    const dir = layer.config.srcDir
     const watcher = chokidar.watch(dir, { depth: 0, ignored: [isIgnored] })
     const watchers: Record<string, FSWatcher> = {}
 
