@@ -6,6 +6,7 @@ if (process.server) {
   state.value.ref = r
   state.value.shallowReactive = shallowReactive({ nested: { ref: r } })
   state.value.shallowRef = shallowRef(false)
+  state.value.undefined = shallowRef()
   state.value.reactive = reactive({ ref: r })
   state.value.error = createError({ message: 'error' })
   state.value.date = new Date()
@@ -19,6 +20,7 @@ if (process.server) {
     Error: {{ isNuxtError(state.error) }} <hr>
     Shallow reactive: {{ isReactive(state.shallowReactive) && isShallow(state.shallowReactive) }} <br>
     Shallow ref: {{ isShallow(state.shallowRef) }} <br>
+    Undefined ref: {{ isRef(state.undefined) }} <br>
     Reactive: {{ isReactive(state.reactive) }} <br>
     Ref: {{ isRef(state.ref) }} <hr>
     Recursive objects: {{ state.ref === state.shallowReactive.nested.ref }} <br>
