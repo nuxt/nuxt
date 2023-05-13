@@ -17,7 +17,7 @@ interface RouteRuleExtractorPluginOptions {
 
 export const routeRuleExtractorPlugin = createUnplugin((options: RouteRuleExtractorPluginOptions) => {
   return {
-    name: 'test',
+    name: 'nuxt:route-rules',
     transformInclude (id) {
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(normalize(id)).href))
       return pathname in options.pageMap
