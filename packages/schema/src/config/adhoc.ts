@@ -29,6 +29,11 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
+    /**
+     * Enable implicit auto import from Vue, Nuxt and module contributed utilities.
+     */
+    autoImport: true,
+
     global: false,
 
     /**

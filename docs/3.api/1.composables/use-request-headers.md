@@ -5,7 +5,7 @@ description: "Use useRequestHeaders to access the incoming request headers."
 
 # `useRequestHeaders`
 
-You can use built-in `useRequestHeaders` composable to access the incoming request headers within your pages, components, and plugins.
+You can use the built-in `useRequestHeaders` composable to access the incoming request headers within your pages, components, and plugins.
 
 ```js
 // Get all request headers

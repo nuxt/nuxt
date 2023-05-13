@@ -4,7 +4,7 @@ title: "abortNavigation"
 
 # `abortNavigation`
 
-`abortNavigation` is a helper function that prevents navigation from taking place and throws an error if one is set as a parameter.
+`abortNavigation` is a helper function that prevents navigation from taking place and throws an error if set as a parameter.
 
 ::alert{type="warning"}
 `abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
@@ -48,7 +48,7 @@ You can pass the error as a string:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  const auth = useState('auth')
+  const user = useState('user')
 
   if (!user.value.isAuthorized) {
     return abortNavigation('Insufficient permissions.')

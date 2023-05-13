@@ -7,7 +7,7 @@ description: reloadNuxtApp will perform a hard reload of the page.
 
 `reloadNuxtApp` will perform a hard reload of your app, re-requesting a page and its dependencies from the server.
 
-By default, it will also save the current `state` of your app (that is, any state you could access with `useState`). You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
+By default, it will also save the current `state` of the app (that is, any state you could access with `useState`). You can enable experimental restoration of this state by setting the `experimental.restoreState` option in your `nuxt.config` file.
 
 ## Type
 
@@ -34,8 +34,8 @@ An object accepting the following properties:
 
   **Default**: `window.location.pathname`
 
-  The path to reload (defaulting to the current path). If this is different from the current window location it
-  will trigger a navigation and add an entry in the browser history.
+  The path to reload (defaulting to the current). If this is different from the current window location it
+  will trigger navigation and add an entry in the browser history.
 
 - `ttl` (optional)
 
@@ -43,8 +43,8 @@ An object accepting the following properties:
 
   **Default**: `10000`
 
-  The number of milliseconds in which to ignore future reload requests. If called again within this time period,
-  `reloadNuxtApp` will not reload your app to avoid reload loops.
+  The number of milliseconds in which to ignore future reload requests. If called again within this period,
+  `reloadNuxtApp` will not reload your app to prevent reload loops.
 
 - `force` (optional)
 
@@ -61,5 +61,5 @@ An object accepting the following properties:
 
   **Default**: `false`
 
-  Whether to dump the current Nuxt state to sessionStorage (as `nuxt:reload:state`). By default this will have no
-  effect on reload unless `experimental.restoreState` is also set, or unless you handle restoring the state yourself.
+  Whether to dump the current Nuxt state to sessionStorage (as `nuxt:reload:state`). By default, this will have no
+  effect on reload unless `experimental.restoreState` is also set, unless you handle restoring the state yourself.

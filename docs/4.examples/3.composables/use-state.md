@@ -4,7 +4,7 @@ toc: false
 
 # useState
 
-This example showcase the `useState` composable, an SSR-friendly ref replacement.
+This example showcases the `useState` composable, an SSR-friendly ref replacement.
 
 Its value will be preserved after server-side rendering and shared across all components using a unique key.
 

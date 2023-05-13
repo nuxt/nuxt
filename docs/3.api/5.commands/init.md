@@ -1,6 +1,6 @@
 ---
 title: "nuxi init"
-description: The init command initializes a fresh Nuxt project.
+description: The init command initializes a clean Nuxt project.
 ---
 
 # `nuxi init`
@@ -9,13 +9,13 @@ description: The init command initializes a fresh Nuxt project.
 npx nuxi init|create [--verbose|-v] [--template,-t] [dir]
 ```
 
-The `init` command initializes a fresh Nuxt project using [unjs/giget](https://github.com/unjs/giget).
+The `init` command initializes a clean Nuxt project using [unjs/giget](https://github.com/unjs/giget).
 
 ## Options
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`--template, -t` | `v3` | Specify template name or git repository to use as a template. Format is `gh:org/name` to use a custom github template.
+`--template, -t` | `v3` | Specify template name or git repository to use as a template. The format is `gh:org/name` to use a custom github template.
 `--force`      | `false` | Force clone to any existing directory.
 `--offline`   | `false` | Do not attempt to download from github and only use local cache.
 `--prefer-offline` | `false` | Try local cache first to download templates.

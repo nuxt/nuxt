@@ -9,15 +9,15 @@ description: The preview command starts a server to preview your application aft
 npx nuxi preview [rootDir] [--dotenv]
 ```
 
-The `preview` command starts a server to preview your Nuxt application after running the `build` command.
+The `preview` command starts a server to preview your Nuxt application after the `build` command executes.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
-`rootDir` | `.` | The root directory of the application to preview.
+`rootDir` | `.` | The application's root directory to preview.
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 
-This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as command-line argument.
+This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as a command-line argument.
 
 ::alert{type=info}
-For convenience, in preview mode, your `.env` file will be loaded into `process.env`. (However, in production you will need to ensure your environment variables are set yourself.)
+For convenience reasons, your `.env` file will be loaded into `process.env` in preview mode. (However, in production, you must ensure your environment variables get configured.)
 ::

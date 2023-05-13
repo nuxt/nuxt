@@ -4,7 +4,7 @@ toc: false
 
 # JSX / TSX
 
-This example shows how to use [jsx syntax](https://vuejs.org/guide/extras/render-function.html#jsx-tsx) with typescript in Nuxt pages and components.
+This example shows [jsx syntax](https://vuejs.org/guide/extras/render-function.html#jsx-tsx) usage with typescript in Nuxt pages and components.
 
 ::ReadMore{link="https://vuejs.org/guide/extras/render-function.html#jsx-tsx"}
 ::
