@@ -33,7 +33,7 @@
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "vite": "^4.3.5",
-    "vue": "3.3.1",
+    "vue": "3.3.2",
     "magic-string": "^0.30.0"
   },
   "devDependencies": {
@@ -67,15 +67,15 @@
     "pathe": "^1.1.0",
     "playwright": "^1.33.0",
     "rimraf": "^5.0.0",
-    "semver": "^7.5.0",
+    "semver": "^7.5.1",
     "std-env": "^3.3.3",
     "typescript": "^5.0.4",
     "ufo": "^1.1.2",
     "vite": "^4.3.5",
     "vitest": "^0.31.0",
-    "vue": "3.3.1",
+    "vue": "3.3.2",
     "vue-eslint-parser": "^9.2.1",
-    "vue-tsc": "^1.6.4"
+    "vue-tsc": "^1.6.5"
   },
   "packageManager": "pnpm@8.5.0",
   "engines": {
