@@ -380,6 +380,7 @@ describe('rich payloads', () => {
       'Recursive objects: true',
       'Shallow reactive: true',
       'Shallow ref: true',
+      'Undefined ref: true',
       'Reactive: true',
       'Ref: true',
       'Error: true'

@@ -37,7 +37,7 @@
     "magic-string": "^0.30.0",
     "memfs": "^3.5.1",
     "mini-css-extract-plugin": "^2.7.5",
-    "mlly": "^1.2.0",
+    "mlly": "^1.2.1",
     "ohash": "^1.1.2",
     "pathe": "^1.1.0",
     "pify": "^6.1.0",
@@ -67,10 +67,10 @@
     "@types/webpack-hot-middleware": "^2.25.6",
     "@types/webpack-virtual-modules": "^0.1.1",
     "unbuild": "latest",
-    "vue": "3.3.1"
+    "vue": "3.3.2"
   },
   "peerDependencies": {
-    "vue": "^3.3.1"
+    "vue": "^3.3.2"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
