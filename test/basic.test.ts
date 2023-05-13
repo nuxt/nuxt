@@ -345,6 +345,8 @@ describe('pages', () => {
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
     // keep-fallback strategy
     expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
+    // #20833
+    expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
     await page.close()
   })
 
@@ -373,6 +375,13 @@ describe('pages', () => {
   })
 })
 
+describe('nuxt composables', () => {
+  it('has useRequestURL()', async () => {
+    const html = await $fetch('/url')
+    expect(html).toContain('path: /url')
+  })
+})
+
 describe('rich payloads', () => {
   it('correctly serializes and revivifies complex types', async () => {
     const html = await $fetch('/json-payload')
@@ -381,6 +390,7 @@ describe('rich payloads', () => {
       'Recursive objects: true',
       'Shallow reactive: true',
       'Shallow ref: true',
+      'Undefined ref: true',
       'Reactive: true',
       'Ref: true',
       'Error: true'
