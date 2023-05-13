@@ -75,7 +75,7 @@
     "vitest": "^0.31.0",
     "vue": "3.3.2",
     "vue-eslint-parser": "^9.2.1",
-    "vue-tsc": "^1.6.4"
+    "vue-tsc": "^1.6.5"
   },
   "packageManager": "pnpm@8.5.0",
   "engines": {
