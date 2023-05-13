@@ -104,7 +104,7 @@ async function watch (nuxt: Nuxt) {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidar.watch(dir, { ...nuxt.options.watchers.chokidar, depth: 0, ignored: [isIgnored] })
+    const watcher = chokidar.watch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
@@ -116,7 +116,7 @@ async function watch (nuxt: Nuxt) {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignoreInitial: true, ignored: [isIgnored] })
+        watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         watchers[path].on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
         nuxt.hook('close', () => watchers[path].close())
       }
