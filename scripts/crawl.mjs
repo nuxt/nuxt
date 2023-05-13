@@ -1,3 +1,4 @@
+// @ts-check
 import Crawler from 'crawler'
 import { consola } from 'consola'
 import { parseURL, withoutTrailingSlash } from 'ufo'
@@ -67,7 +68,7 @@ const crawler = new Crawler({
   callback (error, res, done) {
     const { $ } = res
     const { uri } = res.options
-    const { statusCode } = res.request.response
+    const { statusCode } = res.response
 
     if (error || ![200, 301, 302].includes(statusCode) || !$) {
       // TODO: normalize relative links in module readmes - https://github.com/nuxt/nuxt.com/issues/1271

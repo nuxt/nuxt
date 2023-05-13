@@ -13,7 +13,7 @@ const kit: typeof _kit = _kit.default || _kit
 export async function startServer () {
   const ctx = useTestContext()
   await stopServer()
-  const port = await getRandomPort()
+  const port = ctx.options.port || await getRandomPort()
   ctx.url = 'http://127.0.0.1:' + port
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')

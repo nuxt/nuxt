@@ -1,8 +1,8 @@
-import type { RendererNode } from 'vue'
+import type { RendererNode, Slots } from 'vue'
 import { computed, createStaticVNode, defineComponent, getCurrentInstance, h, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendHeader } from 'h3'
+import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 
 // eslint-disable-next-line import/no-restricted-paths
@@ -42,7 +42,7 @@ export default defineComponent({
       const url = `/__nuxt_island/${props.name}:${hashId.value}`
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
-        appendHeader(event, 'x-nitro-prerender', url)
+        appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
       return $fetch<NuxtIslandResponse>(url, {
@@ -74,7 +74,7 @@ export default defineComponent({
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
-    return () => h((_, { slots }) => slots.default?.(), { key: key.value }, {
+    return () => h((_, { slots }) => (slots as Slots).default?.(), { key: key.value }, {
       default: () => [createStaticVNode(html.value, 1)]
     })
   }

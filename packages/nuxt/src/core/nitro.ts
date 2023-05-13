@@ -65,7 +65,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     analyze: nuxt.options.build.analyze && {
       template: 'treemap',
       projectRoot: nuxt.options.rootDir,
-      filename: join(nuxt.options.rootDir, '.nuxt/stats', '{name}.html')
+      filename: join(nuxt.options.analyzeDir, '{name}.html')
     },
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
@@ -130,7 +130,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
-        ...(nuxt.options.experimental.runtimeVueCompiler && !nuxt.options.experimental.externalVue)
+        ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
           ? [
               ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
                 const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
@@ -150,7 +150,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
           },
       // Vue 3 mocks
-      ...nuxt.options.experimental.runtimeVueCompiler || nuxt.options.experimental.externalVue
+      ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
             'estree-walker': 'unenv/runtime/mock/proxy',
@@ -202,7 +202,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
-  if (!nuxt.options.experimental.inlineSSRStyles) {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.dev) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -253,7 +253,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   // Enable runtime compiler client side
-  if (nuxt.options.experimental.runtimeVueCompiler) {
+  if (nuxt.options.vue.runtimeCompiler) {
     nuxt.hook('vite:extendConfig', (config, { isClient }) => {
       if (isClient) {
         if (Array.isArray(config.resolve!.alias)) {

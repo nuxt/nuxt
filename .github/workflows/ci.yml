@@ -40,7 +40,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -67,13 +67,17 @@ jobs:
     timeout-minutes: 10
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ['bundler', 'node']
 
     steps:
       - uses: actions/checkout@v3
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -87,6 +91,8 @@ jobs:
 
       - name: Test (types)
         run: pnpm test:types
+        env:
+          MODULE_RESOLUTION: ${{ matrix.module }}
 
   lint:
     # autofix workflow will be triggered instead for PRs
@@ -99,7 +105,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -201,7 +207,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18]
+        node: [20]
 
     timeout-minutes: 20
 
