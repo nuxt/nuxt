@@ -67,7 +67,7 @@
     "pathe": "^1.1.0",
     "playwright": "^1.33.0",
     "rimraf": "^5.0.0",
-    "semver": "^7.5.0",
+    "semver": "^7.5.1",
     "std-env": "^3.3.3",
     "typescript": "^5.0.4",
     "ufo": "^1.1.2",
