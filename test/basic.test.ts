@@ -343,7 +343,8 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
-
+    // #20833
+    expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
     await page.close()
   })
 
