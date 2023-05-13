@@ -6,6 +6,6 @@ export default defineComponent({
     if (process.dev) {
       return () => props.slots.default?.()
     }
-    return () => props.slots.fallback
+    return () => props.slots.fallback?.()
   }
 })
