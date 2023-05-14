@@ -9,7 +9,8 @@ interface DevOnlyPluginOptions {
 }
 
 export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
-  const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[^<]*(?:<template\s+#fallback>(?<fallback>[\s\S]*?)<\/template>)?[\s\S]*?<\/(?:dev-only|DevOnly)>/g
+  const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
+  const FALLBACK_SLOT_RE = /<template\s+#fallback>(?<fallback>[\s\S]*?)<\/template>/
 
   return {
     name: 'nuxt:server-devonly:transform',
@@ -29,7 +30,8 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
       for (const match of strippedCode.matchAll(DEVONLY_COMP_RE) || []) {
-        s.overwrite(match.index!, match.index! + match[0].length, match.groups?.fallback || '')
+        const replacement = match[0].match(FALLBACK_SLOT_RE)?.groups?.fallback || ''
+        s.overwrite(match.index!, match.index! + match[0].length, replacement)
       }
 
       if (s.hasChanged()) {
