@@ -3,6 +3,7 @@ import { stripLiteral } from 'strip-literal'
 import { parseQuery, parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
+import { type Node, parse } from 'ultrahtml'
 
 interface DevOnlyPluginOptions {
   sourcemap?: boolean
@@ -10,7 +11,6 @@ interface DevOnlyPluginOptions {
 
 export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
   const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
-  const FALLBACK_SLOT_RE = /<template\s+#fallback>(?<fallback>[\s\S]*?)<\/template>/
 
   return {
     name: 'nuxt:server-devonly:transform',
@@ -30,7 +30,10 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
       for (const match of strippedCode.matchAll(DEVONLY_COMP_RE) || []) {
-        const replacement = match[0].match(FALLBACK_SLOT_RE)?.groups?.fallback || ''
+        const ast: Node = parse(match[0]).children[0]
+        const fallback: Node | undefined = ast.children?.find((n: Node) => n.name === 'template' && Object.values(n.attributes).includes('#fallback'))
+        const replacement = fallback ? match[0].slice(fallback.loc[0].end, fallback.loc[fallback.loc.length - 1].start) : ''
+
         s.overwrite(match.index!, match.index! + match[0].length, replacement)
       }
 
