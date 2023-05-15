@@ -60,6 +60,7 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | null>>()
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | null>>()
+    expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | null>>()
 
     expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | null>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null>>()
