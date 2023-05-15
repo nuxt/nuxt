@@ -128,11 +128,11 @@ const NuxtServerComponent = defineComponent({
         .replace(UID_ATTR, () => `nuxt-ssr-component-uid="${randomUUID()}"`)
         .replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
-        if (currentSlots.includes(slotName)) {
-          return ''
-        }
-        return content
-      })
+          if (currentSlots.includes(slotName)) {
+            return ''
+          }
+          return content
+        })
     })
     function setUid () {
       uid.value = html.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
