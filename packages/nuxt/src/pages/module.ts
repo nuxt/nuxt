@@ -29,7 +29,7 @@ export default defineNuxtModule({
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
     const userPreference = nuxt.options.pages
-    const isPagesEnabled = () => {
+    const isPagesEnabled = async () => {
       if (typeof userPreference === 'boolean') {
         return userPreference
       }
@@ -39,9 +39,14 @@ export default defineNuxtModule({
       if (pagesDirs.some(dir => isNonEmptyDir(dir))) {
         return true
       }
+      
+      const pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', pages)
+      if (pages.length) { return true }
+
       return false
     }
-    nuxt.options.pages = isPagesEnabled()
+    nuxt.options.pages = await isPagesEnabled()
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap(layer => [
