@@ -47,7 +47,7 @@ export default defineComponent({
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      return ssrHTML.value.replaceAll(SLOT_FALLBACK_RE, (full, slotName, content) => {
+      return ssrHTML.value.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
           return ''
