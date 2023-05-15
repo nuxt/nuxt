@@ -25,7 +25,7 @@
     "@unhead/schema": "^1.1.26",
     "@vitejs/plugin-vue": "^4.2.3",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
-    "h3": "^1.6.5",
+    "h3": "^1.6.6",
     "ignore": "^5.2.4",
     "nitropack": "^2.4.0",
     "unbuild": "latest",
