@@ -13,6 +13,7 @@ jobs:
     if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
     permissions:
       id-token: write
+      pull-requests: write
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -47,3 +48,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
           TAG: pr-${{ github.event.issue.number }}
+
+      - name: Post comment
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `:rocket: Release triggered! You can now install [nuxt@npm:nuxt3@pr-${{ github.event.issue.number }}](https://www.npmjs.com/package/nuxt3/v/pr-${{ github.event.issue.number }})`
+            })
