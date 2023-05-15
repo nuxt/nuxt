@@ -43,11 +43,10 @@ jobs:
         run: pnpm build
 
       - name: Release Edge
-        run: ./scripts/release-edge.sh
+        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          TAG: pr-${{ github.event.issue.number }}
 
       - name: Post comment
         uses: actions/github-script@v5
