@@ -31,3 +31,4 @@ export { preloadComponents, prefetchComponents, preloadRouteComponents } from '.
 export { isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver } from './payload'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
+export { useRequestURL } from './url'
