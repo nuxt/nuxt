@@ -130,29 +130,21 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
    * @example AwesomeComponent -> ['Awesome', 'Component']
    */
   const fileNameParts = splitByCase(fileName)
-
-  // e.g Item/Holder/Item/ItemHolderItem.vue -> ItemHolderItem
-  if (fileNameParts.join('').toLowerCase() === prefixParts.join('').toLowerCase()) {
-    return pascalCase(fileNameParts)
-  }
-
-  // e.g Item/Item/Item.vue -> Item
-  if ([...new Set(prefixParts)].length === 1 &&
-    (fileNameParts[0] || '').toLowerCase() === (prefixParts[0] || '').toLowerCase()) {
-    return pascalCase(fileNameParts)
-  }
-
   const fileNamePartsContent = fileNameParts.join('').toLowerCase()
+  const componentNameParts: string[] = [...prefixParts]
   let index = prefixParts.length - 1
   const matchedSuffix:string[] = []
   while (index >= 0) {
     matchedSuffix.unshift((prefixParts[index] || '').toLowerCase())
-    if (!fileNamePartsContent.startsWith(matchedSuffix.join(''))) {
-      index--
-    } else {
-      prefixParts.length = index
-      break
+    if (fileNamePartsContent.startsWith(matchedSuffix.join('')) ||
+      // e.g Item/Item/Item.vue -> Item
+      (prefixParts[index].toLowerCase() === fileNamePartsContent &&
+        prefixParts[index + 1] &&
+        prefixParts[index] === prefixParts[index + 1])) {
+      componentNameParts.length = index
     }
+    index--
   }
-  return pascalCase(prefixParts) + pascalCase(fileNameParts)
+
+  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
 }
