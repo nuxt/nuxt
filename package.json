@@ -32,7 +32,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
-    "vite": "^4.3.5",
+    "vite": "^4.3.6",
     "vue": "3.3.2",
     "magic-string": "^0.30.0"
   },
@@ -71,7 +71,7 @@
     "std-env": "^3.3.3",
     "typescript": "^5.0.4",
     "ufo": "^1.1.2",
-    "vite": "^4.3.5",
+    "vite": "^4.3.6",
     "vitest": "^0.31.0",
     "vue": "3.3.2",
     "vue-eslint-parser": "^9.3.0",
