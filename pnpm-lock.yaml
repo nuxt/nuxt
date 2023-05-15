@@ -438,6 +438,9 @@ importers:
       ultrahtml:
         specifier: ^1.2.0
         version: 1.2.0
+      uncrypto:
+        specifier: ^0.1.2
+        version: 0.1.2
       unctx:
         specifier: ^2.3.0
         version: 2.3.0

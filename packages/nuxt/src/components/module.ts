@@ -9,6 +9,7 @@ import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemp
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
+import { islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -220,6 +221,10 @@ export default defineNuxtModule<ComponentsOptions>({
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
+
+      config.plugins.push(islandsTransform.vite({
+        getComponents
+      }))
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -241,6 +246,10 @@ export default defineNuxtModule<ComponentsOptions>({
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
+        }))
+
+        config.plugins.push(islandsTransform.webpack({
+          getComponents
         }))
       })
     })

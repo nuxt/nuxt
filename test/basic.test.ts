@@ -88,7 +88,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    expect(html.replace(/ nuxt-ssr-component-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -358,8 +358,14 @@ describe('pages', () => {
     await page.locator('#increase-pure-component').click()
     await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.waitForLoadState('networkidle')
+    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
+    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    // test fallback slot with v-for
+    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
+    // test islands update
     expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
-    await page.locator('#count-async-server-long-async').click()
+    await page.locator('#update-server-components').click()
     await Promise.all([
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
@@ -367,6 +373,17 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
     expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    // test islands mounted client side with slot
+    await page.locator('#show-island').click()
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
     await page.close()
   })
 
@@ -1219,7 +1236,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<pre>    Route: /foo
+        "html": "<pre nuxt-ssr-component-uid>    Route: /foo
         </pre>",
         "state": {},
       }
@@ -1241,7 +1258,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div>that was very long ... <div id=\\"long-async-component-count\\">3</div><p>hello world !!!</p></div>",
+        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
       }
     `)
@@ -1257,15 +1274,15 @@ describe('component islands', () => {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
     expect(result).toMatchInlineSnapshot(`
-    {
-      "head": {
-        "link": [],
-        "style": [],
-      },
-      "html": "<div> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div></div>",
-      "state": {},
-    }
-  `)
+      {
+        "head": {
+          "link": [],
+          "style": [],
+        },
+        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+        "state": {},
+      }
+    `)
   })
 
   it('renders pure components', async () => {
@@ -1277,6 +1294,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' }
       })
     }))
+    result.html = result.html.replace(/ nuxt-ssr-component-uid="([^"]*)"/g, '')
 
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
@@ -1304,7 +1322,7 @@ describe('component islands', () => {
             },
           ],
         }
-      `)
+    `)
     } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
@@ -1321,23 +1339,50 @@ describe('component islands', () => {
     }
 
     expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '')).toMatchInlineSnapshot(`
-    "<div > Was router enabled: true <br > Props: <pre >{
-      number: 3487,
-      str: something,
-      obj: {
-        foo: 42,
-        bar: false,
-        me: hi
-      },
-      bool: false
-    }</pre></div>"
-  `)
+      "<div nuxt-ssr-component-uid > Was router enabled: true <br > Props: <pre >{
+        number: 3487,
+        str: something,
+        obj: {
+          foo: 42,
+          bar: false,
+          me: hi
+        },
+        bool: false
+      }</pre></div>"
+    `)
 
     expect(result.state).toMatchInlineSnapshot(`
       {
         "$shasRouter": true,
       }
     `)
+  })
+
+  it('test client-side navigation', async () => {
+    const page = await createPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.click('#islands')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#increase-pure-component').click()
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
+    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    // test islands update
+    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('#update-server-components').click()
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
+    ])
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
+    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
   })
 })
 
@@ -1356,17 +1401,6 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
-
-    const [_key, serverData] = Object.entries(data.data).find(([key]) => key.startsWith('ServerOnlyComponent'))!
-    expect(serverData).toMatchInlineSnapshot(`
-      {
-        "head": {
-          "link": [],
-          "style": [],
-        },
-        "html": "<div> server-only component </div>",
-      }
-    `)
 
     expect(data.data).toMatchObject({
       hey: {
