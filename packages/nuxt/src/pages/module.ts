@@ -39,7 +39,7 @@ export default defineNuxtModule({
       if (pagesDirs.some(dir => isNonEmptyDir(dir))) {
         return true
       }
-      
+
       const pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', pages)
       if (pages.length) { return true }
