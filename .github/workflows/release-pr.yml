@@ -21,7 +21,7 @@ jobs:
         uses: octokit/request-action@v2.x
         id: check_role
         with:
-          route: GET /repos/danielroe/roe.dev/collaborators/${{ github.event.comment.user.login }}
+          route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
