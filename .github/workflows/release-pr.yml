@@ -3,7 +3,6 @@ name: release
 on:
   issue_comment:
     types: [created]
-    contains: "/trigger release"
 
 env:
   # 7 GiB by default on GitHub, setting to 6 GiB
@@ -11,6 +10,7 @@ env:
 
 jobs:
   release-pr:
+    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
     permissions:
       id-token: write
     runs-on: ubuntu-latest
