@@ -92,7 +92,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       layer => resolve(layer.config.srcDir, 'app.config')
     ),
     typescript: {
-      generateTsConfig: false
+      strict: true,
+      generateTsConfig: true,
+      tsconfigPath: 'tsconfig.server.json'
     },
     publicAssets: [
       nuxt.options.dev
