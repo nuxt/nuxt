@@ -83,6 +83,8 @@ describe('pages', () => {
     expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
+    // should remove dev-only and replace with any fallback content
+    expect(html).toContain(isDev() ? 'Some dev-only info' : 'Some prod-only info')
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
@@ -343,7 +345,10 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
-
+    // keep-fallback strategy
+    expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
+    // #20833
+    expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
     await page.close()
   })
 
@@ -386,6 +391,13 @@ describe('pages', () => {
     const response = await fetch('/legacy-async-data-fail').then(r => r.text())
     expect(response).not.toContain('don\'t look at this')
     expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
+  })
+})
+
+describe('nuxt composables', () => {
+  it('has useRequestURL()', async () => {
+    const html = await $fetch('/url')
+    expect(html).toContain('path: /url')
   })
 })
 
@@ -605,9 +617,12 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
-    // TODO: enable when we update test to node v16
-    // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    // TODO: remove when we update CI to node v18
+    if (process.version.startsWith('v16')) {
+      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    } else {
+      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    }
     expect(await res.text()).toContain('This is a custom error')
   })
 

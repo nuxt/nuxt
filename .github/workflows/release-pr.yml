@@ -1,0 +1,61 @@
+name: release
+
+on:
+  issue_comment:
+    types: [created]
+
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  NODE_OPTIONS: --max-old-space-size=6144
+
+jobs:
+  release-pr:
+    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
+    permissions:
+      id-token: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Ensure action is by maintainer
+        uses: octokit/request-action@v2.x
+        id: check_role
+        with:
+          route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Release Edge
+        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Post comment
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `:rocket: Release triggered! You can now install [nuxt@npm:nuxt3@pr-${{ github.event.issue.number }}](https://www.npmjs.com/package/nuxt3/v/pr-${{ github.event.issue.number }})`
+            })
