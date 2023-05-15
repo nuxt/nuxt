@@ -23,6 +23,10 @@ const NuxtClientFallbackServer = defineComponent({
     },
     placeholderTag: {
       type: String
+    },
+    keepFallback: {
+      type: Boolean,
+      default: () => false
     }
   },
   emits: ['ssr-error'],

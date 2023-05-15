@@ -83,6 +83,8 @@ describe('pages', () => {
     expect(html).toContain('Composable | star: auto imported from ~/composables/nested/bar.ts via star export')
     // should import components
     expect(html).toContain('This is a custom component with a named export.')
+    // should remove dev-only and replace with any fallback content
+    expect(html).toContain(isDev() ? 'Some dev-only info' : 'Some prod-only info')
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
@@ -343,7 +345,10 @@ describe('pages', () => {
     // ensure components reactivity once mounted
     await page.locator('#increment-count').click()
     expect(await page.locator('#sugar-counter').innerHTML()).toContain('Sugar Counter 12 x 1 = 12')
-
+    // keep-fallback strategy
+    expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
+    // #20833
+    expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
     await page.close()
   })
 
@@ -372,6 +377,13 @@ describe('pages', () => {
   })
 })
 
+describe('nuxt composables', () => {
+  it('has useRequestURL()', async () => {
+    const html = await $fetch('/url')
+    expect(html).toContain('path: /url')
+  })
+})
+
 describe('rich payloads', () => {
   it('correctly serializes and revivifies complex types', async () => {
     const html = await $fetch('/json-payload')
@@ -380,6 +392,7 @@ describe('rich payloads', () => {
       'Recursive objects: true',
       'Shallow reactive: true',
       'Shallow ref: true',
+      'Undefined ref: true',
       'Reactive: true',
       'Ref: true',
       'Error: true'
@@ -587,9 +600,12 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
-    // TODO: enable when we update test to node v16
-    // expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    // TODO: remove when we update CI to node v18
+    if (process.version.startsWith('v16')) {
+      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    } else {
+      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    }
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -888,6 +904,36 @@ describe('deferred app suspense resolve', () => {
   })
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
+  })
+})
+
+describe('nested suspense', () => {
+  const navigations = [
+    ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
+    ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
+    ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
+  ]
+
+  it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    await page.waitForLoadState('networkidle')
+
+    const slug = nav.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // expect(text).toMatchInlineSnapshot()
+
+    // const parent = await page.waitForSelector(`#${slug}`, { state: 'attached' })
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async child: 2 - 1')
+
+    await page.close()
   })
 })
 

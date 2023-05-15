@@ -15,7 +15,7 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.5 when nitro has support for mocking traced dependencies
+    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
@@ -93,9 +93,8 @@ export default defineUntypedSchema({
      */
     noScripts: false,
 
-    // TODO: enable by default in v3.5
     /** Render JSON payloads with support for revivifying complex types. */
-    renderJsonPayloads: false,
+    renderJsonPayloads: true,
 
     /**
      * Disable vue server renderer endpoint within nitro.
