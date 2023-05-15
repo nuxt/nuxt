@@ -5174,17 +5174,6 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3@1.6.5:
-    resolution: {integrity: sha512-A0r2LCDzeavSfcAbJpMwHXLcSN0H3FpEZtYigbz4IYun0fOE8r6vy3galwubAnmc6gXVob4261zXQsu3sZayzg==}
-    dependencies:
-      cookie-es: 1.0.0
-      defu: 6.1.2
-      destr: 1.2.2
-      iron-webcrypto: 0.7.0
-      radix3: 1.0.1
-      ufo: 1.1.2
-      uncrypto: 0.1.2
-
   /h3@1.6.6:
     resolution: {integrity: sha512-DWu2s11OuuO9suEkX99dXaJoxd1RgPXiM4iDmLdrhGV63GLoav13f3Kdd5/Rw7xNKzhzn2+F2dleQjG66SnMPQ==}
     dependencies:
@@ -6431,7 +6420,7 @@ packages:
       fs-extra: 11.1.1
       globby: 13.1.4
       gzip-size: 7.0.0
-      h3: 1.6.5
+      h3: 1.6.6
       hookable: 5.5.3
       http-proxy: 1.18.1
       is-primitive: 3.0.1
