@@ -1,7 +1,7 @@
 let counter = 0
 
 const test = () => () => {
-  // @ts-expect-error useNuxtApp should be undefined in a nitro route
+  // TODO: useNuxtApp should be undefined when type-testing a nitro route
   useNuxtApp()
 }
 test()
