@@ -1,12 +1,12 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouterScrollBehavior, RouteLocation, Router } from '#vue-router'
+import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
 import {
+  START_LOCATION,
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
-  createWebHistory,
-  START_LOCATION
+  createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
 import { withoutBase } from 'ufo'
