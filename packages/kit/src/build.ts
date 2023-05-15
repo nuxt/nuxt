@@ -136,3 +136,18 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     }
   }, options)
 }
+
+interface AddBuildPluginFactory {
+  vite?: () => VitePlugin | VitePlugin[]
+  webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
+}
+
+export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
+  if (pluginFactory.vite) {
+    addVitePlugin(pluginFactory.vite, options)
+  }
+
+  if (pluginFactory.webpack) {
+    addWebpackPlugin(pluginFactory.webpack, options)
+  }
+}
