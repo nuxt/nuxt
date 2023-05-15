@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "FORCE_COLOR=1 pnpm --filter './packages/**' prepack",
+    "build": "pnpm --filter './packages/**' prepack",
     "build:stub": "pnpm --filter './packages/**' prepack --stub",
     "cleanup": "rimraf 'packages/**/node_modules' 'examples/**/node_modules' 'docs/node_modules' 'playground/node_modules' 'node_modules'",
     "dev": "pnpm play",

@@ -1,0 +1,48 @@
+name: release
+
+on:
+  issue_comment:
+    types: [created]
+    contains: "/trigger release"
+
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  NODE_OPTIONS: --max-old-space-size=6144
+
+jobs:
+  release-pr:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Ensure action is by maintainer
+        uses: octokit/request-action@v2.x
+        id: check_role
+        with:
+          route: GET /repos/danielroe/roe.dev/collaborators/${{ github.event.comment.user.login }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Release Edge
+        run: ./scripts/release-edge.sh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
