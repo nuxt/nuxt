@@ -53,10 +53,10 @@ export default defineNuxtModule({
       join(layer.config.srcDir, 'app/router.options.ts'),
       join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     ])
-    nuxt.hooks.hook('builder:watch', (event, path) => {
+    nuxt.hooks.hook('builder:watch', async (event, path) => {
       const fullPath = join(nuxt.options.srcDir, path)
       if (restartPaths.some(path => path === fullPath || fullPath.startsWith(path + '/'))) {
-        const newSetting = isPagesEnabled()
+        const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
           console.info('Pages', newSetting ? 'enabled' : 'disabled')
           return nuxt.callHook('restart')
