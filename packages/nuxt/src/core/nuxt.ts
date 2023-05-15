@@ -312,7 +312,7 @@ async function initNuxt (nuxt: Nuxt) {
     vite: 'vite/client',
     webpack: 'webpack/module',
     // default 'merged' builder environment for module authors
-    shared: '@nuxt/schema/build-env'
+    shared: '@nuxt/schema/builder-env'
   }
 
   nuxt.hook('prepare:types', ({ references }) => {
