@@ -8,7 +8,7 @@ overrides:
   '@nuxt/webpack-builder': workspace:*
   nuxi: workspace:*
   nuxt: workspace:*
-  vite: ^4.3.5
+  vite: ^4.3.6
   vue: 3.3.2
   magic-string: ^0.30.0
 
@@ -119,8 +119,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.9)
+        specifier: ^4.3.6
+        version: 4.3.6(@types/node@18.16.9)
       vitest:
         specifier: ^0.31.0
         version: 0.31.0(playwright@1.33.0)
@@ -207,8 +207,8 @@ importers:
         specifier: latest
         version: 1.2.1
       vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.9)
+        specifier: ^4.3.6
+        version: 4.3.6(@types/node@18.16.9)
       vitest:
         specifier: ^0.31.0
         version: 0.31.0(playwright@1.33.0)
@@ -483,7 +483,7 @@ importers:
         version: 2.4.4
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.2.3(vite@4.3.5)(vue@3.3.2)
+        version: 4.2.3(vite@4.3.6)(vue@3.3.2)
       acorn:
         specifier: ^8.8.2
         version: 8.8.2
@@ -491,8 +491,8 @@ importers:
         specifier: latest
         version: 1.2.1
       vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.9)
+        specifier: ^4.3.6
+        version: 4.3.6(@types/node@18.16.9)
       vitest:
         specifier: ^0.31.0
         version: 0.31.0(playwright@1.33.0)
@@ -535,10 +535,10 @@ importers:
         version: 1.1.26
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.2.3(vite@4.3.5)(vue@3.3.2)
+        version: 4.2.3(vite@4.3.6)(vue@3.3.2)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.1
-        version: 3.0.1(vite@4.3.5)(vue@3.3.2)
+        version: 3.0.1(vite@4.3.6)(vue@3.3.2)
       h3:
         specifier: ^1.6.6
         version: 1.6.6
@@ -555,8 +555,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.9)
+        specifier: ^4.3.6
+        version: 4.3.6(@types/node@18.16.9)
       vue:
         specifier: 3.3.2
         version: 3.3.2
@@ -626,10 +626,10 @@ importers:
         version: 5.0.2(rollup@3.21.5)
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.2.3(vite@4.3.5)(vue@3.3.2)
+        version: 4.2.3(vite@4.3.6)(vue@3.3.2)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.1
-        version: 3.0.1(vite@4.3.5)(vue@3.3.2)
+        version: 3.0.1(vite@4.3.6)(vue@3.3.2)
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.23)
@@ -709,14 +709,14 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       vite:
-        specifier: ^4.3.5
-        version: 4.3.5(@types/node@18.16.9)
+        specifier: ^4.3.6
+        version: 4.3.6(@types/node@18.16.9)
       vite-node:
         specifier: ^0.31.0
         version: 0.31.0(@types/node@18.16.9)
       vite-plugin-checker:
         specifier: ^0.6.0
-        version: 0.6.0(eslint@8.40.0)(typescript@5.0.4)(vite@4.3.5)(vue-tsc@1.7.0)
+        version: 0.6.0(eslint@8.40.0)(typescript@5.0.4)(vite@4.3.6)(vue-tsc@1.7.0)
       vue-bundle-renderer:
         specifier: ^1.0.3
         version: 1.0.3
@@ -2444,7 +2444,7 @@ packages:
       - encoding
       - supports-color
 
-  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.3.5)(vue@3.3.2):
+  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.3.6)(vue@3.3.2):
     resolution: {integrity: sha512-+Jb7ggL48FSPS1uhPnJbJwWa9Sr90vQ+d0InW+AhBM22n+cfuYqJZDckBc+W3QSHe1WDvewMZfa4wZOtk5pRgw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2454,19 +2454,19 @@ packages:
       '@babel/core': 7.21.4
       '@babel/plugin-transform-typescript': 7.21.0(@babel/core@7.21.4)
       '@vue/babel-plugin-jsx': 1.1.1(@babel/core@7.21.4)
-      vite: 4.3.5(@types/node@18.16.9)
+      vite: 4.3.6(@types/node@18.16.9)
       vue: 3.3.2
     transitivePeerDependencies:
       - supports-color
 
-  /@vitejs/plugin-vue@4.2.3(vite@4.3.5)(vue@3.3.2):
+  /@vitejs/plugin-vue@4.2.3(vite@4.3.6)(vue@3.3.2):
     resolution: {integrity: sha512-R6JDUfiZbJA9cMiguQ7jxALsgiprjBeHL5ikpXfJCH62pPHtI+JdJ5xWj6Ev73yXSlYl86+blXn1kZHQ7uElxw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.3.5(@types/node@18.16.9)
+      vite: 4.3.6(@types/node@18.16.9)
       vue: 3.3.2
 
   /@vitest/expect@0.31.0:
@@ -8554,7 +8554,7 @@ packages:
       mlly: 1.2.1
       pathe: 1.1.0
       picocolors: 1.0.0
-      vite: 4.3.5(@types/node@18.16.9)
+      vite: 4.3.6(@types/node@18.16.9)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8564,7 +8564,7 @@ packages:
       - supports-color
       - terser
 
-  /vite-plugin-checker@0.6.0(eslint@8.40.0)(typescript@5.0.4)(vite@4.3.5)(vue-tsc@1.7.0):
+  /vite-plugin-checker@0.6.0(eslint@8.40.0)(typescript@5.0.4)(vite@4.3.6)(vue-tsc@1.7.0):
     resolution: {integrity: sha512-DWZ9Hv2TkpjviPxAelNUt4Q3IhSGrx7xrwdM64NI+Q4dt8PaMWJJh4qGNtSrfEuiuIzWWo00Ksvh5It4Y3L9xQ==}
     engines: {node: '>=14.16'}
     peerDependencies:
@@ -8610,7 +8610,7 @@ packages:
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
       typescript: 5.0.4
-      vite: 4.3.5(@types/node@18.16.9)
+      vite: 4.3.6(@types/node@18.16.9)
       vscode-languageclient: 7.0.0
       vscode-languageserver: 7.0.0
       vscode-languageserver-textdocument: 1.0.8
@@ -8618,8 +8618,8 @@ packages:
       vue-tsc: 1.7.0(typescript@5.0.4)
     dev: false
 
-  /vite@4.3.5(@types/node@18.16.9):
-    resolution: {integrity: sha512-0gEnL9wiRFxgz40o/i/eTBwm+NEbpUeTWhzKrZDSdKm6nplj+z4lKz8ANDgildxHm47Vg8EUia0aicKbawUVVA==}
+  /vite@4.3.6(@types/node@18.16.9):
+    resolution: {integrity: sha512-cqIyLSbA6gornMS659AXTVKF7cvSHMdKmJJwQ9DXq3lwsT1uZSdktuBRlpHQ8VnOWx0QHtjDwxPpGtyo9Fh/Qg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8704,7 +8704,7 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.4.0
       tinypool: 0.5.0
-      vite: 4.3.5(@types/node@18.16.9)
+      vite: 4.3.6(@types/node@18.16.9)
       vite-node: 0.31.0(@types/node@18.16.9)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
