@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import chokidar from 'chokidar'
-import { isIgnored, tryResolveModule } from '@nuxt/kit'
+import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize } from 'pathe'
@@ -56,38 +56,37 @@ const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'u
 
 async function watch (nuxt: Nuxt) {
   if (nuxt.options.experimental.watcher === 'parcel') {
-    if (nuxt.options.debug) {
-      console.time('[nuxt] builder:parcel:watch')
-    }
-    const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
-    if (watcherPath) {
-      const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
-      for (const layer of nuxt.options._layers) {
-        if (!layer.config.srcDir) { continue }
-        const watcher = subscribe(layer.config.srcDir, (err, events) => {
-          if (err) { return }
-          for (const event of events) {
-            if (isIgnored(event.path)) { continue }
-            nuxt.callHook('builder:watch', watchEvents[event.type], normalize(event.path))
-          }
-        }, {
-          ignore: [
-            ...nuxt.options.ignore,
-            '.nuxt',
-            'node_modules'
-          ]
-        })
-        watcher.then((subscription) => {
-          if (nuxt.options.debug) {
-            console.timeEnd('[nuxt] builder:parcel:watch')
-          }
-          nuxt.hook('close', () => subscription.unsubscribe())
-        })
-      }
-      return
-    }
-    console.warn('[nuxt] falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+    const success = await createParcelWatcher()
+    if (success) { return }
   }
+
+  if (nuxt.options.experimental.watcher === 'granular') {
+    return createGranularWatcher()
+  }
+
+  return createWatcher()
+}
+
+function createWatcher () {
+  const nuxt = useNuxt()
+
+  const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+    ...nuxt.options.watchers.chokidar,
+    cwd: nuxt.options.srcDir,
+    ignoreInitial: true,
+    ignored: [
+      isIgnored,
+      '.nuxt',
+      'node_modules'
+    ]
+  })
+
+  watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
+  nuxt.hook('close', () => watcher.close())
+}
+
+function createGranularWatcher () {
+  const nuxt = useNuxt()
 
   if (nuxt.options.debug) {
     console.time('[nuxt] builder:chokidar:watch')
@@ -128,6 +127,42 @@ async function watch (nuxt: Nuxt) {
       }
     })
   }
+}
+
+async function createParcelWatcher () {
+  const nuxt = useNuxt()
+  if (nuxt.options.debug) {
+    console.time('[nuxt] builder:parcel:watch')
+  }
+  const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
+  if (watcherPath) {
+    const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+    for (const layer of nuxt.options._layers) {
+      if (!layer.config.srcDir) { continue }
+      const watcher = subscribe(layer.config.srcDir, (err, events) => {
+        if (err) { return }
+        for (const event of events) {
+          if (isIgnored(event.path)) { continue }
+          nuxt.callHook('builder:watch', watchEvents[event.type], normalize(event.path))
+        }
+      }, {
+        ignore: [
+          ...nuxt.options.ignore,
+          '.nuxt',
+          'node_modules'
+        ]
+      })
+      watcher.then((subscription) => {
+        if (nuxt.options.debug) {
+          console.timeEnd('[nuxt] builder:parcel:watch')
+        }
+        nuxt.hook('close', () => subscription.unsubscribe())
+      })
+    }
+    return true
+  }
+  console.warn('[nuxt] falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+  return false
 }
 
 async function bundle (nuxt: Nuxt) {

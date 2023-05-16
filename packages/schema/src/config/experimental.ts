@@ -165,10 +165,13 @@ export default defineUntypedSchema({
      * `@parcel/watcher` instead. This may improve performance in large projects or
      * on Windows platforms.
      *
+     * You can also try setting this to `granular` to use an experimental granular
+     * watcher, which ignores top-level directories (like `node_modules` and `.git`).
+     *
      * @see https://github.com/paulmillr/chokidar
      * @see https://github.com/parcel-bundler/watcher
      * @default chokidar
-     * @type {'chokidar' | 'parcel'}
+     * @type {'chokidar' | 'parcel' | 'granular'}
      */
     watcher: 'chokidar'
   }
