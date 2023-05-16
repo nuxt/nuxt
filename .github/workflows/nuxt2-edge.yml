@@ -5,6 +5,12 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 
+# https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+
 jobs:
   nightly:
     if: github.repository_owner == 'nuxt'
@@ -30,8 +36,6 @@ jobs:
         run: yarn run audit
       - name: build
         run: yarn test:fixtures -i
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
       - name: lint app
         run: yarn lint:app
       - name: test types
