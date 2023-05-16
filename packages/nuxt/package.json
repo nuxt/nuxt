@@ -91,6 +91,7 @@
     "strip-literal": "^1.0.1",
     "ufo": "^1.1.2",
     "ultrahtml": "^1.2.0",
+    "uncrypto": "^0.1.2",
     "unctx": "^2.3.0",
     "unenv": "^1.4.1",
     "unimport": "^3.0.6",
@@ -110,7 +111,7 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.5",
+    "vite": "^4.3.6",
     "vitest": "^0.31.0"
   },
   "peerDependencies": {

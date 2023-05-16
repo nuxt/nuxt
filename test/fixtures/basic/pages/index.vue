@@ -23,6 +23,9 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
+    <NuxtLink id="islands" to="/islands">
+      islands
+    </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>

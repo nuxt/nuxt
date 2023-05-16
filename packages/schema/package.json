@@ -35,7 +35,7 @@
     "nitropack": "^2.4.0",
     "unbuild": "latest",
     "unctx": "^2.3.0",
-    "vite": "~4.3.5",
+    "vite": "~4.3.6",
     "vue": "3.3.2",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.2.0",
