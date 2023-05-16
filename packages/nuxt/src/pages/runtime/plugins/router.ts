@@ -186,7 +186,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (process.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
       }
-      if (to.matched.length === 0) {
+      if (to.matched.length === 0 && (!process.server || !nuxtApp.ssrContext?.islandContext)) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
