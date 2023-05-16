@@ -71,7 +71,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           startPosition = savedPosition
           return
         }
-        return routerOptions.scrollBehavior?.(to, from, nuxtApp.isHydrating ? startPosition : savedPosition)
+        // reset scroll behavior to initial value
+        router.options.scrollBehavior = routerOptions.scrollBehavior
+        return routerOptions.scrollBehavior?.(to, from, startPosition || savedPosition)
       },
       history,
       routes
@@ -204,7 +206,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
-        startPosition = null
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await nuxtApp.runWithContext(() => showError(error))
