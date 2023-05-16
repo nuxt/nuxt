@@ -295,8 +295,8 @@ describe('util: route', () => {
           { path: '/de/tech' },
           { path: '/' },
           { path: '/de/:post' },
-          { path: '/:post' },
           { path: '/de*' },
+          { path: '/:post' },
           { path: '*' }
         ]
       )

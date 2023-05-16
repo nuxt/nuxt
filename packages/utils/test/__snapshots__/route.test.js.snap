@@ -299,6 +299,19 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "path": "/",
   },
   {
+    "children": [
+      {
+        "chunkName": "pages/another_route/rout*",
+        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+        "name": "another_route-rout*",
+        "path": "",
+      },
+    ],
+    "chunkName": "pages/another_route/rout*",
+    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
+    "path": "/another_route/rout*",
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -317,29 +330,16 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "path": "/parent/*",
   },
   {
-    "children": [
-      {
-        "chunkName": "pages/another_route/rout*",
-        "component": "/some/nuxt/app/pages/another_route/rout*.vue",
-        "name": "another_route-rout*",
-        "path": "",
-      },
-    ],
-    "chunkName": "pages/another_route/rout*",
-    "component": "/some/nuxt/app/pages/another_route/rout*.vue",
-    "path": "/another_route/rout*",
+    "chunkName": "pages/de*",
+    "component": "/some/nuxt/app/pages/de*.vue",
+    "name": "de*",
+    "path": "/de*",
   },
   {
     "chunkName": "pages/_param",
     "component": "/some/nuxt/app/pages/_param.vue",
     "name": "param",
     "path": "/:param",
-  },
-  {
-    "chunkName": "pages/de*",
-    "component": "/some/nuxt/app/pages/de*.vue",
-    "name": "de*",
-    "path": "/de*",
   },
   {
     "chunkName": "pages/*",
