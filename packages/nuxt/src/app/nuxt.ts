@@ -158,6 +158,7 @@ export interface PluginMeta {
 export interface ResolvedPluginMeta {
   name?: string
   order: number
+  parallel?: boolean
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -169,6 +170,12 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
+  /**
+   * Execute plugin in parallel with other parallel plugins.
+   *
+   * @default false
+   */
+  parallel?: boolean
 }
 
 export interface CreateOptions {
@@ -300,9 +307,18 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
 }
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
+  const parallels: Promise<any>[] = []
+  const errors: Error[] = []
   for (const plugin of plugins) {
-    await applyPlugin(nuxtApp, plugin)
+    const promise = applyPlugin(nuxtApp, plugin)
+    if (plugin.meta?.parallel) {
+      parallels.push(promise.catch(e => errors.push(e)))
+    } else {
+      await promise
+    }
   }
+  await Promise.all(parallels)
+  if (errors.length) { throw errors[0] }
 }
 
 export function normalizePlugins (_plugins: Plugin[]) {
@@ -382,6 +398,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   wrapper.meta = {
     name: meta?.name || plugin.name || plugin.setup?.name,
+    parallel: plugin.parallel,
     order:
       meta?.order ||
       plugin.order ||
