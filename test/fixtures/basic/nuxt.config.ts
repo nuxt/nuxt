@@ -197,6 +197,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    watcher: 'granular',
     typedPages: true,
     polyfillVueUseHead: true,
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
