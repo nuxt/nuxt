@@ -308,15 +308,17 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   const parallels: Promise<any>[] = []
+  const errors: Error[] = []
   for (const plugin of plugins) {
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.meta?.parallel) {
-      parallels.push(promise)
+      parallels.push(promise.catch(e => errors.push(e)))
     } else {
       await promise
     }
   }
   await Promise.all(parallels)
+  if (errors.length) { throw errors[0] }
 }
 
 export function normalizePlugins (_plugins: Plugin[]) {
