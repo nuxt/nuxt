@@ -11,9 +11,20 @@
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
+    <div>
+      <DevOnly>
+        Some dev-only info
+        <template #fallback>
+          Some prod-only info
+        </template>
+      </DevOnly>
+    </div>
     <div>Path: {{ $route.fullPath }}</div>
     <NuxtLink to="/">
       Link
+    </NuxtLink>
+    <NuxtLink id="islands" to="/islands">
+      islands
     </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
