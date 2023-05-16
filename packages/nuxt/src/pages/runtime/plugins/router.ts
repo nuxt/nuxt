@@ -73,7 +73,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
-        return routerOptions.scrollBehavior?.(to, from, startPosition || savedPosition)
+        return routerOptions.scrollBehavior?.(to, START_LOCATION, startPosition || savedPosition)
       },
       history,
       routes
