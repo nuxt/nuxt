@@ -1,7 +1,8 @@
 import { computed, isReadonly, reactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, Router } from '#vue-router'
+import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
 import {
+  START_LOCATION,
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
@@ -61,9 +62,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
+    let startPosition: Parameters<RouterScrollBehavior>[2] | null
     const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
     const router = createRouter({
       ...routerOptions,
+      scrollBehavior: (to, from, savedPosition) => {
+        if (from === START_LOCATION) {
+          startPosition = savedPosition
+          return
+        }
+        // reset scroll behavior to initial value
+        router.options.scrollBehavior = routerOptions.scrollBehavior
+        return routerOptions.scrollBehavior?.(to, START_LOCATION, startPosition || savedPosition)
+      },
       history,
       routes
     })
@@ -190,9 +201,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       try {
         await router.replace({
           ...router.resolve(initialURL),
-          name: undefined, // #4920, #$4982
+          name: undefined, // #4920, #4982
           force: true
         })
+        // reset scroll behavior to initial value
+        router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await nuxtApp.runWithContext(() => showError(error))
