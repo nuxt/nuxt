@@ -49,7 +49,7 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
       - name: Post comment
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
