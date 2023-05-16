@@ -32,6 +32,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     nuxtApp.hook('page:start', indicator.start)
     nuxtApp.hook('page:finish', indicator.finish)
+    nuxtApp.hook('vue:error', indicator.finish)
     onBeforeUnmount(indicator.clear)
 
     return () => h('div', {

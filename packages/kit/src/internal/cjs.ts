@@ -95,18 +95,6 @@ export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
 }
 
 /** @deprecated Do not use CJS utils */
-export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}): string | null {
-  try {
-    return resolveModule(path, opts)
-  } catch (error: any) {
-    if (error?.code !== 'MODULE_NOT_FOUND') {
-      throw error
-    }
-  }
-  return null
-}
-
-/** @deprecated Do not use CJS utils */
 export function requireModule (id: string, opts: RequireModuleOptions = {}) {
   // Resolve id
   const resolvedPath = resolveModule(id, opts)

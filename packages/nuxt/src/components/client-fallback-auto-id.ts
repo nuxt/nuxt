@@ -25,7 +25,7 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
       if (include.some(pattern => id.match(pattern))) {
         return true
       }
-      return isVue(id, { type: ['template'] })
+      return isVue(id)
     },
     transform (code, id) {
       if (!CLIENT_FALLBACK_RE.test(code)) { return }
