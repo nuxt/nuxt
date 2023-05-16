@@ -202,13 +202,7 @@ jobs:
       - lint
       - build
       - test-fixtures
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [20]
-
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -218,7 +212,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -232,6 +226,45 @@ jobs:
 
       - name: Release Edge
         run: ./scripts/release-edge.sh
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
+
+  release-pr:
+    permissions:
+      id-token: write
+      pull-requests: write
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, '🧷 edge release')
+    needs:
+      - lint
+      - build
+      - test-fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
+
+      - name: Release Edge
+        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
