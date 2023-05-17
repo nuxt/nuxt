@@ -176,7 +176,7 @@ export default defineUntypedSchema({
     /**
      * Enable native async context to be accessable for nested composables
      *
-     * @see https://github.com/unjs/unctx#native-async-context
+     * @see https://github.com/nuxt/nuxt/pull/20918
      */
     nativeAsyncContext: false
   }
