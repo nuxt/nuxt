@@ -600,8 +600,7 @@ describe('preserves current instance', () => {
   it('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
-    // TODO: this needs to be fixed upstream in Vue: https://github.com/vuejs/core/issues/7733, https://github.com/vuejs/core/pull/7743
-    expect(html).not.toContain('This should be false: false')
+    expect(html).toContain('This should be false: false')
   })
   it('should not lose current nuxt app after await in vue component', async () => {
     const requests = await Promise.all(Array.from({ length: 100 }).map(() => $fetch('/instance/next-request')))
