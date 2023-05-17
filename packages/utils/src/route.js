@@ -97,7 +97,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
   return routes
 }
 
-const DYNAMIC_ROUTE_REGEX = /^\/?.*([:*])/
+const DYNAMIC_ROUTE_REGEX = /[:*]/
 
 export const sortRoutes = function sortRoutes (routes) {
   routes.sort((a, b) => {
