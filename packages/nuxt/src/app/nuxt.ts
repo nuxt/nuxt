@@ -16,7 +16,7 @@ import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: __NUXT_NATIVE_ASYNC_CONTEXT__ && process.server,
+  asyncContext: !!process.env.NUXT_NATIVE_ASYNC_CONTEXT && process.server,
 })
 
 type NuxtMeta = {

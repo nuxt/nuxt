@@ -27,7 +27,7 @@ globalThis.__buildAssetsURL = buildAssetsURL
 globalThis.__publicAssetsURL = publicAssetsURL
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
-if (__NUXT_NATIVE_ASYNC_CONTEXT__ && !('AsyncLocalStorage' in globalThis)) {
+if (process.env.NUXT_NATIVE_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
   (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
 }
 
