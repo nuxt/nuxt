@@ -435,7 +435,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /**
  * Returns the current Nuxt instance.
  */
-export function useNuxtApp () {
+export function useNuxtApp (): NuxtApp {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
