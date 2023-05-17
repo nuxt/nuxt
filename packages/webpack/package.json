@@ -52,7 +52,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^1.0.3",
     "vue-loader": "^17.1.1",
-    "webpack": "^5.82.1",
+    "webpack": "^5.83.0",
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.3",

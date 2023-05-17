@@ -112,7 +112,7 @@
     "acorn": "^8.8.2",
     "unbuild": "latest",
     "vite": "^4.3.7",
-    "vitest": "^0.31.0"
+    "vitest": "^0.31.1"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

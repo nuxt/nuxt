@@ -36,12 +36,12 @@
     "@jest/globals": "^29.5.0",
     "playwright": "^1.33.0",
     "unbuild": "latest",
-    "vitest": "^0.31.0"
+    "vitest": "^0.31.1"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",
     "playwright": "^1.33.0",
-    "vitest": "^0.31.0",
+    "vitest": "^0.31.1",
     "vue": "^3.3.2"
   },
   "peerDependenciesMeta": {

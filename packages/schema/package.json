@@ -39,7 +39,7 @@
     "vue": "3.3.2",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.2.0",
-    "webpack": "^5.82.1"
+    "webpack": "^5.83.0"
   },
   "dependencies": {
     "defu": "^6.1.2",

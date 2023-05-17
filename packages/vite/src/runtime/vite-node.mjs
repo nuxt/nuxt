@@ -37,7 +37,6 @@ function createRunner () {
   return new ViteNodeRunner({
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
-    // @ts-expect-error https://github.com/vitest-dev/vitest/pull/3312
     resolveId (id, importer) { _importers.set(id, importer) },
     async fetchModule (id) {
       const importer = _importers.get(id)
