@@ -79,7 +79,7 @@
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.1",
-    "nitropack": "^2.4.0",
+    "nitropack": "^2.4.1",
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
@@ -111,7 +111,7 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.6",
+    "vite": "^4.3.7",
     "vitest": "^0.31.0"
   },
   "peerDependencies": {
