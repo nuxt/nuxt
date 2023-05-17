@@ -179,7 +179,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_NATIVE_ASYNC_CONTEXT': !!nuxt.options.experimental.nativeAsyncContext,
       'process.dev': nuxt.options.dev,
-      __VUE_PROD_DEVTOOLS__: false,
+      __VUE_PROD_DEVTOOLS__: false
 
     },
     rollupConfig: {

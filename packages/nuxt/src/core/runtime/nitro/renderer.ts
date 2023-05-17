@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
@@ -9,7 +10,6 @@ import destr from 'destr'
 import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
-import { AsyncLocalStorage } from 'node:async_hooks'
 
 import { defineRenderHandler, getRouteRules, useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
