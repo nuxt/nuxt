@@ -16,6 +16,7 @@
     "play": "nuxi dev playground",
     "play:build": "nuxi build playground",
     "play:preview": "nuxi preview playground",
+    "test": "pnpm test:fixtures && pnpm test:fixtures:payload && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm typecheck",
     "test:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && vitest run --dir test",
     "text:fixtures:payload": "TEST_PAYLOAD=js pnpm test:fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
