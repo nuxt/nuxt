@@ -338,7 +338,7 @@ importers:
         version: link:../vite
       '@types/node':
         specifier: ^14.18.0 || >=16.10.0
-        version: 18.16.9
+        version: 18.16.12
       '@unhead/ssr':
         specifier: ^1.1.26
         version: 1.1.26
@@ -495,7 +495,7 @@ importers:
         version: 1.2.1
       vite:
         specifier: ^4.3.7
-        version: 4.3.7(@types/node@18.16.9)
+        version: 4.3.7(@types/node@18.16.12)
       vitest:
         specifier: ^0.31.0
         version: 0.31.0(playwright@1.33.0)
@@ -2157,9 +2157,6 @@ packages:
   /@types/node@18.16.12:
     resolution: {integrity: sha512-tIRrjbY9C277MOfP8M3zjMIhtMlUJ6YVqkGgLjz+74jVsdf4/UjC6Hku4+1N0BS0qyC0JAS6tJLUk9H6JUKviQ==}
 
-  /@types/node@18.16.9:
-    resolution: {integrity: sha512-IeB32oIV4oGArLrd7znD2rkHQ6EDCM+2Sr76dJnrHwv9OHBTTM6nuDLK9bmikXzPa0ZlWMWtRGo/Uw4mrzQedA==}
-
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
     dev: true
@@ -2477,7 +2474,7 @@ packages:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.3.7(@types/node@18.16.9)
+      vite: 4.3.7(@types/node@18.16.12)
       vue: 3.3.2
 
   /@vitest/expect@0.31.0:
@@ -8656,38 +8653,6 @@ packages:
         optional: true
     dependencies:
       '@types/node': 18.16.12
-      esbuild: 0.17.19
-      postcss: 8.4.23
-      rollup: 3.21.8
-    optionalDependencies:
-      fsevents: 2.3.2
-
-  /vite@4.3.7(@types/node@18.16.9):
-    resolution: {integrity: sha512-MTIFpbIm9v7Hh5b0wSBgkcWzSBz7SAa6K/cBTwS4kUiQJfQLFlZZRJRQgqunCVzhTPCk674tW+0Qaqh3Q00dBg==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': '>= 14'
-      less: '*'
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      '@types/node': 18.16.9
       esbuild: 0.17.19
       postcss: 8.4.23
       rollup: 3.21.8
