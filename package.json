@@ -73,7 +73,7 @@
     "typescript": "^5.0.4",
     "ufo": "^1.1.2",
     "vite": "^4.3.7",
-    "vitest": "^0.31.0",
+    "vitest": "^0.31.1",
     "vue": "3.3.2",
     "vue-eslint-parser": "^9.3.0",
     "vue-tsc": "^1.6.5"
