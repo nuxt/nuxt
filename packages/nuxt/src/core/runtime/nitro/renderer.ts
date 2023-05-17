@@ -40,6 +40,7 @@ export interface NuxtIslandContext {
   name: string
   props?: Record<string, any>
   url?: string
+  skipMiddleware: boolean
 }
 
 export interface NuxtIslandResponse {
@@ -155,7 +156,8 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    uid: destr(context.uid) || undefined
+    uid: destr(context.uid) || undefined,
+    skipMiddleware: !context.url
   }
 
   return ctx
