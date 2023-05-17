@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -43,9 +43,9 @@
     "@types/hash-sum": "^1.0.0",
     "@types/lodash.template": "^4.5.1",
     "@types/semver": "^7.5.0",
-    "nitropack": "^2.4.0",
+    "nitropack": "^2.4.1",
     "unbuild": "latest",
-    "vite": "^4.3.5",
+    "vite": "^4.3.7",
     "vitest": "^0.31.0",
     "webpack": "^5.82.1"
   },
