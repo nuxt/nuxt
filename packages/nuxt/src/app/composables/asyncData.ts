@@ -135,7 +135,7 @@ export function useAsyncData<
       (nuxt._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if (opts._initial && hasCachedData()) {
+    if ((opts._initial || nuxt.isHydrating) && hasCachedData()) {
       return getCachedData()
     }
     asyncData.pending.value = true
