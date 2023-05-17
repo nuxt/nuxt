@@ -170,6 +170,14 @@ export default defineUntypedSchema({
      * @default chokidar
      * @type {'chokidar' | 'parcel'}
      */
-    watcher: 'chokidar'
+    watcher: 'chokidar',
+
+
+    /**
+     * Enable native async context to be accessable for nested composables
+     *
+     * @see https://github.com/unjs/unctx#native-async-context
+     */
+    nativeAsyncContext: false
   }
 })

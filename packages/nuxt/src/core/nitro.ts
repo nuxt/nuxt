@@ -178,7 +178,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.dev': nuxt.options.dev,
-      __VUE_PROD_DEVTOOLS__: false
+      __VUE_PROD_DEVTOOLS__: false,
+      __NUXT_NATIVE_ASYNC_CONTEXT__: nuxt.options.experimental.nativeAsyncContext
     },
     rollupConfig: {
       output: {},

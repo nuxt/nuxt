@@ -598,7 +598,7 @@ describe('navigate', () => {
 
 describe('preserves current instance', () => {
   // TODO: reenable when https://github.com/vuejs/core/issues/7733 is resolved
-  it('should not return getCurrentInstance when there\'s an error in data', async () => {
+  it.skip('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
     expect(html).toContain('This should be false: false')
@@ -1472,6 +1472,12 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
 
     await page.close()
+  })
+})
+
+describe('Async context', () => {
+  it('should be available', async () => {
+    expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
   })
 })
 
