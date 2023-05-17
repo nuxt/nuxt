@@ -596,6 +596,22 @@ describe('navigate', () => {
   })
 })
 
+describe('preserves current instance', () => {
+  // TODO: reenable when https://github.com/vuejs/core/issues/7733 is resolved
+  it('should not return getCurrentInstance when there\'s an error in data', async () => {
+    await fetch('/instance/error')
+    const html = await $fetch('/instance/next-request')
+    expect(html).toContain('This should be false: false')
+  })
+  // TODO: re-enable when https://github.com/nuxt/nuxt/issues/15164 is resolved
+  it.skipIf(isWindows)('should not lose current nuxt app after await in vue component', async () => {
+    const requests = await Promise.all(Array.from({ length: 100 }).map(() => $fetch('/instance/next-request')))
+    for (const html of requests) {
+      expect(html).toContain('This should be true: true')
+    }
+  })
+})
+
 describe('errors', () => {
   it('should render a JSON error page', async () => {
     const res = await fetch('/error', {
