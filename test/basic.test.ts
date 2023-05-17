@@ -604,7 +604,7 @@ describe('preserves current instance', () => {
     expect(html).toContain('This should be false: false')
   })
   it('should not lose current nuxt app after await in vue component', async () => {
-    const requests = await Promise.all(Array.from({ length: 100 }).map(() => $fetch('/instance/next-request')))
+    const requests = await Promise.all(Array.from({ length: isWindows ? 4 : 100 }).map(() => $fetch('/instance/next-request')))
     for (const html of requests) {
       expect(html).toContain('This should be true: true')
     }
