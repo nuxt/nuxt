@@ -60,11 +60,11 @@ async function watch (nuxt: Nuxt) {
     if (success) { return }
   }
 
-  if (nuxt.options.experimental.watcher === 'granular') {
-    return createGranularWatcher()
+  if (nuxt.options.experimental.watcher === 'chokidar') {
+    return createWatcher()
   }
 
-  return createWatcher()
+  return createGranularWatcher()
 }
 
 function createWatcher () {

@@ -161,18 +161,19 @@ export default defineUntypedSchema({
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
-     * `@parcel/watcher` instead. This may improve performance in large projects or
-     * on Windows platforms.
+     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
+     * (like `node_modules` and `.git`) that are excluded from watching.
      *
-     * You can also try setting this to `granular` to use an experimental granular
-     * watcher, which ignores top-level directories (like `node_modules` and `.git`).
+     * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
+     * performance in large projects or on Windows platforms.
+     *
+     * You can also set this to `chokidar` to watch all files in your source directory.
      *
      * @see https://github.com/paulmillr/chokidar
      * @see https://github.com/parcel-bundler/watcher
      * @default chokidar
-     * @type {'chokidar' | 'parcel' | 'granular'}
+     * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar'
+    watcher: 'chokidar-granular'
   }
 })
