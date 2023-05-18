@@ -86,11 +86,15 @@ async function initNuxt (nuxt: Nuxt) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
       transform: true
