@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -32,14 +32,14 @@
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "h3": "^1.6.6",
     "ignore": "^5.2.4",
-    "nitropack": "^2.4.0",
+    "nitropack": "^2.4.1",
     "unbuild": "latest",
     "unctx": "^2.3.0",
-    "vite": "~4.3.6",
+    "vite": "~4.3.7",
     "vue": "3.3.2",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.2.0",
-    "webpack": "^5.82.1"
+    "webpack": "^5.83.0"
   },
   "dependencies": {
     "defu": "^6.1.2",

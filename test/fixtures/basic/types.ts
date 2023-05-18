@@ -17,6 +17,7 @@ describe('API routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
     expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
     // @ts-expect-error not a valid method
     expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
@@ -51,8 +52,10 @@ describe('API routes', () => {
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    // @ts-expect-error TODO: remove when fixed upstream: https://github.com/unjs/nitro/pull/1247
     expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     // @ts-expect-error not a valid method
     useFetch('/api/hey', { method: 'PATCH' })
     expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | null>>()
@@ -60,6 +63,7 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | null>>()
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | null>>()
+    expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | null>>()
 
     expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | null>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null>>()

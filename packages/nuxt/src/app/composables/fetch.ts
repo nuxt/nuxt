@@ -31,7 +31,7 @@ export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>
@@ -43,7 +43,7 @@ export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>
@@ -124,7 +124,7 @@ export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>
@@ -136,7 +136,7 @@ export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>

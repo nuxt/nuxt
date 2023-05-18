@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, hasInjectionContext, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -435,19 +435,20 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /**
  * Returns the current Nuxt instance.
  */
-export function useNuxtApp () {
-  const nuxtAppInstance = nuxtAppCtx.tryUse()
+export function useNuxtApp (): NuxtApp {
+  let nuxtAppInstance
+  if (hasInjectionContext()) {
+    nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
+  }
+
+  nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
 
   if (!nuxtAppInstance) {
-    const vm = getCurrentInstance()
-    if (!vm) {
-      if (process.dev) {
-        throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
-      } else {
-        throw new Error('[nuxt] instance unavailable')
-      }
+    if (process.dev) {
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+    } else {
+      throw new Error('[nuxt] instance unavailable')
     }
-    return vm.appContext.app.$nuxt as NuxtApp
   }
 
   return nuxtAppInstance

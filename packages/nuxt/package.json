@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.4.3",
+  "version": "3.5.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -79,7 +79,7 @@
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.2.1",
-    "nitropack": "^2.4.0",
+    "nitropack": "^2.4.1",
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
@@ -111,8 +111,8 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "acorn": "^8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.6",
-    "vitest": "^0.31.0"
+    "vite": "^4.3.7",
+    "vitest": "^0.31.1"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
