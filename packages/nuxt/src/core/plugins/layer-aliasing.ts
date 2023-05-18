@@ -9,6 +9,7 @@ interface LayerAliasingOptions {
   sourcemap?: boolean
   transform?: boolean
   root: string
+  dev: boolean
   layers: NuxtConfigLayer[]
 }
 
@@ -28,7 +29,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
         '@@': l.config?.alias?.['@@'] || rootDir
       },
       prefix: relative(options.root, publicDir),
-      publicDir: existsSync(publicDir) && publicDir
+      publicDir: !options.dev && existsSync(publicDir) && publicDir
     }]
   }))
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
