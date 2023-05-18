@@ -259,7 +259,8 @@ const tests: Array<[string, string[], string]> = [
   ['Item', ['Item', 'Holder', 'Test'], 'ItemHolderTestItem'],
   ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem'],
   ['Icones', ['Icon'], 'IconIcones'],
-  ['Icon', ['Icones'], 'IconesIcon']
+  ['Icon', ['Icones'], 'IconesIcon'],
+  ['IconHolder', ['IconHolder'], 'IconHolder']
 ]
 
 describe('components:resolveComponentName', () => {
