@@ -29,12 +29,16 @@ type UseFetchOptions = {
   watch?: WatchSource[]
 }
 
-type AsyncData<DataT> = {
-  data: Ref<DataT>
+type AsyncData<DataT, ErrorT> = {
+  data: Ref<DataT | null>
   pending: Ref<boolean>
-  refresh: (opts?: { dedupe?: boolean }) => Promise<void>
-  execute: () => Promise<void>
-  error: Ref<Error | boolean>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  error: Ref<ErrorT | null>
+}
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
 ```
 
