@@ -58,8 +58,8 @@
     "@nuxt/telemetry": "^2.2.0",
     "@nuxt/ui-templates": "^1.1.1",
     "@nuxt/vite-builder": "workspace:../vite",
-    "@unhead/ssr": "^1.1.26",
-    "@unhead/vue": "^1.1.26",
+    "@unhead/ssr": "^1.1.27",
+    "@unhead/vue": "^1.1.27",
     "@vue/shared": "^3.3.4",
     "c12": "^1.4.1",
     "chokidar": "^3.5.3",
@@ -101,7 +101,7 @@
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.0"
+    "vue-router": "^4.2.1"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.1.0",
