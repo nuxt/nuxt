@@ -113,8 +113,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 ```
 
-::alert
-Normally `payload` must contain only plain JavaScript objects. But by setting `experimental.renderJsonPayloads`, it is possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
+It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
 You can also add your own types, with a special plugin helper:
 
@@ -128,8 +127,6 @@ export default definePayloadPlugin((nuxtApp) => {
   definePayloadReviver('BlinkingText', () => '<blink>')
 })
 ```
-
-::
 
 ### `isHydrating`
 
