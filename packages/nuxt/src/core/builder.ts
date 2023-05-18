@@ -161,7 +161,7 @@ async function createParcelWatcher () {
     }
     return true
   }
-  console.warn('[nuxt] falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+  console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
   return false
 }
 
