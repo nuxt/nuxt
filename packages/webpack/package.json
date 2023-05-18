@@ -52,7 +52,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^1.0.3",
     "vue-loader": "^17.1.1",
-    "webpack": "^5.83.0",
+    "webpack": "^5.83.1",
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.3",
@@ -67,10 +67,10 @@
     "@types/webpack-hot-middleware": "^2.25.6",
     "@types/webpack-virtual-modules": "^0.1.1",
     "unbuild": "latest",
-    "vue": "3.3.2"
+    "vue": "3.3.4"
   },
   "peerDependencies": {
-    "vue": "^3.3.2"
+    "vue": "^3.3.4"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

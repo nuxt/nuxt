@@ -42,7 +42,7 @@
     "@jest/globals": "^29.5.0",
     "playwright": "^1.33.0",
     "vitest": "^0.31.1",
-    "vue": "^3.3.2"
+    "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "@jest/globals": {
