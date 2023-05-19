@@ -235,8 +235,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
         nuxtApp._processingMiddleware = true
 
-        const runMiddlewares = process.client || !nuxtApp.ssrContext?.islandContext || nuxtApp.ssrContext?.islandContext?.skipMiddleware === false
-        if (runMiddlewares) {
+        if (process.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           for (const middleware of middlewareEntries) {
