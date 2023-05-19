@@ -130,13 +130,14 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
    * @example AwesomeComponent -> ['Awesome', 'Component']
    */
   const fileNameParts = splitByCase(fileName)
-  const fileNamePartsContent = fileNameParts.join('').toLowerCase()
+  const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
   const componentNameParts: string[] = [...prefixParts]
   let index = prefixParts.length - 1
-  const matchedSuffix:string[] = []
+  const matchedSuffix: string[] = []
   while (index >= 0) {
-    matchedSuffix.unshift((prefixParts[index] || '').toLowerCase())
-    if (fileNamePartsContent.startsWith(matchedSuffix.join('')) ||
+    matchedSuffix.unshift(...splitByCase(prefixParts[index] || '').map(p => p.toLowerCase()))
+    const matchedSuffixContent = matchedSuffix.join('/')
+    if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
       // e.g Item/Item/Item.vue -> Item
       (prefixParts[index].toLowerCase() === fileNamePartsContent &&
         prefixParts[index + 1] &&
