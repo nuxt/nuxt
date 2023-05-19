@@ -28,19 +28,17 @@ type AsyncDataOptions<DataT> = {
   immediate?: boolean
 }
 
-interface RefreshOptions {
-  dedupe?: boolean
-}
-
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
   pending: Ref<boolean>
-  execute: () => Promise<void>
-  refresh: (opts?: RefreshOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+};
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
-
-
 ```
 
 ## Params

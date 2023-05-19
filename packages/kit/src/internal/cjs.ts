@@ -85,27 +85,13 @@ export function getRequireCacheItem (id: string) {
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: ([] as string[]).concat(
-      // @ts-ignore
+    paths: ([] as Array<string | undefined>).concat(
       global.__NUXT_PREPATHS__,
       opts.paths || [],
       process.cwd(),
-      // @ts-ignore
       global.__NUXT_PATHS__
-    ).filter(Boolean)
+    ).filter(Boolean) as string[]
   }))
-}
-
-/** @deprecated Do not use CJS utils */
-export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}): string | null {
-  try {
-    return resolveModule(path, opts)
-  } catch (error: any) {
-    if (error?.code !== 'MODULE_NOT_FOUND') {
-      throw error
-    }
-  }
-  return null
 }
 
 /** @deprecated Do not use CJS utils */
@@ -137,7 +123,7 @@ export function importModule (id: string, opts: RequireModuleOptions = {}) {
 export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
   try {
     return importModule(id, opts).catch(() => undefined)
-  } catch { }
+  } catch {}
 }
 
 /** @deprecated Do not use CJS utils */

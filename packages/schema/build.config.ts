@@ -16,13 +16,16 @@ export default defineBuildConfig({
       }
     },
     'src/index',
+    'src/builder-env'
   ],
   externals: [
     // Type imports
     'vue-router',
+    '@nuxt/telemetry',
     'vue-bundle-renderer',
     '@unhead/schema',
     'vue',
+    'unctx',
     'hookable',
     'nitropack',
     'webpack',

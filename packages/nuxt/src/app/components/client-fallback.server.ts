@@ -1,5 +1,6 @@
-import { defineComponent, getCurrentInstance, onErrorCaptured } from 'vue'
-import { ssrRenderVNode, ssrRenderAttrs, ssrRenderSlot } from 'vue/server-renderer'
+import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
+import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+import { useState } from '../composables/state'
 import { createBuffer } from './utils'
 
 const NuxtClientFallbackServer = defineComponent({
@@ -22,6 +23,10 @@ const NuxtClientFallbackServer = defineComponent({
     },
     placeholderTag: {
       type: String
+    },
+    keepFallback: {
+      type: Boolean,
+      default: () => false
     }
   },
   emits: ['ssr-error'],
@@ -40,8 +45,8 @@ const NuxtClientFallbackServer = defineComponent({
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 
-      for (let i = 0; i < defaultSlot.length; i++) {
-        ssrRenderVNode(ssrVNodes.push, defaultSlot[i], vm)
+      for (let i = 0; i < (defaultSlot?.length || 0); i++) {
+        ssrRenderVNode(ssrVNodes.push, defaultSlot![i], vm!)
       }
 
       return { ssrFailed, ssrVNodes }
@@ -52,7 +57,7 @@ const NuxtClientFallbackServer = defineComponent({
       return { ssrFailed: true, ssrVNodes: [] }
     }
   },
-  ssrRender (ctx, push, parent) {
+  ssrRender (ctx: any, push: any, parent: any) {
     if (ctx.ssrFailed) {
       const { fallback, placeholder } = ctx.$slots
       if (fallback || placeholder) {

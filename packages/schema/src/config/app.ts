@@ -12,7 +12,14 @@ export default defineUntypedSchema({
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
-    compilerOptions: {}
+    compilerOptions: {},
+
+    /**
+     * Include Vue compiler in runtime bundle.
+     */
+    runtimeCompiler: {
+      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false,
+    },
   },
 
   /**

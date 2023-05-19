@@ -1,7 +1,7 @@
 import type { TSConfig } from 'pkg-types'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
-import type { InlineConfig as ViteInlineConfig, ViteDevServer } from 'vite'
+import type { ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -9,7 +9,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
-import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Schema, SchemaDefinition } from 'untyped'
 
 export type HookResult = Promise<void> | void
@@ -45,6 +45,16 @@ export interface ImportPresetWithDeprecation extends InlinePreset {
 
 export interface GenerateAppOptions {
   filter?: (template: ResolvedNuxtTemplate<any>) => boolean
+}
+
+export interface NuxtAnalyzeMeta {
+  name: string
+  slug: string
+  startTime: number
+  endTime: number
+  analyzeDir: string
+  buildDir: string
+  outDir: string
 }
 
 /**
@@ -130,6 +140,13 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'build:manifest': (manifest: Manifest) => HookResult
+
+  /**
+   * Called when `nuxt analyze` is finished
+   * @param meta the analyze meta object, mutations will be saved to `meta.json`
+   * @returns Promise
+   */
+  'build:analyze:done': (meta: NuxtAnalyzeMeta) => HookResult
 
   /**
    * Called before generating the app.
@@ -282,14 +299,21 @@ export interface NuxtHooks {
    * @param viteBuildContext The vite build context object
    * @returns Promise
    */
-  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteInlineConfig }) => HookResult
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteConfig }) => HookResult
   /**
    * Allows to extend Vite default config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
    */
-  'vite:extendConfig': (viteInlineConfig: ViteInlineConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  /**
+   * Allows to read the resolved Vite config.
+   * @param viteInlineConfig The vite inline config object
+   * @param env Server or client
+   * @returns Promise
+   */
+  'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server
@@ -310,6 +334,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
+   /**
+   * Allows to read the resolved webpack config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'webpack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
   /**
    * Called right before compilation.
    * @param options The options to be added

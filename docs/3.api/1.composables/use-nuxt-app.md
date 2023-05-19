@@ -84,9 +84,7 @@ await nuxtApp.callHook('my-plugin:init')
 
 ### `payload`
 
-`payload` exposes data and state variables from server side to client side and makes them available in the `window.__NUXT__` object that is accessible from the browser.
-
-`payload` exposes the following keys on the client side after they are stringified and passed from the server side:
+`payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - **serverRendered** (boolean) - Indicates if response is server-side-rendered.
 - **data** (object) - When you fetch the data from an API endpoint using either `useFetch` or `useAsyncData`, resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
@@ -112,6 +110,21 @@ export default defineNuxtPlugin((nuxtApp) => {
   if (process.server) {
     const color = useColor()
   }
+})
+```
+
+It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
+
+You can also add your own types, with a special plugin helper:
+
+```ts [plugins/custom-payload.ts]
+  /**
+   * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
+   * You will not have access to the router or other Nuxt-injected properties.
+   */
+export default definePayloadPlugin((nuxtApp) => {
+  definePayloadReducer('BlinkingText', data => data === '<blink>' && '_')
+  definePayloadReviver('BlinkingText', () => '<blink>')
 })
 ```
 

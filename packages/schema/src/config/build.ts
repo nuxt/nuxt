@@ -119,10 +119,11 @@ export default defineUntypedSchema({
           return val ?? false
         }
         const rootDir = await get('rootDir')
+        const analyzeDir = await get('analyzeDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(rootDir, '.nuxt/stats', '{name}.html')
+          filename: join(analyzeDir, '{name}.html')
         }
       }
     },
@@ -170,6 +171,7 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+              '#app': ['definePayloadReviver', 'definePageMeta']
             }
           )
         },
@@ -177,10 +179,26 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => defu(val || {},
             await get('dev') ? {} : {
               vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+              '#app': ['definePayloadReducer', 'definePageMeta']
             }
           )
         }
       }
     },
+
+    /**
+     * Options passed directly to the transformer from `unctx` that preserves async context
+     * after `await`.
+     *
+     * @type {import('unctx').TransformerOptions}
+     */
+    asyncTransforms: {
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      objectDefinitions: {
+        defineNuxtComponent: ['asyncData', 'setup'],
+        defineNuxtPlugin: ['setup'],
+        definePageMeta: ['middleware', 'validate']
+      }
+    }
   }
 })

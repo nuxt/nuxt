@@ -1,7 +1,7 @@
-import type { PropType, DefineComponent, ComputedRef } from 'vue'
-import { defineComponent, h, ref, resolveComponent, computed, onMounted, onBeforeUnmount } from 'vue'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
-import { hasProtocol, parseQuery, parseURL, withoutTrailingSlash, withTrailingSlash } from 'ufo'
+import type { ComputedRef, DefineComponent, PropType } from 'vue'
+import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
+import type { RouteLocation, RouteLocationRaw } from '#vue-router'
+import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -24,8 +24,8 @@ export type NuxtLinkOptions = {
 
 export type NuxtLinkProps = {
   // Routing
-  to?: string | RouteLocationRaw
-  href?: string | RouteLocationRaw
+  to?: RouteLocationRaw
+  href?: RouteLocationRaw
   external?: boolean
   replace?: boolean
   custom?: boolean
@@ -81,12 +81,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     props: {
       // Routing
       to: {
-        type: [String, Object] as PropType<string | RouteLocationRaw>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
       href: {
-        type: [String, Object] as PropType<string | RouteLocationRaw>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
@@ -212,7 +212,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value, async () => {
+                  unobserve = observer!.observe(el.value as HTMLElement, async () => {
                     unobserve?.()
                     unobserve = null
 
@@ -265,7 +265,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         // Resolves `to` value if it's a route location object
-        // converts `'''` to `null` to prevent the attribute from being added as empty (`href=""`)
+        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         const href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
 
         // Resolves `target` value

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.3.1",
+  "version": "3.5.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -18,53 +18,51 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/schema": "3.3.1",
-    "@types/cssnano": "^5.1.0",
+    "@nuxt/schema": "workspace:../schema",
+    "@types/estree": "^1.0.1",
     "unbuild": "latest",
-    "vue": "3.2.47"
+    "vue": "3.3.4"
   },
   "dependencies": {
-    "@nuxt/kit": "3.3.1",
+    "@nuxt/kit": "workspace:../kit",
     "@rollup/plugin-replace": "^5.0.2",
-    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
-    "chokidar": "^3.5.3",
     "clear": "^0.1.0",
-    "cssnano": "^5.1.15",
+    "cssnano": "^6.0.1",
     "defu": "^6.1.2",
-    "esbuild": "^0.17.12",
+    "esbuild": "^0.17.19",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.0",
     "fs-extra": "^11.1.1",
     "get-port-please": "^3.0.1",
-    "h3": "^1.6.2",
+    "h3": "^1.6.6",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.0",
-    "mlly": "^1.2.0",
-    "ohash": "^1.0.0",
+    "mlly": "^1.2.1",
+    "ohash": "^1.1.2",
     "pathe": "^1.1.0",
-    "perfect-debounce": "^0.1.3",
-    "pkg-types": "^1.0.2",
-    "postcss": "^8.4.21",
+    "perfect-debounce": "^1.0.0",
+    "pkg-types": "^1.0.3",
+    "postcss": "^8.4.23",
     "postcss-import": "^15.1.0",
     "postcss-url": "^10.1.3",
-    "rollup": "^3.20.0",
     "rollup-plugin-visualizer": "^5.9.0",
-    "std-env": "^3.3.2",
+    "std-env": "^3.3.3",
     "strip-literal": "^1.0.1",
-    "ufo": "^1.1.1",
+    "ufo": "^1.1.2",
     "unplugin": "^1.3.1",
-    "vite": "~4.2.1",
-    "vite-node": "^0.29.7",
-    "vite-plugin-checker": "^0.5.6",
-    "vue-bundle-renderer": "^1.0.2"
+    "vite": "~4.3.8",
+    "vite-node": "^0.31.1",
+    "vite-plugin-checker": "^0.6.0",
+    "vue-bundle-renderer": "^1.0.3"
   },
   "peerDependencies": {
-    "vue": "^3.2.47"
+    "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   }
 }

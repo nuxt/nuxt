@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
-import { dirname, resolve, join } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, resolveFiles, normalizePlugin, normalizeTemplate, compileTemplate, templateUtils, tryResolveModule, resolvePath, resolveAlias } from '@nuxt/kit'
+import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -12,6 +12,7 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
     dir: nuxt.options.srcDir,
     extensions: nuxt.options.extensions,
     plugins: [],
+    components: [],
     templates: []
   } as unknown as NuxtApp) as NuxtApp
 }

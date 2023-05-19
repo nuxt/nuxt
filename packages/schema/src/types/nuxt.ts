@@ -1,6 +1,7 @@
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
+import type { Component } from './components'
 import type { NuxtOptions } from './config'
 
 export interface Nuxt {
@@ -22,6 +23,8 @@ export interface Nuxt {
   server?: any
 
   vfs: Record<string, string>
+
+  apps: Record<string, NuxtApp>
 }
 
 export interface NuxtTemplate<Options = Record<string, any>> {
@@ -58,6 +61,7 @@ export interface NuxtApp {
   dir: string
   extensions: string[]
   plugins: NuxtPlugin[]
+  components: Component[]
   layouts: Record<string, NuxtLayout>
   middleware: NuxtMiddleware[]
   templates: NuxtTemplate[]

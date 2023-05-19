@@ -11,6 +11,7 @@ on:
       - "docs/**"
     branches:
       - main
+      - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
 env:
@@ -39,7 +40,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -66,13 +67,17 @@ jobs:
     timeout-minutes: 10
     needs:
       - build
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ['bundler', 'node']
 
     steps:
       - uses: actions/checkout@v3
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -86,8 +91,12 @@ jobs:
 
       - name: Test (types)
         run: pnpm test:types
+        env:
+          MODULE_RESOLUTION: ${{ matrix.module }}
 
   lint:
+    # autofix workflow will be triggered instead for PRs
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -96,11 +105,14 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm build:stub
 
       - name: Lint
         run: pnpm lint
@@ -116,6 +128,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
+        payload: ['json', 'js']
         node: [16]
         exclude:
           - env: 'dev'
@@ -169,17 +182,17 @@ jobs:
 
       - name: Test (unit)
         run: pnpm test:unit
-        env:
-          TEST_ENV: ${{ matrix.env }}
-          TEST_BUILDER: ${{ matrix.builder }}
 
       - name: Test (fixtures)
         run: pnpm test:fixtures
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
+          TEST_PAYLOAD: ${{ matrix.payload }}
 
   build-release:
+    permissions:
+      id-token: write
     if: |
       github.event_name == 'push' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
@@ -189,13 +202,7 @@ jobs:
       - lint
       - build
       - test-fixtures
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [16]
-
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
@@ -205,7 +212,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -221,3 +228,43 @@ jobs:
         run: ./scripts/release-edge.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
+
+  release-pr:
+    permissions:
+      id-token: write
+      pull-requests: write
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, '🧷 edge release')
+    needs:
+      - lint
+      - build
+      - test-fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
+
+      - name: Release Edge
+        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true

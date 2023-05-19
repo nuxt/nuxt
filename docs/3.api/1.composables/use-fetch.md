@@ -18,7 +18,7 @@ type UseFetchOptions = {
   query?: SearchParams
   params?: SearchParams
   body?: RequestInit['body'] | Record<string, any>
-  headers?: { key: string, value: string }[]
+  headers?: Record<string, string> | [key: string, value: string][] | Headers
   baseURL?: string
   server?: boolean
   lazy?: boolean
@@ -29,12 +29,16 @@ type UseFetchOptions = {
   watch?: WatchSource[]
 }
 
-type AsyncData<DataT> = {
-  data: Ref<DataT>
+type AsyncData<DataT, ErrorT> = {
+  data: Ref<DataT | null>
   pending: Ref<boolean>
-  refresh: (opts?: { dedupe?: boolean }) => Promise<void>
-  execute: () => Promise<void>
-  error: Ref<Error | boolean>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  error: Ref<ErrorT | null>
+}
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
 ```
 
@@ -58,7 +62,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `server`: Whether to fetch the data on the server (defaults to `true`).
   * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
   * `pick`: Only pick specified keys in this array from the `handler` function result.
-  * `watch`: watch reactive sources to auto-refresh.
+  * `watch`: Watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
   * `transform`: A function that can be used to alter `handler` function result after resolving.
   * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 
@@ -114,7 +118,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   },
   onResponse({ request, response, options }) {
     // Process the response data
-    return response._data
+    localStorage.setItem('token', response._data.token)
   },
   onResponseError({ request, response, options }) {
     // Handle the response errors
@@ -124,6 +128,9 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 
 ::alert{type=warning}
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+::
+
+::LinkExample{link="/docs/examples/other/use-custom-fetch-composable"}
 ::
 
 :ReadMore{link="/docs/getting-started/data-fetching"}

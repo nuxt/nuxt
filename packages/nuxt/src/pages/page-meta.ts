@@ -2,15 +2,14 @@ import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
-import { findStaticImports, findExports, parseStaticImport } from 'mlly'
-import type { CallExpression, Identifier, Expression } from 'estree'
+import { findExports, findStaticImports, parseStaticImport } from 'mlly'
+import type { CallExpression, Expression, Identifier } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute, normalize } from 'pathe'
 
 export interface PageMetaPluginOptions {
-  dirs: Array<string | RegExp>
   dev?: boolean
   sourcemap?: boolean
 }
@@ -42,11 +41,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       const query = parseMacroQuery(id)
       id = normalize(id)
 
-      const isPagesDir = options.dirs.some(dir => typeof dir === 'string' ? id.startsWith(dir) : dir.test(id))
-      if (!isPagesDir && !query.macro) { return false }
-
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return /\.(m?[jt]sx?|vue)/.test(pathname)
+      return !!query.macro
     },
     transform (code, id) {
       const query = parseMacroQuery(id)
@@ -58,33 +53,13 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           return {
             code: s.toString(),
             map: options.sourcemap
-              ? s.generateMap({ source: id, includeContent: true })
+              ? s.generateMap({ hires: true })
               : undefined
           }
         }
       }
 
       const hasMacro = code.match(/\bdefinePageMeta\s*\(\s*/)
-
-      // Remove any references to the macro from our pages
-      if (!query.macro) {
-        if (hasMacro) {
-          walk(this.parse(code, {
-            sourceType: 'module',
-            ecmaVersion: 'latest'
-          }) as Node, {
-            enter (_node) {
-              if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-              const node = _node as CallExpression & { start: number, end: number }
-              const name = 'name' in node.callee && node.callee.name
-              if (name === 'definePageMeta') {
-                s.overwrite(node.start, node.end, 'false && {}')
-              }
-            }
-          })
-        }
-        return result()
-      }
 
       const imports = findStaticImports(code)
 
@@ -109,7 +84,14 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       }
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        if (!code) {
+          s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+          console.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+        } else {
+          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        }
+
         return result()
       }
 

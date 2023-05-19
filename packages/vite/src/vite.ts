@@ -1,10 +1,8 @@
+import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { join, resolve } from 'pathe'
-import type { Nuxt } from '@nuxt/schema'
-import type { InlineConfig, SSROptions } from 'vite'
-import { logger, isIgnored, resolvePath, addVitePlugin } from '@nuxt/kit'
-import type { Options as VueOptions } from '@vitejs/plugin-vue'
-import type { Options as VueJsxOptions } from '@vitejs/plugin-vue-jsx'
+import { dirname, join, resolve } from 'pathe'
+import type { Nuxt, ViteConfig } from '@nuxt/schema'
+import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
@@ -18,16 +16,9 @@ import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 
-export interface ViteOptions extends InlineConfig {
-  vue?: VueOptions
-  vueJsx?: VueJsxOptions
-  ssr?: SSROptions
-  devBundler?: 'vite-node' | 'legacy'
-}
-
 export interface ViteBuildContext {
   nuxt: Nuxt
-  config: ViteOptions
+  config: ViteConfig
   entry: string
   clientServer?: vite.ViteDevServer
   ssrServer?: vite.ViteDevServer
@@ -37,6 +28,25 @@ export async function bundle (nuxt: Nuxt) {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+
+  let allowDirs = [
+    nuxt.options.appDir,
+    nuxt.options.workspaceDir,
+    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...Object.values(nuxt.apps).flatMap(app => [
+      ...app.components.map(c => dirname(c.filePath)),
+      ...app.plugins.map(p => dirname(p.src)),
+      ...app.middleware.map(m => dirname(m.path)),
+      ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
+      dirname(nuxt.apps.default.rootComponent!),
+      dirname(nuxt.apps.default.errorComponent!)
+    ])
+  ].filter(d => d && existsSync(d))
+
+  for (const dir of allowDirs) {
+    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
+  }
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -57,7 +67,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          include: ['vue'],
+          include: ['vue', '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared'],
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
@@ -98,13 +108,10 @@ export async function bundle (nuxt: Nuxt) {
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: [
-              nuxt.options.appDir,
-              ...nuxt.options._layers.map(l => l.config.rootDir)
-            ]
+            allow: [...new Set(allowDirs)]
           }
         }
-      } as ViteOptions,
+      } satisfies ViteConfig,
       nuxt.options.vite
     )
   }

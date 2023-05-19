@@ -23,6 +23,7 @@ const appPreset = defineUnimportPreset({
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',
+    'definePayloadPlugin',
     'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
@@ -32,6 +33,7 @@ const appPreset = defineUnimportPreset({
     'useRequestHeaders',
     'useRequestEvent',
     'useRequestFetch',
+    'useRequestURL',
     'setResponseStatus',
     'setPageLayout',
     'onNuxtReady',
@@ -55,7 +57,9 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered'
+    'isPrerendered',
+    'definePayloadReducer',
+    'definePayloadReviver'
   ]
 })
 
@@ -116,6 +120,8 @@ const vuePreset = defineUnimportPreset({
     'unref',
     'watch',
     'watchEffect',
+    'watchPostEffect',
+    'watchSyncEffect',
     'isShallow',
 
     // effect
@@ -131,8 +137,15 @@ const vuePreset = defineUnimportPreset({
     'getCurrentInstance',
     'h',
     'inject',
+    'hasInjectionContext',
     'nextTick',
     'provide',
+    'defineModel',
+    'defineOptions',
+    'defineSlots',
+    'mergeModels',
+    'toValue',
+    'useModel',
     'useAttrs',
     'useCssModule',
     'useCssVars',
