@@ -10,9 +10,9 @@
   ],
   "main": "src/index.js",
   "dependencies": {
-    "@babel/compat-data": "^7.21.4",
-    "@babel/core": "^7.21.4",
-    "@babel/helper-compilation-targets": "^7.21.4",
+    "@babel/compat-data": "^7.21.7",
+    "@babel/core": "^7.21.8",
+    "@babel/helper-compilation-targets": "^7.21.5",
     "@babel/helper-module-imports": "^7.21.4",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.21.0",
@@ -20,15 +20,15 @@
     "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
     "@babel/plugin-transform-runtime": "^7.21.4",
-    "@babel/preset-env": "^7.21.4",
-    "@babel/runtime": "^7.21.0",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/runtime": "^7.21.5",
     "@vue/babel-preset-jsx": "^1.4.0",
-    "core-js": "^3.19.0",
-    "core-js-compat": "^3.30.1",
+    "core-js": "^3.30.2",
+    "core-js-compat": "^3.30.2",
     "regenerator-runtime": "^0.13.11"
   },
   "engines": {
-    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   },
   "publishConfig": {
     "access": "public"
