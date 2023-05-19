@@ -597,7 +597,6 @@ describe('navigate', () => {
 })
 
 describe('preserves current instance', () => {
-  // TODO: reenable when https://github.com/vuejs/core/issues/7733 is resolved
   it('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
