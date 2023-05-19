@@ -134,7 +134,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
       }
       nuxtApp._processingMiddleware = true
- 
+
       if (process.client || !nuxtApp.ssrContext?.islandContext) {
         type MiddlewareDef = string | RouteMiddleware
         const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
