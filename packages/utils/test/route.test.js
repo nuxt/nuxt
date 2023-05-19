@@ -212,7 +212,8 @@ describe('util: route', () => {
       'pages/another_route/_id.vue',
       'pages/parent/index.vue',
       'pages/parent/child/index.vue',
-      'pages/parent/child/test.vue'
+      'pages/parent/child/test.vue',
+      'pages/parent/_.vue'
     ]
     const srcDir = '/some/nuxt/app'
     const pagesDir = 'pages'

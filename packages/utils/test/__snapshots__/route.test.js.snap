@@ -45,6 +45,12 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "path": "/subpage/:param?",
   },
   {
+    "chunkName": "pages/parent/_",
+    "component": "/some/nuxt/app/pages/parent/_.vue",
+    "name": "parent-all",
+    "path": "/parent/*",
+  },
+  {
     "chunkName": "pages/_param",
     "component": "/some/nuxt/app/pages/_param.vue",
     "name": "param",
@@ -172,6 +178,15 @@ exports[`util: route util: route create createRoutes should enforce trailing sla
     },
   },
   {
+    "chunkName": "pages/parent/_",
+    "component": "/some/nuxt/app/pages/parent/_.vue",
+    "name": "parent-all",
+    "path": "/parent/*",
+    "pathToRegexpOptions": {
+      "strict": true,
+    },
+  },
+  {
     "chunkName": "pages/_param",
     "component": "/some/nuxt/app/pages/_param.vue",
     "name": "param",
@@ -244,6 +259,15 @@ exports[`util: route util: route create createRoutes should remove trailing slas
     "component": "/some/nuxt/app/pages/subpage/_param.vue",
     "name": "subpage-param",
     "path": "/subpage/:param?",
+    "pathToRegexpOptions": {
+      "strict": true,
+    },
+  },
+  {
+    "chunkName": "pages/parent/_",
+    "component": "/some/nuxt/app/pages/parent/_.vue",
+    "name": "parent-all",
+    "path": "/parent/*",
     "pathToRegexpOptions": {
       "strict": true,
     },
