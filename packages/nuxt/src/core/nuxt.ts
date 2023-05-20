@@ -37,7 +37,8 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
     close: () => Promise.resolve(hooks.callHook('close', nuxt)),
-    vfs: {}
+    vfs: {},
+    apps: {}
   }
 
   return nuxt
@@ -85,11 +86,15 @@ async function initNuxt (nuxt: Nuxt) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
       transform: true
@@ -302,6 +307,29 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
+
+  const envMap = {
+    // defaults from `builder` based on package name
+    '@nuxt/vite-builder': 'vite/client',
+    '@nuxt/webpack-builder': 'webpack/module',
+    // simpler overrides from `typescript.builder` for better DX
+    vite: 'vite/client',
+    webpack: 'webpack/module',
+    // default 'merged' builder environment for module authors
+    shared: '@nuxt/schema/builder-env'
+  }
+
+  nuxt.hook('prepare:types', ({ references }) => {
+    // Disable entirely if `typescript.builder` is false
+    if (nuxt.options.typescript.builder === false) { return }
+
+    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
+    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
+    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
+    const types = overrideEnv || defaultEnv
+
+    if (types) { references.push({ types }) }
+  })
 
   // Add nuxt app debugger
   if (nuxt.options.debug) {

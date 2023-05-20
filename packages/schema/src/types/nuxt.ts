@@ -23,6 +23,8 @@ export interface Nuxt {
   server?: any
 
   vfs: Record<string, string>
+
+  apps: Record<string, NuxtApp>
 }
 
 export interface NuxtTemplate<Options = Record<string, any>> {

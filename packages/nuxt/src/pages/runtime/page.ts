@@ -1,8 +1,8 @@
 import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterView } from '#vue-router'
 import { defu } from 'defu'
-import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
@@ -54,6 +54,7 @@ export default defineComponent({
 
           return _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
+              suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {}) })

@@ -14,6 +14,20 @@ export default defineUntypedSchema({
     strict: true,
 
     /**
+     * Which builder types to include for your project.
+     *
+     * By default Nuxt infers this based on your `builder` option (defaulting to 'vite') but you can either turn off
+     * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
+     *
+     * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
+     *
+     * @type {'vite' | 'webpack' | 'shared' | false | undefined}
+     */
+    builder: {
+      $resolve: async (val, get) => val ?? null
+    },
+
+    /**
      * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
      */
     includeWorkspace: false,

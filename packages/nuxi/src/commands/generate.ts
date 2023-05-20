@@ -7,8 +7,8 @@ export default defineNuxtCommand({
     usage: 'npx nuxi generate [rootDir] [--dotenv]',
     description: 'Build Nuxt and prerender static routes'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     args.prerender = true
-    await buildCommand.invoke(args)
+    await buildCommand.invoke(args, options)
   }
 })

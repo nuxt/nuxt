@@ -43,6 +43,10 @@
           {
             "pattern": "@nuxt/test-utils",
             "group": "external"
+          },
+          {
+            "pattern": "#vue-router",
+            "group": "external"
           }
         ]
       }
