@@ -122,7 +122,7 @@ export function useAsyncData<
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key]) {
     nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default?.() ?? null),
+      data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key)
     }
@@ -171,7 +171,7 @@ export function useAsyncData<
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
         asyncData.error.value = error
-        asyncData.data.value = unref(options.default?.() ?? getDefault())
+        asyncData.data.value = unref(options.default!())
       })
       .finally(() => {
         if ((promise as any).cancelled) { return }
