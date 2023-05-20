@@ -9,11 +9,11 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
-  ? keyof T extends K[number]
-    ? T // Exact same keys as the target, skip Pick
-    : K[number] extends never
-      ? T
-      : Pick<T, K[number]>
+    ? keyof T extends K[number]
+      ? T // Exact same keys as the target, skip Pick
+      : K[number] extends never
+        ? T
+        : Pick<T, K[number]>
     : T
 
 export type KeysOf<T> = Array<
