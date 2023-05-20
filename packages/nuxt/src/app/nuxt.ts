@@ -29,7 +29,7 @@ type NuxtMeta = {
 type HookResult = Promise<void> | void
 
 type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'] }
-export type RuntimeNuxtHooks = {
+export interface RuntimeNuxtHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult
   'app:mounted': (app: App<Element>) => HookResult
@@ -47,11 +47,8 @@ export type RuntimeNuxtHooks = {
   'page:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
-} & CookieHooks;
-
-type CookieHooks = {
-  [key: `cookies:${string}`]: (newValue: any) => HookResult;
-};
+  [key: `cookies:${string}`]: (newValue: any) => HookResult
+}
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
