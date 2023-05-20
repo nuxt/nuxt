@@ -53,6 +53,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         enter (_node) {
           if (_node.type === 'BlockStatement') {
             scopeTracker.enterScope()
+            varCollector.refresh(scopeTracker.curScopeKey)
           } else if (_node.type === 'FunctionDeclaration' && _node.id) {
             varCollector.addVar(_node.id.name)
           } else if (_node.type === 'VariableDeclarator') {
@@ -62,7 +63,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         leave (_node) {
           if (_node.type === 'BlockStatement') {
             scopeTracker.leaveScope()
-            varCollector.recordScope(scopeTracker.curScopeKey)
+            varCollector.refresh(scopeTracker.curScopeKey)
           }
         }
       })
@@ -132,17 +133,23 @@ class ScopeTracker {
   curScopeKey: string
 
   constructor () {
+    // top level
     this.scopeIdStack = [0]
     this.curScopeKey = '0'
   }
 
+  getKey () {
+    return this.scopeIdStack.slice(0, -1).join('-')
+  }
+
   enterScope () {
     this.scopeIdStack.push(0)
-    this.curScopeKey = this.scopeIdStack.slice(0, -1).join('-')
+    this.curScopeKey = this.getKey()
   }
 
   leaveScope () {
     this.scopeIdStack.pop()
+    this.curScopeKey = this.getKey()
     this.scopeIdStack[this.scopeIdStack.length - 1]++
   }
 }
@@ -154,11 +161,17 @@ class ScopedVarsCollector {
   constructor () {
     this.curScopeVars = new Set()
     this.all = new Map()
+    // top level
+    this.all.set('0', this.curScopeVars)
   }
 
-  recordScope (scopeKey: string) {
-    this.all.set(scopeKey, this.curScopeVars)
-    this.curScopeVars = new Set()
+  refresh (scopeKey: string) {
+    let vars = this.all.get(scopeKey)
+    if (!vars) {
+      vars = new Set()
+    }
+    this.curScopeVars = vars
+    this.all.set(scopeKey, vars)
   }
 
   addVar (name: string) {
