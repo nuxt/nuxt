@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    './modules/test/index',
     [
       '~/modules/example',
       {
