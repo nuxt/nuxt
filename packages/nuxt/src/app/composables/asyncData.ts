@@ -10,17 +10,17 @@ export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
   ? keyof T extends K[number]
-    ? T // Exact same keys as the target, skip Pick
-    : K[number] extends never
-      ? T
-      : Pick<T, K[number]>
+  ? T // Exact same keys as the target, skip Pick
+  : K[number] extends never
+  ? T
+  : Pick<T, K[number]>
   : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
   ? keyof T extends string
-    ? keyof T
-    : never
+  ? keyof T
+  : never
   : never
 >
 
@@ -63,6 +63,7 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
+const getDefault = () => null
 export function useAsyncData<
   ResT,
   DataE = Error,
@@ -96,7 +97,6 @@ export function useAsyncData<
 
   // eslint-disable-next-line prefer-const
   let [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
-  const getDefault = () => null as DefaultT
 
   // Validate arguments
   if (typeof key !== 'string') {
@@ -108,7 +108,7 @@ export function useAsyncData<
 
   // Apply defaults
   options.server = options.server ?? true
-  options.default = options.default ?? getDefault
+  options.default = options.default ?? (getDefault as () => DefaultT)
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
