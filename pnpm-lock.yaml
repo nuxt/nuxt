@@ -185,8 +185,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       unimport:
-        specifier: ^3.0.6
-        version: 3.0.6(rollup@3.21.8)
+        specifier: ^3.0.7
+        version: 3.0.7(rollup@3.21.8)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -448,8 +448,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       unimport:
-        specifier: ^3.0.6
-        version: 3.0.6(rollup@3.21.8)
+        specifier: ^3.0.7
+        version: 3.0.7(rollup@3.21.8)
       unplugin:
         specifier: ^1.3.1
         version: 1.3.1
@@ -524,8 +524,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       unimport:
-        specifier: ^3.0.6
-        version: 3.0.6(rollup@3.21.8)
+        specifier: ^3.0.7
+        version: 3.0.7(rollup@3.21.8)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -6459,7 +6459,7 @@ packages:
       std-env: 3.3.3
       ufo: 1.1.2
       unenv: 1.4.1
-      unimport: 3.0.6(rollup@3.21.8)
+      unimport: 3.0.7(rollup@3.21.8)
       unstorage: 1.6.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -8369,8 +8369,8 @@ packages:
       hookable: 5.5.3
     dev: false
 
-  /unimport@3.0.6(rollup@3.21.8):
-    resolution: {integrity: sha512-GYxGJ1Bri1oqx8VFDjdgooGzeK7jBk3bvhXmamTIpu3nONOcUMGwZbX7X0L5RA7OWMXpR4vzpSQP7pXUzJg1/Q==}
+  /unimport@3.0.7(rollup@3.21.8):
+    resolution: {integrity: sha512-2dVQUxJEGcrSZ0U4qtwJVODrlfyGcwmIOoHVqbAFFUx7kPoEN5JWr1cZFhLwoAwTmZOvqAm3YIkzv1engIQocg==}
     dependencies:
       '@rollup/pluginutils': 5.0.2(rollup@3.21.8)
       escape-string-regexp: 5.0.0
