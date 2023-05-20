@@ -37,6 +37,43 @@ const useKeyedComposable = (arg?: string) => arg
 const useLocalKeyedComposable = () => useKeyedComposable()
 const useMyAsyncDataTest1 = useLocalKeyedComposable()
 const useMyAsyncDataTest2 = useLocalKeyedComposable()
+
+function localScopedComposables () {
+  const _assert = (key?: string) => key ?? 'was not keyed 1'
+
+  function basic () {
+    function useState (key?: string) {
+      return _assert(key)
+    }
+    const useAsyncData = _assert
+
+    return [useState(), useAsyncData()]
+  }
+
+  function hoisting () {
+    return [useState()]
+
+    function useState (key?: string) {
+      return _assert(key)
+    }
+  }
+
+  function complex () {
+    const [useState] = [_assert]
+    const { a: useAsyncData } = {
+      a: _assert
+    }
+    const [_, { b: useLazyAsyncData }] = [null, {
+      b: _assert
+    }]
+
+    return [useState(), useAsyncData(), useLazyAsyncData()]
+  }
+
+  return [...basic(), ...hoisting(), ...complex()]
+}
+
+const skippedLocalScopedComposables = localScopedComposables().every(res => res === 'was not keyed')
 </script>
 
 <template>
@@ -47,6 +84,7 @@ const useMyAsyncDataTest2 = useLocalKeyedComposable()
     {{ useFetchTest1 === useFetchTest2 }}
     {{ useLazyFetchTest1 === useLazyFetchTest2 }}
     {{ !!useMyAsyncDataTest1 && useMyAsyncDataTest1 === useMyAsyncDataTest2 }}
+    {{ skippedLocalScopedComposables }}
   </div>
 </template>
 

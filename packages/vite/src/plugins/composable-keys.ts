@@ -40,46 +40,38 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       let imports: Set<string> | undefined
       let count = 0
       const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
-      const scopeDecls: Set<string>[] = [new Set()]
 
-      function hasDecl (name: string) {
-        return scopeDecls.some(s => s.has(name))
-      }
-
-      function addDecl (name: string) {
-        scopeDecls[scopeDecls.length - 1].add(name)
-      }
-
-      function collectDecls (n: Pattern) {
-        const t = n.type
-        if (t === 'Identifier') {
-          addDecl(n.name)
-        } else if (t === 'RestElement') {
-          collectDecls(n.argument)
-        } else if (t === 'ArrayPattern') {
-          n.elements.forEach(e => e && collectDecls(e))
-        } else if (t === 'ObjectPattern') {
-          n.properties.forEach((p) => {
-            if (p.type === 'RestElement') {
-              collectDecls(p)
-            } else {
-              collectDecls(p.value)
-            }
-          })
-        }
-      }
-
-      walk(this.parse(script, {
+      const ast = this.parse(script, {
         sourceType: 'module',
         ecmaVersion: 'latest'
-      }) as Node, {
+      }) as Node
+
+      // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
+      let scopeTracker = new ScopeTracker()
+      const varCollector = new ScopedVarsCollector()
+      walk(ast, {
         enter (_node) {
           if (_node.type === 'BlockStatement') {
-            scopeDecls.push(new Set())
+            scopeTracker.enterScope()
           } else if (_node.type === 'FunctionDeclaration' && _node.id) {
-            addDecl(_node.id.name)
+            varCollector.addVar(_node.id.name)
           } else if (_node.type === 'VariableDeclarator') {
-            collectDecls(_node.id)
+            varCollector.collect(_node.id)
+          }
+        },
+        leave (_node) {
+          if (_node.type === 'BlockStatement') {
+            scopeTracker.leaveScope()
+            varCollector.recordScope(scopeTracker.curScopeKey)
+          }
+        }
+      })
+
+      scopeTracker = new ScopeTracker()
+      walk(ast, {
+        enter (_node) {
+          if (_node.type === 'BlockStatement') {
+            scopeTracker.enterScope()
           }
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node: CallExpression = _node as CallExpression
@@ -87,7 +79,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
           if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
           imports = imports || detectImportNames(script)
-          if (imports.has(name) || hasDecl(name)) { return }
+          if (imports.has(name) || varCollector.hasVar(scopeTracker.curScopeKey, name)) { return }
 
           const meta = composableMeta[name]
 
@@ -119,7 +111,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
         },
         leave (_node) {
           if (_node.type === 'BlockStatement') {
-            scopeDecls.pop()
+            scopeTracker.leaveScope()
           }
         }
       })
@@ -134,6 +126,70 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     }
   }
 })
+
+class ScopeTracker {
+  scopeIdStack: number[]
+  curScopeKey: string
+
+  constructor () {
+    this.scopeIdStack = [0]
+    this.curScopeKey = '0'
+  }
+
+  enterScope () {
+    this.scopeIdStack.push(0)
+    this.curScopeKey = this.scopeIdStack.slice(0, -1).join('-')
+  }
+
+  leaveScope () {
+    this.scopeIdStack.pop()
+    this.scopeIdStack[this.scopeIdStack.length - 1]++
+  }
+}
+
+class ScopedVarsCollector {
+  curScopeVars: Set<string>
+  all: Map<string, Set<string>>
+
+  constructor () {
+    this.curScopeVars = new Set()
+    this.all = new Map()
+  }
+
+  recordScope (scopeKey: string) {
+    this.all.set(scopeKey, this.curScopeVars)
+    this.curScopeVars = new Set()
+  }
+
+  addVar (name: string) {
+    this.curScopeVars.add(name)
+  }
+
+  hasVar (scopeKey: string, name: string) {
+    return !!this.all.get(scopeKey)?.has(name)
+  }
+
+  collect (n: Pattern) {
+    const t = n.type
+    if (t === 'Identifier') {
+      this.addVar(n.name)
+    } else if (t === 'RestElement') {
+      this.collect(n.argument)
+    } else if (t === 'AssignmentPattern') {
+      this.collect(n.left)
+    } else if (t === 'ArrayPattern') {
+      n.elements.forEach(e => e && this.collect(e))
+    } else if (t === 'ObjectPattern') {
+      n.properties.forEach((p) => {
+        if (p.type === 'RestElement') {
+          this.collect(p)
+        } else {
+          this.collect(p.value)
+        }
+      })
+    }
+  }
+}
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
