@@ -33,27 +33,28 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
-  const nuxtApp = useNuxtApp()
-
   if (process.client) {
-    let watchPaused = false
-
-    watch(cookie, (newValue) => {
-      if (watchPaused) { return }
-      nuxtApp.callHook(`cookies:${name}`, newValue)
-    })
-
-    nuxtApp.hook(`cookies:${name}`, (newValue: any) => {
-      watchPaused = true
-      cookie.value = newValue
-      nextTick(() => { watchPaused = false })
-    })
-
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
     }
+
     if (opts.watch) {
-      watch(cookie, callback, { deep: opts.watch !== 'shallow' })
+      const nuxtApp = useNuxtApp()
+
+      let watchPaused = false
+
+      watch(cookie, (newValue) => {
+        if (watchPaused) { return }
+        nuxtApp.callHook(`cookies:${name}`, newValue)
+        callback()
+      },
+      { deep: opts.watch !== 'shallow' })
+
+      nuxtApp.hook(`cookies:${name}`, (newValue) => {
+        watchPaused = true
+        cookie.value = newValue
+        nextTick(() => { watchPaused = false })
+      })
     } else {
       callback()
     }
