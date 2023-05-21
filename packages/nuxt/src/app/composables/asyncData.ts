@@ -214,12 +214,7 @@ export function useAsyncData<
           cbs.forEach((cb) => { cb() })
           cbs.splice(0, cbs.length)
         })
-        onUnmounted(() => {
-          if (!options.immediate || options.lazy) {
-            delete nuxt._asyncData[key]
-          }
-          cbs.splice(0, cbs.length)
-        })
+        onUnmounted(() => cbs.splice(0, cbs.length))
       }
     }
 
