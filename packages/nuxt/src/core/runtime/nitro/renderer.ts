@@ -154,7 +154,8 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     ...context,
     id: hashId,
     name: componentName,
-    props: destr(context.props) || {}
+    props: destr(context.props) || {},
+    uid: destr(context.uid) || undefined
   }
 
   return ctx
@@ -284,7 +285,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES
+  const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
 
@@ -309,7 +310,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: [_rendered.html],
+    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceServerOnlyComponentsSlots(ssrContext, _rendered.html) : _rendered.html],
     bodyAppend: normalizeChunks([
       NO_SCRIPTS
         ? undefined
@@ -490,4 +491,20 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
+}
+
+const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
+function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
+  const { teleports, islandContext } = ssrContext
+  if (islandContext || !teleports) { return html }
+  for (const key in teleports) {
+    const match = key.match(SSR_TELEPORT_MARKER)
+    if (!match) { continue }
+    const [, uid, slot] = match
+    if (!uid || !slot) { continue }
+    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
+      return full + teleports[key]
+    })
+  }
+  return html
 }

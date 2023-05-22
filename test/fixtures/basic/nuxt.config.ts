@@ -1,4 +1,4 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from 'nuxt/kit'
+import { addBuildPlugin, addComponent } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    './modules/test',
     [
       '~/modules/example',
       {
@@ -104,8 +105,7 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return ':root { --virtual: red }' }
         }
       }))
-      addVitePlugin(() => plugin.vite())
-      addWebpackPlugin(() => plugin.webpack())
+      addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
