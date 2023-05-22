@@ -233,6 +233,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
           to.meta.layout = initialLayout.value
         }
+
+        nuxtApp.callHook('router:beforeMiddleware')
         nuxtApp._processingMiddleware = true
 
         if (process.client || !nuxtApp.ssrContext?.islandContext) {
@@ -253,6 +255,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             if (result || result === false) { return result }
           }
         }
+
+        nuxtApp.callHook('router:afterMiddleware')
       })
 
       router.afterEach(() => { delete nuxtApp._processingMiddleware })
