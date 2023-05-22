@@ -171,7 +171,6 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/paulmillr/chokidar
      * @see https://github.com/parcel-bundler/watcher
-     * @default chokidar
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: 'chokidar-granular'
