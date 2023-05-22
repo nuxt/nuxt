@@ -152,20 +152,20 @@ describe('typed router integration', () => {
     defineNuxtRouteMiddleware((to) => {
       expectTypeOf(to.name).not.toBeAny()
       // @ts-expect-error this route does not exist
-      expectTypeOf(to.name === 'bob').toMatchTypeOf<boolean>()
-      expectTypeOf(to.name === 'page').toMatchTypeOf<boolean>()
+      expectTypeOf(to.name === 'bob').toEqualTypeOf<boolean>()
+      expectTypeOf(to.name === 'page').toEqualTypeOf<boolean>()
     })
   })
 
   it('respects pages:extend augmentation', () => {
     // added via pages:extend
-    expectTypeOf(useRoute().name === 'internal-async-parent').toMatchTypeOf<boolean>()
+    expectTypeOf(useRoute().name === 'internal-async-parent').toEqualTypeOf<boolean>()
     // @ts-expect-error this route does not exist
-    expectTypeOf(useRoute().name === 'invalid').toMatchTypeOf<boolean>()
+    expectTypeOf(useRoute().name === 'invalid').toEqualTypeOf<boolean>()
   })
 
   it('respects pages added via layer', () => {
-    expectTypeOf(useRoute().name === 'override').toMatchTypeOf<boolean>()
+    expectTypeOf(useRoute().name === 'override').toEqualTypeOf<boolean>()
   })
 
   it('allows typing NuxtLink', () => {
