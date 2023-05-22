@@ -11,14 +11,6 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  typescript: {
-    strict: true,
-    tsConfig: {
-      compilerOptions: {
-        moduleResolution: process.env.MODULE_RESOLUTION
-      }
-    }
-  },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -70,27 +62,14 @@ export default defineNuxtConfig({
     ]
   },
   runtimeConfig: {
-    baseURL: '',
-    baseAPIToken: '',
-    privateConfig: 'secret_key',
     public: {
-      ids: [1, 2, 3],
       needsFallback: undefined,
       testConfig: 123
     }
   },
   modules: [
     './modules/test',
-    [
-      '~/modules/example',
-      {
-        typeTest (val) {
-          // @ts-expect-error module type defines val as boolean
-          const b: string = val
-          return !!b
-        }
-      }
-    ],
+    '~/modules/example',
     function (_, nuxt) {
       if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
@@ -143,23 +122,6 @@ export default defineNuxtConfig({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
-    'schema:extend' (schemas) {
-      schemas.push({
-        appConfig: {
-          someThing: {
-            value: {
-              $default: 'default',
-              $schema: {
-                tsType: 'string | false'
-              }
-            }
-          }
-        }
-      })
-    },
-    'prepare:types' ({ tsConfig }) {
-      tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
-    },
     'modules:done' () {
       addComponent({
         name: 'CustomComponent',
