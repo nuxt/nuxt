@@ -7,7 +7,7 @@ import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLink, NuxtPage } from '#components'
+import { NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -276,6 +276,13 @@ describe('head', () => {
 describe('components', () => {
   it('includes types for NuxtPage', () => {
     expectTypeOf(NuxtPage).not.toBeAny()
+  })
+  it('includes types for other components', () => {
+    h(WithTypes)
+    // @ts-expect-error wrong prop type for this component
+    h(WithTypes, { aProp: '40' })
+
+    // TODO: assert typed slots, exposed, generics, etc.
   })
 })
 
