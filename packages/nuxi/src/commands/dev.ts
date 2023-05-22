@@ -172,7 +172,7 @@ export default defineNuxtCommand({
     watcher.on('all', (_event, _file) => {
       const file = relative(rootDir, _file)
       if (file === (args.dotenv || '.env')) { return hardRestart('.env updated') }
-      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.nuxtrc)$/)) {
+      if (RESTART_RE.test(file)) {
         dLoad(true, `${file} updated`)
       }
     })
@@ -182,3 +182,5 @@ export default defineNuxtCommand({
     return 'wait' as const
   }
 })
+
+const RESTART_RE = /^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.nuxtrc)$/
