@@ -1,6 +1,10 @@
 import { addPlugin, createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
 
 export default defineNuxtModule({
+  defaults: {
+    enabled: true,
+    typeTest: (value: boolean) => typeof value === 'boolean'
+  },
   meta: {
     name: 'my-module',
     configKey: 'sampleModule'
@@ -12,8 +16,7 @@ export default defineNuxtModule({
     useNuxt().hook('app:resolve', (app) => {
       app.middleware.push({
         name: 'unctx-test',
-        path: resolver.resolve('./runtime/middleware'),
-        global: true
+        path: resolver.resolve('./runtime/middleware')
       })
     })
   }
