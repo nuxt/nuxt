@@ -9,11 +9,12 @@ import type { CallExpression, Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
+import { matchWithStringOrRegex } from '../utils'
 
 export interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
-  composables: Array<{ name: string, argumentLength: number }>
+  composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
 }
 
 const stringTypes = ['Literal', 'TemplateLiteral']
@@ -40,6 +41,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       let imports: Set<string> | undefined
       let count = 0
       const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
+      const { pathname: relativePathname } = parseURL(relativeID)
 
       const ast = this.parse(script, {
         sourceType: 'module',
@@ -79,10 +81,19 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
           const name = 'name' in node.callee && node.callee.name
           if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
-          imports = imports || detectImportNames(script)
-          if (imports.has(name) || varCollector.hasVar(scopeTracker.curScopeKey, name)) { return }
+          imports = imports || detectImportNames(script, composableMeta)
+          if (imports.has(name)) { return }
 
           const meta = composableMeta[name]
+
+          if (varCollector.hasVar(scopeTracker.curScopeKey, name)) {
+            let skip = true
+            if (meta.source) {
+              skip = !matchWithStringOrRegex(relativePathname, meta.source)
+            }
+
+            if (skip) { return }
+          }
 
           if (node.arguments.length >= meta.argumentLength) { return }
 
@@ -206,20 +217,29 @@ class ScopedVarsCollector {
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
-function detectImportNames (code: string) {
+function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
   const imports = findStaticImports(code)
   const names = new Set<string>()
   for (const i of imports) {
     if (NUXT_IMPORT_RE.test(i.specifier)) { continue }
-    const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
-    for (const name in namedImports || {}) {
+
+    function addName (name: string) {
+      const source = composableMeta[name]?.source
+      if (source && matchWithStringOrRegex(i.specifier, source)) {
+        return
+      }
       names.add(namedImports![name])
     }
+
+    const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
+    for (const name in namedImports || {}) {
+      addName(namedImports![name])
+    }
     if (defaultImport) {
-      names.add(defaultImport)
+      addName(defaultImport)
     }
     if (namespacedImport) {
-      names.add(namespacedImport)
+      addName(namespacedImport)
     }
   }
   return names

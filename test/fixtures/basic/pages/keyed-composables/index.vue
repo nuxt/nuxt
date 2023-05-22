@@ -33,10 +33,10 @@ const useLocalLazyFetch = () => useLazyFetch(() => '/api/counter')
 const { data: useLazyFetchTest1 } = await useLocalLazyFetch()
 const { data: useLazyFetchTest2 } = await useLocalLazyFetch()
 
-const useKeyedComposable = (arg?: string) => arg
-const useCustomizeKeyedComposable = () => useKeyedComposable()
-const useMyAsyncDataTest1 = useCustomizeKeyedComposable()
-const useMyAsyncDataTest2 = useCustomizeKeyedComposable()
+const useCustomKeyedComposable = (arg?: string) => arg
+const useLocalCustomKeyedComposable = () => useCustomKeyedComposable()
+const useMyAsyncDataTest1 = useLocalCustomKeyedComposable()
+const useMyAsyncDataTest2 = useLocalCustomKeyedComposable()
 </script>
 
 <template>

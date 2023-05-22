@@ -142,7 +142,7 @@ export default defineUntypedSchema({
      *
      * The key will be unique based on the location of the function being invoked within the file.
      *
-     * @type {Array<{ name: string, argumentLength: number }>}
+     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
       $resolve: (val) => [
