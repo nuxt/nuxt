@@ -71,7 +71,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
 
       const _id = normalize(id)
       const layer = layers.find(l => _id.startsWith(l))
-      if (!layer || !code.match(ALIAS_RE)) { return }
+      if (!layer || !ALIAS_RE.test(code)) { return }
 
       const s = new MagicString(code)
       s.replace(ALIAS_RE, r => aliases[layer].aliases[r as '~'] || r)

@@ -63,9 +63,9 @@ export default defineNuxtCommand({
       hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
-            cert: args['ssl-cert'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
-            key: args['ssl-key'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
-          }
+          cert: args['ssl-cert'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
+          key: args['ssl-key'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
+        }
         : false
     })
 
@@ -172,7 +172,7 @@ export default defineNuxtCommand({
     watcher.on('all', (_event, _file) => {
       const file = relative(rootDir, _file)
       if (file === (args.dotenv || '.env')) { return hardRestart('.env updated') }
-      if (file.match(/^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.nuxtrc)$/)) {
+      if (RESTART_RE.test(file)) {
         dLoad(true, `${file} updated`)
       }
     })
@@ -182,3 +182,5 @@ export default defineNuxtCommand({
     return 'wait' as const
   }
 })
+
+const RESTART_RE = /^(nuxt\.config\.(js|ts|mjs|cjs)|\.nuxtignore|\.nuxtrc)$/

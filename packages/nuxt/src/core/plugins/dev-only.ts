@@ -25,7 +25,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
       }
     },
     transform (code) {
-      if (!code.match(DEVONLY_COMP_RE)) { return }
+      if (!DEVONLY_COMP_RE.test(code)) { return }
 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
