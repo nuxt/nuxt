@@ -30,7 +30,7 @@ export default defineComponent({
     // Hook to app lifecycle
     // TODO: Use unified loading API
     const nuxtApp = useNuxtApp()
-    nuxtApp.hook('page:start', indicator.start)
+    nuxtApp.hook('page:beforeMiddleware', indicator.start)
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
     onBeforeUnmount(indicator.clear)
