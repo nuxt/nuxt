@@ -27,6 +27,12 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "path": "/parent/child/test",
   },
   {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -43,12 +49,6 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "component": "/some/nuxt/app/pages/parent/_.vue",
     "name": "parent-all",
     "path": "/parent/*",
-  },
-  {
-    "chunkName": "pages/index",
-    "component": "/some/nuxt/app/pages/index.vue",
-    "name": "index",
-    "path": "/",
   },
   {
     "chunkName": "pages/_param",
@@ -86,6 +86,12 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "path": "/parent/child/test",
   },
   {
+    "chunkName": "pages/index",
+    "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\another_route\\\\_id.vue",
     "name": "another_route-id",
@@ -102,12 +108,6 @@ exports[`util: route util: route create createRoutes should allow snake case rou
     "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\parent\\\\_.vue",
     "name": "parent-all",
     "path": "/parent/*",
-  },
-  {
-    "chunkName": "pages/index",
-    "component": "\\\\\\\\some\\\\nuxt\\\\app\\\\pages\\\\index.vue",
-    "name": "index",
-    "path": "/",
   },
   {
     "chunkName": "pages/_param",
@@ -157,6 +157,15 @@ exports[`util: route util: route create createRoutes should enforce trailing sla
     },
   },
   {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+    "pathToRegexpOptions": {
+      "strict": true,
+    },
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -179,15 +188,6 @@ exports[`util: route util: route create createRoutes should enforce trailing sla
     "component": "/some/nuxt/app/pages/parent/_.vue",
     "name": "parent-all",
     "path": "/parent/*",
-    "pathToRegexpOptions": {
-      "strict": true,
-    },
-  },
-  {
-    "chunkName": "pages/index",
-    "component": "/some/nuxt/app/pages/index.vue",
-    "name": "index",
-    "path": "/",
     "pathToRegexpOptions": {
       "strict": true,
     },
@@ -243,6 +243,15 @@ exports[`util: route util: route create createRoutes should remove trailing slas
     },
   },
   {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+    "pathToRegexpOptions": {
+      "strict": true,
+    },
+  },
+  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -270,15 +279,6 @@ exports[`util: route util: route create createRoutes should remove trailing slas
     },
   },
   {
-    "chunkName": "pages/index",
-    "component": "/some/nuxt/app/pages/index.vue",
-    "name": "index",
-    "path": "/",
-    "pathToRegexpOptions": {
-      "strict": true,
-    },
-  },
-  {
     "chunkName": "pages/_param",
     "component": "/some/nuxt/app/pages/_param.vue",
     "name": "param",
@@ -286,6 +286,96 @@ exports[`util: route util: route create createRoutes should remove trailing slas
     "pathToRegexpOptions": {
       "strict": true,
     },
+  },
+]
+`;
+
+exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = `
+[
+  {
+    "chunkName": "pages/de/index",
+    "component": "/some/nuxt/app/pages/de/index.vue",
+    "name": "de",
+    "path": "/de",
+  },
+  {
+    "chunkName": "pages/de_",
+    "component": "/some/nuxt/app/pages/de_.vue",
+    "name": "de_",
+    "path": "/de_",
+  },
+  {
+    "chunkName": "pages/parent/index",
+    "component": "/some/nuxt/app/pages/parent/index.vue",
+    "name": "parent",
+    "path": "/parent",
+  },
+  {
+    "chunkName": "pages/snake_case_route",
+    "component": "/some/nuxt/app/pages/snake_case_route.vue",
+    "name": "snake_case_route",
+    "path": "/snake_case_route",
+  },
+  {
+    "children": [
+      {
+        "chunkName": "pages/another_route/rout_",
+        "component": "/some/nuxt/app/pages/another_route/rout_.vue",
+        "name": "another_route-rout_",
+        "path": "",
+      },
+    ],
+    "chunkName": "pages/another_route/rout_",
+    "component": "/some/nuxt/app/pages/another_route/rout_.vue",
+    "path": "/another_route/rout_",
+  },
+  {
+    "chunkName": "pages/parent/child/index",
+    "component": "/some/nuxt/app/pages/parent/child/index.vue",
+    "name": "parent-child",
+    "path": "/parent/child",
+  },
+  {
+    "chunkName": "pages/parent/child/test",
+    "component": "/some/nuxt/app/pages/parent/child/test.vue",
+    "name": "parent-child-test",
+    "path": "/parent/child/test",
+  },
+  {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
+  },
+  {
+    "chunkName": "pages/another_route/_id",
+    "component": "/some/nuxt/app/pages/another_route/_id.vue",
+    "name": "another_route-id",
+    "path": "/another_route/:id?",
+  },
+  {
+    "chunkName": "pages/subpage/_param",
+    "component": "/some/nuxt/app/pages/subpage/_param.vue",
+    "name": "subpage-param",
+    "path": "/subpage/:param?",
+  },
+  {
+    "chunkName": "pages/parent/_",
+    "component": "/some/nuxt/app/pages/parent/_.vue",
+    "name": "parent-all",
+    "path": "/parent/*",
+  },
+  {
+    "chunkName": "pages/_param",
+    "component": "/some/nuxt/app/pages/_param.vue",
+    "name": "param",
+    "path": "/:param",
+  },
+  {
+    "chunkName": "pages/_",
+    "component": "/some/nuxt/app/pages/_.vue",
+    "name": "all",
+    "path": "/*",
   },
 ]
 `;
