@@ -64,7 +64,7 @@ export default defineNuxtConfig({
   optimization: {
     keyedComposables: [
       {
-        name: 'useKeyedComposable',
+        name: 'useCustomizeKeyedComposable',
         argumentLength: 1
       }
     ]
