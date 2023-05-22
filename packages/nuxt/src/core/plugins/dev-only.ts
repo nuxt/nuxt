@@ -9,7 +9,7 @@ interface DevOnlyPluginOptions {
   sourcemap?: boolean
 }
 
-export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
+export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta) => {
   const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
 
   return {
@@ -20,7 +20,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
       const { type } = parseQuery(search)
 
       // vue files
-      if (pathname.endsWith('.vue') && (type === 'template' || !search)) {
+      if (pathname.endsWith('.vue') && (meta.framework === 'webpack' || type === 'template' || !search)) {
         return true
       }
     },
