@@ -249,6 +249,10 @@ const getRoutePathExtension = (key) => {
     return `:${key.substr(1)}`
   }
 
+  if (key.endsWith('_')) {
+    return `${key.substr(0, key.length - 1)}*`
+  }
+
   return key
 }
 
