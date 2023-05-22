@@ -299,6 +299,12 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "path": "/de",
   },
   {
+    "chunkName": "pages/de_",
+    "component": "/some/nuxt/app/pages/de_.vue",
+    "name": "de_",
+    "path": "/de_",
+  },
+  {
     "chunkName": "pages/parent/index",
     "component": "/some/nuxt/app/pages/parent/index.vue",
     "name": "parent",
@@ -309,6 +315,19 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "component": "/some/nuxt/app/pages/snake_case_route.vue",
     "name": "snake_case_route",
     "path": "/snake_case_route",
+  },
+  {
+    "children": [
+      {
+        "chunkName": "pages/another_route/rout_",
+        "component": "/some/nuxt/app/pages/another_route/rout_.vue",
+        "name": "another_route-rout_",
+        "path": "",
+      },
+    ],
+    "chunkName": "pages/another_route/rout_",
+    "component": "/some/nuxt/app/pages/another_route/rout_.vue",
+    "path": "/another_route/rout_",
   },
   {
     "chunkName": "pages/parent/child/index",
@@ -329,19 +348,6 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "path": "/",
   },
   {
-    "children": [
-      {
-        "chunkName": "pages/another_route/rout_",
-        "component": "/some/nuxt/app/pages/another_route/rout_.vue",
-        "name": "another_route-rout_",
-        "path": "",
-      },
-    ],
-    "chunkName": "pages/another_route/rout_",
-    "component": "/some/nuxt/app/pages/another_route/rout_.vue",
-    "path": "/another_route/rout*",
-  },
-  {
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -358,12 +364,6 @@ exports[`util: route util: route sortRoutes sortRoutes should sort routes 1`] = 
     "component": "/some/nuxt/app/pages/parent/_.vue",
     "name": "parent-all",
     "path": "/parent/*",
-  },
-  {
-    "chunkName": "pages/de_",
-    "component": "/some/nuxt/app/pages/de_.vue",
-    "name": "de_",
-    "path": "/de*",
   },
   {
     "chunkName": "pages/_param",
