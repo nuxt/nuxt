@@ -1205,22 +1205,22 @@
   resolved "https://registry.npmjs.org/@csstools/cascade-layer-name-parser/-/cascade-layer-name-parser-1.0.2.tgz#35253f57c6c83d684fe396672486c644e6a84127"
   integrity sha512-xm7Mgwej/wBfLoK0K5LfntmPJzoULayl1XZY9JYgQgT29JiqNw++sLnx95u5y9zCihblzkyaRYJrsRMhIBzRdg==
 
-"@csstools/color-helpers@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-2.0.0.tgz#4ac578cb00b4e853b94f2250267d85ba957c4fc9"
-  integrity sha512-VcPjEnp07RNgz/D+oI2uIALg+IPCSl6mj0XhA3pl3F2bM2B95vgzatExmmzSg/X0zkh+R2v+jFY/J2pV/bnwpw==
+"@csstools/color-helpers@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-2.1.0.tgz#b27d8376e9e8a947878f10967481c22bf046976a"
+  integrity sha512-OWkqBa7PDzZuJ3Ha7T5bxdSVfSCfTq6K1mbAhbO1MD+GSULGjrp45i5RudyJOedstSarN/3mdwu9upJE7gDXfw==
 
 "@csstools/css-calc@^1.1.1":
   version "1.1.1"
   resolved "https://registry.npmjs.org/@csstools/css-calc/-/css-calc-1.1.1.tgz#c622728b7f0c9aae70952623c2b0d3d114752987"
   integrity sha512-Nh+iLCtjlooTzuR0lpmB8I6hPX/VupcGQ3Z1U2+wgJJ4fa8+cWkub+lCsbZcYPzBGsZLEL8fQAg+Na5dwEFJxg==
 
-"@csstools/css-color-parser@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-1.1.2.tgz#e5956c0fe9c30d9f228b0e37173ff61f0dd89dad"
-  integrity sha512-MjW/VspbFSkvbuou7tUUu2+FAlAR7VJ/PA69M9EGKltThbONC8nyW33wHRzNvLzRLGstZLEO5X5oR7IMhMDi0A==
+"@csstools/css-color-parser@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-1.2.0.tgz#30243b2fe912e1da0787e7d093d25a9ed40a73b5"
+  integrity sha512-kt9jhqyL/Ig/Tsf1cY+iygxs2nu3/D532048G9BSeg9YjlpZxbor6I+nvgMNB1A1ppL+i15Mb/yyDHYMQmgBtQ==
   dependencies:
-    "@csstools/color-helpers" "^2.0.0"
+    "@csstools/color-helpers" "^2.1.0"
     "@csstools/css-calc" "^1.1.1"
 
 "@csstools/css-parser-algorithms@^2.1.1":
@@ -1246,25 +1246,25 @@
     "@csstools/selector-specificity" "^2.0.2"
     postcss-selector-parser "^6.0.10"
 
-"@csstools/postcss-color-function@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-color-function/-/postcss-color-function-2.2.1.tgz#fa28cc742c29ae63dbe0812dd9a03998a67dd318"
-  integrity sha512-T52iiqmzyKk09B9iNTQbuWa9Tn83SztXY7o6r2+j+o1BS/7+CiCjTgN2HgzybDmx8cr6XYhQ1BzqgV9tJzhrmw==
+"@csstools/postcss-color-function@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/@csstools/postcss-color-function/-/postcss-color-function-2.2.2.tgz#10bd96096b01ba58336c7eda90673f27a8b2df0c"
+  integrity sha512-HpBtNAS8m07Umr1kYYOIKTSg2uBMjWMc7zeXchhodsZtopICa5pTyCIuuT0z9oy07j/M4+Uj0M01OLvmN0AHqA==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
-"@csstools/postcss-color-mix-function@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-color-mix-function/-/postcss-color-mix-function-1.0.1.tgz#587f7df69d40f84c7bb4e9d7f178266cb7f6851b"
-  integrity sha512-NSVrzjVcI4TMzDfh6GKZXvEuelT81xpXzruuTNJrwKMTZXEBHY9G2gvmr0eC0wwmL8EF1TblXyPPfBbZobvfXg==
+"@csstools/postcss-color-mix-function@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@csstools/postcss-color-mix-function/-/postcss-color-mix-function-1.0.2.tgz#02e366b84cf84f4522b4d27053959614fbab0e22"
+  integrity sha512-SZRZ1osJo5CR89xojPEkORnH6RS0FK1aktMujo52TCc74oJCIf6udX1e22qTeV8YG78lRNx8NpM3WzI4dL94tQ==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
 "@csstools/postcss-font-format-keywords@^2.0.2":
   version "2.0.2"
@@ -1273,37 +1273,37 @@
   dependencies:
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-gradients-interpolation-method@^3.0.4":
-  version "3.0.4"
-  resolved "https://registry.npmjs.org/@csstools/postcss-gradients-interpolation-method/-/postcss-gradients-interpolation-method-3.0.4.tgz#c03402087c41feee0115f714cc87696e6424ba92"
-  integrity sha512-GgKoY7OlvL65UPigEdlrvMAUCR5kOQCjtue2/36TPrBNoRS6KM2KOqmjIVsxEwYYwK+L28pdnM8r10m03hhZxA==
+"@csstools/postcss-gradients-interpolation-method@^3.0.5":
+  version "3.0.5"
+  resolved "https://registry.npmjs.org/@csstools/postcss-gradients-interpolation-method/-/postcss-gradients-interpolation-method-3.0.5.tgz#7a066b10d42ef6048382ef38dc0a4c845fa9721f"
+  integrity sha512-x1tKUChKajjlZ+pOvapvHTXfRasXLBaChzwcKzI+wGsUmWIfIZhWVdksI/9Yeef0RhI9RFsEgr1fI3gWNcxHyg==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
-"@csstools/postcss-hwb-function@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-hwb-function/-/postcss-hwb-function-2.2.1.tgz#ab50918104e4ef500c42e55e4ccdd27fc33d52b9"
-  integrity sha512-eiqB4DIs+xqProAly7KwIgE04oze1YHb0QSCw/Y7062d9gpw+Cdif3Y0Z+Te+U7JROYdO0/0j91A6Qy8fo/Rlw==
+"@csstools/postcss-hwb-function@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/@csstools/postcss-hwb-function/-/postcss-hwb-function-2.2.2.tgz#c36a450bc98038df00bbbebcef20f04aac6e0b08"
+  integrity sha512-W5Y5oaJ382HSlbdGfPf60d7dAK6Hqf10+Be1yZbd/TNNrQ/3dDdV1c07YwOXPQ3PZ6dvFMhxbIbn8EC3ki3nEg==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
 
-"@csstools/postcss-ic-unit@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/@csstools/postcss-ic-unit/-/postcss-ic-unit-2.0.2.tgz#5a5e481c53977deec3d63793788eec924d4c5f7d"
-  integrity sha512-N84qGTJkfLTPj2qOG5P4CIqGjpZBbjOEMKMn+UjO5wlb9lcBTfBsxCF0lQsFdWJUzBHYFOz19dL66v71WF3Pig==
+"@csstools/postcss-ic-unit@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/@csstools/postcss-ic-unit/-/postcss-ic-unit-2.0.3.tgz#21b3adea10aedd51181285f3e1225598d602e1e2"
+  integrity sha512-azDezOeI7IhLGqRauyfi/JuJOfNHM951h0TZWnL9L38xTmlBK+s7y4MpWXTq/Ohz8IuiIuVPobXTewsqXaTeiQ==
   dependencies:
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-is-pseudo-class@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/@csstools/postcss-is-pseudo-class/-/postcss-is-pseudo-class-3.2.0.tgz#1277cc187bdb075013341dab42b4140d1cafae27"
-  integrity sha512-uooelBL99jMg8ZD6xy0Pj1hSalchWmplcin00eI+JHpv1jW2iwbi1cn2UnVsToM4JLwJSZFzTSWCgSpmlyhe3A==
+"@csstools/postcss-is-pseudo-class@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.npmjs.org/@csstools/postcss-is-pseudo-class/-/postcss-is-pseudo-class-3.2.1.tgz#610f451b9293307d83d484c84af332a05e48b661"
+  integrity sha512-AtANdV34kJl04Al62is3eQRk/BfOfyAvEmRJvbt+nx5REqImLC+2XhuE6skgkcPli1l8ONS67wS+l1sBzySc3Q==
   dependencies:
     "@csstools/selector-specificity" "^2.0.0"
     postcss-selector-parser "^6.0.10"
@@ -1360,29 +1360,32 @@
   dependencies:
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-oklab-function@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-oklab-function/-/postcss-oklab-function-2.2.1.tgz#4f8f4d8d69e6e479e094b5d327c7b259352e8b81"
-  integrity sha512-g4wrVopp6xXr1KetUK4Lj36P+PFPwvUUtd2gaqo7X/0xgJHmMtKMPhD9p77H9bmIpPtkIYQ8b7+7cdmrWNEVAw==
+"@csstools/postcss-oklab-function@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/@csstools/postcss-oklab-function/-/postcss-oklab-function-2.2.2.tgz#a002b05980050f9307b3482cff6925081591a2cf"
+  integrity sha512-25Y9GYia9QamEOHx3B8hyHftDo/lzVhmPPm96ziOzOri9MDZvphPYPyx8NxQXh0P1P0j92eJcOjw4AO6HcXWYw==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
-"@csstools/postcss-progressive-custom-properties@^2.0.0":
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-progressive-custom-properties/-/postcss-progressive-custom-properties-2.0.1.tgz#70b05fa97778c34e0758a313ed11617cdf14189c"
-  integrity sha512-ImgaFLEOhH/EdcrqDF8GSYSlsVR8EQBJ1p9ZhzoHgDkL7/uuzvSZOlRw5dFGFGnjdi7EXK4gsUjy2HU7ChHh3w==
+"@csstools/postcss-progressive-custom-properties@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.npmjs.org/@csstools/postcss-progressive-custom-properties/-/postcss-progressive-custom-properties-2.2.0.tgz#69e9b28282d5f72dbbc82b5ccdf69b20e30c99fe"
+  integrity sha512-qtJ2Jgf5bQW65OK7JaR0dw+XL3tc3BN99g+I5cRdik++HpyZitrKKxIwDGb3OHp2Yo3PZKuiX8pXljqmLHT/eg==
   dependencies:
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-progressive-custom-properties@^2.1.0":
-  version "2.1.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-progressive-custom-properties/-/postcss-progressive-custom-properties-2.1.1.tgz#82df9314451db63bf7f4975a4d32f148e85db490"
-  integrity sha512-6p8eO5+j+9hn4h2Klr9dbmya0GIb9SRrnPaCxqR1muVlV1waAZq6YkmlApEwXrox9qxggSwGZD5TnLRIY9f7WA==
+"@csstools/postcss-relative-color-syntax@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@csstools/postcss-relative-color-syntax/-/postcss-relative-color-syntax-1.0.0.tgz#104c1f7c549781334d408bdba93baf4f7288bc1b"
+  integrity sha512-/Q2xOHjOeq8p8j/+yilJlroWzqbBca3+tux2ikkArsAsQS9sHWbFtPz602EpNnoGSnVg7o/QSf3xxaekyzv/8A==
   dependencies:
-    postcss-value-parser "^4.2.0"
+    "@csstools/css-color-parser" "^1.2.0"
+    "@csstools/css-parser-algorithms" "^2.1.1"
+    "@csstools/css-tokenizer" "^2.1.1"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
 "@csstools/postcss-scope-pseudo-class@^2.0.2":
   version "2.0.2"
@@ -1400,12 +1403,12 @@
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
 
-"@csstools/postcss-text-decoration-shorthand@^2.2.3":
-  version "2.2.3"
-  resolved "https://registry.npmjs.org/@csstools/postcss-text-decoration-shorthand/-/postcss-text-decoration-shorthand-2.2.3.tgz#e634a488aa5ba252907deb787ad6cc24b8c2bb0a"
-  integrity sha512-PADJidg/tdhDk120aWlGuDxsp5ZTc9Nx7GhJ8t0qBCk5fOgLK6V3DsB9X6sOAhDokIihXKzjtUu15puac5McWw==
+"@csstools/postcss-text-decoration-shorthand@^2.2.4":
+  version "2.2.4"
+  resolved "https://registry.npmjs.org/@csstools/postcss-text-decoration-shorthand/-/postcss-text-decoration-shorthand-2.2.4.tgz#184af1d68f4d97c381fad2ca58ae7f3f2a5dd7c3"
+  integrity sha512-zPN56sQkS/7YTCVZhOBVCWf7AiNge8fXDl7JVaHLz2RyT4pnyK2gFjckWRLpO0A2xkm1lCgZ0bepYZTwAVd/5A==
   dependencies:
-    "@csstools/color-helpers" "^2.0.0"
+    "@csstools/color-helpers" "^2.1.0"
     postcss-value-parser "^4.2.0"
 
 "@csstools/postcss-trigonometric-functions@^2.1.1":
@@ -1569,10 +1572,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@eslint/js@8.40.0":
-  version "8.40.0"
-  resolved "https://registry.npmjs.org/@eslint/js/-/js-8.40.0.tgz#3ba73359e11f5a7bd3e407f70b3528abfae69cec"
-  integrity sha512-ElyB54bJIhXQYVKjDSvCkPO1iU1tSAeVQJbllWJq1XQSmmA4dgFk8CbiBGpiOPxleE48vDogxCtmMYku4HSVLA==
+"@eslint/js@8.41.0":
+  version "8.41.0"
+  resolved "https://registry.npmjs.org/@eslint/js/-/js-8.41.0.tgz#080321c3b68253522f7646b55b577dd99d2950b3"
+  integrity sha512-LxcyMGxwmTh2lY9FwHPGWOHmYFCZvbrFCBZL4FzSSsxsRPuhrYUg/49/0KDfW8tnIEaEHtfmn6+NPN+1DqaNmA==
 
 "@gar/promisify@^1.0.1", "@gar/promisify@^1.1.3":
   version "1.1.3"
@@ -5549,10 +5552,10 @@ css@^2.1.0:
     source-map-resolve "^0.5.2"
     urix "^0.1.0"
 
-cssdb@^7.5.3:
-  version "7.5.3"
-  resolved "https://registry.npmjs.org/cssdb/-/cssdb-7.5.3.tgz#6bbd0c6a935919d7f78b8a3ce098faacda01ae8a"
-  integrity sha512-NQNRhrEnS6cW+RU/foLphb6xI/MDA70bI3Cy6VxJU8ilxgyTYz1X9zUzFGVTG5nGPylcKAGIt/UNc4deT56lQQ==
+cssdb@^7.6.0:
+  version "7.6.0"
+  resolved "https://registry.npmjs.org/cssdb/-/cssdb-7.6.0.tgz#beac8f7a5f676db62d3c33da517ef4c9eb008f8b"
+  integrity sha512-Nna7rph8V0jC6+JBY4Vk4ndErUmfJfV6NJCaZdurL0omggabiy+QB2HCQtu5c/ACLZ0I7REv7A4QyPIoYzZx0w==
 
 cssesc@^3.0.0:
   version "3.0.0"
@@ -6644,15 +6647,15 @@ eslint-visitor-keys@^3.4.1:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.4.1.tgz#c22c48f48942d08ca824cc526211ae400478a994"
   integrity sha512-pZnmmLwYzf+kWaM/Qgrvpen51upAktaaiI01nsJD/Yr3lMOdNtq0cxkrrg16w64VtisN6okbs7Q8AfGqj4c9fA==
 
-eslint@^8.40.0:
-  version "8.40.0"
-  resolved "https://registry.npmjs.org/eslint/-/eslint-8.40.0.tgz#a564cd0099f38542c4e9a2f630fa45bf33bc42a4"
-  integrity sha512-bvR+TsP9EHL3TqNtj9sCNJVAFK3fBN8Q7g5waghxyRsPLIMwL73XSKnZFK0hk/O2ANC+iAoq6PWMQ+IfBAJIiQ==
+eslint@^8.41.0:
+  version "8.41.0"
+  resolved "https://registry.npmjs.org/eslint/-/eslint-8.41.0.tgz#3062ca73363b4714b16dbc1e60f035e6134b6f1c"
+  integrity sha512-WQDQpzGBOP5IrXPo4Hc0814r4/v2rrIsB0rhT7jtunIalgg6gYXWhRMOejVO8yH21T/FGaxjmFjBMNqcIlmH1Q==
   dependencies:
     "@eslint-community/eslint-utils" "^4.2.0"
     "@eslint-community/regexpp" "^4.4.0"
     "@eslint/eslintrc" "^2.0.3"
-    "@eslint/js" "8.40.0"
+    "@eslint/js" "8.41.0"
     "@humanwhocodes/config-array" "^0.11.8"
     "@humanwhocodes/module-importer" "^1.0.1"
     "@nodelib/fs.walk" "^1.2.8"
@@ -6672,13 +6675,12 @@ eslint@^8.40.0:
     find-up "^5.0.0"
     glob-parent "^6.0.2"
     globals "^13.19.0"
-    grapheme-splitter "^1.0.4"
+    graphemer "^1.4.0"
     ignore "^5.2.0"
     import-fresh "^3.0.0"
     imurmurhash "^0.1.4"
     is-glob "^4.0.0"
     is-path-inside "^3.0.3"
-    js-sdsl "^4.1.4"
     js-yaml "^4.1.0"
     json-stable-stringify-without-jsonify "^1.0.1"
     levn "^0.4.1"
@@ -7730,6 +7732,11 @@ grapheme-splitter@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
+
+graphemer@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.npmjs.org/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
+  integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
 
 gzip-size@^6.0.0:
   version "6.0.0"
@@ -9258,11 +9265,6 @@ js-beautify@^1.6.12:
     editorconfig "^0.15.3"
     glob "^8.0.3"
     nopt "^6.0.0"
-
-js-sdsl@^4.1.4:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/js-sdsl/-/js-sdsl-4.2.0.tgz#278e98b7bea589b8baaf048c20aeb19eb7ad09d0"
-  integrity sha512-dyBIzQBDkCqCu+0upx25Y2jGdbTGxE9fshMsCdK0ViOongpV+n5tXRcZY9v7CaVQ79AGS9KA1KHtojxiM7aXSQ==
 
 js-tokens@^4.0.0:
   version "4.0.0"
@@ -11736,12 +11738,12 @@ postcss-discard-overridden@^6.0.0:
   resolved "https://registry.npmjs.org/postcss-discard-overridden/-/postcss-discard-overridden-6.0.0.tgz#49c5262db14e975e349692d9024442de7cd8e234"
   integrity sha512-4VELwssYXDFigPYAZ8vL4yX4mUepF/oCBeeIT4OXsJPYOtvJumyz9WflmJWTfDwCUcpDR+z0zvCWBXgTx35SVw==
 
-postcss-double-position-gradients@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/postcss-double-position-gradients/-/postcss-double-position-gradients-4.0.2.tgz#855a23201f26be447210504e9b668429cbf4640c"
-  integrity sha512-GXL1RmFREDK4Q9aYvI2RhVrA6a6qqSMQQ5ke8gSH1xgV6exsqbcJpIumC7AOgooH6/WIG3/K/T8xxAiVHy/tJg==
+postcss-double-position-gradients@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.npmjs.org/postcss-double-position-gradients/-/postcss-double-position-gradients-4.0.3.tgz#9f6e0e17a5b98c3aae1174b8256fc2e2d0220dbf"
+  integrity sha512-Td1+C+kFCadnhRBMMf6D/eiQxjp33eAgwgMcLNYzZPcgXt1iU6vi/qEJ/YObp4nwn3QOtudFBMUOVHoGqmpfiA==
   dependencies:
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
     postcss-value-parser "^4.2.0"
 
 postcss-focus-visible@^8.0.2:
@@ -11796,15 +11798,15 @@ postcss-initial@^4.0.1:
   resolved "https://registry.npmjs.org/postcss-initial/-/postcss-initial-4.0.1.tgz#529f735f72c5724a0fb30527df6fb7ac54d7de42"
   integrity sha512-0ueD7rPqX8Pn1xJIjay0AZeIuDoF+V+VvMt/uOnn+4ezUKhZM/NokDeP6DwMNyIoYByuN/94IQnt5FEkaN59xQ==
 
-postcss-lab-function@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.npmjs.org/postcss-lab-function/-/postcss-lab-function-5.2.1.tgz#a1f324fa5c098bddf36de221abcc32070c77b5db"
-  integrity sha512-u71Adr4nWi+4EmSZq5EV/fg9d1dYO6W26RNtT9LISEyjhH1q23vJIUkSqRwHgD6v7xxsxLOY5cSdVyaNE6rqzw==
+postcss-lab-function@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.npmjs.org/postcss-lab-function/-/postcss-lab-function-5.2.2.tgz#a099c24192f07b49aeea2dc6e1f86fe1cfcbcd68"
+  integrity sha512-O5LrVYzOD3anfPqvSL1HiQ8PpKAav74Gst3pXgZBHSFo6t5sws3dLGTQMnw4hgn1t064SODWAjb9KcC39N820A==
   dependencies:
-    "@csstools/css-color-parser" "^1.1.2"
+    "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
     "@csstools/css-tokenizer" "^2.1.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
 
 postcss-loader@^4.3.0:
   version "4.3.0"
@@ -11817,10 +11819,10 @@ postcss-loader@^4.3.0:
     schema-utils "^3.0.0"
     semver "^7.3.4"
 
-postcss-logical@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.npmjs.org/postcss-logical/-/postcss-logical-6.1.0.tgz#c33ae75d3edaea7eb821e76dc4e6d0ecedc3200d"
-  integrity sha512-qb1+LpClhYjxac8SfOcWotnY3unKZesDqIOm+jnGt8rTl7xaIWpE2bPGZHxflOip1E/4ETo79qlJyRL3yrHn1g==
+postcss-logical@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/postcss-logical/-/postcss-logical-6.2.0.tgz#85e49cfee3ffda839d4befcab9f70c70a7bb337a"
+  integrity sha512-aqlfKGaY0nnbgI9jwUikp4gJKBqcH5noU/EdnIVceghaaDPYhZuyJVxlvWNy55tlTG5tunRKCTAX9yljLiFgmw==
   dependencies:
     postcss-value-parser "^4.2.0"
 
@@ -12134,19 +12136,19 @@ postcss-place@^8.0.1:
   dependencies:
     postcss-value-parser "^4.2.0"
 
-postcss-preset-env@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.3.2.tgz#9ec368e0f0df9c693d52b69d525d366fe4b1833a"
-  integrity sha512-VSAOsfxTXzO/gX5QljC8x8hN3ABbD9iqqLgqHqohBdNI5FhJptwpl96kpu+kYvvzK7BWwaHYou0IeYrp+NqmcQ==
+postcss-preset-env@^8.4.1:
+  version "8.4.1"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.4.1.tgz#ee65281c26f5f7e3d95e081efdd493460271fd09"
+  integrity sha512-IlcUT8ZSuQFWXJ/F+KvqmkzT85u33rlvd36IzM6qhdnccO7Rs3uBrHY802BFjNcPRawqSCDmPv7KKyCzNxx5Fw==
   dependencies:
     "@csstools/postcss-cascade-layers" "^3.0.1"
-    "@csstools/postcss-color-function" "^2.2.1"
-    "@csstools/postcss-color-mix-function" "^1.0.1"
+    "@csstools/postcss-color-function" "^2.2.2"
+    "@csstools/postcss-color-mix-function" "^1.0.2"
     "@csstools/postcss-font-format-keywords" "^2.0.2"
-    "@csstools/postcss-gradients-interpolation-method" "^3.0.4"
-    "@csstools/postcss-hwb-function" "^2.2.1"
-    "@csstools/postcss-ic-unit" "^2.0.2"
-    "@csstools/postcss-is-pseudo-class" "^3.2.0"
+    "@csstools/postcss-gradients-interpolation-method" "^3.0.5"
+    "@csstools/postcss-hwb-function" "^2.2.2"
+    "@csstools/postcss-ic-unit" "^2.0.3"
+    "@csstools/postcss-is-pseudo-class" "^3.2.1"
     "@csstools/postcss-logical-float-and-clear" "^1.0.1"
     "@csstools/postcss-logical-resize" "^1.0.1"
     "@csstools/postcss-logical-viewport-units" "^1.0.3"
@@ -12154,11 +12156,12 @@ postcss-preset-env@^8.3.2:
     "@csstools/postcss-media-queries-aspect-ratio-number-values" "^1.0.2"
     "@csstools/postcss-nested-calc" "^2.0.2"
     "@csstools/postcss-normalize-display-values" "^2.0.1"
-    "@csstools/postcss-oklab-function" "^2.2.1"
-    "@csstools/postcss-progressive-custom-properties" "^2.1.0"
+    "@csstools/postcss-oklab-function" "^2.2.2"
+    "@csstools/postcss-progressive-custom-properties" "^2.2.0"
+    "@csstools/postcss-relative-color-syntax" "^1.0.0"
     "@csstools/postcss-scope-pseudo-class" "^2.0.2"
     "@csstools/postcss-stepped-value-functions" "^2.1.1"
-    "@csstools/postcss-text-decoration-shorthand" "^2.2.3"
+    "@csstools/postcss-text-decoration-shorthand" "^2.2.4"
     "@csstools/postcss-trigonometric-functions" "^2.1.1"
     "@csstools/postcss-unset-value" "^2.0.1"
     autoprefixer "^10.4.14"
@@ -12166,7 +12169,7 @@ postcss-preset-env@^8.3.2:
     css-blank-pseudo "^5.0.2"
     css-has-pseudo "^5.0.2"
     css-prefers-color-scheme "^8.0.2"
-    cssdb "^7.5.3"
+    cssdb "^7.6.0"
     postcss-attribute-case-insensitive "^6.0.2"
     postcss-clamp "^4.1.0"
     postcss-color-functional-notation "^5.0.2"
@@ -12176,15 +12179,15 @@ postcss-preset-env@^8.3.2:
     postcss-custom-properties "^13.1.5"
     postcss-custom-selectors "^7.1.3"
     postcss-dir-pseudo-class "^7.0.2"
-    postcss-double-position-gradients "^4.0.2"
+    postcss-double-position-gradients "^4.0.3"
     postcss-focus-visible "^8.0.2"
     postcss-focus-within "^7.0.2"
     postcss-font-variant "^5.0.0"
     postcss-gap-properties "^4.0.1"
     postcss-image-set-function "^5.0.2"
     postcss-initial "^4.0.1"
-    postcss-lab-function "^5.2.1"
-    postcss-logical "^6.1.0"
+    postcss-lab-function "^5.2.2"
+    postcss-logical "^6.2.0"
     postcss-nesting "^11.2.1"
     postcss-opacity-percentage "^2.0.0"
     postcss-overflow-shorthand "^4.0.1"
