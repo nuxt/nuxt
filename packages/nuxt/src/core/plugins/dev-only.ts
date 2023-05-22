@@ -20,7 +20,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta
       const { type } = parseQuery(search)
 
       // vue files
-      if (pathname.endsWith('.vue') && (meta.framework === 'webpack' ? true : type === 'template' || !search)) {
+      if (pathname.endsWith('.vue') && (meta.framework === 'webpack' || type === 'template' || !search)) {
         return true
       }
     },
