@@ -9,7 +9,6 @@
   },
   "devDependencies": {
     "ofetch": "latest",
-    "ufo": "latest",
     "unplugin": "latest",
     "vitest": "latest",
     "vue-router": "latest"

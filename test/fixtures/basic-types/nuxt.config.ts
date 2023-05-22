@@ -1,6 +1,3 @@
-import type { NuxtPage } from 'nuxt/schema'
-import { withoutLeadingSlash } from 'ufo'
-
 export default defineNuxtConfig({
   experimental: {
     typedPages: true
