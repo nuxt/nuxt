@@ -31,7 +31,15 @@ function localScopedComposables () {
     return [useState(), useAsyncData(), useLazyAsyncData()]
   }
 
-  return [...basic(), ...hoisting(), ...complex()]
+  function deeperScope () {
+    const useState = _assert
+
+    return [(function () {
+      return useState()
+    })()]
+  }
+
+  return [...basic(), ...hoisting(), ...complex(), ...deeperScope()]
 }
 
 const skippedLocalScopedComposables = localScopedComposables().every(res => res === 'was not keyed')

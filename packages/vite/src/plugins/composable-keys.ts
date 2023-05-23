@@ -142,28 +142,28 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 })
 
 class ScopeTracker {
-  scopeIdStack: number[]
+  scopeIndexStack: number[]
   curScopeKey: string
 
   constructor () {
     // top level
-    this.scopeIdStack = [0]
+    this.scopeIndexStack = [0]
     this.curScopeKey = '0'
   }
 
   getKey () {
-    return this.scopeIdStack.slice(0, -1).join('-')
+    return this.scopeIndexStack.slice(0, -1).join('-')
   }
 
   enterScope () {
-    this.scopeIdStack.push(0)
+    this.scopeIndexStack.push(0)
     this.curScopeKey = this.getKey()
   }
 
   leaveScope () {
-    this.scopeIdStack.pop()
+    this.scopeIndexStack.pop()
     this.curScopeKey = this.getKey()
-    this.scopeIdStack[this.scopeIdStack.length - 1]++
+    this.scopeIndexStack[this.scopeIndexStack.length - 1]++
   }
 }
 
@@ -192,7 +192,13 @@ class ScopedVarsCollector {
   }
 
   hasVar (scopeKey: string, name: string) {
-    return !!this.all.get(scopeKey)?.has(name)
+    const indices = scopeKey.split('-').map(Number)
+    for (let i = indices.length; i > 0; i--) {
+      if (this.all.get(indices.slice(0, i).join('-'))?.has(name)) {
+        return true
+      }
+    }
+    return false
   }
 
   collect (n: Pattern) {
