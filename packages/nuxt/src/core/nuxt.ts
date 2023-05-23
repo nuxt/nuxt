@@ -363,7 +363,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
-    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+    if (isFileChange && RESTART_RE.test(path)) {
       console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
@@ -427,3 +427,5 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   return nuxt
 }
+
+const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i

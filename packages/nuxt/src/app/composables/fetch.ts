@@ -134,7 +134,7 @@ export function useLazyFetch<
   DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
 export function useLazyFetch<
   ResT = void,
@@ -147,12 +147,12 @@ export function useLazyFetch<
   DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, Method>, 'lazy'>,
+  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
   arg2?: string
 ) {
   const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  return useFetch<ResT, ErrorT, ReqT, DefaultT, _ResT, PickKeys>(request, {
+  return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
     lazy: true
   },

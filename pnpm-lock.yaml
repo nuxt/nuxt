@@ -913,7 +913,32 @@ importers:
         specifier: latest
         version: 4.2.1(vue@3.3.4)
 
+  test/fixtures/basic-types:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      ofetch:
+        specifier: latest
+        version: 1.0.1
+      unplugin:
+        specifier: latest
+        version: 1.3.1
+      vitest:
+        specifier: latest
+        version: 0.31.1(playwright@1.34.0)
+      vue-router:
+        specifier: latest
+        version: 4.2.1(vue@3.3.4)
+
   test/fixtures/minimal:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/minimal-types:
     dependencies:
       nuxt:
         specifier: workspace:*

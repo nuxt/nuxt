@@ -25,10 +25,10 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
     name: 'nuxt:components-loader',
     enforce: 'post',
     transformInclude (id) {
-      if (exclude.some(pattern => id.match(pattern))) {
+      if (exclude.some(pattern => pattern.test(id))) {
         return false
       }
-      if (include.some(pattern => id.match(pattern))) {
+      if (include.some(pattern => pattern.test(id))) {
         return true
       }
       return isVue(id, { type: ['template', 'script'] })
