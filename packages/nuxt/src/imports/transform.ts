@@ -4,17 +4,20 @@ import { normalize } from 'pathe'
 import type { ImportsOptions } from 'nuxt/schema'
 import { isJS, isVue } from '../core/utils'
 
+const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
+const IMPORTS_RE = /(['"])#imports\1/
+
 export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => {
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
     transformInclude (id) {
       // Included
-      if (options.transform?.include?.some(pattern => id.match(pattern))) {
+      if (options.transform?.include?.some(pattern => pattern.test(id))) {
         return true
       }
       // Excluded
-      if (options.transform?.exclude?.some(pattern => id.match(pattern))) {
+      if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
         return false
       }
 
@@ -28,9 +31,9 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     },
     async transform (code, id) {
       id = normalize(id)
-      const isNodeModule = id.match(/[\\/]node_modules[\\/]/) && !options.transform?.include?.some(pattern => id.match(pattern))
+      const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
       // For modules in node_modules, we only transform `#imports` but not doing imports
-      if (isNodeModule && !code.match(/(['"])#imports\1/)) {
+      if (isNodeModule && !IMPORTS_RE.test(code)) {
         return
       }
 
