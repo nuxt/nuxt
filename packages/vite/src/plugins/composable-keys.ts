@@ -168,27 +168,26 @@ class ScopeTracker {
 }
 
 class ScopedVarsCollector {
-  curScopeVars: Set<string>
+  curScopeKey: string
   all: Map<string, Set<string>>
 
   constructor () {
-    this.curScopeVars = new Set()
     this.all = new Map()
     // top level
-    this.all.set('0', this.curScopeVars)
+    this.curScopeKey = '0'
   }
 
   refresh (scopeKey: string) {
-    let vars = this.all.get(scopeKey)
-    if (!vars) {
-      vars = new Set()
-    }
-    this.curScopeVars = vars
-    this.all.set(scopeKey, vars)
+    this.curScopeKey = scopeKey
   }
 
   addVar (name: string) {
-    this.curScopeVars.add(name)
+    let vars = this.all.get(this.curScopeKey)
+    if (!vars) {
+      vars = new Set()
+      this.all.set(this.curScopeKey, vars)
+    }
+    vars.add(name)
   }
 
   hasVar (scopeKey: string, name: string) {
