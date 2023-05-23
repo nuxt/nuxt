@@ -48,7 +48,7 @@ export function matchWithStringOrRegex (value: string, matcher: string | RegExp)
   if (typeof matcher === 'string') {
     return value === matcher
   } else if (matcher instanceof RegExp) {
-    return !!value.match(matcher)
+    return matcher.test(value)
   }
 
   return false
