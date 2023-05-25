@@ -6,11 +6,10 @@ import { hasProtocol, joinURL, parseURL } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
-import { createError, showError } from './error'
+import { createError, isNuxtError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
-import { isNuxtError } from '#app'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
