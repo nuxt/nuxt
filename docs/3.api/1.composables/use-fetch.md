@@ -12,7 +12,7 @@ function useFetch(
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT>>
 
-type UseFetchOptions = {
+type UseFetchOptions<DataT> = {
   key?: string
   method?: string
   query?: SearchParams
@@ -26,7 +26,7 @@ type UseFetchOptions = {
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
-  watch?: WatchSource[]
+  watch?: WatchSource[] | false
 }
 
 type AsyncData<DataT, ErrorT> = {
@@ -59,12 +59,13 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 
 * **Options (from `useAsyncData`)**:
   * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAsyncData` is used.
-  * `server`: Whether to fetch the data on the server (defaults to `true`).
-  * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
-  * `pick`: Only pick specified keys in this array from the `handler` function result.
-  * `watch`: Watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
-  * `transform`: A function that can be used to alter `handler` function result after resolving.
-  * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
+  * `server`: whether to fetch the data on the server (defaults to `true`)
+  * `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
+  * `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
+  * `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
+  * `transform`: a function that can be used to alter `handler` function result after resolving
+  * `pick`: only pick specified keys in this array from the `handler` function result
+  * `watch`: watch reactive sources to auto-refresh
 
 ::alert{type=warning}
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
