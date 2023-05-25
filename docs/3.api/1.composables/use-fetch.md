@@ -65,7 +65,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   * `transform`: a function that can be used to alter `handler` function result after resolving
   * `pick`: only pick specified keys in this array from the `handler` function result
-  * `watch`: watch reactive sources to auto-refresh
+  * `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
 
 ::alert{type=warning}
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
