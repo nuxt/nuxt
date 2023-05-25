@@ -86,11 +86,15 @@ async function initNuxt (nuxt: Nuxt) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
       transform: true
@@ -359,7 +363,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
-    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+    if (isFileChange && RESTART_RE.test(path)) {
       console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
@@ -423,3 +427,5 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   return nuxt
 }
+
+const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i

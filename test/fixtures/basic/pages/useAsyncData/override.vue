@@ -15,14 +15,14 @@ if (count || data.value !== 1) {
 }
 
 timeout = 100
-const p = refresh({ dedupe: true })
+const p = refresh({ dedupe: true, _initial: false })
 
 if (process.client && (count !== 0 || data.value !== 1)) {
   throw new Error('count should start at 0')
 }
 
 timeout = 0
-await refresh()
+await refresh({ _initial: false })
 
 if (process.client && (count !== 1 || data.value !== 1)) {
   throw new Error('override should execute')

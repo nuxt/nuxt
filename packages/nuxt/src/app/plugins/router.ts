@@ -235,21 +235,23 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
         nuxtApp._processingMiddleware = true
 
-        const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
+        if (process.client || !nuxtApp.ssrContext?.islandContext) {
+          const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
-        for (const middleware of middlewareEntries) {
-          const result = await nuxtApp.runWithContext(() => middleware(to, from))
-          if (process.server) {
-            if (result === false || result instanceof Error) {
-              const error = result || createError({
-                statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`
-              })
-              delete nuxtApp._processingMiddleware
-              return nuxtApp.runWithContext(() => showError(error))
+          for (const middleware of middlewareEntries) {
+            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (process.server) {
+              if (result === false || result instanceof Error) {
+                const error = result || createError({
+                  statusCode: 404,
+                  statusMessage: `Page Not Found: ${initialURL}`
+                })
+                delete nuxtApp._processingMiddleware
+                return nuxtApp.runWithContext(() => showError(error))
+              }
             }
+            if (result || result === false) { return result }
           }
-          if (result || result === false) { return result }
         }
       })
 
