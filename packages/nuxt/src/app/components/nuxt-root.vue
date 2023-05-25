@@ -5,6 +5,12 @@
     <component :is="SingleRenderer" v-else-if="SingleRenderer" />
     <AppComponent v-else />
   </Suspense>
+
+  <DevOnly>
+    <ClientOnly>
+      <VitePluginChecker />
+    </ClientOnly>
+  </DevOnly>
 </template>
 
 <script setup>
@@ -12,6 +18,9 @@ import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from
 import { useNuxtApp } from '#app/nuxt'
 import { isNuxtError, showError, useError } from '#app/composables/error'
 import { useRoute } from '#app/composables/router'
+import DevOnly from '#app/components/dev-only'
+import ClientOnly from '#app/components/client-only'
+import VitePluginChecker from '#app/components/vite-plugin-checker.vue'
 import AppComponent from '#build/app-component.mjs'
 
 const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
