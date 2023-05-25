@@ -10,6 +10,7 @@ import { createError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
+import { isNuxtError } from '#app'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -158,7 +159,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 
   if (!err) { return false }
 
-  if (typeof err === 'object' && err.fatal) {
+  if (isNuxtError(err) && err.fatal) {
     const nuxtApp = useNuxtApp()
     nuxtApp.runWithContext(() => showError(err))
   }
