@@ -6,7 +6,7 @@ import { hasProtocol, joinURL, parseURL } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
-import { createError, isNuxtError, showError } from './error'
+import { createError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
@@ -158,12 +158,13 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 
   if (!err) { return false }
 
-  if (isNuxtError(err) && err.fatal) {
-    const nuxtApp = useNuxtApp()
-    nuxtApp.runWithContext(() => showError(err))
+  err = createError(err)
+
+  if (err.fatal) {
+    useNuxtApp().runWithContext(() => showError(err as NuxtError))
   }
 
-  throw createError(err)
+  throw err
 }
 
 export const setPageLayout = (layout: string) => {
