@@ -34,12 +34,12 @@
     "ignore": "^5.2.4",
     "nitropack": "^2.4.1",
     "unbuild": "latest",
-    "unctx": "^2.3.0",
+    "unctx": "^2.3.1",
     "vite": "~4.3.8",
     "vue": "3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-router": "^4.2.1",
-    "webpack": "^5.83.1"
+    "webpack": "^5.84.0"
   },
   "dependencies": {
     "defu": "^6.1.2",
