@@ -1,4 +1,4 @@
 ---
 navigation: false
-redirect: /guide/going-further/tooling
+redirect: /guide/going-further/internals
 ---

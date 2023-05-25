@@ -1,5 +1,5 @@
 ---
 title: "Utils"
 navigation: false
-redirect: /api/utils/
+redirect: /api/utils/dollarfetch
 ---
