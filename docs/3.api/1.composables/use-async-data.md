@@ -47,7 +47,7 @@ interface AsyncDataExecuteOptions {
 * **handler**: an asynchronous function that returns a value
 * **options**:
   * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
-  * _default_: a factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option
+  * _default_: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   * _server_: whether to fetch the data on the server (defaults to `true`)
   * _transform_: a function that can be used to alter `handler` function result after resolving
   * _pick_: only pick specified keys in this array from the `handler` function result
