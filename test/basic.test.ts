@@ -710,6 +710,14 @@ describe('middlewares', () => {
     expect(res.status).toEqual(401)
   })
 
+  it('should allow aborting navigation fatally on client-side', async () => {
+    const html = await $fetch('/middleware-abort')
+    expect(html).not.toContain('This is the error page')
+    const page = await createPage('/middleware-abort')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerHTML('body')).toContain('This is the error page')
+  })
+
   it('should inject auth', async () => {
     const html = await $fetch('/auth')
 
