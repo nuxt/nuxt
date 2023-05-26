@@ -22,7 +22,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
       types: ['node'],
-      baseUrl: relative(nuxt.options.buildDir, nuxt.options.rootDir),
       paths: {}
     },
     include: [
@@ -50,10 +49,10 @@ export const writeTypes = async (nuxt: Nuxt) => {
       continue
     }
     const relativePath = isAbsolute(aliases[alias])
-      ? relative(nuxt.options.rootDir, aliases[alias]) || '.'
+      ? withLeadingDot(relative(nuxt.options.buildDir, aliases[alias]) || '.')
       : aliases[alias]
 
-    const stats = await fsp.stat(resolve(nuxt.options.rootDir, relativePath)).catch(() => null /* file does not exist */)
+    const stats = await fsp.stat(resolve(nuxt.options.buildDir, relativePath)).catch(() => null /* file does not exist */)
     tsConfig.compilerOptions = tsConfig.compilerOptions || {}
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
@@ -108,6 +107,14 @@ export const writeTypes = async (nuxt: Nuxt) => {
   nuxt.hook('builder:prepared', writeFile)
 
   await writeFile()
+}
+
+const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
+function withLeadingDot (path: string) {
+  if (LEADING_DOT_RE.test(path)) {
+    return path
+  }
+  return `./${path}`
 }
 
 function renderAttrs (obj: Record<string, string>) {
