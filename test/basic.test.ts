@@ -394,7 +394,7 @@ describe('pages', () => {
   })
 })
 
-describe.only('nuxt composables', () => {
+describe('nuxt composables', () => {
   it('has useRequestURL()', async () => {
     const html = await $fetch('/url')
     expect(html).toContain('path: /url')
