@@ -1,7 +1,7 @@
 import { isAbsolute } from 'pathe'
 // import webpack from '@rspack/core'
-// import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-// import { logger } from '@nuxt/kit'
+import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import { logger } from '@nuxt/kit'
 import type { RspackConfigContext } from '../utils/config'
 import { applyPresets, getRspackConfig } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
@@ -35,6 +35,9 @@ function serverPreset (ctx: RspackConfigContext) {
     splitChunks: false,
     minimize: false
   }
+
+  // TODO remove this, server rebuild issue workaround
+  config.devServer = {}
 }
 
 function serverStandalone (ctx: RspackConfigContext) {
@@ -81,18 +84,19 @@ function serverPlugins (ctx: RspackConfigContext) {
   config.plugins = config.plugins || []
 
   // Server polyfills
-  // TODO:
-  // if (options.webpack.serverURLPolyfill) {
-  //   config.plugins.push(new webpack.ProvidePlugin({
-  //     URL: [options.webpack.serverURLPolyfill, 'URL'],
-  //     URLSearchParams: [options.webpack.serverURLPolyfill, 'URLSearchParams']
-  //   }))
-  // }
+  if (options.webpack.serverURLPolyfill) {
+    config.builtins!.provide = config.builtins!.provide || {}
+    Object.assign(config.builtins!.provide, {
+      URL: [options.webpack.serverURLPolyfill, 'URL'],
+      URLSearchParams: [options.webpack.serverURLPolyfill, 'URLSearchParams']
+    })
+  }
 
   // Add type-checking
-  // if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-  //   config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-  //     logger
-  //   }))
-  // }
+  if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+    // @ts-ignore
+    config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+      logger
+    }))
+  }
 }

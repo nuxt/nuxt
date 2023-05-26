@@ -2,9 +2,9 @@ import querystring from 'node:querystring'
 import { resolve } from 'pathe'
 // import webpack from '@rspack/core'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-// import { logger } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
-// import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 import type { RspackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
@@ -103,11 +103,12 @@ function clientPlugins (ctx: RspackConfigContext) {
 
   // Normally type checking runs in server config, but in `ssr: false` there is
   // no server build, so we inject here instead.
-  // if (!ctx.nuxt.options.ssr) {
-  //   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-  //     config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-  //       logger
-  //     }))
-  //   }
-  // }
+  if (!ctx.nuxt.options.ssr) {
+    if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+      // @ts-ignore
+      config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+        logger
+      }))
+    }
+  }
 }

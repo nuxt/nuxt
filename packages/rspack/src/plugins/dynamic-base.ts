@@ -7,7 +7,7 @@ interface DynamicBasePluginOptions {
 }
 
 const defaults: DynamicBasePluginOptions = {
-  globalPublicPath: '__rspack_public_path__',
+  globalPublicPath: '__webpack_public_path__',
   sourcemap: true
 }
 

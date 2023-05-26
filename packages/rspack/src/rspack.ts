@@ -3,7 +3,7 @@ import { createCompiler } from '@rspack/core'
 import type { NodeMiddleware } from 'h3'
 import { fromNodeMiddleware, defineEventHandler /* useBase */ } from 'h3'
 // import type { OutputFileSystem } from '@rspack/dev-middleware'
-import rspackDevMiddleware, { getRspackMemoryAssets } from '@rspack/dev-middleware'
+import rspackDevMiddleware from '@rspack/dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 // @ts-expect-error
 import type { Compiler, Watching, Stats } from '@rspack/core'
@@ -40,12 +40,11 @@ export async function bundle (nuxt: Nuxt) {
   // @ts-ignore
   await nuxt.callHook('rspack:config', webpackConfigs)
 
-  // // Initialize shared MFS for dev
+  // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
-    // TODO: need support for runtime __webpack_public_path__
     config.plugins!.push(DynamicBasePlugin.rspack({
       sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
@@ -102,7 +101,6 @@ async function createDevMiddleware (compiler: Compiler) {
     ...nuxt.options.webpack.devMiddleware
   })
 
-  // @ts-ignore
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
@@ -115,11 +113,8 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  // @ts-ignore
-  const devHandler = fromNodeMiddleware(getRspackMemoryAssets(compiler, devMiddleware))
   const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
-    await devHandler(event)
     await hotHandler(event)
   }))
 
