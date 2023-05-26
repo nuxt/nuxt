@@ -45,9 +45,9 @@
     "@types/semver": "^7.5.0",
     "nitropack": "^2.4.1",
     "unbuild": "latest",
-    "vite": "^4.3.8",
+    "vite": "^4.3.9",
     "vitest": "^0.31.1",
-    "webpack": "^5.84.0"
+    "webpack": "^5.84.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
