@@ -1503,7 +1503,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
     const page = await createPage('/useAsyncData/status')
     await page.waitForLoadState('networkidle')
 
-    expect(await page.locator('#status5-values').textContent()).toContain('IDLE,PENDING,SUCCESS')
+    expect(await page.locator('#status5-values').textContent()).toContain('idle,pending,success')
 
     await page.close()
   })
