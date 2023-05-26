@@ -41,12 +41,11 @@ export default defineUntypedSchema({
     profile: process.argv.includes('--profile'),
 
     /**
-     * Enables Common CSS Extraction using
-     * [Vue Server Renderer guidelines](https://ssr.vuejs.org/guide/css.html).
+     * Enables Common CSS Extraction.
      *
-     * Using [extract-css-chunks-webpack-plugin](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/) under the hood, your CSS will be extracted
+     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
-     * JavaScript separately and is worth trying if you have a lot of global or shared CSS.
+     * JavaScript separately.
      *
      * @example
      * ```js
