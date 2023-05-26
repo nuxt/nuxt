@@ -15,6 +15,8 @@ import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
 
+const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
+
 export default defineNuxtModule({
   meta: {
     name: 'pages'
@@ -180,7 +182,7 @@ export default defineNuxtModule({
       ].filter(Boolean)
 
       const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
-      if (event !== 'change' && path.match(pathPattern)) {
+      if (event !== 'change' && pathPattern.test(path)) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -208,7 +210,7 @@ export default defineNuxtModule({
           const processPages = (pages: NuxtPage[], currentPath = '/') => {
             for (const page of pages) {
               // Add root of optional dynamic paths and catchalls
-              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { prerenderRoutes.add(currentPath) }
+              if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) { prerenderRoutes.add(currentPath) }
               // Skip dynamic paths
               if (page.path.includes(':')) { continue }
               const route = joinURL(currentPath, page.path)

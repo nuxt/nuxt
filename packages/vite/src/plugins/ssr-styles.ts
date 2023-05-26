@@ -14,6 +14,8 @@ interface SSRStylePluginOptions {
   components: Component[]
 }
 
+const SUPPORTED_FILES_RE = /\.(vue|((c|m)?j|t)sx?)$/
+
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
   const idRefMap: Record<string, string> = {}
@@ -101,7 +103,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
 
-      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro || query.nuxt_component) { return }
+      if (!SUPPORTED_FILES_RE.test(pathname) || query.macro || query.nuxt_component) { return }
 
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }

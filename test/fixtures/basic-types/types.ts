@@ -7,7 +7,7 @@ import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLink, NuxtPage } from '#components'
+import { NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -15,6 +15,10 @@ interface TestResponse { message: string }
 describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    // registered in extends
+    expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
+    // registered in module
+    expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
     expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
@@ -90,11 +94,14 @@ describe('aliases', () => {
 
 describe('middleware', () => {
   it('recognizes named middleware', () => {
-    definePageMeta({ middleware: 'inject-auth' })
+    definePageMeta({ middleware: 'named' })
+    // provided by layer
+    definePageMeta({ middleware: 'override' })
+    definePageMeta({ middleware: 'foo' })
     // @ts-expect-error ignore global middleware
-    definePageMeta({ middleware: 'redirect' })
+    definePageMeta({ middleware: 'global' })
     // @ts-expect-error Invalid middleware
-    definePageMeta({ middleware: 'invalid-middleware' })
+    definePageMeta({ middleware: 'nonexistent' })
   })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
@@ -117,14 +124,14 @@ describe('typed router integration', () => {
     // @ts-expect-error this named route does not exist
     router.push({ name: 'some-thing' })
     // this one does
-    router.push({ name: 'fixed-keyed-child-parent' })
+    router.push({ name: 'page' })
     // @ts-expect-error this is an invalid param
-    router.push({ name: 'random-id', params: { bob: 23 } })
-    router.push({ name: 'random-id', params: { id: 4 } })
+    router.push({ name: 'param-id', params: { bob: 23 } })
+    router.push({ name: 'param-id', params: { id: 4 } })
   })
 
   it('allows typing useRoute', () => {
-    const route = useRoute('random-id')
+    const route = useRoute('param-id')
     // @ts-expect-error this param does not exist
     const _invalid = route.params.something
     // this param does
@@ -135,36 +142,40 @@ describe('typed router integration', () => {
     // @ts-expect-error this named route does not exist
     navigateTo({ name: 'some-thing' })
     // this one does
-    navigateTo({ name: 'fixed-keyed-child-parent' })
+    navigateTo({ name: 'page' })
     // @ts-expect-error this is an invalid param
-    navigateTo({ name: 'random-id', params: { bob: 23 } })
-    navigateTo({ name: 'random-id', params: { id: 4 } })
+    navigateTo({ name: 'param-id', params: { bob: 23 } })
+    navigateTo({ name: 'param-id', params: { id: 4 } })
   })
 
   it('allows typing middleware', () => {
     defineNuxtRouteMiddleware((to) => {
       expectTypeOf(to.name).not.toBeAny()
       // @ts-expect-error this route does not exist
-      expectTypeOf(to.name === 'bob').toMatchTypeOf<boolean>()
-      expectTypeOf(to.name === 'assets').toMatchTypeOf<boolean>()
+      expectTypeOf(to.name === 'bob').toEqualTypeOf<boolean>()
+      expectTypeOf(to.name === 'page').toEqualTypeOf<boolean>()
     })
   })
 
   it('respects pages:extend augmentation', () => {
     // added via pages:extend
-    expectTypeOf(useRoute().name === 'internal-async-parent').toMatchTypeOf<boolean>()
+    expectTypeOf(useRoute().name === 'internal-async-parent').toEqualTypeOf<boolean>()
     // @ts-expect-error this route does not exist
-    expectTypeOf(useRoute().name === 'invalid').toMatchTypeOf<boolean>()
+    expectTypeOf(useRoute().name === 'invalid').toEqualTypeOf<boolean>()
+  })
+
+  it('respects pages added via layer', () => {
+    expectTypeOf(useRoute().name === 'override').toEqualTypeOf<boolean>()
   })
 
   it('allows typing NuxtLink', () => {
     // @ts-expect-error this named route does not exist
     h(NuxtLink, { to: { name: 'some-thing' } })
     // this one does
-    h(NuxtLink, { to: { name: 'fixed-keyed-child-parent' } })
+    h(NuxtLink, { to: { name: 'page' } })
     // @ts-expect-error this is an invalid param
-    h(NuxtLink, { to: { name: 'random-id', params: { bob: 23 } } })
-    h(NuxtLink, { to: { name: 'random-id', params: { id: 4 } } })
+    h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
+    h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
   })
 })
 
@@ -172,6 +183,7 @@ describe('layouts', () => {
   it('recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
+    definePageMeta({ layout: 'override' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
   })
@@ -189,7 +201,8 @@ describe('modules', () => {
 
 describe('nuxtApp', () => {
   it('types injections provided by plugins', () => {
-    expectTypeOf(useNuxtApp().$asyncPlugin).toEqualTypeOf<() => string>()
+    expectTypeOf(useNuxtApp().$pluginInjection).toEqualTypeOf<() => ''>()
+    expectTypeOf(useNuxtApp().$foo).toEqualTypeOf<() => 'String generated from foo plugin!'>()
     expectTypeOf(useNuxtApp().$router).toEqualTypeOf<Router>()
   })
   it('marks unknown injections as unknown', () => {
@@ -263,6 +276,13 @@ describe('head', () => {
 describe('components', () => {
   it('includes types for NuxtPage', () => {
     expectTypeOf(NuxtPage).not.toBeAny()
+  })
+  it('includes types for other components', () => {
+    h(WithTypes)
+    // @ts-expect-error wrong prop type for this component
+    h(WithTypes, { aProp: '40' })
+
+    // TODO: assert typed slots, exposed, generics, etc.
   })
 })
 
