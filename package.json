@@ -51,6 +51,7 @@
     "chalk": "^5.2.0",
     "changelogen": "^0.5.3",
     "consola": "^3.1.0",
+    "cookie-es": "^1.0.0",
     "crawler": "^1.4.0",
     "devalue": "^4.3.2",
     "eslint": "^8.41.0",
