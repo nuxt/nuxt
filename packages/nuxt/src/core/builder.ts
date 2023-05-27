@@ -5,7 +5,7 @@ import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
-import { normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
@@ -96,8 +96,9 @@ function createGranularWatcher () {
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
   const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir).filter(d => d && !isIgnored(d))
-  for (const path of nuxt.options.watch) {
-    if (typeof path !== 'string') { continue }
+  for (const pattern of nuxt.options.watch) {
+    if (typeof pattern !== 'string') { continue }
+    const path = resolve(nuxt.options.srcDir, pattern)
     if (pathsToWatch.some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
     pathsToWatch.push(path)
   }
@@ -107,8 +108,9 @@ function createGranularWatcher () {
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
+      path = normalize(path)
       if (!pending) {
-        nuxt.callHook('builder:watch', event, normalize(path))
+        nuxt.callHook('builder:watch', event, path)
       }
       if (event === 'unlinkDir' && path in watchers) {
         watchers[path].close()
