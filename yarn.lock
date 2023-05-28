@@ -2170,10 +2170,10 @@
     write-pkg "4.0.0"
     yargs "16.2.0"
 
-"@ls-lint/ls-lint@^1.11.2":
-  version "1.11.2"
-  resolved "https://registry.npmjs.org/@ls-lint/ls-lint/-/ls-lint-1.11.2.tgz#fa7e8c404b7c2f9f7fe3e92b7d69fe37a15c0e1c"
-  integrity sha512-kX+CCjgNz+NHCaOcFyJLSBLRgAoyOxN18QFLpgucz5ILvbr60BGjwKaoPYTv/rBV/77L+Oz82lpP24mzJ2wGsQ==
+"@ls-lint/ls-lint@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@ls-lint/ls-lint/-/ls-lint-2.0.0.tgz#a31256efaeb1d97d6bcb4a98ed7f2e96809e6767"
+  integrity sha512-1QEk2tzSH5YBCgP+klCZJvdGHJFNQgJb8qPFpFwQPmvjmZMV0aPE11TZ4qd+BlTcteeCWzs5ewSIOVRx2xT+Lw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
