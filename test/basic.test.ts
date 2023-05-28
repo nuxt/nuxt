@@ -54,6 +54,7 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const page = await createPage('/no-scripts')
     expect(await page.locator('script').all()).toHaveLength(0)
+    await page.close()
   })
 })
 
@@ -731,6 +732,7 @@ describe('middlewares', () => {
     const page = await createPage('/middleware-abort')
     await page.waitForLoadState('networkidle')
     expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.close()
   })
 
   it('should inject auth', async () => {
@@ -1421,6 +1423,8 @@ describe('component islands', () => {
     // test islands slots interactivity
     await page.locator('#first-sugar-counter button').click()
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    await page.close()
   })
 })
 
