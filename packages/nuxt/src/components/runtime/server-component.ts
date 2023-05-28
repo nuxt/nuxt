@@ -17,6 +17,9 @@ const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 
+let id = 0
+const getId = process.client ? () => (id++).toString() : randomUUID
+
 export const createServerComponent = (name: string) => {
   return defineComponent({
     name,
@@ -48,7 +51,7 @@ const NuxtServerComponent = defineComponent({
   },
   async setup (props, { slots }) {
     const instance = getCurrentInstance()!
-    const uid = ref(getFragmentHTML(instance.vnode?.el)[0]?.match(SSR_UID_RE)?.[1] ?? randomUUID())
+    const uid = ref(getFragmentHTML(instance.vnode?.el)[0]?.match(SSR_UID_RE)?.[1] ?? getId())
 
     const nuxtApp = useNuxtApp()
     const mounted = ref(false)
@@ -125,7 +128,7 @@ const NuxtServerComponent = defineComponent({
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       return res.data.value!.html
-        .replace(UID_ATTR, () => `nuxt-ssr-component-uid="${randomUUID()}"`)
+        .replace(UID_ATTR, () => `nuxt-ssr-component-uid="${getId()}"`)
         .replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
           if (currentSlots.includes(slotName)) {
@@ -135,7 +138,7 @@ const NuxtServerComponent = defineComponent({
         })
     })
     function setUid () {
-      uid.value = html.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
+      uid.value = html.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
 
     await res

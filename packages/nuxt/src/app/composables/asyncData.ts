@@ -3,6 +3,7 @@ import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { createError } from './error'
+import { onNuxtReady } from './ready'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
 
@@ -300,6 +301,9 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   if (process.server) {
     return Promise.resolve()
   }
+
+  await new Promise<void>(resolve => onNuxtReady(resolve))
+
   const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
