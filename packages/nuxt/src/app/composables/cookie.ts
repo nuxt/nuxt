@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { appendResponseHeader } from 'h3'
+import { deleteCookie, getCookie, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
@@ -80,7 +80,16 @@ function writeClientCookie (name: string, value: any, opts: CookieSerializeOptio
 
 function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
-    // TODO: Try to smart join with existing Set-Cookie headers
-    appendResponseHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
+    // update if value is set
+    if (value !== null && value !== undefined) {
+      return setCookie(event, name, value, opts)
+    }
+
+    // delete if cookie exists in browser and value is null/undefined
+    if (getCookie(event, name) !== undefined) {
+      return deleteCookie(event, name, opts)
+    }
+
+    // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
 }

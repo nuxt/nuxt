@@ -399,6 +399,21 @@ describe('nuxt composables', () => {
     const html = await $fetch('/url')
     expect(html).toContain('path: /url')
   })
+  it('sets cookies correctly', async () => {
+    const res = await fetch('/cookies', {
+      headers: {
+        cookie: Object.entries({
+          'browser-accessed-but-not-used': 'provided-by-browser',
+          'browser-accessed-with-default-value': 'provided-by-browser',
+          'browser-set': 'provided-by-browser',
+          'browser-set-to-null': 'provided-by-browser',
+          'browser-set-to-null-with-default': 'provided-by-browser'
+        }).map(([key, value]) => `${key}=${value}`).join('; ')
+      }
+    })
+    const cookies = res.headers.get('set-cookie')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/"')
+  })
 })
 
 describe('rich payloads', () => {
