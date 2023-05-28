@@ -643,6 +643,9 @@ importers:
       clear:
         specifier: ^0.1.0
         version: 0.1.0
+      consola:
+        specifier: ^3.1.0
+        version: 3.1.0
       cssnano:
         specifier: ^6.0.1
         version: 6.0.1(postcss@8.4.24)
@@ -734,6 +737,9 @@ importers:
       '@types/estree':
         specifier: ^1.0.1
         version: 1.0.1
+      '@types/fs-extra':
+        specifier: ^11.0.1
+        version: 11.0.1
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -864,6 +870,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      '@types/fs-extra':
+        specifier: ^11.0.1
+        version: 11.0.1
       '@types/lodash-es':
         specifier: ^4.17.7
         version: 4.17.7

@@ -20,6 +20,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
     "@types/estree": "^1.0.1",
+    "@types/fs-extra": "^11.0.1",
     "unbuild": "latest",
     "vue": "3.3.4"
   },
@@ -30,6 +31,7 @@
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "autoprefixer": "^10.4.14",
     "clear": "^0.1.0",
+    "consola": "^3.1.0",
     "cssnano": "^6.0.1",
     "defu": "^6.1.2",
     "esbuild": "^0.17.19",
