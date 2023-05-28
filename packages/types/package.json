@@ -11,7 +11,7 @@
     "**/*.d.ts"
   ],
   "dependencies": {
-    "@types/babel__core": "7.20.0",
+    "@types/babel__core": "7.20.1",
     "@types/compression": "1.7.2",
     "@types/connect": "3.4.35",
     "@types/etag": "1.8.1",
