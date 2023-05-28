@@ -46,7 +46,7 @@
     "pathe": "^1.1.0",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.0.3",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.24",
     "postcss-import": "^15.1.0",
     "postcss-url": "^10.1.3",
     "rollup-plugin-visualizer": "^5.9.0",
