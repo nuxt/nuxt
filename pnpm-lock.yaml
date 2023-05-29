@@ -459,7 +459,7 @@ importers:
         version: 1.3.1
       unplugin-vue-router:
         specifier: ^0.6.4
-        version: 0.6.4(rollup@3.21.8)(vue-router@4.2.1)(vue@3.3.4)
+        version: 0.6.4(rollup@3.21.8)(vue-router@4.2.2)(vue@3.3.4)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -473,8 +473,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       vue-router:
-        specifier: ^4.2.1
-        version: 4.2.1(vue@3.3.4)
+        specifier: ^4.2.2
+        version: 4.2.2(vue@3.3.4)
     devDependencies:
       '@parcel/watcher':
         specifier: ^2.1.0
@@ -571,8 +571,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       vue-router:
-        specifier: ^4.2.1
-        version: 4.2.1(vue@3.3.4)
+        specifier: ^4.2.2
+        version: 4.2.2(vue@3.3.4)
       webpack:
         specifier: ^5.84.1
         version: 5.84.1
@@ -924,7 +924,7 @@ importers:
         version: 0.31.1(playwright@1.34.3)
       vue-router:
         specifier: latest
-        version: 4.2.1(vue@3.3.4)
+        version: 4.2.2(vue@3.3.4)
 
   test/fixtures/basic-types:
     dependencies:
@@ -943,7 +943,7 @@ importers:
         version: 0.31.1(playwright@1.34.3)
       vue-router:
         specifier: latest
-        version: 4.2.1(vue@3.3.4)
+        version: 4.2.2(vue@3.3.4)
 
   test/fixtures/minimal:
     dependencies:
@@ -8430,7 +8430,7 @@ packages:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
 
-  /unplugin-vue-router@0.6.4(rollup@3.21.8)(vue-router@4.2.1)(vue@3.3.4):
+  /unplugin-vue-router@0.6.4(rollup@3.21.8)(vue-router@4.2.2)(vue@3.3.4):
     resolution: {integrity: sha512-9THVhhtbVFxbsIibjK59oPwMI1UCxRWRPX7azSkTUABsxovlOXJys5SJx0kd/0oKIqNJuYgkRfAgPuO77SqCOg==}
     peerDependencies:
       vue-router: ^4.1.0
@@ -8450,7 +8450,7 @@ packages:
       pathe: 1.1.0
       scule: 1.0.0
       unplugin: 1.3.1
-      vue-router: 4.2.1(vue@3.3.4)
+      vue-router: 4.2.2(vue@3.3.4)
       yaml: 2.2.2
     transitivePeerDependencies:
       - rollup
@@ -8850,8 +8850,8 @@ packages:
       webpack: 5.84.1
     dev: false
 
-  /vue-router@4.2.1(vue@3.3.4):
-    resolution: {integrity: sha512-nW28EeifEp8Abc5AfmAShy5ZKGsGzjcnZ3L1yc2DYUo+MqbBClrRP9yda3dIekM4I50/KnEwo1wkBLf7kHH5Cw==}
+  /vue-router@4.2.2(vue@3.3.4):
+    resolution: {integrity: sha512-cChBPPmAflgBGmy3tBsjeoe3f3VOSG6naKyY5pjtrqLGbNEXdzCigFUHgBvp9e3ysAtFtEx7OLqcSDh/1Cq2TQ==}
     peerDependencies:
       vue: ^3.2.0
     dependencies:
