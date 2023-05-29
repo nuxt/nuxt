@@ -846,8 +846,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       vue-loader:
-        specifier: ^17.1.1
-        version: 17.1.1(vue@3.3.4)(webpack@5.84.1)
+        specifier: ^17.1.2
+        version: 17.1.2(vue@3.3.4)(webpack@5.84.1)
       webpack:
         specifier: ^5.84.1
         version: 5.84.1
@@ -8831,8 +8831,8 @@ packages:
       - supports-color
     dev: true
 
-  /vue-loader@17.1.1(vue@3.3.4)(webpack@5.84.1):
-    resolution: {integrity: sha512-qpqEVkKdrAsgyIBMHaiXurDeCuBWqRyKqg2GI4aG3NbggEls+BLqTZdqahbJJh7fm83sz+iz3gg6eDWdbNlG7Q==}
+  /vue-loader@17.1.2(vue@3.3.4)(webpack@5.84.1):
+    resolution: {integrity: sha512-AxCiJ2aPPwJC5CWtsQH3d5WSw67v55oLFHBmzrc5kjSr6i1dn5uoj5QsuokApirvWBCegRmfnE/MYFyhKMUwxw==}
     peerDependencies:
       '@vue/compiler-sfc': '*'
       vue: '*'
