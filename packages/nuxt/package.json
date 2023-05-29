@@ -101,7 +101,7 @@
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.1"
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.1.0",

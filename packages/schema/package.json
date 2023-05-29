@@ -38,7 +38,7 @@
     "vite": "~4.3.9",
     "vue": "3.3.4",
     "vue-bundle-renderer": "^1.0.3",
-    "vue-router": "^4.2.1",
+    "vue-router": "^4.2.2",
     "webpack": "^5.84.1"
   },
   "dependencies": {
