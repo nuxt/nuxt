@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { loadNuxt } from '../loader/nuxt'
-import { hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility'
+import { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility'
 import { defineNuxtModule } from './define'
 
 describe('nuxt module compatibility', () => {
@@ -19,7 +19,18 @@ describe('nuxt module compatibility', () => {
     expect(hasNuxtModule('nuxt-module-foo', nuxt)).toStrictEqual(true)
     await nuxt.close()
   })
-  it('detects module instance versions', async () => {
+  it('can retrieve module version from module instance', async () => {
+    const nuxt = await loadNuxt({})
+    const module = defineNuxtModule({
+      meta: {
+        name: 'nuxt-module-foo',
+        version: '1.0.0'
+      }
+    })
+    expect(await getNuxtModuleVersion(module, nuxt)).toEqual('1.0.0')
+    await nuxt.close()
+  })
+  it('check module instance version compatibility', async () => {
     const nuxt = await loadNuxt({})
     const module = defineNuxtModule({
       meta: {
