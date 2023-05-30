@@ -1,11 +1,11 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import type { Nuxt, NuxtModule } from '@nuxt/schema'
 import { useNuxt } from '../context'
-import { normaliseSemanticVersion } from '../compatibility'
+import { normalizeSemanticVersion } from '../compatibility'
 import { loadNuxtModuleInstance } from './install'
 
 /**
- * CHeck if a Nuxt module is installed by name.
+ * Check if a Nuxt module is installed by name.
  *
  * This will check both the installed modules and the modules to be installed. Note
  * that it cannot detect if a module is _going to be_ installed programmatically by another module.
@@ -23,7 +23,7 @@ export async function hasNuxtModuleCompatibility (module: string | NuxtModule, s
   if (!version) {
     return false
   }
-  return satisfies(normaliseSemanticVersion(version), semverVersion, {
+  return satisfies(normalizeSemanticVersion(version), semverVersion, {
     includePrerelease: true
   })
 }
