@@ -39,15 +39,15 @@ export async function getNuxtModuleVersion (module: string | NuxtModule, nuxt: N
   if (!moduleMeta.name) { return false }
   // maybe the version got attached wihtin the installed module instance?
   const version = nuxt.options._installedModules
-    .filter(({ meta }) => meta.name === moduleMeta.name)
-    .map(({ meta }) => meta.version)?.[0]
+    .filter(m => m.meta.name === moduleMeta.name)
+    .map(m => m.meta.version)?.[0]
   if (version) {
     return version
   }
   // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
   if (typeof module !== 'string' && nuxt.options.modules.includes(moduleMeta.name)) {
     const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name)
-    return buildTimeModuleMeta.version
+    return buildTimeModuleMeta.version || false
   }
   return false
 }
