@@ -13,8 +13,9 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   const nuxtApp = useNuxtApp()
   const route = useRoute()
   const vm = getCurrentInstance()!
+  const routeIndex = route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type)) ?? ''
   const { fetchKey } = vm.proxy!.$options
-  const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
+  const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) || (route.fullPath + ':' + routeIndex)
   const { data, error } = await useAsyncData(`options:asyncdata:${key}`, () => nuxtApp.runWithContext(() => fn(nuxtApp)))
   if (error.value) {
     throw createError(error.value)

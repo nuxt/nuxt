@@ -578,8 +578,10 @@ describe('legacy async data', () => {
   it('should work with defineNuxtComponent', async () => {
     const html = await $fetch('/legacy/async-data')
     expect(html).toContain('<div>Hello API</div>')
+    expect(html).toContain('<div>foo</div>')
     const { script } = parseData(html)
-    expect(script.data['options:asyncdata:/legacy/async-data'].hello).toEqual('Hello API')
+    expect(script.data['options:asyncdata:/legacy/async-data:0'].hello).toEqual('Hello API')
+    expect(script.data['options:asyncdata:/legacy/async-data:1'].hello).toEqual('foo')
   })
 })
 
