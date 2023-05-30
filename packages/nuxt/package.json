@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -101,7 +101,7 @@
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.1"
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.1.0",
