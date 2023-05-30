@@ -12,7 +12,7 @@ describe('nuxt module compatibility', () => {
             meta: {
               name: 'nuxt-module-foo'
             }
-          }),
+          })
         ]
       }
     })
