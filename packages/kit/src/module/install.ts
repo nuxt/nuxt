@@ -9,9 +9,9 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 
 /** Installs a module on a Nuxt instance. */
-export async function installModule (moduleToInstall: string | NuxtModule, _inlineOptions?: any, _nuxt?: Nuxt) {
+export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, _nuxt?: Nuxt) {
   const nuxt = useNuxt()
-  const { nuxtModule, inlineOptions, extraModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, _inlineOptions)
+  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall)
 
   // Call module
   const res = (
@@ -30,7 +30,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({
-    meta: defu((await nuxtModule.getMeta?.()) || {}, extraModuleMeta || {}),
+    meta: defu((await nuxtModule.getMeta?.()) || {}, buildTimeModuleMeta || {}),
     timings: res.timings,
     entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
   })
@@ -51,7 +51,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule) {
   const nuxt = useNuxt()
-  let extraModuleMeta: ModuleMeta
+  let buildTimeModuleMeta: ModuleMeta = {}
   // Import if input is string
   if (typeof nuxtModule === 'string') {
     const src = await resolvePath(nuxtModule)
@@ -64,7 +64,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule) {
     }
     // nuxt-module-builder generates a module.json with metadata including the version
     if (existsSync(join(dirname(src), 'module.json'))) {
-      extraModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
+      buildTimeModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
     }
   }
 
@@ -73,5 +73,5 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule) {
     throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
   }
 
-  return { nuxtModule, extraModuleMeta } as { nuxtModule: NuxtModule<any>, extraModuleMeta: undefined | ModuleMeta }
+  return { nuxtModule, buildTimeModuleMeta } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
 }
