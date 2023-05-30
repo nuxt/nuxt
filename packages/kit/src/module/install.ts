@@ -9,9 +9,8 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 
 /** Installs a module on a Nuxt instance. */
-export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, _nuxt?: Nuxt) {
-  const nuxt = useNuxt()
-  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall)
+export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
+  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   // Call module
   const res = (
@@ -49,8 +48,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return p.split('node_modules/').pop() as string
 }
 
-export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule) {
-  const nuxt = useNuxt()
+export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
   // Import if input is string
   if (typeof nuxtModule === 'string') {
