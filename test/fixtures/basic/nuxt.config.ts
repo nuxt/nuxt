@@ -40,6 +40,12 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    esbuild: {
+      options: {
+        // in order to test bigint serialisation
+        target: 'es2022'
+      }
+    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
