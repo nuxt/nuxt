@@ -28,7 +28,8 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
 }
 
 export const defineNuxtComponent: typeof defineComponent =
-  function defineNuxtComponent (options: any, key?: string): any {
+  function defineNuxtComponent (...args: any[]): any {
+    const [options, key] = args
     const { setup } = options
 
     // Avoid wrapping if no options api is used
