@@ -7,7 +7,8 @@ import { loadNuxtModuleInstance } from './install'
 /**
  * CHeck if a Nuxt module is installed by name.
  *
- * This will check both the installed modules and the modules to be installed.
+ * This will check both the installed modules and the modules to be installed. Note
+ * that it cannot detect if a module is _going to be_ installed programmatically by another module.
  */
 export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
