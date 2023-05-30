@@ -1,15 +1,12 @@
 <template>
-  <div>
-    <div>{{ fooParent }}</div>
-    <NuxtPage />
-  </div>
+  <div>{{ fooChild }}</div>
 </template>
 
 <script>
 export default defineNuxtComponent({
   asyncData () {
     return {
-      fooParent: 'fooParent'
+      fooChild: 'fooChild'
     }
   }
 })

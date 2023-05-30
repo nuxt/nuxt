@@ -7,7 +7,7 @@
 
 <script>
 export default defineNuxtComponent({
-  fetchKey: () => 'thing',
+  fetchKey: () => 'hello',
   async setup () {
     await nextTick()
     useRuntimeConfig()
