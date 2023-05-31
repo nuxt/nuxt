@@ -61,12 +61,12 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
-    "@types/fs-extra": "^11.0.1",
-    "@types/lodash-es": "^4.17.7",
-    "@types/pify": "^5.0.1",
-    "@types/webpack-bundle-analyzer": "^4.6.0",
-    "@types/webpack-hot-middleware": "^2.25.6",
-    "@types/webpack-virtual-modules": "^0.1.1",
+    "@types/fs-extra": "11.0.1",
+    "@types/lodash-es": "4.17.7",
+    "@types/pify": "5.0.1",
+    "@types/webpack-bundle-analyzer": "4.6.0",
+    "@types/webpack-hot-middleware": "2.25.6",
+    "@types/webpack-virtual-modules": "0.1.1",
     "unbuild": "latest",
     "vue": "3.3.4"
   },
