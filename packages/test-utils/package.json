@@ -33,10 +33,10 @@
     "ufo": "^1.1.2"
   },
   "devDependencies": {
-    "@jest/globals": "^29.5.0",
-    "playwright": "^1.34.3",
+    "@jest/globals": "29.5.0",
+    "playwright": "1.34.3",
     "unbuild": "latest",
-    "vitest": "^0.31.1"
+    "vitest": "0.31.1"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",

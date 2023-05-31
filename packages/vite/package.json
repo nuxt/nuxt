@@ -19,8 +19,8 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
-    "@types/estree": "^1.0.1",
-    "@types/fs-extra": "^11.0.1",
+    "@types/estree": "1.0.1",
+    "@types/fs-extra": "11.0.1",
     "unbuild": "latest",
     "vue": "3.3.4"
   },

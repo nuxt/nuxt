@@ -104,15 +104,15 @@
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
-    "@parcel/watcher": "^2.1.0",
-    "@types/estree": "^1.0.1",
-    "@types/fs-extra": "^11.0.1",
-    "@types/prompts": "^2.4.4",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "acorn": "^8.8.2",
+    "@parcel/watcher": "2.1.0",
+    "@types/estree": "1.0.1",
+    "@types/fs-extra": "11.0.1",
+    "@types/prompts": "2.4.4",
+    "@vitejs/plugin-vue": "4.2.3",
+    "acorn": "8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.9",
-    "vitest": "^0.31.1"
+    "vite": "4.3.9",
+    "vitest": "0.31.1"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

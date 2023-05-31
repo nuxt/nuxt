@@ -26,20 +26,20 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/telemetry": "^2.2.0",
-    "@unhead/schema": "^1.1.27",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "@vitejs/plugin-vue-jsx": "^3.0.1",
-    "h3": "^1.6.6",
-    "ignore": "^5.2.4",
-    "nitropack": "^2.4.1",
+    "@nuxt/telemetry": "2.2.0",
+    "@unhead/schema": "1.1.27",
+    "@vitejs/plugin-vue": "4.2.3",
+    "@vitejs/plugin-vue-jsx": "3.0.1",
+    "h3": "1.6.6",
+    "ignore": "5.2.4",
+    "nitropack": "2.4.1",
     "unbuild": "latest",
-    "unctx": "^2.3.1",
-    "vite": "~4.3.9",
+    "unctx": "2.3.1",
+    "vite": "4.3.9",
     "vue": "3.3.4",
-    "vue-bundle-renderer": "^1.0.3",
-    "vue-router": "^4.2.2",
-    "webpack": "^5.84.1"
+    "vue-bundle-renderer": "1.0.3",
+    "vue-router": "4.2.2",
+    "webpack": "5.84.1"
   },
   "dependencies": {
     "defu": "^6.1.2",

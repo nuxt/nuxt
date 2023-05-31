@@ -40,14 +40,14 @@
     "untyped": "^1.3.2"
   },
   "devDependencies": {
-    "@types/hash-sum": "^1.0.0",
-    "@types/lodash.template": "^4.5.1",
-    "@types/semver": "^7.5.0",
-    "nitropack": "^2.4.1",
+    "@types/hash-sum": "1.0.0",
+    "@types/lodash.template": "4.5.1",
+    "@types/semver": "7.5.0",
+    "nitropack": "2.4.1",
     "unbuild": "latest",
-    "vite": "^4.3.9",
-    "vitest": "^0.31.1",
-    "webpack": "^5.84.1"
+    "vite": "4.3.9",
+    "vitest": "0.31.1",
+    "webpack": "5.84.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
