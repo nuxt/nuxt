@@ -1,8 +1,8 @@
 import { promises as fsp } from 'node:fs'
-import lodashTemplate from 'lodash.template'
 import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
+import lodashTemplate from '../lodash/lodash.template'
 
 /** @deprecated */
 export async function compileTemplate (template: NuxtTemplate, ctx: any) {
@@ -10,7 +10,7 @@ export async function compileTemplate (template: NuxtTemplate, ctx: any) {
   if (template.src) {
     try {
       const srcContents = await fsp.readFile(template.src, 'utf-8')
-      return lodashTemplate(srcContents, {})(data)
+      return lodashTemplate(srcContents, {}, undefined)(data)
     } catch (err) {
       console.error('Error compiling template: ', template)
       throw err
