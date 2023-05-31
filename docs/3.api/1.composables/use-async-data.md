@@ -9,6 +9,10 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 `useAsyncData` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
+::alert{type=warning}
+If you are working in a local environment and want to retrieve data from a local API you should use a real IP address such as `127.0.0.1` instead of `localhost` so that `useAsyncData()` works correctly.
+::
+
 ## Type
 
 ```ts [Signature]
