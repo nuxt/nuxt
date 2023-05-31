@@ -357,6 +357,7 @@ export default defineUntypedSchema({
       '**/*.d.ts', // ignore type declarations
       '.output',
       '.git',
+      '.cache',
       await get('analyzeDir'),
       await get('buildDir'),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
