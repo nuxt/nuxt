@@ -62,6 +62,37 @@ jobs:
           name: dist
           path: packages/*/dist
 
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+     - build
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
   typecheck:
     runs-on: ubuntu-latest
     timeout-minutes: 10
