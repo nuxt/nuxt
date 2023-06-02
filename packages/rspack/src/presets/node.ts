@@ -14,24 +14,24 @@ export function node (ctx: RspackConfigContext) {
     chunkFormat: 'module',
     chunkLoading: 'import',
     module: true,
-    environment: {
-      module: true,
-      arrowFunction: true,
-      bigIntLiteral: true,
-      const: true,
-      destructuring: true,
-      dynamicImport: true,
-      forOf: true
-    },
+    // environment: {
+    //   module: true,
+    //   arrowFunction: true,
+    //   bigIntLiteral: true,
+    //   const: true,
+    //   destructuring: true,
+    //   dynamicImport: true,
+    //   forOf: true
+    // },
     library: {
       type: 'module'
     }
   }
 
-  config.performance = {
-    ...config.performance,
-    hints: false,
-    maxEntrypointSize: Infinity,
-    maxAssetSize: Infinity
-  }
+  // config.performance = {
+  //   ...config.performance,
+  //   hints: false,
+  //   maxEntrypointSize: Infinity,
+  //   maxAssetSize: Infinity
+  // }
 }

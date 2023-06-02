@@ -6,6 +6,7 @@
   <div>
     Nuxt 3 Playground
   </div>
+  <NuxtPage/>
 </template>
 
 <style scoped>

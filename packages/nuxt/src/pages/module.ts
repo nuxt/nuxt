@@ -1,5 +1,5 @@
 import { existsSync, readdirSync } from 'node:fs'
-import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
+import { defineNuxtModule, addTemplate, addPlugin, addVitePlugin, addWebpackPlugin, addRspackPlugin, findPath, addComponent, updateTemplates } from '@nuxt/kit'
 import { join, relative, resolve } from 'pathe'
 import { genString, genImport, genObjectFromRawEntries } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -158,6 +158,7 @@ export default defineNuxtModule({
     }
     addVitePlugin(PageMetaPlugin.vite(pageMetaOptions))
     addWebpackPlugin(PageMetaPlugin.webpack(pageMetaOptions))
+    addRspackPlugin(PageMetaPlugin.rspack(pageMetaOptions))
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))

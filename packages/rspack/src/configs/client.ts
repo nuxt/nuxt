@@ -1,6 +1,6 @@
 import querystring from 'node:querystring'
 import { resolve } from 'pathe'
-import webpack from '@rspack/core'
+// import webpack from '@rspack/core'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
@@ -17,10 +17,10 @@ export function client (ctx: RspackConfigContext) {
   applyPresets(ctx, [
     nuxt,
     clientPlugins,
-    clientOptimization
-    // clientDevtool,
+    clientOptimization,
+    clientDevtool,
     // clientPerformance,
-    // clientHMR
+    clientHMR
   ])
 }
 
@@ -38,13 +38,13 @@ function clientDevtool (ctx: RspackConfigContext) {
   ctx.config.devtool = 'eval-cheap-module-source-map'
 }
 
-function clientPerformance (ctx: RspackConfigContext) {
-  ctx.config.performance = {
-    maxEntrypointSize: 1000 * 1024,
-    hints: ctx.isDev ? false : 'warning',
-    ...ctx.config.performance
-  }
-}
+// function clientPerformance (ctx: RspackConfigContext) {
+//   ctx.config.performance = {
+//     maxEntrypointSize: 1000 * 1024,
+//     hints: ctx.isDev ? false : 'warning',
+//     ...ctx.config.performance
+//   }
+// }
 
 function clientHMR (ctx: RspackConfigContext) {
   const { options, config } = ctx
@@ -72,9 +72,10 @@ function clientHMR (ctx: RspackConfigContext) {
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
-  // TODO: HMR
-  // config.plugins = config.plugins || []
-  // config.plugins.push(new webpack.HotModuleReplacementPlugin())
+  config.plugins = config.plugins || []
+  config.devServer = config.devServer || {}
+  // webpack.HotModuleReplacementPlugin
+  config.devServer.hot = true
 }
 
 function clientOptimization (_ctx: RspackConfigContext) {
@@ -88,7 +89,7 @@ function clientPlugins (ctx: RspackConfigContext) {
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
   if (!ctx.isDev && ctx.name === 'client' && options.webpack.analyze) {
     const statsDir = resolve(options.buildDir, 'stats')
-
+    // @ts-ignore
     config.plugins!.push(new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       defaultSizes: 'gzip',
@@ -104,6 +105,7 @@ function clientPlugins (ctx: RspackConfigContext) {
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
     if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+      // @ts-ignore
       config.plugins!.push(new ForkTSCheckerWebpackPlugin({
         logger
       }))

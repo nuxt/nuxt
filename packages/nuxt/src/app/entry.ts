@@ -8,8 +8,7 @@ import '#build/css'
 // @ts-ignore
 import _plugins from '#build/plugins'
 // @ts-ignore
-// import RootComponent from '#build/root-component.mjs'
-import RootComponent from './components/nuxt-root-test.vue'
+import RootComponent from '#build/root-component.mjs'
 // @ts-ignore
 import { appRootId } from '#build/nuxt.config.mjs'
 
