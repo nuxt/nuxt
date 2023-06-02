@@ -13,20 +13,45 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
+  // Validate the type filename.
+  if (template.isType === true) {
+    if (!template.filename.endsWith('.d.ts')) {
+      throw new Error(
+        `Invalid types. Filename must end with .d.ts : "${template.filename}"`
+      )
+    }
+  }
+
   // Remove any existing template with the same filename
-  nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+  nuxt.options.build.templates = nuxt.options.build.templates.filter(
+    p => normalizeTemplate(p).filename !== template.filename
+  )
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
 
+  // Add template to types reference
+  if (template.isType === true) {
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: template.filename })
+    })
+  }
   return template
+}
+
+/**
+ * Add types.
+ */
+export function addTypes (_template: NuxtTemplate<any>) {
+  return addTemplate({ ..._template, isType: true })
 }
 
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate (template: NuxtTemplate<any> | string): ResolvedNuxtTemplate<any> {
+export function normalizeTemplate (
+  template: NuxtTemplate<any> | string
+): ResolvedNuxtTemplate<any> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -45,17 +70,26 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName ||
-        `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+      template.filename =
+        (template as any).fileName ||
+        `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${
+          srcPath.ext
+        }`
     }
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either getContents or src options should be provided: ' + JSON.stringify(template))
+    throw new Error(
+      'Invalid template. Either getContents or src options should be provided: ' +
+        JSON.stringify(template)
+    )
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. Either filename should be provided: ' + JSON.stringify(template))
+    throw new Error(
+      'Invalid template. Either filename should be provided: ' +
+        JSON.stringify(template)
+    )
   }
 
   // Always write declaration files
@@ -77,6 +111,8 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
  *
  * You can pass a filter within the options to selectively regenerate a subset of templates.
  */
-export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }) {
+export async function updateTemplates (options?: {
+  filter?: (template: ResolvedNuxtTemplate<any>) => boolean
+}) {
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
