@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import  { VueLoaderPlugin } from 'vue-rsloader'
+import { VueLoaderPlugin } from 'vue-loader'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
 import type { RspackConfigContext } from '../utils/config'
@@ -12,8 +12,9 @@ export function vue (ctx: RspackConfigContext) {
 
   config.module!.rules!.push({
     test: /\.vue$/i,
-    use: 'vue-rsloader',
+    loader: 'vue-loader',
     options: {
+      experimentalInlineMatchResource: true,
       reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
       ...options.webpack.loaders.vue
     }

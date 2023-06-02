@@ -1,7 +1,7 @@
 // import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 // import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import type { RspackConfigContext } from '../utils/config'
-import { fileName, applyPresets } from '../utils/config'
+import { applyPresets } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
 
 export function style (ctx: RspackConfigContext) {

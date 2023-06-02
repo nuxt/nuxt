@@ -71,7 +71,12 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise<void>(resolve => compiler.close(resolve))
+      await new Promise<void>((resolve, reject) => compiler.close((error) => {
+        if (error) {
+          reject(error)
+        }
+        resolve()
+      }))
     }
   })
 
