@@ -36,9 +36,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -56,21 +56,21 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           retention-days: 3
           name: dist
           path: packages/*/dist
 
-  typecheck:
+  codeql:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     needs:
-      - build
-    strategy:
-      fail-fast: false
-      matrix:
-        module: ['bundler', 'node']
+     - build
 
     steps:
       - uses: actions/checkout@v3
@@ -83,8 +83,46 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+          queries: +security-and-quality
+
       - name: Restore dist cache
         uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: packages
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:javascript"
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ['bundler', 'node']
+
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: dist
           path: packages
@@ -101,9 +139,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -137,9 +175,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -163,7 +201,7 @@ jobs:
           echo "PLAYWRIGHT_VERSION=$env:PLAYWRIGHT_VERSION" >> $env:GITHUB_ENV
 
       - name: Cache Playwright's binary
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           key: ${{ runner.os }}-playwright-bin-v1-${{ env.PLAYWRIGHT_VERSION }}
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
@@ -175,7 +213,7 @@ jobs:
         run: pnpm playwright install chromium
 
       - name: Restore dist cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: dist
           path: packages
@@ -206,11 +244,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -219,7 +257,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: dist
           path: packages
@@ -245,11 +283,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -258,7 +296,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: dist
           path: packages
