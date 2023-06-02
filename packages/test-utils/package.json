@@ -29,19 +29,19 @@
     "execa": "^7.1.1",
     "get-port-please": "^3.0.1",
     "ofetch": "^1.0.1",
-    "pathe": "^1.1.0",
+    "pathe": "^1.1.1",
     "ufo": "^1.1.2"
   },
   "devDependencies": {
     "@jest/globals": "29.5.0",
     "playwright": "1.34.3",
     "unbuild": "latest",
-    "vitest": "0.31.1"
+    "vitest": "0.31.4"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",
     "playwright": "^1.34.3",
-    "vitest": "^0.31.1",
+    "vitest": "^0.31.4",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {

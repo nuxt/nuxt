@@ -67,7 +67,7 @@
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "ofetch": "1.0.1",
-    "pathe": "1.1.0",
+    "pathe": "1.1.1",
     "playwright": "1.34.3",
     "rimraf": "5.0.1",
     "semver": "7.5.1",
@@ -75,7 +75,7 @@
     "typescript": "5.0.4",
     "ufo": "1.1.2",
     "vite": "4.3.9",
-    "vitest": "0.31.1",
+    "vitest": "0.31.4",
     "vue": "3.3.4",
     "vue-eslint-parser": "9.3.0",
     "vue-tsc": "1.6.5"
