@@ -30,7 +30,7 @@
     "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
     "mlly": "^1.3.0",
-    "pathe": "^1.1.0",
+    "pathe": "^1.1.1",
     "pkg-types": "^1.0.3",
     "scule": "^1.0.0",
     "semver": "^7.5.1",
@@ -44,8 +44,8 @@
     "nitropack": "2.4.1",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.31.1",
-    "webpack": "5.84.1"
+    "vitest": "0.31.4",
+    "webpack": "5.85.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

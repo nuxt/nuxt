@@ -84,7 +84,7 @@
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
     "ohash": "^1.1.2",
-    "pathe": "^1.1.0",
+    "pathe": "^1.1.1",
     "perfect-debounce": "^1.0.0",
     "prompts": "^2.4.2",
     "scule": "^1.0.0",
@@ -112,7 +112,7 @@
     "acorn": "8.8.2",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.31.1"
+    "vitest": "0.31.4"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
