@@ -55,7 +55,7 @@
     "create-require": "1.1.1",
     "cross-spawn": "7.0.3",
     "esbuild": "0.17.19",
-    "eslint": "8.41.0",
+    "eslint": "8.42.0",
     "eslint-multiplexer": "2.0.0",
     "eslint-plugin-jest": "27.2.1",
     "execa": "^5.1.1",
