@@ -571,7 +571,7 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       vue-loader:
-        specifier: ^17.2.2
+        specifier: 17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.85.0)
       vue-router:
         specifier: 4.2.2
@@ -924,7 +924,7 @@ importers:
         version: 1.3.1
       vitest:
         specifier: latest
-        version: 0.30.1(playwright@1.34.3)
+        version: 0.31.4(playwright@1.34.3)
       vue-router:
         specifier: latest
         version: 4.2.2(vue@3.3.4)
@@ -943,7 +943,7 @@ importers:
         version: 1.3.1
       vitest:
         specifier: latest
-        version: 0.30.1(playwright@1.34.3)
+        version: 0.31.4(playwright@1.34.3)
       vue-router:
         specifier: latest
         version: 4.2.2(vue@3.3.4)
@@ -2518,29 +2518,12 @@ packages:
       vite: 4.3.9(@types/node@18.16.16)
       vue: 3.3.4
 
-  /@vitest/expect@0.30.1:
-    resolution: {integrity: sha512-c3kbEtN8XXJSeN81iDGq29bUzSjQhjES2WR3aColsS4lPGbivwLtas4DNUe0jD9gg/FYGIteqOenfU95EFituw==}
-    dependencies:
-      '@vitest/spy': 0.30.1
-      '@vitest/utils': 0.30.1
-      chai: 4.3.7
-    dev: true
-
   /@vitest/expect@0.31.4:
     resolution: {integrity: sha512-tibyx8o7GUyGHZGyPgzwiaPaLDQ9MMuCOrc03BYT0nryUuhLbL7NV2r/q98iv5STlwMgaKuFJkgBW/8iPKwlSg==}
     dependencies:
       '@vitest/spy': 0.31.4
       '@vitest/utils': 0.31.4
       chai: 4.3.7
-    dev: true
-
-  /@vitest/runner@0.30.1:
-    resolution: {integrity: sha512-W62kT/8i0TF1UBCNMRtRMOBWJKRnNyv9RrjIgdUryEe0wNpGZvvwPDLuzYdxvgSckzjp54DSpv1xUbv4BQ0qVA==}
-    dependencies:
-      '@vitest/utils': 0.30.1
-      concordance: 5.0.4
-      p-limit: 4.0.0
-      pathe: 1.1.1
     dev: true
 
   /@vitest/runner@0.31.4:
@@ -2552,14 +2535,6 @@ packages:
       pathe: 1.1.1
     dev: true
 
-  /@vitest/snapshot@0.30.1:
-    resolution: {integrity: sha512-fJZqKrE99zo27uoZA/azgWyWbFvM1rw2APS05yB0JaLwUIg9aUtvvnBf4q7JWhEcAHmSwbrxKFgyBUga6tq9Tw==}
-    dependencies:
-      magic-string: 0.30.0
-      pathe: 1.1.1
-      pretty-format: 27.5.1
-    dev: true
-
   /@vitest/snapshot@0.31.4:
     resolution: {integrity: sha512-LemvNumL3NdWSmfVAMpXILGyaXPkZbG5tyl6+RQSdcHnTj6hvA49UAI8jzez9oQyE/FWLKRSNqTGzsHuk89LRA==}
     dependencies:
@@ -2568,24 +2543,10 @@ packages:
       pretty-format: 27.5.1
     dev: true
 
-  /@vitest/spy@0.30.1:
-    resolution: {integrity: sha512-YfJeIf37GvTZe04ZKxzJfnNNuNSmTEGnla2OdL60C8od16f3zOfv9q9K0nNii0NfjDJRt/CVN/POuY5/zTS+BA==}
-    dependencies:
-      tinyspy: 2.1.0
-    dev: true
-
   /@vitest/spy@0.31.4:
     resolution: {integrity: sha512-3ei5ZH1s3aqbEyftPAzSuunGICRuhE+IXOmpURFdkm5ybUADk+viyQfejNk6q8M5QGX8/EVKw+QWMEP3DTJDag==}
     dependencies:
       tinyspy: 2.1.0
-    dev: true
-
-  /@vitest/utils@0.30.1:
-    resolution: {integrity: sha512-/c8Xv2zUVc+rnNt84QF0Y0zkfxnaGhp87K2dYJMLtLOIckPzuxLVzAtFCicGFdB4NeBHNzTRr1tNn7rCtQcWFA==}
-    dependencies:
-      concordance: 5.0.4
-      loupe: 2.3.6
-      pretty-format: 27.5.1
     dev: true
 
   /@vitest/utils@0.31.4:
@@ -8206,11 +8167,6 @@ packages:
     resolution: {integrity: sha512-kRwSG8Zx4tjF9ZiyH4bhaebu+EDz1BOx9hOigYHlUW4xxI/wKIUQUqo018UlU4ar6ATPBsaMrdbKZ+tmPdohFA==}
     dev: true
 
-  /tinypool@0.4.0:
-    resolution: {integrity: sha512-2ksntHOKf893wSAH4z/+JbPpi92esw8Gn9N2deXX+B0EO92hexAVI9GIZZPx7P5aYo5KULfeOSt3kMOmSOy6uA==}
-    engines: {node: '>=14.0.0'}
-    dev: true
-
   /tinypool@0.5.0:
     resolution: {integrity: sha512-paHQtnrlS1QZYKF/GnLoOM/DN9fqaGOFbCbxzAhwniySnzl9Ebk8w73/dd34DAhe/obUbPAOldTyYXQZxnPBPQ==}
     engines: {node: '>=14.0.0'}
@@ -8638,27 +8594,6 @@ packages:
       extsprintf: 1.3.0
     dev: true
 
-  /vite-node@0.30.1(@types/node@18.16.16):
-    resolution: {integrity: sha512-vTikpU/J7e6LU/8iM3dzBo8ZhEiKZEKRznEMm+mJh95XhWaPrJQraT/QsT2NWmuEf+zgAoMe64PKT7hfZ1Njmg==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    dependencies:
-      cac: 6.7.14
-      debug: 4.3.4
-      mlly: 1.3.0
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      vite: 4.3.9(@types/node@18.16.16)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
-
   /vite-node@0.31.4(@types/node@18.16.16):
     resolution: {integrity: sha512-uzL377GjJtTbuc5KQxVbDu2xfU/x0wVjUtXQR2ihS21q/NK6ROr4oG0rsSkBBddZUVCwzfx22in76/0ZZHXgkQ==}
     engines: {node: '>=v14.18.0'}
@@ -8764,73 +8699,6 @@ packages:
       rollup: 3.21.8
     optionalDependencies:
       fsevents: 2.3.2
-
-  /vitest@0.30.1(playwright@1.34.3):
-    resolution: {integrity: sha512-y35WTrSTlTxfMLttgQk4rHcaDkbHQwDP++SNwPb+7H8yb13Q3cu2EixrtHzF27iZ8v0XCciSsLg00RkPAzB/aA==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      playwright: '*'
-      safaridriver: '*'
-      webdriverio: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-      playwright:
-        optional: true
-      safaridriver:
-        optional: true
-      webdriverio:
-        optional: true
-    dependencies:
-      '@types/chai': 4.3.5
-      '@types/chai-subset': 1.3.3
-      '@types/node': 18.16.16
-      '@vitest/expect': 0.30.1
-      '@vitest/runner': 0.30.1
-      '@vitest/snapshot': 0.30.1
-      '@vitest/spy': 0.30.1
-      '@vitest/utils': 0.30.1
-      acorn: 8.8.2
-      acorn-walk: 8.2.0
-      cac: 6.7.14
-      chai: 4.3.7
-      concordance: 5.0.4
-      debug: 4.3.4
-      local-pkg: 0.4.3
-      magic-string: 0.30.0
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      playwright: 1.34.3
-      source-map: 0.6.1
-      std-env: 3.3.3
-      strip-literal: 1.0.1
-      tinybench: 2.5.0
-      tinypool: 0.4.0
-      vite: 4.3.9(@types/node@18.16.16)
-      vite-node: 0.30.1(@types/node@18.16.16)
-      why-is-node-running: 2.2.2
-    transitivePeerDependencies:
-      - less
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
 
   /vitest@0.31.4(playwright@1.34.3):
     resolution: {integrity: sha512-GoV0VQPmWrUFOZSg3RpQAPN+LPmHg2/gxlMNJlyxJihkz6qReHDV6b0pPDcqFLNEPya4tWJ1pgwUNP9MLmUfvQ==}
