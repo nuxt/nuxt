@@ -154,7 +154,7 @@ export default defineUntypedSchema({
 
       /**
        * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
-       * @type {typeof import('vue-loader')['VueLoaderOptions']}
+       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
         productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
