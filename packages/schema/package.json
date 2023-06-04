@@ -38,6 +38,7 @@
     "vite": "4.3.9",
     "vue": "3.3.4",
     "vue-bundle-renderer": "1.0.3",
+    "vue-loader": "^17.2.2",
     "vue-router": "4.2.2",
     "webpack": "5.85.0"
   },

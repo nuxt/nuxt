@@ -151,8 +151,12 @@ export default defineUntypedSchema({
       fontUrl: { esModule: false, limit: 1000 },
       imgUrl: { esModule: false, limit: 1000 },
       pugPlain: {},
+
+      /**
+       * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
+       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
+       */
       vue: {
-        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
