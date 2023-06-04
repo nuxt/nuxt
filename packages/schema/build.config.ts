@@ -43,6 +43,7 @@ export default defineBuildConfig({
     'postcss',
     'consola',
     'ignore',
+    'vue-loader',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

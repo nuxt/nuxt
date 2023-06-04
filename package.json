@@ -52,7 +52,7 @@
     "cheerio": "1.0.0-rc.12",
     "consola": "3.1.0",
     "devalue": "4.3.2",
-    "eslint": "8.41.0",
+    "eslint": "8.42.0",
     "eslint-import-resolver-typescript": "3.5.5",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jsdoc": "41.1.2",
