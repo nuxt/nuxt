@@ -157,7 +157,6 @@ export default defineUntypedSchema({
        * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
-        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
