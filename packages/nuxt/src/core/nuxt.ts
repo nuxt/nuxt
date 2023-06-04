@@ -309,7 +309,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add type-checking
-  if (process.dev && nuxt.options.builder === '@nuxt/vite-builder' && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+  if (process.dev && nuxt.options.builder === '@nuxt/vite-builder' && nuxt.options.typescript.typeCheck === true) {
     addPluginTemplate({
       mode: 'client',
       filename: 'type-checker.plugin.mjs',
