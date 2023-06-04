@@ -20,6 +20,18 @@ export default defineUntypedSchema({
     runtimeCompiler: {
       $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false,
     },
+
+    /**
+     * Vue Experimental:  Enable reactive destructure for `defineProps`
+     * @type {boolean}
+     */
+    propsDestructure: false,
+
+   /**
+     * Vue Experimental: Enable macro `defineModel`
+     * @type {boolean}
+     */
+    defineModel: false
   },
 
   /**
