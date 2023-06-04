@@ -40,6 +40,14 @@ export default defineUntypedSchema({
         compilerOptions: {
           $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
         }
+      },
+      script: {
+        propsDestructure: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure),
+        },
+        defineModel: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel),
+        },
       }
     },
     vueJsx: {

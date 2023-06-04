@@ -164,6 +164,8 @@ export default defineUntypedSchema({
           embed: 'src'
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
+        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
       },
       css: {
         importLoaders: 0,
