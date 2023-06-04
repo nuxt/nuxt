@@ -62,7 +62,7 @@
     "express": "4.18.2",
     "finalhandler": "1.2.0",
     "fs-extra": "10.1.0",
-    "get-port": "6.1.2",
+    "get-port": "7.0.0",
     "glob": "8.1.0",
     "got": "13.0.0",
     "improved-yarn-audit": "3.0.0",
