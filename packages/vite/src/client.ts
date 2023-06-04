@@ -110,7 +110,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     clientConfig.server = defu(clientConfig.server, <ServerOptions> {
       https: ctx.nuxt.options.devServer.https,
       hmr: {
-        clientPort: ctx.nuxt.options.devServer.port,
+        clientPort: ctx.nuxt.options.devServer.port
       }
     })
   }
