@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onUnmounted, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { appendResponseHeader } from 'h3'
@@ -34,27 +34,25 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
   if (process.client) {
-    const callback = () => {
-      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-    }
+    const callback = () => { writeClientCookie(name, cookie.value, opts as CookieSerializeOptions) }
 
     if (opts.watch) {
-      const nuxtApp = useNuxtApp()
-
+      const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+      onUnmounted(() => { channel.close() })
       let watchPaused = false
 
       watch(cookie, (newValue) => {
         if (watchPaused) { return }
-        nuxtApp.callHook(`cookies:${name}`, newValue)
         callback()
+        channel.postMessage(newValue)
       },
       { deep: opts.watch !== 'shallow' })
 
-      nuxtApp.hook(`cookies:${name}`, (newValue) => {
+      channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = newValue
+        cookie.value = event.data
         nextTick(() => { watchPaused = false })
-      })
+      }
     } else {
       callback()
     }

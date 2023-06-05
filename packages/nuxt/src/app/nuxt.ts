@@ -47,7 +47,6 @@ export interface RuntimeNuxtHooks {
   'page:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
-  [key: `cookies:${string}`]: (newValue: any) => HookResult
 }
 
 export interface NuxtSSRContext extends SSRContext {
