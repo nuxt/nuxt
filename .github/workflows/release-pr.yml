@@ -8,6 +8,9 @@ env:
   # 7 GiB by default on GitHub, setting to 6 GiB
   NODE_OPTIONS: --max-old-space-size=6144
 
+permissions:
+  contents: read
+
 jobs:
   release-pr:
     if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
@@ -19,20 +22,20 @@ jobs:
 
     steps:
       - name: Ensure action is by maintainer
-        uses: octokit/request-action@v2.x
+        uses: octokit/request-action@352d2ae93e1805721b5fe308598555ba3bd2c8e2 # v2.x
         id: check_role
         with:
           route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           ref: refs/pull/${{ github.event.issue.number }}/merge
           fetch-depth: 0
 
       - run: corepack enable
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -50,7 +53,7 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
       - name: Post comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

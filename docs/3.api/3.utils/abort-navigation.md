@@ -22,7 +22,7 @@ abortNavigation(err?: Error | string): false
 
 - **Type**: [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) | `string`
 
-  Optional error to be thrown by `abortNavigation`.
+  Optional error to be thrown by `abortNavigation`.
 
 ## Examples
 
