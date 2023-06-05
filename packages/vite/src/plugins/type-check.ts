@@ -1,7 +1,7 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 
-export function typeCheckPlugin (): Plugin {
+export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
   let entry: string
   return {
     name: 'nuxt:type-check',
@@ -19,7 +19,10 @@ export function typeCheckPlugin (): Plugin {
 
       s.prepend('import "/@vite-plugin-checker-runtime-entry";\n')
 
-      return s.toString()
+      return {
+        code: s.toString(),
+        map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
+      }
     }
   }
 }

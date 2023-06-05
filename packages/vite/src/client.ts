@@ -14,6 +14,7 @@ import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
+import { typeCheckPlugin } from './plugins/type-check'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
@@ -129,7 +130,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add type checking client panel
   if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
-      clientConfig.plugins!.push(await import('./plugins/type-check').then(r => r.typeCheckPlugin()))
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
