@@ -193,13 +193,13 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       '@types/lodash-es':
-        specifier: ^4.17.7
+        specifier: 4.17.7
         version: 4.17.7
       '@types/semver':
         specifier: 7.5.0
         version: 7.5.0
       lodash-es:
-        specifier: ^4.17.21
+        specifier: 4.17.21
         version: 4.17.21
       nitropack:
         specifier: 2.4.1

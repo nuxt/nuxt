@@ -40,9 +40,9 @@
   },
   "devDependencies": {
     "@types/hash-sum": "1.0.0",
-    "@types/lodash-es": "^4.17.7",
+    "@types/lodash-es": "4.17.7",
     "@types/semver": "7.5.0",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "4.17.21",
     "nitropack": "2.4.1",
     "unbuild": "latest",
     "vite": "4.3.9",
