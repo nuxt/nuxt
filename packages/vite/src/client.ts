@@ -127,6 +127,11 @@ export async function buildClient (ctx: ViteBuildContext) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
+  // Add type checking client panel
+  if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
+      clientConfig.plugins!.push(await import('./plugins/type-check').then(r => r.typeCheckPlugin()))
+  }
+
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
