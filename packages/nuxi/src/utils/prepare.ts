@@ -44,15 +44,17 @@ export const writeTypes = async (nuxt: Nuxt) => {
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
+  const basePath = tsConfig.compilerOptions!.baseUrl || nuxt.options.buildDir
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
     const relativePath = isAbsolute(aliases[alias])
-      ? withLeadingDot(relative(nuxt.options.buildDir, aliases[alias]) || '.')
+      ? withLeadingDot(relative(basePath, aliases[alias]) || '.')
       : aliases[alias]
 
-    const stats = await fsp.stat(resolve(nuxt.options.buildDir, relativePath)).catch(() => null /* file does not exist */)
+    const stats = await fsp.stat(resolve(basePath, relativePath)).catch(() => null /* file does not exist */)
     tsConfig.compilerOptions = tsConfig.compilerOptions || {}
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
