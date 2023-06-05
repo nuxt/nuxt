@@ -37,6 +37,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       devSourcemap: ctx.nuxt.options.sourcemap.client
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
       'process.server': false,
       'process.client': true,
       'module.hot': false
