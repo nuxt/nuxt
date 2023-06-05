@@ -9,7 +9,7 @@ export function typeCheckPlugin (): Plugin {
 
       const s = new MagicString(code)
 
-      s.prepend('import "/@vite-plugin-checker-runtime-entry"\n')
+      s.prepend('import "/@vite-plugin-checker-runtime-entry";\n')
 
       return s.toString()
     }
