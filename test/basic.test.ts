@@ -1086,6 +1086,12 @@ describe('automatically keyed composables', () => {
   it('should match server-generated keys', async () => {
     await expectNoClientErrors('/keyed-composables')
   })
+  it('should not automatically generate keys', async () => {
+    await expectNoClientErrors('/keyed-composables/local')
+    const html = await $fetch('/keyed-composables/local')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+  })
 })
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
