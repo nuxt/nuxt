@@ -81,7 +81,7 @@ export default defineUntypedSchema({
      * You can provide your own templates which will be rendered based
      * on Nuxt configuration. This feature is specially useful for using with modules.
      *
-     * Templates are rendered using [`lodash.template`](https://lodash.com/docs/4.17.15#template).
+     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      *
      * @example
      * ```js
