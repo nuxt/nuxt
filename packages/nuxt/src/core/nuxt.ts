@@ -408,7 +408,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
-  options.build.transpile.push('@nuxt/ui-templates')
+  options.build.transpile.push(
+    '@nuxt/ui-templates', // this exposes vue SFCs
+    'std-env' // we need to statically replace process.env when used in runtime code
+  )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
