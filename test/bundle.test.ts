@@ -45,10 +45,10 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.2k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.4k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2283k"')
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2284k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

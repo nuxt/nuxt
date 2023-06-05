@@ -135,42 +135,44 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
       nuxtApp._processingMiddleware = true
 
-      type MiddlewareDef = string | RouteMiddleware
-      const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
-      for (const component of to.matched) {
-        const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
-        if (!componentMiddleware) { continue }
-        if (Array.isArray(componentMiddleware)) {
-          for (const entry of componentMiddleware) {
-            middlewareEntries.add(entry)
-          }
-        } else {
-          middlewareEntries.add(componentMiddleware)
-        }
-      }
-
-      for (const entry of middlewareEntries) {
-        const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
-
-        if (!middleware) {
-          if (process.dev) {
-            throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
-          }
-          throw new Error(`Unknown route middleware: '${entry}'.`)
-        }
-
-        const result = await nuxtApp.runWithContext(() => middleware(to, from))
-        if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
-          if (result === false || result instanceof Error) {
-            const error = result || createError({
-              statusCode: 404,
-              statusMessage: `Page Not Found: ${initialURL}`
-            })
-            await nuxtApp.runWithContext(() => showError(error))
-            return false
+      if (process.client || !nuxtApp.ssrContext?.islandContext) {
+        type MiddlewareDef = string | RouteMiddleware
+        const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
+        for (const component of to.matched) {
+          const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
+          if (!componentMiddleware) { continue }
+          if (Array.isArray(componentMiddleware)) {
+            for (const entry of componentMiddleware) {
+              middlewareEntries.add(entry)
+            }
+          } else {
+            middlewareEntries.add(componentMiddleware)
           }
         }
-        if (result || result === false) { return result }
+
+        for (const entry of middlewareEntries) {
+          const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+
+          if (!middleware) {
+            if (process.dev) {
+              throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
+            }
+            throw new Error(`Unknown route middleware: '${entry}'.`)
+          }
+
+          const result = await nuxtApp.runWithContext(() => middleware(to, from))
+          if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+            if (result === false || result instanceof Error) {
+              const error = result || createError({
+                statusCode: 404,
+                statusMessage: `Page Not Found: ${initialURL}`
+              })
+              await nuxtApp.runWithContext(() => showError(error))
+              return false
+            }
+          }
+          if (result || result === false) { return result }
+        }
       }
     })
 

@@ -14,6 +14,7 @@ interface LayerAliasingOptions {
 }
 
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
+const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 
 export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
   const aliases = Object.fromEntries(options.layers.map((l) => {
@@ -71,7 +72,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
 
       const _id = normalize(id)
       const layer = layers.find(l => _id.startsWith(l))
-      if (!layer || !code.match(ALIAS_RE)) { return }
+      if (!layer || !ALIAS_RE_SINGLE.test(code)) { return }
 
       const s = new MagicString(code)
       s.replace(ALIAS_RE, r => aliases[layer].aliases[r as '~'] || r)

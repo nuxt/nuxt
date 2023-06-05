@@ -13,12 +13,15 @@ on:
       - main
       - "!v[0-9]*"
 
+permissions:
+  contents: read
+
 jobs:
   lint-workflows:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
         run: |

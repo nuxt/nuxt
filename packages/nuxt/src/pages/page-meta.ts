@@ -14,6 +14,8 @@ export interface PageMetaPluginOptions {
   sourcemap?: boolean
 }
 
+const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
+
 const CODE_EMPTY = `
 const __nuxt_page_meta = null
 export default __nuxt_page_meta
@@ -59,7 +61,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         }
       }
 
-      const hasMacro = code.match(/\bdefinePageMeta\s*\(\s*/)
+      const hasMacro = HAS_MACRO_RE.test(code)
 
       const imports = findStaticImports(code)
 
