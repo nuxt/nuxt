@@ -7,7 +7,6 @@ export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin 
     name: 'nuxt:type-check',
     configResolved (config) {
       const input = config.build.rollupOptions.input
-      console.log(input)
       if (input && typeof input !== 'string' && !Array.isArray(input)) {
         entry = input.entry
       }
