@@ -40,6 +40,12 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    esbuild: {
+      options: {
+        // in order to test bigint serialisation
+        target: 'es2022'
+      }
+    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
@@ -122,6 +128,19 @@ export default defineNuxtConfig({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'webpack:config' (configs) {
+      // in order to test bigint serialisation we need to set target to a more modern one
+      for (const config of configs) {
+        const esbuildRules = config.module!.rules!.filter(
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+        )
+        for (const rule of esbuildRules) {
+          if (typeof rule === 'object' && typeof rule.options === 'object') {
+            rule.options.target = 'es2022'
+          }
+        }
+      }
+    },
     'modules:done' () {
       addComponent({
         name: 'CustomComponent',

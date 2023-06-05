@@ -11,6 +11,9 @@ env:
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
   NODE_OPTIONS: --max-old-space-size=6144
 
+permissions:
+  contents: read
+
 jobs:
   nightly:
     if: github.repository_owner == 'nuxt'
@@ -18,13 +21,13 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           ref: '2.x'
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
