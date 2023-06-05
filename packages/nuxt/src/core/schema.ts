@@ -76,7 +76,7 @@ export default defineNuxtModule({
           }
           return
         }
-        console.warn('[nuxt] falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
+        console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>

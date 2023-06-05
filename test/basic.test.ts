@@ -54,6 +54,7 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const page = await createPage('/no-scripts')
     expect(await page.locator('script').all()).toHaveLength(0)
+    await page.close()
   })
 })
 
@@ -399,6 +400,21 @@ describe('nuxt composables', () => {
     const html = await $fetch('/url')
     expect(html).toContain('path: /url')
   })
+  it('sets cookies correctly', async () => {
+    const res = await fetch('/cookies', {
+      headers: {
+        cookie: Object.entries({
+          'browser-accessed-but-not-used': 'provided-by-browser',
+          'browser-accessed-with-default-value': 'provided-by-browser',
+          'browser-set': 'provided-by-browser',
+          'browser-set-to-null': 'provided-by-browser',
+          'browser-set-to-null-with-default': 'provided-by-browser'
+        }).map(([key, value]) => `${key}=${value}`).join('; ')
+      }
+    })
+    const cookies = res.headers.get('set-cookie')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/"')
+  })
 })
 
 describe('rich payloads', () => {
@@ -597,8 +613,7 @@ describe('navigate', () => {
 })
 
 describe('preserves current instance', () => {
-  // TODO: reenable when https://github.com/vuejs/core/issues/7733 is resolved
-  it.skip('should not return getCurrentInstance when there\'s an error in data', async () => {
+  it('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
     expect(html).toContain('This should be false: false')
@@ -709,6 +724,15 @@ describe('middlewares', () => {
       }
     })
     expect(res.status).toEqual(401)
+  })
+
+  it('should allow aborting navigation fatally on client-side', async () => {
+    const html = await $fetch('/middleware-abort')
+    expect(html).not.toContain('This is the error page')
+    const page = await createPage('/middleware-abort')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.close()
   })
 
   it('should inject auth', async () => {
@@ -1399,6 +1423,8 @@ describe('component islands', () => {
     // test islands slots interactivity
     await page.locator('#first-sugar-counter button').click()
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    await page.close()
   })
 })
 

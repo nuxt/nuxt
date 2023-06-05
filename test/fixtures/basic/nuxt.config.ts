@@ -11,14 +11,6 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  typescript: {
-    strict: true,
-    tsConfig: {
-      compilerOptions: {
-        moduleResolution: process.env.MODULE_RESOLUTION
-      }
-    }
-  },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -48,6 +40,12 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    esbuild: {
+      options: {
+        // in order to test bigint serialisation
+        target: 'es2022'
+      }
+    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
@@ -70,26 +68,14 @@ export default defineNuxtConfig({
     ]
   },
   runtimeConfig: {
-    baseURL: '',
-    baseAPIToken: '',
-    privateConfig: 'secret_key',
     public: {
-      ids: [1, 2, 3],
       needsFallback: undefined,
       testConfig: 123
     }
   },
   modules: [
-    [
-      '~/modules/example',
-      {
-        typeTest (val) {
-          // @ts-expect-error module type defines val as boolean
-          const b: string = val
-          return !!b
-        }
-      }
-    ],
+    './modules/test',
+    '~/modules/example',
     function (_, nuxt) {
       if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
@@ -142,22 +128,18 @@ export default defineNuxtConfig({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
-    'schema:extend' (schemas) {
-      schemas.push({
-        appConfig: {
-          someThing: {
-            value: {
-              $default: 'default',
-              $schema: {
-                tsType: 'string | false'
-              }
-            }
+    'webpack:config' (configs) {
+      // in order to test bigint serialisation we need to set target to a more modern one
+      for (const config of configs) {
+        const esbuildRules = config.module!.rules!.filter(
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+        )
+        for (const rule of esbuildRules) {
+          if (typeof rule === 'object' && typeof rule.options === 'object') {
+            rule.options.target = 'es2022'
           }
         }
-      })
-    },
-    'prepare:types' ({ tsConfig }) {
-      tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
+      }
     },
     'modules:done' () {
       addComponent({

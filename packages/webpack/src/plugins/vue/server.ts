@@ -6,6 +6,8 @@ export interface VueSSRServerPluginOptions {
   filename: string
 }
 
+const JS_MAP_RE = /\.js\.map$/
+
 export default class VueSSRServerPlugin {
   options: VueSSRServerPluginOptions
 
@@ -61,7 +63,7 @@ export default class VueSSRServerPlugin {
             } else {
               bundle.files[asset.name] = asset.name
             }
-          } else if (asset.name.match(/\.js\.map$/)) {
+          } else if (JS_MAP_RE.test(asset.name)) {
             bundle.maps[asset.name.replace(/\.map$/, '')] = asset.name
           } else {
             // Do not emit non-js assets for server
