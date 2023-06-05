@@ -6,7 +6,7 @@ import { hasProtocol, joinURL, parseURL } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
@@ -155,10 +155,16 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (process.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
   }
-  if (err) {
-    throw createError(err)
+
+  if (!err) { return false }
+
+  err = createError(err)
+
+  if (err.fatal) {
+    useNuxtApp().runWithContext(() => showError(err as NuxtError))
   }
-  return false
+
+  throw err
 }
 
 export const setPageLayout = (layout: string) => {

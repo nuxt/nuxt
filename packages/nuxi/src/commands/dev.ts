@@ -112,6 +112,9 @@ export default defineNuxtCommand({
           ready: false,
           overrides: {
             logLevel: args['log-level'],
+            vite: {
+              clearScreen: args.clear
+            },
             ...(options.overrides || {})
           }
         })
