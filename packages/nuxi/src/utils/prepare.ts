@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -51,7 +51,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       continue
     }
     const relativePath = isAbsolute(aliases[alias])
-      ? withLeadingDot(relative(basePath, aliases[alias]) || '.')
+      ? relativeTo(basePath, aliases[alias])
       : aliases[alias]
 
     const stats = await fsp.stat(resolve(basePath, relativePath)).catch(() => null /* file does not exist */)
@@ -78,6 +78,18 @@ export const writeTypes = async (nuxt: Nuxt) => {
   const declarations: string[] = []
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
+
+  // Normalise aliases to be relative to buildDir for backward compatibility
+  for (const alias in tsConfig.compilerOptions!.paths!) {
+    const paths = tsConfig.compilerOptions!.paths![alias] as string[]
+    for (const [index, path] of paths.entries()) {
+      if (isAbsolute(path) || LEADING_DOT_RE.test(path)) { continue }
+      const resolvedPath = join(nuxt.options.rootDir, path) /* previously basePath was set to rootDir */
+      if (existsSync(resolvedPath)) {
+        paths[index] = relativeTo(basePath, resolvedPath)
+      }
+    }
+  }
 
   const declaration = [
     ...references.map((ref) => {
@@ -117,6 +129,10 @@ function withLeadingDot (path: string) {
     return path
   }
   return `./${path}`
+}
+
+function relativeTo (from: string, to: string) {
+  return withLeadingDot(relative(from, to) || '.')
 }
 
 function renderAttrs (obj: Record<string, string>) {
