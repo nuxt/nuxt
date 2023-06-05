@@ -17,6 +17,8 @@ export interface ComposableKeysOptions {
 }
 
 const stringTypes = ['Literal', 'TemplateLiteral']
+const NUXT_LIB_RE = /node_modules\/nuxt3?\//
+const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
   const composableMeta = Object.fromEntries(options.composables.map(({ name, ...meta }) => [name, meta]))
@@ -30,7 +32,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     enforce: 'post',
     transformInclude (id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return !pathname.match(/node_modules\/nuxt3?\//) && pathname.match(/\.(m?[jt]sx?|vue)/) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+      return !NUXT_LIB_RE.test(pathname) && SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
     },
     transform (code, id) {
       if (!KEYED_FUNCTIONS_RE.test(code)) { return }

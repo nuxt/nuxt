@@ -115,7 +115,7 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 
 ## Nuxt 2
 
-You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [nuxtjs.org](https://nuxtjs.org).
+You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [v2.nuxt.com](https://v2.nuxt.com).
 
 ## Follow us
 

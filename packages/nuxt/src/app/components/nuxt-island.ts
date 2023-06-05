@@ -16,6 +16,9 @@ const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
 const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
+let id = 0
+const getId = process.client ? () => (id++).toString() : randomUUID
+
 export default defineComponent({
   name: 'NuxtIsland',
   props: {
@@ -56,7 +59,7 @@ export default defineComponent({
       })
     })
     function setUid () {
-      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
+      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
@@ -90,7 +93,7 @@ export default defineComponent({
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       ssrHTML.value = res.html.replace(UID_ATTR, () => {
-        return `nuxt-ssr-component-uid="${randomUUID()}"`
+        return `nuxt-ssr-component-uid="${getId()}"`
       })
       key.value++
       if (process.client) {
