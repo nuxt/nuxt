@@ -627,7 +627,7 @@ describe('navigate', () => {
   it('should not run setup function in path redirected to', async () => {
     const { headers, status } = await fetch('/navigate-to-error', { redirect: 'manual' })
 
-    expect(headers.get('location')).toEqual('/navigate-to-error')
+    expect(headers.get('location')).toEqual('/setup-should-not-run')
     expect(status).toEqual(302)
   })
 
