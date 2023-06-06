@@ -260,7 +260,8 @@ const tests: Array<[string, string[], string]> = [
   ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem'],
   ['Icones', ['Icon'], 'IconIcones'],
   ['Icon', ['Icones'], 'IconesIcon'],
-  ['IconHolder', ['IconHolder'], 'IconHolder']
+  ['IconHolder', ['IconHolder'], 'IconHolder'],
+  ['GameList', ['Desktop', 'ShareGame', 'Review', 'Detail'], 'DesktopShareGameReviewDetailGameList']
 ]
 
 describe('components:resolveComponentName', () => {
