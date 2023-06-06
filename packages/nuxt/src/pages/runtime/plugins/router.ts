@@ -43,7 +43,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const path = renderedPath || withoutBase(pathname, base)
-  return path + search + hash
+  return path + (path.includes('?') ? '' : search) + hash
 }
 
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
