@@ -624,6 +624,13 @@ describe('navigate', () => {
     expect(status).toEqual(302)
   })
 
+  it('should not run setup function in path redirected to', async () => {
+    const { headers, status } = await fetch('/navigate-to-error', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/navigate-to-error')
+    expect(status).toEqual(302)
+  })
+
   it('supports directly aborting navigation on SSR', async () => {
     const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
 
