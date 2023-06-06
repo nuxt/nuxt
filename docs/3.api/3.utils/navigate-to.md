@@ -18,7 +18,7 @@ interface NavigateToOptions {
   replace?: boolean
   redirectCode?: number
   external?: boolean,
-  open?: WindowOpenOptions
+  open?: OpenOptions
 }
 ```
 
