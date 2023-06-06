@@ -13,8 +13,9 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   const nuxtApp = useNuxtApp()
   const route = useRoute()
   const vm = getCurrentInstance()!
-  const { fetchKey } = vm.proxy!.$options
-  const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
+  const { fetchKey, _fetchKeyBase } = vm.proxy!.$options
+  const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) ||
+    ([_fetchKeyBase, route.fullPath, route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type))].join(':'))
   const { data, error } = await useAsyncData(`options:asyncdata:${key}`, () => nuxtApp.runWithContext(() => fn(nuxtApp)))
   if (error.value) {
     throw createError(error.value)
@@ -27,7 +28,8 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
 }
 
 export const defineNuxtComponent: typeof defineComponent =
-  function defineNuxtComponent (options: any): any {
+  function defineNuxtComponent (...args: any[]): any {
+    const [options, key] = args
     const { setup } = options
 
     // Avoid wrapping if no options api is used
@@ -40,6 +42,7 @@ export const defineNuxtComponent: typeof defineComponent =
 
     return {
       [NuxtComponentIndicator]: true,
+      _fetchKeyBase: key,
       ...options,
       setup (props, ctx) {
         const nuxtApp = useNuxtApp()
