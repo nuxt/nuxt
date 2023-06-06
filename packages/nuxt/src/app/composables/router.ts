@@ -119,11 +119,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
       const features = Object.entries(windowFeatures)
         .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => {
-          const formattedValue = typeof value === 'boolean' ? (value ? 'true' : 'false') : value
-
-          return `${feature.toLowerCase()}=${formattedValue}`
-        })
+        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
         .join(', ')
 
       open(toPath, target, features)
