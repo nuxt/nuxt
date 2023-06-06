@@ -99,10 +99,10 @@ export type OpenOptions = {
 }
 
 export interface NavigateToOptions {
-  replace?: boolean;
-  redirectCode?: number;
-  external?: boolean;
-  open?: OpenOptions;
+  replace?: boolean
+  redirectCode?: number,
+  external?: boolean,
+  open?: OpenOptions
 }
 
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {

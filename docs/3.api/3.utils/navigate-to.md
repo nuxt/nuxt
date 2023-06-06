@@ -120,7 +120,7 @@ An object accepting the following properties:
   
       **Type**: `boolean`
 
-    Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/ope) for more detailed information on the **windowFeatures** properties.
+    Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.
 
 ## Examples
 
