@@ -13,8 +13,12 @@ import { useNuxtApp } from '#app/nuxt'
 import { isNuxtError, showError, useError } from '#app/composables/error'
 import { useRoute } from '#app/composables/router'
 import AppComponent from '#build/app-component.mjs'
+import errorComponent from '#build/error-component.mjs'
 
-const ErrorComponent = defineAsyncComponent(() => import('#build/error-component.mjs').then(r => r.default || r))
+// We import ErrorComponent synchronously so that it will be pulled into the default bundle.  That way if there
+// are network issues later we will still be able to render the error.
+const ErrorComponent = errorComponent.default || errorComponent
+
 const IslandRenderer = process.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
