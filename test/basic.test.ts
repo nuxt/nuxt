@@ -162,6 +162,15 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('should render correctly when loaded on a different path', async () => {
+    const page = await createPage('/proxy')
+
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+
+    await expectNoClientErrors('/proxy')
+  })
+
   it('preserves query', async () => {
     const html = await $fetch('/?test=true')
 
