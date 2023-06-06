@@ -18,10 +18,6 @@ const cookie = useCookie(name, options)
 `useCookie` ref will automatically serialize and deserialize cookie value to JSON.
 ::
 
-::alert{icon=⚠️}
-Multiple invocations of `useCookie` with the same name are not synced. [You can utilise `useState()` to sync them as a workaround](https://github.com/nuxt/nuxt/issues/13020#issuecomment-1505548242).
-::
-
 ## Example
 
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
