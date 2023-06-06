@@ -155,7 +155,7 @@ await navigateTo('https://nuxt.com', {
 // will open 'https://nuxt.com' in a new tab
 await navigateTo('https://nuxt.com', {  
   open: {
-    target: '_blank'
+    target: '_blank',
     windowFeatures: {
       width: 500,
       height: 500
