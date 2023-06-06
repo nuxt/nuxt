@@ -17,7 +17,8 @@ navigateTo(to: RouteLocationRaw | undefined | null, options?: NavigateToOptions)
 interface NavigateToOptions {
   replace?: boolean
   redirectCode?: number
-  external?: boolean
+  external?: boolean,
+  open?: WindowOpenOptions
 }
 ```
 
@@ -69,6 +70,32 @@ An object accepting the following properties:
 
   Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
 
+- `open` (optional)
+
+  **Type**: `WindowOpenOptions`
+
+  Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
+  
+  ```ts
+  interface WindowOpenFeatures {
+    width?: number;
+    innerWidth?: number;
+    height?: number;
+    innerHeight?: number;
+    left?: number;
+    screenX?: number;
+    top?: number;
+    screenY?: number;
+    noopener?: boolean;
+    noreferrer?: boolean;
+  }
+
+  interface WindowOpenOptions {
+    target: '_self' | '_blank' | '_parent' | '_top';
+    windowFeatures?: WindowOpenFeatures;
+  }
+  ```
+
 ## Examples
 
 ### Navigating Within a Vue Component
@@ -117,6 +144,23 @@ await navigateTo('https://nuxt.com')
 // will redirect successfully with the 'external' parameter set to 'true'
 await navigateTo('https://nuxt.com', {
   external: true
+})
+</script>
+```
+
+### Navigating using open()
+
+```vue
+<script setup>
+// will open 'https://nuxt.com' in a new tab
+await navigateTo('https://nuxt.com', {  
+  open: {
+    target: '_blank'
+    windowFeatures: {
+      width: 500,
+      height: 500
+    }
+  }
 })
 </script>
 ```

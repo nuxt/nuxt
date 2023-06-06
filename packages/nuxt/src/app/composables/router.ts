@@ -80,10 +80,29 @@ const isProcessingMiddleware = () => {
   return false
 }
 
+export interface WindowOpenFeatures {
+  readonly width?: number;
+  readonly innerWidth?: number;
+  readonly height?: number;
+  readonly innerHeight?: number;
+  readonly left?: number;
+  readonly screenX?: number;
+  readonly top?: number;
+  readonly screenY?: number;
+  readonly noopener?: boolean;
+  readonly noreferrer?: boolean;
+}
+
+export interface WindowOpenOptions {
+  readonly target: '_self' | '_blank' | '_parent' | '_top';
+  readonly windowFeatures?: WindowOpenFeatures;
+}
+
 export interface NavigateToOptions {
-  replace?: boolean
-  redirectCode?: number,
-  external?: boolean
+  replace?: boolean;
+  redirectCode?: number;
+  external?: boolean;
+  open?: WindowOpenOptions;
 }
 
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
@@ -92,6 +111,26 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
+
+  // Early open handler
+  if (options?.open) {
+    if (process.client) {
+      const { target = '_blank', windowFeatures = {} } = options.open
+
+      const features = Object.entries(windowFeatures)
+        .map(([feature, value]) => {
+          const formattedValue =
+              typeof value === 'boolean' ? (value ? 'true' : 'false') : value
+          return `${feature.toLowerCase()}=${formattedValue}`
+        })
+        .join(', ')
+
+      open(toPath, target, features)
+    }
+
+    return Promise.resolve()
+  }
+
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
