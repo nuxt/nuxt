@@ -91,35 +91,35 @@ An object accepting the following properties:
     **Type**: `OpenWindowFeatures`
 
     An object accepting the following properties:
-    
+
     - `popup` (optional)
-      
+
       **Type**: `boolean`
 
     - `width` or `innerWidth` (optional)
-      
+
       **Type**: `number`
 
     - `height` or `innerHeight` (optional)
-      
+
       **Type**: `number`
 
     - `left` or `screenX` (optional)
-      
+
       **Type**: `number`
 
     - `top` or `screenY` (optional)
-      
+
       **Type**: `number`
   
     - `noopener` (optional)
-      
+
       **Type**: `boolean`
 
     - `noreferrer` (optional)
   
       **Type**: `boolean`
-    
+
     Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/ope) for more detailed information on the **windowFeatures** properties.
 
 ## Examples
