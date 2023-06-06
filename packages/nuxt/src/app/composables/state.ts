@@ -37,7 +37,7 @@ export function useState <T> (...args: any): Ref<T> {
   return state
 }
 
-function clearNuxtState (
+export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean)
 ): void {
   const nuxtApp = useNuxtApp()
