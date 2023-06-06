@@ -62,7 +62,8 @@ export default defineNuxtConfig({
   optimization: {
     keyedComposables: [
       {
-        name: 'useKeyedComposable',
+        name: 'useCustomKeyedComposable',
+        source: 'pages/keyed-composables/index.vue',
         argumentLength: 1
       }
     ]
