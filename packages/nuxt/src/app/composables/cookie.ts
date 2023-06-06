@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { nextTick, onUnmounted, ref, watch } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, setCookie } from 'h3'
@@ -34,25 +34,30 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
   if (process.client) {
-    const callback = () => { writeClientCookie(name, cookie.value, opts as CookieSerializeOptions) }
+    const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    if (getCurrentInstance()) { onUnmounted(() => { channel.close() }) }
+
+    const callback = () => {
+      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+      channel.postMessage(cookie.value)
+    }
+
+    let watchPaused = false
+
+    channel.onmessage = (event) => {
+      if (isEqual(cookie.value, event.data)) { return }
+      watchPaused = true
+      cookie.value = event.data
+      nextTick(() => { watchPaused = false })
+    }
 
     if (opts.watch) {
-      const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-      onUnmounted(() => { channel.close() })
-      let watchPaused = false
-
-      watch(cookie, (newValue) => {
+      watch(cookie, () => {
         if (watchPaused) { return }
+        console.log(cookie.value)
         callback()
-        channel.postMessage(newValue)
       },
       { deep: opts.watch !== 'shallow' })
-
-      channel.onmessage = (event) => {
-        watchPaused = true
-        cookie.value = event.data
-        nextTick(() => { watchPaused = false })
-      }
     } else {
       callback()
     }
