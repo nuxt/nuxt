@@ -119,6 +119,7 @@ interface _NuxtApp {
 
   ssrContext?: NuxtSSRContext
   payload: {
+    path?: string
     serverRendered?: boolean
     prerenderedAt?: number
     data: Record<string, any>
@@ -255,13 +256,13 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   if (process.server) {
-    // Expose nuxt to the renderContext
     if (nuxtApp.ssrContext) {
+      // Expose nuxt to the renderContext
       nuxtApp.ssrContext.nuxt = nuxtApp
-    }
-    // Expose payload types
-    if (nuxtApp.ssrContext) {
+      // Expose payload types
       nuxtApp.ssrContext._payloadReducers = {}
+      // Expose current path
+      nuxtApp.payload.path = nuxtApp.ssrContext.event.path
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any

@@ -27,7 +27,8 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
   base: string,
-  location: Location
+  location: Location,
+  renderedPath?: string
 ): string {
   const { pathname, search, hash } = location
   // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
@@ -41,8 +42,8 @@ function createCurrentLocation (
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
     return withoutBase(pathFromHash, '')
   }
-  const path = withoutBase(pathname, base)
-  return path + search + hash
+  const path = renderedPath || withoutBase(pathname, base)
+  return path + (path.includes('?') ? '' : search) + hash
 }
 
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
@@ -63,7 +64,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
+    const initialURL = process.server
+      ? nuxtApp.ssrContext!.url
+      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
     const router = createRouter({
       ...routerOptions,
       scrollBehavior: (to, from, savedPosition) => {
