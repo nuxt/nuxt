@@ -72,29 +72,55 @@ An object accepting the following properties:
 
 - `open` (optional)
 
-  **Type**: `WindowOpenOptions`
+  **Type**: `OpenOptions`
 
   Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
-  
-  ```ts
-  interface WindowOpenFeatures {
-    width?: number;
-    innerWidth?: number;
-    height?: number;
-    innerHeight?: number;
-    left?: number;
-    screenX?: number;
-    top?: number;
-    screenY?: number;
-    noopener?: boolean;
-    noreferrer?: boolean;
-  }
 
-  interface WindowOpenOptions {
-    target: '_self' | '_blank' | '_parent' | '_top';
-    windowFeatures?: WindowOpenFeatures;
-  }
-  ```
+  An object accepting the following properties:
+
+  - `target`
+
+    **Type**: `string`
+
+    **Default**: `'_blank'`
+
+    A string, without whitespace, specifying the name of the browsing context the resource is being loaded into.
+
+  - `windowFeatures` (optional)
+
+    **Type**: `OpenWindowFeatures`
+
+    An object accepting the following properties:
+    
+    - `popup` (optional)
+      
+      **Type**: `boolean`
+
+    - `width` or `innerWidth` (optional)
+      
+      **Type**: `number`
+
+    - `height` or `innerHeight` (optional)
+      
+      **Type**: `number`
+
+    - `left` or `screenX` (optional)
+      
+      **Type**: `number`
+
+    - `top` or `screenY` (optional)
+      
+      **Type**: `number`
+  
+    - `noopener` (optional)
+      
+      **Type**: `boolean`
+
+    - `noreferrer` (optional)
+  
+      **Type**: `boolean`
+    
+    Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/ope) for more detailed information on the **windowFeatures** properties.
 
 ## Examples
 

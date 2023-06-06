@@ -80,29 +80,29 @@ const isProcessingMiddleware = () => {
   return false
 }
 
-export interface WindowOpenFeatures {
-  readonly width?: number;
-  readonly innerWidth?: number;
-  readonly height?: number;
-  readonly innerHeight?: number;
-  readonly left?: number;
-  readonly screenX?: number;
-  readonly top?: number;
-  readonly screenY?: number;
-  readonly noopener?: boolean;
-  readonly noreferrer?: boolean;
-}
+// Conditional types, either one or other
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
-export interface WindowOpenOptions {
-  readonly target: '_self' | '_blank' | '_parent' | '_top';
-  readonly windowFeatures?: WindowOpenFeatures;
+export type OpenWindowFeatures = {
+  popup?: boolean
+  noopener?: boolean
+  noreferrer?: boolean
+} & XOR<{width?: number}, {innerWidth?: number}>
+  & XOR<{height?: number}, {innerHeight?: number}>
+  & XOR<{left?: number}, {screenX?: number}>
+  & XOR<{top?: number}, {screenY?: number}>
+
+export type OpenOptions = {
+  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  windowFeatures?: OpenWindowFeatures
 }
 
 export interface NavigateToOptions {
   replace?: boolean;
   redirectCode?: number;
   external?: boolean;
-  open?: WindowOpenOptions;
+  open?: OpenOptions;
 }
 
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
@@ -118,9 +118,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const { target = '_blank', windowFeatures = {} } = options.open
 
       const features = Object.entries(windowFeatures)
+        .filter(([_, value]) => value !== undefined)
         .map(([feature, value]) => {
-          const formattedValue =
-              typeof value === 'boolean' ? (value ? 'true' : 'false') : value
+          const formattedValue = typeof value === 'boolean' ? (value ? 'true' : 'false') : value
+
           return `${feature.toLowerCase()}=${formattedValue}`
         })
         .join(', ')
