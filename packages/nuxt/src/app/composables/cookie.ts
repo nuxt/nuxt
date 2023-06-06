@@ -45,15 +45,14 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     let watchPaused = false
 
     channel.onmessage = (event) => {
-      if (isEqual(cookie.value, event.data)) { return }
       watchPaused = true
       cookie.value = event.data
       nextTick(() => { watchPaused = false })
     }
 
     if (opts.watch) {
-      watch(cookie, () => {
-        if (watchPaused) { return }
+      watch(cookie, (newVal, oldVal) => {
+        if (watchPaused || isEqual(newVal, oldVal)) { return }
         callback()
       },
       { deep: opts.watch !== 'shallow' })
