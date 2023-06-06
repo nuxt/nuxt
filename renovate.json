@@ -10,6 +10,16 @@
   ],
   "packageRules": [
     {
+      "groupName": "vitest",
+      "matchPackageNames": [
+        "vite-node",
+        "vitest"
+      ],
+      "matchPackagePatterns": [
+        "^@vitest/"
+      ]
+    },
+    {
       "matchBaseBranches": [
         "main"
       ],
