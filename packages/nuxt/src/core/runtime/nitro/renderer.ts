@@ -122,6 +122,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
     ssrContext!.payload = {
+      path: ssrContext.event.path,
       _errors: {},
       serverRendered: false,
       data: {},
