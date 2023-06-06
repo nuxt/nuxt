@@ -34,20 +34,22 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
   if (process.client) {
-    const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-    if (getCurrentInstance()) { onUnmounted(() => { channel.close() }) }
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel.postMessage(cookie.value)
+      channel?.postMessage(cookie.value)
     }
 
     let watchPaused = false
 
-    channel.onmessage = (event) => {
-      watchPaused = true
-      cookie.value = event.data
-      nextTick(() => { watchPaused = false })
+    if (channel) {
+      channel.onmessage = (event) => {
+        watchPaused = true
+        cookie.value = event.data
+        nextTick(() => { watchPaused = false })
+      }
     }
 
     if (opts.watch) {
