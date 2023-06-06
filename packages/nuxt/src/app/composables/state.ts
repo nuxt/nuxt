@@ -35,3 +35,23 @@ export function useState <T> (...args: any): Ref<T> {
   }
   return state
 }
+
+function clearNuxtState (
+  keys?: string | string[] | ((key: string) => boolean)
+): void {
+  const nuxtApp = useNuxtApp()
+  const _allKeys = Object.keys(nuxtApp.payload.state)
+  const _keys: string[] = !keys
+    ? _allKeys
+    : typeof keys === 'function'
+      ? _allKeys.filter(keys)
+      : Array.isArray(keys)
+        ? keys.map(k => '$s' + k)
+        : ['$s' + keys]
+
+  for (const key of _keys) {
+    if (key in nuxtApp.payload.state) {
+      nuxtApp.payload.state[key] = undefined
+    }
+  }
+}
