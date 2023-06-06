@@ -123,8 +123,6 @@ export async function bundle (nuxt: Nuxt) {
     ctx.config.build!.watch = undefined
   }
 
-  await nuxt.callHook('vite:extend', ctx)
-
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
@@ -132,8 +130,10 @@ export async function bundle (nuxt: Nuxt) {
       vueTsc: {
         tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
       }
-    }), { client: !nuxt.options.ssr, server: nuxt.options.ssr })
+    }), { server: nuxt.options.ssr })
   }
+
+  await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated

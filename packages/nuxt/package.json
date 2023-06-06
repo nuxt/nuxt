@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.5.1",
+  "version": "3.5.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -84,7 +84,7 @@
     "nypm": "^0.2.0",
     "ofetch": "^1.0.1",
     "ohash": "^1.1.2",
-    "pathe": "^1.1.0",
+    "pathe": "^1.1.1",
     "perfect-debounce": "^1.0.0",
     "prompts": "^2.4.2",
     "scule": "^1.0.0",
@@ -101,18 +101,18 @@
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.1"
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
-    "@parcel/watcher": "^2.1.0",
-    "@types/estree": "^1.0.1",
-    "@types/fs-extra": "^11.0.1",
-    "@types/prompts": "^2.4.4",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "acorn": "^8.8.2",
+    "@parcel/watcher": "2.1.0",
+    "@types/estree": "1.0.1",
+    "@types/fs-extra": "11.0.1",
+    "@types/prompts": "2.4.4",
+    "@vitejs/plugin-vue": "4.2.3",
+    "acorn": "8.8.2",
     "unbuild": "latest",
-    "vite": "^4.3.9",
-    "vitest": "^0.31.1"
+    "vite": "4.3.9",
+    "vitest": "0.31.4"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
