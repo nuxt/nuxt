@@ -381,10 +381,12 @@ const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
   post: 20
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
   return defineNuxtPlugin(plugin, { order: -40 })
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
   if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
 
@@ -433,6 +435,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  */
@@ -455,6 +458,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (): RuntimeConfig {
   return useNuxtApp().$config
 }

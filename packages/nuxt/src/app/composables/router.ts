@@ -42,7 +42,10 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware
+/*! @__NO_SIDE_EFFECTS__ */
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
+  return middleware
+}
 
 export interface AddRouteMiddlewareOptions {
   global?: boolean
