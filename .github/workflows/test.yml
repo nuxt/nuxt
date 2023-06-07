@@ -20,33 +20,23 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0 # All history
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "yarn"
 
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-
-      - name: cache node_modules
-        id: node_modules_cache_id
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-            distributions/*/node_modules
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
 
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -64,15 +54,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -97,15 +87,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -128,15 +118,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -168,15 +158,15 @@ jobs:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -189,7 +179,7 @@ jobs:
         run: yarn test:fixtures -i
 
       - name: Save fixtures
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -204,15 +194,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -222,7 +212,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -241,15 +231,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -259,7 +249,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -278,15 +268,15 @@ jobs:
         node: [16]
 
     steps:
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - run: corepack enable
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
-
-      - name: checkout
-        uses: actions/checkout@master
+          cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -296,7 +286,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
@@ -314,8 +304,7 @@ jobs:
         node: [16]
 
     steps:
-      - name: checkout
-        uses: actions/checkout@master
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           ref: "refs/heads/dev"
           fetch-depth: 0 # All history
@@ -324,7 +313,7 @@ jobs:
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - name: restore workspace cache
-        uses: actions/cache@v3
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
         with:
           path: |
             node_modules
@@ -333,9 +322,10 @@ jobs:
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
           node-version: ${{ matrix.node }}
+          cache: "yarn"
           registry-url: "https://registry.npmjs.org"
 
       - name: bump version

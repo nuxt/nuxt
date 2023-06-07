@@ -279,6 +279,10 @@ export async function setContext (app, context) {
     app.context.from = fromRouteData
   }
 
+  if (context.error) {
+    app.context.error = context.error
+  }
+
   app.context.next = context.next
   app.context._redirected = false
   app.context._errored = false
@@ -287,13 +291,13 @@ export async function setContext (app, context) {
   app.context.query = app.context.route.query || {}
 }
 <% if (features.middleware) { %>
-export function middlewareSeries (promises, appContext) {
-  if (!promises.length || appContext._redirected || appContext._errored) {
+export function middlewareSeries (promises, appContext, renderState) {
+  if (!promises.length || appContext._redirected || appContext._errored || (renderState && renderState.aborted)) {
     return Promise.resolve()
   }
   return promisify(promises[0], appContext)
     .then(() => {
-      return middlewareSeries(promises.slice(1), appContext)
+      return middlewareSeries(promises.slice(1), appContext, renderState)
     })
 }
 <% } %>

@@ -97,7 +97,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
   return routes
 }
 
-const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
+const DYNAMIC_ROUTE_REGEX = /[:*]/
 
 export const sortRoutes = function sortRoutes (routes) {
   routes.sort((a, b) => {
@@ -126,13 +126,13 @@ export const sortRoutes = function sortRoutes (routes) {
       if (res !== 0) {
         break
       }
-      y = _a[i] === '*' ? 2 : _a[i].includes(':') ? 1 : 0
-      z = _b[i] === '*' ? 2 : _b[i].includes(':') ? 1 : 0
+      y = _a[i] === '*' ? 3 : _a[i].includes(':') ? 2 : _a[i].includes('*') ? 1 : 0
+      z = _b[i] === '*' ? 3 : _b[i].includes(':') ? 2 : _b[i].includes('*') ? 1 : 0
       res = y - z
       // If a.length >= b.length
       if (i === _b.length - 1 && res === 0) {
         // unless * found sort by level, then alphabetically
-        res = _a[i] === '*'
+        res = _a[i].includes('*')
           ? -1
           : (
             _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
@@ -142,7 +142,7 @@ export const sortRoutes = function sortRoutes (routes) {
 
     if (res === 0) {
       // unless * found sort by level, then alphabetically
-      res = _a[i - 1] === '*' && _b[i]
+      res = _a[i - 1].includes('*') && _b[i]
         ? 1
         : (
           _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
@@ -248,7 +248,6 @@ const getRoutePathExtension = (key) => {
   if (key.startsWith('_')) {
     return `:${key.substr(1)}`
   }
-
   return key
 }
 
