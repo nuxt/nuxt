@@ -168,8 +168,15 @@ export default class PostcssConfig {
       return { postcssOptions: {} }
     }
     if (postcssOptions.postcssOptions && typeof postcssOptions.postcssOptions === 'function') {
-      consola.warn('Using a Function as `build.postcss.postcssOptions` is not yet supported in Nuxt 2.16.2')
-      return { postcssOptions: {} }
+      const postcssOptionsFn = postcssOptions.postcssOptions
+      return {
+        postcssOptions: (loaderContext) => {
+          const result = this.normalize(postcssOptionsFn(loaderContext))
+          if (result) {
+            return result.postcssOptions
+          }
+        }
+      }
     }
     if (!('postcssOptions' in postcssOptions)) {
       if (Object.keys(postcssOptions).length > 0) {
@@ -252,15 +259,7 @@ export default class PostcssConfig {
 
     if (Array.isArray(postcssOptions.postcssOptions.plugins)) {
       defaults(postcssOptions.postcssOptions.plugins, this.defaultPostcssOptions.plugins)
-    } else if (typeof postcssOptions.postcssOptions === 'function') {
-      const postcssOptionsFn = postcssOptions.postcssOptions
-      postcssOptions.postcssOptions = (loaderContext) => {
-        const result = this.normalize(postcssOptionsFn(loaderContext))
-        if (result) {
-          return result.postcssOptions
-        }
-      }
-    } else {
+    } else if (typeof postcssOptions.postcssOptions !== 'function') {
       // Merge all plugins and use preset for setting up postcss-preset-env
       if (postcssOptions.postcssOptions.preset) {
         if (!postcssOptions.postcssOptions.plugins) {
