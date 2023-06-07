@@ -100,8 +100,8 @@ export type OpenOptions = {
 
 export interface NavigateToOptions {
   replace?: boolean
-  redirectCode?: number,
-  external?: boolean,
+  redirectCode?: number
+  external?: boolean
   open?: OpenOptions
 }
 

@@ -17,7 +17,7 @@ navigateTo(to: RouteLocationRaw | undefined | null, options?: NavigateToOptions)
 interface NavigateToOptions {
   replace?: boolean
   redirectCode?: number
-  external?: boolean,
+  external?: boolean
   open?: OpenOptions
 }
 ```
