@@ -44,8 +44,7 @@ export interface NuxtTemplate<Options = Record<string, any>> {
   isType?: boolean
 }
 
-export interface ResolvedNuxtTemplate<Options = Record<string, any>>
-  extends NuxtTemplate<Options> {
+export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends NuxtTemplate<Options> {
   filename: string
   dst: string
 }
@@ -72,5 +71,4 @@ export interface NuxtApp {
 }
 
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
-export interface NuxtPluginTemplate<Options = Record<string, any>>
-  extends _TemplatePlugin<Options> {}
+export interface NuxtPluginTemplate<Options = Record<string, any>> extends _TemplatePlugin<Options> { }
