@@ -68,6 +68,14 @@ An object accepting the following properties:
   **Default**: `false`
 
   Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
+  
+- `newTab` (optional)
+  
+  **Type**: `boolean`
+  
+  **Default**: `false`
+  
+  Opens the navigation in a new tab when set to `true`.
 
 ## Examples
 
