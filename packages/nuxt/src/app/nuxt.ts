@@ -28,7 +28,7 @@ type NuxtMeta = {
 
 type HookResult = Promise<void> | void
 
-type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
+type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
 export interface RuntimeNuxtHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult
