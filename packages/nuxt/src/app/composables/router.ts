@@ -102,8 +102,9 @@ export interface NavigateToOptions {
  * 
  * Can be called on the server and on the client, within pages, middleware, plugins, and more.
  * 
- * @param to The route to navigate to.
- * @param options Optional customization for controlling the behavior of the navigation.
+ * @param {(RouteLocationRaw | undefined | null)} [to='/'] The route to navigate to. Accepts a `String` of the relative path, `undefined`, and `null`.
+ * @default '/'
+ * @param {NavigateToOptions} [options] Optional customization for controlling the behavior of the navigation.
  * @see https://nuxt.com/docs/api/utils/navigate-to
  */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
