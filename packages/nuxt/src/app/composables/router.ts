@@ -42,7 +42,10 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware
+/*! @__NO_SIDE_EFFECTS__ */
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
+  return middleware
+}
 
 export interface AddRouteMiddlewareOptions {
   global?: boolean
@@ -151,7 +154,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      async function redirect () {
+      async function redirect (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
@@ -160,16 +163,16 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location }
         }
-        return inMiddleware ? /* abort route navigation */ false : undefined
+        return response
       }
 
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.afterEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
+        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
         return to
       }
-      return redirect()
+      return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
     }
   }
 
