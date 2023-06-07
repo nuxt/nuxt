@@ -84,11 +84,28 @@ const isProcessingMiddleware = () => {
 }
 
 export interface NavigateToOptions {
+  /**
+   * Whether or not the given route would replace the current route in the navigation history, rather than push it.
+   */
   replace?: boolean
+  /**
+   * The status code to emit with the navigation. Defaults to `302 Found` when used on server side redirects.
+   */
   redirectCode?: number,
+  /**
+   * Whether or not the given route is a website/resource from a different origin. By default, navigating to external resources without setting `external: true` would result in an error.
+   */
   external?: boolean
 }
-
+/**
+ * A helper that aids in programmatic navigation within your Nuxt application.
+ * 
+ * Can be called on the server and on the client, within pages, middleware, plugins, and more.
+ * 
+ * @param to The route to navigate to.
+ * @param options Optional customization for controlling the behavior of the navigation.
+ * @see https://nuxt.com/docs/api/utils/navigate-to
+ */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
