@@ -96,8 +96,8 @@ importers:
         specifier: workspace:*
         version: link:packages/nuxt
       ofetch:
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.1.0
+        version: 1.1.0
       pathe:
         specifier: 1.1.1
         version: 1.1.1
@@ -410,10 +410,10 @@ importers:
         specifier: workspace:*
         version: link:../nuxi
       nypm:
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.2.1
+        version: 0.2.1
       ofetch:
-        specifier: ^1.0.1
+        specifier: ^1.1.0
         version: 1.1.0
       ohash:
         specifier: ^1.1.2
@@ -440,8 +440,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       uncrypto:
-        specifier: ^0.1.2
-        version: 0.1.2
+        specifier: ^0.1.3
+        version: 0.1.3
       unctx:
         specifier: ^2.3.1
         version: 2.3.1
@@ -598,7 +598,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       ofetch:
-        specifier: ^1.0.1
+        specifier: ^1.1.0
         version: 1.1.0
       pathe:
         specifier: ^1.1.1
@@ -662,8 +662,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       externality:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.2
+        version: 1.0.2
       fs-extra:
         specifier: ^11.1.1
         version: 11.1.1
@@ -4592,8 +4592,8 @@ packages:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  /externality@1.0.0:
-    resolution: {integrity: sha512-MAU9ci3XdpqOX1aoIoyL2DMzW97P8LYeJxIUkfXhOfsrkH4KLHFaYDwKN0B2l6tqedVJWiTIJtWmxmZfa05vOQ==}
+  /externality@1.0.2:
+    resolution: {integrity: sha512-LyExtJWKxtgVzmgtEHyQtLFpw1KFhQphF9nTG8TpAIVkiI/xQ3FJh75tRFLYl4hkn7BNIIdLJInuDAavX35pMw==}
     dependencies:
       enhanced-resolve: 5.14.1
       mlly: 1.3.0
@@ -5054,7 +5054,7 @@ packages:
       iron-webcrypto: 0.7.0
       radix3: 1.0.1
       ufo: 1.1.2
-      uncrypto: 0.1.2
+      uncrypto: 0.1.3
 
   /has-bigints@1.0.2:
     resolution: {integrity: sha512-tSvCKtBr9lkF0Ex0aQiP9N+OpV4zi2r/Nee5VkRDbaqv35RLYMzbwQfFSZZH0kR+Rd6302UJZ2p/bJCEoR3VoQ==}
@@ -6324,9 +6324,9 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nypm@0.2.0:
-    resolution: {integrity: sha512-auBv78LkHyU9TywBE91N+RTkanVyFLsVayZaHW+YYvJDJ3u2PCwLaYB3eecPQD9tgCIXGuH871HlHTdKSf6rtw==}
-    engines: {node: ^14.16.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0}
+  /nypm@0.2.1:
+    resolution: {integrity: sha512-5XKv4OKlnL+qkeWU4ywu35iyT1p8TmFJ5vD9BfVn8tHU3g/X0lDLV8TqZ4dNHwkoo9mtHUpQ8W8ert0XPqwbow==}
+    engines: {node: ^14.16.0 || >=16.10.0}
     dependencies:
       execa: 7.1.1
     dev: false
@@ -6361,14 +6361,6 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.0
       es-abstract: 1.21.2
-    dev: true
-
-  /ofetch@1.0.1:
-    resolution: {integrity: sha512-icBz2JYfEpt+wZz1FRoGcrMigjNKjzvufE26m9+yUiacRQRHwnNlGRPiDnW4op7WX/MR6aniwS8xw8jyVelF2g==}
-    dependencies:
-      destr: 1.2.2
-      node-fetch-native: 1.2.0
-      ufo: 1.1.2
     dev: true
 
   /ofetch@1.1.0:
@@ -8004,8 +7996,8 @@ packages:
       - supports-color
     dev: true
 
-  /uncrypto@0.1.2:
-    resolution: {integrity: sha512-kuZwRKV615lEw/Xx3Iz56FKk3nOeOVGaVmw0eg+x4Mne28lCotNFbBhDW7dEBCBKyKbRQiCadEZeNAFPVC5cgw==}
+  /uncrypto@0.1.3:
+    resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
 
   /unctx@2.3.1:
     resolution: {integrity: sha512-PhKke8ZYauiqh3FEMVNm7ljvzQiph0Mt3GBRve03IJm7ukfaON2OBK795tLwhbyfzknuRRkW0+Ze+CQUmzOZ+A==}
