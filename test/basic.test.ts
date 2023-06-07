@@ -162,6 +162,15 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('should render correctly when loaded on a different path', async () => {
+    const page = await createPage('/proxy')
+
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+
+    await expectNoClientErrors('/proxy')
+  })
+
   it('preserves query', async () => {
     const html = await $fetch('/?test=true')
 
@@ -578,8 +587,27 @@ describe('legacy async data', () => {
   it('should work with defineNuxtComponent', async () => {
     const html = await $fetch('/legacy/async-data')
     expect(html).toContain('<div>Hello API</div>')
+    expect(html).toContain('<div>fooChild</div>')
+    expect(html).toContain('<div>fooParent</div>')
     const { script } = parseData(html)
-    expect(script.data['options:asyncdata:/legacy/async-data'].hello).toEqual('Hello API')
+    expect(script.data['options:asyncdata:hello'].hello).toBe('Hello API')
+    expect(Object.values(script.data)).toMatchInlineSnapshot(`
+      [
+        {
+          "baz": "qux",
+          "foo": "bar",
+        },
+        {
+          "hello": "Hello API",
+        },
+        {
+          "fooParent": "fooParent",
+        },
+        {
+          "fooChild": "fooChild",
+        },
+      ]
+    `)
   })
 })
 
@@ -1066,6 +1094,12 @@ describe('automatically keyed composables', () => {
   })
   it('should match server-generated keys', async () => {
     await expectNoClientErrors('/keyed-composables')
+  })
+  it('should not automatically generate keys', async () => {
+    await expectNoClientErrors('/keyed-composables/local')
+    const html = await $fetch('/keyed-composables/local')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
   })
 })
 

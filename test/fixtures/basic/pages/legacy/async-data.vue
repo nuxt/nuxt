@@ -1,11 +1,13 @@
 <template>
   <div>
-    {{ hello }}
+    <div>{{ hello }}</div>
+    <NuxtPage />
   </div>
 </template>
 
 <script>
 export default defineNuxtComponent({
+  fetchKey: () => 'hello',
   async setup () {
     await nextTick()
     useRuntimeConfig()

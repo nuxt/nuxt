@@ -1,5 +1,6 @@
 import { promises as fsp } from 'node:fs'
-import lodashTemplate from 'lodash.template'
+// TODO: swap out when https://github.com/lodash/lodash/pull/5649 is merged
+import { template as lodashTemplate } from 'lodash-es'
 import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
