@@ -31,17 +31,18 @@ const LayoutLoader = defineComponent({
       })
     }
 
-    const LayoutComponent = defineAsyncComponent(() => layouts[props.name]().then((r: any) => r.default || r))
+    const LayoutComponent = defineAsyncComponent(layouts[props.name])
 
-    return () => {
-      if (process.dev && process.client && props.hasTransition) {
-        vnode = h(LayoutComponent, context.attrs, context.slots)
-        return h(Suspense, { suspensible: true }, { default: () => vnode })
-      }
-      return h(Suspense, { suspensible: true }, {
-        default: () => h(LayoutComponent, context.attrs, context.slots)
-      })
-    }
+    return () => h(Suspense, { suspensible: true }, {
+      default: () => {
+        const node = h(LayoutComponent, context.attrs, context.slots)
+        if (process.dev && process.client && props.hasTransition) {
+          vnode = node
+        }
+        return node
+      },
+      fallback: () => h('div')
+    })
   }
 })
 export default defineComponent({
