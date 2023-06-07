@@ -44,6 +44,7 @@ export default defineBuildConfig({
     'consola',
     'ignore',
     'vue-loader',
+    'esbuild-loader',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

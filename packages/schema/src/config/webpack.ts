@@ -147,6 +147,8 @@ export default defineUntypedSchema({
         }
         return val
       },
+      /** @type {typeof import('esbuild-loader')['LoaderOptions']} */
+      esbuild: {},
       file: { esModule: false },
       fontUrl: { esModule: false, limit: 1000 },
       imgUrl: { esModule: false, limit: 1000 },
