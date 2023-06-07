@@ -81,12 +81,28 @@ const isProcessingMiddleware = () => {
 }
 
 export interface NavigateToOptions {
+  /**
+   * Whether or not the given route should be replaced, rather than pushed into the navigation history.
+   */
   replace?: boolean,
   redirectCode?: number,
+  /**
+   * Whether or not the given route is not from the same origin. By default, navigating to external sources without specifing `external: true` would result in an error.
+   */
   external?: boolean,
+  /**
+   * Whether or not to open the given route in a new tab, preventing the current route from being overridden.
+   */
   newTab?: boolean
 }
 
+/**
+ * A helper function that can handle programmatic navigation throughout your Nuxt application.
+ * It is usable on both client and server side, as well as inside plugins, middleware, and everywhere else.
+ * @param to The destination route
+ * @param options Optional navigation customization 
+ * @see https://nuxt.com/docs/api/utils/navigate-to
+ */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
