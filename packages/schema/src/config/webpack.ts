@@ -213,20 +213,6 @@ export default defineUntypedSchema({
     plugins: [],
 
     /**
-     * Terser plugin options.
-     *
-     * Set to false to disable this plugin, or pass an object of options.
-     *
-     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin).
-     *
-     * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
-     * the end of each output file if webpack `config.devtool` is set to `source-map`.
-     *
-     * @type {false | typeof import('terser-webpack-plugin').BasePluginOptions & typeof import('terser-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
-     */
-    terser: {},
-
-    /**
      * Hard-replaces `typeof process`, `typeof window` and `typeof document` to tree-shake bundle.
      */
     aggressiveCodeRemoval: false,
