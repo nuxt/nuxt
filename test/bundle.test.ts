@@ -4,17 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
-import { isWindows } from 'std-env'
-import { isRenderingJson } from './utils'
 
-// We only want to run this test for:
-// - ubuntu
-// - vite
-// - in our own CI
-// - using JS (default) payload rendering
-// - production build
-
-describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.env.ECOSYSTEM_CI || !isRenderingJson || process.env.TEST_ENV === 'dev')('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
