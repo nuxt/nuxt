@@ -81,9 +81,10 @@ const isProcessingMiddleware = () => {
 }
 
 export interface NavigateToOptions {
-  replace?: boolean
+  replace?: boolean,
   redirectCode?: number,
-  external?: boolean
+  external?: boolean,
+  newTab?: boolean
 }
 
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
@@ -146,7 +147,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     }
     return Promise.resolve()
   }
-
+  if(options?.newTab){
+    return window.open(to,"_blank")
+  }
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
