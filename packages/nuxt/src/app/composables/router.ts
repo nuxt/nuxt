@@ -83,19 +83,38 @@ const isProcessingMiddleware = () => {
   return false
 }
 
+// Conditional types, either one or other
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+
+export type OpenWindowFeatures = {
+  popup?: boolean
+  noopener?: boolean
+  noreferrer?: boolean
+} & XOR<{width?: number}, {innerWidth?: number}>
+  & XOR<{height?: number}, {innerHeight?: number}>
+  & XOR<{left?: number}, {screenX?: number}>
+  & XOR<{top?: number}, {screenY?: number}>
+
+export type OpenOptions = {
+  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  windowFeatures?: OpenWindowFeatures
+}
+
 export interface NavigateToOptions {
   /**
-   * Whether or not the given route would replace the current route in the navigation history, rather than push it.
+   * Whether or not the given route should replace the current route in the navigation history, rather than push it.
    */
   replace?: boolean
   /**
    * The status code to emit with the navigation. Defaults to `302 Found` when used on server side redirects.
    */
-  redirectCode?: number,
+  redirectCode?: number
   /**
    * Whether or not the given route is a website/resource from a different origin. By default, navigating to external resources without setting `external: true` would result in an error.
    */
   external?: boolean
+  open?: OpenOptions
 }
 /**
  * A helper that aids in programmatic navigation within your Nuxt application.
@@ -113,6 +132,23 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
+
+  // Early open handler
+  if (options?.open) {
+    if (process.client) {
+      const { target = '_blank', windowFeatures = {} } = options.open
+
+      const features = Object.entries(windowFeatures)
+        .filter(([_, value]) => value !== undefined)
+        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+        .join(', ')
+
+      open(toPath, target, features)
+    }
+
+    return Promise.resolve()
+  }
+
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
