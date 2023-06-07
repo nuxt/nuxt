@@ -290,5 +290,13 @@ export default defineUntypedSchema({
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
+
+    /**
+     * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
+     * @type {false | typeof import('webpack').Configuration['experiments']}
+     */
+    experiments: {
+      $resolve: async (val, get) => val ?? (await get('experiments'))
+    }
   }
 })
