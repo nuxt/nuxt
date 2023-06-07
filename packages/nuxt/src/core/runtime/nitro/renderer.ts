@@ -252,7 +252,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   })
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
   if (ssrContext._renderResponse) { return ssrContext._renderResponse }
 
