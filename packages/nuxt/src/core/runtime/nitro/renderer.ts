@@ -247,6 +247,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
+    // We use error to bypass full render if we have an early response we can make
+    if (ssrContext._renderResponse && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
