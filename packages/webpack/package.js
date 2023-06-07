@@ -1,5 +1,8 @@
 export default {
   build: true,
+  externals: [
+    'webpack/lib/util/objectToMap'
+  ],
   ignoreUnused: [
     '@nuxt/babel-preset-app',
     '@babel/core', // peerDependency of babel-loader

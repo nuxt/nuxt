@@ -7,13 +7,13 @@
  *                https://github.com/jshttp/etag#readme
  */
 
-import { ServerResponse } from 'http'
-import { CompressionOptions } from 'compression'
-import { IncomingMessage } from 'connect'
-import { Options as EtagOptions } from 'etag'
-import { ServeStaticOptions } from 'serve-static'
-import { BundleRendererOptions } from 'vue-server-renderer'
-import { NuxtOptionsServerMiddleware } from './server-middleware'
+import type { ServerResponse } from 'http'
+import type { CompressionOptions } from 'compression'
+import type { IncomingMessage } from 'connect'
+import type { Options as EtagOptions } from 'etag'
+import type { ServeStaticOptions } from 'serve-static'
+import type { BundleRendererOptions } from 'vue-server-renderer'
+import type { NuxtOptionsServerMiddleware } from './server-middleware'
 
 type NuxtEtagOptions = EtagOptions & {
   hash?: (html: string) => string

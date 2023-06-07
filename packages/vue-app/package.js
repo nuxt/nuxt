@@ -3,7 +3,7 @@ export default {
   ignoreUnused: [
     // used in vue-app
     'ufo',
-    'node-fetch',
+    'node-fetch-native',
     'unfetch',
     'vue',
     'vue-client-only',

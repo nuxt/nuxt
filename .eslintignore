@@ -8,7 +8,10 @@ coverage
 
 ## cofeescript
 examples/coffeescript/pages/index.vue
-examples/pug-stylus-coffee/
+examples/pug-stylus-coffee/**/*.*
+examples/web-worker/**/*.*
+examples/vue-class-component/**/*.*
+
 # Packages
 
 # vue-app

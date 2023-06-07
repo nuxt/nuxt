@@ -71,10 +71,18 @@ export default class SPARenderer extends BaseRenderer {
       // BODY_ATTRS
       meta.BODY_ATTRS = m.bodyAttrs.text()
 
+      //  charset must come before the title to avoid encoding issues
+      let metaTags = m.meta.text()
+      const charset = m.meta.text({ charset: true })
+      if (charset) {
+        meta.HEAD += charset
+        metaTags = metaTags.replace(charset, '')
+      }
+
       // HEAD tags
-      meta.HEAD =
+      meta.HEAD +=
         m.title.text() +
-        m.meta.text() +
+        metaTags +
         m.link.text() +
         m.style.text() +
         m.script.text() +

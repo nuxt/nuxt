@@ -1,5 +1,5 @@
 import path from 'path'
-import defu from 'defu'
+import { defu } from 'defu'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
 
 export async function loadNuxtConfig (argv, configContext) {

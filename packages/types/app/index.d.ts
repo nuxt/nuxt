@@ -1,7 +1,7 @@
 import type { ServerResponse } from 'http'
 import type { IncomingMessage, NextFunction } from 'connect'
 import type Vue from 'vue'
-import type { Route } from 'vue-router'
+import type { Location, Route } from 'vue-router'
 import type { Store } from 'vuex'
 import VueRouter from 'vue-router'
 
@@ -31,14 +31,6 @@ export interface Context {
 
   app: NuxtAppOptions
   base: string
-  /**
-   * @deprecated Use process.client instead
-  */
-  isClient: boolean
-  /**
-   * @deprecated Use process.server instead
-  */
-  isServer: boolean
   /**
    * @deprecated Use process.static instead
   */
@@ -86,7 +78,7 @@ export interface Context {
       config: NuxtRuntimeConfig
     }
   }
-  error(params: NuxtError): void
+  error(params: NuxtError): NuxtError
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
   beforeSerialize(fn: (nuxtState: NuxtState) => void): void
@@ -164,7 +156,7 @@ export interface NuxtApp extends Vue {
   nbFetching: number
   isFetching: boolean
   context: Context
-  error(params: NuxtError): void
+  error(params: NuxtError): NuxtError
   isOffline: boolean
   isOnline: boolean
   layout: any // TBD

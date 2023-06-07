@@ -23,6 +23,10 @@ jest.mock('../src/ignore', () => function () {
 })
 jest.mock('@nuxt/webpack')
 
+jest.mock('path', () => ({
+  ...jest.requireActual('path')
+}))
+
 describe('builder: builder generate', () => {
   beforeAll(() => {
     r.mockImplementation((...args) => `r(${args.join(', ')})`)

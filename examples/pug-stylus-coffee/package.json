@@ -12,7 +12,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "devDependencies": {
     "coffee-loader": "^0.8.0",

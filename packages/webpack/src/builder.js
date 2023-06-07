@@ -1,4 +1,4 @@
-import path from 'path'
+import upath from 'upath'
 import pify from 'pify'
 import webpack from 'webpack'
 import Glob from 'glob'
@@ -68,7 +68,7 @@ export class WebpackBundler {
       )
       for (const ext of Object.keys(styleResources)) {
         await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-          const styleResourceFiles = await glob(path.resolve(this.buildContext.options.rootDir, p))
+          const styleResourceFiles = await glob(upath.resolve(this.buildContext.options.rootDir, p))
 
           if (!styleResourceFiles || styleResourceFiles.length === 0) {
             throw new Error(`Style Resource not found: ${p}`)

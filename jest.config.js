@@ -41,13 +41,13 @@ module.exports = {
   ],
 
   transformIgnorePatterns: [
-    'node_modules/(?!(@nuxt|nuxt))',
+    'node_modules/(?!(@nuxt|@sindresorhus|@szmarczak|nuxt|devalue|got|p-cancelable|cacheable-request|normalize-url|responselike|lowercase-keys|mimic-response|form-data-encoder|cacheable-lookup|get-port))',
     'packages/utils/test/serialize\\.test\\.input\\.js'
   ],
 
   transform: {
-    '^.+\\.js$': 'babel-jest',
-    '^.+\\.vue$': 'vue-jest'
+    '^.+\\.[cm]?[jt]sx?$': 'babel-jest',
+    '^.+\\.vue$': '@vue/vue2-jest'
   },
 
   moduleFileExtensions: [
@@ -56,6 +56,7 @@ module.exports = {
   ],
 
   moduleNameMapper: {
+    [`consola$`]: '<rootDir>/node_modules/consola/dist/index.basic.cjs',
     [`@nuxt/(${corePackages.join('|')})(/?.*)$`]: '<rootDir>/packages/$1/src/$2'
   }
 }

@@ -19,6 +19,7 @@
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
+            <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
             <v-list-tile-title v-text="item.title" />
           </v-list-tile-content>
         </v-list-tile>
@@ -44,6 +45,7 @@
       >
         <v-icon>remove</v-icon>
       </v-btn>
+      <!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn

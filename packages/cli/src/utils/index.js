@@ -3,12 +3,12 @@ import exit from 'exit'
 
 import { lock } from '@nuxt/utils'
 import chalk from 'chalk'
-import env from 'std-env'
+import { isWindows } from 'std-env'
 import { warningBox } from './formatting'
 
 export const eventsMapping = {
   add: { icon: '+', color: 'green', action: 'Created' },
-  change: { icon: env.windows ? '»' : '↻', color: 'blue', action: 'Updated' },
+  change: { icon: isWindows ? '»' : '↻', color: 'blue', action: 'Updated' },
   unlink: { icon: '-', color: 'red', action: 'Removed' }
 }
 

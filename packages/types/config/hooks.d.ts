@@ -8,7 +8,7 @@
  *                https://nuxtjs.org/api/internals-generator#hooks
  */
 
-import { Server as ConnectServer } from 'connect'
+import type { Server as ConnectServer } from 'connect'
 
 export interface NuxtOptionsHooks {
   build?: {

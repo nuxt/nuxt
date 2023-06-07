@@ -372,7 +372,7 @@ export default class Package {
 
   gitShortCommit () {
     const { stdout } = this.exec('git', 'rev-parse --short HEAD', true)
-    return stdout
+    return stdout.trim().substring(0, 7) // 7 to be consistent with github and nuxt3
   }
 
   gitBranch () {

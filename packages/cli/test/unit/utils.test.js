@@ -8,8 +8,8 @@ import { showMemoryUsage } from '../../src/utils/memory'
 import * as fmt from '../../src/utils/formatting'
 
 jest.mock('std-env', () => ({
-  test: false,
-  minimalCLI: false
+  isTest: false,
+  isMinimal: false
 }))
 jest.mock('boxen', () => text => `[boxen] ${text}`)
 

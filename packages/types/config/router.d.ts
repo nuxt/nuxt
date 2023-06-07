@@ -23,5 +23,6 @@ export interface NuxtOptionsRouter extends RouterOptions {
   linkPrefetchedClass?: string
   middleware?: string | string[]
   prefetchLinks?: boolean
+  prefetchPayloads?: boolean
   trailingSlash?: boolean
 }

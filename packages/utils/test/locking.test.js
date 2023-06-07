@@ -1,7 +1,8 @@
 import consola from 'consola'
 import fs from 'fs-extra'
 import properlock from 'proper-lockfile'
-import onExit from 'signal-exit'
+// eslint-disable-next-line import/namespace
+import { onExit } from 'signal-exit'
 import { lockPaths, defaultLockOptions, getLockOptions, createLockPath, getLockPath, lock } from '../src/locking'
 
 jest.mock('fs-extra')

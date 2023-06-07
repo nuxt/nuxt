@@ -3,7 +3,7 @@
   "dependencies": {
     "less": "^2.7.3",
     "less-loader": "^4.0.5",
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",

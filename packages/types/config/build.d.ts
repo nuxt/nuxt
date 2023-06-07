@@ -1,20 +1,20 @@
+/// <reference types="less" />
 /**
  * NuxtOptionsBuild
  * Documentation: https://nuxtjs.org/api/configuration-build
  */
 
-import { TransformOptions, PluginItem } from '@babel/core'
-import { Options as AutoprefixerOptions } from 'autoprefixer'
-import { Options as FileLoaderOptions } from 'file-loader'
-import { Options as HtmlMinifierOptions } from 'html-minifier'
-import * as Less from 'less'
-import { Options as SassOptions } from 'sass-loader'
-import { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
-import { Plugin as PostcssPlugin } from 'postcss'
-import { Options as PugOptions } from 'pug'
-import { TerserPluginOptions } from 'terser-webpack-plugin'
-import { VueLoaderOptions } from 'vue-loader'
-import {
+import type { IncomingMessage, ServerResponse } from 'http'
+import type { TransformOptions, PluginItem } from '@babel/core'
+import type { Options as AutoprefixerOptions } from 'autoprefixer'
+import type { Options as FileLoaderOptions } from 'file-loader'
+import type { Options as HtmlMinifierOptions } from 'html-minifier'
+import type { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
+import type { Plugin as PostcssPlugin } from 'postcss'
+import type { Options as PugOptions } from 'pug'
+import type { TerserPluginOptions } from 'terser-webpack-plugin'
+import type { VueLoaderOptions } from 'vue-loader'
+import type {
   Configuration as WebpackConfiguration,
   Loader as WebpackLoader,
   loader as WebpackLoaderNamespace,
@@ -22,8 +22,9 @@ import {
   Plugin as WebpackPlugin
 } from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
-import { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
+import type { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
+import type { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
+import type { Options as SassOptions } from '../lib/sass-loader'
 
 type CssLoaderUrlFunction = (url: string, resourcePath: string) => boolean
 type CssLoaderImportFunction = (url: string, media: string, resourcePath: string) => boolean
@@ -121,8 +122,8 @@ interface PostcssConfiguration {
   order?: PostcssOrderPreset | string[] | ((names: string[], presets: PostcssOrderPresetFunctions) => string[])
   plugins?: {
     [key: string]: false | { [key: string]: any }
-  } | ((loader: WebpackLoaderNamespace.LoaderContext) => PostcssPlugin<any>[]) | Array<[string | PostcssPlugin<any>, any] | string | PostcssPlugin<any>>
-  preset?: {
+  } | ((loader: WebpackLoaderNamespace.LoaderContext) => PostcssPlugin[]) | Array<[string | PostcssPlugin, any] | string | PostcssPlugin>
+  readonly preset?: {
     autoprefixer?: false | AutoprefixerOptions
     browsers?: string
     exportTo?: string | string[] | Partial<PostcssVariableMap> | ((map: PostcssVariableMap) => Partial<PostcssVariableMap>)
@@ -130,8 +131,8 @@ interface PostcssConfiguration {
       [key: string]: boolean | { [key: string]: any }
     }
     importFrom?: string | string[] | Partial<PostcssVariableMap> | (() => Partial<PostcssVariableMap>)
-    insertAfter?: { [key: string]: PostcssPlugin<any> }
-    insertBefore?: { [key: string]: PostcssPlugin<any> }
+    insertAfter?: { [key: string]: PostcssPlugin }
+    insertBefore?: { [key: string]: PostcssPlugin }
     preserve?: boolean
     stage?: 0 | 1 | 2 | 3 | 4 | false
   }
@@ -145,7 +146,7 @@ export interface NuxtOptionsBuild {
   corejs?: 'auto' | 2 | 3
   crossorigin?: string
   cssSourceMap?: boolean
-  devMiddleware?: WebpackDevMiddlewareOptions
+  devMiddleware?: WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
   devtools?: boolean
   extend?(
     config: WebpackConfiguration,
@@ -166,7 +167,7 @@ export interface NuxtOptionsBuild {
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean
   plugins?: WebpackPlugin[]
-  postcss?: string[] | boolean | PostcssConfiguration | (() => PostcssConfiguration)
+  postcss?: string[] | boolean | { postcssOptions: PostcssConfiguration | (() => PostcssConfiguration) }
   profile?: boolean
   publicPath?: string
   quiet?: boolean

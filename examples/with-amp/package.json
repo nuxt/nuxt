@@ -2,7 +2,7 @@
   "name": "example-with-amp",
   "version": "1.0.0",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",

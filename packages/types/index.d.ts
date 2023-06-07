@@ -1,6 +1,7 @@
 import '@nuxt/components'
 import '@nuxt/telemetry'
 import './process'
+import './shims'
 
 /**
  * Note: `export * from './app'` does not work well with TypeScript < 3.9

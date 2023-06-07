@@ -9,15 +9,15 @@ module.exports = {
     fn3: foobar => {
       return 3
     },
-    // eslint-disable-next-line arrow-parens
+
     fn4: arg1 =>
       2 * arg1,
     fn5: () => {},
-    // eslint-disable-next-line arrow-parens
+
     fn6: foobar => (foobar ? 1 : 0)
   },
   normal: {
-    fn: function () {} // eslint-disable-line object-shorthand
+    fn: function () {}
   },
   shorthand: {
     fn () {},

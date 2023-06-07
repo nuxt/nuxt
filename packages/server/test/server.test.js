@@ -3,7 +3,7 @@ import compression from 'compression'
 import connect from 'connect'
 import consola from 'consola'
 import serveStatic from 'serve-static'
-import servePlaceholder from 'serve-placeholder'
+import { servePlaceholder } from 'serve-placeholder'
 import launchMiddleware from 'launch-editor-middleware'
 import { determineGlobals, isUrl } from '@nuxt/utils'
 import { VueRenderer } from '@nuxt/vue-renderer'
@@ -29,6 +29,10 @@ jest.mock('../src/jsdom')
 jest.mock('../src/middleware/nuxt')
 jest.mock('../src/middleware/error')
 jest.mock('../src/middleware/timing')
+
+jest.mock('path', () => ({
+  ...jest.requireActual('path')
+}))
 
 describe('server: server', () => {
   const createNuxt = () => ({
@@ -71,6 +75,7 @@ describe('server: server', () => {
   beforeAll(() => {
     jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
     jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
+
     connect.mockReturnValue({ use: jest.fn() })
     serveStatic.mockImplementation(dir => ({ id: 'test-serve-static', dir }))
     nuxtMiddleware.mockImplementation(options => ({

@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import { defaultsDeep, pick, uniq } from 'lodash'
-import defu from 'defu'
+import { defu } from 'defu'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
@@ -441,6 +441,15 @@ export function getNuxtConfig (_options) {
     delete options.build.crossorigin
   }
 
+  if (options.build.postcss?.plugins) {
+    consola.warn('`postcss.plugins` option has been moved to `postcss.postcssOptions.plugins` for aligning `postcss-loader` format.')
+  }
+
+  if (options.buildModules && options.buildModules.includes('@nuxt/postcss8')) {
+    consola.info('`@nuxt/postcss8` is disabled since nuxt has upgraded to postcss v8.')
+    options.buildModules = options.buildModules.filter(module => module !== '@nuxt/postcss8')
+  }
+
   const { timing } = options.server
   if (timing) {
     options.server.timing = { total: true, ...timing }
@@ -509,6 +518,17 @@ export function getNuxtConfig (_options) {
   } else {
     // When loadingScreen is disabled we should also disable build indicator
     options.build.indicator = false
+  }
+
+  // Monkey patch crypto.createHash in dev/build to upgrade hashing fnction
+  if (parseInt(process.versions.node.slice(0, 2)) > 16 && !options.buildModules.some(m => m.name === 'patchMD4')) {
+    options.buildModules.push(function patchMD4 () {
+      const crypto = require('crypto')
+      const _createHash = crypto.createHash
+      crypto.createHash = function (algorithm, options) {
+        return _createHash(algorithm === 'md4' ? 'md5' : algorithm, options)
+      }
+    })
   }
 
   // Components Module

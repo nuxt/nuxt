@@ -22,7 +22,7 @@ describe('error', () => {
 
   test('/ should display an error', async () => {
     await expect(nuxt.server.renderRoute('/error')).rejects.toMatchObject({
-      message: expect.stringContaining('not_defined is not defined')
+      message: expect.stringContaining('notDefined is not defined')
     })
   })
 
@@ -58,9 +58,11 @@ describe('error', () => {
   })
 
   test('/info should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/info')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'title\' of undefined')
-    })
+    const promise = nuxt.server.renderRoute('/info')
+    await expect(promise).rejects
+    const message = await promise.catch(e => e.message)
+    expect(message).toContain('Cannot read proper')
+    expect(message).toContain('title')
   })
 
   test('/about should work', async () => {
@@ -70,9 +72,11 @@ describe('error', () => {
   })
 
   test('/error-square should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/squared')).rejects.toMatchObject({
-      message: expect.stringContaining('Cannot read property \'data\' of undefined')
-    })
+    const promise = nuxt.server.renderRoute('/squared')
+    await expect(promise).rejects
+    const message = await promise.catch(e => e.message)
+    expect(message).toContain('Cannot read proper')
+    expect(message).toContain('data')
   })
 
   // Close server and ask nuxt to stop listening to file changes

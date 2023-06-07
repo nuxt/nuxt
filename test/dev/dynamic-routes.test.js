@@ -54,23 +54,23 @@ describe('dynamic routes', () => {
     // pages/test/songs/toto.vue
     expect(routes[5].path).toBe('/test/songs/toto')
     expect(routes[5].name).toBe('test-songs-toto')
-    // pages/test/projects/_category.vue
-    expect(routes[6].path).toBe('/test/projects/:category')
-    expect(routes[6].name).toBe('test-projects-category')
-    // pages/test/songs/_id.vue
-    expect(routes[7].path).toBe('/test/songs/:id?')
-    expect(routes[7].name).toBe('test-songs-id')
-    // pages/users/_id.vue
-    expect(routes[8].path).toBe('/users/:id?')
-    expect(routes[8].name).toBe('users-id')
-    // pages/test/_.vue
-    expect(routes[9].path).toBe('/test/*')
-    expect(routes[9].name).toBe('test-all')
 
     // pages/index.vue
-    expect(routes[10].path).toBe('/')
-    expect(routes[10].name).toBe('index')
+    expect(routes[6].path).toBe('/')
+    expect(routes[6].name).toBe('index')
 
+    // pages/test/projects/_category.vue
+    expect(routes[7].path).toBe('/test/projects/:category')
+    expect(routes[7].name).toBe('test-projects-category')
+    // pages/test/songs/_id.vue
+    expect(routes[8].path).toBe('/test/songs/:id?')
+    expect(routes[8].name).toBe('test-songs-id')
+    // pages/users/_id.vue
+    expect(routes[9].path).toBe('/users/:id?')
+    expect(routes[9].name).toBe('users-id')
+    // pages/test/_.vue
+    expect(routes[10].path).toBe('/test/*')
+    expect(routes[10].name).toBe('test-all')
     // pages/_slug.vue
     expect(routes[11].path).toBe('/:slug')
     expect(routes[11].name).toBe('slug')

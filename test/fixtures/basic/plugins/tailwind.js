@@ -1,6 +1,9 @@
+const plugin = () => {
+  return {
+    postcssPlugin: 'nuxt-test'
+  }
+}
 
-const postcss = require('postcss')
+plugin.postcss = true
 
-module.exports = postcss.plugin('nuxt-test', () => {
-  return function () {}
-})
+module.exports = plugin

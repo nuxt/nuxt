@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.15.6",
+  "version": "2.16.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/cli.js",
@@ -12,30 +12,33 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.15.6",
-    "@nuxt/utils": "2.15.6",
-    "boxen": "^5.0.1",
+    "@nuxt/config": "2.16.3",
+    "@nuxt/utils": "2.16.3",
+    "boxen": "^5.1.2",
     "chalk": "^4.1.2",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
-    "consola": "^2.15.3",
-    "crc": "^3.8.0",
-    "defu": "^5.0.0",
-    "destr": "^1.1.0",
+    "consola": "^3.1.0",
+    "crc": "^4.3.2",
+    "defu": "^6.1.2",
+    "destr": "^1.2.2",
     "execa": "^5.1.1",
     "exit": "^0.1.2",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^10.1.0",
     "globby": "^11.0.4",
     "hable": "^3.0.0",
     "lodash": "^4.17.21",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.8",
     "opener": "1.5.2",
     "pretty-bytes": "^5.6.0",
-    "semver": "^7.3.5",
-    "serve-static": "^1.14.1",
-    "std-env": "^2.3.0",
+    "semver": "^7.5.1",
+    "serve-static": "^1.15.0",
+    "std-env": "^3.3.3",
     "upath": "^2.0.1",
     "wrap-ansi": "^7.0.0"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.10.0"
   },
   "publishConfig": {
     "access": "public"

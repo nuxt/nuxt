@@ -1,15 +1,15 @@
 import { getDefaultNuxtConfig } from '../../src/config'
 
 jest.mock('std-env', () => ({
-  browser: false,
-  test: 'test',
-  dev: false,
-  production: true,
-  debug: false,
-  ci: true,
-  windows: false,
-  darwin: false,
-  linux: true
+  isBrowser: false,
+  isTest: true,
+  isDevelopment: false,
+  isProduction: true,
+  isDebug: false,
+  isCI: true,
+  isWindows: false,
+  isMacOS: false,
+  isLinux: true
 }))
 
 describe('config', () => {
@@ -23,6 +23,8 @@ describe('config', () => {
       NUXT_HOST: 'localhost',
       UNIX_SOCKET: '/var/run/nuxt.sock'
     }
-    expect(getDefaultNuxtConfig({ env })).toMatchSnapshot()
+    const config = getDefaultNuxtConfig({ env })
+    config.buildModules = config.buildModules.filter(p => p.name !== 'patchMD4')
+    expect(config).toMatchSnapshot()
   })
 })

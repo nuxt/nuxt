@@ -1,7 +1,7 @@
 import path, { relative } from 'path'
 import upath from 'upath'
 import fs from 'fs-extra'
-import crc32 from 'crc/lib/crc32'
+import crc32 from 'crc/crc32'
 import consola from 'consola'
 import globby from 'globby'
 import destr from 'destr'
@@ -109,6 +109,7 @@ export async function ensureBuild (cmd) {
       const changed = compareSnapshots(previousBuild.snapshot, currentBuild.snapshot)
       if (!changed) {
         consola.success('Skipping webpack build as no changes detected')
+        await nuxt.close()
         return
       } else {
         consola.info(`Doing webpack rebuild because ${changed} modified`)
