@@ -259,11 +259,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (ssrContext._renderResponse) { return ssrContext._renderResponse }
 
-  if (event.node.res.headersSent || event.node.res.writableEnded) {
-    // @ts-expect-error TODO: handle additional cases
-    return
-  }
-
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
     throw ssrContext.payload.error
