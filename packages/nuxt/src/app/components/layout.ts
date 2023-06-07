@@ -1,5 +1,5 @@
 import type { Ref, VNode } from 'vue'
-import { Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
@@ -79,12 +79,14 @@ export default defineComponent({
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => _wrapIf(LayoutLoader, hasLayout && {
-          key: layout.value,
-          name: layout.value,
-          ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-          ...context.attrs
-        }, context.slots).default()
+        default: () => h(Suspense, { suspensible: true }, {
+          default: () => _wrapIf(LayoutLoader, hasLayout && {
+            key: layout.value,
+            name: layout.value,
+            ...(process.dev ? { hasTransition: !!transitionProps } : {}),
+            ...context.attrs
+          }, context.slots).default()
+        })
       }).default()
     }
   }
