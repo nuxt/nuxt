@@ -65,7 +65,7 @@
     "markdownlint-cli": "^0.33.0",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
-    "ofetch": "1.0.1",
+    "ofetch": "1.1.0",
     "pathe": "1.1.1",
     "playwright": "1.34.3",
     "rimraf": "5.0.1",
