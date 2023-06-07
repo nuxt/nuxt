@@ -147,9 +147,12 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     }
     return Promise.resolve()
   }
+  
+  // Open in a new window/tab
   if(options?.newTab){
     return window.open(to,"_blank")
   }
+  
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
