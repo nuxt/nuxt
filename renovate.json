@@ -1,31 +1,42 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>nuxt/renovate-config-nuxt"
+    "github>nuxt/renovate-config-nuxt",
+    ":pinDevDependencies"
   ],
   "baseBranches": [
     "main",
-    "2.x-dev"
+    "2.x"
   ],
   "packageRules": [
+    {
+      "groupName": "vitest",
+      "matchPackageNames": [
+        "vite-node",
+        "vitest"
+      ],
+      "matchPackagePatterns": [
+        "^@vitest/"
+      ]
+    },
     {
       "matchBaseBranches": [
         "main"
       ],
       "ignoreDeps": [
+        "typescript",
+        "markdownlint-cli",
         "nuxt",
         "nuxt3",
-        "@nuxt/kit",
-        "parse5"
+        "@nuxt/kit"
       ]
     },
     {
       "matchBaseBranches": [
-        "2.x-dev"
+        "2.x"
       ],
       "ignoreDeps": [
-        "core-js",
-        "postcss",
+        "@types/node",
         "postcss-import",
         "postcss-loader",
         "postcss-url",
@@ -37,9 +48,8 @@
         "terser-webpack-plugin",
         "@types/terser-webpack-plugin",
         "@types/webpack-bundle-analyzer",
+        "@types/webpack-hot-middleware",
         "wrap-ansi",
-        "jest",
-        "babel-jest",
         "globby",
         "execa",
         "chalk",

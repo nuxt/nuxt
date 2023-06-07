@@ -1,5 +1,7 @@
-import Crawler from 'crawler'
-import consola from 'consola'
+// @ts-check
+import { fetch } from 'ofetch'
+import { load } from 'cheerio'
+import { consola } from 'consola'
 import { parseURL, withoutTrailingSlash } from 'ufo'
 import chalk from 'chalk'
 import * as actions from '@actions/core'
@@ -10,7 +12,7 @@ const logger = consola.withTag('crawler')
 const baseURL = withoutTrailingSlash(process.env.BASE_URL || 'https://nuxt.com')
 const startingURL = baseURL + '/'
 
-const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif']
+const excludedExtensions = ['svg', 'png', 'jpg', 'sketch', 'ico', 'gif', 'zip']
 const urlsToOmit = ['http://localhost:3000']
 
 // TODO: remove when migrating to Nuxt 3/Docus
@@ -27,6 +29,8 @@ const errorsToIgnore = [
 const urls = new Set([startingURL])
 const erroredUrls = new Set()
 
+const referrers = new Map()
+
 /**
  * @param {string} path Path to check
  * @param {string | undefined} referrer The referring page
@@ -34,7 +38,7 @@ const erroredUrls = new Set()
 function queue (path, referrer) {
   if (!path) {
     const message = chalk.red(`${chalk.bold('✗')} ${referrer} linked to empty href`)
-    if (isCI) { actions.error(message) }
+    if (isCI && path?.match(/\/docs\//)) { actions.error(message) }
     logger.log(message)
     return
   }
@@ -54,26 +58,59 @@ function queue (path, referrer) {
   // Don't crawl external URLs
   if (origin !== baseURL) { return }
 
+  referrers.set(url, referrer)
   urls.add(url)
 
   crawler.queue(url)
 }
 
-const crawler = new Crawler({
+const crawler = {
   maxConnections: 100,
+  /** @type {Array<string | Promise<any>>} */
+  _queue: [],
+  get queueSize () {
+    return this._queue.length
+  },
+  /** @param {string} url The URL to crawl */
+  queue (url) {
+    this._queue.push(url)
+    this.processQueue()
+  },
+  processQueue () {
+    if (!this.queueSize) { return }
+
+    for (let i = 0; i < Math.min(this.maxConnections, this.queueSize); i++) {
+      const item = this._queue[i]
+      if (!item || item instanceof Promise) { continue }
+      const promise = this._queue[i] = fetch(item, { redirect: 'manual' }).then(async (res) => {
+        const text = res.ok && await res.text()
+        this.callback(!res.ok ? new Error(res.statusText) : null, Object.assign(res, {
+          $: text ? load(text) : null
+        }), () => {
+          this._queue.splice(this._queue.indexOf(promise), 1)
+          this.processQueue()
+        })
+      })
+    }
+  },
+  /**
+   * @param {Error | null} error
+   * @param {import('ofetch').FetchResponse<any> & { $: import('cheerio').CheerioAPI | null }} res
+   * @param {() => void} done
+   */
   callback (error, res, done) {
-    const { $ } = res
-    const { uri } = res.options
-    // @ts-ignore
-    const { statusCode } = res.request.response
+    const $ = res.$
+    const uri = res.url
+    const statusCode = res.status
 
     if (error || ![200, 301, 302].includes(statusCode) || !$) {
-      if (errorsToIgnore.includes(parseURL(uri).pathname)) {
-        const message = chalk.gray(`${chalk.bold('✗')} ${uri} (${statusCode}) (ignored)`)
+      // TODO: normalize relative links in module readmes - https://github.com/nuxt/nuxt.com/issues/1271
+      if (errorsToIgnore.includes(parseURL(uri).pathname) || referrers.get(uri)?.match(/\/modules\//) || !uri?.match(/\/docs\//)) {
+        const message = chalk.gray(`${chalk.bold('✗')} ${uri} (${statusCode}) [<- ${referrers.get(uri)}] (ignored)`)
         logger.log(message)
         return done()
       }
-      const message = chalk.red(`${chalk.bold('✗')} ${uri} (${statusCode})`)
+      const message = chalk.red(`${chalk.bold('✗')} ${uri} (${statusCode}) [<- ${referrers.get(uri)}]`)
       if (isCI) { actions.error(message) }
       logger.log(message)
       erroredUrls.add(uri)
@@ -111,7 +148,7 @@ const crawler = new Crawler({
 
     done()
   }
-})
+}
 
 logger.log('')
 logger.info(`Checking \`${baseURL}\`.`)

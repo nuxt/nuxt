@@ -1,7 +1,8 @@
 import { resolve } from 'node:path'
-import type { ComponentsDir } from '@nuxt/schema'
-import { expect, it, vi } from 'vitest'
-import { scanComponents } from '../src/components/scan'
+import { describe, expect, it, vi } from 'vitest'
+import type { ComponentsDir } from 'nuxt/schema'
+
+import { resolveComponentName, scanComponents } from '../src/components/scan'
 
 const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
@@ -97,6 +98,7 @@ const expectedComponents = [
     pascalName: 'Isle',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/islands/Isle.vue'
   },
   {
@@ -109,6 +111,7 @@ const expectedComponents = [
     pascalName: 'Glob',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/global/Glob.vue'
   },
   {
@@ -121,7 +124,8 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
   },
   {
     mode: 'client',
@@ -133,7 +137,8 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
   },
   {
     mode: 'server',
@@ -145,7 +150,34 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
+  },
+  {
+    chunkName: 'components/client-component-with-props',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-component-with-props',
+    mode: 'all',
+    pascalName: 'ClientComponentWithProps',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/client/ComponentWithProps.vue'
+  },
+  {
+    chunkName: 'components/client-with-client-only-setup',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'client-with-client-only-setup',
+    mode: 'all',
+    pascalName: 'ClientWithClientOnlySetup',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/client/WithClientOnlySetup.vue'
   },
   {
     mode: 'server',
@@ -157,7 +189,21 @@ const expectedComponents = [
     global: undefined,
     island: undefined,
     prefetch: false,
-    preload: false
+    preload: false,
+    priority: 1
+  },
+  {
+    chunkName: 'components/same-name-same',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'same-name-same',
+    mode: 'all',
+    pascalName: 'SameNameSame',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/same-name/same/Same.vue'
   },
   {
     chunkName: 'components/some-glob',
@@ -169,6 +215,7 @@ const expectedComponents = [
     pascalName: 'SomeGlob',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/some-glob.global.vue'
   },
   {
@@ -181,6 +228,7 @@ const expectedComponents = [
     pascalName: 'Some',
     prefetch: false,
     preload: false,
+    priority: 1,
     shortPath: 'components/some.island.vue'
   }
 ]
@@ -190,8 +238,34 @@ const srcDir = rFixture('.')
 it('components:scanComponents', async () => {
   const scannedComponents = await scanComponents(dirs, srcDir)
   for (const c of scannedComponents) {
-    // @ts-ignore
+    // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)
+})
+
+const tests: Array<[string, string[], string]> = [
+  ['WithClientOnlySetup', ['Client'], 'ClientWithClientOnlySetup'],
+  ['ItemHolderItem', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
+  ['Item', ['Item'], 'Item'],
+  ['Item', ['Item', 'Item'], 'Item'],
+  ['ItemTest', ['Item', 'Test'], 'ItemTest'],
+  ['ThingItemTest', ['Item', 'Thing'], 'ItemThingItemTest'],
+  ['Item', ['Thing', 'Item'], 'ThingItem'],
+  ['Item', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
+  ['ItemHolder', ['Item', 'Holder', 'Item'], 'ItemHolderItemHolder'],
+  ['ThingItemTest', ['Item', 'Thing', 'Foo'], 'ItemThingFooThingItemTest'],
+  ['ItemIn', ['Item', 'Holder', 'Item', 'In'], 'ItemHolderItemIn'],
+  ['Item', ['Item', 'Holder', 'Test'], 'ItemHolderTestItem'],
+  ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem'],
+  ['Icones', ['Icon'], 'IconIcones'],
+  ['Icon', ['Icones'], 'IconesIcon'],
+  ['IconHolder', ['IconHolder'], 'IconHolder'],
+  ['GameList', ['Desktop', 'ShareGame', 'Review', 'Detail'], 'DesktopShareGameReviewDetailGameList']
+]
+
+describe('components:resolveComponentName', () => {
+  it.each(tests)('resolves %s with prefix parts %s and filename %s', (fileName, prefixParts: string[], result) => {
+    expect(resolveComponentName(fileName, prefixParts)).toBe(result)
+  })
 })

@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
 
@@ -18,12 +19,10 @@ export default defineUntypedSchema({
     mode: {
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
-    logLevel:{
-      $resolve: async (val, get) => val ?? (await get('dev') ? 'warn' : 'info')
-    },
     define: {
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
+        'process.test': isTest,
         ...val || {}
       })
     },
@@ -41,6 +40,22 @@ export default defineUntypedSchema({
         compilerOptions: {
           $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
         }
+      },
+      script: {
+        propsDestructure: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure),
+        },
+        defineModel: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel),
+        },
+      }
+    },
+    vueJsx: {
+      $resolve: async (val, get) => {
+        return {
+          isCustomElement: (await get('vue')).compilerOptions?.isCustomElement,
+          ...(val || {})
+        }
       }
     },
     optimizeDeps: {
@@ -57,7 +72,7 @@ export default defineUntypedSchema({
       jsxFragment: 'Fragment',
       tsconfigRaw: '{}'
     },
-    clearScreen: false,
+    clearScreen: true,
     build: {
       assetsDir: {
         $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app')).buildAssetsDir)

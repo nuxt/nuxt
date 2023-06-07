@@ -2,8 +2,10 @@ import querystring from 'node:querystring'
 import { resolve } from 'pathe'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-
+import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
+import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
@@ -84,10 +86,9 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
   if (!ctx.isDev && ctx.name === 'client' && options.webpack.analyze) {
-    const statsDir = resolve(options.buildDir, 'stats')
+    const statsDir = resolve(options.analyzeDir)
 
-    // @ts-ignore
-    config.plugins.push(new BundleAnalyzerPlugin({
+    config.plugins!.push(new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       defaultSizes: 'gzip',
       generateStatsFile: true,
@@ -96,5 +97,15 @@ function clientPlugins (ctx: WebpackConfigContext) {
       statsFilename: resolve(statsDir, `${ctx.name}.json`),
       ...options.webpack.analyze === true ? {} : options.webpack.analyze
     }))
+  }
+
+  // Normally type checking runs in server config, but in `ssr: false` there is
+  // no server build, so we inject here instead.
+  if (!ctx.nuxt.options.ssr) {
+    if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+      config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+        logger
+      }))
+    }
   }
 }

@@ -22,7 +22,7 @@ abortNavigation(err?: Error | string): false
 
 - **Type**: [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) | `string`
 
-  Optional error to be thrown by `abortNavigation`.
+  Optional error to be thrown by `abortNavigation`.
 
 ## Examples
 
@@ -36,7 +36,9 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return abortNavigation()
   }
  
-  return navigateTo('/edit-post')
+  if (to.path !== '/edit-post') {
+    return navigateTo('/edit-post')
+  }
 })
 ```
 
@@ -49,7 +51,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const auth = useState('auth')
 
   if (!user.value.isAuthorized) {
-    abortNavigation('Insufficient permissions.')
+    return abortNavigation('Insufficient permissions.')
   }
 })
 ```
@@ -63,7 +65,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   try {
     /* code that might throw an error */
   } catch (err) {
-    abortNavigation(err)
+    return abortNavigation(err)
   }
 })
 ```

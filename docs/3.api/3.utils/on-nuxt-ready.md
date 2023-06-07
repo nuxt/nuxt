@@ -17,3 +17,7 @@ export default defineNuxtPlugin(() => {
 ```
 
 It is 'safe' to run even after your app has initialized. In this case, then the code will be registered to run in the next idle callback.
+
+::alert
+`onNuxtReady` only runs on the client-side.
+::

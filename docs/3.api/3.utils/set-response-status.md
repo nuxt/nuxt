@@ -10,11 +10,13 @@ Nuxt provides composables and utilities for first-class server-side-rendering su
 `setResponseStatus` can only be called within component setup functions, plugins, and route middleware.
 
 ```js
+const event = useRequestEvent()
+
 // Set the status code to 404 for a custom 404 page
-setResponseStatus(404)
+setResponseStatus(event, 404)
 
 // Set the status message as well
-setResponseStatus(404, 'Page Not Found')
+setResponseStatus(event, 404, 'Page Not Found')
 ```
 
 ::alert{icon=👉}

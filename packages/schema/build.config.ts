@@ -16,13 +16,16 @@ export default defineBuildConfig({
       }
     },
     'src/index',
+    'src/builder-env'
   ],
   externals: [
     // Type imports
     'vue-router',
+    '@nuxt/telemetry',
     'vue-bundle-renderer',
     '@unhead/schema',
     'vue',
+    'unctx',
     'hookable',
     'nitropack',
     'webpack',
@@ -30,6 +33,7 @@ export default defineBuildConfig({
     'rollup-plugin-visualizer',
     'vite',
     '@vitejs/plugin-vue',
+    '@vitejs/plugin-vue-jsx',
     'mini-css-extract-plugin',
     'terser-webpack-plugin',
     'css-minimizer-webpack-plugin',
@@ -39,6 +43,7 @@ export default defineBuildConfig({
     'postcss',
     'consola',
     'ignore',
+    'vue-loader',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

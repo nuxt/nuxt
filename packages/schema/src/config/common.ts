@@ -117,26 +117,37 @@ export default defineUntypedSchema({
   },
 
   /**
- * Used to set the modules directories for path resolving (for example, webpack's
- * `resolveLoading`, `nodeExternals` and `postcss`).
- *
- * The configuration path is relative to `options.rootDir` (default is current working directory).
- *
- * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
- *
- * @example
- * ```js
- * export default {
- *   modulesDir: ['../../node_modules']
- * }
- * ```
- */
+   * Used to set the modules directories for path resolving (for example, webpack's
+   * `resolveLoading`, `nodeExternals` and `postcss`).
+   *
+   * The configuration path is relative to `options.rootDir` (default is current working directory).
+   *
+   * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
+   *
+   * @example
+   * ```js
+   * export default {
+   *   modulesDir: ['../../node_modules']
+   * }
+   * ```
+   */
   modulesDir: {
     $default: ['node_modules'],
     $resolve: async (val, get) => [
       ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
       resolve(process.cwd(), 'node_modules')
     ]
+  },
+
+  /**
+   * The directory where Nuxt will store the generated files when running `nuxt analyze`.
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  analyzeDir: {
+    $resolve: async (val, get) => val
+      ? resolve(await get('rootDir'), val)
+      : resolve(await get('buildDir'), 'analyze')
   },
 
   /**
@@ -164,8 +175,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to enable rendering of HTML - either dynamically (in server mode) or at generate time.
-   * If set to `false` and combined with `static` target, generated pages will simply display
-   * a loading screen with no content.
+   * If set to `false` generated pages will have no content.
    */
   ssr: {
     $resolve: (val) => val ?? true,
@@ -195,9 +205,11 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>])[]}
+   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
-  modules: [],
+  modules: {
+    $resolve: val => [].concat(val).filter(Boolean)
+  },
 
   /**
    * Customize default directory structure used by Nuxt.
@@ -219,6 +231,11 @@ export default defineUntypedSchema({
      * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
      */
     middleware: 'middleware',
+
+    /**
+     * The modules directory, each file in which will be auto-registered as a Nuxt module.
+     */
+    modules: 'modules',
 
     /**
      * The directory which will be processed to auto-generate your application page routes.
@@ -297,10 +314,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
@@ -325,7 +342,9 @@ export default defineUntypedSchema({
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
-  ignorePrefix: '-',
+  ignorePrefix: {
+    $resolve: (val) => val ?? '-',
+  },
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
@@ -337,8 +356,24 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
       '.output',
+      '.git',
+      '.cache',
+      await get('analyzeDir'),
+      await get('buildDir'),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
+  },
+
+  /**
+   * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
+   *
+   * It is an array of strings or regular expressions, which will be matched against the file path
+   * relative to the project `srcDir`.
+   *
+   * @type {Array<string | RegExp>}
+   */
+  watch: {
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
   },
 
   /**

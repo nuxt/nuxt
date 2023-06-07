@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-const route = useRoute()
+const route = useRoute('random-id')
 
 const pageKey = 'rand_' + route.params.id
 

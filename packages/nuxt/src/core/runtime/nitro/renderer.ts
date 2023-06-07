@@ -2,23 +2,27 @@ import { createRenderer, renderResourceHeaders } from 'vue-bundle-renderer/runti
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendHeader, getQuery, writeEarlyHints, readBody, createError } from 'h3'
+import { appendResponseHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
+import { stringify, uneval } from 'devalue'
 import destr from 'destr'
-import { joinURL } from 'ufo'
+import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { useRuntimeConfig, useNitroApp, defineRenderHandler, getRouteRules } from '#internal/nitro'
 import { hash } from 'ohash'
+
+import { defineRenderHandler, getRouteRules, useRuntimeConfig } from '#internal/nitro'
+import { useNitroApp } from '#internal/nitro/app'
+
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app'
-// @ts-ignore
+import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
+// @ts-expect-error virtual file
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
-// @ts-ignore
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
-// @ts-ignore
+// @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
 
 export interface NuxtRenderHTMLContext {
@@ -57,19 +61,19 @@ export interface NuxtRenderResponse {
 
 interface ClientManifest {}
 
-// @ts-ignore
+// @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-// @ts-ignore
+// @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
-// @ts-ignore
+// @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
-// @ts-ignore
-const getSSRStyles = (): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r)
+// @ts-expect-error file will be produced after app build
+const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
@@ -118,13 +122,15 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
     ssrContext!.payload = {
+      path: ssrContext.event.path,
+      _errors: {},
       serverRendered: false,
-      config: {
-        public: config.public,
-        app: config.app
-      },
       data: {},
       state: {}
+    }
+    ssrContext.config = {
+      public: config.public,
+      app: config.app
     }
     ssrContext!.renderMeta = ssrContext!.renderMeta ?? getStaticRenderedHead
     return Promise.resolve(result)
@@ -149,26 +155,37 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     ...context,
     id: hashId,
     name: componentName,
-    props: destr(context.props) || {}
+    props: destr(context.props) || {},
+    uid: destr(context.uid) || undefined
   }
 
   return ctx
 }
 
 const PAYLOAD_CACHE = (process.env.NUXT_PAYLOAD_EXTRACTION && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
-const PAYLOAD_URL_RE = /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const ISLAND_CACHE = (process.env.NUXT_COMPONENT_ISLANDS && process.env.prerender) ? new Map() : null // TODO: Use LRU cache
+const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload(\.[a-zA-Z0-9]+)?.json(\?.*)?$/ : /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag} id="${appRootId}">([\\s\\S]*)</${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
-export default defineRenderHandler(async (event) => {
+export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as Exclude<NuxtApp['payload']['error'], Error>
+    ? getQuery(event) as unknown as Exclude<NuxtApp['payload']['error'], Error>
     : null
+
+  if (ssrError && ssrError.statusCode) {
+    ssrError.statusCode = parseInt(ssrError.statusCode as any)
+  }
+
   if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
-    throw createError('Cannot directly render error page!')
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Page Not Found: /__nuxt_error'
+    })
   }
 
   // Check for island component rendering
@@ -176,11 +193,15 @@ export default defineRenderHandler(async (event) => {
     ? await getIslandContext(event)
     : undefined
 
+  if (process.env.prerender && islandContext && ISLAND_CACHE!.has(event.node.req.url)) {
+    return ISLAND_CACHE!.get(event.node.req.url)
+  }
+
   // Request url
   let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url)
+  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
     event.node.req.url = url
@@ -199,18 +220,19 @@ export default defineRenderHandler(async (event) => {
     runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
-      !!(event.node.req.headers['x-nuxt-no-ssr']) ||
+      event.context.nuxt?.noSSR ||
       routeOptions.ssr === false ||
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload'],
+    _payloadReducers: {},
     islandContext
   }
 
   // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, '_payload.js') : undefined
+  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !islandContext
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (process.env.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -224,11 +246,20 @@ export default defineRenderHandler(async (event) => {
     writeEarlyHints(event, link)
   }
 
-  const _rendered = await renderer.renderToString(ssrContext).catch((error) => {
+  const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // Use explicitly thrown error in preference to subsequent rendering errors
-    throw (!ssrError && ssrContext.payload?.error) || error
+    const _err = (!ssrError && ssrContext.payload?.error) || error
+    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    throw _err
   })
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
+
+  if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+
+  if (event.node.res.headersSent || event.node.res.writableEnded) {
+    // @ts-expect-error TODO: handle additional cases
+    return
+  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
@@ -246,18 +277,20 @@ export default defineRenderHandler(async (event) => {
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendHeader(event, 'x-nitro-prerender', joinURL(url, '_payload.js'))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
     // Use same ssr context to generate payload for this route
-    PAYLOAD_CACHE!.set(url, renderPayloadResponse(ssrContext))
+    PAYLOAD_CACHE!.set(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
   // Render meta
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES
+  const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : ''
+
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
@@ -265,8 +298,10 @@ export default defineRenderHandler(async (event) => {
     htmlAttrs: normalizeChunks([renderedMeta.htmlAttrs]),
     head: normalizeChunks([
       renderedMeta.headTags,
-      _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
-      _rendered.renderResourceHints(),
+      process.env.NUXT_JSON_PAYLOADS
+        ? _PAYLOAD_EXTRACTION ? `<link rel="preload" as="fetch" crossorigin="anonymous" href="${payloadURL}">` : null
+        : _PAYLOAD_EXTRACTION ? `<link rel="modulepreload" href="${payloadURL}">` : null,
+      NO_SCRIPTS ? null : _rendered.renderResourceHints(),
       _rendered.renderStyles(),
       inlinedStyles,
       ssrContext.styles
@@ -276,15 +311,19 @@ export default defineRenderHandler(async (event) => {
       renderedMeta.bodyScriptsPrepend,
       ssrContext.teleports?.body
     ]),
-    body: (process.env.NUXT_COMPONENT_ISLANDS && islandContext) ? [] : [_rendered.html],
+    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceServerOnlyComponentsSlots(ssrContext, _rendered.html) : _rendered.html],
     bodyAppend: normalizeChunks([
-      process.env.NUXT_NO_SCRIPTS
+      NO_SCRIPTS
         ? undefined
         : (_PAYLOAD_EXTRACTION
-            ? `<script type="module">import p from "${payloadURL}";window.__NUXT__={...p,...(${devalue(splitPayload(ssrContext).initial)})}</script>`
-            : `<script>window.__NUXT__=${devalue(ssrContext.payload)}</script>`
+            ? process.env.NUXT_JSON_PAYLOADS
+              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+              : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+            : process.env.NUXT_JSON_PAYLOADS
+              ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+              : renderPayloadScript({ ssrContext, data: ssrContext.payload })
           ),
-      _rendered.renderScripts(),
+      routeOptions.experimentalNoScripts ? undefined : _rendered.renderScripts(),
       // Note: bodyScripts may contain tags other than <script>
       renderedMeta.bodyScripts
     ])
@@ -310,7 +349,7 @@ export default defineRenderHandler(async (event) => {
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head,
-      html: ssrContext.teleports!['nuxt-island'].replace(/<!--.*-->/g, ''),
+      html: getServerComponentHTML(htmlContext.body),
       state: ssrContext.payload.state
     }
 
@@ -324,6 +363,9 @@ export default defineRenderHandler(async (event) => {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
+    }
+    if (process.env.prerender) {
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
     }
     return response
   }
@@ -372,7 +414,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-// TOOD: Move to external library
+// TODO: Move to external library
 const HTML_TAG_RE = /<(?<tag>[a-z]+)(?<rawAttrs> [^>]*)?>(?:(?<innerHTML>[\s\S]*?)<\/\k<tag>)?/g
 const HTML_TAG_ATTR_RE = /(?<name>[a-z]+)="(?<value>[^"]*)"/g
 function extractHTMLTags (html: string) {
@@ -403,14 +445,37 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return <RenderResponse> {
-    body: `export default ${devalue(splitPayload(ssrContext).payload)}`,
+    body: process.env.NUXT_JSON_PAYLOADS
+      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
+      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     statusCode: ssrContext.event.node.res.statusCode,
     statusMessage: ssrContext.event.node.res.statusMessage,
     headers: {
-      'content-type': 'text/javascript;charset=UTF-8',
+      'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt'
     }
   }
+}
+
+function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }) {
+  const attrs = [
+    'type="application/json"',
+    `id="${opts.id}"`,
+    `data-ssr="${!(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR)}"`,
+    opts.src ? `data-src="${opts.src}"` : ''
+  ].filter(Boolean)
+  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
+  return `<script ${attrs.join(' ')}>${contents}</script>` +
+    `<script>window.__NUXT__={};window.__NUXT__.config=${uneval(opts.ssrContext.config)}</script>`
+}
+
+function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }) {
+  opts.data.config = opts.ssrContext.config
+  const _PAYLOAD_EXTRACTION = process.env.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  if (_PAYLOAD_EXTRACTION) {
+    return `<script type="module">import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}</script>`
+  }
+  return `<script>window.__NUXT__=${devalue(opts.data)}</script>`
 }
 
 function splitPayload (ssrContext: NuxtSSRContext) {
@@ -419,4 +484,28 @@ function splitPayload (ssrContext: NuxtSSRContext) {
     initial: { ...initial, prerenderedAt },
     payload: { data, prerenderedAt }
   }
+}
+
+/**
+ * remove the root node from the html body
+ */
+function getServerComponentHTML (body: string[]): string {
+  const match = body[0].match(ROOT_NODE_REGEX)
+  return match ? match[1] : body[0]
+}
+
+const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
+function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
+  const { teleports, islandContext } = ssrContext
+  if (islandContext || !teleports) { return html }
+  for (const key in teleports) {
+    const match = key.match(SSR_TELEPORT_MARKER)
+    if (!match) { continue }
+    const [, uid, slot] = match
+    if (!uid || !slot) { continue }
+    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
+      return full + teleports[key]
+    })
+  }
+  return html
 }

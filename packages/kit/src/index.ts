@@ -1,6 +1,7 @@
 // Module
 export * from './module/define'
 export * from './module/install'
+export * from './module/compatibility'
 
 // Loader
 export * from './loader/config'
@@ -24,5 +25,13 @@ export * from './logger'
 
 // Internal Utils
 // TODO
-export * from './internal/cjs'
+export {
+  resolveModule,
+  requireModule,
+  importModule,
+  tryImportModule,
+  tryRequireModule
+} from './internal/cjs'
+export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
+export { tryResolveModule } from './internal/esm'
 export * from './internal/template'

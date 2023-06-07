@@ -5,12 +5,16 @@ import { dirname, relative } from 'pathe'
 import { genObjectFromRawEntries } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
+import type { Component } from '@nuxt/schema'
 
 interface SSRStylePluginOptions {
   srcDir: string
   chunksWithInlinedCSS: Set<string>
-  shouldInline?: (id?: string) => boolean
+  shouldInline?: ((id?: string) => boolean) | boolean
+  components: Component[]
 }
+
+const SUPPORTED_FILES_RE = /\.(vue|((c|m)?j|t)sx?)$/
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
@@ -19,9 +23,28 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const relativeToSrcDir = (path: string) => relative(options.srcDir, path)
 
   const warnCache = new Set<string>()
+  const islands = options.components.filter(component =>
+    component.island ||
+    // .server components without a corresponding .client component will need to be rendered as an island
+    (component.mode === 'server' && !options.components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+  )
 
   return {
     name: 'ssr-styles',
+    resolveId: {
+      order: 'pre',
+      async handler (id, importer, options) {
+        if (!id.endsWith('.vue')) { return }
+
+        const res = await this.resolve(id, importer, { ...options, skipSelf: true })
+        if (res) {
+          return {
+            ...res,
+            moduleSideEffects: false
+          }
+        }
+      }
+    },
     generateBundle (outputOptions) {
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {
@@ -79,8 +102,12 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     async transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       const query = parseQuery(search)
-      if (!pathname.match(/\.(vue|((c|m)?j|t)sx?)$/g) || query.macro) { return }
-      if (options.shouldInline && !options.shouldInline(id)) { return }
+
+      if (!SUPPORTED_FILES_RE.test(pathname) || query.macro || query.nuxt_component) { return }
+
+      if (!islands.some(c => c.filePath === pathname)) {
+        if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
+      }
 
       const relativeId = relativeToSrcDir(id)
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }

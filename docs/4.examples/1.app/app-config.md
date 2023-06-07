@@ -8,7 +8,7 @@ toc: false
 
 This example shows how to use `app.config` feature.
 
-::ReadMore{link="/docs/guide/features/app-config"}
+::ReadMore{link="/docs/guide/directory-structure/app-config"}
 ::
 
 ::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/app-config" file="app.vue"}

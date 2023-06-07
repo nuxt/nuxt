@@ -18,5 +18,9 @@ useState<T>(key: string, init?: () => T | Ref<T>): Ref<T>
 Because the data inside `useState` will be serialized to JSON, it is important that it does not contain anything that cannot be serialized, such as classes, functions or symbols.
 ::
 
+::alert{type=warning}
+`useState` is a reserved function name transformed by the compiler, so you should not name your own function `useState`.
+::
+
 ::ReadMore{link="/docs/getting-started/state-management"}
 ::

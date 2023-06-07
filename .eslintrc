@@ -4,7 +4,8 @@
     "$fetch": true
   },
   "plugins": [
-    "jsdoc"
+    "jsdoc",
+    "no-only-tests"
   ],
   "extends": [
     "plugin:jsdoc/recommended",
@@ -12,6 +13,13 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
+    "no-only-tests/no-only-tests": "error",
     "unicorn/prefer-node-protocol": "error",
     "no-console": "off",
     "vue/multi-word-component-names": "off",
@@ -24,6 +32,25 @@
     "jsdoc/require-returns": "off",
     "jsdoc/require-param-type": "off",
     "no-redeclare": "off",
+    "import/order": [
+      "error",
+      {
+        "pathGroups": [
+          {
+            "pattern": "@nuxt/test-utils/experimental",
+            "group": "external"
+          },
+          {
+            "pattern": "@nuxt/test-utils",
+            "group": "external"
+          },
+          {
+            "pattern": "#vue-router",
+            "group": "external"
+          }
+        ]
+      }
+    ],
     "import/no-restricted-paths": [
       "error",
       {
@@ -52,6 +79,14 @@
         "disallowTypeAnnotations": false
       }
     ],
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      {
+        "ts-expect-error": "allow-with-description",
+        "ts-ignore": true
+      }
+    ],
+    "@typescript-eslint/prefer-ts-expect-error": "error",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -63,6 +98,7 @@
   },
   "settings": {
     "jsdoc": {
+      "ignoreInternal": true,
       "tagNamePreference": {
         "warning": "warning",
         "note": "note"

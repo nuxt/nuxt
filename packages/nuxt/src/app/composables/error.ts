@@ -2,6 +2,7 @@ import type { H3Error } from 'h3'
 import { createError as _createError } from 'h3'
 import { toRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { useRouter } from './router'
 
 export const useError = () => toRef(useNuxtApp().payload, 'error')
 
@@ -12,8 +13,10 @@ export const showError = (_err: string | Error | Partial<NuxtError>) => {
 
   try {
     const nuxtApp = useNuxtApp()
-    nuxtApp.callHook('app:error', err)
     const error = useError()
+    if (process.client) {
+      nuxtApp.hooks.callHook('app:error', err)
+    }
     error.value = error.value || err
   } catch {
     throw err
@@ -27,7 +30,7 @@ export const clearError = async (options: { redirect?: string } = {}) => {
   const error = useError()
   nuxtApp.callHook('app:error:cleared', options)
   if (options.redirect) {
-    await nuxtApp.$router.replace(options.redirect)
+    await useRouter().replace(options.redirect)
   }
   error.value = null
 }

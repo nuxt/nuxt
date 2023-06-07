@@ -1,4 +1,4 @@
-import { expect, describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { generateRoutesFromFiles } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
@@ -56,6 +56,27 @@ describe('pages:generateRoutesFromFiles', () => {
       ]
     },
     {
+      description: 'should not generate colliding route names when hyphens are in file name',
+      files: [
+        `${pagesDir}/parent/[child].vue`,
+        `${pagesDir}/parent-[child].vue`
+      ],
+      output: [
+        {
+          name: 'parent-child',
+          path: '/parent/:child()',
+          file: `${pagesDir}/parent/[child].vue`,
+          children: []
+        },
+        {
+          name: 'parent-child',
+          path: '/parent-:child()',
+          file: `${pagesDir}/parent-[child].vue`,
+          children: []
+        }
+      ]
+    },
+    {
       description: 'should generate correct id for catchall (order 1)',
       files: [
         `${pagesDir}/[...stories].vue`,
@@ -70,7 +91,7 @@ describe('pages:generateRoutesFromFiles', () => {
         },
         {
           name: 'stories-id',
-          path: '/stories/:id',
+          path: '/stories/:id()',
           file: `${pagesDir}/stories/[id].vue`,
           children: []
         }
@@ -85,7 +106,7 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'stories-id',
-          path: '/stories/:id',
+          path: '/stories/:id()',
           file: `${pagesDir}/stories/[id].vue`,
           children: []
         },
@@ -146,7 +167,7 @@ describe('pages:generateRoutesFromFiles', () => {
           children: [],
           name: 'slug',
           file: 'pages/[slug].vue',
-          path: '/:slug'
+          path: '/:slug()'
         },
         {
           children: [
@@ -165,11 +186,11 @@ describe('pages:generateRoutesFromFiles', () => {
           children: [],
           name: 'bar',
           file: 'pages/[bar]/index.vue',
-          path: '/:bar'
+          path: '/:bar()'
         },
         {
           name: 'nonopt-slug',
-          path: '/nonopt/:slug',
+          path: '/nonopt/:slug()',
           file: `${pagesDir}/nonopt/[slug].vue`,
           children: []
         },
@@ -181,7 +202,7 @@ describe('pages:generateRoutesFromFiles', () => {
         },
         {
           name: 'sub-route-slug',
-          path: '/:sub?/route-:slug',
+          path: '/:sub?/route-:slug()',
           file: `${pagesDir}/[[sub]]/route-[slug].vue`,
           children: []
         }
@@ -222,20 +243,27 @@ describe('pages:generateRoutesFromFiles', () => {
       files: [
         `${pagesDir}/[a1_1a].vue`,
         `${pagesDir}/[b2.2b].vue`,
+        `${pagesDir}/[b2]_[2b].vue`,
         `${pagesDir}/[[c3@3c]].vue`,
         `${pagesDir}/[[d4-4d]].vue`
       ],
       output: [
         {
           name: 'a1_1a',
-          path: '/:a1_1a',
+          path: '/:a1_1a()',
           file: `${pagesDir}/[a1_1a].vue`,
           children: []
         },
         {
           name: 'b2.2b',
-          path: '/:b2.2b',
+          path: '/:b2.2b()',
           file: `${pagesDir}/[b2.2b].vue`,
+          children: []
+        },
+        {
+          name: 'b2_2b',
+          path: '/:b2()_:2b()',
+          file: `${pagesDir}/[b2]_[2b].vue`,
           children: []
         },
         {

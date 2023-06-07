@@ -2,15 +2,6 @@ import type { InlinePreset } from 'unimport'
 import { defineUnimportPreset } from 'unimport'
 
 const commonPresets: InlinePreset[] = [
-  // #head
-  defineUnimportPreset({
-    from: '#head',
-    imports: [
-      'useHead',
-      'useSeoMeta',
-      'useServerSeoMeta'
-    ]
-  }),
   // vue-demi (mocked)
   defineUnimportPreset({
     from: 'vue-demi',
@@ -32,6 +23,8 @@ const appPreset = defineUnimportPreset({
     'defineNuxtComponent',
     'useNuxtApp',
     'defineNuxtPlugin',
+    'definePayloadPlugin',
+    'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
     'useFetch',
@@ -39,6 +32,8 @@ const appPreset = defineUnimportPreset({
     'useCookie',
     'useRequestHeaders',
     'useRequestEvent',
+    'useRequestFetch',
+    'useRequestURL',
     'setResponseStatus',
     'setPageLayout',
     'onNuxtReady',
@@ -62,7 +57,9 @@ const appPreset = defineUnimportPreset({
     'prefetchComponents',
     'loadPayload',
     'preloadPayload',
-    'isPrerendered'
+    'isPrerendered',
+    'definePayloadReducer',
+    'definePayloadReviver'
   ]
 })
 
@@ -123,6 +120,8 @@ const vuePreset = defineUnimportPreset({
     'unref',
     'watch',
     'watchEffect',
+    'watchPostEffect',
+    'watchSyncEffect',
     'isShallow',
 
     // effect
@@ -138,19 +137,41 @@ const vuePreset = defineUnimportPreset({
     'getCurrentInstance',
     'h',
     'inject',
+    'hasInjectionContext',
     'nextTick',
     'provide',
+    'defineModel',
+    'defineOptions',
+    'defineSlots',
+    'mergeModels',
+    'toValue',
+    'useModel',
     'useAttrs',
     'useCssModule',
     'useCssVars',
     'useSlots',
     'useTransitionState'
-  ] as Array<keyof typeof import('vue')>
+  ]
+})
+
+const vueTypesPreset = defineUnimportPreset({
+  from: 'vue',
+  type: true,
+  imports: [
+    'Component',
+    'ComponentPublicInstance',
+    'ComputedRef',
+    'InjectionKey',
+    'PropType',
+    'Ref',
+    'VNode'
+  ]
 })
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   appPreset,
   routerPreset,
-  vuePreset
+  vuePreset,
+  vueTypesPreset
 ]

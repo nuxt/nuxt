@@ -1,8 +1,9 @@
-import { addVitePlugin, addWebpackPlugin, defineNuxtModule, addTemplate, resolveAlias, useNuxt, updateTemplates } from '@nuxt/kit'
-import { isAbsolute, join, relative, resolve, normalize } from 'pathe'
+import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates, useNuxt } from '@nuxt/kit'
+import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
-import type { ImportsOptions, ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { ImportPresetWithDeprecation, ImportsOptions } from 'nuxt/schema'
+
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
 
@@ -61,6 +62,17 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     await nuxt.callHook('imports:dirs', composablesDirs)
     composablesDirs = composablesDirs.map(dir => normalize(dir))
 
+    // Restart nuxt when composable directories are added/removed
+    nuxt.hook('builder:watch', (event, path) => {
+      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
+      const fullPath = resolve(nuxt.options.srcDir, path)
+
+      if (isDirChange && composablesDirs.includes(fullPath)) {
+        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        return nuxt.callHook('restart')
+      }
+    })
+
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
@@ -69,8 +81,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transform to inject imports in production mode
-    addVitePlugin(TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(() => TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(() => TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 

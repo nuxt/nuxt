@@ -15,6 +15,8 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
+    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
@@ -28,28 +30,44 @@ export default defineUntypedSchema({
     treeshakeClientOnly: true,
 
     /**
-     * Use vite-node for on-demand server chunk loading
+     * Emit `app:chunkError` hook when there is an error loading vite/webpack
+     * chunks.
      *
-     * @deprecated use `vite.devBundler: 'vite-node'`
+     * By default, Nuxt will also perform a hard reload of the new route
+     * when a chunk fails to load when navigating to a new route.
+     *
+     * You can disable automatic handling by setting this to `false`, or handle
+     * chunk errors manually by setting it to `manual`.
+     *
+     * @see https://github.com/nuxt/nuxt/pull/19038
+     * @type {false | 'manual' | 'automatic'}
      */
-    viteNode: {
-      $resolve: (val) => {
-        val = process.env.EXPERIMENTAL_VITE_NODE ? true : val
+    emitRouteChunkError: {
+      $resolve: val => {
         if (val === true) {
-          console.warn('`vite-node` is now enabled by default. You can safely remove `experimental.viteNode` from your config.')
-        } else if (val === false) {
-          console.warn('`vite-node` is now enabled by default. To disable it, set `vite.devBundler` to `legacy` instead.')
+          return 'manual'
         }
-        return val ?? true
-      }
+        if (val === 'reload') {
+          return 'automatic'
+        }
+        return val ?? 'automatic'
+      },
     },
 
     /**
-     * Split server bundle into multiple chunks and dynamically import them.
+     * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
+     * after a chunk error or manual `reloadNuxtApp()` call.
      *
-     * @see https://github.com/nuxt/nuxt/issues/14525
+     * To avoid hydration errors, it will be applied only after the Vue app has been mounted,
+     * meaning there may be a flicker on initial load.
+     *
+     * Consider carefully before enabling this as it can cause unexpected behavior, and
+     * consider providing explicit keys to `useState` as auto-generated keys may not match
+     * across builds.
+     *
+     * @type {boolean}
      */
-    viteServerDynamicImports: true,
+    restoreState: false,
 
     /**
      * Inline styles when rendering HTML (currently vite only).
@@ -60,7 +78,7 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
-      async $resolve(val, get) {
+      async $resolve (val, get) {
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -71,24 +89,38 @@ export default defineUntypedSchema({
 
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
      */
     noScripts: false,
+
+    /** Render JSON payloads with support for revivifying complex types. */
+    renderJsonPayloads: true,
+
+    /**
+     * Disable vue server renderer endpoint within nitro.
+    */
+    noVueServer: false,
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
      */
-    payloadExtraction: {
-      async $resolve(enabled, get) {
-        enabled = enabled ?? false
-        if (enabled) {
-          console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-        }
-        return enabled
-      }
-    },
+    payloadExtraction: undefined,
+
+    /**
+     * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
+     * if there's an error in SSR.
+     */
+    clientFallback: false,
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     *
+     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     */
+    viewTransition: false,
 
     /**
      * Write early hints when using node server.
@@ -103,10 +135,44 @@ export default defineUntypedSchema({
     componentIslands: false,
 
     /**
-     * Enable experimental config schema support
+     * Config schema support
      *
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
-    configSchema: false
+    configSchema: true,
+
+    /**
+     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
+     * `@vueuse/head` API.
+     *
+     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
+     */
+    polyfillVueUseHead: false,
+
+    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    respectNoSSRHeader: false,
+
+    /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
+    localLayerAliases: true,
+
+    /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
+    typedPages: false,
+
+    /**
+     * Set an alternative watcher that will be used as the watching service for Nuxt.
+     *
+     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
+     * (like `node_modules` and `.git`) that are excluded from watching.
+     *
+     * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
+     * performance in large projects or on Windows platforms.
+     *
+     * You can also set this to `chokidar` to watch all files in your source directory.
+     *
+     * @see https://github.com/paulmillr/chokidar
+     * @see https://github.com/parcel-bundler/watcher
+     * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
+     */
+    watcher: 'chokidar-granular'
   }
 })

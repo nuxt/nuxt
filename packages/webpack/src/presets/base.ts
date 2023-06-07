@@ -1,13 +1,16 @@
-import { resolve, normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
+import type { Configuration } from 'webpack'
 import webpack from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
+import type { NuxtOptions } from '@nuxt/schema'
+import { isTest } from 'std-env'
 import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
@@ -40,7 +43,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: 'none',
+    stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config
   }
 }
@@ -86,28 +89,28 @@ function basePlugins (ctx: WebpackConfigContext) {
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
+      // @ts-expect-error TODO: this is a valid option for Webpack.ProgressPlugin and needs to be declared for WebpackBar
       stats: !ctx.isDev,
       reporter: {
-        // @ts-ignore
-        change: (_, { shortPath }) => {
-          if (!ctx.isServer) {
-            nuxt.callHook('webpack:change', shortPath)
+        reporter: {
+          change: (_, { shortPath }) => {
+            if (!ctx.isServer) {
+              nuxt.callHook('webpack:change', shortPath)
+            }
+          },
+          done: ({ state }) => {
+            if (state.hasErrors) {
+              nuxt.callHook('webpack:error')
+            } else {
+              logger.success(`${state.name} ${state.message}`)
+            }
+          },
+          allDone: () => {
+            nuxt.callHook('webpack:done')
+          },
+          progress ({ statesArray }) {
+            nuxt.callHook('webpack:progress', statesArray)
           }
-        },
-        // @ts-ignore
-        done: ({ state }) => {
-          if (state.hasErrors) {
-            nuxt.callHook('webpack:error')
-          } else {
-            logger.success(`${state.name} ${state.message}`)
-          }
-        },
-        allDone: () => {
-          nuxt.callHook('webpack:done')
-        },
-        // @ts-ignore
-        progress ({ statesArray }) {
-          nuxt.callHook('webpack:progress', statesArray)
         }
       }
     }))
@@ -156,7 +159,8 @@ export function baseTranspile (ctx: WebpackConfigContext) {
   const transpile = [
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
-    /vue-demi/
+    /vue-demi/,
+    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/
   ]
 
   for (let pattern of options.build.transpile) {
@@ -230,6 +234,8 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     'process.mode': JSON.stringify(ctx.config.mode),
     'process.dev': options.dev,
+    'process.test': isTest,
+    __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
@@ -242,4 +248,10 @@ function getEnv (ctx: WebpackConfigContext) {
   }
 
   return _env
+}
+
+const statsMap: Record<NuxtOptions['logLevel'], Configuration['stats']> = {
+  silent: 'none',
+  info: 'normal',
+  verbose: 'verbose'
 }

@@ -1,7 +1,7 @@
 /// <reference types="nitropack" />
 export * from './dist/index'
 
-import type { SchemaDefinition } from '@nuxt/schema'
+import type { SchemaDefinition } from 'nuxt/schema'
 
 declare global {
   const defineNuxtConfig: typeof import('nuxt/config')['defineNuxtConfig']
@@ -11,8 +11,10 @@ declare global {
 declare module 'nitropack' {
   interface NitroRouteConfig {
     ssr?: boolean
+    experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    experimentalNoScripts?: boolean
   }
 }

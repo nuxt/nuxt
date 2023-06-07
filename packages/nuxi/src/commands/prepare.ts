@@ -1,7 +1,6 @@
-import { buildNuxt } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
-import { clearDir } from '../utils/fs'
+import { consola } from 'consola'
+import { clearBuildDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
 import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
@@ -9,16 +8,23 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'prepare',
-    usage: 'npx nuxi prepare',
+    usage: 'npx nuxi prepare [--log-level] [rootDir]',
     description: 'Prepare nuxt for development/build'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt } = await loadKit(rootDir)
-    const nuxt = await loadNuxt({ rootDir, config: { _prepare: true } })
-    await clearDir(nuxt.options.buildDir)
+    const { loadNuxt, buildNuxt } = await loadKit(rootDir)
+    const nuxt = await loadNuxt({
+      rootDir,
+      overrides: {
+        _prepare: true,
+        logLevel: args['log-level'],
+        ...(options.overrides || {})
+      }
+    })
+    await clearBuildDir(nuxt.options.buildDir)
 
     await buildNuxt(nuxt)
     await writeTypes(nuxt)

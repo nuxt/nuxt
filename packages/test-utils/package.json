@@ -1,11 +1,20 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.1.1",
+  "version": "3.5.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
-  "exports": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./experimental": {
+      "types": "./dist/experimental.d.ts",
+      "import": "./dist/experimental.mjs"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -13,25 +22,40 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "3.1.1",
-    "@nuxt/schema": "3.1.1",
-    "consola": "^2.15.3",
+    "@nuxt/kit": "workspace:../kit",
+    "@nuxt/schema": "workspace:../schema",
+    "consola": "^3.1.0",
     "defu": "^6.1.2",
-    "execa": "^6.1.0",
+    "execa": "^7.1.1",
     "get-port-please": "^3.0.1",
-    "jiti": "^1.16.2",
-    "ofetch": "^1.0.0",
-    "pathe": "^1.1.0"
+    "ofetch": "^1.0.1",
+    "pathe": "^1.1.1",
+    "ufo": "^1.1.2"
   },
   "devDependencies": {
-    "playwright": "^1.30.0",
+    "@jest/globals": "29.5.0",
+    "playwright": "1.34.3",
     "unbuild": "latest",
-    "vitest": "^0.28.2"
+    "vitest": "0.31.4"
   },
   "peerDependencies": {
-    "vue": "^3.2.45"
+    "@jest/globals": "^29.5.0",
+    "playwright": "^1.34.3",
+    "vitest": "^0.30.0 || ^0.31.0",
+    "vue": "^3.3.4"
+  },
+  "peerDependenciesMeta": {
+    "@jest/globals": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
   },
   "engines": {
-    "node": "^14.16.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   }
 }

@@ -1,8 +1,8 @@
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
-import { clearDir } from '../utils/fs'
+import { clearBuildDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
 import { showVersions } from '../utils/banner'
 import { defineNuxtCommand } from './index'
@@ -10,10 +10,10 @@ import { defineNuxtCommand } from './index'
 export default defineNuxtCommand({
   meta: {
     name: 'build',
-    usage: 'npx nuxi build [--prerender] [--dotenv] [rootDir]',
+    usage: 'npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     overrideEnv('production')
 
     const rootDir = resolve(args._[0] || '.')
@@ -27,20 +27,17 @@ export default defineNuxtCommand({
         cwd: rootDir,
         fileName: args.dotenv
       },
-      defaults: {
-        experimental: {
-          payloadExtraction: args.prerender ? true : undefined
-        }
-      },
       overrides: {
-        _generate: args.prerender
+        logLevel: args['log-level'],
+        _generate: args.prerender,
+        ...(options?.overrides || {})
       }
     })
 
     // Use ? for backward compatibility for Nuxt <= RC.10
     const nitro = useNitro?.()
 
-    await clearDir(nuxt.options.buildDir)
+    await clearBuildDir(nuxt.options.buildDir)
 
     await writeTypes(nuxt)
 
@@ -52,6 +49,9 @@ export default defineNuxtCommand({
     await buildNuxt(nuxt)
 
     if (args.prerender) {
+      if (!nuxt.options.ssr) {
+        consola.warn('HTML content not prerendered because `ssr: false` was set. You can read more in `https://nuxt.com/docs/getting-started/deployment#static-hosting`.')
+      }
       // TODO: revisit later if/when nuxt build --prerender will output hybrid
       const dir = nitro?.options.output.publicDir
       const publicDir = dir ? relative(process.cwd(), dir) : '.output/public'

@@ -1,12 +1,13 @@
 import { promises as fsp } from 'node:fs'
+import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { Nuxt, NuxtModule, ModuleOptions, ModuleDefinition, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleOptions, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
-import { useNuxt, nuxtCtx, tryUseNuxt } from '../context'
-import { isNuxt2, checkNuxtCompatibility } from '../compatibility'
-import { templateUtils, compileTemplate } from '../internal/template'
+import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
+import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
+import { compileTemplate, templateUtils } from '../internal/template'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -41,8 +42,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     if (uniqueKey) {
       nuxt.options._requiredModules = nuxt.options._requiredModules || {}
       if (nuxt.options._requiredModules[uniqueKey]) {
-        // TODO: Notify user if inline options is provided since will be ignored!
-        return
+        return false
       }
       nuxt.options._requiredModules[uniqueKey] = true
     }
@@ -68,7 +68,28 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Call setup
-    await definition.setup?.call(null as any, _options, nuxt)
+    const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
+    const mark = performance.mark(key)
+    const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
+    const perf = performance.measure(key, mark?.name) // TODO: remove when Node 14 reaches EOL
+    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+
+    // Measure setup time
+    if (setupTime > 5000) {
+      logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+    } else if (nuxt.options.debug) {
+      logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
+    }
+
+    // Check if module is ignored
+    if (res === false) { return false }
+
+    // Return module install result
+    return defu(res, <ModuleSetupReturn> {
+      timings: {
+        setup: setupTime
+      }
+    })
   }
 
   // Define getters for options and meta
@@ -82,10 +103,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
 const NUXT2_SHIMS_KEY = '__nuxt2_shims_key__'
 function nuxt2Shims (nuxt: Nuxt) {
   // Avoid duplicate install and only apply to Nuxt2
-  // @ts-ignore
-  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY]) { return }
-  // @ts-ignore
-  nuxt[NUXT2_SHIMS_KEY] = true
+  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) { return }
+  nuxt[NUXT2_SHIMS_KEY as keyof Nuxt] = true
 
   // Allow using nuxt.hooks
   // @ts-expect-error Nuxt 2 extends hookable
@@ -99,14 +118,14 @@ function nuxt2Shims (nuxt: Nuxt) {
 
   // Support virtual templates with getContents() by writing them to .nuxt directory
   let virtualTemplates: ResolvedNuxtTemplate[]
-  // @ts-ignore Nuxt 2 hook
+  // @ts-expect-error Nuxt 2 hook
   nuxt.hook('builder:prepared', (_builder, buildOptions) => {
     virtualTemplates = buildOptions.templates.filter((t: any) => t.getContents)
     for (const template of virtualTemplates) {
       buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
     }
   })
-  // @ts-ignore Nuxt 2 hook
+  // @ts-expect-error Nuxt 2 hook
   nuxt.hook('build:templates', async (templates) => {
     const context = {
       nuxt,
