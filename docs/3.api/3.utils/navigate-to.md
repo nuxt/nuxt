@@ -18,6 +18,7 @@ interface NavigateToOptions {
   replace?: boolean
   redirectCode?: number
   external?: boolean
+  newTab?: boolean
 }
 ```
 
@@ -125,6 +126,17 @@ await navigateTo('https://nuxt.com')
 // will redirect successfully with the 'external' parameter set to 'true'
 await navigateTo('https://nuxt.com', {
   external: true
+})
+</script>
+```
+
+### Navigating to a new window
+
+```vue
+<script setup>
+// This will open the navigation in a new window, so that the current route won't be overridden
+await navigateTo('/', {
+  newTab: true
 })
 </script>
 ```
