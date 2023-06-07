@@ -29,42 +29,42 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
 
 /*! @__NO_SIDE_EFFECTS__ */
 export const defineNuxtComponent: typeof defineComponent =
- function defineNuxtComponent (...args: any[]): any {
-   const [options, key] = args
-   const { setup } = options
+  function defineNuxtComponent (...args: any[]): any {
+    const [options, key] = args
+    const { setup } = options
 
-   // Avoid wrapping if no options api is used
-   if (!setup && !options.asyncData && !options.head) {
-     return {
-       [NuxtComponentIndicator]: true,
-       ...options
-     }
-   }
+    // Avoid wrapping if no options api is used
+    if (!setup && !options.asyncData && !options.head) {
+      return {
+        [NuxtComponentIndicator]: true,
+        ...options
+      }
+    }
 
-   return {
-     [NuxtComponentIndicator]: true,
-     _fetchKeyBase: key,
-     ...options,
-     setup (props, ctx) {
-       const nuxtApp = useNuxtApp()
-       const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
+    return {
+      [NuxtComponentIndicator]: true,
+      _fetchKeyBase: key,
+      ...options,
+      setup (props, ctx) {
+        const nuxtApp = useNuxtApp()
+        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
 
-       const promises: Promise<any>[] = []
-       if (options.asyncData) {
-         promises.push(runLegacyAsyncData(res, options.asyncData))
-       }
+        const promises: Promise<any>[] = []
+        if (options.asyncData) {
+          promises.push(runLegacyAsyncData(res, options.asyncData))
+        }
 
-       if (options.head) {
-         const nuxtApp = useNuxtApp()
-         useHead(typeof options.head === 'function' ? () => options.head(nuxtApp) : options.head)
-       }
+        if (options.head) {
+          const nuxtApp = useNuxtApp()
+          useHead(typeof options.head === 'function' ? () => options.head(nuxtApp) : options.head)
+        }
 
-       return Promise.resolve(res)
-         .then(() => Promise.all(promises))
-         .then(() => res)
-         .finally(() => {
-           promises.length = 0
-         })
-     }
-   } as DefineComponent
- }
+        return Promise.resolve(res)
+          .then(() => Promise.all(promises))
+          .then(() => res)
+          .finally(() => {
+            promises.length = 0
+          })
+      }
+    } as DefineComponent
+  }
