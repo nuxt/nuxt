@@ -5,6 +5,10 @@ description: useAsyncData provides access to data that resolves asynchronously.
 
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
+::alert{type=warning}
+`useAsyncData` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+::
+
 ## Type
 
 ```ts [Signature]
@@ -28,19 +32,17 @@ type AsyncDataOptions<DataT> = {
   immediate?: boolean
 }
 
-interface RefreshOptions {
-  dedupe?: boolean
-}
-
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
   pending: Ref<boolean>
-  execute: () => Promise<void>
-  refresh: (opts?: RefreshOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+};
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
-
-
 ```
 
 ## Params

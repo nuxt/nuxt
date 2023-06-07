@@ -7,6 +7,8 @@ import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import type { getComponentsT } from './module'
 
+const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+
 export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
   const componentUnimport = createUnimport({
     imports: [
@@ -47,36 +49,43 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     },
     async transform (code, id) {
       // Virtual component wrapper
-      if (id.match(/[?&]nuxt_component=/)) {
+      if (COMPONENT_QUERY_RE.test(id)) {
         const { search } = parseURL(id)
         const query = parseQuery(search)
         const mode = query.nuxt_component
         const bare = id.replace(/\?.*/, '')
         if (mode === 'async') {
-          return [
-            'import { defineAsyncComponent } from "vue"',
-            `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r.default))`
-          ].join('\n')
+          return {
+            code: [
+              'import { defineAsyncComponent } from "vue"',
+              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r.default))`
+            ].join('\n'),
+            map: null
+          }
         } else if (mode === 'client') {
-          return [
-            `import __component from ${JSON.stringify(bare)}`,
-            'import { createClientOnly } from "#app/components/client-only"',
-            'export default createClientOnly(__component)'
-          ].join('\n')
+          return {
+            code: [
+              `import __component from ${JSON.stringify(bare)}`,
+              'import { createClientOnly } from "#app/components/client-only"',
+              'export default createClientOnly(__component)'
+            ].join('\n'),
+            map: null
+          }
         } else if (mode === 'client,async') {
-          return [
-            'import { defineAsyncComponent } from "vue"',
-            'import { createClientOnly } from "#app/components/client-only"',
-            `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`
-          ].join('\n')
+          return {
+            code: [
+              'import { defineAsyncComponent } from "vue"',
+              'import { createClientOnly } from "#app/components/client-only"',
+              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`
+            ].join('\n'),
+            map: null
+          }
         } else {
           throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
         }
       }
 
-      if (!code.includes('#components')) {
-        return null
-      }
+      if (!code.includes('#components')) { return }
 
       componentUnimport.modifyDynamicImports((imports) => {
         imports.length = 0
@@ -85,12 +94,11 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
       })
 
       const result = await componentUnimport.injectImports(code, id, { autoImport: false, transformVirtualImports: true })
-      if (!result) {
-        return null
-      }
+      if (!result) { return }
+
       return {
         code: result.code,
-        map: nuxt.options.sourcemap
+        map: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
           ? result.s.generateMap({ hires: true })
           : undefined
       }

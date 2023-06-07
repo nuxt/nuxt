@@ -1,11 +1,11 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, reactive } from 'vue'
+import { getCurrentInstance, hasInjectionContext, reactive } from 'vue'
 import type { App, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
-import type { SSRContext } from 'vue-bundle-renderer/runtime'
+import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
@@ -28,7 +28,7 @@ type NuxtMeta = {
 
 type HookResult = Promise<void> | void
 
-type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'] }
+type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
 export interface RuntimeNuxtHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult
@@ -119,6 +119,7 @@ interface _NuxtApp {
 
   ssrContext?: NuxtSSRContext
   payload: {
+    path?: string
     serverRendered?: boolean
     prerenderedAt?: number
     data: Record<string, any>
@@ -158,6 +159,7 @@ export interface PluginMeta {
 export interface ResolvedPluginMeta {
   name?: string
   order: number
+  parallel?: boolean
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -169,6 +171,12 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
+  /**
+   * Execute plugin in parallel with other parallel plugins.
+   *
+   * @default false
+   */
+  parallel?: boolean
 }
 
 export interface CreateOptions {
@@ -248,13 +256,13 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   if (process.server) {
-    // Expose nuxt to the renderContext
     if (nuxtApp.ssrContext) {
+      // Expose nuxt to the renderContext
       nuxtApp.ssrContext.nuxt = nuxtApp
-    }
-    // Expose payload types
-    if (nuxtApp.ssrContext) {
+      // Expose payload types
       nuxtApp.ssrContext._payloadReducers = {}
+      // Expose current path
+      nuxtApp.payload.path = nuxtApp.ssrContext.event.path
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
@@ -300,9 +308,18 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
 }
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
+  const parallels: Promise<any>[] = []
+  const errors: Error[] = []
   for (const plugin of plugins) {
-    await applyPlugin(nuxtApp, plugin)
+    const promise = applyPlugin(nuxtApp, plugin)
+    if (plugin.meta?.parallel) {
+      parallels.push(promise.catch(e => errors.push(e)))
+    } else {
+      await promise
+    }
   }
+  await Promise.all(parallels)
+  if (errors.length) { throw errors[0] }
 }
 
 export function normalizePlugins (_plugins: Plugin[]) {
@@ -364,10 +381,12 @@ const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
   post: 20
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
   return defineNuxtPlugin(plugin, { order: -40 })
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
   if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
 
@@ -382,6 +401,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   wrapper.meta = {
     name: meta?.name || plugin.name || plugin.setup?.name,
+    parallel: plugin.parallel,
     order:
       meta?.order ||
       plugin.order ||
@@ -407,35 +427,38 @@ export function isNuxtPlugin (plugin: unknown) {
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (process.server) {
-    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-    return fn()
+    return nuxt.vueApp.runWithContext(fn)
   }
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  */
-export function useNuxtApp () {
-  const nuxtAppInstance = nuxtAppCtx.tryUse()
+export function useNuxtApp (): NuxtApp {
+  let nuxtAppInstance
+  if (hasInjectionContext()) {
+    nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
+  }
+
+  nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
 
   if (!nuxtAppInstance) {
-    const vm = getCurrentInstance()
-    if (!vm) {
-      if (process.dev) {
-        throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
-      } else {
-        throw new Error('[nuxt] instance unavailable')
-      }
+    if (process.dev) {
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+    } else {
+      throw new Error('[nuxt] instance unavailable')
     }
-    return vm.appContext.app.$nuxt as NuxtApp
   }
 
   return nuxtAppInstance
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (): RuntimeConfig {
   return useNuxtApp().$config
 }

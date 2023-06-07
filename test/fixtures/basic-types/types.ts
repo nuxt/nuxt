@@ -1,13 +1,13 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtPage } from '#components'
+import { NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -15,8 +15,13 @@ interface TestResponse { message: string }
 describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    // registered in extends
+    expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
+    // registered in module
+    expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
     expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
     // @ts-expect-error not a valid method
     expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
     expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
@@ -51,8 +56,10 @@ describe('API routes', () => {
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    // @ts-expect-error TODO: remove when fixed upstream: https://github.com/unjs/nitro/pull/1247
     expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     // @ts-expect-error not a valid method
     useFetch('/api/hey', { method: 'PATCH' })
     expectTypeOf(useFetch('/api/hey', { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | null>>()
@@ -60,6 +67,7 @@ describe('API routes', () => {
     expectTypeOf(useFetch('/api/union', { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | null>>()
     expectTypeOf(useFetch('/api/other').data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch<TestResponse>('/test').data).toEqualTypeOf<Ref<TestResponse | null>>()
+    expectTypeOf(useFetch<TestResponse>('/test', { method: 'POST' }).data).toEqualTypeOf<Ref<TestResponse | null>>()
 
     expectTypeOf(useFetch('/error').error).toEqualTypeOf<Ref<FetchError | null>>()
     expectTypeOf(useFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null>>()
@@ -86,11 +94,14 @@ describe('aliases', () => {
 
 describe('middleware', () => {
   it('recognizes named middleware', () => {
-    definePageMeta({ middleware: 'inject-auth' })
+    definePageMeta({ middleware: 'named' })
+    // provided by layer
+    definePageMeta({ middleware: 'override' })
+    definePageMeta({ middleware: 'foo' })
     // @ts-expect-error ignore global middleware
-    definePageMeta({ middleware: 'redirect' })
+    definePageMeta({ middleware: 'global' })
     // @ts-expect-error Invalid middleware
-    definePageMeta({ middleware: 'invalid-middleware' })
+    definePageMeta({ middleware: 'nonexistent' })
   })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
@@ -107,10 +118,72 @@ describe('middleware', () => {
   })
 })
 
+describe('typed router integration', () => {
+  it('allows typing useRouter', () => {
+    const router = useRouter()
+    // @ts-expect-error this named route does not exist
+    router.push({ name: 'some-thing' })
+    // this one does
+    router.push({ name: 'page' })
+    // @ts-expect-error this is an invalid param
+    router.push({ name: 'param-id', params: { bob: 23 } })
+    router.push({ name: 'param-id', params: { id: 4 } })
+  })
+
+  it('allows typing useRoute', () => {
+    const route = useRoute('param-id')
+    // @ts-expect-error this param does not exist
+    const _invalid = route.params.something
+    // this param does
+    const _valid = route.params.id
+  })
+
+  it('allows typing navigateTo', () => {
+    // @ts-expect-error this named route does not exist
+    navigateTo({ name: 'some-thing' })
+    // this one does
+    navigateTo({ name: 'page' })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'param-id', params: { bob: 23 } })
+    navigateTo({ name: 'param-id', params: { id: 4 } })
+  })
+
+  it('allows typing middleware', () => {
+    defineNuxtRouteMiddleware((to) => {
+      expectTypeOf(to.name).not.toBeAny()
+      // @ts-expect-error this route does not exist
+      expectTypeOf(to.name === 'bob').toEqualTypeOf<boolean>()
+      expectTypeOf(to.name === 'page').toEqualTypeOf<boolean>()
+    })
+  })
+
+  it('respects pages:extend augmentation', () => {
+    // added via pages:extend
+    expectTypeOf(useRoute().name === 'internal-async-parent').toEqualTypeOf<boolean>()
+    // @ts-expect-error this route does not exist
+    expectTypeOf(useRoute().name === 'invalid').toEqualTypeOf<boolean>()
+  })
+
+  it('respects pages added via layer', () => {
+    expectTypeOf(useRoute().name === 'override').toEqualTypeOf<boolean>()
+  })
+
+  it('allows typing NuxtLink', () => {
+    // @ts-expect-error this named route does not exist
+    h(NuxtLink, { to: { name: 'some-thing' } })
+    // this one does
+    h(NuxtLink, { to: { name: 'page' } })
+    // @ts-expect-error this is an invalid param
+    h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
+    h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
+  })
+})
+
 describe('layouts', () => {
   it('recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
+    definePageMeta({ layout: 'override' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
   })
@@ -128,7 +201,8 @@ describe('modules', () => {
 
 describe('nuxtApp', () => {
   it('types injections provided by plugins', () => {
-    expectTypeOf(useNuxtApp().$asyncPlugin).toEqualTypeOf<() => string>()
+    expectTypeOf(useNuxtApp().$pluginInjection).toEqualTypeOf<() => ''>()
+    expectTypeOf(useNuxtApp().$foo).toEqualTypeOf<() => 'String generated from foo plugin!'>()
     expectTypeOf(useNuxtApp().$router).toEqualTypeOf<Router>()
   })
   it('marks unknown injections as unknown', () => {
@@ -203,6 +277,13 @@ describe('components', () => {
   it('includes types for NuxtPage', () => {
     expectTypeOf(NuxtPage).not.toBeAny()
   })
+  it('includes types for other components', () => {
+    h(WithTypes)
+    // @ts-expect-error wrong prop type for this component
+    h(WithTypes, { aProp: '40' })
+
+    // TODO: assert typed slots, exposed, generics, etc.
+  })
 })
 
 describe('composables', () => {
@@ -214,13 +295,13 @@ describe('composables', () => {
     expectTypeOf(useCookie('test', { default: () => 500 })).toEqualTypeOf<Ref<number>>()
     useCookie<number | null>('test').value = null
 
-    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
-    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
-    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
-    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => ref(500) }).data).toEqualTypeOf<Ref<string | number>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve('500'), { default: () => 500 }).data).toEqualTypeOf<Ref<string | number>>()
 
-    expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<number | null>>()
-    expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<number | null>>()
+    expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
   it('infer request url string literal from server/api routes', () => {
@@ -252,11 +333,11 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     // Default values: #14437
-    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number } | null>>()
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number }>>()
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
-    expectTypeOf(useFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
-    expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useFetch('/api/hey', { default: () => 1, transform: v => v.foo }).data).toEqualTypeOf<Ref<string | number>>()
+    expectTypeOf(useLazyFetch('/api/hey', { default: () => 'bar', transform: v => v.foo }).data).toEqualTypeOf<Ref<string>>()
   })
 
   it('uses types compatible between useRequestHeaders and useFetch', () => {

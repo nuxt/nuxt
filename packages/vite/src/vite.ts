@@ -1,5 +1,6 @@
+import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { join, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -27,6 +28,25 @@ export async function bundle (nuxt: Nuxt) {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+
+  let allowDirs = [
+    nuxt.options.appDir,
+    nuxt.options.workspaceDir,
+    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...Object.values(nuxt.apps).flatMap(app => [
+      ...app.components.map(c => dirname(c.filePath)),
+      ...app.plugins.map(p => dirname(p.src)),
+      ...app.middleware.map(m => dirname(m.path)),
+      ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
+      dirname(nuxt.apps.default.rootComponent!),
+      dirname(nuxt.apps.default.errorComponent!)
+    ])
+  ].filter(d => d && existsSync(d))
+
+  for (const dir of allowDirs) {
+    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
+  }
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -47,7 +67,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          include: ['vue'],
+          include: ['vue', '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared'],
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
@@ -88,10 +108,7 @@ export async function bundle (nuxt: Nuxt) {
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: [
-              nuxt.options.appDir,
-              ...nuxt.options._layers.map(l => l.config.rootDir)
-            ]
+            allow: [...new Set(allowDirs)]
           }
         }
       } satisfies ViteConfig,
@@ -106,8 +123,6 @@ export async function bundle (nuxt: Nuxt) {
     ctx.config.build!.watch = undefined
   }
 
-  await nuxt.callHook('vite:extend', ctx)
-
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
@@ -115,8 +130,10 @@ export async function bundle (nuxt: Nuxt) {
       vueTsc: {
         tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
       }
-    }), { client: !nuxt.options.ssr, server: nuxt.options.ssr })
+    }), { server: nuxt.options.ssr })
   }
+
+  await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated

@@ -145,7 +145,7 @@ export default defineUntypedSchema({
    * If a relative path is specified, it will be relative to your `rootDir`.
    */
   analyzeDir: {
-    $resolve: async (val, get) => val 
+    $resolve: async (val, get) => val
       ? resolve(await get('rootDir'), val)
       : resolve(await get('buildDir'), 'analyze')
   },
@@ -357,7 +357,9 @@ export default defineUntypedSchema({
       '**/*.d.ts', // ignore type declarations
       '.output',
       '.git',
+      '.cache',
       await get('analyzeDir'),
+      await get('buildDir'),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },

@@ -43,6 +43,10 @@
           {
             "pattern": "@nuxt/test-utils",
             "group": "external"
+          },
+          {
+            "pattern": "#vue-router",
+            "group": "external"
           }
         ]
       }
@@ -90,7 +94,10 @@
         "varsIgnorePattern": "^_",
         "ignoreRestSiblings": true
       }
-    ]
+    ],
+    "jsdoc/check-tag-names": ["error", {
+      "definedTags": ["__NO_SIDE_EFFECTS__"]
+    }]
   },
   "settings": {
     "jsdoc": {

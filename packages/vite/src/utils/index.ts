@@ -43,3 +43,13 @@ export async function isDirectory (path: string) {
     return false
   }
 }
+
+export function matchWithStringOrRegex (value: string, matcher: string | RegExp) {
+  if (typeof matcher === 'string') {
+    return value === matcher
+  } else if (matcher instanceof RegExp) {
+    return matcher.test(value)
+  }
+
+  return false
+}

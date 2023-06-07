@@ -77,7 +77,7 @@ It is possible to update runtime config values using a matching environment vari
 We can set the environment variables inside the `.env` file to make them accessible during **development** and **build/generate**.
 
 ``` [.env]
-NUXT_PUBLIC_API_BASE_URL = "https://api.localhost:5555"
+NUXT_PUBLIC_API_BASE = "https://api.localhost:5555"
 NUXT_API_SECRET = "123"
 ```
 

@@ -41,12 +41,11 @@ export default defineUntypedSchema({
     profile: process.argv.includes('--profile'),
 
     /**
-     * Enables Common CSS Extraction using
-     * [Vue Server Renderer guidelines](https://ssr.vuejs.org/guide/css.html).
+     * Enables Common CSS Extraction.
      *
-     * Using [extract-css-chunks-webpack-plugin](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/) under the hood, your CSS will be extracted
+     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
-     * JavaScript separately and is worth trying if you have a lot of global or shared CSS.
+     * JavaScript separately.
      *
      * @example
      * ```js
@@ -148,12 +147,18 @@ export default defineUntypedSchema({
         }
         return val
       },
+      /** @type {typeof import('esbuild-loader')['LoaderOptions']} */
+      esbuild: {},
       file: { esModule: false },
       fontUrl: { esModule: false, limit: 1000 },
       imgUrl: { esModule: false, limit: 1000 },
       pugPlain: {},
+
+      /**
+       * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
+       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
+       */
       vue: {
-        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
@@ -161,6 +166,8 @@ export default defineUntypedSchema({
           embed: 'src'
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
+        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
       },
       css: {
         importLoaders: 0,
@@ -206,20 +213,6 @@ export default defineUntypedSchema({
      * ```
      */
     plugins: [],
-
-    /**
-     * Terser plugin options.
-     *
-     * Set to false to disable this plugin, or pass an object of options.
-     *
-     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin).
-     *
-     * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
-     * the end of each output file if webpack `config.devtool` is set to `source-map`.
-     *
-     * @type {false | typeof import('terser-webpack-plugin').BasePluginOptions & typeof import('terser-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
-     */
-    terser: {},
 
     /**
      * Hard-replaces `typeof process`, `typeof window` and `typeof document` to tree-shake bundle.
