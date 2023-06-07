@@ -123,8 +123,8 @@ importers:
         specifier: 4.3.9
         version: 4.3.9(@types/node@18.16.16)
       vitest:
-        specifier: 0.31.4
-        version: 0.31.4(playwright@1.34.3)
+        specifier: 0.32.0
+        version: 0.32.0(playwright@1.34.3)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -211,8 +211,8 @@ importers:
         specifier: 4.3.9
         version: 4.3.9(@types/node@18.16.16)
       vitest:
-        specifier: 0.31.4
-        version: 0.31.4(playwright@1.34.3)
+        specifier: 0.32.0
+        version: 0.32.0(playwright@1.34.3)
       webpack:
         specifier: 5.85.1
         version: 5.85.1
@@ -414,7 +414,7 @@ importers:
         version: 0.2.0
       ofetch:
         specifier: ^1.0.1
-        version: 1.0.1
+        version: 1.1.0
       ohash:
         specifier: ^1.1.2
         version: 1.1.2
@@ -498,8 +498,8 @@ importers:
         specifier: 4.3.9
         version: 4.3.9(@types/node@18.16.16)
       vitest:
-        specifier: 0.31.4
-        version: 0.31.4(playwright@1.34.3)
+        specifier: 0.32.0
+        version: 0.32.0(playwright@1.34.3)
 
   packages/schema:
     dependencies:
@@ -602,7 +602,7 @@ importers:
         version: 3.0.1
       ofetch:
         specifier: ^1.0.1
-        version: 1.0.1
+        version: 1.1.0
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -623,8 +623,8 @@ importers:
         specifier: latest
         version: 1.2.1
       vitest:
-        specifier: 0.31.4
-        version: 0.31.4(playwright@1.34.3)
+        specifier: 0.32.0
+        version: 0.32.0(playwright@1.34.3)
 
   packages/vite:
     dependencies:
@@ -725,8 +725,8 @@ importers:
         specifier: 4.3.9
         version: 4.3.9(@types/node@18.16.16)
       vite-node:
-        specifier: ^0.31.4
-        version: 0.31.4(@types/node@18.16.16)
+        specifier: ^0.32.0
+        version: 0.32.0(@types/node@18.16.16)
       vite-plugin-checker:
         specifier: ^0.6.0
         version: 0.6.0(eslint@8.42.0)(typescript@5.0.4)(vite@4.3.9)(vue-tsc@1.6.5)
@@ -1836,7 +1836,7 @@ packages:
       mri: 1.2.0
       nanoid: 4.0.2
       node-fetch: 3.3.1
-      ofetch: 1.0.1
+      ofetch: 1.1.0
       parse-git-config: 3.0.0
       rc9: 2.1.0
       std-env: 3.3.3
@@ -2500,29 +2500,12 @@ packages:
       vite: 4.3.9(@types/node@18.16.16)
       vue: 3.3.4
 
-  /@vitest/expect@0.31.4:
-    resolution: {integrity: sha512-tibyx8o7GUyGHZGyPgzwiaPaLDQ9MMuCOrc03BYT0nryUuhLbL7NV2r/q98iv5STlwMgaKuFJkgBW/8iPKwlSg==}
-    dependencies:
-      '@vitest/spy': 0.31.4
-      '@vitest/utils': 0.31.4
-      chai: 4.3.7
-    dev: true
-
   /@vitest/expect@0.32.0:
     resolution: {integrity: sha512-VxVHhIxKw9Lux+O9bwLEEk2gzOUe93xuFHy9SzYWnnoYZFYg1NfBtnfnYWiJN7yooJ7KNElCK5YtA7DTZvtXtg==}
     dependencies:
       '@vitest/spy': 0.32.0
       '@vitest/utils': 0.32.0
       chai: 4.3.7
-    dev: true
-
-  /@vitest/runner@0.31.4:
-    resolution: {integrity: sha512-Wgm6UER+gwq6zkyrm5/wbpXGF+g+UBB78asJlFkIOwyse0pz8lZoiC6SW5i4gPnls/zUcPLWS7Zog0LVepXnpg==}
-    dependencies:
-      '@vitest/utils': 0.31.4
-      concordance: 5.0.4
-      p-limit: 4.0.0
-      pathe: 1.1.1
     dev: true
 
   /@vitest/runner@0.32.0:
@@ -2534,14 +2517,6 @@ packages:
       pathe: 1.1.1
     dev: true
 
-  /@vitest/snapshot@0.31.4:
-    resolution: {integrity: sha512-LemvNumL3NdWSmfVAMpXILGyaXPkZbG5tyl6+RQSdcHnTj6hvA49UAI8jzez9oQyE/FWLKRSNqTGzsHuk89LRA==}
-    dependencies:
-      magic-string: 0.30.0
-      pathe: 1.1.1
-      pretty-format: 27.5.1
-    dev: true
-
   /@vitest/snapshot@0.32.0:
     resolution: {integrity: sha512-yCKorPWjEnzpUxQpGlxulujTcSPgkblwGzAUEL+z01FTUg/YuCDZ8dxr9sHA08oO2EwxzHXNLjQKWJ2zc2a19Q==}
     dependencies:
@@ -2550,24 +2525,10 @@ packages:
       pretty-format: 27.5.1
     dev: true
 
-  /@vitest/spy@0.31.4:
-    resolution: {integrity: sha512-3ei5ZH1s3aqbEyftPAzSuunGICRuhE+IXOmpURFdkm5ybUADk+viyQfejNk6q8M5QGX8/EVKw+QWMEP3DTJDag==}
-    dependencies:
-      tinyspy: 2.1.0
-    dev: true
-
   /@vitest/spy@0.32.0:
     resolution: {integrity: sha512-MruAPlM0uyiq3d53BkwTeShXY0rYEfhNGQzVO5GHBmmX3clsxcWp79mMnkOVcV244sNTeDcHbcPFWIjOI4tZvw==}
     dependencies:
       tinyspy: 2.1.0
-    dev: true
-
-  /@vitest/utils@0.31.4:
-    resolution: {integrity: sha512-DobZbHacWznoGUfYU8XDPY78UubJxXfMNY1+SUdOp1NsI34eopSA6aZMeaGu10waSOeYwE8lxrd/pLfT0RMxjQ==}
-    dependencies:
-      concordance: 5.0.4
-      loupe: 2.3.6
-      pretty-format: 27.5.1
     dev: true
 
   /@vitest/utils@0.32.0:
@@ -3360,8 +3321,8 @@ packages:
       convert-gitmoji: 0.1.3
       execa: 7.1.1
       mri: 1.2.0
-      node-fetch-native: 1.1.1
-      ofetch: 1.0.1
+      node-fetch-native: 1.2.0
+      ofetch: 1.1.0
       open: 9.1.0
       pathe: 1.1.1
       pkg-types: 1.0.3
@@ -6228,8 +6189,8 @@ packages:
       mime: 3.0.0
       mlly: 1.3.0
       mri: 1.2.0
-      node-fetch-native: 1.1.1
-      ofetch: 1.0.1
+      node-fetch-native: 1.2.0
+      ofetch: 1.1.0
       ohash: 1.1.2
       openapi-typescript: 6.2.4
       pathe: 1.1.1
@@ -6274,9 +6235,6 @@ packages:
   /node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
-
-  /node-fetch-native@1.1.1:
-    resolution: {integrity: sha512-9VvspTSUp2Sxbl+9vbZTlFGq9lHwE8GDVVekxx6YsNd1YH59sb3Ba8v3Y3cD8PkLNcileGGcA21PFjVl0jzDaw==}
 
   /node-fetch-native@1.2.0:
     resolution: {integrity: sha512-5IAMBTl9p6PaAjYCnMv5FmqIF6GcZnawAVnzaCG0rX2aYZJ4CxEkZNtVPuTRug7fL7wyM5BQYTlAzcyMPi6oTQ==}
@@ -6408,8 +6366,9 @@ packages:
     resolution: {integrity: sha512-icBz2JYfEpt+wZz1FRoGcrMigjNKjzvufE26m9+yUiacRQRHwnNlGRPiDnW4op7WX/MR6aniwS8xw8jyVelF2g==}
     dependencies:
       destr: 1.2.2
-      node-fetch-native: 1.1.1
+      node-fetch-native: 1.2.0
       ufo: 1.1.2
+    dev: true
 
   /ofetch@1.1.0:
     resolution: {integrity: sha512-yjq2ZUUMto1ITpge2J5vNlUfteLzxfHn9aJC55WtVGD3okKwSfPoLaKpcHXmmKd2kZZUGo+jdkFuuj09Blyeig==}
@@ -8066,7 +8025,7 @@ packages:
       consola: 3.1.0
       defu: 6.1.2
       mime: 3.0.0
-      node-fetch-native: 1.1.1
+      node-fetch-native: 1.2.0
       pathe: 1.1.1
 
   /unhead@1.1.27:
@@ -8246,26 +8205,6 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: true
 
-  /vite-node@0.31.4(@types/node@18.16.16):
-    resolution: {integrity: sha512-uzL377GjJtTbuc5KQxVbDu2xfU/x0wVjUtXQR2ihS21q/NK6ROr4oG0rsSkBBddZUVCwzfx22in76/0ZZHXgkQ==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    dependencies:
-      cac: 6.7.14
-      debug: 4.3.4
-      mlly: 1.3.0
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      vite: 4.3.9(@types/node@18.16.16)
-    transitivePeerDependencies:
-      - '@types/node'
-      - less
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-
   /vite-node@0.32.0(@types/node@18.16.16):
     resolution: {integrity: sha512-220P/y8YacYAU+daOAqiGEFXx2A8AwjadDzQqos6wSukjvvTWNqleJSwoUn0ckyNdjHIKoxn93Nh1vWBqEKr3Q==}
     engines: {node: '>=v14.18.0'}
@@ -8285,7 +8224,6 @@ packages:
       - sugarss
       - supports-color
       - terser
-    dev: true
 
   /vite-plugin-checker@0.6.0(eslint@8.42.0)(typescript@5.0.4)(vite@4.3.9)(vue-tsc@1.6.5):
     resolution: {integrity: sha512-DWZ9Hv2TkpjviPxAelNUt4Q3IhSGrx7xrwdM64NI+Q4dt8PaMWJJh4qGNtSrfEuiuIzWWo00Ksvh5It4Y3L9xQ==}
@@ -8372,72 +8310,6 @@ packages:
       rollup: 3.21.8
     optionalDependencies:
       fsevents: 2.3.2
-
-  /vitest@0.31.4(playwright@1.34.3):
-    resolution: {integrity: sha512-GoV0VQPmWrUFOZSg3RpQAPN+LPmHg2/gxlMNJlyxJihkz6qReHDV6b0pPDcqFLNEPya4tWJ1pgwUNP9MLmUfvQ==}
-    engines: {node: '>=v14.18.0'}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
-      happy-dom: '*'
-      jsdom: '*'
-      playwright: '*'
-      safaridriver: '*'
-      webdriverio: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-      playwright:
-        optional: true
-      safaridriver:
-        optional: true
-      webdriverio:
-        optional: true
-    dependencies:
-      '@types/chai': 4.3.5
-      '@types/chai-subset': 1.3.3
-      '@types/node': 18.16.16
-      '@vitest/expect': 0.31.4
-      '@vitest/runner': 0.31.4
-      '@vitest/snapshot': 0.31.4
-      '@vitest/spy': 0.31.4
-      '@vitest/utils': 0.31.4
-      acorn: 8.8.2
-      acorn-walk: 8.2.0
-      cac: 6.7.14
-      chai: 4.3.7
-      concordance: 5.0.4
-      debug: 4.3.4
-      local-pkg: 0.4.3
-      magic-string: 0.30.0
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      playwright: 1.34.3
-      std-env: 3.3.3
-      strip-literal: 1.0.1
-      tinybench: 2.5.0
-      tinypool: 0.5.0
-      vite: 4.3.9(@types/node@18.16.16)
-      vite-node: 0.31.4(@types/node@18.16.16)
-      why-is-node-running: 2.2.2
-    transitivePeerDependencies:
-      - less
-      - sass
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-    dev: true
 
   /vitest@0.32.0(playwright@1.34.3):
     resolution: {integrity: sha512-SW83o629gCqnV3BqBnTxhB10DAwzwEx3z+rqYZESehUB+eWsJxwcBQx7CKy0otuGMJTYh7qCVuUX23HkftGl/Q==}
