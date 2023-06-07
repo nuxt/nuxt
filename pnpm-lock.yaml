@@ -544,7 +544,7 @@ importers:
         specifier: 3.0.1
         version: 3.0.1(vite@4.3.9)(vue@3.3.4)
       esbuild-loader:
-        specifier: ^3.0.1
+        specifier: 3.0.1
         version: 3.0.1(webpack@5.85.1)
       h3:
         specifier: 1.6.6
