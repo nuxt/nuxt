@@ -100,7 +100,7 @@ export interface NavigateToOptions {
 /**
  * A helper that aids in programmatic navigation within your Nuxt application.
  * 
- * Can be called on the server and on the client, within pages, middleware, plugins, and more.
+ * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
  * 
  * @param {(RouteLocationRaw | undefined | null)} [to='/'] The route to navigate to. Accepts a `String` of the relative path, `undefined`, and `null`.
  * @default '/'
