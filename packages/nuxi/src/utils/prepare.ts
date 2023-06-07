@@ -44,7 +44,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
-  const basePath = tsConfig.compilerOptions!.baseUrl || nuxt.options.buildDir
+  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
