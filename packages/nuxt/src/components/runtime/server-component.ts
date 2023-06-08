@@ -18,7 +18,7 @@ const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
 let id = 0
-const getId = process.client ? () => (id++).toString() : randomUUID
+const getId = process.client ? () => 's' + (id--) : randomUUID
 
 export const createServerComponent = (name: string) => {
   return defineComponent({
