@@ -46,13 +46,11 @@ export function clearNuxtState (
     ? _allKeys
     : typeof keys === 'function'
       ? _allKeys.filter(keys)
-      : Array.isArray(keys)
-        ? keys.map(k => useStateKeyPrefix + k)
-        : [useStateKeyPrefix + keys]
+      : Array.isArray(keys) ? keys : [keys]
 
   for (const key of _keys) {
     if (key in nuxtApp.payload.state) {
-      nuxtApp.payload.state[key] = undefined
+      nuxtApp.payload.state[useStateKeyPrefix + key] = undefined
     }
   }
 }
