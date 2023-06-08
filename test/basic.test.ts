@@ -168,6 +168,8 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
 
+    await page.close()
+
     await expectNoClientErrors('/proxy')
   })
 
@@ -1165,6 +1167,7 @@ describe('prefetching', () => {
 
     await page.goto(url('/prefetch'))
     await page.waitForLoadState('networkidle')
+    await page.waitForRequest(/AsyncComponent/)
 
     const snapshot = [...requests]
     await page.click('[href="/prefetch/server-components"]')
@@ -1173,6 +1176,7 @@ describe('prefetching', () => {
     expect(await page.innerHTML('#async-server-component-count')).toBe('34')
 
     expect(requests).toEqual(snapshot)
+    await page.close()
   })
 
   it('should not prefetch certain dynamic imports by default', async () => {
