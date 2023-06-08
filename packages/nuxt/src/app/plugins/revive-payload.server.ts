@@ -10,6 +10,7 @@ const reducers = {
   EmptyRef: (data: any) => isRef(data) && !data.value && (typeof data.value === 'bigint' ? '0n' : (JSON.stringify(data.value) || '_')),
   ShallowRef: (data: any) => isRef(data) && isShallow(data) && data.value,
   ShallowReactive: (data: any) => isReactive(data) && isShallow(data) && toRaw(data),
+  Island: (data: any) => data && data?.__nuxt_island,
   Ref: (data: any) => isRef(data) && data.value,
   Reactive: (data: any) => isReactive(data) && toRaw(data)
 }

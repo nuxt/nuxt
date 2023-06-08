@@ -57,7 +57,8 @@ const NuxtServerComponent = defineComponent({
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
-    const uid = ref(getFragmentHTML(instance.vnode?.el)[0]?.match(SSR_UID_RE)?.[1] ?? getId())
+    const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
 
     const key = ref(0)
 
@@ -87,6 +88,7 @@ const NuxtServerComponent = defineComponent({
         }
         const res: NuxtIslandResponse = await nuxtApp[pKey][hashId.value]
         return {
+          __nuxt_island: `${props.name}:${hashId.value}`,
           html: res.html,
           head: {
             link: res.head.link,
@@ -104,8 +106,6 @@ const NuxtServerComponent = defineComponent({
       }
     )
 
-    useHead(() => res.data.value!.head)
-
     if (process.client) {
       watch(props, debounce(async () => {
         await res.execute()
@@ -117,6 +117,17 @@ const NuxtServerComponent = defineComponent({
         setUid()
       }, 100))
     }
+
+    if (process.client) {
+      res.data.value = res.data.value || {
+        html: ssrHTML.value,
+        head: {
+          link: [], style: []
+        }
+      }
+    }
+
+    useHead(() => res.data.value!.head)
 
     const slotProps = computed(() => {
       return getSlotProps(res.data.value!.html)
