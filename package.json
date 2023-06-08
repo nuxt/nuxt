@@ -73,7 +73,7 @@
     "jsdom": "22.1.0",
     "jsonfile": "6.1.0",
     "klaw-sync": "6.0.0",
-    "lerna": "6.6.2",
+    "lerna": "7.0.0",
     "lodash": "4.17.21",
     "node-fetch-native": "1.2.0",
     "puppeteer-core": "20.5.0",
