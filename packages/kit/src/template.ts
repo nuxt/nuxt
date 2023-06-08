@@ -38,7 +38,7 @@ export function addTypeTemplate (_template: NuxtTemplate<any>) {
 
   // Add template to types reference
   nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: template.filename })
+    references.push({ path: template.dst })
   })
 
   return template
