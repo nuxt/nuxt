@@ -42,6 +42,7 @@ export default defineComponent({
     const event = useRequestEvent()
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
+
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => {

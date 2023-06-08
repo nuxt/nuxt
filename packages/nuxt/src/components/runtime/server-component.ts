@@ -12,10 +12,10 @@ import { useAsyncData } from '#app/composables/asyncData'
 import { getFragmentHTML, getSlotProps } from '#app/components/utils'
 
 const pKey = '_islandPromises'
+const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
 const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 
 let id = 0
 const getId = process.client ? () => (id++).toString() : randomUUID
@@ -50,16 +50,16 @@ const NuxtServerComponent = defineComponent({
     }
   },
   async setup (props, { slots }) {
+    const nuxtApp = useNuxtApp()
+    const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
+    const event = useRequestEvent()
+    const mounted = ref(false)
+    onMounted(() => { mounted.value = true })
+
     const uid = ref(getFragmentHTML(instance.vnode?.el)[0]?.match(SSR_UID_RE)?.[1] ?? getId())
 
-    const nuxtApp = useNuxtApp()
-    const mounted = ref(false)
     const key = ref(0)
-    onMounted(() => { mounted.value = true })
-    const hashId = computed(() => hash([props.name, props.props, props.context]))
-
-    const event = useRequestEvent()
 
     function _fetchComponent () {
       const url = `/__nuxt_island/${props.name}:${hashId.value}`
