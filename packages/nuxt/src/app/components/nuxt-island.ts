@@ -8,7 +8,7 @@ import { randomUUID } from 'uncrypto'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp } from '#app/nuxt'
-import { useRequestEvent, useRequestFetch } from '#app/composables/ssr'
+import { useRequestEvent } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
