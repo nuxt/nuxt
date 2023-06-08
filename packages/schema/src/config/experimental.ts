@@ -103,6 +103,8 @@ export default defineUntypedSchema({
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     * 
+     * @type {boolean | undefined}
      */
     payloadExtraction: undefined,
 
