@@ -123,7 +123,7 @@ const NuxtServerComponent = defineComponent({
     })
     const availableSlots = computed(() => {
       return [...res.data.value!.html.matchAll(SLOTNAME_RE)].map(m => m[1])
-    }) 
+    })
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
