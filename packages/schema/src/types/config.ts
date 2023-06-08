@@ -125,21 +125,26 @@ export interface ViteConfig extends ViteUserConfig {
   server?: Omit<ViteServerOptions, 'port' | 'host'>
 }
 
+// add warning to try prevent non-JSON-serialisable types from being set
+type JsonSerializable = null | boolean | number | string | JsonSerializable[] | { [key: string]: JsonSerializable }
 
 // -- Runtime Config --
 
 type RuntimeConfigNamespace = Record<string, any>
 
-export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
+export interface PublicRuntimeConfig extends RuntimeConfigNamespace {
+  [key: string]: JsonSerializable
+}
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  [key: string]: JsonSerializable
   public: PublicRuntimeConfig
 }
 
 // -- App Config --
 
 export interface CustomAppConfig {
-  [key: string]: unknown
+  [key: string]: JsonSerializable | undefined
 }
 
 export interface AppConfigInput extends CustomAppConfig {
@@ -161,5 +166,5 @@ export interface NuxtAppConfig {
 }
 
 export interface AppConfig {
-  [key: string]: unknown
+  [key: string]: JsonSerializable
 }
