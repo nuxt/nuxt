@@ -70,7 +70,7 @@ export default defineUntypedSchema({
    * 
    * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
    * @experimental
-   * @type {boolean | { enabled: boolean }}
+   * @type {boolean | import('@nuxt/devtools').ModuleOptions}
    */
   devtools: false
 })

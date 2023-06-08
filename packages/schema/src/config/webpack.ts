@@ -120,6 +120,24 @@ export default defineUntypedSchema({
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
+     * 
+     * @type {
+     *  Record<
+     *    string,
+     *    string |
+     *    ((
+     *      ctx: {
+     *        nuxt: import('../src/types/nuxt').Nuxt,
+     *        options: import('../src/types/nuxt').Nuxt['options'],
+     *        name: string,
+     *        isDev: boolean,
+     *        isServer: boolean,
+     *        isClient: boolean,
+     *        alias: { [index: string]: string | false | string[] },
+     *        transpile: RegExp[]
+     *      }) => string)
+     *  >
+     * }
      */
     filenames: {
       app: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
@@ -147,11 +165,50 @@ export default defineUntypedSchema({
         }
         return val
       },
-      /** @type {typeof import('esbuild-loader')['LoaderOptions']} */
+
+      /**
+       * See https://github.com/esbuild-kit/esbuild-loader
+       * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
+      */
       esbuild: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false }
+       * ```
+       */
       file: { esModule: false },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       fontUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       imgUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://pugjs.org/api/reference.html#options
+       * @type {typeof import('pug')['Options']}
+       */
       pugPlain: {},
 
       /**
@@ -169,6 +226,7 @@ export default defineUntypedSchema({
         propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
         defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
       },
+
       css: {
         importLoaders: 0,
         url: {
@@ -176,6 +234,7 @@ export default defineUntypedSchema({
         },
         esModule: false
       },
+
       cssModules: {
         importLoaders: 0,
         url: {
@@ -186,14 +245,42 @@ export default defineUntypedSchema({
           localIdentName: '[local]_[hash:base64:5]'
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/less-loader#options
+       */
       less: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @type {typeof import('sass-loader')['Options']}
+       * 
+       * @default
+       * ```ts
+       * {
+       *   sassOptions: {
+       *     indentedSyntax: true
+       *   }
+       * }
+       * ```
+       */
       sass: {
         sassOptions: {
           indentedSyntax: true
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @type {typeof import('sass-loader')['Options']}
+       */
       scss: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/stylus-loader#options
+       */
       stylus: {},
+
       vueStyle: {}
     },
 

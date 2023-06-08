@@ -96,6 +96,8 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
+     * 
+     * @type {import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 

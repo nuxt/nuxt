@@ -44,6 +44,10 @@ export default defineBuildConfig({
     'ignore',
     'vue-loader',
     'esbuild-loader',
+    'file-loader',
+    'pug',
+    'sass-loader',
+    '@nuxt/devtools',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',
