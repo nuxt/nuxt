@@ -162,6 +162,15 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('should render correctly when loaded on a different path', async () => {
+    const page = await createPage('/proxy')
+
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+
+    await expectNoClientErrors('/proxy')
+  })
+
   it('preserves query', async () => {
     const html = await $fetch('/?test=true')
 
@@ -621,6 +630,13 @@ describe('navigate', () => {
     const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(302)
+  })
+
+  it('should not run setup function in path redirected to', async () => {
+    const { headers, status } = await fetch('/navigate-to-error', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/setup-should-not-run')
     expect(status).toEqual(302)
   })
 
