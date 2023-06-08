@@ -8,7 +8,7 @@ import { randomUUID } from 'uncrypto'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp } from '#app/nuxt'
-import { useRequestEvent } from '#app/composables/ssr'
+import { useRequestEvent, useRequestFetch } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
@@ -41,6 +41,7 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const mounted = ref(false)
+    const internalFetch = useRequestFetch()
     onMounted(() => { mounted.value = true })
 
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
@@ -78,13 +79,26 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const result = await $fetch<NuxtIslandResponse>(url, {
+      const result = await internalFetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
         }
       })
-      nuxtApp.payload.data[key] = { __nuxt_island: key, ...result }
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...process.env.prerender
+            ? {}
+            : {
+                params: {
+                  ...props.context,
+                  props: props.props ? JSON.stringify(props.props) : undefined
+                }
+              }
+        },
+        ...result
+      }
       return result
     }
     const key = ref(0)

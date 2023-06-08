@@ -1170,6 +1170,8 @@ describe('prefetching', () => {
     await page.click('[href="/prefetch/server-components"]')
     await page.waitForLoadState('networkidle')
 
+    expect(await page.innerHTML('#async-server-component-count')).toBe('34')
+
     expect(requests).toEqual(snapshot)
   })
 

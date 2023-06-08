@@ -10,10 +10,10 @@ const revivers = {
   EmptyRef: (data: any) => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : JSON.parse(data)),
   ShallowRef: (data: any) => shallowRef(data),
   ShallowReactive: (data: any) => shallowReactive(data),
-  Island: (key: any) => {
+  Island: ({ key, params }: any) => {
     const nuxtApp = useNuxtApp()
     nuxtApp.payload.data[key] = nuxtApp.payload.data[key] ||
-      useAsyncData(key, () => $fetch(`/__nuxt_island/${key}`), { immediate: !nuxtApp.isHydrating })
+      useAsyncData(key, () => $fetch(`/__nuxt_island/${key}`, params ? { params } : {}), { immediate: !nuxtApp.isHydrating })
     return null
   },
   Ref: (data: any) => ref(data),
