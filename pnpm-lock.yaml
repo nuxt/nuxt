@@ -1334,19 +1334,6 @@ packages:
       '@babel/core': 7.21.4
       '@babel/helper-plugin-utils': 7.20.2
 
-  /@babel/plugin-transform-typescript@7.21.0(@babel/core@7.21.4):
-    resolution: {integrity: sha512-xo///XTPp3mDzTtrqXoBlK9eiAYW3wv9JXglcn/u1bi60RW11dEUxIgA8cbnDhutS1zacjMRmAwxE0gMklLnZg==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0-0
-    dependencies:
-      '@babel/core': 7.21.4
-      '@babel/helper-create-class-features-plugin': 7.21.0(@babel/core@7.21.4)
-      '@babel/helper-plugin-utils': 7.20.2
-      '@babel/plugin-syntax-typescript': 7.20.0(@babel/core@7.21.4)
-    transitivePeerDependencies:
-      - supports-color
-
   /@babel/plugin-transform-typescript@7.21.3(@babel/core@7.21.4):
     resolution: {integrity: sha512-RQxPz6Iqt8T0uw/WsJNReuBpWpBqs/n7mNo18sKLoTbMp+UrEekhH+pKSVC7gWz+DNjo9gryfV8YzCiT45RgMw==}
     engines: {node: '>=6.9.0'}
@@ -1360,7 +1347,6 @@ packages:
       '@babel/plugin-syntax-typescript': 7.20.0(@babel/core@7.21.4)
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/standalone@7.21.3:
     resolution: {integrity: sha512-c8feJERTAHlBEvihQUWrnUMLg2GzrwSnE76WDyN3fRJWju10pHeRy8r3wniIq0q7zPLhHd71PQtFVsn1H+Qscw==}
@@ -2488,7 +2474,7 @@ packages:
       '@types/node': 18.16.16
       '@types/node-sass': 4.11.3
       '@types/webpack': 4.41.33
-      sass: 1.63.2
+      sass: 1.62.1
     dev: true
 
   /@types/semver@7.5.0:
@@ -2768,7 +2754,7 @@ packages:
       vue: ^3.0.0
     dependencies:
       '@babel/core': 7.21.4
-      '@babel/plugin-transform-typescript': 7.21.0(@babel/core@7.21.4)
+      '@babel/plugin-transform-typescript': 7.21.3(@babel/core@7.21.4)
       '@vue/babel-plugin-jsx': 1.1.1(@babel/core@7.21.4)
       vite: 4.3.9(@types/node@18.16.16)
       vue: 3.3.4
@@ -8509,8 +8495,8 @@ packages:
   /safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  /sass@1.63.2:
-    resolution: {integrity: sha512-u56TU0AIFqMtauKl/OJ1AeFsXqRHkgO7nCWmHaDwfxDo9GUMSqBA4NEh6GMuh1CYVM7zuROYtZrHzPc2ixK+ww==}
+  /sass@1.62.1:
+    resolution: {integrity: sha512-NHpxIzN29MXvWiuswfc1W3I0N8SXBd8UR26WntmDlRYf0bSADnwnOjsyMZ3lMezSlArD33Vs3YFhp7dWvL770A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:
