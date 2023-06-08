@@ -64,7 +64,7 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'runtimeConfig'>> {
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
-  runtimeConfig?: Overrideable<RuntimeConfig>
+  runtimeConfig?: Overrideable<RuntimeConfigInput>
 
   /**
    * Experimental custom config schema
@@ -125,26 +125,28 @@ export interface ViteConfig extends ViteUserConfig {
   server?: Omit<ViteServerOptions, 'port' | 'host'>
 }
 
-// add warning to try prevent non-JSON-serialisable types from being set
-type JsonSerializable = null | boolean | number | string | JsonSerializable[] | { [key: string]: JsonSerializable }
+// add warning to try prevent non-serializable types from being set
+type SerializableValues =  null | boolean | number | string | SerializableValues[] | { [key: string]: SerializableValues } | undefined | Function
 
 // -- Runtime Config --
 
 type RuntimeConfigNamespace = Record<string, any>
 
-export interface PublicRuntimeConfig extends RuntimeConfigNamespace {
-  [key: string]: JsonSerializable
+export interface RuntimeConfigInput {
+  public: PublicRuntimeConfig
+
+  [key: string]: SerializableValues
 }
 
+export interface PublicRuntimeConfig extends RuntimeConfigNamespace {}
+
 export interface RuntimeConfig extends RuntimeConfigNamespace {
-  [key: string]: JsonSerializable
   public: PublicRuntimeConfig
 }
 
 // -- App Config --
 
 export interface CustomAppConfig {
-  [key: string]: JsonSerializable | undefined
 }
 
 export interface AppConfigInput extends CustomAppConfig {
@@ -156,6 +158,8 @@ export interface AppConfigInput extends CustomAppConfig {
   nitro?: never
   /** @deprecated reserved */
   server?: never
+
+  [key: string]: SerializableValues
 }
 
 export interface NuxtAppConfig {
@@ -166,5 +170,5 @@ export interface NuxtAppConfig {
 }
 
 export interface AppConfig {
-  [key: string]: JsonSerializable
+  [key: string]: unknown
 }
