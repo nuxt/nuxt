@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { Nuxt, NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { tryUseNuxt, useNuxt } from './context'
 
 /**
@@ -14,7 +14,8 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same filename
-  removeTemplateDuplicates(nuxt, template.filename)
+  nuxt.options.build.templates = nuxt.options.build.templates
+    .filter(p => normalizeTemplate(p).filename !== template.filename)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -26,20 +27,14 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
  * Renders given types using lodash template during build into the project buildDir
  * and register them as types.
  */
-export function addTypes (_template: NuxtTemplate<any>) {
+export function addTypeTemplate (_template: NuxtTemplate<any>) {
   const nuxt = useNuxt()
 
-  // Normalize template
-  const template = normalizeTemplate(_template)
+  const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid types. Filename must end with .d.ts : "${template.filename}"`)
+    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
   }
-  // Remove any existing template with the same filename
-  removeTemplateDuplicates(nuxt, template.filename)
-
-  // Add to templates array
-  nuxt.options.build.templates.push(template)
 
   // Add template to types reference
   nuxt.hook('prepare:types', ({ references }) => {
@@ -47,11 +42,6 @@ export function addTypes (_template: NuxtTemplate<any>) {
   })
 
   return template
-}
-
-function removeTemplateDuplicates (nuxt: Nuxt, filename: string) {
-  nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== filename)
 }
 
 /**
