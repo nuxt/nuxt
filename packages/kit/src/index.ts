@@ -1,6 +1,7 @@
 // Module
 export * from './module/define'
 export * from './module/install'
+export * from './module/compatibility'
 
 // Loader
 export * from './loader/config'

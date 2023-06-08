@@ -122,6 +122,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
     ssrContext!.payload = {
+      path: ssrContext.event.path,
       _errors: {},
       serverRendered: false,
       data: {},
@@ -246,19 +247,17 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
+    // We use error to bypass full render if we have an early response we can make
+    if (ssrContext._renderResponse && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   })
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
   if (ssrContext._renderResponse) { return ssrContext._renderResponse }
-
-  if (event.node.res.headersSent || event.node.res.writableEnded) {
-    // @ts-expect-error TODO: handle additional cases
-    return
-  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {

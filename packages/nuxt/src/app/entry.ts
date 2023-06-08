@@ -41,6 +41,7 @@ if (process.server) {
       await nuxt.hooks.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
+    if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
     return vueApp
   }
