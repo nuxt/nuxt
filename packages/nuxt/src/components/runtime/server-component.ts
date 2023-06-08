@@ -18,7 +18,7 @@ const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>((
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 
 let id = 0
-const getId = process.client ? () => (id++).toString() : randomUUID
+const getId = process.client ? () => (id--).toString() : randomUUID
 
 export const createServerComponent = (name: string) => {
   return defineComponent({
@@ -123,7 +123,7 @@ const NuxtServerComponent = defineComponent({
     })
     const availableSlots = computed(() => {
       return [...res.data.value!.html.matchAll(SLOTNAME_RE)].map(m => m[1])
-    })
+    }) 
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
