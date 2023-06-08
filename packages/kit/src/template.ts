@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { tryUseNuxt, useNuxt } from './context'
 
 /**
@@ -13,36 +13,45 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
-  // Validate the type filename.
-  if (template.isType === true) {
-    if (!template.filename.endsWith('.d.ts')) {
-      throw new Error(
-        `Invalid types. Filename must end with .d.ts : "${template.filename}"`
-      )
-    }
-  }
-
   // Remove any existing template with the same filename
-  nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+  removeTemplateDuplicates(nuxt, template.filename)
+
+  // Add to templates array
+  nuxt.options.build.templates.push(template)
+
+  return template
+}
+
+/**
+ * Renders given types using lodash template during build into the project buildDir
+ * and register them as types.
+ */
+export function addTypes (_template: NuxtTemplate<any>) {
+  const nuxt = useNuxt()
+
+  // Normalize template
+  const template = normalizeTemplate(_template)
+
+  if (!template.filename.endsWith('.d.ts')) {
+    throw new Error(`Invalid types. Filename must end with .d.ts : "${template.filename}"`)
+  }
+  // Remove any existing template with the same filename
+  removeTemplateDuplicates(nuxt, template.filename)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
 
   // Add template to types reference
-  if (template.isType === true) {
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: template.filename })
-    })
-  }
+  nuxt.hook('prepare:types', ({ references }) => {
+    references.push({ path: template.filename })
+  })
+
   return template
 }
 
-/**
- * Add types.
- */
-export function addTypes (_template: NuxtTemplate<any>) {
-  return addTemplate({ ..._template, isType: true })
+function removeTemplateDuplicates (nuxt: Nuxt, filename: string) {
+  nuxt.options.build.templates = nuxt.options.build.templates
+    .filter(p => normalizeTemplate(p).filename !== filename)
 }
 
 /**

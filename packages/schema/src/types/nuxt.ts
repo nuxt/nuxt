@@ -40,8 +40,6 @@ export interface NuxtTemplate<Options = Record<string, any>> {
   getContents?: (data: Options) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
-  /** Register this template as types */
-  isType?: boolean
 }
 
 export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends NuxtTemplate<Options> {
