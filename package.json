@@ -18,7 +18,7 @@
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*/",
     "dev": "jiti ./scripts/dev.js",
-    "postinstall": "lerna link && yarn dev",
+    "postinstall": "yarn dev",
     "lint": "eslint --ext .js,.mjs,.vue,.ts .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/vue-app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
     "ls-lint": "npx @ls-lint/ls-lint",
