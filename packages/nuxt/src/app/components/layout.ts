@@ -1,5 +1,5 @@
 import type { Ref, VNode } from 'vue'
-import { Suspense, Transition, computed, defineAsyncComponent, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
@@ -18,7 +18,7 @@ const LayoutLoader = defineComponent({
     name: String,
     ...process.dev ? { hasTransition: Boolean } : {}
   },
-  setup (props, context) {
+  async setup (props, context) {
     let vnode: VNode
 
     if (process.dev && process.client) {
@@ -31,18 +31,15 @@ const LayoutLoader = defineComponent({
       })
     }
 
-    const LayoutComponent = defineAsyncComponent(layouts[props.name])
+    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
-    return () => h(Suspense, { suspensible: true }, {
-      default: () => {
-        const node = h(LayoutComponent, context.attrs, context.slots)
-        if (process.dev && process.client && props.hasTransition) {
-          vnode = node
-        }
-        return node
-      },
-      fallback: () => h('div')
-    })
+    return () => {
+      if (process.dev && process.client && props.hasTransition) {
+        vnode = h(LayoutComponent, context.attrs, context.slots)
+        return vnode
+      }
+      return h(LayoutComponent, context.attrs, context.slots)
+    }
   }
 })
 export default defineComponent({
@@ -81,14 +78,16 @@ export default defineComponent({
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
-      return _wrapIf(Transition, hasLayout && transitionProps,
-        _wrapIf(LayoutLoader, hasLayout && {
-          key: layout.value,
-          name: layout.value,
-          ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-          ...context.attrs
-        }, context.slots)
-      ).default()
+      return _wrapIf(Transition, hasLayout && transitionProps, {
+        default: () => h(Suspense, { suspensible: true }, {
+          default: () => _wrapIf(LayoutLoader, hasLayout && {
+            key: layout.value,
+            name: layout.value,
+            ...(process.dev ? { hasTransition: !!transitionProps } : {}),
+            ...context.attrs
+          }, context.slots).default()
+        })
+      }).default()
     }
   }
 })
