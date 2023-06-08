@@ -27,16 +27,18 @@ export function esbuild (ctx: WebpackConfigContext) {
         fullySpecified: false
       },
       options: {
-        loader: 'ts',
-        target
+        target,
+        ...ctx.nuxt.options.webpack.loaders.esbuild,
+        loader: 'ts'
       }
     },
     {
       test: /\.m?[jt]sx$/,
       loader: 'esbuild-loader',
       options: {
-        loader: 'tsx',
-        target
+        target,
+        ...ctx.nuxt.options.webpack.loaders.esbuild,
+        loader: 'tsx'
       }
     }
   )

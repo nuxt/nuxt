@@ -39,7 +39,9 @@ function baseConfig (ctx: WebpackConfigContext) {
       ...options.webpack.optimization,
       minimizer: []
     },
-    experiments: {},
+    experiments: {
+      ...options.webpack.experiments
+    },
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),

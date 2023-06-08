@@ -33,14 +33,10 @@ export default async (ssrContext) => {
 }
 
 function createRunner () {
-  const _importers = new Map()
   return new ViteNodeRunner({
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
-    resolveId (id, importer) { _importers.set(id, importer) },
     async fetchModule (id) {
-      const importer = _importers.get(id)
-      _importers.delete(id)
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
       return await viteNodeFetch('/module/' + encodeURI(id)).catch((err) => {
         const errorData = err?.data?.data
@@ -49,7 +45,7 @@ function createRunner () {
         }
         let _err
         try {
-          const { message, stack } = formatViteError(errorData, id, importer)
+          const { message, stack } = formatViteError(errorData, id)
           _err = createError({
             statusMessage: 'Vite Error',
             message,
@@ -76,7 +72,7 @@ function createRunner () {
  * @param id {string}
  * @param importer {string}
  */
-function formatViteError (errorData, id, importer) {
+function formatViteError (errorData, id) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
 
@@ -99,7 +95,7 @@ function formatViteError (errorData, id, importer) {
 
   const stack = [
     message,
-    `at ${loc} ${importer ? `(imported from ${importer})` : ''}`,
+    `at ${loc}`,
     errorData.stack
   ].filter(Boolean).join('\n')
 
