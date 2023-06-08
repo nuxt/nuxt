@@ -44,6 +44,9 @@ export default defineBuildConfig({
     'ignore',
     'vue-loader',
     'esbuild-loader',
+    'file-loader',
+    'pug',
+    'sass-loader',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',
