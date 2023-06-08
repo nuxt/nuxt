@@ -41,7 +41,6 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const mounted = ref(false)
-    const internalFetch = useRequestFetch()
     onMounted(() => { mounted.value = true })
 
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
@@ -79,7 +78,7 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const result = await internalFetch<NuxtIslandResponse>(url, {
+      const result = await $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
