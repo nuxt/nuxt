@@ -46,6 +46,7 @@ export type NuxtLinkProps = {
   ariaCurrentValue?: string
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 

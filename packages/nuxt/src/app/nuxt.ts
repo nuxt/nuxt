@@ -5,7 +5,7 @@ import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
-import type { SSRContext } from 'vue-bundle-renderer/runtime'
+import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
@@ -29,7 +29,7 @@ type NuxtMeta = {
 
 type HookResult = Promise<void> | void
 
-type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'] }
+type AppRenderedContext = { ssrContext: NuxtApp['ssrContext'], renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
 export interface RuntimeNuxtHooks {
   'app:created': (app: App<Element>) => HookResult
   'app:beforeMount': (app: App<Element>) => HookResult
@@ -121,6 +121,7 @@ interface _NuxtApp {
 
   ssrContext?: NuxtSSRContext
   payload: {
+    path?: string
     serverRendered?: boolean
     prerenderedAt?: number
     data: Record<string, any>
@@ -257,13 +258,13 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
   if (process.server) {
-    // Expose nuxt to the renderContext
     if (nuxtApp.ssrContext) {
+      // Expose nuxt to the renderContext
       nuxtApp.ssrContext.nuxt = nuxtApp
-    }
-    // Expose payload types
-    if (nuxtApp.ssrContext) {
+      // Expose payload types
       nuxtApp.ssrContext._payloadReducers = {}
+      // Expose current path
+      nuxtApp.payload.path = nuxtApp.ssrContext.event.path
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
@@ -382,10 +383,12 @@ const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
   post: 20
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
   return defineNuxtPlugin(plugin, { order: -40 })
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
   if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
 
@@ -434,6 +437,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  */
@@ -456,6 +460,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (): RuntimeConfig {
   return useNuxtApp().$config
 }
