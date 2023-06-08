@@ -68,19 +68,24 @@ export default defineComponent({
       return getSlotProps(ssrHTML.value)
     })
 
-    function _fetchComponent () {
-      const url = `/__nuxt_island/${props.name}:${hashId.value}`
+    async function _fetchComponent () {
+      const key = `${props.name}:${hashId.value}`
+      if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+
+      const url = `/__nuxt_island/${key}`
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      return $fetch<NuxtIslandResponse>(url, {
+      const result = await $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
         }
       })
+      nuxtApp.payload.data[key] = { __nuxt_island: key, ...result }
+      return result
     }
     const key = ref(0)
     async function fetchComponent () {
