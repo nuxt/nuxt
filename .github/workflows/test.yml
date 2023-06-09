@@ -7,6 +7,15 @@ on:
   pull_request:
     branches:
       - 2.x
+      - "!v[0-9]*"
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   setup:
@@ -296,6 +305,8 @@ jobs:
     needs: build
 
   release-commit:
+    permissions:
+      id-token: write
     if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
     runs-on: ${{ matrix.os }}
     strategy:
@@ -340,4 +351,5 @@ jobs:
         env:
           ref: ${{ github.ref }}
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
     needs: [lint-app, test-dev, test-unit, test-e2e]
