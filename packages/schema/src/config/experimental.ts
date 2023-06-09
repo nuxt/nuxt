@@ -12,6 +12,10 @@ export default defineUntypedSchema({
     /**
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     * 
+     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be 
+     * removed from core in Vue 3.4.
+     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
      */
     reactivityTransform: false,
 
