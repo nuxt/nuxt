@@ -20,7 +20,7 @@ describe('postcss configuration as function', () => {
       const window = await nuxt.server.renderAndGetWindow(url(path))
 
       const headHtml = window.document.head.innerHTML
-      expect(headHtml.replace(/[ \n]+/g, '').replace(/;}/g, '}')).toContain('div.red{background-color:blue}.red{color:red}')
+      expect(headHtml.replace(/\s+/g, '').replace(/;}/g, '}')).toContain('div.red{background-color:blue}.red{color:red}')
 
       const element = window.document.querySelector('.red')
       expect(element).not.toBe(null)
