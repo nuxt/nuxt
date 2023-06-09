@@ -64,13 +64,13 @@ export default defineUntypedSchema({
 
   /**
    * Enable Nuxt DevTools for development.
-   * 
+   *
    * This is an experimental feature.
    * Breaking changes for devtools might not reflect on the version of Nuxt.
-   * 
+   *
    * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
    * @experimental
-   * @type {boolean | { enabled: boolean }}
+   * @type {boolean | { enabled: boolean, [key: string]: any }}
    */
   devtools: false
 })
