@@ -154,7 +154,7 @@ export default class PostcssConfig {
    * @param postcssOptions
    * @returns {{ postcssOptions: { plugins?: unknown, order?: string, preset?: any} }}
    */
-  normalize (postcssOptions) {
+  normalize (postcssOptions, warnAboutTopLevelDeprecation = true) {
     // TODO: Remove in Nuxt 3
     if (Array.isArray(postcssOptions)) {
       consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
@@ -168,12 +168,19 @@ export default class PostcssConfig {
       return { postcssOptions: {} }
     }
     if (postcssOptions.postcssOptions && typeof postcssOptions.postcssOptions === 'function') {
-      consola.warn('Using a Function as `build.postcss.postcssOptions` is not yet supported in Nuxt 2.16.2')
-      return { postcssOptions: {} }
+      const postcssOptionsFn = postcssOptions.postcssOptions
+      return {
+        postcssOptions: (loaderContext) => {
+          const result = this.normalize(postcssOptionsFn(loaderContext), false)
+          if (result) {
+            return result.postcssOptions
+          }
+        }
+      }
     }
     if (!('postcssOptions' in postcssOptions)) {
-      if (Object.keys(postcssOptions).length > 0) {
-        consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move' +
+      if (Object.keys(postcssOptions).length > 0 && warnAboutTopLevelDeprecation) {
+        consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move ' +
           'the settings to `postcss.postcssOptions`')
       }
       postcssOptions = { postcssOptions }
@@ -211,7 +218,7 @@ export default class PostcssConfig {
 
   /**
    * Load plugins from postcssOptions
-   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function}}} postcssOptions
+   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function }}} postcssOptions
    */
   loadPlugins (postcssOptions) {
     const { plugins, order } = postcssOptions.postcssOptions
@@ -252,7 +259,7 @@ export default class PostcssConfig {
 
     if (Array.isArray(postcssOptions.postcssOptions.plugins)) {
       defaults(postcssOptions.postcssOptions.plugins, this.defaultPostcssOptions.plugins)
-    } else {
+    } else if (typeof postcssOptions.postcssOptions !== 'function') {
       // Merge all plugins and use preset for setting up postcss-preset-env
       if (postcssOptions.postcssOptions.preset) {
         if (!postcssOptions.postcssOptions.plugins) {
