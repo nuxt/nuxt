@@ -54,7 +54,7 @@
     "postcss-import-resolver": "^2.0.0",
     "std-env": "^3.3.3",
     "ufo": "^1.1.2",
-    "unimport": "^3.0.7",
+    "unimport": "^3.0.8",
     "untyped": "^1.3.2"
   },
   "engines": {
