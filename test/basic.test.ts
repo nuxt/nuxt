@@ -1562,6 +1562,19 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
   })
+
+  it('requests status can be used', async () => {
+    const html = await $fetch('/useAsyncData/status')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+
+    const page = await createPage('/useAsyncData/status')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#status5-values').textContent()).toContain('idle,pending,success')
+
+    await page.close()
+  })
 })
 
 describe.runIf(isDev())('component testing', () => {
