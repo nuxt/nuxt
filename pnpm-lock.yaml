@@ -102,8 +102,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       playwright:
-        specifier: 1.34.3
-        version: 1.34.3
+        specifier: 1.35.0
+        version: 1.35.0
       rimraf:
         specifier: 5.0.1
         version: 5.0.1
@@ -124,7 +124,7 @@ importers:
         version: 4.3.9(@types/node@18.16.16)
       vitest:
         specifier: 0.32.0
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -183,8 +183,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       unimport:
-        specifier: ^3.0.7
-        version: 3.0.7(rollup@3.21.8)
+        specifier: ^3.0.8
+        version: 3.0.8(rollup@3.21.8)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -212,7 +212,7 @@ importers:
         version: 4.3.9(@types/node@18.16.16)
       vitest:
         specifier: 0.32.0
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
       webpack:
         specifier: 5.86.0
         version: 5.86.0
@@ -449,8 +449,8 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1
       unimport:
-        specifier: ^3.0.7
-        version: 3.0.7(rollup@3.21.8)
+        specifier: ^3.0.8
+        version: 3.0.8(rollup@3.21.8)
       unplugin:
         specifier: ^1.3.1
         version: 1.3.1
@@ -499,7 +499,7 @@ importers:
         version: 4.3.9(@types/node@18.16.16)
       vitest:
         specifier: 0.32.0
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
 
   packages/schema:
     dependencies:
@@ -525,8 +525,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2
       unimport:
-        specifier: ^3.0.7
-        version: 3.0.7(rollup@3.21.8)
+        specifier: ^3.0.8
+        version: 3.0.8(rollup@3.21.8)
       untyped:
         specifier: ^1.3.2
         version: 1.3.2
@@ -626,14 +626,14 @@ importers:
         specifier: 29.5.0
         version: 29.5.0
       playwright:
-        specifier: 1.34.3
-        version: 1.34.3
+        specifier: 1.35.0
+        version: 1.35.0
       unbuild:
         specifier: latest
         version: 1.2.1
       vitest:
         specifier: 0.32.0
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
 
   packages/vite:
     dependencies:
@@ -936,7 +936,7 @@ importers:
         version: 1.3.1
       vitest:
         specifier: latest
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
       vue-router:
         specifier: latest
         version: 4.2.2(vue@3.3.4)
@@ -955,7 +955,7 @@ importers:
         version: 1.3.1
       vitest:
         specifier: latest
-        version: 0.32.0(playwright@1.34.3)
+        version: 0.32.0(playwright@1.35.0)
       vue-router:
         specifier: latest
         version: 4.2.2(vue@3.3.4)
@@ -6311,7 +6311,7 @@ packages:
       std-env: 3.3.3
       ufo: 1.1.2
       unenv: 1.5.1
-      unimport: 3.0.7(rollup@3.21.8)
+      unimport: 3.0.8(rollup@3.21.8)
       unstorage: 1.6.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -6721,19 +6721,19 @@ packages:
       mlly: 1.3.0
       pathe: 1.1.1
 
-  /playwright-core@1.34.3:
-    resolution: {integrity: sha512-2pWd6G7OHKemc5x1r1rp8aQcpvDh7goMBZlJv6Co5vCNLVcQJdhxRL09SGaY6HcyHH9aT4tiynZabMofVasBYw==}
-    engines: {node: '>=14'}
+  /playwright-core@1.35.0:
+    resolution: {integrity: sha512-muMXyPmIx/2DPrCHOD1H1ePT01o7OdKxKj2ebmCAYvqhUy+Y1bpal7B0rdoxros7YrXI294JT/DWw2LqyiqTPA==}
+    engines: {node: '>=16'}
     hasBin: true
     dev: true
 
-  /playwright@1.34.3:
-    resolution: {integrity: sha512-UOOVE4ZbGfGkP1KVqWTdXOmm8Pw2pBhfbmlqKMkpiRCQjL5W+J+xRQXpgutFr0iM4pWl8g0GyyASMsqjQfFohw==}
-    engines: {node: '>=14'}
+  /playwright@1.35.0:
+    resolution: {integrity: sha512-xhFhsoBmKPQfj3dM+HbIiFVlqRCZp2rwdJd/QFd9YBuidabo3TkVv0iuxPQ4vZoMwtSI7qzjY93f5ohdC97hww==}
+    engines: {node: '>=16'}
     hasBin: true
     requiresBuild: true
     dependencies:
-      playwright-core: 1.34.3
+      playwright-core: 1.35.0
     dev: true
 
   /pluralize@8.0.0:
@@ -8252,8 +8252,8 @@ packages:
       hookable: 5.5.3
     dev: false
 
-  /unimport@3.0.7(rollup@3.21.8):
-    resolution: {integrity: sha512-2dVQUxJEGcrSZ0U4qtwJVODrlfyGcwmIOoHVqbAFFUx7kPoEN5JWr1cZFhLwoAwTmZOvqAm3YIkzv1engIQocg==}
+  /unimport@3.0.8(rollup@3.21.8):
+    resolution: {integrity: sha512-AOt6xj3QMwqcTZRPB+NhFkyVEjCKnpTVoPm5x6424zz2NYYtCfym2bpJofzPHIJKPNIh5ko2/t2q46ZIMgdmbw==}
     dependencies:
       '@rollup/pluginutils': 5.0.2(rollup@3.21.8)
       escape-string-regexp: 5.0.0
@@ -8526,7 +8526,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest@0.32.0(playwright@1.34.3):
+  /vitest@0.32.0(playwright@1.35.0):
     resolution: {integrity: sha512-SW83o629gCqnV3BqBnTxhB10DAwzwEx3z+rqYZESehUB+eWsJxwcBQx7CKy0otuGMJTYh7qCVuUX23HkftGl/Q==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -8575,7 +8575,7 @@ packages:
       magic-string: 0.30.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      playwright: 1.34.3
+      playwright: 1.35.0
       std-env: 3.3.3
       strip-literal: 1.0.1
       tinybench: 2.5.0
