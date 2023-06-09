@@ -1,3 +1,5 @@
+import { addTypeTemplate } from 'nuxt/kit'
+
 export default defineNuxtConfig({
   experimental: {
     typedPages: true
@@ -33,6 +35,12 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    function () {
+      addTypeTemplate({
+        filename: 'test.d.ts',
+        getContents: () => 'declare type Fromage = "cheese"'
+      })
+    },
     './modules/test',
     [
       '~/modules/example',
