@@ -154,7 +154,7 @@ export default class PostcssConfig {
    * @param postcssOptions
    * @returns {{ postcssOptions: { plugins?: unknown, order?: string, preset?: any} }}
    */
-  normalize (postcssOptions) {
+  normalize (postcssOptions, warnAboutTopLevelDeprecation = true) {
     // TODO: Remove in Nuxt 3
     if (Array.isArray(postcssOptions)) {
       consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
@@ -171,7 +171,7 @@ export default class PostcssConfig {
       const postcssOptionsFn = postcssOptions.postcssOptions
       return {
         postcssOptions: (loaderContext) => {
-          const result = this.normalize(postcssOptionsFn(loaderContext))
+          const result = this.normalize(postcssOptionsFn(loaderContext), false)
           if (result) {
             return result.postcssOptions
           }
@@ -179,8 +179,8 @@ export default class PostcssConfig {
       }
     }
     if (!('postcssOptions' in postcssOptions)) {
-      if (Object.keys(postcssOptions).length > 0) {
-        consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move' +
+      if (Object.keys(postcssOptions).length > 0 && warnAboutTopLevelDeprecation) {
+        consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move ' +
           'the settings to `postcss.postcssOptions`')
       }
       postcssOptions = { postcssOptions }
