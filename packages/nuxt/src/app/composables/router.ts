@@ -2,7 +2,7 @@ import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vu
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, joinURL, parseURL } from 'ufo'
+import { hasProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
@@ -113,7 +113,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     to = '/'
   }
 
-  const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
+  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
 
   // Early open handler
   if (options?.open) {

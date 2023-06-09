@@ -732,7 +732,7 @@ describe('navigate external', () => {
   it('should redirect to example.com', async () => {
     const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
 
-    expect(headers.get('location')).toEqual('https://example.com/')
+    expect(headers.get('location')).toEqual('https://example.com/?redirect=false#test')
   })
 
   it('should redirect to api endpoint', async () => {
