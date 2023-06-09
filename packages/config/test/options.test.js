@@ -116,7 +116,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 
@@ -130,7 +131,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 

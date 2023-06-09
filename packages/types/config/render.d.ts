@@ -34,6 +34,7 @@ interface CspOptions {
   addMeta?: boolean
   allowedSources?: string[]
   hashAlgorithm?: string
+  generateNonce?: boolean
   policies?: Partial<Record<CspPolicyName, string[]>>
   reportOnly?: boolean
   unsafeInlineCompatibility?: boolean

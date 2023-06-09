@@ -217,6 +217,26 @@ describe('basic ssr csp', () => {
       }
     )
 
+    test('Contain nonce on ssr links and scripts', async () => {
+      nuxt = await startCspServer({
+        generateNonce: true
+      })
+
+      const { body, headers } = await rp(url('/stateless'))
+
+      expect(headers[cspHeader]).toMatch(/script-src .* 'nonce-.*'/)
+
+      const nonceValue = headers[cspHeader].match(/'nonce-(.*?)'/)[1]
+
+      for (const link of body.match(/<link[^>]+?>/g)) {
+        expect(link).toContain(`nonce="${nonceValue}"`)
+      }
+
+      for (const script of body.match(/<script[^>]+?>/g)) {
+        expect(script).toContain(`nonce="${nonceValue}"`)
+      }
+    })
+
     // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
     test(
       'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
