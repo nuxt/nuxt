@@ -21,7 +21,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  addAttrs (tags, referenceTag, referenceAttr) {
+  addAttrs (renderContext, tags, referenceTag, referenceAttr) {
     const reference = referenceTag ? `<${referenceTag}` : referenceAttr
     if (!reference) {
       return tags
@@ -35,15 +35,23 @@ export default class SSRRenderer extends BaseRenderer {
       )
     }
 
+    const { req } = renderContext
+    if (req && typeof req.__nonce_value__ === 'string') {
+      tags = tags.replace(
+        new RegExp(reference, 'g'),
+        `${reference} nonce="${req.__nonce_value__}"`
+      )
+    }
+
     return tags
   }
 
   renderResourceHints (renderContext) {
-    return this.addAttrs(renderContext.renderResourceHints(), null, 'rel="preload"')
+    return this.addAttrs(renderContext, renderContext.renderResourceHints(), null, 'rel="preload"')
   }
 
   renderScripts (renderContext) {
-    let renderedScripts = this.addAttrs(renderContext.renderScripts(), 'script')
+    let renderedScripts = this.addAttrs(renderContext, renderContext.renderScripts(), 'script')
     if (this.options.render.asyncScripts) {
       renderedScripts = renderedScripts.replace(/defer>/g, 'defer async>')
     }
@@ -51,7 +59,7 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderStyles (renderContext) {
-    return this.addAttrs(renderContext.renderStyles(), 'link')
+    return this.addAttrs(renderContext, renderContext.renderStyles(), 'link')
   }
 
   getPreloadFiles (renderContext) {
@@ -152,6 +160,12 @@ export default class SSRRenderer extends BaseRenderer {
         meta.noscript.text()
     }
 
+    const { csp } = this.options.render
+    const { req = {} } = renderContext
+    if (csp && csp.generateNonce === true) {
+      req.__nonce_value__ = crypto.randomBytes(32).toString('hex')
+    }
+
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
 
@@ -178,7 +192,6 @@ export default class SSRRenderer extends BaseRenderer {
       }
     }
 
-    const { csp } = this.options.render
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
@@ -255,6 +268,10 @@ export default class SSRRenderer extends BaseRenderer {
           hash.update(script)
           cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
         }
+      }
+
+      if (req.__nonce_value__) {
+        cspScriptSrcHashes.push(`'nonce-${req.__nonce_value__}'`)
       }
 
       // Call ssr:csp hook
