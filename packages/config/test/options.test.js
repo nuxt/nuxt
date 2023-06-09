@@ -26,14 +26,16 @@ describe('config: options', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
     jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
-    expect(getNuxtConfig({
+    const config = getNuxtConfig({
       createRequire: jest.fn(),
       generate: {
         staticAssets: {
           version: 'x'
         }
       }
-    })).toMatchSnapshot()
+    })
+    config.buildModules = config.buildModules.filter(p => p.name !== 'patchMD4')
+    expect(config).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
@@ -114,7 +116,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 
@@ -128,7 +131,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 
@@ -294,7 +298,7 @@ describe('config: options', () => {
       const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
       expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
       expect(config.devModules).toBe(undefined)
-      expect(config.buildModules).toEqual(['bar', 'foo'])
+      expect(config.buildModules.filter(p => p.name !== 'patchMD4')).toEqual(['bar', 'foo'])
     })
 
     test('should deprecate build.extractCSS.allChunks', () => {

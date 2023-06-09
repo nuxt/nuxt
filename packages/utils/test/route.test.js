@@ -1,4 +1,4 @@
-import { flatRoutes, createRoutes, guardDir, promisifyRoute } from '../src/route'
+import { flatRoutes, createRoutes, guardDir, promisifyRoute, sortRoutes } from '../src/route'
 
 describe('util: route', () => {
   test('should flat route with path', () => {
@@ -212,7 +212,8 @@ describe('util: route', () => {
       'pages/another_route/_id.vue',
       'pages/parent/index.vue',
       'pages/parent/child/index.vue',
-      'pages/parent/child/test.vue'
+      'pages/parent/child/test.vue',
+      'pages/parent/_.vue'
     ]
     const srcDir = '/some/nuxt/app'
     const pagesDir = 'pages'
@@ -235,6 +236,111 @@ describe('util: route', () => {
     test.posix('createRoutes should remove trailing slashes when configured to', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: false })
       expect(routesResult).toMatchSnapshot()
+    })
+  })
+
+  describe('util: route sortRoutes', () => {
+    const files = [
+      'pages/_param.vue',
+      'pages/de/index.vue',
+      'pages/index.vue',
+      'pages/_.vue',
+      'pages/another_route/rout_.vue',
+      'pages/snake_case_route.vue',
+      'pages/subpage/_param.vue',
+      'pages/de_.vue',
+      'pages/parent/index.vue',
+      'pages/parent/_.vue',
+      'pages/another_route/_id.vue',
+      'pages/another_route/rout_.vue',
+      'pages/parent/child/index.vue',
+      'pages/parent/child/test.vue'
+    ]
+    const srcDir = '/some/nuxt/app'
+    const pagesDir = 'pages'
+
+    test.posix('sortRoutes should sort routes', () => {
+      const routesResult = createRoutes({ files, srcDir, pagesDir })
+      expect(routesResult).toMatchSnapshot()
+    })
+    test('Should sortRoutes with extendRoutes using *', () => {
+      const routes = [
+        { path: '/poetry' },
+        { path: '/reports' },
+        { path: '*' },
+        { path: '/de/about' },
+        { path: '/' },
+        { path: '/about' },
+        { path: '/de' },
+        { path: '/tech' },
+        { path: '/de/tech' },
+        { path: '/de*' },
+        { path: '/:post' },
+        { path: '/de/:post' },
+        { path: '/de/reports' },
+        { path: '/de/poetry' }
+      ]
+
+      sortRoutes(routes)
+
+      expect(routes).toEqual(
+        [
+          { path: '/about' },
+          { path: '/de' },
+          { path: '/poetry' },
+          { path: '/reports' },
+          { path: '/tech' },
+          { path: '/de/about' },
+          { path: '/de/poetry' },
+          { path: '/de/reports' },
+          { path: '/de/tech' },
+          { path: '/' },
+          { path: '/de/:post' },
+          { path: '/de*' },
+          { path: '/:post' },
+          { path: '*' }
+        ]
+      )
+    })
+
+    test('Should sortRoutes with extendRoutes using /*', () => {
+      const routes = [
+        { path: '/poetry' },
+        { path: '/reports' },
+        { path: '/*' },
+        { path: '/de/about' },
+        { path: '/about' },
+        { path: '/de' },
+        { path: '/tech' },
+        { path: '/de/tech' },
+        { path: '/de/*' },
+        { path: '/' },
+        { path: '/:post' },
+        { path: '/de/:post' },
+        { path: '/de/reports' },
+        { path: '/de/poetry' }
+      ]
+
+      sortRoutes(routes)
+
+      expect(routes).toEqual(
+        [
+          { path: '/about' },
+          { path: '/de' },
+          { path: '/poetry' },
+          { path: '/reports' },
+          { path: '/tech' },
+          { path: '/de/about' },
+          { path: '/de/poetry' },
+          { path: '/de/reports' },
+          { path: '/de/tech' },
+          { path: '/' },
+          { path: '/de/:post' },
+          { path: '/de/*' },
+          { path: '/:post' },
+          { path: '/*' }
+        ]
+      )
     })
   })
 })

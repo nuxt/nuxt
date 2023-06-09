@@ -1,7 +1,6 @@
 {
-  "version": "2.16.1",
+  "version": "2.16.3",
   "npmClient": "yarn",
-  "useWorkspaces": true,
   "conventionalCommits": true,
   "exact": true,
   "packages": [

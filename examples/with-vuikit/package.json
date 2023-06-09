@@ -3,7 +3,7 @@
   "dependencies": {
     "@vuikit/icons": "latest",
     "@vuikit/theme": "latest",
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "vuikit": "latest"
   },
   "scripts": {

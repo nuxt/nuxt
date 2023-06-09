@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@nuxtjs/markdownit": "^1.1.2",
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "pug": "^2.0.0-rc.4"
   },
   "scripts": {

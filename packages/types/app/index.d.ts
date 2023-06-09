@@ -78,7 +78,7 @@ export interface Context {
       config: NuxtRuntimeConfig
     }
   }
-  error(params: NuxtError): void
+  error(params: NuxtError): NuxtError
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
   beforeSerialize(fn: (nuxtState: NuxtState) => void): void
@@ -156,7 +156,7 @@ export interface NuxtApp extends Vue {
   nbFetching: number
   isFetching: boolean
   context: Context
-  error(params: NuxtError): void
+  error(params: NuxtError): NuxtError
   isOffline: boolean
   isOnline: boolean
   layout: any // TBD

@@ -7,9 +7,11 @@ export default {
       }
     },
     postcss: {
-      preset: {
-        autoprefixer: {
-          grid: true
+      postcssOptions: {
+        preset: {
+          autoprefixer: {
+            grid: true
+          }
         }
       }
     },

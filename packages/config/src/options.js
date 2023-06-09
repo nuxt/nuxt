@@ -280,7 +280,8 @@ export function getNuxtConfig (_options) {
       policies: undefined,
       addMeta: Boolean(options.target === TARGETS.static),
       unsafeInlineCompatibility: false,
-      reportOnly: options.debug
+      reportOnly: options.debug,
+      generateNonce: false
     })
 
     // TODO: Remove this if statement in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
@@ -517,6 +518,17 @@ export function getNuxtConfig (_options) {
   } else {
     // When loadingScreen is disabled we should also disable build indicator
     options.build.indicator = false
+  }
+
+  // Monkey patch crypto.createHash in dev/build to upgrade hashing fnction
+  if (parseInt(process.versions.node.slice(0, 2)) > 16 && !options.buildModules.some(m => m.name === 'patchMD4')) {
+    options.buildModules.push(function patchMD4 () {
+      const crypto = require('crypto')
+      const _createHash = crypto.createHash
+      crypto.createHash = function (algorithm, options) {
+        return _createHash(algorithm === 'md4' ? 'md5' : algorithm, options)
+      }
+    })
   }
 
   // Components Module

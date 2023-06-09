@@ -8,7 +8,17 @@ fi
 
 yarn build
 
-./scripts/workspace-run npm publish --tag 2x -q
+for dir in packages/* distributions/* ; do
+  # echo "$dir"
+  pushd $dir > /dev/null
+  # if package is nuxt then publish with tag 2x
+  if [ "$dir" = "distributions/nuxt" ]; then
+    npm publish --tag 2x -q
+  else
+    npm publish -q
+  fi
+  popd > /dev/null
+done
 
 git tag -a v$1 -m v$1
 git push --tags

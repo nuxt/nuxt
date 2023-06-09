@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.16.1",
+  "version": "2.16.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/vue-app.js",
@@ -13,8 +13,8 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "node-fetch-native": "^1.0.1",
-    "ufo": "^1.0.1",
+    "node-fetch-native": "^1.2.0",
+    "ufo": "^1.1.2",
     "unfetch": "^5.0.0",
     "vue": "^2.7.10",
     "vue-client-only": "^2.1.0",
@@ -23,6 +23,9 @@
     "vue-router": "^3.6.5",
     "vue-template-compiler": "^2.7.14",
     "vuex": "^3.6.2"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.10.0"
   },
   "publishConfig": {
     "access": "public"

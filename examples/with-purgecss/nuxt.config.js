@@ -15,9 +15,9 @@ export default {
       postcssOptions: {
         plugins: {
           tailwindcss: path.resolve('./tailwind.js')
-        }
-      },
-      preset: { autoprefixer: { grid: true } }
+        },
+        preset: { autoprefixer: { grid: true } }
+      }
     },
     extend (config, { isDev }) {
       if (!isDev) {

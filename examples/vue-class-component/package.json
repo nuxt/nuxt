@@ -1,7 +1,7 @@
 {
   "name": "example-vue-class-component",
   "dependencies": {
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "nuxt-class-component": "latest"
   },
   "scripts": {

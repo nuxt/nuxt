@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.16.1",
+  "version": "2.16.3",
   "description": "babel-preset-app for nuxt",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
@@ -10,22 +10,26 @@
   ],
   "main": "src/index.js",
   "dependencies": {
-    "@babel/compat-data": "^7.20.14",
-    "@babel/core": "^7.20.12",
-    "@babel/helper-compilation-targets": "^7.20.7",
-    "@babel/helper-module-imports": "^7.18.6",
+    "@babel/compat-data": "^7.22.5",
+    "@babel/core": "^7.22.1",
+    "@babel/helper-compilation-targets": "^7.22.1",
+    "@babel/helper-module-imports": "^7.21.4",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-decorators": "^7.20.13",
+    "@babel/plugin-proposal-decorators": "^7.22.5",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
-    "@babel/plugin-proposal-optional-chaining": "^7.20.7",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@babel/plugin-transform-runtime": "^7.19.6",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/runtime": "^7.20.13",
+    "@babel/plugin-proposal-private-property-in-object": "^7.20.0",
+    "@babel/plugin-transform-runtime": "^7.22.4",
+    "@babel/preset-env": "^7.22.4",
+    "@babel/runtime": "^7.22.3",
     "@vue/babel-preset-jsx": "^1.4.0",
-    "core-js": "^3.19.0",
-    "core-js-compat": "^3.28.0",
+    "core-js": "^3.30.2",
+    "core-js-compat": "^3.30.2",
     "regenerator-runtime": "^0.13.11"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.10.0"
   },
   "publishConfig": {
     "access": "public"

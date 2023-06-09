@@ -67,6 +67,10 @@ export default class PostcssConfig {
     return alias
   }
 
+  /**
+   * Returns the default PostCSS options used by Nuxt.
+   * @returns {{ plugins: {"postcss-import": {resolve: Function}, "postcss-preset-env": {}, "postcss-url": {}, cssnano: (boolean|{preset: [string,{minifyFontValues: {removeQuotes: boolean}}]})}, order: string}}
+   */
   get defaultPostcssOptions () {
     const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
@@ -82,8 +86,8 @@ export default class PostcssConfig {
         // https://github.com/postcss/postcss-url
         'postcss-url': {},
 
-        // https://github.com/csstools/postcss-preset-env
-        'postcss-preset-env': this.postcssLoaderOptions.preset || {},
+        // https://github.com/csstools/postcss-plugins/tree/main/plugin-packs/postcss-preset-env
+        'postcss-preset-env': {},
 
         cssnano: dev
           ? false
@@ -141,12 +145,58 @@ export default class PostcssConfig {
     }
   }
 
+  /**
+   * Converts the old syntax to the one expected by Nuxt ^2.16.
+   * - `Array` to `{ plugins: [] }`
+   * - `Boolean` to `{ plugins: {} }` (default plugins) or `{ plugins: false }` (no plugins)
+   * - Moves the `preset`, `order` and `plugins` to the inner `postcssOptions` object
+   * - Does not convert an Array of plugins to an object
+   * @param postcssOptions
+   * @returns {{ postcssOptions: { plugins?: unknown, order?: string, preset?: any} }}
+   */
   normalize (postcssOptions) {
     // TODO: Remove in Nuxt 3
     if (Array.isArray(postcssOptions)) {
       consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
         ' declaration')
-      postcssOptions = { plugins: postcssOptions }
+      return { postcssOptions: { plugins: postcssOptions } }
+    } else if (typeof postcssOptions === 'boolean') {
+      consola.warn('Using a Boolean as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
+        ' declaration')
+      return { postcssOptions: { plugins: postcssOptions ? {} : false } }
+    } else if (!isPureObject(postcssOptions)) {
+      return { postcssOptions: {} }
+    }
+    if (postcssOptions.postcssOptions && typeof postcssOptions.postcssOptions === 'function') {
+      consola.warn('Using a Function as `build.postcss.postcssOptions` is not yet supported in Nuxt 2.16.2')
+      return { postcssOptions: {} }
+    }
+    if (!('postcssOptions' in postcssOptions)) {
+      if (Object.keys(postcssOptions).length > 0) {
+        consola.warn('Using the top-level properties in `build.postcss` will be deprecated in Nuxt 3. Please move' +
+          'the settings to `postcss.postcssOptions`')
+      }
+      postcssOptions = { postcssOptions }
+    }
+    // The plugins and preset are merged, with priority to the inner `postcssOptions`
+    if (postcssOptions.plugins) {
+      postcssOptions.postcssOptions.plugins = merge(
+        postcssOptions.postcssOptions.plugins || {},
+        postcssOptions.plugins)
+      delete postcssOptions.plugins
+    }
+    // The preset is merged, with priority to the inner `postcssOptions`
+    if (postcssOptions.preset) {
+      postcssOptions.postcssOptions.preset = merge(
+        postcssOptions.preset,
+        postcssOptions.postcssOptions.preset || {}
+      )
+      delete postcssOptions.preset
+    }
+    // The `postcssOptions.order` is used only if there is no `postcssOptions.postcssOptions.order`
+    if (postcssOptions.order) {
+      postcssOptions.postcssOptions.order = postcssOptions.postcssOptions.order || postcssOptions.order
+      delete postcssOptions.order
     }
     return postcssOptions
   }
@@ -159,11 +209,15 @@ export default class PostcssConfig {
     return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
+  /**
+   * Load plugins from postcssOptions
+   * @param {{ postcssOptions: {plugins?: unknown, order?: string | function}}} postcssOptions
+   */
   loadPlugins (postcssOptions) {
-    const { plugins } = postcssOptions
+    const { plugins, order } = postcssOptions.postcssOptions
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
-      postcssOptions.plugins = this.sortPlugins(postcssOptions)
+      postcssOptions.postcssOptions.plugins = this.sortPlugins({ plugins, order })
         .map((p) => {
           const plugin = this.buildContext.nuxt.resolver.requireModule(p, { paths: [__dirname] })
           const opts = plugins[p]
@@ -178,51 +232,50 @@ export default class PostcssConfig {
 
   config () {
     /* istanbul ignore if */
-    if (!this.postcssOptions) {
+    if (!this.postcssLoaderOptions) {
       return false
     }
 
-    let postcssOptions = this.configFromFile()
-    if (postcssOptions) {
+    const postcssOptionsFromFile = this.configFromFile()
+    if (postcssOptionsFromFile) {
       return {
-        postcssOptions,
+        postcssOptions: postcssOptionsFromFile,
         sourceMap: this.cssSourceMap
       }
     }
 
-    postcssOptions = this.normalize(cloneDeep(this.postcssOptions))
+    /**
+     * Normalized postcss options
+     * @type {{postcssOptions: {plugins?: unknown, order?: string, preset?: unknown}}}
+     */
+    const postcssOptions = this.normalize(cloneDeep(this.postcssLoaderOptions))
 
-    // Apply default plugins
-    if (isPureObject(postcssOptions)) {
-      const postcssLoaderOptions = this.postcssLoaderOptions
-      if (postcssLoaderOptions.plugins) {
-        if (!postcssOptions.plugins || isPureObject(postcssOptions.plugins)) {
-          postcssOptions.plugins = { ...postcssLoaderOptions.plugins || {}, ...postcssOptions.plugins || {} }
+    if (Array.isArray(postcssOptions.postcssOptions.plugins)) {
+      defaults(postcssOptions.postcssOptions.plugins, this.defaultPostcssOptions.plugins)
+    } else {
+      // Merge all plugins and use preset for setting up postcss-preset-env
+      if (postcssOptions.postcssOptions.preset) {
+        if (!postcssOptions.postcssOptions.plugins) {
+          postcssOptions.postcssOptions.plugins = {}
         }
-        delete postcssLoaderOptions.plugins
-      }
-      if ('order' in postcssLoaderOptions) {
-        // Prioritise correct config value
-        postcssOptions.order = postcssOptions.order || postcssLoaderOptions.order
-        delete postcssLoaderOptions.order
+        postcssOptions.postcssOptions.plugins['postcss-preset-env'] = defaults(
+          postcssOptions.postcssOptions.preset,
+          this.defaultPostcssOptions.plugins['postcss-preset-env']
+        )
+
+        delete postcssOptions.postcssOptions.preset
       }
 
-      if (Array.isArray(postcssOptions.plugins)) {
-        defaults(postcssOptions, this.defaultPostcssOptions)
-      } else {
-        // Keep the order of default plugins
-        postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
-        this.loadPlugins(postcssOptions)
-      }
+      // Keep the order of default plugins
+      postcssOptions.postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions.postcssOptions)
+      this.loadPlugins(postcssOptions)
+    }
 
-      delete postcssOptions.order
-      delete postcssLoaderOptions.preset
+    delete postcssOptions.postcssOptions.order
 
-      return {
-        sourceMap: this.cssSourceMap,
-        ...postcssLoaderOptions,
-        postcssOptions
-      }
+    return {
+      sourceMap: this.cssSourceMap,
+      ...postcssOptions
     }
   }
 }

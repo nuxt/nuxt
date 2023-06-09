@@ -2,7 +2,7 @@
   "name": "example-cached-components",
   "dependencies": {
     "lru-cache": "^4.0.2",
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",

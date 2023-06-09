@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/types",
-  "version": "2.16.1",
+  "version": "2.16.3",
   "description": "Nuxt types",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "**/*.d.ts"
   ],
   "dependencies": {
-    "@types/babel__core": "7.20.0",
+    "@types/babel__core": "7.20.1",
     "@types/compression": "1.7.2",
     "@types/connect": "3.4.35",
     "@types/etag": "1.8.1",
@@ -21,11 +21,14 @@
     "@types/node": "^16",
     "@types/optimize-css-assets-webpack-plugin": "5.0.5",
     "@types/pug": "2.0.6",
-    "@types/serve-static": "1.15.0",
+    "@types/serve-static": "1.15.1",
     "@types/terser-webpack-plugin": "4.2.1",
     "@types/webpack": "4.41.33",
     "@types/webpack-bundle-analyzer": "3.9.5",
     "@types/webpack-hot-middleware": "2.25.5"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.10.0"
   },
   "publishConfig": {
     "access": "public"
