@@ -1,5 +1,5 @@
-import type { Ref, VNode } from 'vue'
-import { markRaw, Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
+import type { Ref, VNode, VNodeRef } from 'vue'
+import { Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
@@ -17,12 +17,12 @@ const LayoutLoader = defineComponent({
   props: {
     name: String,
     exposed: Object as Record<string, any>,
+    layoutRef: Object as () => VNodeRef,
     ...process.dev ? { hasTransition: Boolean } : {}
   },
   async setup (props, context) {
     let vnode: VNode
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    const { exposed } = props
+
     if (process.dev && process.client) {
       onMounted(() => {
         nextTick(() => {
@@ -36,19 +36,7 @@ const LayoutLoader = defineComponent({
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => {
-      vnode = h(LayoutComponent, context.attrs, context.slots)
-
-      if (process.client) {
-        nextTick(() => {
-          // @ts-expect-error
-          Object.keys(exposed).forEach(key => delete exposed[key])
-          if (vnode && vnode.component && vnode.component.exposed) {
-            // @ts-expect-error
-            Object.assign(exposed, vnode.component.exposed)
-          }
-        })
-      }
-
+      vnode = h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
       return vnode
     }
   }
@@ -69,8 +57,8 @@ export default defineComponent({
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
 
-    const exposed = markRaw({}) as Record<string, any>
-    context.expose(exposed)
+    const layoutRef = ref()
+    context.expose({ layout: layoutRef })
 
     let vnode: VNode
     let _layout: string | false
@@ -98,19 +86,10 @@ export default defineComponent({
           const layoutNode = _wrapIf(LayoutLoader, hasLayout && {
             key: layout.value,
             name: layout.value,
-            exposed,
             ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-            ...context.attrs
+            ...context.attrs,
+            layoutRef
           }, context.slots).default()
-
-          if (process.client) {
-            nextTick(() => {
-              Object.keys(exposed).forEach(key => delete exposed[key])
-              if (layoutNode && layoutNode.component && layoutNode.component.exposed) {
-                Object.assign(exposed, layoutNode.component.exposed)
-              }
-            })
-          }
 
           return layoutNode
         }

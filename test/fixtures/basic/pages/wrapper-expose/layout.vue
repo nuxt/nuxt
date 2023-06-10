@@ -22,10 +22,10 @@ definePageMeta({
 })
 
 function logFoo () {
-  layout.value.logFoo()
+  layout.value.layout.logFoo()
 }
 function logHello () {
-  layout.value.logHello()
+  layout.value.layout.logHello()
 }
 
 function swapLayout () {
