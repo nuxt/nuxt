@@ -326,6 +326,27 @@ describe('pages', () => {
     await expectNoClientErrors('/client-only-explicit-import')
   })
 
+  it('/wrapper-expose/page', async () => {
+    await expectNoClientErrors('/wrapper-expose/page')
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/page')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('#log-foo').click()
+    expect(lastLog === 'bar').toBeTruthy()
+    // change page
+    await page.locator('#to-hello').click()
+    await page.locator('#log-foo').click()
+    expect(lastLog?.includes('.foo is not a function')).toBeTruthy()
+    await page.locator('#log-hello').click()
+    expect(lastLog === 'world').toBeTruthy()
+  })
+
   it('client-fallback', async () => {
     const classes = [
       'clientfallback-non-stateful-setup',
