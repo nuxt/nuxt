@@ -58,7 +58,7 @@ export default defineComponent({
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
 
     const layoutRef = ref()
-    context.expose({ layout: layoutRef })
+    context.expose({ layoutRef })
 
     let vnode: VNode
     let _layout: string | false
