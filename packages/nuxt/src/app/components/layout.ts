@@ -36,8 +36,11 @@ const LayoutLoader = defineComponent({
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => {
-      vnode = h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
-      return vnode
+      if (process.dev && process.client && props.hasTransition) {
+        vnode = h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
+        return vnode
+      }
+      return h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
     }
   }
 })
