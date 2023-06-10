@@ -1,7 +1,5 @@
 
 // Types
-import './types/global'
-
 export * from './types/compatibility'
 export * from './types/components'
 export * from './types/config'

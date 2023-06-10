@@ -1,8 +1,8 @@
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
+import { consola } from 'consola'
 import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
-import { clearDir } from '../utils/fs'
+import { clearBuildDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
 import { showVersions } from '../utils/banner'
 import { defineNuxtCommand } from './index'
@@ -13,7 +13,7 @@ export default defineNuxtCommand({
     usage: 'npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]',
     description: 'Build nuxt for production deployment'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     overrideEnv('production')
 
     const rootDir = resolve(args._[0] || '.')
@@ -29,14 +29,15 @@ export default defineNuxtCommand({
       },
       overrides: {
         logLevel: args['log-level'],
-        _generate: args.prerender
+        _generate: args.prerender,
+        ...(options?.overrides || {})
       }
     })
 
     // Use ? for backward compatibility for Nuxt <= RC.10
     const nitro = useNitro?.()
 
-    await clearDir(nuxt.options.buildDir)
+    await clearBuildDir(nuxt.options.buildDir)
 
     await writeTypes(nuxt)
 

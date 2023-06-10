@@ -1,10 +1,10 @@
 import type { FetchError } from 'ofetch'
-import type { TypedInternalResponse, NitroFetchOptions, NitroFetchRequest, AvailableRouterMethod } from 'nitropack'
+import type { AvailableRouterMethod, NitroFetchOptions, NitroFetchRequest, TypedInternalResponse } from 'nitropack'
 import type { Ref } from 'vue'
-import { computed, unref, reactive } from 'vue'
+import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
-import type { AsyncDataOptions, _Transform, KeysOf, AsyncData, PickFrom } from './asyncData'
+import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, M>
@@ -19,36 +19,40 @@ export interface UseFetchOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = null,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>
-> extends AsyncDataOptions<ResT, DataT, PickKeys>, ComputedFetchOptions<R, M> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
   key?: string
   $fetch?: typeof globalThis.$fetch
+  watch?: MultiWatchSources | false
 }
 
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, ReqT, Method>
-): AsyncData<PickFrom<DataT, PickKeys>, ErrorT | null>
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, ReqT, Method>,
+  arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   arg2?: string
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
@@ -59,6 +63,7 @@ export function useFetch<
   if (!request) {
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
+
   const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
@@ -68,6 +73,10 @@ export function useFetch<
     }
     return unref(r)
   })
+
+  if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
+    throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+  }
 
   const {
     server,
@@ -85,23 +94,19 @@ export function useFetch<
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
 
-  const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys> = {
+  const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
     server,
     lazy,
     default: defaultFn,
     transform,
     pick,
     immediate,
-    watch: [
-      _fetchOptions,
-      _request,
-      ...(watch || [])
-    ]
+    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
   let controller: AbortController
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys>(key, () => {
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
@@ -122,33 +127,35 @@ export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, Method>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys>, ErrorT | null>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
   ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT>,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, Method>, 'lazy'>,
+  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
   arg2?: string
 ) {
   const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  return useFetch<ResT, ErrorT, ReqT, _ResT, PickKeys>(request, {
+  return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
     lazy: true
   },
-  // @ts-ignore
+  // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)
 }

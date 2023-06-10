@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
 
@@ -21,6 +22,7 @@ export default defineUntypedSchema({
     define: {
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
+        'process.test': isTest,
         ...val || {}
       })
     },
@@ -38,6 +40,14 @@ export default defineUntypedSchema({
         compilerOptions: {
           $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
         }
+      },
+      script: {
+        propsDestructure: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure),
+        },
+        defineModel: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel),
+        },
       }
     },
     vueJsx: {

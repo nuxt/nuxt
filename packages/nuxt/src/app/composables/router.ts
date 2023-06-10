@@ -1,23 +1,25 @@
-import { getCurrentInstance, inject, onUnmounted } from 'vue'
+import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vue'
 import type { Ref } from 'vue'
-import type { Router, RouteLocationNormalizedLoaded, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, NavigationFailure, RouteLocationPathRaw } from 'vue-router'
-import { sendRedirect } from 'h3'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, joinURL, parseURL } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, showError } from './error'
 import { useState } from './state'
-import { setResponseStatus } from './ssr'
 
 import type { PageMeta } from '#app'
 
-export const useRouter = () => {
+export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
 }
 
-export const useRoute = (): RouteLocationNormalizedLoaded => {
-  if (getCurrentInstance()) {
+export const useRoute: typeof _useRoute = () => {
+  if (process.dev && isProcessingMiddleware()) {
+    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
+  }
+  if (hasInjectionContext()) {
     return inject('_route', useNuxtApp()._route)
   }
   return useNuxtApp()._route
@@ -40,7 +42,10 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware
+/*! @__NO_SIDE_EFFECTS__ */
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
+  return middleware
+}
 
 export interface AddRouteMiddlewareOptions {
   global?: boolean
@@ -78,18 +83,54 @@ const isProcessingMiddleware = () => {
   return false
 }
 
-export interface NavigateToOptions {
-  replace?: boolean
-  redirectCode?: number,
-  external?: boolean
+// Conditional types, either one or other
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+
+export type OpenWindowFeatures = {
+  popup?: boolean
+  noopener?: boolean
+  noreferrer?: boolean
+} & XOR<{width?: number}, {innerWidth?: number}>
+  & XOR<{height?: number}, {innerHeight?: number}>
+  & XOR<{left?: number}, {screenX?: number}>
+  & XOR<{top?: number}, {screenY?: number}>
+
+export type OpenOptions = {
+  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  windowFeatures?: OpenWindowFeatures
 }
 
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure> | RouteLocationRaw => {
+export interface NavigateToOptions {
+  replace?: boolean
+  redirectCode?: number
+  external?: boolean
+  open?: OpenOptions
+}
+
+export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
   }
 
   const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
+
+  // Early open handler
+  if (options?.open) {
+    if (process.client) {
+      const { target = '_blank', windowFeatures = {} } = options.open
+
+      const features = Object.entries(windowFeatures)
+        .filter(([_, value]) => value !== undefined)
+        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+        .join(', ')
+
+      open(toPath, target, features)
+    }
+
+    return Promise.resolve()
+  }
+
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
@@ -98,8 +139,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     throw new Error('Cannot navigate to an URL with script protocol.')
   }
 
+  const inMiddleware = isProcessingMiddleware()
+
   // Early redirect on client-side
-  if (process.client && !isExternal && isProcessingMiddleware()) {
+  if (process.client && !isExternal && inMiddleware) {
     return to
   }
 
@@ -107,16 +150,29 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   if (process.server) {
     const nuxtApp = useNuxtApp()
-    if (nuxtApp.ssrContext && nuxtApp.ssrContext.event) {
-      // Let vue-router handle internal redirects within middleware
-      // to prevent the navigation happening after response is sent
-      if (isProcessingMiddleware() && !isExternal) {
-        setResponseStatus(options?.redirectCode || 302)
+    if (nuxtApp.ssrContext) {
+      const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
+      const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
+
+      async function redirect (response: any) {
+        // TODO: consider deprecating in favour of `app:rendered` and removing
+        await nuxtApp.callHook('app:redirected')
+        const encodedLoc = location.replace(/"/g, '%22')
+        nuxtApp.ssrContext!._renderResponse = {
+          statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
+          body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
+          headers: { location }
+        }
+        return response
+      }
+
+      // We wait to perform the redirect last in case any other middleware will intercept the redirect
+      // and redirect somewhere else instead.
+      if (!isExternal && inMiddleware) {
+        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
         return to
       }
-      const redirectLocation = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, router.resolve(to).fullPath || '/')
-      return nuxtApp.callHook('app:redirected')
-        .then(() => sendRedirect(nuxtApp.ssrContext!.event, redirectLocation, options?.redirectCode || 302))
+      return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
     }
   }
 
@@ -138,10 +194,16 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (process.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
   }
-  if (err) {
-    throw createError(err)
+
+  if (!err) { return false }
+
+  err = createError(err)
+
+  if (err.fatal) {
+    useNuxtApp().runWithContext(() => showError(err as NuxtError))
   }
-  return false
+
+  throw err
 }
 
 export const setPageLayout = (layout: string) => {

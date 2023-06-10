@@ -13,8 +13,10 @@ export const showError = (_err: string | Error | Partial<NuxtError>) => {
 
   try {
     const nuxtApp = useNuxtApp()
-    nuxtApp.callHook('app:error', err)
     const error = useError()
+    if (process.client) {
+      nuxtApp.hooks.callHook('app:error', err)
+    }
     error.value = error.value || err
   } catch {
     throw err

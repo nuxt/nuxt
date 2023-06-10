@@ -4,9 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
-import { isWindows } from 'std-env'
 
-describe.skipIf(isWindows)('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -26,24 +25,20 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(stats.client.totalBytes).toBeLessThan(106650)
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.1k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
-        "_nuxt/_plugin-vue_export-helper.js",
         "_nuxt/entry.js",
-        "_nuxt/error-404.js",
-        "_nuxt/error-500.js",
-        "_nuxt/error-component.js",
       ]
     `)
   })
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(stats.server.totalBytes).toBeLessThan(93900)
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"61.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(modules.totalBytes).toBeLessThan(2693900)
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2286k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -66,17 +61,19 @@ describe.skipIf(isWindows)('minimal nuxt application', () => {
         "cookie-es",
         "defu",
         "destr",
+        "devalue",
         "estree-walker",
         "h3",
         "hookable",
         "iron-webcrypto",
+        "klona",
         "node-fetch-native",
         "ofetch",
         "ohash",
         "pathe",
         "radix3",
         "scule",
-        "source-map",
+        "source-map-js",
         "ufo",
         "uncrypto",
         "unctx",
@@ -103,4 +100,8 @@ async function analyzeSizes (pattern: string | string[], rootDir: string) {
     }
   }
   return { files, totalBytes }
+}
+
+function roundToKilobytes (bytes: number) {
+  return (bytes / 1024).toFixed(bytes > (100 * 1024) ? 0 : 1) + 'k'
 }

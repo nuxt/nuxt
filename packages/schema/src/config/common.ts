@@ -117,26 +117,37 @@ export default defineUntypedSchema({
   },
 
   /**
- * Used to set the modules directories for path resolving (for example, webpack's
- * `resolveLoading`, `nodeExternals` and `postcss`).
- *
- * The configuration path is relative to `options.rootDir` (default is current working directory).
- *
- * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
- *
- * @example
- * ```js
- * export default {
- *   modulesDir: ['../../node_modules']
- * }
- * ```
- */
+   * Used to set the modules directories for path resolving (for example, webpack's
+   * `resolveLoading`, `nodeExternals` and `postcss`).
+   *
+   * The configuration path is relative to `options.rootDir` (default is current working directory).
+   *
+   * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
+   *
+   * @example
+   * ```js
+   * export default {
+   *   modulesDir: ['../../node_modules']
+   * }
+   * ```
+   */
   modulesDir: {
     $default: ['node_modules'],
     $resolve: async (val, get) => [
       ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
       resolve(process.cwd(), 'node_modules')
     ]
+  },
+
+  /**
+   * The directory where Nuxt will store the generated files when running `nuxt analyze`.
+   *
+   * If a relative path is specified, it will be relative to your `rootDir`.
+   */
+  analyzeDir: {
+    $resolve: async (val, get) => val
+      ? resolve(await get('rootDir'), val)
+      : resolve(await get('buildDir'), 'analyze')
   },
 
   /**
@@ -303,10 +314,10 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => ({
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
       '~': await get('srcDir'),
       '@': await get('srcDir'),
+      '~~': await get('rootDir'),
+      '@@': await get('rootDir'),
       [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
       [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
       ...val
@@ -331,7 +342,9 @@ export default defineUntypedSchema({
    * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
-  ignorePrefix: '-',
+  ignorePrefix: {
+    $resolve: (val) => val ?? '-',
+  },
 
   /**
    * More customizable than `ignorePrefix`: all files matching glob patterns specified
@@ -343,6 +356,10 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
       '.output',
+      '.git',
+      '.cache',
+      await get('analyzeDir'),
+      await get('buildDir'),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },

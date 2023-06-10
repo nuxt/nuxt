@@ -1,5 +1,5 @@
-import { addComponent, addVitePlugin, addWebpackPlugin } from '@nuxt/kit'
-import type { NuxtPage } from '@nuxt/schema'
+import { addBuildPlugin, addComponent } from 'nuxt/kit'
+import type { NuxtPage } from 'nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
@@ -11,16 +11,6 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  typescript: {
-    strict: true,
-    tsConfig: {
-      compilerOptions: {
-        // TODO: For testing (future) support for Node16-style module resolution.
-        // See https://github.com/nuxt/nuxt/issues/18426 and https://github.com/nuxt/nuxt/pull/18431
-        // moduleResolution: 'Node16'
-      }
-    }
-  },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -50,8 +40,15 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    esbuild: {
+      options: {
+        // in order to test bigint serialisation
+        target: 'es2022'
+      }
+    },
     routeRules: {
-      '/route-rules/spa': { ssr: false }
+      '/route-rules/spa': { ssr: false },
+      '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
@@ -65,32 +62,21 @@ export default defineNuxtConfig({
   optimization: {
     keyedComposables: [
       {
-        name: 'useKeyedComposable',
+        name: 'useCustomKeyedComposable',
+        source: 'pages/keyed-composables/index.vue',
         argumentLength: 1
       }
     ]
   },
   runtimeConfig: {
-    baseURL: '',
-    baseAPIToken: '',
-    privateConfig: 'secret_key',
     public: {
-      ids: [1, 2, 3],
       needsFallback: undefined,
       testConfig: 123
     }
   },
   modules: [
-    [
-      '~/modules/example',
-      {
-        typeTest (val) {
-          // @ts-expect-error module type defines val as boolean
-          const b: string = val
-          return !!b
-        }
-      }
-    ],
+    './modules/test',
+    '~/modules/example',
     function (_, nuxt) {
       if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
@@ -105,8 +91,7 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return ':root { --virtual: red }' }
         }
       }))
-      addVitePlugin(plugin.vite())
-      addWebpackPlugin(plugin.webpack())
+      addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
@@ -142,9 +127,20 @@ export default defineNuxtConfig({
   vite: {
     logLevel: 'silent'
   },
+  telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
-    'prepare:types' ({ tsConfig }) {
-      tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
+    'webpack:config' (configs) {
+      // in order to test bigint serialisation we need to set target to a more modern one
+      for (const config of configs) {
+        const esbuildRules = config.module!.rules!.filter(
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+        )
+        for (const rule of esbuildRules) {
+          if (typeof rule === 'object' && typeof rule.options === 'object') {
+            rule.options.target = 'es2022'
+          }
+        }
+      }
     },
     'modules:done' () {
       addComponent({
@@ -184,6 +180,10 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    typedPages: true,
+    polyfillVueUseHead: true,
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),

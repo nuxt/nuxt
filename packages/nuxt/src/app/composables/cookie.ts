@@ -1,8 +1,8 @@
 import type { Ref } from 'vue'
-import { ref, watch } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { appendHeader } from 'h3'
+import { deleteCookie, getCookie, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
@@ -27,16 +27,37 @@ const CookieDefaults: CookieOptions<any> = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
 
-export function useCookie <T = string | null> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
   if (process.client) {
-    const callback = () => { writeClientCookie(name, cookie.value, opts as CookieSerializeOptions) }
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
+
+    const callback = () => {
+      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+      channel?.postMessage(cookie.value)
+    }
+
+    let watchPaused = false
+
+    if (channel) {
+      channel.onmessage = (event) => {
+        watchPaused = true
+        cookie.value = event.data
+        nextTick(() => { watchPaused = false })
+      }
+    }
+
     if (opts.watch) {
-      watch(cookie, callback, { deep: opts.watch !== 'shallow' })
+      watch(cookie, (newVal, oldVal) => {
+        if (watchPaused || isEqual(newVal, oldVal)) { return }
+        callback()
+      },
+      { deep: opts.watch !== 'shallow' })
     } else {
       callback()
     }
@@ -48,9 +69,8 @@ export function useCookie <T = string | null> (name: string, _opts?: CookieOptio
       }
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
-    nuxtApp.hooks.hookOnce('app:redirected', () => {
-      // don't write cookie subsequently when app:rendered is called
-      unhook()
+    nuxtApp.hooks.hookOnce('app:error', () => {
+      unhook() // don't write cookie subsequently when app:rendered is called
       return writeFinalCookieValue()
     })
   }
@@ -60,7 +80,7 @@ export function useCookie <T = string | null> (name: string, _opts?: CookieOptio
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
   if (process.server) {
-    return parse(useRequestEvent()?.req.headers.cookie || '', opts)
+    return parse(useRequestEvent()?.node.req.headers.cookie || '', opts)
   } else if (process.client) {
     return parse(document.cookie, opts)
   }
@@ -81,7 +101,16 @@ function writeClientCookie (name: string, value: any, opts: CookieSerializeOptio
 
 function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
-    // TODO: Try to smart join with existing Set-Cookie headers
-    appendHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
+    // update if value is set
+    if (value !== null && value !== undefined) {
+      return setCookie(event, name, value, opts)
+    }
+
+    // delete if cookie exists in browser and value is null/undefined
+    if (getCookie(event, name) !== undefined) {
+      return deleteCookie(event, name, opts)
+    }
+
+    // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
 }

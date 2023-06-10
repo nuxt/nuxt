@@ -94,14 +94,16 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
 }
 
 export interface ViteConfig extends ViteUserConfig {
+  /** The path to the entrypoint for the Vite build. */
+  entry?: string
   /**
-   * Options passed to @vitejs/plugin-vue
+   * Options passed to @vitejs/plugin-vue.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
    */
   vue?: VuePluginOptions
 
   /**
-   * Options passed to @vitejs/plugin-vue-jsx
+   * Options passed to @vitejs/plugin-vue-jsx.
    * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx
    */
   vueJsx?: VueJsxPluginOptions
@@ -136,7 +138,9 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 
 // -- App Config --
 
-export interface CustomAppConfig { }
+export interface CustomAppConfig {
+  [key: string]: unknown
+}
 
 export interface AppConfigInput extends CustomAppConfig {
   /** @deprecated reserved */
@@ -156,4 +160,6 @@ export interface NuxtAppConfig {
   keepalive: boolean | KeepAliveProps
 }
 
-export interface AppConfig { }
+export interface AppConfig {
+  [key: string]: unknown
+}

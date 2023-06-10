@@ -1,9 +1,9 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { setResponseHeader, getRequestHeaders, setResponseStatus } from 'h3'
+import { getRequestHeaders, setResponseHeader, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
-import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
+import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
@@ -55,9 +55,9 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Fallback to static rendered error page
   if (!res) {
     const { template } = process.dev
-      // @ts-ignore
+      // @ts-expect-error TODO: add legacy type support for subpath imports
       ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
-      // @ts-ignore
+      // @ts-expect-error TODO: add legacy type support for subpath imports
       : await import('@nuxt/ui-templates/templates/error-500.mjs')
     if (process.dev) {
       // TODO: Support `message` in template

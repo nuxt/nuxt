@@ -86,7 +86,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
   if (!ctx.isDev && ctx.name === 'client' && options.webpack.analyze) {
-    const statsDir = resolve(options.buildDir, 'stats')
+    const statsDir = resolve(options.analyzeDir)
 
     config.plugins!.push(new BundleAnalyzerPlugin({
       analyzerMode: 'static',

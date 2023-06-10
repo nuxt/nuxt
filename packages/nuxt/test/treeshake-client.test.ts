@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
 import { Parser } from 'acorn'
@@ -8,12 +8,6 @@ import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
 import { fixtureDir, normalizeLineEndings } from './utils'
-
-vi.mock('node:crypto', () => ({
-  update: vi.fn().mockReturnThis(),
-  digest: vi.fn().mockReturnValue('one-hash-to-rule-them-all'),
-  createHash: vi.fn().mockReturnThis()
-}))
 
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {
@@ -90,7 +84,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
   return typeof result === 'string' ? result : result?.code
 }
 
-const stateToTest: {name: string, options: Partial<Options & {devServer: {config: {server: any}}}> }[] = [
+const stateToTest: { name: string, options: Partial<Options & { devServer: { config: { server: any } } }> }[] = [
   {
     name: 'prod',
     options: {
@@ -165,7 +159,7 @@ describe('treeshake client only in ssr', () => {
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')
-      expect(treeshaken).toContain('import { Glob, } from \'#components\'')
+      expect(treeshaken).toContain('import {  Glob } from \'#components\'')
 
       // treeshake .client slot
       expect(treeshaken).not.toContain('ByeBye')
@@ -188,7 +182,7 @@ describe('treeshake client only in ssr', () => {
         expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
         expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
       }
-      expect(treeshaken).toMatchSnapshot()
+      expect(treeshaken.replace(/data-v-[\d\w]{8}/g, 'data-v-one-hash').replace(/scoped=[\d\w]{8}/g, 'scoped=one-hash')).toMatchSnapshot()
     })
   }
 })
