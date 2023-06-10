@@ -115,7 +115,7 @@ const RouteProvider = defineComponent({
 
     return () => {
       if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component)
+        vnode = h(props.routeProps.Component, { ref: props.pageRef })
         return vnode
       }
 
