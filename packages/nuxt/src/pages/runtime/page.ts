@@ -38,7 +38,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
 
-    expose({ page: pageRef })
+    expose({ pageRef })
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {

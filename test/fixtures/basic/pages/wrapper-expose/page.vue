@@ -15,10 +15,10 @@
 const page = ref()
 
 function logFoo () {
-  page.value.page.foo()
+  page.value.pageRef.foo()
 }
 
 function logHello () {
-  page.value.page.hello()
+  page.value.pageRef.hello()
 }
 </script>
