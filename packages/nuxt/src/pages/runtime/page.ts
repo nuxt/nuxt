@@ -1,4 +1,4 @@
-import { Suspense, Transition, computed, defineComponent, getCurrentInstance, h, markRaw, nextTick, onMounted, provide, reactive } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive, ref } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
@@ -36,29 +36,14 @@ export default defineComponent({
   },
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
+    const pageRef = ref()
 
-    let vnode: VNode | null = null
-    const exposed = markRaw({}) as Record<string, any>
-    expose(exposed)
-    const instance = getCurrentInstance()!
+    expose({ page: pageRef })
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
           if (!routeProps.Component) { return }
-
-          if (process.client) {
-            // expose the exposed route components data to the exposed object
-            nextTick(async () => {
-              // await a second tick for the route component's tick
-              await nextTick()
-              Object.keys(exposed).forEach(key => delete exposed[key])
-              if (vnode && vnode.component && vnode.component.exposed) {
-                Object.assign(exposed, vnode.component.exposed)
-              }
-              instance.parent?.update()
-            })
-          }
 
           const key = generateRouteKey(routeProps, props.pageKey)
           const done = nuxtApp.deferHydration()
@@ -76,12 +61,7 @@ export default defineComponent({
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, {
-              default: () => {
-                vnode = h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {})
-                return vnode
-              }
-            })
+            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, pageRef } as {}) })
             )).default()
         }
       })
@@ -105,8 +85,8 @@ const RouteProvider = defineComponent({
   name: 'RouteProvider',
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
-  props: ['routeProps', 'pageKey', 'hasTransition'],
-  setup (props, { expose }) {
+  props: ['routeProps', 'pageKey', 'hasTransition', 'pageRef'],
+  setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.pageKey
@@ -121,12 +101,7 @@ const RouteProvider = defineComponent({
 
     provide('_route', reactive(route))
 
-    let vnode: VNode | undefined
-
-    const exposed = markRaw({}) as Record<string, any>
-
-    expose(exposed)
-
+    let vnode: VNode
     if (process.dev && process.client && props.hasTransition) {
       onMounted(() => {
         nextTick(() => {
@@ -139,17 +114,12 @@ const RouteProvider = defineComponent({
     }
 
     return () => {
-      vnode = h(props.routeProps.Component)
-
-      if (process.client) {
-        nextTick(() => {
-          Object.keys(exposed).forEach(key => delete exposed[key])
-          if (vnode && vnode.component && vnode.component.exposed) {
-            Object.assign(exposed, vnode.component.exposed)
-          }
-        })
+      if (process.dev && process.client) {
+        vnode = h(props.routeProps.Component)
+        return vnode
       }
-      return vnode
+
+      return h(props.routeProps.Component, { ref: props.pageRef })
     }
   }
 })
