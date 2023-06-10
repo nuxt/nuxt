@@ -2,11 +2,12 @@ import { writeFile } from 'node:fs/promises'
 import { downloadTemplate, startShell } from 'giget'
 import { relative } from 'pathe'
 import { consola } from 'consola'
+import { addDependency } from 'nypm'
+import type { PackageManagerName } from 'nypm'
 import { defineNuxtCommand } from './index'
 
-const rpath = (p: string) => relative(process.cwd(), p)
-
 const DEFAULT_REGISTRY = 'https://raw.githubusercontent.com/nuxt/starter/templates/templates'
+const DEFAULT_TEMPLATE_NAME = 'v3'
 
 export default defineNuxtCommand({
   meta: {
@@ -15,19 +16,23 @@ export default defineNuxtCommand({
     description: 'Initialize a fresh project'
   },
   async invoke (args) {
-    // Clone template
-    const template = args.template || args.t || 'v3'
+    // Get template name
+    const templateName =
+      (args.template as string | true | undefined) ||
+      (args.t as string | true | undefined) ||
+      DEFAULT_TEMPLATE_NAME
 
-    if (typeof template === 'boolean') {
+    if (typeof templateName !== 'string') {
       consola.error('Please specify a template!')
       process.exit(1)
     }
 
+    // Download template
     let t
 
     try {
-      t = await downloadTemplate(template, {
-        dir: args._[0] as string,
+      t = await downloadTemplate(templateName, {
+        dir: args._[0] || '',
         force: args.force,
         offline: args.offline,
         preferOffline: args['prefer-offline'],
@@ -41,22 +46,60 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    // Show next steps
-    const relativeDist = rpath(t.dir)
+    // Prompt user to select package manager
+    const selectedPackageManager = (await consola.prompt(
+      'Which package manager would you like to use?',
+      {
+        type: 'select',
+        options: ['npm', 'pnpm', 'yarn']
+      }
+    )) as unknown as PackageManagerName
+
+    // Get relative project path
+    const relativeProjectPath = relative(process.cwd(), t.dir)
 
     // Write .nuxtrc with `shamefully-hoist=true` for pnpm
-    const usingPnpm = (process.env.npm_config_user_agent || '').includes('pnpm')
-    if (usingPnpm) {
-      await writeFile(`${relativeDist}/.npmrc`, 'shamefully-hoist=true')
+    if (selectedPackageManager === 'pnpm') {
+      await writeFile(`${relativeProjectPath}/.npmrc`, 'shamefully-hoist=true')
     }
 
+    // Install project dependencies
+    consola.start('Installing dependencies...')
+
+    try {
+      await addDependency('', {
+        cwd: relativeProjectPath,
+        packageManager: {
+          name: selectedPackageManager,
+          command: selectedPackageManager
+        }
+      })
+    } catch (err) {
+      if (process.env.DEBUG) {
+        throw err
+      }
+      consola.error((err as Error).toString())
+      process.exit(1)
+    }
+
+    consola.success('Installation completed.')
+
+    // Display next steps
+    consola.log(
+      `\n✨ Nuxt project is created with \`${t.name}\` template. Next steps:`
+    )
+
     const nextSteps = [
-      !args.shell && relativeDist.length > 1 && `\`cd ${relativeDist}\``,
-      'Install dependencies with `npm install` or `yarn install` or `pnpm install`',
-      'Start development server with `npm run dev` or `yarn dev` or `pnpm run dev`'
+      !args.shell &&
+        relativeProjectPath.length > 1 &&
+        `\`cd ${relativeProjectPath}\``,
+      `Start development server with \`${
+        selectedPackageManager === 'yarn'
+          ? 'yarn'
+          : `${selectedPackageManager} run`
+      } dev\``
     ].filter(Boolean)
 
-    consola.log(`✨ Nuxt project is created with \`${t.name}\` template. Next steps:`)
     for (const step of nextSteps) {
       consola.log(` › ${step}`)
     }
