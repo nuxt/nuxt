@@ -16,7 +16,6 @@ const LayoutLoader = defineComponent({
   inheritAttrs: false,
   props: {
     name: String,
-    exposed: Object as Record<string, any>,
     layoutRef: Object as () => VNodeRef,
     ...process.dev ? { hasTransition: Boolean } : {}
   },
