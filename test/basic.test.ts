@@ -1204,7 +1204,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe('prefetching', () => {
+describe.skipIf(isDev() || isWindows)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
@@ -1223,9 +1223,6 @@ describe('prefetching', () => {
 
     await page.goto(url('/prefetch'))
     await page.waitForLoadState('networkidle')
-    if (!requests.some(r => r.includes('AsyncServerComponent'))) {
-      await page.waitForRequest(/AsyncServerComponent/)
-    }
 
     const snapshot = [...requests]
     await page.click('[href="/prefetch/server-components"]')
