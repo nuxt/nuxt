@@ -44,7 +44,7 @@
     "@nuxt/test-utils": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "12.0.0",
-    "@types/node": "18.16.16",
+    "@types/node": "18.16.17",
     "@types/semver": "7.5.0",
     "case-police": "0.6.1",
     "chalk": "5.2.0",
