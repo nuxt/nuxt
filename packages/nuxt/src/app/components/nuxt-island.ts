@@ -87,7 +87,7 @@ export default defineComponent({
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
-          ...process.env.prerender
+          ...(process.server && process.env.prerender)
             ? {}
             : {
                 params: {
