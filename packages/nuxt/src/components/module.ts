@@ -178,7 +178,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
-      tsConfig.compilerOptions!.paths['#components'] = [relative(nuxt.options.rootDir, resolve(nuxt.options.buildDir, 'components'))]
+      tsConfig.compilerOptions!.paths['#components'] = [withLeadingDot(relative(nuxt.options.buildDir, resolve(nuxt.options.buildDir, 'components')))]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
@@ -255,3 +255,11 @@ export default defineNuxtModule<ComponentsOptions>({
     })
   }
 })
+
+const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
+function withLeadingDot (path: string) {
+  if (LEADING_DOT_RE.test(path)) {
+    return path
+  }
+  return `./${path}`
+}
