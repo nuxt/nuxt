@@ -1223,7 +1223,9 @@ describe('prefetching', () => {
 
     await page.goto(url('/prefetch'))
     await page.waitForLoadState('networkidle')
-    await page.waitForRequest(/AsyncComponent/)
+    if (!requests.some(r => r.includes('AsyncServerComponent'))) {
+      await page.waitForRequest(/AsyncServerComponent/)
+    }
 
     const snapshot = [...requests]
     await page.click('[href="/prefetch/server-components"]')
