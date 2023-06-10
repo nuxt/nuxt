@@ -1202,7 +1202,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe.skipIf(isDev() || isWindows)('prefetching', () => {
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
