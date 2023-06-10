@@ -448,8 +448,6 @@ describe('pages', () => {
 
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
     await page.close()
