@@ -2,7 +2,6 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
 import { createError } from '#app/composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
-import { useAsyncData } from '#app/composables'
 
 const revivers = {
   NuxtError: (data: any) => createError(data),
@@ -12,7 +11,12 @@ const revivers = {
   ShallowReactive: (data: any) => shallowReactive(data),
   Island: ({ key, params }: any) => {
     const nuxtApp = useNuxtApp()
-    useAsyncData(key, () => $fetch(`/__nuxt_island/${key}`, params ? { params } : {}), { immediate: !nuxtApp.isHydrating })
+    if (!nuxtApp.isHydrating) {
+      nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}`, params ? { params } : {}).then((r) => {
+        nuxtApp.payload.data[key] = r
+        return r
+      })
+    }
     return null
   },
   Ref: (data: any) => ref(data),
