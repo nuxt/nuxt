@@ -148,8 +148,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   const router = useRouter()
 
+  const nuxtApp = useNuxtApp()
+
   if (process.server) {
-    const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
@@ -182,6 +183,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       location.replace(toPath)
     } else {
       location.href = toPath
+    }
+    // Within in a Nuxt route middleware handler
+    if (inMiddleware) {
+      // Abort navigation when app is hydrated
+      if (!nuxtApp.isHydrating) {
+        return false
+      }
     }
     return Promise.resolve()
   }
