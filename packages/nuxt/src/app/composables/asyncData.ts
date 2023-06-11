@@ -212,9 +212,6 @@ export function useAsyncData<
 
   // Client side
   if (process.client) {
-    if (!nuxt.isHydrating && (!options.immediate || options.lazy)) {
-      asyncData.data.value = unref(options.default())
-    }
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
     if (instance && !instance._nuxtOnBeforeMountCbs) {
