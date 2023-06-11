@@ -1,5 +1,5 @@
-import type { Ref, VNode } from 'vue'
-import { Transition, computed, defineComponent, h, inject, nextTick, onMounted, unref } from 'vue'
+import type { Ref, VNode, VNodeRef } from 'vue'
+import { Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { useRoute } from '#app/composables/router'
@@ -16,6 +16,7 @@ const LayoutLoader = defineComponent({
   inheritAttrs: false,
   props: {
     name: String,
+    layoutRef: Object as () => VNodeRef,
     ...process.dev ? { hasTransition: Boolean } : {}
   },
   async setup (props, context) {
@@ -35,13 +36,14 @@ const LayoutLoader = defineComponent({
 
     return () => {
       if (process.dev && process.client && props.hasTransition) {
-        vnode = h(LayoutComponent, context.attrs, context.slots)
+        vnode = h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
         return vnode
       }
-      return h(LayoutComponent, context.attrs, context.slots)
+      return h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
     }
   }
 })
+
 export default defineComponent({
   name: 'NuxtLayout',
   inheritAttrs: false,
@@ -56,6 +58,9 @@ export default defineComponent({
     const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+
+    const layoutRef = ref()
+    context.expose({ layoutRef })
 
     let vnode: VNode
     let _layout: string | false
@@ -79,12 +84,17 @@ export default defineComponent({
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => _wrapIf(LayoutLoader, hasLayout && {
-          key: layout.value,
-          name: layout.value,
-          ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-          ...context.attrs
-        }, context.slots).default()
+        default: () => {
+          const layoutNode = _wrapIf(LayoutLoader, hasLayout && {
+            key: layout.value,
+            name: layout.value,
+            ...(process.dev ? { hasTransition: !!transitionProps } : {}),
+            ...context.attrs,
+            layoutRef
+          }, context.slots).default()
+
+          return layoutNode
+        }
       }).default()
     }
   }

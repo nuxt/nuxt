@@ -162,6 +162,15 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('should render correctly when loaded on a different path', async () => {
+    const page = await createPage('/proxy')
+
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+
+    await expectNoClientErrors('/proxy')
+  })
+
   it('preserves query', async () => {
     const html = await $fetch('/?test=true')
 
@@ -306,6 +315,41 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('/wrapper-expose/layout', async () => {
+    await expectNoClientErrors('/wrapper-expose/layout')
+
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/layout')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('.logFoo is not a function')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('world')
+    await page.locator('.add-count').first().click()
+    expect(await page.locator('.count').first().innerText()).toContain('1')
+
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForTimeout(25)
+    expect(await page.locator('.count').first().innerText()).toContain('0')
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('bar')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('.logHello is not a function')
+    await page.locator('.add-count').first().click()
+    expect(await page.locator('.count').first().innerText()).toContain('1')
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForTimeout(25)
+    expect(await page.locator('.count').first().innerText()).toContain('0')
+  })
+
   it('/client-only-explicit-import', async () => {
     const html = await $fetch('/client-only-explicit-import')
 
@@ -315,6 +359,27 @@ describe('pages', () => {
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
+  })
+
+  it('/wrapper-expose/page', async () => {
+    await expectNoClientErrors('/wrapper-expose/page')
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/page')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('#log-foo').click()
+    expect(lastLog === 'bar').toBeTruthy()
+    // change page
+    await page.locator('#to-hello').click()
+    await page.locator('#log-foo').click()
+    expect(lastLog?.includes('.foo is not a function')).toBeTruthy()
+    await page.locator('#log-hello').click()
+    expect(lastLog === 'world').toBeTruthy()
   })
 
   it('client-fallback', async () => {
@@ -621,6 +686,13 @@ describe('navigate', () => {
     const { headers, status } = await fetch('/navigate-to-external', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(302)
+  })
+
+  it('should not run setup function in path redirected to', async () => {
+    const { headers, status } = await fetch('/navigate-to-error', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/setup-should-not-run')
     expect(status).toEqual(302)
   })
 
@@ -1545,6 +1617,19 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+
+  it('requests status can be used', async () => {
+    const html = await $fetch('/useAsyncData/status')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+
+    const page = await createPage('/useAsyncData/status')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#status5-values').textContent()).toContain('idle,pending,success')
+
+    await page.close()
   })
 })
 

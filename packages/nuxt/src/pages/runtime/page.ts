@@ -1,4 +1,4 @@
-import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive, ref } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
@@ -34,8 +34,12 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs }) {
+  setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
+    const pageRef = ref()
+
+    expose({ pageRef })
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -57,7 +61,7 @@ export default defineComponent({
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {}) })
+            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, pageRef } as {}) })
             )).default()
         }
       })
@@ -81,7 +85,7 @@ const RouteProvider = defineComponent({
   name: 'RouteProvider',
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
-  props: ['routeProps', 'pageKey', 'hasTransition'],
+  props: ['routeProps', 'pageKey', 'hasTransition', 'pageRef'],
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
@@ -111,11 +115,11 @@ const RouteProvider = defineComponent({
 
     return () => {
       if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component)
+        vnode = h(props.routeProps.Component, { ref: props.pageRef })
         return vnode
       }
 
-      return h(props.routeProps.Component)
+      return h(props.routeProps.Component, { ref: props.pageRef })
     }
   }
 })
