@@ -266,8 +266,8 @@ importers:
         specifier: 6.1.2
         version: 6.1.2
       destr:
-        specifier: 1.2.2
-        version: 1.2.2
+        specifier: 2.0.0
+        version: 2.0.0
       execa:
         specifier: 7.1.1
         version: 7.1.1
@@ -362,8 +362,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       destr:
-        specifier: ^1.2.2
-        version: 1.2.2
+        specifier: ^2.0.0
+        version: 2.0.0
       devalue:
         specifier: ^4.3.2
         version: 4.3.2
@@ -4151,6 +4151,9 @@ packages:
 
   /destr@1.2.2:
     resolution: {integrity: sha512-lrbCJwD9saUQrqUfXvl6qoM+QN3W7tLV5pAOs+OqOmopCCz/JkE05MHedJR1xfk4IAnZuJXPVuN5+7jNA2ZCiA==}
+
+  /destr@2.0.0:
+    resolution: {integrity: sha512-FJ9RDpf3GicEBvzI3jxc2XhHzbqD8p4ANw/1kPsFBfTvP1b7Gn/Lg1vO7R9J4IVgoMbyUmFrFGZafJ1hPZpvlg==}
 
   /destroy@1.2.0:
     resolution: {integrity: sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==}
