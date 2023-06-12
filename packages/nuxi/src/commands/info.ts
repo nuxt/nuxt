@@ -139,7 +139,7 @@ function getPkg (name: string, rootDir: string) {
     // console.log('not found:', name)
   }
 
-  return readJSONSync(pkgPath)
+  return readJSONSync(pkgPath) as PackageJson
 }
 
 function findPackage (rootDir: string) {
