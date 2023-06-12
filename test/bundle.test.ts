@@ -38,7 +38,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"61.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2286k"')
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2295k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -64,11 +64,13 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "estree-walker",
         "h3",
+        "h3/node_modules/destr",
         "hookable",
         "iron-webcrypto",
         "klona",
         "node-fetch-native",
         "ofetch",
+        "ofetch/node_modules/destr",
         "ohash",
         "pathe",
         "radix3",
@@ -80,6 +82,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unenv",
         "unhead",
         "unstorage",
+        "unstorage/node_modules/destr",
         "vue",
         "vue-bundle-renderer",
       ]
