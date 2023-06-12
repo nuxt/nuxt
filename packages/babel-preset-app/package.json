@@ -24,8 +24,8 @@
     "@babel/preset-env": "^7.22.5",
     "@babel/runtime": "^7.22.5",
     "@vue/babel-preset-jsx": "^1.4.0",
-    "core-js": "^3.30.2",
-    "core-js-compat": "^3.30.2",
+    "core-js": "^3.31.0",
+    "core-js-compat": "^3.31.0",
     "regenerator-runtime": "^0.13.11"
   },
   "engines": {
