@@ -4,17 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
-import { isWindows } from 'std-env'
-import { isRenderingJson } from './utils'
 
-// We only want to run this test for:
-// - ubuntu
-// - vite
-// - in our own CI
-// - using JS (default) payload rendering
-// - production build
-
-describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.env.ECOSYSTEM_CI || !isRenderingJson || process.env.TEST_ENV === 'dev')('minimal nuxt application', () => {
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
   const publicDir = join(rootDir, '.output/public')
   const serverDir = join(rootDir, '.output/server')
@@ -34,18 +25,17 @@ describe.skipIf(isWindows || process.env.TEST_BUILDER === 'webpack' || process.e
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"98.3k"')
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.2k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
-        "_nuxt/error-component.js",
       ]
     `)
   })
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.7k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"61.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2286k"')

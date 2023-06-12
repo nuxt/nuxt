@@ -96,6 +96,8 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
+     *
+     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -191,7 +193,7 @@ export default defineUntypedSchema({
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
      *
-     * @type {import('unctx').TransformerOptions}
+     * @type {typeof import('unctx').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
