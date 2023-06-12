@@ -96,7 +96,7 @@ await navigateTo({
 
 ```ts
 export default defineNuxtRouteMiddleware((to, from) => {
-  if (from.path !== '/search') {
+  if (to.path !== '/search') {
     // setting the redirect code to '301 Moved Permanently'
     return navigateTo('/search', { redirectCode: 301 })
   }
