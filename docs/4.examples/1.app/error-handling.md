@@ -9,5 +9,5 @@ This example shows how to handle errors in different contexts: pages, plugins, c
 ::ReadMore{link="/docs/getting-started/error-handling"}
 ::
 
-::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/app/error-handling" file="app.vue"}
+::sandbox{repo="nuxt/examples" branch="main" dir="features/app/error-handling" file="app.vue"}
 ::

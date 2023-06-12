@@ -9,5 +9,5 @@ Components in the `components/` directory are auto-imported and can be used dire
 ::ReadMore{link="/docs/guide/directory-structure/components"}
 ::
 
-::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/auto-imports/components" file="app.vue"}
+::sandbox{repo="nuxt/examples" branch="main" dir="features/auto-imports/components" file="app.vue"}
 ::

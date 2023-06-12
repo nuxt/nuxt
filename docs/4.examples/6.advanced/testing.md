@@ -13,5 +13,5 @@ Learn more about [testing](/docs/getting-started/testing).
 ::ReadMore{link="/docs/getting-started/testing"}
 ::
 
-::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/advanced/testing" file="app.vue"}
+::sandbox{repo="nuxt/examples" branch="main" dir="features/advanced/testing" file="app.vue"}
 ::

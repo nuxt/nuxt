@@ -11,4 +11,4 @@ This example shows how to use `app.config` feature.
 ::ReadMore{link="/docs/guide/directory-structure/app-config"}
 ::
 
-::sandbox{repo="nuxt/nuxt" branch="main" dir="examples/app-config" file="app.vue"}
+::sandbox{repo="nuxt/examples" branch="main" dir="features/app-config" file="app.vue"}
