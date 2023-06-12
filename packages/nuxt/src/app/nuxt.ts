@@ -155,11 +155,21 @@ export interface PluginMeta {
   order?: number
 }
 
+interface PluginEnvContext {
+  /**
+   * This enable the plugin for islands components.
+   * Require `experimental.componentsIslands`.
+   *
+   * @default true
+   */
+  islands?: boolean
+}
+
 export interface ResolvedPluginMeta {
   name?: string
   order: number
-  islands: boolean
   parallel?: boolean
+  env: PluginEnvContext
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
@@ -171,13 +181,7 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
-  /**
-   * This enable the plugin for islands components.
-   * Require `experimental.componentsIslands`.
-   *
-   * @default true
-   */
-  islands?: boolean
+  env?: PluginEnvContext
   /**
    * Execute plugin in parallel with other parallel plugins.
    *
@@ -318,7 +322,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
-    if (nuxtApp.ssrContext?.islandContext && plugin.meta?.islands === false) { continue }
+    if (nuxtApp.ssrContext?.islandContext && plugin.meta?.env.islands === false) { continue }
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.meta?.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
@@ -394,7 +398,7 @@ export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: 
 }
 
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
-  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
+  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin, env: { islands: true } }, meta) }
 
   const wrapper: Plugin<T> = (nuxtApp) => {
     if (plugin.hooks) {
@@ -413,7 +417,9 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
       plugin.order ||
       orderMap[plugin.enforce || 'default'] ||
       orderMap.default,
-    islands: plugin.islands ?? true
+    env: {
+      islands: plugin.env?.islands ?? true
+    }
   }
 
   wrapper[NuxtPluginIndicator] = true

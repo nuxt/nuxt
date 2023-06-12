@@ -6,5 +6,7 @@ export default defineNuxtPlugin({
     const evt = useRequestEvent()
     setHeader(evt, 'custom-head', 'hello')
   },
-  islands: false
+  env: {
+    islands: false
+  }
 })
