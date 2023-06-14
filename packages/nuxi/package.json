@@ -32,7 +32,7 @@
     "consola": "3.1.0",
     "deep-object-diff": "1.1.9",
     "defu": "6.1.2",
-    "destr": "1.2.2",
+    "destr": "2.0.0",
     "execa": "7.1.1",
     "flat": "5.0.2",
     "giget": "1.1.2",

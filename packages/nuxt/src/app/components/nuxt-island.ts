@@ -42,6 +42,7 @@ export default defineComponent({
     const event = useRequestEvent()
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
+
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => {
@@ -67,19 +68,37 @@ export default defineComponent({
       return getSlotProps(ssrHTML.value)
     })
 
-    function _fetchComponent () {
-      const url = `/__nuxt_island/${props.name}:${hashId.value}`
+    async function _fetchComponent () {
+      const key = `${props.name}:${hashId.value}`
+      if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+
+      const url = `/__nuxt_island/${key}`
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      return $fetch<NuxtIslandResponse>(url, {
+      const result = await $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
         }
       })
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...(process.server && process.env.prerender)
+            ? {}
+            : {
+                params: {
+                  ...props.context,
+                  props: props.props ? JSON.stringify(props.props) : undefined
+                }
+              }
+        },
+        ...result
+      }
+      return result
     }
     const key = ref(0)
     async function fetchComponent () {
