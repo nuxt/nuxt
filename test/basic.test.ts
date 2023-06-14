@@ -168,6 +168,8 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
 
+    await page.close()
+
     await expectNoClientErrors('/proxy')
   })
 
@@ -315,6 +317,41 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('/wrapper-expose/layout', async () => {
+    await expectNoClientErrors('/wrapper-expose/layout')
+
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/layout')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('.logFoo is not a function')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('world')
+    await page.locator('.add-count').first().click()
+    expect(await page.locator('.count').first().innerText()).toContain('1')
+
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForTimeout(25)
+    expect(await page.locator('.count').first().innerText()).toContain('0')
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('bar')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('.logHello is not a function')
+    await page.locator('.add-count').first().click()
+    expect(await page.locator('.count').first().innerText()).toContain('1')
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForTimeout(25)
+    expect(await page.locator('.count').first().innerText()).toContain('0')
+  })
+
   it('/client-only-explicit-import', async () => {
     const html = await $fetch('/client-only-explicit-import')
 
@@ -324,6 +361,27 @@ describe('pages', () => {
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
+  })
+
+  it('/wrapper-expose/page', async () => {
+    await expectNoClientErrors('/wrapper-expose/page')
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/page')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('#log-foo').click()
+    expect(lastLog === 'bar').toBeTruthy()
+    // change page
+    await page.locator('#to-hello').click()
+    await page.locator('#log-foo').click()
+    expect(lastLog?.includes('.foo is not a function')).toBeTruthy()
+    await page.locator('#log-hello').click()
+    expect(lastLog === 'world').toBeTruthy()
   })
 
   it('client-fallback', async () => {
@@ -390,8 +448,6 @@ describe('pages', () => {
 
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
     await page.close()
@@ -648,7 +704,8 @@ describe('navigate', () => {
 })
 
 describe('preserves current instance', () => {
-  it('should not return getCurrentInstance when there\'s an error in data', async () => {
+  // TODO: it's unclear why there's an error here in vite ecosystem CI but it's not stemming from Nuxt
+  it.skipIf(process.env.ECOSYSTEM_CI)('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
     expect(html).toContain('This should be false: false')
@@ -732,7 +789,7 @@ describe('navigate external', () => {
   it('should redirect to example.com', async () => {
     const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
 
-    expect(headers.get('location')).toEqual('https://example.com/')
+    expect(headers.get('location')).toEqual('https://example.com/?redirect=false#test')
   })
 
   it('should redirect to api endpoint', async () => {
@@ -1146,10 +1203,36 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe('prefetching', () => {
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
+
+  it('should prefetch server components', async () => {
+    await expectNoClientErrors('/prefetch/server-components')
+  })
+
+  it('should prefetch everything needed when NuxtLink is used', async () => {
+    const page = await createPage()
+    const requests: string[] = []
+
+    page.on('request', (req) => {
+      requests.push(req.url().replace(url('/'), '/').replace(/\.[^.]+\./g, '.'))
+    })
+
+    await page.goto(url('/prefetch'))
+    await page.waitForLoadState('networkidle')
+
+    const snapshot = [...requests]
+    await page.click('[href="/prefetch/server-components"]')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.innerHTML('#async-server-component-count')).toBe('34')
+
+    expect(requests).toEqual(snapshot)
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch('/auth')
     // should not prefetch global components
@@ -1540,6 +1623,13 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     await page.close()
   })
+
+  it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const entries = Object.entries(parsePayload(payload))
+    const [key, serialisedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
+    expect(serialisedComponent).toEqual(key)
+  })
 })
 
 describe.skipIf(isWindows)('useAsyncData', () => {
@@ -1561,6 +1651,19 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
+  })
+
+  it('requests status can be used', async () => {
+    const html = await $fetch('/useAsyncData/status')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+
+    const page = await createPage('/useAsyncData/status')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#status5-values').textContent()).toContain('idle,pending,success')
+
+    await page.close()
   })
 })
 

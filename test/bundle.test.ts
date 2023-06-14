@@ -25,21 +25,20 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"98.5k"')
+    expect(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.2k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
-        "_nuxt/error-component.js",
       ]
     `)
   })
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.8k"')
+    expect(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.0k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2286k"')
+    expect(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2295k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -65,11 +64,13 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "estree-walker",
         "h3",
+        "h3/node_modules/destr",
         "hookable",
         "iron-webcrypto",
         "klona",
         "node-fetch-native",
         "ofetch",
+        "ofetch/node_modules/destr",
         "ohash",
         "pathe",
         "radix3",
@@ -81,6 +82,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unenv",
         "unhead",
         "unstorage",
+        "unstorage/node_modules/destr",
         "vue",
         "vue-bundle-renderer",
       ]

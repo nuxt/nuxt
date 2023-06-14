@@ -401,3 +401,12 @@ describe('composables inference', () => {
     expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
   })
 })
+
+describe('kit utilities', () => {
+  it('addTypeTemplate', () => {
+    // @ts-expect-error Fromage is 'cheese'
+    const _fake: Fromage = 'babybel'
+
+    const _fromage: Fromage = 'cheese'
+  })
+})
