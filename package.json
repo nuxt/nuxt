@@ -44,7 +44,7 @@
     "@nuxt/test-utils": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "12.0.0",
-    "@types/node": "18.16.17",
+    "@types/node": "18.16.18",
     "@types/semver": "7.5.0",
     "case-police": "0.6.1",
     "chalk": "5.2.0",
@@ -76,10 +76,10 @@
     "vite": "4.3.9",
     "vitest": "0.32.0",
     "vue": "3.3.4",
-    "vue-eslint-parser": "9.3.0",
+    "vue-eslint-parser": "9.3.1",
     "vue-tsc": "1.6.5"
   },
-  "packageManager": "pnpm@8.6.1",
+  "packageManager": "pnpm@8.6.2",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   }
