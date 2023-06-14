@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -19,6 +19,7 @@ import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protect
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
+import { CSSPlugin } from './plugins/css-import'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
@@ -71,6 +72,13 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
+
+  // Add CSS directly to nuxt-root.vue for better inlining support
+  addBuildPlugin(CSSPlugin({
+    sourcemap: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server,
+    rootId: () => nuxt.apps.default.rootComponent!,
+    css: nuxt.options.css
+  }))
 
   // Add import protection
   const config = {

@@ -10,7 +10,6 @@ import { baseURL } from '#build/paths.mjs'
 import type { CreateOptions } from '#app'
 import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
 
-import '#build/css'
 // @ts-expect-error virtual file
 import _plugins from '#build/plugins'
 // @ts-expect-error virtual file

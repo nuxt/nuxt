@@ -1171,6 +1171,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of [
+      '{--global:"global";', // global css from nuxt.config
       '{--assets:"assets"}', // <script>
       '{--scoped:"scoped"}', // <style lang=css>
       '{--postcss:"postcss"}' // <style lang=postcss>
@@ -1394,11 +1395,16 @@ describe('component islands', () => {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
     }
 
-    expect(result).toMatchInlineSnapshot(`
+    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [],
+          "style": [
+            {
+              "innerHTML": ":root{--global:\\"global\\";--asset:url(/_nuxt/logo.148d9522.svg)}",
+              "key": "island-style",
+            },
+          ],
         },
         "html": "<pre nuxt-ssr-component-uid>    Route: /foo
         </pre>",
@@ -1416,11 +1422,16 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
-    expect(result).toMatchInlineSnapshot(`
+    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [],
+          "style": [
+            {
+              "innerHTML": ":root{--global:\\"global\\";--asset:url(/_nuxt/logo.148d9522.svg)}",
+              "key": "island-style",
+            },
+          ],
         },
         "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
@@ -1437,11 +1448,16 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
-    expect(result).toMatchInlineSnapshot(`
+    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [],
+          "style": [
+            {
+              "innerHTML": ":root{--global:\\"global\\";--asset:url(/_nuxt/logo.148d9522.svg)}",
+              "key": "island-style",
+            },
+          ],
         },
         "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
         "state": {},
@@ -1468,25 +1484,24 @@ describe('component islands', () => {
         link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
       }
     }
-    result.head.style = result.head.style.map(s => ({
-      ...s,
-      innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
-      key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
-    }))
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
-      expect(result.head).toMatchInlineSnapshot(`
+      expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "link": [],
           "style": [
+            {
+              "innerHTML": ":root{--global:\\"global\\";--asset:url(/_nuxt/logo.148d9522.svg)}",
+              "key": "island-style",
+            },
             {
               "innerHTML": "pre[data-v-xxxxx]{color:blue}",
               "key": "island-style",
             },
           ],
         }
-    `)
+      `)
     } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
@@ -1676,3 +1691,17 @@ describe.runIf(isDev())('component testing', () => {
     expect(comp2).toContain('12 x 4 = 48')
   })
 })
+
+function normaliseIslandResult (result: NuxtIslandResponse) {
+  return {
+    ...result,
+    head: {
+      ...result.head,
+      style: result.head.style.map(s => ({
+        ...s,
+        innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
+        key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
+      }))
+    }
+  }
+}
