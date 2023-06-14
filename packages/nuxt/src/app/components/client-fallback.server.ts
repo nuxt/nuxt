@@ -29,15 +29,19 @@ const NuxtClientFallbackServer = defineComponent({
       default: () => false
     }
   },
-  emits: ['ssr-error'],
+  emits: {
+    'ssr-error' (_error: unknown) {
+      return true
+    }
+  },
   setup (props, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
 
-    onErrorCaptured(() => {
+    onErrorCaptured((err) => {
       useState(`${props.uid}`, () => true)
       ssrFailed.value = true
-      ctx.emit('ssr-error')
+      ctx.emit('ssr-error', err)
       return false
     })
 
@@ -50,10 +54,10 @@ const NuxtClientFallbackServer = defineComponent({
       }
 
       return { ssrFailed, ssrVNodes }
-    } catch {
+    } catch (ssrError) {
       // catch in dev
       useState(`${props.uid}`, () => true)
-      ctx.emit('ssr-error')
+      ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }
     }
   },
