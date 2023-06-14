@@ -1544,10 +1544,10 @@
   dependencies:
     postcss-value-parser "^4.2.0"
 
-"@csstools/postcss-relative-color-syntax@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@csstools/postcss-relative-color-syntax/-/postcss-relative-color-syntax-1.0.1.tgz#37b1c5d4bfcd607456e6a4b2fd2782dfae0264af"
-  integrity sha512-IskxdQqAkx/pyyOEW3Lhn3nvOu5zlaZ8wQljFl5zc3ABl+gEFf2G42yWK3+wX+J0F4jm7OikOigXo9fAISFEmg==
+"@csstools/postcss-relative-color-syntax@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@csstools/postcss-relative-color-syntax/-/postcss-relative-color-syntax-1.0.2.tgz#9321765da2b372f3056ebdbfa219bfddf9285519"
+  integrity sha512-juCoVInkgH2TZPfOhyx6tIal7jW37L/0Tt+Vcl1LoxqQA9sxcg3JWYZ98pl1BonDnki6s/M7nXzFQHWsWMeHgw==
   dependencies:
     "@csstools/css-color-parser" "^1.2.0"
     "@csstools/css-parser-algorithms" "^2.1.1"
@@ -11993,10 +11993,10 @@ postcss-modules-values@^4.0.0:
   dependencies:
     icss-utils "^5.0.0"
 
-postcss-nesting@^11.2.1:
-  version "11.2.2"
-  resolved "https://registry.npmjs.org/postcss-nesting/-/postcss-nesting-11.2.2.tgz#ddedfea5a1fdcd8d753298d82297ad15d5640c0f"
-  integrity sha512-aOTiUniAB1bcPE6GGiynWRa6PZFPhOTAm5q3q5cem6QeSijIHHkWr6gs65ukCZMXeak8yXeZVbBJET3VM+HlhA==
+postcss-nesting@^11.3.0:
+  version "11.3.0"
+  resolved "https://registry.npmjs.org/postcss-nesting/-/postcss-nesting-11.3.0.tgz#f0a16ecd55555770d41974236c90918447355a5f"
+  integrity sha512-JlS10AQm/RzyrUGgl5irVkAlZYTJ99mNueUl+Qab+TcHhVedLiylWVkKBhRale+rS9yWIJK48JVzQlq3LcSdeA==
   dependencies:
     "@csstools/selector-specificity" "^2.0.0"
     postcss-selector-parser "^6.0.10"
@@ -12170,10 +12170,10 @@ postcss-place@^8.0.1:
   dependencies:
     postcss-value-parser "^4.2.0"
 
-postcss-preset-env@^8.4.2:
-  version "8.4.2"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.4.2.tgz#1973bc78333a159f1a54e5258f871989f4998216"
-  integrity sha512-Bihxo+FsyVNjsRADiYYnj9Ez0WBSWSSHAe8WvxoMlqrw8H8m6gK9E0MkDd7P6ForoikRIF3I8grGg/pFM6ECRQ==
+postcss-preset-env@^8.5.0:
+  version "8.5.0"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-8.5.0.tgz#42eacef909fdeb3e501c9afa0c80646df6e66315"
+  integrity sha512-aqAbT5dXqYX5ZvicGKQpaW/eDEZFRfnhV6Hn1Jn2bCKEB9L2MgsTdnIsXsZyFUQflIV2wIs9HTEQgkH5duMCNg==
   dependencies:
     "@csstools/postcss-cascade-layers" "^3.0.1"
     "@csstools/postcss-color-function" "^2.2.3"
@@ -12192,7 +12192,7 @@ postcss-preset-env@^8.4.2:
     "@csstools/postcss-normalize-display-values" "^2.0.1"
     "@csstools/postcss-oklab-function" "^2.2.3"
     "@csstools/postcss-progressive-custom-properties" "^2.3.0"
-    "@csstools/postcss-relative-color-syntax" "^1.0.1"
+    "@csstools/postcss-relative-color-syntax" "^1.0.2"
     "@csstools/postcss-scope-pseudo-class" "^2.0.2"
     "@csstools/postcss-stepped-value-functions" "^2.1.1"
     "@csstools/postcss-text-decoration-shorthand" "^2.2.4"
@@ -12222,7 +12222,7 @@ postcss-preset-env@^8.4.2:
     postcss-initial "^4.0.1"
     postcss-lab-function "^5.2.3"
     postcss-logical "^6.2.0"
-    postcss-nesting "^11.2.1"
+    postcss-nesting "^11.3.0"
     postcss-opacity-percentage "^2.0.0"
     postcss-overflow-shorthand "^4.0.1"
     postcss-page-break "^3.0.4"
