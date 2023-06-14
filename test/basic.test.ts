@@ -168,6 +168,8 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
 
+    await page.close()
+
     await expectNoClientErrors('/proxy')
   })
 
@@ -446,8 +448,6 @@ describe('pages', () => {
 
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
     await page.close()
@@ -1202,10 +1202,36 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe('prefetching', () => {
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
+
+  it('should prefetch server components', async () => {
+    await expectNoClientErrors('/prefetch/server-components')
+  })
+
+  it('should prefetch everything needed when NuxtLink is used', async () => {
+    const page = await createPage()
+    const requests: string[] = []
+
+    page.on('request', (req) => {
+      requests.push(req.url().replace(url('/'), '/').replace(/\.[^.]+\./g, '.'))
+    })
+
+    await page.goto(url('/prefetch'))
+    await page.waitForLoadState('networkidle')
+
+    const snapshot = [...requests]
+    await page.click('[href="/prefetch/server-components"]')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.innerHTML('#async-server-component-count')).toBe('34')
+
+    expect(requests).toEqual(snapshot)
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch('/auth')
     // should not prefetch global components
@@ -1595,6 +1621,13 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
 
     await page.close()
+  })
+
+  it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const entries = Object.entries(parsePayload(payload))
+    const [key, serialisedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
+    expect(serialisedComponent).toEqual(key)
   })
 })
 
