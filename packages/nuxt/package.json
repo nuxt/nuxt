@@ -65,7 +65,7 @@
     "chokidar": "^3.5.3",
     "cookie-es": "^1.0.0",
     "defu": "^6.1.2",
-    "destr": "^1.2.2",
+    "destr": "^2.0.0",
     "devalue": "^4.3.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",

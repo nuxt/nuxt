@@ -36,6 +36,9 @@ jobs:
       - name: Test (unit)
         run: pnpm test:unit -u
 
+      - name: Run build
+        run: pnpm build
+
       - name: Update bundle size
         run: pnpm vitest run bundle -u
 

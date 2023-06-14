@@ -48,7 +48,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
           markInvalidates(server.moduleGraph.getModulesByFile(typeof plugin === 'string' ? plugin : plugin.src))
         }
         for (const template of ctx.nuxt.options.build.templates) {
-          markInvalidates(server.moduleGraph.getModulesByFile(template?.src as string))
+          markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
         }
       }
 
