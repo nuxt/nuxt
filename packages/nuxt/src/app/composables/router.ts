@@ -190,6 +190,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       if (!nuxtApp.isHydrating) {
         return false
       }
+      // When app is hydrating (i.e. on page load), we don't want to abort navigation as
+      // it would lead to a 404 error / page that's blinking before location changes.
+      return new Promise(() => {})
     }
     return Promise.resolve()
   }
