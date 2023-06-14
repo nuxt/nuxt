@@ -8,6 +8,8 @@ interface CSSPluginOptions {
   css: string[]
 }
 
+const SCRIPT_RE = /<script[^>]*>/i
+
 export const CSSPlugin = (options: CSSPluginOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:css-import:transform',
@@ -17,7 +19,7 @@ export const CSSPlugin = (options: CSSPluginOptions) => createUnplugin(() => {
     },
     transform (code) {
       const s = new MagicString(code)
-      s.replace(/<script[^>]*>/, ['$0', ...options.css.map(i => genImport(i))].join('\n'))
+      s.replace(SCRIPT_RE, ['$0', ...options.css.map(i => genImport(i))].join('\n'))
 
       return {
         code: s.toString(),
