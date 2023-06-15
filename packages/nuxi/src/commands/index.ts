@@ -22,7 +22,8 @@ export const commands = {
   upgrade: () => import('./upgrade').then(_rDefault),
   test: () => import('./test').then(_rDefault),
   add: () => import('./add').then(_rDefault),
-  new: () => import('./add').then(_rDefault)
+  new: () => import('./add').then(_rDefault),
+  attach: () => import('./attach').then(_rDefault)
 }
 
 export type Command = keyof typeof commands
