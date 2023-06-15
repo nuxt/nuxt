@@ -33,6 +33,10 @@ export default defineComponent({
     context: {
       type: Object,
       default: () => ({})
+    },
+    source: {
+      type: String,
+      default: () => undefined
     }
   },
   async setup (props, { slots }) {
@@ -72,7 +76,8 @@ export default defineComponent({
       const key = `${props.name}:${hashId.value}`
       if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
 
-      const url = `/__nuxt_island/${key}`
+      const url = props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
+
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
