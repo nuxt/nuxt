@@ -8,6 +8,7 @@ import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+import { consola } from 'consola'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -25,6 +26,22 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
+  // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
+  [
+    'vite.config.js',
+    'vite.config.mjs',
+    'vite.config.ts',
+    'vite.config.cjs',
+    'vite.config.mts',
+    'vite.config.cts'
+  ].some((fileName) => {
+    if (existsSync(resolve(nuxt.options.rootDir, fileName))) {
+      consola.warn(`\`${fileName}\` is not supported. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`)
+      return true
+    }
+    return false
+  })
+
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
