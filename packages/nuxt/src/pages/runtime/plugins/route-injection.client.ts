@@ -9,7 +9,7 @@ export default defineNuxtPlugin({
         const vm = getCurrentInstance()!
         // @ts-expect-error Vue internal type
         this.$route = vm.provides._route
-      },
+      }
     })
   }
 })

@@ -251,7 +251,7 @@ export default defineNuxtModule({
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
-  
+
     if (nuxt.options.experimental.templateRouteMixin) {
       // Add global mixin to ensure template $route is kept in sync with `<NuxtPage>`
       addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
