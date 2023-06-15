@@ -24,6 +24,27 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
 }
 
 /**
+ * Renders given types using lodash template during build into the project buildDir
+ * and register them as types.
+ */
+export function addTypeTemplate (_template: NuxtTemplate<any>) {
+  const nuxt = useNuxt()
+
+  const template = addTemplate(_template)
+
+  if (!template.filename.endsWith('.d.ts')) {
+    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+  }
+
+  // Add template to types reference
+  nuxt.hook('prepare:types', ({ references }) => {
+    references.push({ path: template.dst })
+  })
+
+  return template
+}
+
+/**
  * Normalize a nuxt template object
  */
 export function normalizeTemplate (template: NuxtTemplate<any> | string): ResolvedNuxtTemplate<any> {

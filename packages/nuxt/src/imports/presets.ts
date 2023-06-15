@@ -27,6 +27,7 @@ const appPreset = defineUnimportPreset({
     'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
+    'clearNuxtState',
     'useFetch',
     'useLazyFetch',
     'useCookie',
@@ -161,9 +162,13 @@ const vueTypesPreset = defineUnimportPreset({
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'ExtractPropTypes',
+    'ExtractPublicPropTypes',
     'InjectionKey',
     'PropType',
     'Ref',
+    'MaybeRef',
+    'MaybeRefOrGetter',
     'VNode'
   ]
 })

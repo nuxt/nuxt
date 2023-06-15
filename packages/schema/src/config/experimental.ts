@@ -12,6 +12,10 @@ export default defineUntypedSchema({
     /**
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     * 
+     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be 
+     * removed from core in Vue 3.4.
+     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
      */
     reactivityTransform: false,
 
@@ -103,6 +107,8 @@ export default defineUntypedSchema({
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     * 
+     * @type {boolean | undefined}
      */
     payloadExtraction: undefined,
 
@@ -171,7 +177,6 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/paulmillr/chokidar
      * @see https://github.com/parcel-bundler/watcher
-     * @default chokidar
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: 'chokidar-granular'

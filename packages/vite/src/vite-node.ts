@@ -48,7 +48,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
           markInvalidates(server.moduleGraph.getModulesByFile(typeof plugin === 'string' ? plugin : plugin.src))
         }
         for (const template of ctx.nuxt.options.build.templates) {
-          markInvalidates(server.moduleGraph.getModulesByFile(template?.src))
+          markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
         }
       }
 
@@ -118,7 +118,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     const node: ViteNodeServer = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
-          /\/(nuxt|nuxt3)\//,
+          /\/node_modules\/(.*\/)?(nuxt|nuxt3)\//,
           /^#/,
           ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev })
         ]

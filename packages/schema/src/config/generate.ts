@@ -14,11 +14,15 @@ export default defineUntypedSchema({
      * ```js
      * routes: ['/users/1', '/users/2', '/users/3']
      * ```
+     * 
+     * @type {string | string[]}
      */
     routes: [],
 
     /**
      * This option is no longer used. Instead, use `nitro.prerender.ignore`.
+     * 
+     * @deprecated
      */
     exclude: []
   }

@@ -190,7 +190,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
   })
 
   addComponent({
@@ -363,7 +363,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
-    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+    if (isFileChange && RESTART_RE.test(path)) {
       console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
@@ -408,7 +408,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
-  options.build.transpile.push('@nuxt/ui-templates')
+  options.build.transpile.push(
+    '@nuxt/ui-templates', // this exposes vue SFCs
+    'std-env' // we need to statically replace process.env when used in runtime code
+  )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
@@ -427,3 +430,5 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   return nuxt
 }
+
+const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i

@@ -3,6 +3,9 @@ import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { createError } from './error'
+import { onNuxtReady } from './ready'
+
+export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
 
@@ -59,6 +62,7 @@ export interface _AsyncData<DataT, ErrorT> {
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
@@ -124,7 +128,8 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
-      error: toRef(nuxt.payload._errors, key)
+      error: toRef(nuxt.payload._errors, key),
+      status: ref('idle')
     }
   }
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
@@ -143,6 +148,7 @@ export function useAsyncData<
       return getCachedData()
     }
     asyncData.pending.value = true
+    asyncData.status.value = 'pending'
     // TODO: Cancel previous promise
     const promise = new Promise<ResT>(
       (resolve, reject) => {
@@ -165,6 +171,7 @@ export function useAsyncData<
         }
         asyncData.data.value = result
         asyncData.error.value = null
+        asyncData.status.value = 'success'
       })
       .catch((error: any) => {
         // If this request is cancelled, resolve to the latest request.
@@ -172,6 +179,7 @@ export function useAsyncData<
 
         asyncData.error.value = error
         asyncData.data.value = unref(options.default!())
+        asyncData.status.value = 'error'
       })
       .finally(() => {
         if ((promise as any).cancelled) { return }
@@ -221,6 +229,7 @@ export function useAsyncData<
     if (fetchOnServer && nuxt.isHydrating && hasCachedData()) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
+      asyncData.status.value = asyncData.error.value ? 'error' : 'success'
     } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
@@ -300,6 +309,9 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   if (process.server) {
     return Promise.resolve()
   }
+
+  await new Promise<void>(resolve => onNuxtReady(resolve))
+
   const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
@@ -324,6 +336,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       nuxtApp._asyncData[key]!.data.value = undefined
       nuxtApp._asyncData[key]!.error.value = undefined
       nuxtApp._asyncData[key]!.pending.value = false
+      nuxtApp._asyncData[key]!.status.value = 'idle'
     }
     if (key in nuxtApp._asyncDataPromises) {
       nuxtApp._asyncDataPromises[key] = undefined

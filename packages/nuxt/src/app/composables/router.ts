@@ -2,11 +2,11 @@ import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vu
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, joinURL, parseURL } from 'ufo'
+import { hasProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
@@ -42,7 +42,10 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-export const defineNuxtRouteMiddleware = (middleware: RouteMiddleware) => middleware
+/*! @__NO_SIDE_EFFECTS__ */
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
+  return middleware
+}
 
 export interface AddRouteMiddlewareOptions {
   global?: boolean
@@ -80,10 +83,29 @@ const isProcessingMiddleware = () => {
   return false
 }
 
+// Conditional types, either one or other
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+
+export type OpenWindowFeatures = {
+  popup?: boolean
+  noopener?: boolean
+  noreferrer?: boolean
+} & XOR<{width?: number}, {innerWidth?: number}>
+  & XOR<{height?: number}, {innerHeight?: number}>
+  & XOR<{left?: number}, {screenX?: number}>
+  & XOR<{top?: number}, {screenY?: number}>
+
+export type OpenOptions = {
+  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  windowFeatures?: OpenWindowFeatures
+}
+
 export interface NavigateToOptions {
   replace?: boolean
-  redirectCode?: number,
+  redirectCode?: number
   external?: boolean
+  open?: OpenOptions
 }
 
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
@@ -91,7 +113,24 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     to = '/'
   }
 
-  const toPath = typeof to === 'string' ? to : ((to as RouteLocationPathRaw).path || '/')
+  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+
+  // Early open handler
+  if (options?.open) {
+    if (process.client) {
+      const { target = '_blank', windowFeatures = {} } = options.open
+
+      const features = Object.entries(windowFeatures)
+        .filter(([_, value]) => value !== undefined)
+        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+        .join(', ')
+
+      open(toPath, target, features)
+    }
+
+    return Promise.resolve()
+  }
+
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
@@ -109,13 +148,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   const router = useRouter()
 
+  const nuxtApp = useNuxtApp()
+
   if (process.server) {
-    const nuxtApp = useNuxtApp()
     if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      async function redirect () {
+      async function redirect (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
@@ -124,16 +164,16 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location }
         }
-        return inMiddleware ? /* abort route navigation */ false : undefined
+        return response
       }
 
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.afterEach(final => (final.fullPath === fullPath) ? redirect() : undefined)
+        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
         return to
       }
-      return redirect()
+      return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
     }
   }
 
@@ -143,6 +183,16 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       location.replace(toPath)
     } else {
       location.href = toPath
+    }
+    // Within in a Nuxt route middleware handler
+    if (inMiddleware) {
+      // Abort navigation when app is hydrated
+      if (!nuxtApp.isHydrating) {
+        return false
+      }
+      // When app is hydrating (i.e. on page load), we don't want to abort navigation as
+      // it would lead to a 404 error / page that's blinking before location changes.
+      return new Promise(() => {})
     }
     return Promise.resolve()
   }
@@ -155,10 +205,16 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (process.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
   }
-  if (err) {
-    throw createError(err)
+
+  if (!err) { return false }
+
+  err = createError(err)
+
+  if (err.fatal) {
+    useNuxtApp().runWithContext(() => showError(err as NuxtError))
   }
-  return false
+
+  throw err
 }
 
 export const setPageLayout = (layout: string) => {

@@ -94,7 +94,10 @@
         "varsIgnorePattern": "^_",
         "ignoreRestSiblings": true
       }
-    ]
+    ],
+    "jsdoc/check-tag-names": ["error", {
+      "definedTags": ["__NO_SIDE_EFFECTS__"]
+    }]
   },
   "settings": {
     "jsdoc": {

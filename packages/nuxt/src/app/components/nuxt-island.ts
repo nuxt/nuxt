@@ -16,6 +16,9 @@ const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
 const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
+let id = 0
+const getId = process.client ? () => (id++).toString() : randomUUID
+
 export default defineComponent({
   name: 'NuxtIsland',
   props: {
@@ -39,6 +42,7 @@ export default defineComponent({
     const event = useRequestEvent()
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
+
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => {
@@ -56,7 +60,7 @@ export default defineComponent({
       })
     })
     function setUid () {
-      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID() as string
+      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
@@ -64,19 +68,37 @@ export default defineComponent({
       return getSlotProps(ssrHTML.value)
     })
 
-    function _fetchComponent () {
-      const url = `/__nuxt_island/${props.name}:${hashId.value}`
+    async function _fetchComponent () {
+      const key = `${props.name}:${hashId.value}`
+      if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+
+      const url = `/__nuxt_island/${key}`
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      return $fetch<NuxtIslandResponse>(url, {
+      const result = await $fetch<NuxtIslandResponse>(url, {
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
         }
       })
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...(process.server && process.env.prerender)
+            ? {}
+            : {
+                params: {
+                  ...props.context,
+                  props: props.props ? JSON.stringify(props.props) : undefined
+                }
+              }
+        },
+        ...result
+      }
+      return result
     }
     const key = ref(0)
     async function fetchComponent () {
@@ -90,7 +112,7 @@ export default defineComponent({
       cHead.value.link = res.head.link
       cHead.value.style = res.head.style
       ssrHTML.value = res.html.replace(UID_ATTR, () => {
-        return `nuxt-ssr-component-uid="${randomUUID()}"`
+        return `nuxt-ssr-component-uid="${getId()}"`
       })
       key.value++
       if (process.client) {

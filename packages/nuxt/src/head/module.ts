@@ -50,7 +50,7 @@ export default defineNuxtModule({
     // Opt-out feature allowing dependencies using @vueuse/head to work
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = await tryResolveModule('@unhead/vue') || '@unhead/vue'
+      nuxt.options.alias['@vueuse/head'] = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
       addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
     }
 

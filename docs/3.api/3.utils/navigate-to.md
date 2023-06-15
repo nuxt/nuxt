@@ -18,6 +18,7 @@ interface NavigateToOptions {
   replace?: boolean
   redirectCode?: number
   external?: boolean
+  open?: OpenOptions
 }
 ```
 
@@ -69,6 +70,58 @@ An object accepting the following properties:
 
   Allows navigating to an external URL when set to `true`. Otherwise, `navigateTo` will throw an error, as external navigation is not allowed by default.
 
+- `open` (optional)
+
+  **Type**: `OpenOptions`
+
+  Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
+
+  An object accepting the following properties:
+
+  - `target`
+
+    **Type**: `string`
+
+    **Default**: `'_blank'`
+
+    A string, without whitespace, specifying the name of the browsing context the resource is being loaded into.
+
+  - `windowFeatures` (optional)
+
+    **Type**: `OpenWindowFeatures`
+
+    An object accepting the following properties:
+
+    - `popup` (optional)
+
+      **Type**: `boolean`
+
+    - `width` or `innerWidth` (optional)
+
+      **Type**: `number`
+
+    - `height` or `innerHeight` (optional)
+
+      **Type**: `number`
+
+    - `left` or `screenX` (optional)
+
+      **Type**: `number`
+
+    - `top` or `screenY` (optional)
+
+      **Type**: `number`
+  
+    - `noopener` (optional)
+
+      **Type**: `boolean`
+
+    - `noreferrer` (optional)
+  
+      **Type**: `boolean`
+
+    Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.
+
 ## Examples
 
 ### Navigating Within a Vue Component
@@ -117,6 +170,23 @@ await navigateTo('https://nuxt.com')
 // will redirect successfully with the 'external' parameter set to 'true'
 await navigateTo('https://nuxt.com', {
   external: true
+})
+</script>
+```
+
+### Navigating using open()
+
+```vue
+<script setup>
+// will open 'https://nuxt.com' in a new tab
+await navigateTo('https://nuxt.com', {  
+  open: {
+    target: '_blank',
+    windowFeatures: {
+      width: 500,
+      height: 500
+    }
+  }
 })
 </script>
 ```
