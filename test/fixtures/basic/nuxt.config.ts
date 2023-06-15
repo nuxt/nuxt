@@ -180,6 +180,7 @@ export default defineNuxtConfig({
     }
   },
   experimental: {
+    templateRouteMixin: true,
     typedPages: true,
     polyfillVueUseHead: true,
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
