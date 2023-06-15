@@ -42,8 +42,6 @@ export interface RuntimeNuxtHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'link:prefetch': (link: string) => HookResult
-  'router:beforeMiddleware': (Component?: VNode) => HookResult
-  'router:afterMiddleware': (Component?: VNode) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
