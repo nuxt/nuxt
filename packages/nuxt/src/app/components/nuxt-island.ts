@@ -40,8 +40,9 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
+    const error = ref<unknown>(null)
     const nuxtApp = useNuxtApp()
-    const hashId = computed(() => hash([props.name, props.props, props.context]))
+    const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     const mounted = ref(false)
@@ -113,18 +114,23 @@ export default defineComponent({
           delete nuxtApp[pKey]![uid.value]
         })
       }
-      const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-      cHead.value.link = res.head.link
-      cHead.value.style = res.head.style
-      ssrHTML.value = res.html.replace(UID_ATTR, () => {
-        return `nuxt-ssr-component-uid="${getId()}"`
-      })
-      key.value++
-      if (process.client) {
-        // must await next tick for Teleport to work correctly with static node re-rendering
-        await nextTick()
+      try {
+        const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
+        cHead.value.link = res.head.link
+        cHead.value.style = res.head.style
+        ssrHTML.value = res.html.replace(UID_ATTR, () => {
+          return `nuxt-ssr-component-uid="${getId()}"`
+        })
+        key.value++
+        error.value = null
+        if (process.client) {
+          // must await next tick for Teleport to work correctly with static node re-rendering
+          await nextTick()
+        }
+        setUid()
+      } catch (e) {
+        error.value = e
       }
-      setUid()
     }
 
     if (process.client) {
@@ -136,6 +142,9 @@ export default defineComponent({
     }
 
     return () => {
+      if (error.value && slots.fallback) {
+        return [slots.fallback({ error: error.value })]
+      }
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [h(createStaticVNode(html.value, 1))])]
