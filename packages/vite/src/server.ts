@@ -133,7 +133,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       for (const key in manifest) {
         const entry = manifest[key]
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key)
-        if (shouldRemoveCSS) {
+        if (shouldRemoveCSS && entry.css) {
           entry.css = []
         }
       }

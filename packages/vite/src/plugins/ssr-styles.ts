@@ -4,8 +4,10 @@ import { findStaticImports } from 'mlly'
 import { dirname, relative } from 'pathe'
 import { genObjectFromRawEntries } from 'knitwork'
 import { filename } from 'pathe/utils'
+import type { OutputChunk } from 'rollup'
 import { parseQuery, parseURL } from 'ufo'
 import type { Component } from '@nuxt/schema'
+import escapeRE from 'escape-string-regexp'
 
 interface SSRStylePluginOptions {
   srcDir: string
@@ -45,7 +47,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         }
       }
     },
-    generateBundle (outputOptions) {
+    generateBundle (outputOptions, bundle) {
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {
         const { files, inBundle } = cssMap[file]
@@ -73,6 +75,21 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       for (const key in emitted) {
         // Track the chunks we are inlining CSS for so we can omit including links to the .css files
         options.chunksWithInlinedCSS.add(key)
+      }
+
+      // remove entrypoint css from vite preload arrays
+      const entry = Object.values(bundle).find(c => c.type === 'chunk' && c.isEntry) as OutputChunk
+      const css = [...entry.viteMetadata?.importedCss || []]
+
+      if (css.length) {
+        for (const file in bundle) {
+          const chunk = bundle[file]
+          if (chunk.type === 'asset') { continue }
+          const CSS_RE = new RegExp(
+            '[^\\s]\\s*["\'](' + css.map(c => `\\.\\/${escapeRE(relative(dirname(chunk.fileName), c))}`).join('|') + ')["\']\\s*[^\\s]', 'g'
+          )
+          chunk.code = chunk.code.replace(CSS_RE, r => r.startsWith(',') && r.endsWith(',') ? ',' : '')
+        }
       }
 
       this.emitFile({
