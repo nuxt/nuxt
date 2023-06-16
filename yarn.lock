@@ -6133,10 +6133,10 @@ dot-prop@^5.1.0:
   dependencies:
     is-obj "^2.0.0"
 
-dotenv@^16.1.4:
-  version "16.1.4"
-  resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.1.4.tgz#67ac1a10cd9c25f5ba604e4e08bc77c0ebe0ca8c"
-  integrity sha512-m55RtE8AsPeJBpOIFKihEmqUcoVncQIwo7x9U8ZwLEZw9ZpXboz2c+rvog+jUaJvVrZ5kBOeYQBX5+8Aa/OZQw==
+dotenv@^16.2.0:
+  version "16.2.0"
+  resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.2.0.tgz#d0c7110551d39c407f407d1afdce49c501c8e320"
+  integrity sha512-jcq2vR1DY1+QA+vH58RIrWLDZOifTGmyQJWzP9arDUbgZcySdzuBb1WvhWZzZtiXgfm+GW2pjBqStqlfpzq7wQ==
 
 dotenv@^9.0.2:
   version "9.0.2"
