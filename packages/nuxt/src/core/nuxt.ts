@@ -86,11 +86,15 @@ async function initNuxt (nuxt: Nuxt) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
       transform: true
@@ -186,7 +190,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
   })
 
   addComponent({
@@ -304,6 +308,29 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
+  const envMap = {
+    // defaults from `builder` based on package name
+    '@nuxt/vite-builder': 'vite/client',
+    '@nuxt/webpack-builder': 'webpack/module',
+    // simpler overrides from `typescript.builder` for better DX
+    vite: 'vite/client',
+    webpack: 'webpack/module',
+    // default 'merged' builder environment for module authors
+    shared: '@nuxt/schema/builder-env'
+  }
+
+  nuxt.hook('prepare:types', ({ references }) => {
+    // Disable entirely if `typescript.builder` is false
+    if (nuxt.options.typescript.builder === false) { return }
+
+    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
+    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
+    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
+    const types = overrideEnv || defaultEnv
+
+    if (types) { references.push({ types }) }
+  })
+
   // Add nuxt app debugger
   if (nuxt.options.debug) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
@@ -336,7 +363,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
-    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+    if (isFileChange && RESTART_RE.test(path)) {
       console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
@@ -381,7 +408,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
-  options.build.transpile.push('@nuxt/ui-templates')
+  options.build.transpile.push(
+    '@nuxt/ui-templates', // this exposes vue SFCs
+    'std-env' // we need to statically replace process.env when used in runtime code
+  )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
@@ -400,3 +430,5 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   return nuxt
 }
+
+const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i

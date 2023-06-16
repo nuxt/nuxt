@@ -46,6 +46,7 @@ export type NuxtLinkProps = {
   ariaCurrentValue?: string
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
@@ -212,7 +213,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value as Element, async () => {
+                  unobserve = observer!.observe(el.value as HTMLElement, async () => {
                     unobserve?.()
                     unobserve = null
 

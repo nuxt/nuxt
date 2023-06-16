@@ -5,6 +5,10 @@ description: useAsyncData provides access to data that resolves asynchronously.
 
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
+::alert{type=warning}
+`useAsyncData` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+::
+
 ## Type
 
 ```ts [Signature]
@@ -28,19 +32,20 @@ type AsyncDataOptions<DataT> = {
   immediate?: boolean
 }
 
-interface RefreshOptions {
-  dedupe?: boolean
-}
-
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
   pending: Ref<boolean>
-  execute: () => Promise<void>
-  refresh: (opts?: RefreshOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
+};
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
 
-
+type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
 ## Params
@@ -64,6 +69,7 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 * **pending**: a boolean indicating whether the data is still being fetched
 * **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function
 * **error**: an error object if the data fetching failed
+* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`)
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 

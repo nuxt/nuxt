@@ -22,6 +22,7 @@ export default defineComponent({
 
 const cache = new WeakMap()
 
+/*! @__NO_SIDE_EFFECTS__ */
 export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (cache.has(component)) {
     return cache.get(component)

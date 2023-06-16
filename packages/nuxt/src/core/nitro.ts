@@ -37,7 +37,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     imports: {
-      autoImports: nuxt.options.imports.autoImport,
+      autoImport: nuxt.options.imports.autoImport,
       imports: [
         {
           as: '__buildAssetsURL',
@@ -92,7 +92,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       layer => resolve(layer.config.srcDir, 'app.config')
     ),
     typescript: {
-      generateTsConfig: false
+      strict: true,
+      generateTsConfig: true,
+      tsconfigPath: 'tsconfig.server.json'
     },
     publicAssets: [
       nuxt.options.dev
@@ -202,7 +204,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
-  if (!nuxt.options.experimental.inlineSSRStyles) {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.dev) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -293,7 +295,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     handler: resolve(distDir, 'core/runtime/nitro/renderer')
   })
 
-  if (nuxt.options.experimental.noVueServer) {
+  if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
     nitro.hooks.hook('rollup:before', (nitro) => {
       if (nitro.options.preset === 'nitro-prerender') { return }
       const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')

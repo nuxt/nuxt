@@ -7,6 +7,8 @@ import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import type { getComponentsT } from './module'
 
+const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+
 export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
   const componentUnimport = createUnimport({
     imports: [
@@ -47,7 +49,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     },
     async transform (code, id) {
       // Virtual component wrapper
-      if (id.match(/[?&]nuxt_component=/)) {
+      if (COMPONENT_QUERY_RE.test(id)) {
         const { search } = parseURL(id)
         const query = parseQuery(search)
         const mode = query.nuxt_component

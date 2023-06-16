@@ -15,6 +15,8 @@ import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
 
+const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
+
 export default defineNuxtModule({
   meta: {
     name: 'pages'
@@ -29,7 +31,7 @@ export default defineNuxtModule({
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
     const userPreference = nuxt.options.pages
-    const isPagesEnabled = () => {
+    const isPagesEnabled = async () => {
       if (typeof userPreference === 'boolean') {
         return userPreference
       }
@@ -39,25 +41,38 @@ export default defineNuxtModule({
       if (pagesDirs.some(dir => isNonEmptyDir(dir))) {
         return true
       }
+
+      const pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', pages)
+      if (pages.length) { return true }
+
       return false
     }
-    nuxt.options.pages = isPagesEnabled()
+    nuxt.options.pages = await isPagesEnabled()
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap(layer => [
       join(layer.config.srcDir, 'app/router.options.ts'),
       join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     ])
-    nuxt.hooks.hook('builder:watch', (event, path) => {
+    nuxt.hooks.hook('builder:watch', async (event, path) => {
       const fullPath = join(nuxt.options.srcDir, path)
       if (restartPaths.some(path => path === fullPath || fullPath.startsWith(path + '/'))) {
-        const newSetting = isPagesEnabled()
+        const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
           console.info('Pages', newSetting ? 'enabled' : 'disabled')
           return nuxt.callHook('restart')
         }
       }
     })
+
+    // adds support for #vue-router alias (used for types) with and without pages integration
+    addTemplate({
+      filename: 'vue-router.d.ts',
+      getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
+    })
+
+    nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router')
 
     if (!nuxt.options.pages) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
@@ -72,6 +87,12 @@ export default defineNuxtModule({
       })
       return
     }
+
+    addTemplate({
+      filename: 'vue-router.mjs',
+      // TODO: use `vue-router/auto` when we have support for page metadata
+      getContents: () => 'export * from \'vue-router\';'
+    })
 
     if (useExperimentalTypedPages) {
       const declarationFile = './types/typed-router.d.ts'
@@ -161,7 +182,7 @@ export default defineNuxtModule({
       ].filter(Boolean)
 
       const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
-      if (event !== 'change' && path.match(pathPattern)) {
+      if (event !== 'change' && pathPattern.test(path)) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -189,7 +210,7 @@ export default defineNuxtModule({
           const processPages = (pages: NuxtPage[], currentPath = '/') => {
             for (const page of pages) {
               // Add root of optional dynamic paths and catchalls
-              if (page.path.match(/^\/?:.*(\?|\(\.\*\)\*)$/) && !page.children?.length) { prerenderRoutes.add(currentPath) }
+              if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) { prerenderRoutes.add(currentPath) }
               // Skip dynamic paths
               if (page.path.includes(':')) { continue }
               const route = joinURL(currentPath, page.path)
@@ -254,17 +275,6 @@ export default defineNuxtModule({
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
-    })
-
-    // adds support for #vue-router alias
-    addTemplate({
-      filename: 'vue-router.mjs',
-      // TODO: use `vue-router/auto` when we have support for page metadata
-      getContents: () => 'export * from \'vue-router\';'
-    })
-    addTemplate({
-      filename: 'vue-router.d.ts',
-      getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
     })
 
     // Add routes template
@@ -359,8 +369,6 @@ export default defineNuxtModule({
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
     })
-
-    nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router')
 
     // Add declarations for middleware keys
     nuxt.hook('prepare:types', ({ references }) => {

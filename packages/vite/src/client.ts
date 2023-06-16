@@ -14,6 +14,7 @@ import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
+import { typeCheckPlugin } from './plugins/type-check'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
@@ -36,6 +37,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       devSourcemap: ctx.nuxt.options.sourcemap.client
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
       'process.server': false,
       'process.client': true,
       'module.hot': false
@@ -48,7 +50,14 @@ export async function buildClient (ctx: ViteBuildContext) {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       },
-      dedupe: ['vue']
+      dedupe: [
+        'vue',
+        // basic reactivity
+        '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared',
+        // runtime compiler
+        '@vue/compiler-sfc', '@vue/compiler-dom', '@vue/compiler-core', '@vue/compiler-ssr'
+      ]
+
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
@@ -118,6 +127,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   // Add analyze plugin if needed
   if (ctx.nuxt.options.build.analyze) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
+  }
+
+  // Add type checking client panel
+  if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })

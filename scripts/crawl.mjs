@@ -1,5 +1,6 @@
 // @ts-check
-import Crawler from 'crawler'
+import { fetch } from 'ofetch'
+import { load } from 'cheerio'
 import { consola } from 'consola'
 import { parseURL, withoutTrailingSlash } from 'ufo'
 import chalk from 'chalk'
@@ -63,12 +64,44 @@ function queue (path, referrer) {
   crawler.queue(url)
 }
 
-const crawler = new Crawler({
+const crawler = {
   maxConnections: 100,
+  /** @type {Array<string | Promise<any>>} */
+  _queue: [],
+  get queueSize () {
+    return this._queue.length
+  },
+  /** @param {string} url The URL to crawl */
+  queue (url) {
+    this._queue.push(url)
+    this.processQueue()
+  },
+  processQueue () {
+    if (!this.queueSize) { return }
+
+    for (let i = 0; i < Math.min(this.maxConnections, this.queueSize); i++) {
+      const item = this._queue[i]
+      if (!item || item instanceof Promise) { continue }
+      const promise = this._queue[i] = fetch(item, { redirect: 'manual' }).then(async (res) => {
+        const text = res.ok && await res.text()
+        this.callback(!res.ok ? new Error(res.statusText) : null, Object.assign(res, {
+          $: text ? load(text) : null
+        }), () => {
+          this._queue.splice(this._queue.indexOf(promise), 1)
+          this.processQueue()
+        })
+      })
+    }
+  },
+  /**
+   * @param {Error | null} error
+   * @param {import('ofetch').FetchResponse<any> & { $: import('cheerio').CheerioAPI | null }} res
+   * @param {() => void} done
+   */
   callback (error, res, done) {
-    const { $ } = res
-    const { uri } = res.options
-    const { statusCode } = res.response
+    const $ = res.$
+    const uri = res.url
+    const statusCode = res.status
 
     if (error || ![200, 301, 302].includes(statusCode) || !$) {
       // TODO: normalize relative links in module readmes - https://github.com/nuxt/nuxt.com/issues/1271
@@ -115,7 +148,7 @@ const crawler = new Crawler({
 
     done()
   }
-})
+}
 
 logger.log('')
 logger.info(`Checking \`${baseURL}\`.`)

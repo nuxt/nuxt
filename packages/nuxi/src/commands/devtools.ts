@@ -19,6 +19,6 @@ export default defineNuxtCommand({
       process.exit(1)
     }
 
-    await execa('npx', ['@nuxt/devtools-wizard', command, rootDir], { stdio: 'inherit', cwd: rootDir })
+    await execa('npx', ['@nuxt/devtools-wizard@latest', command, rootDir], { stdio: 'inherit', cwd: rootDir })
   }
 })

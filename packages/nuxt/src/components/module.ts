@@ -9,6 +9,7 @@ import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemp
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
+import { islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -177,7 +178,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
-      tsConfig.compilerOptions!.paths['#components'] = [relative(nuxt.options.rootDir, resolve(nuxt.options.buildDir, 'components'))]
+      tsConfig.compilerOptions!.paths['#components'] = [withLeadingDot(relative(nuxt.options.buildDir, resolve(nuxt.options.buildDir, 'components')))]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
@@ -220,6 +221,10 @@ export default defineNuxtModule<ComponentsOptions>({
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
+
+      config.plugins.push(islandsTransform.vite({
+        getComponents
+      }))
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -242,7 +247,19 @@ export default defineNuxtModule<ComponentsOptions>({
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
+
+        config.plugins.push(islandsTransform.webpack({
+          getComponents
+        }))
       })
     })
   }
 })
+
+const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
+function withLeadingDot (path: string) {
+  if (LEADING_DOT_RE.test(path)) {
+    return path
+  }
+  return `./${path}`
+}
