@@ -1,7 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>nuxt/renovate-config-nuxt"
+    "github>nuxt/renovate-config-nuxt",
+    ":pinDevDependencies",
+    ":widenPeerDependencies"
   ],
   "baseBranches": [
     "main",
@@ -9,10 +11,21 @@
   ],
   "packageRules": [
     {
+      "groupName": "vitest",
+      "matchPackageNames": [
+        "vite-node",
+        "vitest"
+      ],
+      "matchPackagePatterns": [
+        "^@vitest/"
+      ]
+    },
+    {
       "matchBaseBranches": [
         "main"
       ],
       "ignoreDeps": [
+        "typescript",
         "markdownlint-cli",
         "nuxt",
         "nuxt3",

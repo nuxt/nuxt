@@ -62,7 +62,8 @@ export default defineNuxtConfig({
   optimization: {
     keyedComposables: [
       {
-        name: 'useKeyedComposable',
+        name: 'useCustomKeyedComposable',
+        source: 'pages/keyed-composables/index.vue',
         argumentLength: 1
       }
     ]
@@ -115,10 +116,6 @@ export default defineNuxtConfig({
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
       })
-    },
-    function (_, nuxt) {
-      nuxt.options.optimization.treeShake.composables.server[nuxt.options.rootDir] = ['useClientOnlyComposable', 'setTitleToPink']
-      nuxt.options.optimization.treeShake.composables.client[nuxt.options.rootDir] = ['useServerOnlyComposable']
     },
     // To test falsy module values
     undefined

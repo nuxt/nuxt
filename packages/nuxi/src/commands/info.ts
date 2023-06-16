@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'pathe'
 import jiti from 'jiti'
 import destr from 'destr'
+import type { PackageJson } from 'pkg-types'
 import { splitByCase } from 'scule'
 import clipboardy from 'clipboardy'
 import type { NuxtModule } from '@nuxt/schema'
@@ -138,14 +139,14 @@ function getPkg (name: string, rootDir: string) {
     // console.log('not found:', name)
   }
 
-  return readJSONSync(pkgPath)
+  return readJSONSync(pkgPath) as PackageJson
 }
 
 function findPackage (rootDir: string) {
   return findup(rootDir, (dir) => {
     const p = resolve(dir, 'package.json')
     if (existsSync(p)) {
-      return readJSONSync(p)
+      return readJSONSync(p) as PackageJson
     }
   }) || {}
 }

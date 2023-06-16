@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -22,7 +22,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
       types: ['node'],
-      baseUrl: relative(nuxt.options.buildDir, nuxt.options.rootDir),
       paths: {}
     },
     include: [
@@ -45,15 +44,17 @@ export const writeTypes = async (nuxt: Nuxt) => {
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
+  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
     const relativePath = isAbsolute(aliases[alias])
-      ? relative(nuxt.options.rootDir, aliases[alias]) || '.'
+      ? relativeTo(basePath, aliases[alias])
       : aliases[alias]
 
-    const stats = await fsp.stat(resolve(nuxt.options.rootDir, relativePath)).catch(() => null /* file does not exist */)
+    const stats = await fsp.stat(resolve(basePath, relativePath)).catch(() => null /* file does not exist */)
     tsConfig.compilerOptions = tsConfig.compilerOptions || {}
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
@@ -77,6 +78,18 @@ export const writeTypes = async (nuxt: Nuxt) => {
   const declarations: string[] = []
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
+
+  // Normalise aliases to be relative to buildDir for backward compatibility
+  for (const alias in tsConfig.compilerOptions!.paths!) {
+    const paths = tsConfig.compilerOptions!.paths![alias] as string[]
+    for (const [index, path] of paths.entries()) {
+      if (isAbsolute(path) || LEADING_DOT_RE.test(path)) { continue }
+      const resolvedPath = join(nuxt.options.rootDir, path) /* previously basePath was set to rootDir */
+      if (existsSync(resolvedPath)) {
+        paths[index] = relativeTo(basePath, resolvedPath)
+      }
+    }
+  }
 
   const declaration = [
     ...references.map((ref) => {
@@ -108,6 +121,18 @@ export const writeTypes = async (nuxt: Nuxt) => {
   nuxt.hook('builder:prepared', writeFile)
 
   await writeFile()
+}
+
+const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
+function withLeadingDot (path: string) {
+  if (LEADING_DOT_RE.test(path)) {
+    return path
+  }
+  return `./${path}`
+}
+
+function relativeTo (from: string, to: string) {
+  return withLeadingDot(relative(from, to) || '.')
 }
 
 function renderAttrs (obj: Record<string, string>) {
