@@ -79,6 +79,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       const result = await $fetch<NuxtIslandResponse>(url, {
+        responseType: 'json',
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
