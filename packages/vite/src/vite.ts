@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, resolve } from 'pathe'
+import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -27,20 +27,11 @@ export interface ViteBuildContext {
 
 export async function bundle (nuxt: Nuxt) {
   // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
-  [
-    'vite.config.js',
-    'vite.config.mjs',
-    'vite.config.ts',
-    'vite.config.cjs',
-    'vite.config.mts',
-    'vite.config.cts'
-  ].some((fileName) => {
-    if (existsSync(resolve(nuxt.options.rootDir, fileName))) {
-      consola.warn(`\`${fileName}\` is not supported. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`)
-      return true
-    }
-    return false
-  })
+  const viteConfigPrefix = resolve(nuxt.options.rootDir, 'vite.config')
+  const viteConfigFile = await resolvePath(viteConfigPrefix).catch(() => null)
+  if (viteConfigFile && viteConfigFile !== viteConfigPrefix) {
+    consola.warn(`Using \`${basename(viteConfigFile)}\` is not supported together with Nuxt. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`)
+  }
 
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
