@@ -109,7 +109,7 @@
     "@types/fs-extra": "11.0.1",
     "@types/prompts": "2.4.4",
     "@vitejs/plugin-vue": "4.2.3",
-    "acorn": "8.8.2",
+    "acorn": "8.9.0",
     "unbuild": "latest",
     "vite": "4.3.9",
     "vitest": "0.32.2"
