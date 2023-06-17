@@ -422,9 +422,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
       plugin.order ||
       orderMap[plugin.enforce || 'default'] ||
       orderMap.default,
-    env: {
-      islands: plugin.env?.islands ?? true
-    }
+    env: plugin.env || {}
   }
 
   wrapper[NuxtPluginIndicator] = true
