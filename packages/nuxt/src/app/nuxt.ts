@@ -403,7 +403,7 @@ export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: 
 
 /*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
-  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin, env: { islands: true } }, meta) }
+  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin, env: {} }, meta) }
 
   const wrapper: Plugin<T> = (nuxtApp) => {
     if (plugin.hooks) {
