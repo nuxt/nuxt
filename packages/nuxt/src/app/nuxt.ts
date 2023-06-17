@@ -315,12 +315,12 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: ObjectPlugin<any>) 
   }
 }
 
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: ObjectPlugin[]) {
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
     const promise = applyPlugin(nuxtApp, plugin)
-    if (plugin.meta?.parallel) {
+    if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
     } else {
       await promise
@@ -331,7 +331,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Plugin<T> {
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> {
   const _plugin = plugin as Plugin<T>
   _plugin[NuxtPluginIndicator] = true
   return _plugin
