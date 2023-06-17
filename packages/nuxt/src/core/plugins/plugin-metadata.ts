@@ -118,7 +118,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       try {
         walk(parse(code) as Node, {
           enter (_node) {
-            if (_node.type === 'ExportDefaultDeclaration' && _node.declaration.type === 'FunctionDeclaration') {
+            if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
                 console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
                 s.overwrite(0, code.length, 'export default {}')
