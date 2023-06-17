@@ -52,7 +52,7 @@
     "cheerio": "1.0.0-rc.12",
     "consola": "3.1.0",
     "devalue": "4.3.2",
-    "eslint": "8.42.0",
+    "eslint": "8.43.0",
     "eslint-import-resolver-typescript": "3.5.5",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jsdoc": "41.1.2",
@@ -67,9 +67,9 @@
     "nuxt": "workspace:*",
     "ofetch": "1.1.0",
     "pathe": "1.1.1",
-    "playwright": "1.35.0",
+    "playwright": "1.35.1",
     "rimraf": "5.0.1",
-    "semver": "7.5.1",
+    "semver": "7.5.2",
     "std-env": "3.3.3",
     "typescript": "5.0.4",
     "ufo": "1.1.2",
@@ -77,7 +77,7 @@
     "vitest": "0.32.2",
     "vue": "3.3.4",
     "vue-eslint-parser": "9.3.1",
-    "vue-tsc": "1.6.5"
+    "vue-tsc": "1.8.0"
   },
   "packageManager": "pnpm@8.6.2",
   "engines": {
