@@ -160,7 +160,6 @@ export interface PluginMeta {
 
 export interface ResolvedPluginMeta {
   name?: string
-  order: number
   parallel?: boolean
 }
 
@@ -352,8 +351,6 @@ export function normalizePlugins (_plugins: Plugin[]) {
     plugins.push(_plugin)
   }
 
-  plugins.sort((a, b) => (a.meta?.order || orderMap.default) - (b.meta?.order || orderMap.default))
-
   if (process.dev && legacyInjectPlugins.length) {
     console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
   }
@@ -365,27 +362,6 @@ export function normalizePlugins (_plugins: Plugin[]) {
   }
 
   return plugins
-}
-
-// -50: pre-all (nuxt)
-// -40: custom payload revivers (user)
-// -30: payload reviving (nuxt)
-// -20: pre (user) <-- pre mapped to this
-// -10: default (nuxt)
-// 0: default (user) <-- default behavior
-// +10: post (nuxt)
-// +20: post (user) <-- post mapped to this
-// +30: post-all (nuxt)
-
-const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
-  pre: -20,
-  default: 0,
-  post: 20
-}
-
-/*! @__NO_SIDE_EFFECTS__ */
-export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
-  return defineNuxtPlugin(plugin, { order: -40 })
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
@@ -403,18 +379,16 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   wrapper.meta = {
     name: meta?.name || plugin.name || plugin.setup?.name,
-    parallel: plugin.parallel,
-    order:
-      meta?.order ||
-      plugin.order ||
-      orderMap[plugin.enforce || 'default'] ||
-      orderMap.default
+    parallel: plugin.parallel
   }
 
   wrapper[NuxtPluginIndicator] = true
 
   return wrapper
 }
+
+/*! @__NO_SIDE_EFFECTS__ */
+export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin

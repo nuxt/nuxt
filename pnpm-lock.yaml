@@ -433,6 +433,9 @@ importers:
       strip-literal:
         specifier: ^1.0.1
         version: 1.0.1
+      typescript-estree:
+        specifier: ^18.1.0
+        version: 18.1.0(typescript@5.0.4)
       ufo:
         specifier: ^1.1.2
         version: 1.1.2
@@ -6156,6 +6159,10 @@ packages:
     resolution: {integrity: sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==}
     dev: false
 
+  /lodash.unescape@4.0.1:
+    resolution: {integrity: sha512-DhhGRshNS1aX6s5YdBE3njCCouPgnG29ebyHvImlZzXZf2SHgt+J08DHgytTPnpywNbO1Y8mNUFyQuIDBq2JZg==}
+    dev: false
+
   /lodash.union@4.6.0:
     resolution: {integrity: sha512-c4pB2CdGrGdjMKYLA+XiRDO7Y0PRQbm/Gzg8qMj+QH+pFVAoTp5sBpO0odL3FjoPCGjK96p6qsP+yQoiLoOBcw==}
 
@@ -7808,6 +7815,11 @@ packages:
   /scule@1.0.0:
     resolution: {integrity: sha512-4AsO/FrViE/iDNEPaAQlb77tf0csuq27EsVpy6ett584EcRTp6pTDLoGWVxCD77y5iU5FauOvhsI4o1APwPoSQ==}
 
+  /semver@5.5.0:
+    resolution: {integrity: sha512-4SJ3dm0WAwWy/NVeioZh5AntkdJoWKxHxcmyP622fOkgHa4z3R0TdBJICINyaSDE6uNwVc8gZr+ZinwZAH4xIA==}
+    hasBin: true
+    dev: false
+
   /semver@5.7.1:
     resolution: {integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==}
     hasBin: true
@@ -8388,6 +8400,18 @@ packages:
       for-each: 0.3.3
       is-typed-array: 1.1.10
     dev: true
+
+  /typescript-estree@18.1.0(typescript@5.0.4):
+    resolution: {integrity: sha512-LvvwoTuPgMO5UyckFXZeNI+m1UH1bkgAXEaHDEtkmxugtlMKM3mzyvSQUdnQ/FhifwaLuoAsNPqTGLrJI/UUaQ==}
+    engines: {node: '>=6.14.0'}
+    deprecated: This package was moved to @typescript-eslint/typescript-estree, please install the latest version from there instead
+    peerDependencies:
+      typescript: '*'
+    dependencies:
+      lodash.unescape: 4.0.1
+      semver: 5.5.0
+      typescript: 5.0.4
+    dev: false
 
   /typescript@5.0.4:
     resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}

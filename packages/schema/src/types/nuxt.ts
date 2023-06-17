@@ -52,6 +52,7 @@ export interface NuxtPlugin {
   ssr?: boolean
   src: string
   mode?: 'all' | 'server' | 'client'
+  order?: number
 }
 
 export interface NuxtApp {

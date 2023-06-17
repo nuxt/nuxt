@@ -6,6 +6,7 @@ import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } fr
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
+import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -148,4 +149,19 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
       [key]: await resolvePath(resolveAlias(item[key]))
     }
   }))
+}
+
+export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
+  for (const plugin of plugins) {
+    try {
+      const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
+      const meta = extractMetadata(code)
+      plugin.order = plugin.order ?? meta.order
+    } catch (e) {
+      console.warn(`Could not resolve \`${plugin.src}\`.`)
+    }
+  }
+
+  plugins.sort((a, b) => (a.order || orderMap.default) - (b.order || orderMap.default))
+  // TODO: normalise invalid plugins
 }
