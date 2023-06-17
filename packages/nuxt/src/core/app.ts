@@ -152,16 +152,19 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 }
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
+  const _plugins: NuxtPlugin[] = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
-      const meta = extractMetadata(code)
-      plugin.order = plugin.order ?? meta.order
+      _plugins.push({
+        ...extractMetadata(code),
+        ...plugin
+      })
     } catch (e) {
       console.warn(`Could not resolve \`${plugin.src}\`.`)
+      _plugins.push(plugin)
     }
   }
 
-  plugins.sort((a, b) => (a.order || orderMap.default) - (b.order || orderMap.default))
-  // TODO: normalise invalid plugins
+  return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }

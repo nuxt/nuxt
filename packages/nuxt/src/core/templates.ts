@@ -56,7 +56,7 @@ export const cssTemplate: NuxtTemplate<TemplateContext> = {
 export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/client.mjs',
   async getContents (ctx) {
-    const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
+    const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     await annotatePlugins(ctx.nuxt, clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
@@ -76,8 +76,7 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
 export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
   async getContents (ctx) {
-    const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
-    await annotatePlugins(ctx.nuxt, serverPlugins)
+    const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of serverPlugins) {
