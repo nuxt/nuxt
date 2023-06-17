@@ -161,7 +161,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         ...plugin
       })
     } catch (e) {
-      console.warn(`Could not resolve \`${plugin.src}\`.`)
+      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
       _plugins.push(plugin)
     }
   }
