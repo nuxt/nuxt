@@ -323,47 +323,6 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   if (errors.length) { throw errors[0] }
 }
 
-export function normalizePlugins (_plugins: Plugin[]) {
-  const unwrappedPlugins: Plugin[] = []
-  const legacyInjectPlugins: Plugin[] = []
-  const invalidPlugins: Plugin[] = []
-
-  const plugins: Plugin[] = []
-
-  for (const plugin of _plugins) {
-    if (typeof plugin !== 'function') {
-      if (process.dev) { invalidPlugins.push(plugin) }
-      continue
-    }
-
-    // TODO: Skip invalid plugins in next releases
-    let _plugin = plugin
-    if (plugin.length > 1) {
-      // Allow usage without wrapper but warn
-      if (process.dev) { legacyInjectPlugins.push(plugin) }
-      // @ts-expect-error deliberate invalid second argument
-      _plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
-    }
-
-    // Allow usage without wrapper but warn
-    if (process.dev && !isNuxtPlugin(_plugin)) { unwrappedPlugins.push(_plugin) }
-
-    plugins.push(_plugin)
-  }
-
-  if (process.dev && legacyInjectPlugins.length) {
-    console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
-  }
-  if (process.dev && invalidPlugins.length) {
-    console.warn('[warn] [nuxt] Some plugins are not exposing a function and skipped:', invalidPlugins)
-  }
-  if (process.dev && unwrappedPlugins.length) {
-    console.warn('[warn] [nuxt] You are using a plugin that has not been wrapped in `defineNuxtPlugin`. It is advised to wrap your plugins as in the future this may enable enhancements:', unwrappedPlugins.map(p => p.name || p).join(','))
-  }
-
-  return plugins
-}
-
 /*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
   if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }

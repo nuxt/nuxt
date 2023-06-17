@@ -8,11 +8,11 @@ import type { $Fetch, NitroFetchRequest } from 'nitropack'
 import { baseURL } from '#build/paths.mjs'
 
 import type { CreateOptions } from '#app'
-import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
+import { applyPlugins, createNuxtApp } from '#app/nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
-import _plugins from '#build/plugins'
+import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
@@ -25,8 +25,6 @@ if (!globalThis.$fetch) {
 }
 
 let entry: Function
-
-const plugins = normalizePlugins(_plugins)
 
 if (process.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
