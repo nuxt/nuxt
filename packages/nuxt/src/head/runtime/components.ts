@@ -150,7 +150,7 @@ export const Title = defineComponent({
   inheritAttrs: false,
   setup: setupForUseMeta((_, { slots }) => {
     if (process.dev) {
-      const defaultSlot = slots.default?.() ?? null
+      const defaultSlot = slots.default?.()
 
       if (defaultSlot && (defaultSlot.length > 1 || typeof defaultSlot[0].children !== 'string')) {
         console.error('<Title> can take only one string in its default slot.')
