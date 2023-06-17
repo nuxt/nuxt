@@ -7,9 +7,10 @@ import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
+import { normalize } from 'pathe'
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ObjectPluginInput, PluginMeta } from '#app'
+import type { ObjectPlugin, PluginMeta } from '#app'
 
 // -50: pre-all (nuxt)
 // -40: custom payload revivers (user)
@@ -21,7 +22,7 @@ import type { ObjectPluginInput, PluginMeta } from '#app'
 // +20: post (user) <-- post mapped to this
 // +30: post-all (nuxt)
 
-export const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
+export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
   pre: -20,
   default: 0,
   post: 20
@@ -98,6 +99,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     name: 'nuxt:remove-plugin-metadata',
     enforce: 'pre',
     transform (code, id) {
+      id = normalize(id)
       const plugin = nuxt.apps.default.plugins.find(p => p.src === id)
       if (!plugin) { return }
 
