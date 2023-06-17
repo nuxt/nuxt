@@ -132,13 +132,16 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
             if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
             wrapped = true
 
-            // TODO: Warn if legacy plugin format is detected
             if (node.arguments[0].type !== 'ObjectExpression') {
+              // TODO: Warn if legacy plugin format is detected
               if ('params' in node.arguments[0] && node.arguments[0].params.length > 1) {
                 console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
                 s.overwrite(0, code.length, 'export default {}')
                 return
               }
+
+              // Normalize to object-syntax plugin
+              s.overwrite(node.range![0], node.range![1], `${name}({ setup: ${code.slice(node.arguments[0].range![0], node.arguments[0].range![1])} })`)
             }
 
             // Remove metadata that already has been extracted

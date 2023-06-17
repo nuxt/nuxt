@@ -169,7 +169,7 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
   meta?: ResolvedPluginMeta
 }
 
-export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
+export interface ObjectPlugin<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
   /**
@@ -179,6 +179,9 @@ export interface ObjectPluginInput<Injections extends Record<string, unknown> = 
    */
   parallel?: boolean
 }
+
+/** @deprecated Use `ObjectPlugin` */
+export type ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> = ObjectPlugin<Injections>
 
 export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
@@ -298,12 +301,16 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
-  if (typeof plugin !== 'function') { return }
-  const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
-  if (provide && typeof provide === 'object') {
-    for (const key in provide) {
-      nuxtApp.provide(key, provide[key])
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: ObjectPlugin<any>) {
+  if (plugin.hooks) {
+    nuxtApp.hooks.addHooks(plugin.hooks)
+  }
+  if (plugin.setup) {
+    const { provide } = await nuxtApp.runWithContext(() => plugin.setup!(nuxtApp)) || {}
+    if (provide && typeof provide === 'object') {
+      for (const key in provide) {
+        nuxtApp.provide(key, provide[key])
+      }
     }
   }
 }
@@ -324,26 +331,10 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
-  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
-
-  const wrapper: Plugin<T> = (nuxtApp) => {
-    if (plugin.hooks) {
-      nuxtApp.hooks.addHooks(plugin.hooks)
-    }
-    if (plugin.setup) {
-      return plugin.setup(nuxtApp)
-    }
-  }
-
-  wrapper.meta = {
-    name: meta?.name || plugin.name || plugin.setup?.name,
-    parallel: plugin.parallel
-  }
-
-  wrapper[NuxtPluginIndicator] = true
-
-  return wrapper
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>): Plugin<T> {
+  const _plugin = plugin as Plugin<T>
+  _plugin[NuxtPluginIndicator] = true
+  return _plugin
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
