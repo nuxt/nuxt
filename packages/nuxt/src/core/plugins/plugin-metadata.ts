@@ -86,6 +86,9 @@ function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
     if (property.value.type === 'Literal') {
       meta[propertyKey] = property.value.value as any
     }
+    if (property.value.type === 'UnaryExpression' && property.value.argument.type === 'Literal') {
+      meta[propertyKey] = JSON.parse(property.value.operator + property.value.argument.raw!)
+    }
   }
   return meta
 }
