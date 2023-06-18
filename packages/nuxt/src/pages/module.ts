@@ -254,7 +254,7 @@ export default defineNuxtModule({
 
     if (nuxt.options.experimental.templateRouteMixin) {
       // Add global mixin to ensure template $route is kept in sync with `<NuxtPage>`
-      addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
+      addPlugin(resolve(runtimeDir, 'plugins/route-injection.client'))
     }
 
     // Add router plugin
