@@ -363,7 +363,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       }
     }
     if (process.env.prerender) {
-      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
     }
     return response
   }
