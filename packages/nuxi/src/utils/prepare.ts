@@ -18,6 +18,8 @@ export const writeTypes = async (nuxt: Nuxt) => {
       skipLibCheck: true,
       strict: nuxt.options.typescript?.strict ?? false,
       allowJs: true,
+      // TODO: remove by default in 3.7
+      baseUrl: nuxt.options.srcDir,
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
@@ -34,7 +36,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
-  })
+  } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
