@@ -286,7 +286,7 @@ export function createNuxtApp (options: CreateOptions) {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
 
-    window.useNuxtApp = useNuxtApp
+    window.useNuxtApp = window.useNuxtApp || useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
