@@ -21,6 +21,7 @@ import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, {
+    configFile: false,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : './',
