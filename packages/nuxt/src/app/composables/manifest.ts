@@ -13,6 +13,6 @@ let manifest: Promise<NuxtAppManifest>
 export function getAppManifest (): Promise<NuxtAppManifest> {
   const config = useRuntimeConfig()
   // TODO: use build id injected
-  manifest = manifest || $fetch(joinURL(config.app.buildAssetsURL, 'builds/latest.json'))
+  manifest = manifest || $fetch(joinURL(config.app.buildAssetsDir, 'builds/latest.json'))
   return manifest
 }
