@@ -41,7 +41,7 @@ describe('plugin-metadata', () => {
       'export default function (ctx, inject) {}'
     ]
     for (const plugin of invalidPlugins) {
-      expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toBe('export default {}')
+      expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
   })
 
