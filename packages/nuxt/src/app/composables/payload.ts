@@ -5,7 +5,7 @@ import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
 // @ts-expect-error virtual import
-import { renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 import { getAppManifest } from '#app/composables/manifest'
 
 interface LoadPayloadOptions {
@@ -14,7 +14,7 @@ interface LoadPayloadOptions {
 }
 
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
-  if (process.server) { return null }
+  if (process.server || !payloadExtraction) { return null }
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
@@ -61,7 +61,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 }
 
 async function _importPayload (payloadURL: string) {
-  if (process.server) { return null }
+  if (process.server || !payloadExtraction) { return null }
   try {
     return renderJsonPayloads
       ? parsePayload(await fetch(payloadURL).then(res => res.text()))

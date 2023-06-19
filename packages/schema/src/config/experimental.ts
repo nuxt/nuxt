@@ -106,11 +106,11 @@ export default defineUntypedSchema({
     noVueServer: false,
 
     /**
-     * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     * When this option is enabled (by default) payload of pages that are prerendered are extracted
      * 
      * @type {boolean | undefined}
      */
-    payloadExtraction: undefined,
+    payloadExtraction: true,
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
