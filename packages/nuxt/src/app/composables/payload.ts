@@ -6,6 +6,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
 // @ts-expect-error virtual import
 import { renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { getAppManifest } from '#app/composables/manifest'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -17,15 +18,20 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
-  if (cache[payloadURL]) {
+  if (cache[payloadURL] || cache[payloadURL] === null) {
     return cache[payloadURL]
   }
-  cache[payloadURL] = _importPayload(payloadURL).then((payload) => {
-    if (!payload) {
-      delete cache[payloadURL]
-      return null
+  cache[payloadURL] = getAppManifest().then(manifest => {
+    if (manifest.prerendered.includes(url) || Object.keys(manifest.routeRules).some(key => key === url || (key.endsWith('/**') && (url + '/').startsWith(key.replace('/**', '/'))))) {
+      return _importPayload(payloadURL).then((payload) => {
+        if (!payload) {
+          delete cache[payloadURL]
+          return null
+        }
+        return payload
+      })
     }
-    return payload
+    cache[payloadURL] = null
   })
   return cache[payloadURL]
 }
