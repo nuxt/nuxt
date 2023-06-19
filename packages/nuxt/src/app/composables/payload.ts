@@ -21,7 +21,7 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   if (cache[payloadURL] || cache[payloadURL] === null) {
     return cache[payloadURL]
   }
-  cache[payloadURL] = getAppManifest().then(manifest => {
+  cache[payloadURL] = getAppManifest().then((manifest) => {
     if (manifest.prerendered.includes(url) || Object.keys(manifest.routeRules).some(key => key === url || (key.endsWith('/**') && (url + '/').startsWith(key.replace('/**', '/'))))) {
       return _importPayload(payloadURL).then((payload) => {
         if (!payload) {

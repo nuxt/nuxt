@@ -1,9 +1,9 @@
-import { defineEventHandler } from "h3"
+import { defineEventHandler } from 'h3'
+import { useRuntimeConfig } from '#internal/nitro'
 // @ts-expect-error Virtual file
-import { hashId, buildTimestamp } from '#app-manifest'
-import { useRuntimeConfig } from "#internal/nitro"
+import { buildTimestamp, hashId } from '#app-manifest'
 
-export default defineEventHandler(async event => {
+export default defineEventHandler(() => {
   const routeRules = {} as Record<string, any>
   const _routeRules = useRuntimeConfig().nitro.routeRules
   for (const key in _routeRules) {

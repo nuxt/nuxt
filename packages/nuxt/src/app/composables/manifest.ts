@@ -1,5 +1,5 @@
-import { useRuntimeConfig } from "#app"
-import { joinURL } from "ufo"
+import { joinURL } from 'ufo'
+import { useRuntimeConfig } from '#app'
 
 export interface NuxtAppManifest {
   id: string
@@ -8,10 +8,11 @@ export interface NuxtAppManifest {
   prerendered: string[]
 }
 
-// TODO: use build id injected
-let manifest: NuxtAppManifest
+let manifest: Promise<NuxtAppManifest>
 
-export async function getAppManifest () {
+export function getAppManifest (): Promise<NuxtAppManifest> {
   const config = useRuntimeConfig()
-  return manifest = manifest || $fetch(joinURL(config.app.buildAssetsURL, 'builds/latest.json'))
+  // TODO: use build id injected
+  manifest = manifest || $fetch(joinURL(config.app.buildAssetsURL, 'builds/latest.json'))
+  return manifest
 }

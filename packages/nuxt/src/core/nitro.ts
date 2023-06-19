@@ -206,7 +206,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         timestamp: Date.now(),
         routeRules: {},
         prerendered: []
-      })),
+      }))
     })
 
     if (!nuxt.options.dev) {
