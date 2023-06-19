@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
@@ -28,6 +28,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
+
+    let spaLoadingTemplatePath = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+    if (spaLoadingTemplatePath !== false && !existsSync(spaLoadingTemplatePath)) {
+      if (nuxt.options.spaLoadingTemplate) {
+        console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplatePath}\`.`)
+      }
+      spaLoadingTemplatePath = resolve(distDir, 'core/runtime/spa-loading-indicator.html')
+    }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
     debug: nuxt.options.debug,
@@ -75,7 +83,17 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
-      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config']
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
+      '#spa-template': () => {
+        try {
+          if (spaLoadingTemplatePath) {
+            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplatePath, 'utf-8'))}`
+          }
+        } catch (e){
+          console.log(e,spaLoadingTemplatePath)
+        }
+        return 'export const template = ""'
+      }
     },
     routeRules: {
       '/__nuxt_error': { cache: false }

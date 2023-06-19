@@ -1,5 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
+import { resolve } from 'pathe'
 import type { AppHeadMetaObject } from '../types/head'
 
 export default defineUntypedSchema({
@@ -175,6 +176,19 @@ export default defineUntypedSchema({
      *
      */
     rootTag: 'div',
+  },
+
+  /** A path to an HTML file, the contents of which will be inserted into any HTML page
+   * rendered with `ssr: false`.
+   * 
+   * You can set this to `false` to disable any loading indicator.
+   * 
+   * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
+   * 
+   * @type {string | false}
+   */
+  spaLoadingTemplate: {
+    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? null)
   },
 
   /**
