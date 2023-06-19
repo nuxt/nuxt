@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -24,6 +24,7 @@ import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
+import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -71,6 +72,9 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
+
+  // Add plugin normalisation plugin
+  addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
   const config = {
