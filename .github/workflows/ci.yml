@@ -101,13 +101,14 @@ jobs:
           category: "/language:javascript"
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     needs:
       - build
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         module: ['bundler', 'node']
 
     steps:
