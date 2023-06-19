@@ -56,9 +56,8 @@ describe('plugin-metadata', () => {
     expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
       "
             export default defineNuxtPlugin({
-              name: 'test',
               setup: () => {},
-            }, { name: test })
+            }, { })
           "
     `)
   })

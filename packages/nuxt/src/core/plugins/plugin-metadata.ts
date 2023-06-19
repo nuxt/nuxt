@@ -119,7 +119,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
         console.error(`[warn] [nuxt] Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
-        s.overwrite(0, code.length, 'export default {}')
+        s.overwrite(0, code.length, 'export default () => {}')
         return {
           code: s.toString(),
           map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server ? s.generateMap({ hires: true }) : null
@@ -134,7 +134,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
                 console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
-                s.overwrite(0, code.length, 'export default {}')
+                s.overwrite(0, code.length, 'export default () => {}')
                 wrapped = true // silence a duplicate error
                 return
               }
@@ -149,22 +149,19 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               // TODO: Warn if legacy plugin format is detected
               if ('params' in node.arguments[0] && node.arguments[0].params.length > 1) {
                 console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
-                s.overwrite(0, code.length, 'export default {}')
+                s.overwrite(0, code.length, 'export default () => {}')
                 return
               }
-
-              // Normalize to object-syntax plugin
-              s.overwrite(node.range![0], node.range![1], `${name}({ setup: ${code.slice(node.arguments[0].range![0], node.arguments[0].range![1])} })`)
             }
 
             // Remove metadata that already has been extracted
-            if (!('order' in plugin)) { return }
+            if (!('order' in plugin) && !('name' in plugin)) { return }
             for (const [argIndex, arg] of node.arguments.entries()) {
               if (arg.type !== 'ObjectExpression') { continue }
               for (const [propertyIndex, property] of arg.properties.entries()) {
                 if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
                 const propertyKey = property.key.name
-                if (propertyKey === 'order' || propertyKey === 'enforce') {
+                if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
                   const nextIndex = arg.properties[propertyIndex + 1]?.range?.[0] || node.arguments[argIndex + 1]?.range?.[0] || (arg.range![1] - 1)
                   s.remove(property.range![0], nextIndex)
                 }

@@ -301,12 +301,12 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: ObjectPlugin<any>) {
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
-  if (plugin.setup) {
-    const { provide } = await nuxtApp.runWithContext(() => plugin.setup!(nuxtApp)) || {}
+  if (typeof plugin === 'function') {
+    const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
       for (const key in provide) {
         nuxtApp.provide(key, provide[key])
@@ -315,7 +315,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: ObjectPlugin<any>) 
   }
 }
 
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: ObjectPlugin[]) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
@@ -331,10 +331,10 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: ObjectPlugin[]) {
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> {
-  const _plugin = plugin as Plugin<T>
-  _plugin[NuxtPluginIndicator] = true
-  return _plugin
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> | ObjectPlugin<T> {
+  if (typeof plugin === 'function') { return plugin }
+  delete plugin.name
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true } as const)
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
