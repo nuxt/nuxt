@@ -69,7 +69,7 @@ export default defineComponent({
     })
 
     async function _fetchComponent () {
-      const key = `${props.name}:${hashId.value}`
+      const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
 
       const url = `/__nuxt_island/${key}`
