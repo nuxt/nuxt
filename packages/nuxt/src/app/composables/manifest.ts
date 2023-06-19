@@ -1,3 +1,6 @@
+import { useRuntimeConfig } from "#app"
+import { joinURL } from "ufo"
+
 export interface NuxtAppManifest {
   id: string
   timestamp: number
@@ -9,5 +12,6 @@ export interface NuxtAppManifest {
 let manifest: NuxtAppManifest
 
 export async function getAppManifest () {
-  return manifest = manifest || $fetch('/_nuxt/builds/latest.json')
+  const config = useRuntimeConfig()
+  return manifest = manifest || $fetch(joinURL(config.app.buildAssetsURL, 'builds/latest.json'))
 }
