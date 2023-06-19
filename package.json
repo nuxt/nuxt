@@ -21,9 +21,7 @@
     "test:fixtures:payload": "TEST_PAYLOAD=js pnpm test:fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
-    "test:types": "pnpm test:types:basic && pnpm test:types:minimal",
-    "test:types:basic": "nuxi prepare test/fixtures/basic-types && cd test/fixtures/basic-types && npx vue-tsc --noEmit",
-    "test:types:minimal": "nuxi prepare test/fixtures/minimal-types && cd test/fixtures/minimal-types && npx vue-tsc --noEmit",
+    "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run --dir packages",
     "typecheck": "tsc --noEmit"
   },
