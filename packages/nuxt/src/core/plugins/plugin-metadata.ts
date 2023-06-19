@@ -12,20 +12,31 @@ import { normalize } from 'pathe'
 // eslint-disable-next-line import/no-restricted-paths
 import type { ObjectPlugin, PluginMeta } from '#app'
 
-// -50: pre-all (nuxt)
-// -40: custom payload revivers (user)
-// -30: payload reviving (nuxt)
-// -20: pre (user) <-- pre mapped to this
-// -10: default (nuxt)
-// 0: default (user) <-- default behavior
-// +10: post (nuxt)
-// +20: post (user) <-- post mapped to this
-// +30: post-all (nuxt)
+const internalOrderMap = {
+  // -50: pre-all (nuxt)
+  'nuxt-pre-all': -50,
+  // -40: custom payload revivers (user)
+  'user-revivers': -40,
+  // -30: payload reviving (nuxt)
+  'nuxt-revivers': -30,
+  // -20: pre (user) <-- pre mapped to this
+  'user-pre': -20,
+  // -10: default (nuxt)
+  'nuxt-default': -10,
+  // 0: default (user) <-- default behavior
+  'user-default': 0,
+  // +10: post (nuxt)
+  'nuxt-post': 10,
+  // +20: post (user) <-- post mapped to this
+  'user-post': 20,
+  // +30: post-all (nuxt)
+  'nuxt-post-all': 30
+}
 
 export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
-  pre: -20,
-  default: 0,
-  post: 20
+  pre: internalOrderMap['user-pre'],
+  default: internalOrderMap['user-default'],
+  post: internalOrderMap['user-post']
 }
 
 const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
@@ -42,7 +53,7 @@ export function extractMetadata (code: string) {
       if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
 
       if (name === 'definePayloadPlugin') {
-        meta.order = -40
+        meta.order = internalOrderMap['user-revivers']
       }
 
       const metaArg = node.arguments[1]
