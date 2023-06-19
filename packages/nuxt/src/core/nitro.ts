@@ -1,12 +1,15 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { join, relative, resolve } from 'pathe'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import { randomUUID } from 'uncrypto'
+import { joinURL } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
 import { logger, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
-import { dynamicEventHandler } from 'h3'
+import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 import type { Nuxt } from 'nuxt/schema'
@@ -189,6 +192,36 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
 
+  // Add app manifest handler and prerender configuration
+  // TODO: expose build id to nitro
+  const buildId = randomUUID()
+  if (nitroConfig.prerender?.routes) {
+    const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
+    nitroConfig.prerender.routes.push(joinURL(manifestPrefix, 'latest.json'))
+    nitroConfig.prerender.routes.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
+    nitroConfig.devHandlers!.push({
+      route: joinURL(manifestPrefix, '**'),
+      handler: defineEventHandler(() => ({
+        id: 'dev',
+        timestamp: Date.now(),
+        routeRules: {},
+        prerendered: []
+      })),
+    })
+
+    if (!nuxt.options.dev) {
+      const timestamp = Date.now()
+      nitroConfig.virtual!['#app-manifest'] = () => `
+        export const hashId = ${JSON.stringify(buildId)}
+        export const buildTimestamp = ${JSON.stringify(timestamp)}
+      `
+      nitroConfig.handlers!.push({
+        route: joinURL(manifestPrefix, '**'),
+        handler: resolve(distDir, 'core/runtime/nitro/manifest')
+      })
+    }
+  }
+
   // Add head chunk for SPA renders
   const head = createHeadCore()
   head.push(nuxt.options.app.head)
@@ -329,7 +362,30 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await prepare(nitro)
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
+
+      // Add pages prerendered but not covered by route rules
+      const prerenderedRoutes = new Set<string>()
+      const routeRulesMatcher = toRouteMatcher(
+        createRadixRouter({ routes: nitro.options.routeRules })
+      )
+      const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+      nitro.hooks.hook('prerender:route', (route) => {
+        if (!route.error && route.route.endsWith(payloadSuffix)) {
+          const url = route.route.slice(0, -payloadSuffix.length) || '/'
+          const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+          if (!rules.prerender) {
+            prerenderedRoutes.add(url)
+          }
+        }
+      })
       await prerender(nitro)
+
+      for (const file of ['builds/latest.json', `builds/meta.${buildId}.json`]) {
+        const manifestFile = join(nitro.options.output.publicDir, nuxt.options.app.buildAssetsDir, file)
+        const manifest = await fsp.readFile(manifestFile, 'utf-8')
+        await fsp.writeFile(manifestFile, manifest.replace(/['"]__NUXT_PRERENDERED_ROUTES__['"]/, JSON.stringify([...prerenderedRoutes])))
+      }
+
       if (!nuxt.options._generate) {
         logger.restoreAll()
         await build(nitro)
