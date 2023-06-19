@@ -102,6 +102,7 @@ const revivers = {
   EmptyRef: (data: any) => ref(JSON.parse(data)),
   ShallowRef: (data: any) => shallowRef(data),
   ShallowReactive: (data: any) => shallowReactive(data),
+  Island: (key: any) => key,
   Ref: (data: any) => ref(data),
   Reactive: (data: any) => reactive(data),
   // test fixture reviver only

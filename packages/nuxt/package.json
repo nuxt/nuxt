@@ -65,7 +65,7 @@
     "chokidar": "^3.5.3",
     "cookie-es": "^1.0.0",
     "defu": "^6.1.2",
-    "destr": "^1.2.2",
+    "destr": "^2.0.0",
     "devalue": "^4.3.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
@@ -109,10 +109,10 @@
     "@types/fs-extra": "11.0.1",
     "@types/prompts": "2.4.4",
     "@vitejs/plugin-vue": "4.2.3",
-    "acorn": "8.8.2",
+    "acorn": "8.9.0",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.32.0"
+    "vitest": "0.32.2"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

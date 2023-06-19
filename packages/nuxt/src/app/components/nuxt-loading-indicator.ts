@@ -1,5 +1,9 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
+import { useRouter } from '#app/composables/router'
+
+// @ts-expect-error virtual file
+import { globalMiddleware } from '#build/middleware'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
@@ -30,10 +34,20 @@ export default defineComponent({
     // Hook to app lifecycle
     // TODO: Use unified loading API
     const nuxtApp = useNuxtApp()
-    nuxtApp.hook('page:start', indicator.start)
+    const router = useRouter()
+
+    globalMiddleware.unshift(indicator.start)
+    router.beforeResolve((to, from) => {
+      if (to === from) {
+        indicator.finish()
+      }
+    })
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
-    onBeforeUnmount(indicator.clear)
+    onBeforeUnmount(() => {
+      globalMiddleware.splice(globalMiddleware.indexOf(indicator.start, 1))
+      indicator.clear()
+    })
 
     return () => h('div', {
       class: 'nuxt-loading-indicator',
