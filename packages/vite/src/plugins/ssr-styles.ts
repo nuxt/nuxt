@@ -44,7 +44,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         // We deliberately prevent importing `#build/css` to avoid including it in the client bundle
         // in its entirety. We will instead include _just_ the styles that can't be inlined,
         // in the <NuxtRoot> component below
-        if (options.mode === 'client' && id === '#build/css') {
+        if (options.mode === 'client' && id === '#build/css' && (options.shouldInline === true || (typeof options.shouldInline === 'function' && !options.shouldInline(importer)))) {
           return this.resolve('unenv/runtime/mock/empty', importer, _options)
         }
 
@@ -134,7 +134,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (options.mode === 'client') {
         // We will either teleport global CSS to the 'entry' chunk on the server side
         // or include it here in the client build so it is emitted in the CSS.
-        if (id === options.entry) {
+        if (id === options.entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && !options.shouldInline(id)))) {
           const s = new MagicString(code)
           options.clientCSSMap[id] ||= new Set()
           for (const file of options.globalCSS) {
