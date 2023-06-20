@@ -83,6 +83,17 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | null>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null>>()
   })
+  
+  it('excludes body when using GET request with useFetch', () => {
+    // @ts-expect-error Body cannot be passed to GET request
+    useFetch('/api/other', { body: {} })
+    // TODO: enable when fixed upstream https://github.com/unjs/nitro/pull/1247
+    // TODO: @ts-expect-error Body cannot be passed to GET request
+    // useFetch('/api/other', { method: 'GET', body: {} })
+    // @ts-expect-error Body cannot be passed to GET request
+    useFetch('/api/other', { method: 'get', body: {} })
+    useFetch('/api/other', { method: 'post', body: {} })
+  })
 })
 
 describe('aliases', () => {

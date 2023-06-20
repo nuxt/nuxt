@@ -39,7 +39,9 @@ export function useFetch<
   DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: Method extends 'get'
+    ? Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'body'>
+    : UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
 export function useFetch<
   ResT = void,
