@@ -331,11 +331,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
-      
+
       logger.restoreAll()
       await build(nitro)
       logger.wrapAll()
-      
+
       if (nuxt.options._generate) {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
