@@ -1,7 +1,7 @@
 import type { CallExpression, Property, SpreadElement } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
-import { parse } from 'typescript-estree'
+import { parse } from '@typescript-eslint/typescript-estree'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
@@ -129,7 +129,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       let wrapped = false
 
       try {
-        walk(parse(code) as Node, {
+        walk(parse(code, { range: true }) as Node, {
           enter (_node) {
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
