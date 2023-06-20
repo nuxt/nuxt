@@ -6,6 +6,7 @@ import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
+  if (event.handled) { return }
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
@@ -63,16 +64,19 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
+    if (event.handled) { return }
     setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
     event.node.res.end(template(errorObject))
     return
   }
 
+  const html = await res.text()
+  if (event.handled) { return }
+
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
   }
-
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
-  event.node.res.end(await res.text())
+  event.node.res.end(html)
 }
