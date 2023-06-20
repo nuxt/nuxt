@@ -164,6 +164,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
       if (!(id in options.clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
 
+      const query = parseQuery(search)
+      if (query.macro || query.nuxt_component) { return }
+
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
       }
@@ -195,8 +198,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         cssMap[relativeId].files.push(ref)
       }
 
-      const query = parseQuery(search)
-      if (!SUPPORTED_FILES_RE.test(pathname) || query.macro || query.nuxt_component) { return }
+      if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
       for (const i of findStaticImports(code)) {
         const { type } = parseQuery(i.specifier)
