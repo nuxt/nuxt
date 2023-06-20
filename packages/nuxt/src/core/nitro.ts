@@ -10,6 +10,8 @@ import { dynamicEventHandler } from 'h3'
 import { createHeadCore } from '@unhead/vue'
 import { renderSSRHead } from '@unhead/ssr'
 import type { Nuxt } from 'nuxt/schema'
+// @ts-expect-error TODO: add legacy type support for subpath imports
+import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
@@ -29,12 +31,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
 
-  let spaLoadingTemplatePath = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  const spaLoadingTemplatePath = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
   if (spaLoadingTemplatePath !== false && !existsSync(spaLoadingTemplatePath)) {
     if (nuxt.options.spaLoadingTemplate) {
       console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplatePath}\`.`)
     }
-    spaLoadingTemplatePath = resolve(distDir, 'core/runtime/spa-loading-indicator.html')
   }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
@@ -89,10 +90,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           if (spaLoadingTemplatePath) {
             return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplatePath, 'utf-8'))}`
           }
-        } catch (e) {
-          console.log(e, spaLoadingTemplatePath)
-        }
-        return 'export const template = ""'
+        } catch {}
+        return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }
     },
     routeRules: {
