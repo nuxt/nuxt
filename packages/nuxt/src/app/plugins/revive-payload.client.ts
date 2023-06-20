@@ -20,7 +20,10 @@ if (componentIslands) {
   revivers.Island = ({ key, params }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}`, params ? { params } : {}).then((r) => {
+      nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}`, {
+        responseType: 'json',
+        ...params ? { params } : {}
+      }).then((r) => {
         nuxtApp.payload.data[key] = r
         return r
       })

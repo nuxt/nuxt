@@ -145,7 +145,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
   const url = event.node.req.url?.substring('/__nuxt_island'.length + 1) || ''
-  const [componentName, hashId] = url.split('?')[0].split(':')
+  const [componentName, hashId] = url.split('?')[0].split('_')
 
   // TODO: Validate context
   const context = event.node.req.method === 'GET' ? getQuery(event) : await readBody(event)
@@ -363,7 +363,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       }
     }
     if (process.env.prerender) {
-      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}:${islandContext!.id}`, response)
+      ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
     }
     return response
   }

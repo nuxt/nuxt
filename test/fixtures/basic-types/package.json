@@ -2,7 +2,8 @@
   "private": true,
   "name": "fixture-basic-types",
   "scripts": {
-    "build": "nuxi build"
+    "build": "nuxi build",
+    "test:types": "nuxi prepare && npx vue-tsc --noEmit"
   },
   "dependencies": {
     "nuxt": "workspace:*"

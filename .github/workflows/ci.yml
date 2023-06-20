@@ -101,14 +101,16 @@ jobs:
           category: "/language:javascript"
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     needs:
       - build
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         module: ['bundler', 'node']
+        base: ['with-base-url', 'without-base-url']
 
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
@@ -131,6 +133,7 @@ jobs:
         run: pnpm test:types
         env:
           MODULE_RESOLUTION: ${{ matrix.module }}
+          TS_BASE_URL: ${{ matrix.base }}
 
   lint:
     # autofix workflow will be triggered instead for PRs
