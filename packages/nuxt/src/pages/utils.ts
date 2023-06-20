@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
@@ -63,6 +64,12 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       children: []
     }
 
+    const fileContent = fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+    const overrideRouteName = getRouteName(fileContent)
+    if (overrideRouteName) {
+      route.name = overrideRouteName
+    }
+
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
@@ -73,7 +80,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '/') + segmentName
+      if (!overrideRouteName) { route.name += (route.name && '/') + segmentName }
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
@@ -92,6 +99,12 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
   }
 
   return prepareRoutes(routes)
+}
+
+function getRouteName (file: string) {
+  const regExp = /definePageMeta\(\s*{[^}]*name:\s*(["'`])((?:[^"'`\\]|\\.)+?)\1/g
+  const match = regExp.exec(file)
+  return match ? match[2] : undefined
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
