@@ -34,7 +34,7 @@
     "consola": "^3.1.0",
     "cssnano": "^6.0.1",
     "defu": "^6.1.2",
-    "esbuild": "^0.18.4",
+    "esbuild": "^0.18.5",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
@@ -58,7 +58,7 @@
     "unplugin": "^1.3.1",
     "vite": "~4.3.9",
     "vite-node": "^0.32.2",
-    "vite-plugin-checker": "^0.6.0",
+    "vite-plugin-checker": "^0.6.1",
     "vue-bundle-renderer": "^1.0.3"
   },
   "peerDependencies": {
