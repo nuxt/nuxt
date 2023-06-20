@@ -101,9 +101,9 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
   return prepareRoutes(routes)
 }
 
+const PAGE_META_NAME_RE = /definePageMeta\(\s*{[^}]*name:\s*(["'`])((?:[^"'`\\]|\\.)+?)\1/
 function getRouteName (file: string) {
-  const regExp = /definePageMeta\(\s*{[^}]*name:\s*(["'`])((?:[^"'`\\]|\\.)+?)\1/g
-  const match = regExp.exec(file)
+  const match = PAGE_META_NAME_RE.exec(file)
   return match ? match[2] : undefined
 }
 
