@@ -1,12 +1,14 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol, joinURL, withTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
+import { getAppManifest } from '#app/composables/manifest'
+import { useRoute } from '#app/composables'
+
 // @ts-expect-error virtual import
 import { payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
-import { getAppManifest } from '#app/composables/manifest'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -18,20 +20,20 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
-  if (cache[payloadURL] || cache[payloadURL] === null) {
+  if (payloadURL in cache) {
     return cache[payloadURL]
   }
-  cache[payloadURL] = getAppManifest().then((manifest) => {
-    if (manifest.prerendered.includes(url) || Object.keys(manifest.routeRules).some(key => key === url || (key.endsWith('/**') && (url + '/').startsWith(key.replace('/**', '/'))))) {
-      return _importPayload(payloadURL).then((payload) => {
-        if (!payload) {
-          delete cache[payloadURL]
-          return null
-        }
-        return payload
-      })
+  cache[payloadURL] = isPrerendered().then((prerendered) => {
+    if (!prerendered) {
+      cache[payloadURL] = null
+      return null
     }
-    cache[payloadURL] = null
+    return _importPayload(payloadURL).then((payload) => {
+      if (payload) { return payload }
+
+      delete cache[payloadURL]
+      return null
+    })
   })
   return cache[payloadURL]
 }
@@ -72,10 +74,32 @@ async function _importPayload (payloadURL: string) {
   return null
 }
 
-export function isPrerendered () {
+// TODO: refactor with minimal version of radix3
+/** @internal */
+export function _routeMatches (routeRules: Record<string, any>, path: string) {
+  path = withTrailingSlash(path)
+  for (const key in routeRules) {
+    if (key === path) {
+      return routeRules[key]
+    }
+    if (key.endsWith('/**') && path.startsWith(key.replace('/**', '/'))) {
+      return routeRules[key]
+    }
+  }
+  return {}
+}
+
+export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   const nuxtApp = useNuxtApp()
-  return !!nuxtApp.payload.prerenderedAt
+  if (nuxtApp.payload.prerenderedAt) {
+    return true
+  }
+  const manifest = await getAppManifest()
+  if (manifest.prerendered.includes(url)) {
+    return true
+  }
+  return !!_routeMatches(manifest.routeRules, url).prerender
 }
 
 let payloadCache: any = null

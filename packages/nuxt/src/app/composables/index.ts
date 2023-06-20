@@ -29,6 +29,8 @@ export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBefor
 export type { AddRouteMiddlewareOptions, RouteMiddleware } from './router'
 export { preloadComponents, prefetchComponents, preloadRouteComponents } from './preload'
 export { isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver } from './payload'
+export { getAppManifest } from './manifest'
+export type { NuxtAppManifest } from './manifest'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
 export { useRequestURL } from './url'
