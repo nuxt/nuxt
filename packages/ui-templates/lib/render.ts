@@ -33,8 +33,9 @@ export const RenderPlugin = () => {
 
         // Read source template
         let html = await fsp.readFile(fileName, 'utf-8')
+        const isCompleteHTML = html.includes('<!DOCTYPE html>')
 
-        // Apply criters to inline styles
+        // Apply critters to inline styles
         html = await critters.process(html)
         // We no longer need references to external CSS
         html = html.replace(/<link[^>]*>/g, '')
@@ -62,6 +63,11 @@ export const RenderPlugin = () => {
 
         // Minify HTML
         html = htmlMinifier.minify(html, { collapseWhitespace: true })
+
+        if (!isCompleteHTML) {
+          html = html.replace('<html><head></head><body>', '')
+          html = html.replace('</body></html>', '')
+        }
 
         // Load messages
         const messages = JSON.parse(await fsp.readFile(r(`templates/${templateName}/messages.json`), 'utf-8'))
