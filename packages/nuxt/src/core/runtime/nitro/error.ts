@@ -6,7 +6,6 @@ import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
-  if (event.handled) { return }
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
@@ -22,9 +21,6 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     data: error.data
   }
 
-  // Set response code and message
-  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
-
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
@@ -36,6 +32,11 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     ].filter(Boolean).join(' ')
     console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
+
+  if (event.handled) { return }
+
+  // Set response code and message
+  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
 
   // JSON response
   if (isJsonRequest(event)) {
