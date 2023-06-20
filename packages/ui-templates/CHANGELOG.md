@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.1.1...@nuxt/ui-templates@1.2.0) (2023-06-20)
+
+
+### Bug Fixes
+
+* **templates:** update the docs link for `app.vue` ([#207](https://github.com/nuxt/ui/issues/207)) ([65b027e](https://github.com/nuxt/ui/commit/65b027ec5a7bec116ff0d694d2491b205c7895cf))
+
+
+### Features
+
+* **templates:** add spa-loading-icon ([b3ceabe](https://github.com/nuxt/ui/commit/b3ceabeea80f9e7239d18f331dfe457c65681b3d))
+
+
+
+
+
 ## [1.1.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.1.0...@nuxt/ui-templates@1.1.1) (2023-01-31)
 
 **Note:** Version bump only for package @nuxt/ui-templates
