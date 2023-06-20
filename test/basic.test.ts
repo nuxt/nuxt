@@ -1,5 +1,4 @@
 import { fileURLToPath } from 'node:url'
-import { readdir } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
