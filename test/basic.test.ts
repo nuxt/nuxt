@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { readdir } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
@@ -1168,16 +1169,45 @@ describe('automatically keyed composables', () => {
 })
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
+  const inlinedCSS = [
+    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+    '{--global:"global";', // global css from nuxt.config
+    '{--assets:"assets"}', // <script>
+    '{--postcss:"postcss"}', // <style lang=postcss>
+    '{--scoped:"scoped"}' // <style lang=css>
+    // TODO: ideally both client/server components would have inlined css when used
+    // '{--client-only:"client-only"}', // client-only component not in server build
+    // '{--server-only:"server-only"}' // server-only component not in client build
+    // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
+    // '{--functional:"functional"}', // CSS imported ambiently in a functional component
+  ]
+
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
-    for (const style of [
-      '{--global:"global";', // global css from nuxt.config
-      '{--assets:"assets"}', // <script>
-      '{--scoped:"scoped"}', // <style lang=css>
-      '{--postcss:"postcss"}' // <style lang=postcss>
-    ]) {
+    for (const style of inlinedCSS) {
       expect(html).toContain(style)
     }
+  })
+
+  it('should not include inlined CSS in generated CSS file', async () => {
+    const html: string = await $fetch('/styles')
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
+    let css = ''
+    for (const file of cssFiles || []) {
+      css += await $fetch(file)
+    }
+
+    // should not include inlined CSS in generated CSS files
+    for (const style of inlinedCSS) {
+      // TODO: remove 'ambient global' CSS from generated CSS file
+      if (style === '{--plugin:"plugin"}') { continue }
+      expect.soft(css).not.toContain(style)
+    }
+
+    // should include unloadable CSS in generated CSS file
+    expect.soft(css).toContain('--virtual:red')
+    expect.soft(css).toContain('--functional:"functional"')
+    expect.soft(css).toContain('--client-only:"client-only"')
   })
 
   it('does not load stylesheet for page styles', async () => {
@@ -1482,10 +1512,6 @@ describe('component islands', () => {
         {
           "link": [],
           "style": [
-            {
-              "innerHTML": ":root{--global:\\"global\\";--asset:url(/_nuxt/logo.svg)}",
-              "key": "island-style",
-            },
             {
               "innerHTML": "pre[data-v-xxxxx]{color:blue}",
               "key": "island-style",

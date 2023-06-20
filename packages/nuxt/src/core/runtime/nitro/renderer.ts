@@ -66,6 +66,8 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
+const getEntryId: () => Promise<string> = () => getClientManifest().then(r => Object.values(r).find(r => r.isEntry)!.src!)
+
 // @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
@@ -282,6 +284,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Render meta
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
+
+  if (process.env.NUXT_INLINE_STYLES && !islandContext) {
+    const entryId = await getEntryId()
+    if (ssrContext.modules) {
+      ssrContext.modules.add(entryId)
+    } else if (ssrContext._registeredComponents) {
+      ssrContext._registeredComponents.add(entryId)
+    }
+  }
 
   // Render inline styles
   const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))

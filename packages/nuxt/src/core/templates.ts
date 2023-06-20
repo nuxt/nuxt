@@ -48,7 +48,6 @@ export const testComponentWrapperTemplate = {
   getContents: (ctx: TemplateContext) => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
 }
 
-// This template only exists for backwards compatibility; it is not used within Nuxt itself
 export const cssTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'css.mjs',
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
