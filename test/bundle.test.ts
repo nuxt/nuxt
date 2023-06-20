@@ -35,7 +35,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"61.3k"')
+    expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.1k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2295k"')
