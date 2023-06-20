@@ -38,7 +38,7 @@ export default defineComponent({
 
     globalMiddleware.unshift(indicator.start)
     router.beforeResolve((to, from) => {
-      if (to === from) {
+      if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
         indicator.finish()
       }
     })
