@@ -6,7 +6,7 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 
@@ -42,14 +42,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
       const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
-      return generateRoutesFromFiles(files, dir)
+      return generateRoutesFromFiles(files, dir, nuxt)
     })
   )).flat()
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtPage[] {
+export function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt: Nuxt): NuxtPage[] {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -64,7 +64,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       children: []
     }
 
-    const fileContent = fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+    const fileContent = file in nuxt.vfs ? nuxt.vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
     const overrideRouteName = getRouteName(fileContent)
     if (overrideRouteName) {
       route.name = overrideRouteName
