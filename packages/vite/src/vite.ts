@@ -157,7 +157,7 @@ export async function bundle (nuxt: Nuxt) {
         components: ctx.nuxt.apps.default.components,
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',
-        getEntryId: () => ctx.entry
+        entry: ctx.entry
       }))
     })
 

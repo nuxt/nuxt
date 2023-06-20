@@ -16,7 +16,7 @@ interface SSRStylePluginOptions {
   shouldInline?: ((id?: string) => boolean) | boolean
   components: Component[]
   clientCSSMap: Record<string, Set<string>>
-  getEntryId: () => string
+  entry: string
   globalCSS: string[]
   mode: 'server' | 'client'
 }
@@ -134,7 +134,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (options.mode === 'client') {
         // We will either teleport global CSS to the 'entry' chunk on the server side
         // or include it here in the client build so it is emitted in the CSS.
-        if (id === options.getEntryId()) {
+        if (id === options.entry) {
           const s = new MagicString(code)
           options.clientCSSMap[id] ||= new Set()
           for (const file of options.globalCSS) {
