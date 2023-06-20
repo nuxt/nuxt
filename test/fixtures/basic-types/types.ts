@@ -83,7 +83,7 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | null>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | null>>()
   })
-  
+
   it('excludes body when using GET request with useFetch', () => {
     // @ts-expect-error Body cannot be passed to GET request
     useFetch('/api/other', { body: {} })
