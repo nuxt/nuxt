@@ -1424,13 +1424,11 @@ describe('component islands', () => {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
     }
 
-    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
+    expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [
-            "<removed from snapshot>",
-          ],
+          "style": [],
         },
         "html": "<pre nuxt-ssr-component-uid>    Route: /foo
         </pre>",
@@ -1448,13 +1446,11 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
-    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
+    expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [
-            "<removed from snapshot>",
-          ],
+          "style": [],
         },
         "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
@@ -1471,13 +1467,11 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
-    expect(normaliseIslandResult(result)).toMatchInlineSnapshot(`
+    expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
-          "style": [
-            "<removed from snapshot>",
-          ],
+          "style": [],
         },
         "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
         "state": {},
@@ -1507,7 +1501,7 @@ describe('component islands', () => {
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
-      expect(normaliseIslandResult(result, false).head).toMatchInlineSnapshot(`
+      expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "link": [],
           "style": [
@@ -1708,18 +1702,16 @@ describe.runIf(isDev())('component testing', () => {
   })
 })
 
-function normaliseIslandResult (result: NuxtIslandResponse, removeStyle = true) {
+function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
     head: {
       ...result.head,
-      style: removeStyle
-        ? ['<removed from snapshot>']
-        : result.head.style.map(s => ({
-          ...s,
-          innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
-          key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
-        }))
+      style: result.head.style.map(s => ({
+        ...s,
+        innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
+        key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
+      }))
     }
   }
 }
