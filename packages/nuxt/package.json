@@ -56,7 +56,7 @@
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
     "@nuxt/telemetry": "^2.2.0",
-    "@nuxt/ui-templates": "^1.1.1",
+    "@nuxt/ui-templates": "^1.2.0",
     "@nuxt/vite-builder": "workspace:../vite",
     "@unhead/ssr": "^1.1.27",
     "@unhead/vue": "^1.1.27",
