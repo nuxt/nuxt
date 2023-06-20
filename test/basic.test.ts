@@ -1168,15 +1168,45 @@ describe('automatically keyed composables', () => {
 })
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
+  const inlinedCSS = [
+    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+    '{--global:"global";', // global css from nuxt.config
+    '{--assets:"assets"}', // <script>
+    '{--postcss:"postcss"}', // <style lang=postcss>
+    '{--scoped:"scoped"}' // <style lang=css>
+    // TODO: ideally both client/server components would have inlined css when used
+    // '{--client-only:"client-only"}', // client-only component not in server build
+    // '{--server-only:"server-only"}' // server-only component not in client build
+    // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
+    // '{--functional:"functional"}', // CSS imported ambiently in a functional component
+  ]
+
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
-    for (const style of [
-      '{--assets:"assets"}', // <script>
-      '{--scoped:"scoped"}', // <style lang=css>
-      '{--postcss:"postcss"}' // <style lang=postcss>
-    ]) {
+    for (const style of inlinedCSS) {
       expect(html).toContain(style)
     }
+  })
+
+  it('should not include inlined CSS in generated CSS file', async () => {
+    const html: string = await $fetch('/styles')
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
+    let css = ''
+    for (const file of cssFiles || []) {
+      css += await $fetch(file)
+    }
+
+    // should not include inlined CSS in generated CSS files
+    for (const style of inlinedCSS) {
+      // TODO: remove 'ambient global' CSS from generated CSS file
+      if (style === '{--plugin:"plugin"}') { continue }
+      expect.soft(css).not.toContain(style)
+    }
+
+    // should include unloadable CSS in generated CSS file
+    expect.soft(css).toContain('--virtual:red')
+    expect.soft(css).toContain('--functional:"functional"')
+    expect.soft(css).toContain('--client-only:"client-only"')
   })
 
   it('does not load stylesheet for page styles', async () => {
@@ -1468,15 +1498,10 @@ describe('component islands', () => {
         link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
       }
     }
-    result.head.style = result.head.style.map(s => ({
-      ...s,
-      innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
-      key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
-    }))
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
-      expect(result.head).toMatchInlineSnapshot(`
+      expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "link": [],
           "style": [
@@ -1486,7 +1511,7 @@ describe('component islands', () => {
             },
           ],
         }
-    `)
+      `)
     } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
@@ -1676,3 +1701,17 @@ describe.runIf(isDev())('component testing', () => {
     expect(comp2).toContain('12 x 4 = 48')
   })
 })
+
+function normaliseIslandResult (result: NuxtIslandResponse) {
+  return {
+    ...result,
+    head: {
+      ...result.head,
+      style: result.head.style.map(s => ({
+        ...s,
+        innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
+        key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
+      }))
+    }
+  }
+}

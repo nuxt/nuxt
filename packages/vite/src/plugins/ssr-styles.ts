@@ -1,17 +1,24 @@
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
-import { findStaticImports } from 'mlly'
 import { dirname, relative } from 'pathe'
-import { genObjectFromRawEntries } from 'knitwork'
+import { genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
 import type { Component } from '@nuxt/schema'
+import MagicString from 'magic-string'
+import { findStaticImports } from 'mlly'
+
+import { isCSS } from '../utils'
 
 interface SSRStylePluginOptions {
   srcDir: string
   chunksWithInlinedCSS: Set<string>
   shouldInline?: ((id?: string) => boolean) | boolean
   components: Component[]
+  clientCSSMap: Record<string, Set<string>>
+  entry: string
+  globalCSS: string[]
+  mode: 'server' | 'client'
 }
 
 const SUPPORTED_FILES_RE = /\.(vue|((c|m)?j|t)sx?)$/
@@ -33,10 +40,17 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     name: 'ssr-styles',
     resolveId: {
       order: 'pre',
-      async handler (id, importer, options) {
-        if (!id.endsWith('.vue')) { return }
+      async handler (id, importer, _options) {
+        // We deliberately prevent importing `#build/css` to avoid including it in the client bundle
+        // in its entirety. We will instead include _just_ the styles that can't be inlined,
+        // in the <NuxtRoot> component below
+        if (options.mode === 'client' && id === '#build/css' && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(importer)))) {
+          return this.resolve('unenv/runtime/mock/empty', importer, _options)
+        }
 
-        const res = await this.resolve(id, importer, { ...options, skipSelf: true })
+        if (options.mode === 'client' || !id.endsWith('.vue')) { return }
+
+        const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
         if (res) {
           return {
             ...res,
@@ -46,6 +60,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       }
     },
     generateBundle (outputOptions) {
+      if (options.mode === 'client') { return }
+
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {
         const { files, inBundle } = cssMap[file]
@@ -75,6 +91,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         options.chunksWithInlinedCSS.add(key)
       }
 
+      // TODO: remove css from vite preload arrays
+
       this.emitFile({
         type: 'asset',
         fileName: 'styles.mjs',
@@ -89,6 +107,19 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     },
     renderChunk (_code, chunk) {
       if (!chunk.facadeModuleId) { return null }
+
+      // 'Teleport' CSS chunks that made it into the bundle on the client side
+      // to be inlined on server rendering
+      if (options.mode === 'client') {
+        options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
+        for (const id of chunk.moduleIds) {
+          if (isCSS(id)) {
+            options.clientCSSMap[chunk.facadeModuleId].add(id)
+          }
+        }
+        return
+      }
+
       const id = relativeToSrcDir(chunk.facadeModuleId)
       for (const file in chunk.modules) {
         const relativePath = relativeToSrcDir(file)
@@ -100,10 +131,41 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       return null
     },
     async transform (code, id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      const query = parseQuery(search)
+      if (options.mode === 'client') {
+        // We will either teleport global CSS to the 'entry' chunk on the server side
+        // or include it here in the client build so it is emitted in the CSS.
+        if (id === options.entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
+          const s = new MagicString(code)
+          options.clientCSSMap[id] ||= new Set()
+          for (const file of options.globalCSS) {
+            const resolved = await this.resolve(file, id)
+            const res = await this.resolve(file + '?inline&used', id)
+            if (!resolved || !res) {
+              if (!warnCache.has(file)) {
+                warnCache.add(file)
+                this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+              }
+              s.prepend(`${genImport(file)}\n`)
+              continue
+            }
+            options.clientCSSMap[id].add(resolved.id)
+          }
+          if (s.hasChanged()) {
+            return {
+              code: s.toString(),
+              map: s.generateMap({ hires: true })
+            }
+          }
+        }
+        return
+      }
 
-      if (!SUPPORTED_FILES_RE.test(pathname) || query.macro || query.nuxt_component) { return }
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+
+      if (!(id in options.clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
+
+      const query = parseQuery(search)
+      if (query.macro || query.nuxt_component) { return }
 
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
@@ -112,7 +174,32 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       const relativeId = relativeToSrcDir(id)
       cssMap[relativeId] = cssMap[relativeId] || { files: [] }
 
+      const emittedIds = new Set<string>()
+
       let styleCtr = 0
+      const ids = options.clientCSSMap[id] || []
+      for (const file of ids) {
+        const resolved = await this.resolve(file, id)
+        if (!resolved || !(await this.resolve(file + '?inline&used', id))) {
+          if (!warnCache.has(file)) {
+            warnCache.add(file)
+            this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+          }
+          continue
+        }
+        if (emittedIds.has(file)) { continue }
+        const ref = this.emitFile({
+          type: 'chunk',
+          name: `${filename(id)}-styles-${++styleCtr}.mjs`,
+          id: file + '?inline&used'
+        })
+
+        idRefMap[relativeToSrcDir(file)] = ref
+        cssMap[relativeId].files.push(ref)
+      }
+
+      if (!SUPPORTED_FILES_RE.test(pathname)) { return }
+
       for (const i of findStaticImports(code)) {
         const { type } = parseQuery(i.specifier)
         if (type !== 'style' && !i.specifier.endsWith('.css')) { continue }
@@ -127,6 +214,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           continue
         }
 
+        if (emittedIds.has(resolved.id)) { continue }
         const ref = this.emitFile({
           type: 'chunk',
           name: `${filename(id)}-styles-${++styleCtr}.mjs`,

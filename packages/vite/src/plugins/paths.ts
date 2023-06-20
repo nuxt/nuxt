@@ -2,14 +2,13 @@ import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
 import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
+import { isCSS } from '../utils'
 
 export interface RuntimePathsOptions {
   sourcemap?: boolean
 }
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
-const CSS_RE =
-  /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)$/
 
 export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
   return {
@@ -19,7 +18,7 @@ export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
 
       // skip import into css files
-      if (CSS_RE.test(pathname)) { return }
+      if (isCSS(pathname)) { return }
 
       // skip import into <style> vue files
       if (pathname.endsWith('.vue')) {
