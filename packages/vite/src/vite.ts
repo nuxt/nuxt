@@ -16,6 +16,7 @@ import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
+import { ssrStylesPlugin } from './plugins/ssr-styles'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -142,6 +143,35 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('vite:extend', ctx)
+
+  if (!ctx.nuxt.options.dev) {
+    const chunksWithInlinedCSS = new Set<string>()
+    const clientCSSMap = {}
+
+    nuxt.hook('vite:extendConfig', (config, { isServer }) => {
+      config.plugins!.push(ssrStylesPlugin({
+        srcDir: ctx.nuxt.options.srcDir,
+        clientCSSMap,
+        chunksWithInlinedCSS,
+        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        components: ctx.nuxt.apps.default.components,
+        globalCSS: ctx.nuxt.options.css,
+        mode: isServer ? 'server' : 'client',
+        entry: ctx.entry
+      }))
+    })
+
+    // Remove CSS entries for files that will have inlined styles
+    ctx.nuxt.hook('build:manifest', (manifest) => {
+      for (const key in manifest) {
+        const entry = manifest[key]
+        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
+        if (shouldRemoveCSS && entry.css) {
+          entry.css = []
+        }
+      }
+    })
+  }
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
