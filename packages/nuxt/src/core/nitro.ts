@@ -206,6 +206,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       output: {},
       plugins: []
     }
+  // @ts-expect-error pending nitropack upgrade
   } satisfies NitroConfig)
 
   // Resolve user-provided paths
