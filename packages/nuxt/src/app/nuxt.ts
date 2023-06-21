@@ -266,7 +266,7 @@ export function createNuxtApp (options: CreateOptions) {
       // Expose payload types
       nuxtApp.ssrContext._payloadReducers = {}
       // Expose current path
-      nuxtApp.payload.path = nuxtApp.ssrContext.event.path
+      nuxtApp.payload.path = nuxtApp.ssrContext.url
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any

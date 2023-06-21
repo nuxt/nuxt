@@ -1,5 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
+import { resolve } from 'pathe'
 import type { AppHeadMetaObject } from '../types/head'
 
 export default defineUntypedSchema({
@@ -175,6 +176,65 @@ export default defineUntypedSchema({
      *
      */
     rootTag: 'div',
+  },
+
+  /** A path to an HTML file, the contents of which will be inserted into any HTML page
+   * rendered with `ssr: false`.
+   *
+   * By default Nuxt will look in `~/app/spa-loading-template.html` for this file.
+   *
+   * You can set this to `false` to disable any loading indicator.
+   *
+   * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
+   *
+   * @example ~/app/spa-loading-template.html
+   * ```html
+   * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
+   * <div class="loader"></div>
+   * <style>
+   * .loader {
+   *   display: block;
+   *   position: fixed;
+   *   z-index: 1031;
+   *   top: 50%;
+   *   left: 50%;
+   *   transform: translate(-50%, -50%);
+   *   width: 18px;
+   *   height: 18px;
+   *   box-sizing: border-box;
+   *   border: solid 2px transparent;
+   *   border-top-color: #000;
+   *   border-left-color: #000;
+   *   border-bottom-color: #efefef;
+   *   border-right-color: #efefef;
+   *   border-radius: 50%;
+   *   -webkit-animation: loader 400ms linear infinite;
+   *   animation: loader 400ms linear infinite;
+   * }
+   *
+   * \@-webkit-keyframes loader {
+   *   0% {
+   *     -webkit-transform: rotate(0deg);
+   *   }
+   *   100% {
+   *     -webkit-transform: rotate(360deg);
+   *   }
+   * }
+   * \@keyframes loader {
+   *   0% {
+   *     transform: rotate(0deg);
+   *   }
+   *   100% {
+   *     transform: rotate(360deg);
+   *   }
+   * }
+   * </style>
+   * ```
+   *
+   * @type {string | false}
+   */
+  spaLoadingTemplate: {
+    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? null)
   },
 
   /**

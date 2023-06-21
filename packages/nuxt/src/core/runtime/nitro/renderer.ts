@@ -66,6 +66,8 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
+const getEntryId: () => Promise<string> = () => getClientManifest().then(r => Object.values(r).find(r => r.isEntry)!.src!)
+
 // @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
 
@@ -110,9 +112,12 @@ const getSSRRenderer = lazyCachedFunction(async () => {
 const getSPARenderer = lazyCachedFunction(async () => {
   const manifest = await getClientManifest()
 
+  // @ts-expect-error virtual file
+  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
+
   const options = {
     manifest,
-    renderToString: () => `<${appRootTag} id="${appRootId}"></${appRootTag}>`,
+    renderToString: () => `<${appRootTag} id="${appRootId}">${spaTemplate}</${appRootTag}>`,
     buildAssetsURL
   }
   // Create SPA renderer and cache the result for all requests
@@ -122,7 +127,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
     ssrContext!.payload = {
-      path: ssrContext.event.path,
+      path: ssrContext.url,
       _errors: {},
       serverRendered: false,
       data: {},
@@ -282,6 +287,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Render meta
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
+
+  if (process.env.NUXT_INLINE_STYLES && !islandContext) {
+    const entryId = await getEntryId()
+    if (ssrContext.modules) {
+      ssrContext.modules.add(entryId)
+    } else if (ssrContext._registeredComponents) {
+      ssrContext._registeredComponents.add(entryId)
+    }
+  }
 
   // Render inline styles
   const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))
