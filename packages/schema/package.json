@@ -34,7 +34,7 @@
     "@vitejs/plugin-vue": "4.2.3",
     "@vitejs/plugin-vue-jsx": "3.0.1",
     "esbuild-loader": "3.0.1",
-    "h3": "1.6.6",
+    "h3": "1.7.0",
     "ignore": "5.2.4",
     "nitropack": "2.4.1",
     "unbuild": "latest",
