@@ -23,3 +23,11 @@ declare module 'nitropack' {
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
+
+// TODO: dedupe these type declarations
+declare module 'nitropack/dist/runtime/types' {
+  interface NitroRuntimeHooks {
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
