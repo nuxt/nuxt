@@ -16,6 +16,11 @@ overrides:
   vue: 3.3.4
   magic-string: ^0.30.0
 
+patchedDependencies:
+  nitropack@2.5.0:
+    hash: 5ecgevhxlqc76fah3yn6hbvggu
+    path: patches/nitropack@2.5.0.patch
+
 importers:
 
   .:
@@ -203,7 +208,7 @@ importers:
         version: 4.17.21
       nitropack:
         specifier: 2.5.0
-        version: 2.5.0
+        version: 2.5.0(patch_hash=5ecgevhxlqc76fah3yn6hbvggu)
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -408,7 +413,7 @@ importers:
         version: 1.4.0
       nitropack:
         specifier: ^2.5.0
-        version: 2.5.0
+        version: 2.5.0(patch_hash=5ecgevhxlqc76fah3yn6hbvggu)
       nuxi:
         specifier: workspace:*
         version: link:../nuxi
@@ -566,7 +571,7 @@ importers:
         version: 5.2.4
       nitropack:
         specifier: 2.5.0
-        version: 2.5.0
+        version: 2.5.0(patch_hash=5ecgevhxlqc76fah3yn6hbvggu)
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -6522,7 +6527,7 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack@2.5.0:
+  /nitropack@2.5.0(patch_hash=5ecgevhxlqc76fah3yn6hbvggu):
     resolution: {integrity: sha512-uuQZZ7xaE4YYJBZjwN7Bj7pFbD6dwEN/4qxmb+gKdKGsc8VPY4Up9WHIp9/fb7Lh7S0k3GBSaeAcKTaIsrgRQg==}
     engines: {node: ^14.16.0 || ^16.11.0 || >=17.0.0}
     hasBin: true
@@ -6604,6 +6609,7 @@ packages:
       - debug
       - encoding
       - supports-color
+    patched: true
 
   /node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}

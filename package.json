@@ -80,5 +80,10 @@
   "packageManager": "pnpm@8.6.3",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "nitropack@2.5.0": "patches/nitropack@2.5.0.patch"
+    }
   }
 }

@@ -1,0 +1,216 @@
+diff --git a/dist/config.d.ts b/dist/config.d.ts
+index 78e99a1d84814cbfc420b17c721ad011a5ab5805..2e871c0f0a2f52afbc959e340464f8b7713d8d3a 100644
+--- a/dist/config.d.ts
++++ b/dist/config.d.ts
+@@ -1,4 +1,4 @@
+-import { N as NitroConfig } from './global-c4a18867.js';
++import { N as NitroConfig } from './global-24e68b74.js';
+ import 'unenv';
+ import 'unimport';
+ import 'unimport/unplugin';
+diff --git a/dist/global-c4a18867.d.ts b/dist/global-24e68b74.d.ts
+similarity index 95%
+rename from dist/global-c4a18867.d.ts
+rename to dist/global-24e68b74.d.ts
+index 9d2b4caea2572569506c999c8d970146aaeaa53f..3364eac24a45d1c1298b67b097b43a37a2d42ef5 100644
+--- a/dist/global-c4a18867.d.ts
++++ b/dist/global-24e68b74.d.ts
+@@ -146,14 +146,6 @@ interface CachedEventHandlerOptions<T = any> extends Omit<CacheOptions<ResponseC
+     headersOnly?: boolean;
+ }
+ 
+-interface RenderResponse {
+-    body: string;
+-    statusCode: number;
+-    statusMessage: string;
+-    headers: Record<string, string>;
+-}
+-type RenderHandler = (event: H3Event) => Partial<RenderResponse> | Promise<Partial<RenderResponse>>;
+-
+ declare module "h3" {
+     interface H3Event {
+         /** @experimental Calls fetch with same context and request headers */
+@@ -162,12 +154,6 @@ declare module "h3" {
+         $fetch: typeof globalThis.fetch;
+     }
+ }
+-interface NitroRuntimeHooks {
+-    "render:response": (response: Partial<RenderResponse>, context: {
+-        event: H3Event;
+-    }) => void;
+-    close: () => void;
+-}
+ 
+ declare const awsLambda: NitroPreset;
+ 
+@@ -428,11 +414,18 @@ interface PresetOptions {
+ }
+ 
+ type NitroDynamicConfig = Pick<NitroConfig, "runtimeConfig" | "routeRules">;
++interface NitroRuntimeConfigApp {
++    baseURL: string;
++    [key: string]: unknown;
++}
+ interface NitroRuntimeConfig {
+-    app: {
+-        baseURL: string;
++    app: NitroRuntimeConfigApp;
++    nitro: {
++        routeRules?: {
++            [path: string]: NitroRouteConfig;
++        };
+     };
+-    [key: string]: any;
++    [key: string]: unknown;
+ }
+ interface Nitro {
+     options: NitroOptions;
+@@ -660,4 +653,4 @@ declare global {
+     }
+ }
+ 
+-export { $Fetch as $, AvailableRouterMethod as A, CompressOptions as C, DevServerOptions as D, ExtractedRouteMethod as E, InternalApi as I, KebabCase as K, MiddlewareOf as M, NitroConfig as N, PrerenderRoute as P, ResponseCacheEntry as R, StorageMounts as S, TypedInternalResponse as T, NitroRuntimeHooks as a, Nitro as b, NitroOptions as c, NitroEventHandler as d, NitroPreset as e, NitroFetchRequest as f, NitroFetchOptions as g, NitroStaticBuildFlags as h, NitroDynamicConfig as i, NitroRuntimeConfig as j, PrerenderGenerateRoute as k, NitroHooks as l, AppConfig as m, PublicAssetDir as n, ServerAssetDir as o, NitroRouteConfig as p, NitroRouteRules as q, NitroDevEventHandler as r, NitroErrorHandler as s, MatchedRoutes as t, CacheEntry as u, CacheOptions as v, CachedEventHandlerOptions as w, RenderResponse as x, RenderHandler as y };
++export { $Fetch as $, AvailableRouterMethod as A, CompressOptions as C, DevServerOptions as D, ExtractedRouteMethod as E, InternalApi as I, KebabCase as K, MiddlewareOf as M, NitroConfig as N, PrerenderRoute as P, StorageMounts as S, TypedInternalResponse as T, Nitro as a, NitroOptions as b, NitroEventHandler as c, NitroPreset as d, NitroFetchRequest as e, NitroFetchOptions as f, NitroStaticBuildFlags as g, NitroDynamicConfig as h, NitroRuntimeConfigApp as i, NitroRuntimeConfig as j, PrerenderGenerateRoute as k, NitroHooks as l, AppConfig as m, PublicAssetDir as n, ServerAssetDir as o, NitroRouteConfig as p, NitroRouteRules as q, NitroDevEventHandler as r, NitroErrorHandler as s, MatchedRoutes as t };
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index de827bda7b82936a64a47f9899652fc2d7587947..41656c4f1d7af1384eeac0918648b733b1f72684 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,16 +1,15 @@
+-import { a as NitroRuntimeHooks, b as Nitro, N as NitroConfig, c as NitroOptions, d as NitroEventHandler, e as NitroPreset } from './global-c4a18867.js';
+-export { $ as $Fetch, m as AppConfig, A as AvailableRouterMethod, u as CacheEntry, v as CacheOptions, w as CachedEventHandlerOptions, C as CompressOptions, D as DevServerOptions, E as ExtractedRouteMethod, I as InternalApi, K as KebabCase, t as MatchedRoutes, M as MiddlewareOf, r as NitroDevEventHandler, i as NitroDynamicConfig, s as NitroErrorHandler, g as NitroFetchOptions, f as NitroFetchRequest, l as NitroHooks, p as NitroRouteConfig, q as NitroRouteRules, j as NitroRuntimeConfig, h as NitroStaticBuildFlags, k as PrerenderGenerateRoute, P as PrerenderRoute, n as PublicAssetDir, y as RenderHandler, x as RenderResponse, R as ResponseCacheEntry, o as ServerAssetDir, S as StorageMounts, T as TypedInternalResponse } from './global-c4a18867.js';
++import { a as Nitro, N as NitroConfig, b as NitroOptions, c as NitroEventHandler, d as NitroPreset } from './global-24e68b74.js';
++export { $ as $Fetch, m as AppConfig, A as AvailableRouterMethod, C as CompressOptions, D as DevServerOptions, E as ExtractedRouteMethod, I as InternalApi, K as KebabCase, t as MatchedRoutes, M as MiddlewareOf, r as NitroDevEventHandler, h as NitroDynamicConfig, s as NitroErrorHandler, f as NitroFetchOptions, e as NitroFetchRequest, l as NitroHooks, p as NitroRouteConfig, q as NitroRouteRules, j as NitroRuntimeConfig, i as NitroRuntimeConfigApp, g as NitroStaticBuildFlags, k as PrerenderGenerateRoute, P as PrerenderRoute, n as PublicAssetDir, o as ServerAssetDir, S as StorageMounts, T as TypedInternalResponse } from './global-24e68b74.js';
+ import { WatchConfigOptions } from 'c12';
+ import { Worker } from 'node:worker_threads';
+-import { App, Router } from 'h3';
++import { App } from 'h3';
+ import { ListenOptions, Listener } from 'listhen';
+ import { FSWatcher } from 'chokidar';
+-import { createCall, createFetch } from 'unenv/runtime/fetch/index';
+-import { Hookable } from 'hookable';
+ import 'unenv';
+ import 'unimport';
+ import 'unimport/unplugin';
+ import 'rollup-plugin-visualizer';
++import 'hookable';
+ import 'consola';
+ import '@rollup/plugin-commonjs';
+ import '@rollup/plugin-wasm';
+@@ -23,18 +22,6 @@ import 'ofetch';
+ import 'esbuild';
+ import '@rollup/pluginutils';
+ 
+-interface NitroApp {
+-    h3App: App;
+-    router: Router;
+-    hooks: Hookable<NitroRuntimeHooks>;
+-    localCall: ReturnType<typeof createCall>;
+-    localFetch: ReturnType<typeof createFetch>;
+-}
+-
+-interface NitroAppPlugin {
+-    (nitro: NitroApp): void;
+-}
+-
+ /**
+  * @link https://github.com/remix-run/remix/blob/2248669ed59fd716e267ea41df5d665d4781f4a9/packages/remix-server-runtime/serialize.ts
+  */
+@@ -119,4 +106,4 @@ declare function prerender(nitro: Nitro): Promise<void>;
+ 
+ declare function defineNitroPreset(preset: NitroPreset): NitroPreset;
+ 
+-export { GLOB_SCAN_PATTERN, LoadConfigOptions, Nitro, NitroApp, NitroAppPlugin, NitroConfig, NitroDevServer, NitroEventHandler, NitroOptions, NitroPreset, NitroRuntimeHooks, NitroWorker, Serialize, Simplify, build, copyPublicAssets, createDevServer, createNitro, defineNitroPreset, loadOptions, prepare, prerender, scanHandlers, scanMiddleware, scanPlugins, scanRoutes, writeTypes };
++export { GLOB_SCAN_PATTERN, LoadConfigOptions, Nitro, NitroConfig, NitroDevServer, NitroEventHandler, NitroOptions, NitroPreset, NitroWorker, Serialize, Simplify, build, copyPublicAssets, createDevServer, createNitro, defineNitroPreset, loadOptions, prepare, prerender, scanHandlers, scanMiddleware, scanPlugins, scanRoutes, writeTypes };
+diff --git a/dist/runtime/types.d.ts b/dist/runtime/types.d.ts
+index 63cc4fa35b86a09ec91a6e5d578e67ca5903575d..1adc018e25748733868e51bc2691413d4fc00eb5 100644
+--- a/dist/runtime/types.d.ts
++++ b/dist/runtime/types.d.ts
+@@ -1,5 +1,5 @@
+ import type { H3Event } from "h3";
+-import type { RenderResponse } from "../types";
++import type { RenderResponse } from "./types";
+ export type { NitroApp } from "./app";
+ export type { CacheEntry, CacheOptions, ResponseCacheEntry, CachedEventHandlerOptions, } from "./cache";
+ export type { NitroAppPlugin } from "./plugin";
+diff --git a/package.json b/package.json
+index 3e6432d7eb5cfea2e391cf4bb3f5008c1c975677..f18454b6d8bc9e7e4580ca5a92214417e552a20e 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+   "type": "module",
+   "exports": {
+     ".": {
+-      "types": "./dist/index.d.ts",
++      "types": "./types.d.ts",
+       "import": "./dist/index.mjs"
+     },
+     "./config": {
+@@ -20,7 +20,7 @@
+     "./package.json": "./package.json"
+   },
+   "main": "./dist/index.mjs",
+-  "types": "./dist/index.d.ts",
++  "types": "./types.d.ts",
+   "bin": {
+     "nitro": "./dist/cli.mjs",
+     "nitropack": "./dist/cli.mjs"
+@@ -29,6 +29,22 @@
+     "dist",
+     "*.d.ts"
+   ],
++  "scripts": {
++    "build": "unbuild",
++    "dev": "pnpm nitro dev playground",
++    "dev:build": "pnpm nitro build playground",
++    "dev:start": "node playground/.output/server/index.mjs",
++    "lint": "eslint --cache --ext .ts,.mjs,.cjs . && prettier -c src",
++    "lint:fix": "eslint --cache --fix --ext .ts,.mjs,.cjs . && prettier --write -c src",
++    "nitro": "jiti ./src/cli/cli.ts",
++    "prepack": "pnpm build",
++    "release": "pnpm test && pnpm build && changelogen --release && pnpm publish && git push --follow-tags",
++    "stub": "unbuild --stub",
++    "test": "pnpm lint && pnpm vitest-es run --silent",
++    "test:fixture:types": "pnpm stub && jiti ./test/scripts/gen-fixture-types.ts && cd test/fixture && tsc --noEmit",
++    "test:types": "tsc --noEmit && pnpm test:fixture:types",
++    "vitest-es": "NODE_OPTIONS=--experimental-vm-modules vitest"
++  },
+   "resolutions": {
+     "nitropack": "link:.",
+     "undici": "^5.22.1"
+@@ -126,19 +142,14 @@
+   "engines": {
+     "node": "^14.16.0 || ^16.11.0 || >=17.0.0"
+   },
+-  "scripts": {
+-    "build": "unbuild",
+-    "dev": "pnpm nitro dev playground",
+-    "dev:build": "pnpm nitro build playground",
+-    "dev:start": "node playground/.output/server/index.mjs",
+-    "lint": "eslint --cache --ext .ts,.mjs,.cjs . && prettier -c src",
+-    "lint:fix": "eslint --cache --fix --ext .ts,.mjs,.cjs . && prettier --write -c src",
+-    "nitro": "jiti ./src/cli/cli.ts",
+-    "release": "pnpm test && pnpm build && changelogen --release && pnpm publish && git push --follow-tags",
+-    "stub": "unbuild --stub",
+-    "test": "pnpm lint && pnpm vitest-es run --silent",
+-    "test:fixture:types": "pnpm stub && jiti ./test/scripts/gen-fixture-types.ts && cd test/fixture && tsc --noEmit",
+-    "test:types": "tsc --noEmit && pnpm test:fixture:types",
+-    "vitest-es": "NODE_OPTIONS=--experimental-vm-modules vitest"
++  "pnpm": {
++    "peerDependencyRules": {
++      "ignoreMissing": [
++        "react",
++        "@types/react",
++        "react-dom",
++        "@algolia/client-search"
++      ]
++    }
+   }
+ }
+diff --git a/types.d.ts b/types.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..a3bfcecfd16820481abd15d2d279eb65ac9b3605
+--- /dev/null
++++ b/types.d.ts
+@@ -0,0 +1,2 @@
++export * from './dist/index'
++export * from './dist/runtime/types'
