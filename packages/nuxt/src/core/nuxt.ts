@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -153,6 +153,22 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transpile #app if it is imported directly from subpath export
   nuxt.options.build.transpile.push('nuxt/app')
+
+  addTemplate({
+    filename: 'types/nitro-nuxt.d.ts',
+    getContents: () => {
+      return `
+declare global {
+  namespace NodeJS {
+    interface Process {
+      dev: boolean
+    }
+  }
+}
+export {}
+      `
+    }
+  })
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
