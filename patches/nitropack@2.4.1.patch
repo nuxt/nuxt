@@ -1,0 +1,27 @@
+diff --git a/dist/shared/nitro.9c0245b5.mjs b/dist/shared/nitro.9c0245b5.mjs
+index 22332a83417a49343c4e1d29e0bc49775bcfe4b0..aec65aef923de25c119922724b8cb403e368e322 100644
+--- a/dist/shared/nitro.9c0245b5.mjs
++++ b/dist/shared/nitro.9c0245b5.mjs
+@@ -9,6 +9,7 @@ import serveStatic from 'serve-static';
+ import { resolve } from 'pathe';
+ import { joinURL } from 'ufo';
+ import { watch } from 'chokidar';
++import { access } from 'node:fs/promises'
+ 
+ function createVFSHandler(nitro) {
+   return eventHandler(async (event) => {
+@@ -268,7 +269,13 @@ function createDevServer(nitro) {
+     eventHandler(async (event) => {
+       await reloadPromise;
+       const address = currentWorker && currentWorker.address;
+-      if (!address || address.socketPath && !existsSync(address.socketPath)) {
++      if (
++        !address ||
++        (address.socketPath &&
++          !(await access(address.socketPath).then(() => true,
++            () => false
++          )))
++      ) {
+         return errorHandler$1(lastError, event);
+       }
+       await proxy.handle(event, { target: address }).catch((err) => {
