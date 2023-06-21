@@ -49,7 +49,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
   const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
   tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
