@@ -7,7 +7,8 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-
+import { parse } from '@typescript-eslint/typescript-estree'
+import type { CallExpression, ExpressionStatement, ObjectExpression, Property } from 'estree'
 import { uniqueBy } from '../core/utils'
 
 enum SegmentParserState {
@@ -101,10 +102,29 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt
   return prepareRoutes(routes)
 }
 
-const PAGE_META_NAME_RE = /definePageMeta\(\s*{[^}]*name:\s*(["'`])((?:[^"'`\\]|\\.)+?)\1/
+const SFC_SCRIPT_RE = /<script\s+.*?>([\s\S]*?)<\/script>/i
+function extractScriptContent (html: string) {
+  const match = html.match(SFC_SCRIPT_RE)
+
+  if (match && match[1]) {
+    return match[1].trim()
+  }
+
+  return null
+}
 function getRouteName (file: string) {
-  const match = PAGE_META_NAME_RE.exec(file)
-  return match ? match[2] : undefined
+  const script = extractScriptContent(file)
+  if (!script) { return null }
+
+  const ast = parse(script)
+  const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
+  if (!pageMetaAST) { return null }
+
+  const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+  const nameProperty = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === 'name') as Property
+  if (!nameProperty || nameProperty.value.type !== 'Literal' || typeof nameProperty.value.value !== 'string') { return null }
+
+  return nameProperty.value.value
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
