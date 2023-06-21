@@ -25,7 +25,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect.soft(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"96.7k"')
+    expect.soft(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.0k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
@@ -38,7 +38,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.2k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2296k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2297k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
