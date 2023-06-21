@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { normalize } from 'pathe'
+import { getRandomPort } from 'get-port-please'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt/test-utils'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
@@ -11,11 +12,15 @@ import { expectNoClientErrors, expectWithPolling, isRenderingJson, parseData, pa
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
+const port = await getRandomPort()
+console.log('Running test server on', port)
+
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
+  port,
   setupTimeout: (isWindows ? 240 : 120) * 1000,
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite',
