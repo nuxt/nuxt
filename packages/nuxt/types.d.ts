@@ -2,6 +2,7 @@
 export * from './dist/index'
 
 import type { SchemaDefinition } from 'nuxt/schema'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/core/runtime/nitro/renderer'
 
 declare global {
   const defineNuxtConfig: typeof import('nuxt/config')['defineNuxtConfig']
@@ -16,5 +17,9 @@ declare module 'nitropack' {
   interface NitroRouteRules {
     ssr?: boolean
     experimentalNoScripts?: boolean
+  }
+  interface NitroRuntimeHooks {
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
