@@ -10,9 +10,8 @@ declare global {
 }
 
 declare module 'nitropack' {
-  interface NitroRuntimeConfig extends RuntimeConfig {
-    app: NitroRuntimeConfig['app'] & RuntimeConfig['app']
-  }
+  interface NitroRuntimeConfigApp extends RuntimeConfig['app'] {}
+  interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
     experimentalNoScripts?: boolean
