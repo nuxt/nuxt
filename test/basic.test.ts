@@ -458,6 +458,24 @@ describe('pages', () => {
     expect(response).not.toContain('don\'t look at this')
     expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
   })
+
+  it('respects preview mode', async () => {
+    const token = "hehe"
+
+    let page = await createPage(`/preview?preview=true&token=${token}`)
+
+    const hasRunOnClient = await page.waitForEvent('console');
+    expect(hasRunOnClient.text()).toBe('true')
+
+    expect(await page.locator('#fetched-on-client').textContent()).toBe('fetched on client')
+    expect(await page.locator('#preview-mode').textContent()).toBe('preview mode enabled')
+
+    await page.click('#use-fetch-check')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#token-check').textContent()).toBe(token)
+    expect(await page.locator('#correct-api-key-check').textContent()).toBe('true')
+  })
 })
 
 describe('nuxt composables', () => {
