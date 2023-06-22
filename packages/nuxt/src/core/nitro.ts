@@ -112,7 +112,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       strict: true,
       generateTsConfig: true,
       tsconfigPath: 'tsconfig.server.json',
-      // @ts-expect-error pending nitropack upgrade
       tsConfig: {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
