@@ -9,40 +9,7 @@ import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-
-// TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
-const LayoutLoader = defineComponent({
-  name: 'LayoutLoader',
-  inheritAttrs: false,
-  props: {
-    name: String,
-    layoutRef: Object as () => VNodeRef,
-    ...process.dev ? { hasTransition: Boolean } : {}
-  },
-  async setup (props, context) {
-    let vnode: VNode
-
-    if (process.dev && process.client) {
-      onMounted(() => {
-        nextTick(() => {
-          if (props.name && ['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            console.warn(`[nuxt] \`${props.name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
-          }
-        })
-      })
-    }
-
-    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
-
-    return () => {
-      if (process.dev && process.client && props.hasTransition) {
-        vnode = h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
-        return vnode
-      }
-      return h(LayoutComponent, mergeProps(context.attrs, { ref: props.layoutRef }), context.slots)
-    }
-  }
-})
+import { useNuxtApp } from '#app'
 
 export default defineComponent({
   name: 'NuxtLayout',
@@ -54,6 +21,7 @@ export default defineComponent({
     }
   },
   setup (props, context) {
+    const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
     const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
@@ -75,6 +43,7 @@ export default defineComponent({
     }
 
     return () => {
+      const done = nuxtApp.deferHydration()
       const hasLayout = layout.value && layout.value in layouts
       if (process.dev && layout.value && !hasLayout && layout.value !== 'default') {
         console.warn(`Invalid layout \`${layout.value}\` selected.`)
@@ -82,16 +51,21 @@ export default defineComponent({
 
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
+      if (process.dev && process.client && hasLayout && transitionProps) {
+        _layout = layout.value
+        vnode = _wrapIf(Transition, hasLayout && transitionProps, {
+          default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+            default: () => _wrapIf(layouts[layout.value], hasLayout && mergeProps(context.attrs, { ref: layoutRef }), context.slots).default()
+          })
+        }).default()
+
+        return vnode
+      }
+
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true }, {
-          default: () => _wrapIf(LayoutLoader, hasLayout && {
-            key: layout.value,
-            name: layout.value,
-            ...(process.dev ? { hasTransition: !!transitionProps } : {}),
-            ...context.attrs,
-            layoutRef
-          }, context.slots).default()
+        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+          default: () => _wrapIf(layouts[layout.value], hasLayout && mergeProps(context.attrs, { ref: layoutRef }), context.slots).default()
         })
       }).default()
     }
