@@ -48,6 +48,8 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
@@ -55,7 +57,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
     const absolutePath = resolve(basePath, aliases[alias])
 
     const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
-    tsConfig.compilerOptions = tsConfig.compilerOptions || {}
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [absolutePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]

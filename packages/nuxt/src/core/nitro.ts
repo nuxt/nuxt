@@ -38,7 +38,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
-  const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
+  const nitroConfig: NitroConfig = defu(_nitroConfig, {
     static: nuxt.options._generate,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -47,7 +47,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     imports: {
-      autoImport: nuxt.options.imports.autoImport,
+      autoImport: nuxt.options.imports.autoImport as boolean,
       imports: [
         {
           as: '__buildAssetsURL',
@@ -112,7 +112,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     typescript: {
       strict: true,
       generateTsConfig: true,
-      tsconfigPath: 'tsconfig.server.json'
+      tsconfigPath: 'tsconfig.server.json',
+      tsConfig: {
+        include: [
+          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+        ]
+      }
     },
     publicAssets: [
       nuxt.options.dev
@@ -143,7 +148,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               '@nuxt/',
               nuxt.options.buildDir
             ]),
-        ...nuxt.options.build.transpile.filter(i => typeof i === 'string'),
+        ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
         distDir
@@ -202,7 +207,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       output: {},
       plugins: []
     }
-  })
+  } satisfies NitroConfig)
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
@@ -255,6 +260,30 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  // TODO: extract to shared utility?
+  const excludedAlias = [/^@vue\/.*$/, '#imports', '#vue-router', 'vue-demi', /^#app/]
+  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
+  const aliases = nitroConfig.alias!
+  const tsConfig = nitroConfig.typescript!.tsConfig!
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
+  for (const _alias in aliases) {
+    const alias = _alias as keyof typeof aliases
+    if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
+      continue
+    }
+    if (alias in tsConfig.compilerOptions.paths) { continue }
+
+    const absolutePath = resolve(basePath, aliases[alias]!)
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[alias] = [absolutePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+    } else {
+      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+    }
+  }
 
   // Init nitro
   const nitro = await createNitro(nitroConfig)
