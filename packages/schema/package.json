@@ -36,7 +36,7 @@
     "esbuild-loader": "3.0.1",
     "h3": "1.7.0",
     "ignore": "5.2.4",
-    "nitropack": "2.4.1",
+    "nitropack": "2.5.1",
     "unbuild": "latest",
     "unctx": "2.3.1",
     "vite": "4.3.9",

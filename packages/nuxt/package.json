@@ -80,7 +80,7 @@
     "local-pkg": "^0.4.3",
     "magic-string": "^0.30.0",
     "mlly": "^1.4.0",
-    "nitropack": "^2.4.1",
+    "nitropack": "^2.5.1",
     "nuxi": "workspace:../nuxi",
     "nypm": "^0.2.1",
     "ofetch": "^1.1.1",

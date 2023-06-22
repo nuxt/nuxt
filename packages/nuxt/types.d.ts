@@ -1,7 +1,7 @@
 /// <reference types="nitropack" />
 export * from './dist/index'
 
-import type { SchemaDefinition } from 'nuxt/schema'
+import type { SchemaDefinition, RuntimeConfig } from 'nuxt/schema'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/core/runtime/nitro/renderer'
 
 declare global {
@@ -10,6 +10,8 @@ declare global {
 }
 
 declare module 'nitropack' {
+  interface NitroRuntimeConfigApp extends RuntimeConfig['app'] {}
+  interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
     experimentalNoScripts?: boolean
