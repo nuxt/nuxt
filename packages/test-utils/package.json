@@ -28,15 +28,15 @@
     "defu": "^6.1.2",
     "execa": "^7.1.1",
     "get-port-please": "^3.0.1",
-    "ofetch": "^1.1.0",
+    "ofetch": "^1.1.1",
     "pathe": "^1.1.1",
     "ufo": "^1.1.2"
   },
   "devDependencies": {
     "@jest/globals": "29.5.0",
-    "playwright": "1.35.0",
+    "playwright": "1.35.1",
     "unbuild": "latest",
-    "vitest": "0.32.0"
+    "vitest": "0.32.2"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",

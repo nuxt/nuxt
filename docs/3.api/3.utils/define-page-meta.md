@@ -32,7 +32,7 @@ interface PageMeta {
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
-  [key: string]: any
+  [key: string]: unknown
 }
 ```
 

@@ -34,9 +34,9 @@
     "@vitejs/plugin-vue": "4.2.3",
     "@vitejs/plugin-vue-jsx": "3.0.1",
     "esbuild-loader": "3.0.1",
-    "h3": "1.6.6",
+    "h3": "1.7.0",
     "ignore": "5.2.4",
-    "nitropack": "2.4.1",
+    "nitropack": "2.5.1",
     "unbuild": "latest",
     "unctx": "2.3.1",
     "vite": "4.3.9",
@@ -44,7 +44,7 @@
     "vue-bundle-renderer": "1.0.3",
     "vue-loader": "17.2.2",
     "vue-router": "4.2.2",
-    "webpack": "5.86.0"
+    "webpack": "5.88.0"
   },
   "dependencies": {
     "defu": "^6.1.2",

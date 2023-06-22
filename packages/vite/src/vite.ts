@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, resolve } from 'pathe'
+import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -8,6 +8,7 @@ import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+import { consola } from 'consola'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -15,6 +16,7 @@ import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
+import { ssrStylesPlugin } from './plugins/ssr-styles'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -25,6 +27,13 @@ export interface ViteBuildContext {
 }
 
 export async function bundle (nuxt: Nuxt) {
+  // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
+  const viteConfigPrefix = resolve(nuxt.options.rootDir, 'vite.config')
+  const viteConfigFile = await resolvePath(viteConfigPrefix).catch(() => null)
+  if (viteConfigFile && viteConfigFile !== viteConfigPrefix) {
+    consola.warn(`Using \`${basename(viteConfigFile)}\` is not supported together with Nuxt. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`)
+  }
+
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
@@ -134,6 +143,35 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('vite:extend', ctx)
+
+  if (!ctx.nuxt.options.dev) {
+    const chunksWithInlinedCSS = new Set<string>()
+    const clientCSSMap = {}
+
+    nuxt.hook('vite:extendConfig', (config, { isServer }) => {
+      config.plugins!.push(ssrStylesPlugin({
+        srcDir: ctx.nuxt.options.srcDir,
+        clientCSSMap,
+        chunksWithInlinedCSS,
+        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        components: ctx.nuxt.apps.default.components,
+        globalCSS: ctx.nuxt.options.css,
+        mode: isServer ? 'server' : 'client',
+        entry: ctx.entry
+      }))
+    })
+
+    // Remove CSS entries for files that will have inlined styles
+    ctx.nuxt.hook('build:manifest', (manifest) => {
+      for (const key in manifest) {
+        const entry = manifest[key]
+        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
+        if (shouldRemoveCSS && entry.css) {
+          entry.css = []
+        }
+      }
+    })
+  }
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated

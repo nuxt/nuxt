@@ -58,7 +58,9 @@ export interface NuxtSSRContext extends SSRContext {
   /** whether we are rendering an SSR error */
   error?: boolean
   nuxt: _NuxtApp
-  payload: _NuxtApp['payload']
+  payload: NuxtPayload
+  /** This is used solely to render runtime config with SPA renderer. */
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
@@ -66,6 +68,25 @@ export interface NuxtSSRContext extends SSRContext {
   _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
+}
+
+export interface NuxtPayload {
+  path?: string
+  serverRendered?: boolean
+  prerenderedAt?: number
+  data: Record<string, any>
+  state: Record<string, any>
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  error?: Error | {
+    url: string
+    statusCode: number
+    statusMessage: string
+    message: string
+    description: string
+    data?: any
+  } | null
+  _errors: Record<string, NuxtError | undefined>
+  [key: string]: unknown
 }
 
 interface _NuxtApp {
@@ -120,23 +141,7 @@ interface _NuxtApp {
   deferHydration: () => () => void | Promise<void>
 
   ssrContext?: NuxtSSRContext
-  payload: {
-    path?: string
-    serverRendered?: boolean
-    prerenderedAt?: number
-    data: Record<string, any>
-    state: Record<string, any>
-    error?: Error | {
-      url: string
-      statusCode: number
-      statusMessage: string
-      message: string
-      description: string
-      data?: any
-    } | null
-    _errors: Record<string, NuxtError | undefined>
-    [key: string]: any
-  }
+  payload: NuxtPayload
   static: {
     data: Record<string, any>
   }
@@ -160,7 +165,6 @@ export interface PluginMeta {
 
 export interface ResolvedPluginMeta {
   name?: string
-  order: number
   parallel?: boolean
 }
 
@@ -170,7 +174,7 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
   meta?: ResolvedPluginMeta
 }
 
-export interface ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
+export interface ObjectPlugin<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
   /**
@@ -180,6 +184,9 @@ export interface ObjectPluginInput<Injections extends Record<string, unknown> = 
    */
   parallel?: boolean
 }
+
+/** @deprecated Use `ObjectPlugin` */
+export type ObjectPluginInput<Injections extends Record<string, unknown> = Record<string, unknown>> = ObjectPlugin<Injections>
 
 export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
@@ -264,7 +271,7 @@ export function createNuxtApp (options: CreateOptions) {
       // Expose payload types
       nuxtApp.ssrContext._payloadReducers = {}
       // Expose current path
-      nuxtApp.payload.path = nuxtApp.ssrContext.event.path
+      nuxtApp.payload.path = nuxtApp.ssrContext.url
     }
     // Expose to server renderer to create payload
     nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
@@ -286,6 +293,8 @@ export function createNuxtApp (options: CreateOptions) {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
 
+    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
     const unreg = nuxtApp.hook('app:error', (...args) => { console.error('[nuxt] error caught during app initialization', ...args) })
@@ -293,28 +302,32 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
 }
 
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin) {
-  if (typeof plugin !== 'function') { return }
-  const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
-  if (provide && typeof provide === 'object') {
-    for (const key in provide) {
-      nuxtApp.provide(key, provide[key])
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+  if (plugin.hooks) {
+    nuxtApp.hooks.addHooks(plugin.hooks)
+  }
+  if (typeof plugin === 'function') {
+    const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
+    if (provide && typeof provide === 'object') {
+      for (const key in provide) {
+        nuxtApp.provide(key, provide[key])
+      }
     }
   }
 }
 
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
     const promise = applyPlugin(nuxtApp, plugin)
-    if (plugin.meta?.parallel) {
+    if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
     } else {
       await promise
@@ -324,97 +337,15 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Plugin[]) {
   if (errors.length) { throw errors[0] }
 }
 
-export function normalizePlugins (_plugins: Plugin[]) {
-  const unwrappedPlugins: Plugin[] = []
-  const legacyInjectPlugins: Plugin[] = []
-  const invalidPlugins: Plugin[] = []
-
-  const plugins: Plugin[] = []
-
-  for (const plugin of _plugins) {
-    if (typeof plugin !== 'function') {
-      if (process.dev) { invalidPlugins.push(plugin) }
-      continue
-    }
-
-    // TODO: Skip invalid plugins in next releases
-    let _plugin = plugin
-    if (plugin.length > 1) {
-      // Allow usage without wrapper but warn
-      if (process.dev) { legacyInjectPlugins.push(plugin) }
-      // @ts-expect-error deliberate invalid second argument
-      _plugin = (nuxtApp: NuxtApp) => plugin(nuxtApp, nuxtApp.provide)
-    }
-
-    // Allow usage without wrapper but warn
-    if (process.dev && !isNuxtPlugin(_plugin)) { unwrappedPlugins.push(_plugin) }
-
-    plugins.push(_plugin)
-  }
-
-  plugins.sort((a, b) => (a.meta?.order || orderMap.default) - (b.meta?.order || orderMap.default))
-
-  if (process.dev && legacyInjectPlugins.length) {
-    console.warn('[warn] [nuxt] You are using a plugin with legacy Nuxt 2 format (context, inject) which is likely to be broken. In the future they will be ignored:', legacyInjectPlugins.map(p => p.name || p).join(','))
-  }
-  if (process.dev && invalidPlugins.length) {
-    console.warn('[warn] [nuxt] Some plugins are not exposing a function and skipped:', invalidPlugins)
-  }
-  if (process.dev && unwrappedPlugins.length) {
-    console.warn('[warn] [nuxt] You are using a plugin that has not been wrapped in `defineNuxtPlugin`. It is advised to wrap your plugins as in the future this may enable enhancements:', unwrappedPlugins.map(p => p.name || p).join(','))
-  }
-
-  return plugins
-}
-
-// -50: pre-all (nuxt)
-// -40: custom payload revivers (user)
-// -30: payload reviving (nuxt)
-// -20: pre (user) <-- pre mapped to this
-// -10: default (nuxt)
-// 0: default (user) <-- default behavior
-// +10: post (nuxt)
-// +20: post (user) <-- post mapped to this
-// +30: post-all (nuxt)
-
-const orderMap: Record<NonNullable<ObjectPluginInput['enforce']>, number> = {
-  pre: -20,
-  default: 0,
-  post: 20
+/*! @__NO_SIDE_EFFECTS__ */
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
+  if (typeof plugin === 'function') { return plugin }
+  delete plugin.name
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true } as const)
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function definePayloadPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>) {
-  return defineNuxtPlugin(plugin, { order: -40 })
-}
-
-/*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPluginInput<T>, meta?: PluginMeta): Plugin<T> {
-  if (typeof plugin === 'function') { return defineNuxtPlugin({ setup: plugin }, meta) }
-
-  const wrapper: Plugin<T> = (nuxtApp) => {
-    if (plugin.hooks) {
-      nuxtApp.hooks.addHooks(plugin.hooks)
-    }
-    if (plugin.setup) {
-      return plugin.setup(nuxtApp)
-    }
-  }
-
-  wrapper.meta = {
-    name: meta?.name || plugin.name || plugin.setup?.name,
-    parallel: plugin.parallel,
-    order:
-      meta?.order ||
-      plugin.order ||
-      orderMap[plugin.enforce || 'default'] ||
-      orderMap.default
-  }
-
-  wrapper[NuxtPluginIndicator] = true
-
-  return wrapper
-}
+export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin

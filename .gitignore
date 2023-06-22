@@ -20,6 +20,8 @@ packages/*/LICENSE
 dist
 .nuxt
 .nuxt-*
+.vercel
+.netlify
 .output
 .gen
 

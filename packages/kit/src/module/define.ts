@@ -13,20 +13,22 @@ import { compileTemplate, templateUtils } from '../internal/template'
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
  * any hooks that are provided, and calling an optional setup function for full control.
  */
-export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: ModuleDefinition<OptionsT>): NuxtModule<OptionsT> {
+export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: ModuleDefinition<OptionsT> | NuxtModule<OptionsT>): NuxtModule<OptionsT> {
+  if (typeof definition === 'function') { return defineNuxtModule({ setup: definition }) }
+
   // Normalize definition and meta
-  if (!definition.meta) { definition.meta = {} }
-  if (definition.meta.configKey === undefined) {
-    definition.meta.configKey = definition.meta.name
+  const module: ModuleDefinition<OptionsT> & Required<Pick<ModuleDefinition<OptionsT>, 'meta'>> = defu(definition, { meta: {} })
+  if (module.meta.configKey === undefined) {
+    module.meta.configKey = module.meta.name
   }
 
   // Resolves module options from inline options, [configKey] in nuxt.config, defaults and schema
   async function getOptions (inlineOptions?: OptionsT, nuxt: Nuxt = useNuxt()) {
-    const configKey = definition.meta!.configKey || definition.meta!.name!
-    const _defaults = definition.defaults instanceof Function ? definition.defaults(nuxt) : definition.defaults
+    const configKey = module.meta.configKey || module.meta.name!
+    const _defaults = module.defaults instanceof Function ? module.defaults(nuxt) : module.defaults
     let _options = defu(inlineOptions, nuxt.options[configKey as keyof NuxtOptions], _defaults) as OptionsT
-    if (definition.schema) {
-      _options = await applyDefaults(definition.schema, _options) as OptionsT
+    if (module.schema) {
+      _options = await applyDefaults(module.schema, _options) as OptionsT
     }
     return Promise.resolve(_options)
   }
@@ -38,7 +40,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Avoid duplicate installs
-    const uniqueKey = definition.meta!.name || definition.meta!.configKey
+    const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
       nuxt.options._requiredModules = nuxt.options._requiredModules || {}
       if (nuxt.options._requiredModules[uniqueKey]) {
@@ -48,10 +50,10 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     }
 
     // Check compatibility constraints
-    if (definition.meta!.compatibility) {
-      const issues = await checkNuxtCompatibility(definition.meta!.compatibility, nuxt)
+    if (module.meta.compatibility) {
+      const issues = await checkNuxtCompatibility(module.meta.compatibility, nuxt)
       if (issues.length) {
-        logger.warn(`Module \`${definition.meta!.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+        logger.warn(`Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
         return
       }
     }
@@ -63,14 +65,14 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     const _options = await getOptions(inlineOptions, nuxt)
 
     // Register hooks
-    if (definition.hooks) {
-      nuxt.hooks.addHooks(definition.hooks)
+    if (module.hooks) {
+      nuxt.hooks.addHooks(module.hooks)
     }
 
     // Call setup
     const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
     const mark = performance.mark(key)
-    const res = await definition.setup?.call(null as any, _options, nuxt) ?? {}
+    const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
     const perf = performance.measure(key, mark?.name) // TODO: remove when Node 14 reaches EOL
     const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
@@ -93,7 +95,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
   }
 
   // Define getters for options and meta
-  normalizedModule.getMeta = () => Promise.resolve(definition.meta)
+  normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
 
   return normalizedModule as NuxtModule<OptionsT>

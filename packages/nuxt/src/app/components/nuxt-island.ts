@@ -69,7 +69,7 @@ export default defineComponent({
     })
 
     async function _fetchComponent () {
-      const key = `${props.name}:${hashId.value}`
+      const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
 
       const url = `/__nuxt_island/${key}`
@@ -79,6 +79,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       const result = await $fetch<NuxtIslandResponse>(url, {
+        responseType: 'json',
         params: {
           ...props.context,
           props: props.props ? JSON.stringify(props.props) : undefined
