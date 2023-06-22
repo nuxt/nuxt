@@ -1,5 +1,5 @@
 import { useNuxtApp } from '../nuxt'
-import type { NuxtApp } from '#app'
+import type { NuxtPayload } from '#app'
 
 /**
  * Allows full control of the hydration cycle to set and receive data from the server.
@@ -8,7 +8,7 @@ import type { NuxtApp } from '#app'
  * @param get a function that returns the value to set the initial data
  * @param set a function that will receive the data on the client-side
  */
-export const useHydration = <K extends keyof NuxtApp['payload'], T = NuxtApp['payload'][K]> (key: K, get: () => T, set: (value: T) => void) => {
+export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (key: K, get: () => T, set: (value: T) => void) => {
   const nuxt = useNuxtApp()
 
   if (process.server) {

@@ -14,7 +14,7 @@ import { defineRenderHandler, getRouteRules, useRuntimeConfig } from '#internal/
 import { useNitroApp } from '#internal/nitro/app'
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
+import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -179,7 +179,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as Exclude<NuxtApp['payload']['error'], Error>
+    ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
     : null
 
   if (ssrError && ssrError.statusCode) {
@@ -230,7 +230,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
-    payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload'],
+    payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     islandContext
   }
