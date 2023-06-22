@@ -10,7 +10,6 @@ overrides:
   '@nuxt/test-utils': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
-  nitropack: npm:nitropack-edge@2.5.1-28123149.b926dd0
   nuxi: workspace:*
   nuxt: workspace:*
   vite: 4.3.9
@@ -203,8 +202,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: npm:nitropack-edge@2.5.1-28123149.b926dd0
-        version: /nitropack-edge@2.5.1-28123149.b926dd0
+        specifier: 2.5.1
+        version: 2.5.1
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -408,8 +407,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       nitropack:
-        specifier: npm:nitropack-edge@2.5.1-28123149.b926dd0
-        version: /nitropack-edge@2.5.1-28123149.b926dd0
+        specifier: ^2.5.1
+        version: 2.5.1
       nuxi:
         specifier: workspace:*
         version: link:../nuxi
@@ -566,8 +565,8 @@ importers:
         specifier: 5.2.4
         version: 5.2.4
       nitropack:
-        specifier: npm:nitropack-edge@2.5.1-28123149.b926dd0
-        version: /nitropack-edge@2.5.1-28123149.b926dd0
+        specifier: 2.5.1
+        version: 2.5.1
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -6523,8 +6522,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge@2.5.1-28123149.b926dd0:
-    resolution: {integrity: sha512-kNwoE2ZoGjBRaaeYgCw1fWesNkS4CYs8mTWhEJyfIWsxKYopuAHUWxm/+Phjd2UjduJfpQBXFeROouNvUr0noA==}
+  /nitropack@2.5.1:
+    resolution: {integrity: sha512-RKq++lLrs7m/hlkEkYezL119Lu7LzseaDh/6UzmXqYD8/fx896Bou4CJpe775iHiHDzASiCmVKtlkBJxSiRi5w==}
     engines: {node: ^14.16.0 || ^16.11.0 || >=17.0.0}
     hasBin: true
     dependencies:
