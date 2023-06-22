@@ -32,3 +32,4 @@ export { isPrerendered, loadPayload, preloadPayload, definePayloadReducer, defin
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
 export { useRequestURL } from './url'
+export { usePreviewMode } from './preview'
