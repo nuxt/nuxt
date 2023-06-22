@@ -460,11 +460,11 @@ describe('pages', () => {
   })
 
   it('respects preview mode', async () => {
-    const token = "hehe"
+    const token = 'hehe'
 
-    let page = await createPage(`/preview?preview=true&token=${token}`)
+    const page = await createPage(`/preview?preview=true&token=${token}`)
 
-    const hasRunOnClient = await page.waitForEvent('console');
+    const hasRunOnClient = await page.waitForEvent('console')
     expect(hasRunOnClient.text()).toBe('true')
 
     expect(await page.locator('#fetched-on-client').textContent()).toBe('fetched on client')

@@ -10,8 +10,12 @@ const { data } = await useFetch('/api/preview', {
 
 <template>
   <div>
-    <p id="token-check">{{ token }}</p>
+    <p id="token-check">
+      {{ token }}
+    </p>
 
-    <p id="correct-api-key-check">{{ data && data.hehe }}</p>
+    <p id="correct-api-key-check">
+      {{ data && data.hehe }}
+    </p>
   </div>
 </template>

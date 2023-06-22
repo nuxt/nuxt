@@ -1,4 +1,4 @@
-const apiKeyName = 'apiKey';
+const apiKeyName = 'apiKey'
 const apiKey = 'hehe'
 
 export default defineEventHandler((event) => {
