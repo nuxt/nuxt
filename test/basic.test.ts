@@ -1148,6 +1148,20 @@ describe('layout change not load page twice', () => {
   })
 })
 
+describe('layout switching', () => {
+  it('does not cause an unhandled error', async () => {
+    await withLogs(async (page, logs) => {
+      await page.goto(url('/layout-switch/start'))
+      await page.waitForLoadState('networkidle')
+      await page.click('[href="/layout-switch/end"]')
+      // Wait for all pending micro ticks to be cleared,
+      // so we are not resolved too early when there are repeated page loading
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+      expect(logs.filter(l => !l.includes('isHydrating'))).toMatchInlineSnapshot('[]')
+    })
+  })
+})
+
 describe('automatically keyed composables', () => {
   it('should automatically generate keys', async () => {
     const html = await $fetch('/keyed-composables')
