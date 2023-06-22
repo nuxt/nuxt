@@ -39,6 +39,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, <NitroConfig>{
+    static: nuxt.options._generate,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
@@ -347,11 +348,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
-      if (!nuxt.options._generate) {
-        logger.restoreAll()
-        await build(nitro)
-        logger.wrapAll()
-      } else {
+
+      logger.restoreAll()
+      await build(nitro)
+      logger.wrapAll()
+
+      if (nuxt.options._generate) {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
           await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
