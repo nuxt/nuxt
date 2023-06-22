@@ -25,7 +25,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default client bundle size', async () => {
     stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect.soft(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"96.7k"')
+    expect.soft(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.0k"')
     expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
@@ -35,10 +35,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default server bundle size', async () => {
     stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"62.1k"')
+    expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"63.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2295k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2328k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -59,30 +59,32 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/server-renderer",
         "@vue/shared",
         "cookie-es",
+        "debug",
         "defu",
         "destr",
         "devalue",
         "estree-walker",
         "h3",
-        "h3/node_modules/destr",
+        "has-flag",
         "hookable",
+        "http-graceful-shutdown",
         "iron-webcrypto",
         "klona",
+        "ms",
         "node-fetch-native",
         "ofetch",
-        "ofetch/node_modules/destr",
         "ohash",
         "pathe",
         "radix3",
         "scule",
         "source-map-js",
+        "supports-color",
         "ufo",
         "uncrypto",
         "unctx",
         "unenv",
         "unhead",
         "unstorage",
-        "unstorage/node_modules/destr",
         "vue",
         "vue-bundle-renderer",
       ]
