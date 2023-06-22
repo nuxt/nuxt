@@ -1,11 +1,15 @@
-import { readonly, ref } from 'vue'
-import type { Ref } from 'vue'
+import { reactive, readonly, toRef, toRefs } from 'vue'
 
 import { refreshNuxtData, useRoute, useRouter } from '#app'
 
 export interface PreviewOptions {
   controls: boolean
   tokenQueryName: string
+}
+
+interface PreviewState {
+  enabled: boolean
+  token: string | null
 }
 
 const previewQueryName = 'preview'
@@ -16,42 +20,46 @@ const previewDefaultOptions: PreviewOptions = {
 
 const tokensMap = new Map<string, string | null>()
 
-let _isPreview: Ref<boolean>
+let isPreviewEnabled: boolean
 let addedAfterNavigationCallback = false
 
 export function usePreviewMode (options?: PreviewOptions) {
   options = { ...previewDefaultOptions, ...(options || {}) }
+
+  const preview = reactive<PreviewState>({
+    enabled: false,
+    token: null
+  })
 
   const router = useRouter()
   const route = useRoute()
 
   const previewParam = route.query[previewQueryName]
 
-  const isPreview = _isPreview || ref<boolean>(!!previewParam && previewParam === 'true')
-  _isPreview = isPreview
+  preview.enabled = isPreviewEnabled ?? (!!previewParam && previewParam === 'true')
 
-  const tokenFromMap = tokensMap.get(options!.tokenQueryName)
+  isPreviewEnabled = preview.enabled
 
-  if (!isPreview.value || !tokenFromMap) {
+  if (preview.enabled && !tokensMap.get(options!.tokenQueryName)) {
     const query = route.query[options!.tokenQueryName]
     const token = Array.isArray(query) ? query[0] : query
 
     tokensMap.set(options!.tokenQueryName, token)
   }
 
-  const token = readonly(ref<string | null>(tokenFromMap || null))
+  preview.token = tokensMap.get(options!.tokenQueryName) || null
 
   const refreshData = () => {
     addedAfterNavigationCallback = true
     refreshNuxtData()
   }
 
-  if (isPreview.value && !addedAfterNavigationCallback && process.client) {
+  if (preview.enabled && !addedAfterNavigationCallback && process.client) {
     refreshData()
     router.afterEach(refreshData)
   }
 
-  if (options.controls) { return { isPreview, token } }
-
-  return isPreview
+  return options.controls
+    ? toRefs(readonly(preview))
+    : readonly(toRef(preview, 'enabled'))
 }
