@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { readonly, ref } from 'vue'
 import type { Ref } from 'vue'
 
 import { refreshNuxtData, useRoute, useRouter } from '#app'
@@ -38,8 +38,8 @@ export function usePreviewMode (options?: PreviewOptions) {
 
     tokensMap.set(options!.tokenQueryName, token)
   }
-  
-  const token = ref<string | null>(tokenFromMap || null)
+
+  const token = readonly(ref<string | null>(tokenFromMap || null))
 
   const refreshData = () => {
     addedAfterNavigationCallback = true
