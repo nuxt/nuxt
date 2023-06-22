@@ -338,18 +338,16 @@ describe('pages', () => {
 
     // change layout
     await page.locator('.swap-layout').click()
-    await page.waitForTimeout(25)
-    expect(await page.locator('.count').first().innerText()).toContain('0')
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('0'))
     await page.locator('.log-foo').first().click()
     expect(lastLog).toContain('bar')
     await page.locator('.log-hello').first().click()
     expect(lastLog).toContain('.logHello is not a function')
     await page.locator('.add-count').first().click()
-    expect(await page.locator('.count').first().innerText()).toContain('1')
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('1'))
     // change layout
     await page.locator('.swap-layout').click()
-    await page.waitForTimeout(25)
-    expect(await page.locator('.count').first().innerText()).toContain('0')
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('0'))
   })
 
   it('/client-only-explicit-import', async () => {
