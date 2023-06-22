@@ -53,12 +53,14 @@ const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
-    ? T[K] extends Record<string, any>
-      ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-      : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-    : K extends number
-      ? T[K]
-      : never
+    ? unknown extends T[K]
+      ? unknown
+      : T[K] extends Record<string, unknown>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+      : K extends number
+        ? T[K]
+        : never
 }
 
 /** User configuration in `nuxt.config` file */
@@ -129,7 +131,7 @@ export interface ViteConfig extends ViteUserConfig {
 
 // -- Runtime Config --
 
-type RuntimeConfigNamespace = Record<string, any>
+type RuntimeConfigNamespace = Record<string, unknown>
 
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
