@@ -6,6 +6,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { AppHeadMetaObject } from './head'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
+import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
 export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -133,6 +134,9 @@ type RuntimeConfigNamespace = Record<string, any>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  app: NitroRuntimeConfigApp
+  /** Only available on the server. */
+  nitro?: NitroRuntimeConfig['nitro']
   public: PublicRuntimeConfig
 }
 

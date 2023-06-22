@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
-  [key: string]: any
+  [key: string]: unknown
   /**
    * Validate whether a given route can validly be rendered with this page.
    *

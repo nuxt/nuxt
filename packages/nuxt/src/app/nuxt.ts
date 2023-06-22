@@ -59,6 +59,8 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: _NuxtApp['payload']
+  /** This is used solely to render runtime config with SPA renderer. */
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
@@ -126,6 +128,7 @@ interface _NuxtApp {
     prerenderedAt?: number
     data: Record<string, any>
     state: Record<string, any>
+    config?: Pick<RuntimeConfig, 'public' | 'app'>
     error?: Error | {
       url: string
       statusCode: number
@@ -135,7 +138,7 @@ interface _NuxtApp {
       data?: any
     } | null
     _errors: Record<string, NuxtError | undefined>
-    [key: string]: any
+    [key: string]: unknown
   }
   static: {
     data: Record<string, any>
@@ -297,7 +300,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
