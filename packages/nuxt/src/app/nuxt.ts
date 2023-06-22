@@ -58,7 +58,9 @@ export interface NuxtSSRContext extends SSRContext {
   /** whether we are rendering an SSR error */
   error?: boolean
   nuxt: _NuxtApp
-  payload: _NuxtApp['payload']
+  payload: NuxtPayload
+  /** This is used solely to render runtime config with SPA renderer. */
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
   renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
@@ -66,6 +68,25 @@ export interface NuxtSSRContext extends SSRContext {
   _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
+}
+
+export interface NuxtPayload {
+  path?: string
+  serverRendered?: boolean
+  prerenderedAt?: number
+  data: Record<string, any>
+  state: Record<string, any>
+  config?: Pick<RuntimeConfig, 'public' | 'app'>
+  error?: Error | {
+    url: string
+    statusCode: number
+    statusMessage: string
+    message: string
+    description: string
+    data?: any
+  } | null
+  _errors: Record<string, NuxtError | undefined>
+  [key: string]: unknown
 }
 
 interface _NuxtApp {
@@ -120,23 +141,7 @@ interface _NuxtApp {
   deferHydration: () => () => void | Promise<void>
 
   ssrContext?: NuxtSSRContext
-  payload: {
-    path?: string
-    serverRendered?: boolean
-    prerenderedAt?: number
-    data: Record<string, any>
-    state: Record<string, any>
-    error?: Error | {
-      url: string
-      statusCode: number
-      statusMessage: string
-      message: string
-      description: string
-      data?: any
-    } | null
-    _errors: Record<string, NuxtError | undefined>
-    [key: string]: any
-  }
+  payload: NuxtPayload
   static: {
     data: Record<string, any>
   }
@@ -297,7 +302,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config)
+  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp

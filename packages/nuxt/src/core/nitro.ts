@@ -101,6 +101,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
       nitro: {
+        // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1336
         envPrefix: 'NUXT_',
         ...nuxt.options.runtimeConfig.nitro
       }
