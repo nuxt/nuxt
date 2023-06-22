@@ -63,7 +63,20 @@ export default defineComponent({
 const LayoutProvider = defineComponent({
   name: 'NuxtLayoutProvider',
   inheritAttrs: false,
-  props: ['name', 'layoutProps', 'hasTransition', 'shouldProvide'],
+  props: {
+    name: {
+      type: String
+    },
+    layoutProps: {
+      type: Object
+    },
+    hasTransition: {
+      type: Boolean
+    },
+    shouldProvide: {
+      type: Boolean
+    }
+  },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     if (props.shouldProvide) {
