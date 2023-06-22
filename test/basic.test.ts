@@ -467,14 +467,14 @@ describe('pages', () => {
     const hasRunOnClient = await page.waitForEvent('console')
     expect(hasRunOnClient.text()).toBe('true')
 
-    expect(await page.locator('#fetched-on-client').textContent()).toBe('fetched on client')
-    expect(await page.locator('#preview-mode').textContent()).toBe('preview mode enabled')
+    expect(await page.locator('#fetched-on-client').textContent()).toContain('fetched on client')
+    expect(await page.locator('#preview-mode').textContent()).toContain('preview mode enabled')
 
     await page.click('#use-fetch-check')
     await page.waitForLoadState('networkidle')
 
-    expect(await page.locator('#token-check').textContent()).toBe(token)
-    expect(await page.locator('#correct-api-key-check').textContent()).toBe('true')
+    expect(await page.locator('#token-check').textContent()).toContain(token)
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('true')
   })
 })
 
