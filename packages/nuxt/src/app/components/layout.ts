@@ -1,4 +1,4 @@
-import type { Ref, VNode } from 'vue'
+import type { InjectionKey, Ref, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
@@ -14,6 +14,8 @@ import { useNuxtApp } from '#app'
 export interface LayoutMeta {
   isCurrent: (route: RouteLocationNormalizedLoaded) => boolean
 }
+
+export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
 
 export default defineComponent({
   name: 'NuxtLayout',
@@ -82,7 +84,7 @@ const LayoutProvider = defineComponent({
     if (props.shouldProvide) {
       // eslint-disable-next-line vue/no-setup-props-destructure
       const name = props.name
-      provide('_layout', {
+      provide(LayoutMetaSymbol, {
         isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default')
       })
     }

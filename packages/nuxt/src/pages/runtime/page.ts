@@ -8,7 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
-import type { LayoutMeta } from '#app/components/layout'
+import { LayoutMetaSymbol } from '#app/components/layout'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -41,7 +41,7 @@ export default defineComponent({
 
     expose({ pageRef })
 
-    const _layoutMeta = inject<LayoutMeta | null>('_layout', null)
+    const _layoutMeta = inject(LayoutMetaSymbol, null)
     let vnode: VNode
 
     return () => {
