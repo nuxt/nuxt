@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   update-changelog:
-    if: github.repository_owner == 'nuxt'
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
     runs-on: ubuntu-latest
 
     steps:
