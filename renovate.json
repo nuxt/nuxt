@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>nuxt/renovate-config-nuxt",
-    ":pinDevDependencies"
+    ":pinDevDependencies",
+    ":widenPeerDependencies"
   ],
   "baseBranches": [
     "main",
@@ -49,6 +50,7 @@
         "@types/terser-webpack-plugin",
         "@types/webpack-bundle-analyzer",
         "@types/webpack-hot-middleware",
+        "webpack-dev-middleware",
         "wrap-ansi",
         "globby",
         "execa",

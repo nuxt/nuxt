@@ -8,6 +8,7 @@ import { camelCase } from 'scule'
 import { resolvePath } from 'mlly'
 import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
+import { annotatePlugins } from './app'
 
 export interface TemplateContext {
   nuxt: Nuxt
@@ -54,8 +55,9 @@ export const cssTemplate: NuxtTemplate<TemplateContext> = {
 
 export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/client.mjs',
-  getContents (ctx) {
-    const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
+  async getContents (ctx) {
+    const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
+    await annotatePlugins(ctx.nuxt, clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of clientPlugins) {
@@ -73,8 +75,8 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
 
 export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
-  getContents (ctx) {
-    const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
+  async getContents (ctx) {
+    const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of serverPlugins) {
@@ -173,9 +175,10 @@ export const layoutTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
+      return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
     }))
     return [
+      'import { defineAsyncComponent } from \'vue\'',
       `export default ${layoutsObject}`
     ].join('\n')
   }
@@ -292,6 +295,7 @@ export const nuxtConfigTemplate = {
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
+      `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`
     ].join('\n\n')

@@ -178,7 +178,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
-      tsConfig.compilerOptions!.paths['#components'] = [relative(nuxt.options.rootDir, resolve(nuxt.options.buildDir, 'components'))]
+      tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 

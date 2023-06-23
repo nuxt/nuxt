@@ -1,3 +1,5 @@
+import { addTypeTemplate } from 'nuxt/kit'
+
 export default defineNuxtConfig({
   experimental: {
     typedPages: true
@@ -33,6 +35,20 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    function (_, nuxt) {
+      // TODO: remove in v3.7
+      if (process.env.TS_BASE_URL === 'without-base-url') {
+        nuxt.hook('prepare:types', ({ tsConfig }) => {
+          delete tsConfig.compilerOptions!.baseUrl
+        })
+      }
+    },
+    function () {
+      addTypeTemplate({
+        filename: 'test.d.ts',
+        getContents: () => 'declare type Fromage = "cheese"'
+      })
+    },
     './modules/test',
     [
       '~/modules/example',

@@ -21,21 +21,21 @@
   },
   "dependencies": {
     "@nuxt/schema": "workspace:../schema",
-    "c12": "^1.4.1",
+    "c12": "^1.4.2",
     "consola": "^3.1.0",
     "defu": "^6.1.2",
-    "globby": "^13.1.4",
+    "globby": "^13.2.0",
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
     "jiti": "^1.18.2",
     "knitwork": "^1.0.0",
-    "mlly": "^1.3.0",
+    "mlly": "^1.4.0",
     "pathe": "^1.1.1",
     "pkg-types": "^1.0.3",
     "scule": "^1.0.0",
-    "semver": "^7.5.1",
+    "semver": "^7.5.3",
     "unctx": "^2.3.1",
-    "unimport": "^3.0.7",
+    "unimport": "^3.0.8",
     "untyped": "^1.3.2"
   },
   "devDependencies": {
@@ -43,11 +43,11 @@
     "@types/lodash-es": "4.17.7",
     "@types/semver": "7.5.0",
     "lodash-es": "4.17.21",
-    "nitropack": "2.4.1",
+    "nitropack": "2.5.1",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.31.4",
-    "webpack": "5.85.1"
+    "vitest": "0.32.2",
+    "webpack": "5.88.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

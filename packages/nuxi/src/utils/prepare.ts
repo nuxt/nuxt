@@ -18,11 +18,12 @@ export const writeTypes = async (nuxt: Nuxt) => {
       skipLibCheck: true,
       strict: nuxt.options.typescript?.strict ?? false,
       allowJs: true,
+      // TODO: remove by default in 3.7
+      baseUrl: nuxt.options.srcDir,
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
       types: ['node'],
-      baseUrl: relative(nuxt.options.buildDir, nuxt.options.rootDir),
       paths: {}
     },
     include: [
@@ -35,7 +36,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
-  })
+  } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
@@ -45,21 +46,22 @@ export const writeTypes = async (nuxt: Nuxt) => {
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
+  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
+
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const relativePath = isAbsolute(aliases[alias])
-      ? relative(nuxt.options.rootDir, aliases[alias]) || '.'
-      : aliases[alias]
+    const absolutePath = resolve(basePath, aliases[alias])
 
-    const stats = await fsp.stat(resolve(nuxt.options.rootDir, relativePath)).catch(() => null /* file does not exist */)
-    tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (stats?.isDirectory()) {
-      tsConfig.compilerOptions.paths[alias] = [relativePath]
-      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
+      tsConfig.compilerOptions.paths[alias] = [absolutePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
     } else {
-      tsConfig.compilerOptions.paths[alias] = [relativePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
     }
   }
 

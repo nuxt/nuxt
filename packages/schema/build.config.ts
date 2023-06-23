@@ -35,7 +35,6 @@ export default defineBuildConfig({
     '@vitejs/plugin-vue',
     '@vitejs/plugin-vue-jsx',
     'mini-css-extract-plugin',
-    'terser-webpack-plugin',
     'css-minimizer-webpack-plugin',
     'webpack-dev-middleware',
     'h3',
@@ -44,6 +43,10 @@ export default defineBuildConfig({
     'consola',
     'ignore',
     'vue-loader',
+    'esbuild-loader',
+    'file-loader',
+    'pug',
+    'sass-loader',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

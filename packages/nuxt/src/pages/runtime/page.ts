@@ -1,4 +1,4 @@
-import { Suspense, Transition, computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
+import { Suspense, Transition, computed, defineComponent, h, inject, nextTick, onMounted, provide, reactive, ref } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
@@ -8,6 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
+import { LayoutMetaSymbol } from '#app/components/layout'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -34,12 +35,24 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs }) {
+  setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
+    const pageRef = ref()
+
+    expose({ pageRef })
+
+    const _layoutMeta = inject(LayoutMetaSymbol, null)
+    let vnode: VNode
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
           if (!routeProps.Component) { return }
+
+          // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
+          if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+            return vnode
+          }
 
           const key = generateRouteKey(routeProps, props.pageKey)
           const done = nuxtApp.deferHydration()
@@ -52,13 +65,15 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          return _wrapIf(Transition, hasTransition && transitionProps,
+          vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition } as {}) })
+            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, pageRef } as {}) })
             )).default()
+
+          return vnode
         }
       })
     }
@@ -81,7 +96,7 @@ const RouteProvider = defineComponent({
   name: 'RouteProvider',
   // TODO: Type props
   // eslint-disable-next-line vue/require-prop-types
-  props: ['routeProps', 'pageKey', 'hasTransition'],
+  props: ['routeProps', 'pageKey', 'hasTransition', 'pageRef'],
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     // eslint-disable-next-line vue/no-setup-props-destructure
@@ -111,11 +126,11 @@ const RouteProvider = defineComponent({
 
     return () => {
       if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component)
+        vnode = h(props.routeProps.Component, { ref: props.pageRef })
         return vnode
       }
 
-      return h(props.routeProps.Component)
+      return h(props.routeProps.Component, { ref: props.pageRef })
     }
   }
 })
