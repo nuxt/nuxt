@@ -21,7 +21,7 @@
     "@types/node": "^16",
     "@types/optimize-css-assets-webpack-plugin": "5.0.5",
     "@types/pug": "2.0.6",
-    "@types/serve-static": "1.15.1",
+    "@types/serve-static": "1.15.2",
     "@types/terser-webpack-plugin": "4.2.1",
     "@types/webpack": "4.41.33",
     "@types/webpack-bundle-analyzer": "3.9.5",
