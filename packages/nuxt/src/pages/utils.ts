@@ -104,7 +104,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
-            : encodePath(token.value))
+            : encodePath(token.value).replace(/:/g, '\\:'))
     )
   }, '/')
 }
@@ -288,4 +288,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       return route
     }))
   }
+}
+
+function escapeSegment (segment: string) {
+  return segment.replace(/:/g, '\\:')
 }

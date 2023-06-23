@@ -279,6 +279,20 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         }
       ]
+    },
+    {
+      description: 'should allow pages with `:` in their path',
+      files: [
+        `${pagesDir}/test:name.vue`
+      ],
+      output: [
+        {
+          name: 'test:name',
+          path: '/test\\:name',
+          file: `${pagesDir}/test:name.vue`,
+          children: []
+        }
+      ]
     }
   ]
 
