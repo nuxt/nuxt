@@ -464,12 +464,11 @@ describe('pages', () => {
 
     const page = await createPage(`/preview?preview=true&token=${token}`)
 
-    const hasRunOnClient = await new Promise<boolean>(resolve => {
+    const hasRunOnClient = await new Promise<boolean>((resolve) => {
       page.on('console', (message) => {
         setTimeout(() => resolve(false), 4000)
 
-        if (message.text() === 'true')
-          resolve(true)
+        if (message.text() === 'true') { resolve(true) }
       })
     })
 
