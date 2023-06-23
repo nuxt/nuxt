@@ -154,14 +154,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Transpile #app if it is imported directly from subpath export
   nuxt.options.build.transpile.push('nuxt/app')
 
-  // This is currently a placeholder for future augmentations that need to be applied in Nitro context
-  addTemplate({
-    filename: 'types/nitro-nuxt.d.ts',
-    getContents: () => {
-      return 'export {}'
-    }
-  })
-
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string)
