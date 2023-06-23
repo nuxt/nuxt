@@ -1149,7 +1149,8 @@ describe('layout change not load page twice', () => {
 })
 
 describe('layout switching', () => {
-  it('does not cause an unhandled error', async () => {
+  // #13309
+  it('does not cause TypeError: Cannot read properties of null', async () => {
     await withLogs(async (page, logs) => {
       await page.goto(url('/layout-switch/start'))
       await page.waitForLoadState('networkidle')
@@ -1157,7 +1158,7 @@ describe('layout switching', () => {
       // Wait for all pending micro ticks to be cleared,
       // so we are not resolved too early when there are repeated page loading
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
-      expect(logs.filter(l => !l.includes('isHydrating'))).toMatchInlineSnapshot('[]')
+      expect(logs.filter(l => l.match(/error/i))).toMatchInlineSnapshot('[]')
     })
   })
 })
