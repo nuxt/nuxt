@@ -61,6 +61,7 @@
     "@unhead/ssr": "^1.1.27",
     "@unhead/vue": "^1.1.27",
     "@vue/shared": "^3.3.4",
+    "acorn": "8.9.0",
     "c12": "^1.4.2",
     "chokidar": "^3.5.3",
     "cookie-es": "^1.0.0",
@@ -110,7 +111,6 @@
     "@types/fs-extra": "11.0.1",
     "@types/prompts": "2.4.4",
     "@vitejs/plugin-vue": "4.2.3",
-    "acorn": "8.9.0",
     "unbuild": "latest",
     "vite": "4.3.9",
     "vitest": "0.32.2"

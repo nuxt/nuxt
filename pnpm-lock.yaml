@@ -349,6 +349,9 @@ importers:
       '@vue/shared':
         specifier: ^3.3.4
         version: 3.3.4
+      acorn:
+        specifier: 8.9.0
+        version: 8.9.0
       c12:
         specifier: ^1.4.2
         version: 1.4.2
@@ -491,9 +494,6 @@ importers:
       '@vitejs/plugin-vue':
         specifier: 4.2.3
         version: 4.2.3(vite@4.3.9)(vue@3.3.4)
-      acorn:
-        specifier: 8.9.0
-        version: 8.9.0
       unbuild:
         specifier: latest
         version: 1.2.1
