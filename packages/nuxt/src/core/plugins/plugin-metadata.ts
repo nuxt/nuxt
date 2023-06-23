@@ -46,7 +46,7 @@ export async function extractMetadata (code: string) {
   if (metaCache[code]) {
     return metaCache[code]
   }
-  const js = await transform(code)
+  const js = await transform(code, { loader: 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest'
@@ -113,7 +113,6 @@ function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:remove-plugin-metadata',
-    enforce: 'pre',
     transform (code, id) {
       id = normalize(id)
       const plugin = nuxt.apps.default.plugins.find(p => p.src === id)
