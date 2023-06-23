@@ -289,7 +289,3 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     }))
   }
 }
-
-function escapeSegment (segment: string) {
-  return segment.replace(/:/g, '\\:')
-}
