@@ -157,7 +157,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
-        ...extractMetadata(code),
+        ...await extractMetadata(code),
         ...plugin
       })
     } catch (e) {
