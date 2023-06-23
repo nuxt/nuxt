@@ -464,8 +464,16 @@ describe('pages', () => {
 
     const page = await createPage(`/preview?preview=true&token=${token}`)
 
-    const hasRunOnClient = await page.waitForEvent('console')
-    expect(hasRunOnClient.text()).toBe('true')
+    const hasRunOnClient = await new Promise<boolean>(resolve => {
+      page.on('console', (message) => {
+        setTimeout(() => resolve(false), 4000)
+
+        if (message.text() === 'true')
+          resolve(true)
+      })
+    })
+
+    expect(hasRunOnClient).toBe(true)
 
     expect(await page.locator('#fetched-on-client').textContent()).toContain('fetched on client')
     expect(await page.locator('#preview-mode').textContent()).toContain('preview mode enabled')
