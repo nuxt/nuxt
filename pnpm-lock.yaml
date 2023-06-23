@@ -108,8 +108,8 @@ importers:
         specifier: 5.0.1
         version: 5.0.1
       semver:
-        specifier: 7.5.2
-        version: 7.5.2
+        specifier: 7.5.3
+        version: 7.5.3
       std-env:
         specifier: 3.3.3
         version: 3.3.3
@@ -177,8 +177,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       semver:
-        specifier: ^7.5.2
-        version: 7.5.2
+        specifier: ^7.5.3
+        version: 7.5.3
       unctx:
         specifier: ^2.3.1
         version: 2.3.1
@@ -308,8 +308,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       semver:
-        specifier: 7.5.2
-        version: 7.5.2
+        specifier: 7.5.3
+        version: 7.5.3
       ufo:
         specifier: 1.1.2
         version: 1.1.2
@@ -1968,7 +1968,7 @@ packages:
       nopt: 5.0.0
       npmlog: 5.0.1
       rimraf: 3.0.2
-      semver: 7.5.2
+      semver: 7.5.3
       tar: 6.1.15
     transitivePeerDependencies:
       - encoding
@@ -2550,7 +2550,7 @@ packages:
       grapheme-splitter: 1.0.4
       ignore: 5.2.4
       natural-compare-lite: 1.4.0
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2629,7 +2629,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2650,7 +2650,7 @@ packages:
       debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.2
+      semver: 7.5.3
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -2671,7 +2671,7 @@ packages:
       '@typescript-eslint/typescript-estree': 5.59.9(typescript@5.0.4)
       eslint: 8.43.0
       eslint-scope: 5.1.1
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -3502,7 +3502,7 @@ packages:
   /builtins@5.0.1:
     resolution: {integrity: sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==}
     dependencies:
-      semver: 7.5.2
+      semver: 7.5.3
     dev: true
 
   /bundle-name@3.0.0:
@@ -3623,7 +3623,7 @@ packages:
       pathe: 1.1.1
       pkg-types: 1.0.3
       scule: 1.0.0
-      semver: 7.5.2
+      semver: 7.5.3
       yaml: 2.3.0
     transitivePeerDependencies:
       - supports-color
@@ -3819,7 +3819,7 @@ packages:
       js-string-escape: 1.0.1
       lodash: 4.17.21
       md5-hex: 3.0.1
-      semver: 7.5.2
+      semver: 7.5.3
       well-known-symbols: 2.0.0
     dev: true
 
@@ -3923,7 +3923,7 @@ packages:
       postcss-modules-scope: 3.0.0(postcss@8.4.24)
       postcss-modules-values: 4.0.0(postcss@8.4.24)
       postcss-value-parser: 4.2.0
-      semver: 7.5.2
+      semver: 7.5.3
       webpack: 5.88.0
     dev: false
 
@@ -4648,7 +4648,7 @@ packages:
       escape-string-regexp: 4.0.0
       eslint: 8.43.0
       esquery: 1.5.0
-      semver: 7.5.2
+      semver: 7.5.3
       spdx-expression-parse: 3.0.1
     transitivePeerDependencies:
       - supports-color
@@ -4668,7 +4668,7 @@ packages:
       is-core-module: 2.12.1
       minimatch: 3.1.2
       resolve: 1.22.2
-      semver: 7.5.2
+      semver: 7.5.3
     dev: true
 
   /eslint-plugin-no-only-tests@3.1.0:
@@ -4719,7 +4719,7 @@ packages:
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.27
       safe-regex: 2.1.1
-      semver: 7.5.2
+      semver: 7.5.3
       strip-indent: 3.0.0
     dev: true
 
@@ -4734,7 +4734,7 @@ packages:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 6.0.13
-      semver: 7.5.2
+      semver: 7.5.3
       vue-eslint-parser: 9.3.1(eslint@8.43.0)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
@@ -5089,7 +5089,7 @@ packages:
       minimatch: 3.1.2
       node-abort-controller: 3.1.1
       schema-utils: 3.3.0
-      semver: 7.5.2
+      semver: 7.5.3
       tapable: 2.2.1
       typescript: 5.0.4
       webpack: 5.88.0
@@ -5959,7 +5959,7 @@ packages:
       jest-util: 29.5.0
       natural-compare: 1.4.0
       pretty-format: 29.5.0
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -6581,7 +6581,7 @@ packages:
       rollup: 3.25.1
       rollup-plugin-visualizer: 5.9.2(rollup@3.25.1)
       scule: 1.0.0
-      semver: 7.5.2
+      semver: 7.5.3
       serve-placeholder: 2.0.1
       serve-static: 1.15.0
       source-map-support: 0.5.21
@@ -7115,7 +7115,7 @@ packages:
       cosmiconfig: 8.2.0
       jiti: 1.18.2
       postcss: 8.4.24
-      semver: 7.5.2
+      semver: 7.5.3
       webpack: 5.88.0
     dev: false
 
@@ -7860,8 +7860,8 @@ packages:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==}
     hasBin: true
 
-  /semver@7.5.2:
-    resolution: {integrity: sha512-SoftuTROv/cRjCze/scjGyiDtcUyxw1rgYQSZY7XTmtR5hX+dm76iDbTH8TkLPHCQmlbQVSSbNZCPM2hb0knnQ==}
+  /semver@7.5.3:
+    resolution: {integrity: sha512-QBlUtyVk/5EeHbi7X0fw6liDZc7BBmEaSYn01fMU1OUYbf6GPsbTtd8WmnqbI20SeycoHSeiybkE/q1Q+qlThQ==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -8746,7 +8746,7 @@ packages:
       lodash.debounce: 4.0.8
       lodash.pick: 4.4.0
       npm-run-path: 4.0.1
-      semver: 7.5.2
+      semver: 7.5.3
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
       typescript: 5.0.4
@@ -8871,7 +8871,7 @@ packages:
     engines: {vscode: ^1.52.0}
     dependencies:
       minimatch: 3.1.2
-      semver: 7.5.2
+      semver: 7.5.3
       vscode-languageserver-protocol: 3.16.0
     dev: false
 
@@ -8923,7 +8923,7 @@ packages:
       espree: 9.5.2
       esquery: 1.5.0
       lodash: 4.17.21
-      semver: 7.5.2
+      semver: 7.5.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8968,7 +8968,7 @@ packages:
     dependencies:
       '@vue/language-core': 1.8.1(typescript@5.0.4)
       '@vue/typescript': 1.8.1(typescript@5.0.4)
-      semver: 7.5.2
+      semver: 7.5.3
       typescript: 5.0.4
 
   /vue@3.3.4:
