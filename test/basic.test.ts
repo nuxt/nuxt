@@ -1,9 +1,10 @@
+import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
-import { normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt/test-utils'
+import { join, normalize } from 'pathe'
+import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -67,8 +68,8 @@ describe('modules', () => {
 
 describe('pages', () => {
   it('render index', async () => {
-    const res = await fetch('/')
-    const html = await res.text()
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const html = await $fetch('/')
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
@@ -91,8 +92,9 @@ describe('pages', () => {
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
     expect(html.replace(/ nuxt-ssr-component-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
-    // should include headers set by server-only components
-    expect(res.headers.get('x-server')).toBe('Hello from ServerOnlyComponent.server.vue')
+    // should allow server-only components to set prerender hints
+    // /some/url/from/server-only/component/_payload.json
+    expect(await readdir(join(publicDir, 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain('_payload.json')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')

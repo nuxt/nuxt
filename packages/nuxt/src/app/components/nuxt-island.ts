@@ -86,9 +86,11 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
       const result = await r.json() as NuxtIslandResponse
-      if (process.server) {
-        for (const [header, value] of r.headers) {
-          appendResponseHeader(event, header, value)
+      // TODO: support passing on more headers
+      if (process.server && process.env.prerender) {
+        const hints = r.headers.get('x-nitro-prerender')
+        if (hints) {
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
       nuxtApp.payload.data[key] = {

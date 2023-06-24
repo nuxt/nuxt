@@ -7,7 +7,7 @@
 <script setup>
 import { appendResponseHeader } from 'h3'
 
-appendResponseHeader(useRequestEvent(), 'x-server', 'Hello from ServerOnlyComponent.server.vue')
+appendResponseHeader(useRequestEvent(), 'x-nitro-prerender', '/some/url/from/server-only/component')
 </script>
 
 <style>
