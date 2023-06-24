@@ -112,11 +112,21 @@ function extractScriptContent (html: string) {
 
   return null
 }
+
+const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
+function extractDefinePageMeta (input: string) {
+  const match = input.match(PAGE_META_RE)
+  return match && match[1] ? match[1] : null
+}
+
 function getRouteName (file: string) {
   const script = extractScriptContent(file)
   if (!script) { return null }
 
-  const ast = parse(script)
+  const extractedPageMeta = extractDefinePageMeta(script)
+  if (!extractedPageMeta) { return null }
+
+  const ast = parse(extractedPageMeta)
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
   if (!pageMetaAST) { return null }
 
