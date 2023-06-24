@@ -17,7 +17,7 @@ export default <RouterConfig> {
     // savedPosition is only available for popstate navigations (back button)
     let position: ScrollPosition = savedPosition || undefined
 
-    const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to) : to.meta.scrollToTop
+    const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
 
     // Scroll to top if route is changed by default
     if (!position && from && to && routeAllowsScrollToTop !== false && _isDifferentRoute(from, to)) {

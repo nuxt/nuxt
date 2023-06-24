@@ -32,7 +32,7 @@ interface PageMeta {
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
-  scrollToTop?: boolean | ((route: RouteLocationNormalizedLoaded) => boolean)
+  scrollToTop?:boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
 }
 ```
@@ -101,7 +101,7 @@ interface PageMeta {
 
   **`scrollTopTop`**
 
-  - **Type**: `boolean | (route: RouteLocationNormalized) => boolean`
+  - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
     Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
 
