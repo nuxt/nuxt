@@ -85,12 +85,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
       '#spa-template': () => {
+        if (!spaLoadingTemplate) { return 'export const template = ""' }
         try {
-          if (spaLoadingTemplate) {
-            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
-          }
+          return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
         } catch {}
-        return `export const template = ${JSON.stringify(spaLoadingTemplate === false ? '' : defaultSpaLoadingTemplate({}))}`
+        return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }
     },
     routeRules: {
