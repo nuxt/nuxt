@@ -1251,7 +1251,11 @@ describe('server components/islands', () => {
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
-    expect(await readdir(join(publicDir, 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain('_payload.json')
+    expect(await readdir(join(publicDir, 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain(
+      isRenderingJson
+        ? '_payload.json'
+        : '_payload.js'
+    )
   })
 })
 
