@@ -32,6 +32,7 @@ interface PageMeta {
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
+  scrollToTop?:boolean | ((route: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
 }
 ```
@@ -97,6 +98,13 @@ interface PageMeta {
   - **Type**: `(route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>`
 
     Validate whether a given route can validly be rendered with this page. Return true if it is valid, or false if not. If another match can't be found, this will mean a 404. You can also directly return an object with `statusCode`/`statusMessage` to respond immediately with an error (other matches will not be checked).
+
+  **`scrollTopTop`**
+
+  - **Type**: `boolean | (route: RouteLocationNormalized) => boolean`
+
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
+
 
   **`[key: string]`**
 
