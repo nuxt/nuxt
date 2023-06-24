@@ -68,6 +68,7 @@ describe('modules', () => {
 
 describe('pages', () => {
   it('render index', async () => {
+    // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const html = await $fetch('/')
 
