@@ -6,6 +6,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { AppHeadMetaObject } from './head'
 import type { Nuxt } from './nuxt'
 import type { SchemaDefinition } from 'untyped'
+import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
 export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -52,12 +53,14 @@ const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
-    ? T[K] extends Record<string, any>
-      ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-      : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-    : K extends number
-      ? T[K]
-      : never
+    ? unknown extends T[K]
+      ? unknown
+      : T[K] extends Record<string, unknown>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+      : K extends number
+        ? T[K]
+        : never
 }
 
 /** User configuration in `nuxt.config` file */
@@ -128,11 +131,14 @@ export interface ViteConfig extends ViteUserConfig {
 
 // -- Runtime Config --
 
-type RuntimeConfigNamespace = Record<string, any>
+type RuntimeConfigNamespace = Record<string, unknown>
 
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  app: NitroRuntimeConfigApp
+  /** Only available on the server. */
+  nitro?: NitroRuntimeConfig['nitro']
   public: PublicRuntimeConfig
 }
 

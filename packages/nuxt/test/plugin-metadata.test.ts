@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { parse } from 'acorn'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata'
 
 describe('plugin-metadata', () => {
-  it('should extract metadata from object-syntax plugins', () => {
+  it('should extract metadata from object-syntax plugins', async () => {
     const properties = Object.entries({
       name: 'test',
       enforce: 'post',
@@ -15,7 +16,7 @@ describe('plugin-metadata', () => {
     for (const item of properties) {
       const obj = [...properties.filter(([key]) => key !== item[0]), item]
 
-      const meta = extractMetadata([
+      const meta = await extractMetadata([
         'export default defineNuxtPlugin({',
         ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString() : JSON.stringify(value)},`),
         '})'
@@ -41,7 +42,7 @@ describe('plugin-metadata', () => {
       'export default function (ctx, inject) {}'
     ]
     for (const plugin of invalidPlugins) {
-      expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
+      expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
   })
 
@@ -53,7 +54,7 @@ describe('plugin-metadata', () => {
         setup: () => {},
       }, { order: 10, name: test })
     `
-    expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
       "
             export default defineNuxtPlugin({
               setup: () => {},
