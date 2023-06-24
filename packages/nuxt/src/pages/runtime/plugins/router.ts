@@ -175,7 +175,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return false
             }
           }
-          if (result || result === false) { return result }
+
+          if (result || result === false) {
+            if (result === false) {
+              nuxtApp.callHook('app:navigation:aborted')
+            }
+            return result
+          }
         }
       }
     })

@@ -44,6 +44,7 @@ export default defineComponent({
     })
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
+    nuxtApp.hook('app:navigation:aborted', indicator.finish)
     onBeforeUnmount(() => {
       globalMiddleware.splice(globalMiddleware.indexOf(indicator.start, 1))
       indicator.clear()

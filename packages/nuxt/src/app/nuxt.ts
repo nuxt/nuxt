@@ -35,6 +35,7 @@ export interface RuntimeNuxtHooks {
   'app:beforeMount': (app: App<Element>) => HookResult
   'app:mounted': (app: App<Element>) => HookResult
   'app:rendered': (ctx: AppRenderedContext) => HookResult
+  'app:navigation:aborted': () => HookResult
   'app:redirected': () => HookResult
   'app:suspense:resolve': (Component?: VNode) => HookResult
   'app:error': (err: any) => HookResult
