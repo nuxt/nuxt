@@ -4,11 +4,12 @@ import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-// eslint-disable-next-line import/no-restricted-paths
+
+import { withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp } from '#app/nuxt'
-import { useRequestEvent } from '#app/composables/ssr'
+import { useRequestEvent, useRequestFetch } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
@@ -40,6 +41,7 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+    const eventFetch = process.server ? event.fetch : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
@@ -78,13 +80,16 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const result = await $fetch<NuxtIslandResponse>(url, {
-        responseType: 'json',
-        params: {
-          ...props.context,
-          props: props.props ? JSON.stringify(props.props) : undefined
+      const r = await eventFetch(withQuery(url, {
+        ...props.context,
+        props: props.props ? JSON.stringify(props.props) : undefined
+      }))
+      const result = await r.json() as NuxtIslandResponse
+      if (process.server) {
+        for (const [header, value] of r.headers) {
+          appendResponseHeader(event, header, value)
         }
-      })
+      }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,

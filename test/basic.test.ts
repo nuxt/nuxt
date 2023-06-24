@@ -67,7 +67,8 @@ describe('modules', () => {
 
 describe('pages', () => {
   it('render index', async () => {
-    const html = await $fetch('/')
+    const res = await fetch('/')
+    const html = await res.text()
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
@@ -90,6 +91,8 @@ describe('pages', () => {
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
     expect(html.replace(/ nuxt-ssr-component-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    // should include headers set by server-only components
+    expect(res.headers.get('x-server')).toBe('Hello from ServerOnlyComponent.server.vue')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
