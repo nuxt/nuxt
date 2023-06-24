@@ -8,6 +8,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "require": "./module.cjs",
       "import": "./dist/index.mjs"
     },
     "./dist/*": "./dist/*"
