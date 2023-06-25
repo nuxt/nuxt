@@ -138,8 +138,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           const s = new MagicString(code)
           options.clientCSSMap[id] ||= new Set()
           for (const file of options.globalCSS) {
-            const resolved = await this.resolve(file, id)
-            const res = await this.resolve(file + '?inline&used', id)
+            const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+            const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
             if (!resolved || !res) {
               if (!warnCache.has(file)) {
                 warnCache.add(file)
@@ -179,8 +179,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       let styleCtr = 0
       const ids = options.clientCSSMap[id] || []
       for (const file of ids) {
-        const resolved = await this.resolve(file, id)
-        if (!resolved || !(await this.resolve(file + '?inline&used', id))) {
+        const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+        const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+        if (!resolved || !res) {
           if (!warnCache.has(file)) {
             warnCache.add(file)
             this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
