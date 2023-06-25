@@ -1154,10 +1154,10 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     '{--global:"global";', // global css from nuxt.config
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
-    '{--scoped:"scoped"}' // <style lang=css>
+    '{--scoped:"scoped"}', // <style lang=css>
+    '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
-    // '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
     // '{--functional:"functional"}', // CSS imported ambiently in a functional component
   ]
