@@ -1169,6 +1169,17 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     }
   })
 
+  it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
+    const globalCSS = [
+      '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+      '{--global:"global";' // global css from nuxt.config
+    ]
+    const html = await $fetch('/route-rules/spa')
+    for (const style of globalCSS) {
+      expect(html).toContain(style)
+    }
+  })
+
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch('/styles')
     const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
