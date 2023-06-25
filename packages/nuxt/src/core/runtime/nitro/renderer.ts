@@ -367,7 +367,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
-    const response: RenderResponse = {
+    const response = {
       body: JSON.stringify(islandResponse, null, 2),
       statusCode: event.node.res.statusCode,
       statusMessage: event.node.res.statusMessage,
@@ -375,7 +375,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
-    }
+    } satisfies RenderResponse
     if (process.env.prerender) {
       ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
     }
@@ -383,7 +383,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Construct HTML response
-  const response: RenderResponse = {
+  const response = {
     body: renderHTMLDocument(htmlContext),
     statusCode: event.node.res.statusCode,
     statusMessage: event.node.res.statusMessage,
@@ -391,7 +391,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       'content-type': 'text/html;charset=utf-8',
       'x-powered-by': 'Nuxt'
     }
-  }
+  } satisfies RenderResponse
 
   return response
 })
@@ -456,7 +456,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
-  return <RenderResponse> {
+  return {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
@@ -466,7 +466,7 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
       'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt'
     }
-  }
+  } satisfies RenderResponse
 }
 
 function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }) {
