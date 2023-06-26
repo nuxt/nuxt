@@ -27,6 +27,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       if (!code.includes('<slot ')) { return }
       const template = code.match(/<template>([\s\S]*)<\/template>/)
       if (!template) { return }
+      const startingIndex = template.index! + '<template>'.length
       const s = new MagicString(code)
 
       s.replace(SCRIPT_RE, (full) => {
@@ -51,25 +52,25 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           const bindings = getBindings(attributes, vfor)
 
           if (isSelfClosingTag) {
-            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
           } else {
-            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
-            s.overwrite(loc[1].start, loc[1].end, '</div>')
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
+            s.overwrite(startingIndex + loc[1].start, startingIndex + loc[1].end, '</div>')
 
             if (children.length > 1) {
               // need to wrap instead of applying v-for on each child
               const wrapperTag = `<div ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} style="display: contents;">`
-              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
-              s.appendLeft(loc[1].start, '</div><div nuxt-slot-fallback-end/>')
+              s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
+              s.appendLeft(startingIndex + loc[1].start, '</div><div nuxt-slot-fallback-end/>')
             } else if (children.length === 1) {
               if (vfor && children[0].type === ELEMENT_NODE) {
                 const { loc, name, attributes, isSelfClosingTag } = children[0]
                 const attrs = Object.entries(attributes).map(([attr, val]) => `${attr}="${val}"`).join(' ')
-                s.overwrite(loc[0].start, loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
+                s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
               }
 
-              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
-              s.appendLeft(loc[1].start, '<div nuxt-slot-fallback-end/>')
+              s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
+              s.appendLeft(startingIndex + loc[1].start, '<div nuxt-slot-fallback-end/>')
             }
           }
         }
