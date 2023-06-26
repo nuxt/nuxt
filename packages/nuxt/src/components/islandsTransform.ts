@@ -4,6 +4,7 @@ import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
+import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
@@ -16,6 +17,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     name: 'server-only-component-transform',
     enforce: 'pre',
     transformInclude (id) {
+      if (!isVue(id)) { return false }
+
       const components = options.getComponents()
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
@@ -27,7 +30,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       if (!code.includes('<slot ')) { return }
       const template = code.match(/<template>([\s\S]*)<\/template>/)
       if (!template) { return }
-      const startingIndex = template.index! + '<template>'.length
+      const startingIndex = template.index || 0
       const s = new MagicString(code)
 
       s.replace(SCRIPT_RE, (full) => {
