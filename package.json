@@ -77,7 +77,7 @@
     "vue-eslint-parser": "9.3.1",
     "vue-tsc": "1.8.1"
   },
-  "packageManager": "pnpm@8.6.3",
+  "packageManager": "pnpm@8.6.4",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   }
