@@ -1180,6 +1180,13 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     }
   })
 
+  it('should emit assets referenced in inlined CSS', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
+    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+  })
+
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch('/styles')
     const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
