@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -34,7 +34,7 @@
     "consola": "^3.1.0",
     "cssnano": "^6.0.1",
     "defu": "^6.1.2",
-    "esbuild": "^0.18.6",
+    "esbuild": "^0.18.9",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",

@@ -31,11 +31,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
 
-  const spaLoadingTemplatePath = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
-  if (spaLoadingTemplatePath !== false && !existsSync(spaLoadingTemplatePath)) {
-    if (nuxt.options.spaLoadingTemplate) {
-      console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplatePath}\`.`)
-    }
+  const spaLoadingTemplate = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && !existsSync(spaLoadingTemplate)) {
+    console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
@@ -87,10 +85,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
       '#spa-template': () => {
+        if (!spaLoadingTemplate) { return 'export const template = ""' }
         try {
-          if (spaLoadingTemplatePath) {
-            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplatePath, 'utf-8'))}`
-          }
+          return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
         } catch {}
         return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }

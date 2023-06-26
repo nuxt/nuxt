@@ -4,6 +4,8 @@ import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
+import { withQuery } from 'ufo'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
@@ -40,6 +42,7 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+    const eventFetch = process.server ? event.fetch : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
@@ -78,13 +81,18 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const result = await $fetch<NuxtIslandResponse>(url, {
-        responseType: 'json',
-        params: {
-          ...props.context,
-          props: props.props ? JSON.stringify(props.props) : undefined
+      const r = await eventFetch(withQuery(url, {
+        ...props.context,
+        props: props.props ? JSON.stringify(props.props) : undefined
+      }))
+      const result = await r.json() as NuxtIslandResponse
+      // TODO: support passing on more headers
+      if (process.server && process.env.prerender) {
+        const hints = r.headers.get('x-nitro-prerender')
+        if (hints) {
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
-      })
+      }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,

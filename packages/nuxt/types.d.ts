@@ -2,6 +2,7 @@
 export * from './dist/index'
 
 import type { SchemaDefinition, RuntimeConfig } from 'nuxt/schema'
+import type { H3Event } from 'h3'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/core/runtime/nitro/renderer'
 
 declare global {
@@ -9,6 +10,7 @@ declare global {
   const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
 }
 
+// Note: Keep in sync with packages/nuxt/src/core/templates.ts
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string

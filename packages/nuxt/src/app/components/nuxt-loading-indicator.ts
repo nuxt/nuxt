@@ -45,7 +45,10 @@ export default defineComponent({
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
     onBeforeUnmount(() => {
-      globalMiddleware.splice(globalMiddleware.indexOf(indicator.start, 1))
+      const index = globalMiddleware.indexOf(indicator.start)
+      if (index >= 0) {
+        globalMiddleware.splice(index, 1)
+      }
       indicator.clear()
     })
 

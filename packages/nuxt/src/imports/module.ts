@@ -155,7 +155,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   addTemplate({
     filename: 'imports.d.ts',
-    getContents: () => ctx.toExports(nuxt.options.buildDir)
+    getContents: () => ctx.toExports(nuxt.options.buildDir, true)
   })
 
   addTemplate({
