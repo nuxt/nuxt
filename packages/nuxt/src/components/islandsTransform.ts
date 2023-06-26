@@ -11,6 +11,8 @@ interface ServerOnlyComponentTransformPluginOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
+const HAS_SLOT_RE = /<slot[ \/]/
+const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {
   return {
@@ -27,8 +29,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       return islands.some(c => c.filePath === pathname)
     },
     async transform (code, id) {
-      if (!code.includes('<slot ')) { return }
-      const template = code.match(/<template>([\s\S]*)<\/template>/)
+      if (!HAS_SLOT_RE.test(code)) { return }
+      const template = code.match(TEMPLATE_RE)
       if (!template) { return }
       const startingIndex = template.index || 0
       const s = new MagicString(code)
