@@ -41,20 +41,19 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     resolveId: {
       order: 'pre',
       async handler (id, importer, _options) {
-        // We deliberately prevent importing `#build/css` to avoid including it in the client bundle
-        // in its entirety. We will instead include _just_ the styles that can't be inlined,
-        // in the <NuxtRoot> component below
-        if (options.mode === 'client' && id === '#build/css' && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(importer)))) {
-          return this.resolve('unenv/runtime/mock/empty', importer, _options)
+        // We want to remove side effects (namely, emitting CSS) from `.vue` files and explicitly imported `.css` files
+        // but only as long as we are going to inline that CSS.
+        if ((options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(importer)))) {
+          return
         }
 
-        if (options.mode === 'client' || !id.endsWith('.vue')) { return }
-
-        const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
-        if (res) {
-          return {
-            ...res,
-            moduleSideEffects: false
+        if (id === '#build/css' || id.endsWith('.vue') || isCSS(id)) {
+          const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
+          if (res) {
+            return {
+              ...res,
+              moduleSideEffects: false
+            }
           }
         }
       }
