@@ -133,10 +133,10 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
 
-::LinkExample{link="/docs/examples/other/use-custom-fetch-composable"}
+::LinkExample{link="/docs/examples/advanced/use-custom-fetch-composable"}
 ::
 
 :ReadMore{link="/docs/getting-started/data-fetching"}
 
-::LinkExample{link="/docs/examples/composables/use-fetch"}
+::LinkExample{link="/docs/examples/features/data-fetching"}
 ::
