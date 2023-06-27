@@ -47,10 +47,9 @@ export default defineComponent({
     onMounted(() => { mounted.value = true })
 
     const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
-    const availableSlots = computed(() => {
-      return [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])
-    })
+    const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
@@ -67,9 +66,6 @@ export default defineComponent({
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
-    const slotProps = computed(() => {
-      return getSlotProps(ssrHTML.value)
-    })
 
     async function _fetchComponent () {
       const key = `${props.name}_${hashId.value}`

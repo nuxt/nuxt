@@ -58,7 +58,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templatesGenerated', app)
 }
 
-export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
