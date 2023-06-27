@@ -553,7 +553,7 @@ importers:
         specifier: 3.0.1
         version: 3.0.1(vite@4.3.9)(vue@3.3.4)
       '@vue/compiler-core':
-        specifier: ^3.3.4
+        specifier: 3.3.4
         version: 3.3.4
       esbuild-loader:
         specifier: 3.0.1
@@ -592,7 +592,7 @@ importers:
         specifier: 5.88.0
         version: 5.88.0
       webpack-dev-middleware:
-        specifier: ^6.1.1
+        specifier: 6.1.1
         version: 6.1.1(webpack@5.88.0)
 
   packages/test-utils:

@@ -33,7 +33,7 @@
     "@unhead/schema": "1.1.28",
     "@vitejs/plugin-vue": "4.2.3",
     "@vitejs/plugin-vue-jsx": "3.0.1",
-    "@vue/compiler-core": "^3.3.4",
+    "@vue/compiler-core": "3.3.4",
     "esbuild-loader": "3.0.1",
     "h3": "1.7.0",
     "ignore": "5.2.4",
@@ -46,7 +46,7 @@
     "vue-loader": "17.2.2",
     "vue-router": "4.2.2",
     "webpack": "5.88.0",
-    "webpack-dev-middleware": "^6.1.1"
+    "webpack-dev-middleware": "6.1.1"
   },
   "dependencies": {
     "defu": "^6.1.2",
