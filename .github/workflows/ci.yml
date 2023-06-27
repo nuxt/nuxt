@@ -4,11 +4,13 @@ on:
   push:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
   pull_request:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
       - "!v[0-9]*"
