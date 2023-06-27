@@ -35,7 +35,7 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.30.0",
-    "memfs": "^3.5.3",
+    "memfs": "^4.2.0",
     "mini-css-extract-plugin": "^2.7.6",
     "mlly": "^1.4.0",
     "ohash": "^1.1.2",
