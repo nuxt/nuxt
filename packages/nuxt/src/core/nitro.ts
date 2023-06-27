@@ -131,6 +131,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir }))
     ],
     prerender: {
+      failOnError: true,
+      concurrency: 10,
       crawlLinks: nuxt.options._generate ?? undefined,
       routes: ([] as string[])
         .concat(nuxt.options.generate.routes)
