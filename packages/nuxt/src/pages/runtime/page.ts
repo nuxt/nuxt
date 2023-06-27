@@ -11,6 +11,7 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol } from '#app/components/layout'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+import { useRoute } from '#app'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -38,6 +39,7 @@ export default defineComponent({
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
+    const oldRoute = useRoute()
 
     expose({ pageRef })
 
@@ -47,7 +49,15 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
-          if (!routeProps.Component) { return }
+          if (!routeProps.Component) {
+            // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
+            // we'll render the old vnode until the new route finishes resolving
+            if (oldRoute.matched.some((c, index) => !c.components || c.components.default !== routeProps.route.matched[index]?.components?.default)) {
+              // Return old vnode if we are rendering child when new route has no child
+              return vnode
+            }
+            return
+          }
 
           // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
           if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {

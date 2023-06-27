@@ -4,7 +4,7 @@ definePageMeta({
   pageTransition: false,
   layoutTransition: false
 })
-const links = ['sync', 'async'].flatMap(parent => [1, 2].flatMap(p => ['sync', 'async'].flatMap(child => [1, 2].map(c => `/suspense/${parent}-${p}/${child}-${c}/`))))
+const links = new Set(['sync', 'async'].flatMap(parent => [1, 2].flatMap(p => ['sync', 'async'].flatMap(child => [null, 1, 2].map(c => !c ? `/suspense/${parent}-${p}/` : `/suspense/${parent}-${p}/${child}-${c}/`)))))
 </script>
 
 <template>

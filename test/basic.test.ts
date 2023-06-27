@@ -1064,6 +1064,54 @@ describe('nested suspense', () => {
 
     await page.close()
   })
+
+  const outwardNavigations = [
+    ['/suspense/async-2/async-1/', '/suspense/async-1/'],
+    ['/suspense/async-2/sync-1/', '/suspense/async-1/']
+  ]
+
+  it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    await page.waitForLoadState('networkidle')
+
+    await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
+
+    const slug = start.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector disappears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:not(:has(#child${slug}))`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    expect(text).toContain('Async parent: 1')
+
+    await page.close()
+  })
+
+  const inwardNavigations = [
+    ['/suspense/async-2/', '/suspense/async-1/async-1/'],
+    ['/suspense/async-2/', '/suspense/async-1/sync-1/']
+  ]
+
+  // TODO: should wait to navigate parent until child suspense is resolved
+  it.todo.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    await page.waitForLoadState('networkidle')
+
+    const slug = start.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector appears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async parent: 1')
+
+    await page.close()
+  })
 })
 
 // Bug #6592
