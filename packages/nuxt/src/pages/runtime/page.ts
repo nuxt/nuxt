@@ -159,7 +159,7 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
-  if (index === -1) { return true }
+  if (!index || index === -1) { return false }
 
   // we only care whether the parent route components have had to rerender
   return newRoute.matched.slice(0, index)
