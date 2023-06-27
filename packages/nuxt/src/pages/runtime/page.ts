@@ -9,9 +9,9 @@ import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol } from '#app/components/layout'
+import { useRoute } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
-import { useRoute } from '#app'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -39,7 +39,7 @@ export default defineComponent({
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
-    const oldRoute = useRoute()
+    const forkRoute = useRoute()
 
     expose({ pageRef })
 
@@ -49,11 +49,13 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
+          const isRenderingNewRouteInOldFork = haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
+          const hasSameChildren = forkRoute.matched.length === routeProps.route.matched.length
+
           if (!routeProps.Component) {
             // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
             // we'll render the old vnode until the new route finishes resolving
-            if (oldRoute.matched.some((c, index) => !c.components || c.components.default !== routeProps.route.matched[index]?.components?.default)) {
-              // Return old vnode if we are rendering child when new route has no child
+            if (vnode && !hasSameChildren) {
               return vnode
             }
             return
@@ -62,6 +64,15 @@ export default defineComponent({
           // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
           if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
             return vnode
+          }
+
+          if (isRenderingNewRouteInOldFork && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
+            // if leaving a route with an existing child route, render the old vnode
+            if (hasSameChildren) {
+              return vnode
+            }
+            // If _leaving_ null child route, return null vnode
+            return null
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
@@ -144,3 +155,14 @@ const RouteProvider = defineComponent({
     }
   }
 })
+
+function haveParentRoutesRendered (from: RouteLocationNormalizedLoaded, to: RouteLocationNormalizedLoaded, Component?: VNode) {
+  const index = to.matched.findIndex(m => m.components?.default === Component?.type)
+  if (index === -1) { return true }
+
+  // we only care whether the parent route components have had to rerender
+  return to.matched.slice(0, index)
+    .some(
+      (c, i) => c.components?.default !== from.matched[i]?.components?.default) ||
+        (Component && generateRouteKey({ route: to, Component }) !== generateRouteKey({ route: from, Component }))
+}

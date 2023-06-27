@@ -1051,7 +1051,7 @@ describe('nested suspense', () => {
     const slug = nav.replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
-    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
       // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
@@ -1061,6 +1061,7 @@ describe('nested suspense', () => {
 
     // const text = await parent.innerText()
     expect(text).toContain('Async child: 2 - 1')
+    expect(text).toContain('parent: 2')
 
     await page.close()
   })
@@ -1094,12 +1095,11 @@ describe('nested suspense', () => {
     ['/suspense/async-2/', '/suspense/async-1/sync-1/']
   ]
 
-  // TODO: should wait to navigate parent until child suspense is resolved
-  it.todo.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+  it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
     await page.waitForLoadState('networkidle')
 
-    const slug = start.replace(/[/-]+/g, '-')
+    const slug = nav.replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
     // wait until child selector appears and grab HTML of parent
