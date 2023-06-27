@@ -10,7 +10,7 @@ import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 import { annotatePlugins } from './app'
 
-export interface TemplateContext {
+interface TemplateContext {
   nuxt: Nuxt
   app: NuxtApp
 }

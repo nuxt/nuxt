@@ -9,10 +9,7 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "ofetch": "latest",
     "ufo": "latest",
-    "unplugin": "latest",
-    "vitest": "latest",
-    "vue-router": "latest"
+    "unplugin": "latest"
   }
 }

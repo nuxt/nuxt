@@ -117,6 +117,11 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  it('allows routes to be added dynamically', async () => {
+    const html = await $fetch('/add-route-test')
+    expect(html).toContain('Hello Nuxt 3!')
+  })
+
   it('includes page metadata from pages added in pages:extend hook', async () => {
     const res = await fetch('/page-extend')
     expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
