@@ -344,7 +344,8 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true } as const)
 }
 
-export { defineNuxtPlugin as definePayloadPlugin }
+/*! @__NO_SIDE_EFFECTS__ */
+export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin
