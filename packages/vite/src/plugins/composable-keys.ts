@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { matchWithStringOrRegex } from '../utils'
 
-export interface ComposableKeysOptions {
+interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>

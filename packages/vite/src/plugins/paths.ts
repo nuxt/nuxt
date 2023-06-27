@@ -4,7 +4,7 @@ import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
 import { isCSS } from '../utils'
 
-export interface RuntimePathsOptions {
+interface RuntimePathsOptions {
   sourcemap?: boolean
 }
 
