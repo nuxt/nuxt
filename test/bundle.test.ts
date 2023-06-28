@@ -1,41 +1,38 @@
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { globby } from 'globby'
 import { join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
-  const publicDir = join(rootDir, '.output/public')
-  const serverDir = join(rootDir, '.output/server')
-
-  const stats = {
-    client: { totalBytes: 0, files: [] as string[] },
-    server: { totalBytes: 0, files: [] as string[] }
-  }
 
   beforeAll(async () => {
-    await execaCommand(`pnpm nuxi build ${rootDir}`)
+    await Promise.all([
+      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'false' } }),
+      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'true' } })
+    ])
   }, 120 * 1000)
 
-  afterAll(async () => {
-    await fsp.writeFile(join(rootDir, '.output/test-stats.json'), JSON.stringify(stats, null, 2))
-  })
-
-  it('default client bundle size', async () => {
-    stats.client = await analyzeSizes('**/*.js', publicDir)
-    expect.soft(roundToKilobytes(stats.client.totalBytes)).toMatchInlineSnapshot('"97.2k"')
-    expect(stats.client.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
-      [
-        "_nuxt/entry.js",
-      ]
-    `)
-  })
+  // Identical behaviour between inline/external vue options as this should only affect the server build
+  for (const outputDir of ['.output', '.output-inline']) {
+    it('default client bundle size', async () => {
+      const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"97.2k"')
+      expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
+        [
+          "_nuxt/entry.js",
+        ]
+      `)
+    })
+  }
 
   it('default server bundle size', async () => {
-    stats.server = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(stats.server.totalBytes)).toMatchInlineSnapshot('"63.9k"')
+    const serverDir = join(rootDir, '.output/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"63.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2329k"')
@@ -87,6 +84,53 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+      ]
+    `)
+  })
+
+  it('default server bundle size (inlined vue modules)', async () => {
+    const serverDir = join(rootDir, '.output-inline/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"370k"')
+
+    const modules = await analyzeSizes('node_modules/**/*', serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"590k"')
+
+    const packages = modules.files
+      .filter(m => m.endsWith('package.json'))
+      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .sort()
+    expect(packages).toMatchInlineSnapshot(`
+      [
+        "@unhead/dom",
+        "@unhead/shared",
+        "@unhead/ssr",
+        "cookie-es",
+        "debug",
+        "defu",
+        "destr",
+        "devalue",
+        "h3",
+        "has-flag",
+        "hookable",
+        "http-graceful-shutdown",
+        "iron-webcrypto",
+        "klona",
+        "ms",
+        "node-fetch-native",
+        "ofetch",
+        "ohash",
+        "pathe",
+        "radix3",
+        "scule",
+        "supports-color",
+        "ufo",
+        "uncrypto",
+        "unctx",
+        "unenv",
+        "unhead",
+        "unstorage",
       ]
     `)
   })
