@@ -1,4 +1,5 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
+import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
@@ -131,6 +132,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir }))
     ],
     prerender: {
+      failOnError: true,
+      concurrency: cpus().length * 4 || 4,
       crawlLinks: nuxt.options._generate ?? undefined,
       routes: ([] as string[])
         .concat(nuxt.options.generate.routes)
