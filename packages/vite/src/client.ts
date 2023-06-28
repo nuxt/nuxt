@@ -58,7 +58,6 @@ export async function buildClient (ctx: ViteBuildContext) {
         // runtime compiler
         '@vue/compiler-sfc', '@vue/compiler-dom', '@vue/compiler-core', '@vue/compiler-ssr'
       ]
-
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {

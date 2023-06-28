@@ -2,7 +2,7 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -165,13 +165,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ]
     },
     alias: {
-      ...nuxt.options.experimental.externalVue
-        ? {}
-        : {
-            'vue/compiler-sfc': 'vue/compiler-sfc',
-            'vue/server-renderer': 'vue/server-renderer',
-            vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
-          },
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
