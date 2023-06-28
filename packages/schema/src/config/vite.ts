@@ -30,6 +30,7 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
+      $schema: { deprecated: 'use `dir.public` option instead' },
       $resolve: async (val, get) => val ?? resolve((await get('srcDir')), (await get('dir')).public)
     },
     vue: {

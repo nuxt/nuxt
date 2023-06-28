@@ -60,6 +60,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       ]
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
+    publicDir: resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.public),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? true : false,
       manifest: true,
