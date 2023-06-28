@@ -222,9 +222,11 @@ export default defineNuxtModule<ComponentsOptions>({
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
 
-      config.plugins.push(islandsTransform.vite({
-        getComponents
-      }))
+      if (isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push(islandsTransform.vite({
+          getComponents
+        }))
+      }
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -248,9 +250,11 @@ export default defineNuxtModule<ComponentsOptions>({
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
 
-        config.plugins.push(islandsTransform.webpack({
-          getComponents
-        }))
+        if (nuxt.options.experimental.componentIslands && mode === 'server') {
+          config.plugins.push(islandsTransform.webpack({
+            getComponents
+          }))
+        }
       })
     })
   }
