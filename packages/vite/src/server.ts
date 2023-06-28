@@ -56,9 +56,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       }
     },
     ssr: {
-      external: ctx.nuxt.options.experimental.externalVue
-        ? ['#internal/nitro', '#internal/nitro/utils', 'vue', 'vue-router']
-        : ['#internal/nitro', '#internal/nitro/utils'],
+      external: ['#internal/nitro', '#internal/nitro/utils'],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
         // TODO: Use externality for production (rollup) build
@@ -77,7 +75,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro', ...ctx.nuxt.options.experimental.externalVue ? ['vue', 'vue-router'] : []],
+        external: ['#internal/nitro'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
