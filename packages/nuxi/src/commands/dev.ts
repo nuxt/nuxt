@@ -25,20 +25,6 @@ export default defineNuxtCommand({
   async invoke (args, options = {}) {
     overrideEnv('development')
 
-    const { listen } = await import('listhen')
-    const { toNodeListener } = await import('h3')
-    let currentHandler: RequestListener | undefined
-    let loadingMessage = 'Nuxt is starting...'
-    const loadingHandler: RequestListener = async (_req, res) => {
-      const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates')
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.statusCode = 503 // Service Unavailable
-      res.end(loadingTemplate({ loading: loadingMessage }))
-    }
-    const serverHandler: RequestListener = (req, res) => {
-      return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
-    }
-
     const rootDir = resolve(args._[0] || '.')
     showVersions(rootDir)
 
@@ -54,6 +40,20 @@ export default defineNuxtCommand({
         ...(options.overrides || {})
       }
     })
+
+    const { listen } = await import('listhen')
+    const { toNodeListener } = await import('h3')
+    let currentHandler: RequestListener | undefined
+    let loadingMessage = 'Nuxt is starting...'
+    const loadingHandler: RequestListener = async (_req, res) => {
+      const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates', config.modulesDir)
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
+      res.statusCode = 503 // Service Unavailable
+      res.end(loadingTemplate({ loading: loadingMessage }))
+    }
+    const serverHandler: RequestListener = (req, res) => {
+      return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
+    }
 
     const listener = await listen(serverHandler, {
       showURL: false,
