@@ -38,7 +38,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
-    static: nuxt.options._generate,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
@@ -133,10 +132,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     prerender: {
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
-      crawlLinks: nuxt.options._generate ?? undefined,
-      routes: ([] as string[])
-        .concat(nuxt.options.generate.routes)
-        .concat(nuxt.options._generate ? [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html'] : [])
+      routes: ([] as string[]).concat(nuxt.options.generate.routes)
     },
     sourceMap: nuxt.options.sourcemap.server,
     externals: {
@@ -360,6 +356,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
+  if (nitro.options.static) {
+    nitro.hooks.hook('prerender:routes', (routes) => {
+      for (const route of [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html']) {
+        routes.add(route)
+      }
+    })
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
@@ -375,7 +379,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
       logger.wrapAll()
 
-      if (nuxt.options._generate) {
+      if (nitro.options.static) {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
           await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})

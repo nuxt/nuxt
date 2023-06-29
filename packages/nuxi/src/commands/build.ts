@@ -30,6 +30,7 @@ export default defineNuxtCommand({
       overrides: {
         logLevel: args['log-level'],
         _generate: args.prerender,
+        ...(args.prerender ? { nitro: { static: true } } : {}),
         ...(options?.overrides || {})
       }
     })
