@@ -166,7 +166,7 @@ export async function bundle (nuxt: Nuxt) {
       for (const key in manifest) {
         const entry = manifest[key]
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
-        if (chunksWithInlinedCSS.has(key)) {
+        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
           // @ts-expect-error internal key
           entry._globalCSS = true
         }
