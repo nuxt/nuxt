@@ -66,7 +66,10 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r => r.isEntry).map(r => r.src!))
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
+  // @ts-expect-error internal key set by CSS inlining configuration
+  r._globalCSS
+).map(r => r.src!))
 
 // @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
