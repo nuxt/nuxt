@@ -5,7 +5,7 @@ import { hash } from 'ohash'
 import type { Nuxt } from '@nuxt/schema'
 import { rmRecursive } from './fs'
 
-export interface NuxtProjectManifest {
+interface NuxtProjectManifest {
   _hash: string | null
   project: {
     rootDir: string
@@ -37,7 +37,7 @@ export function nuxtVersionToGitIdentifier (version: string) {
   return `v${version}`
 }
 
-export function resolveNuxtManifest (nuxt: Nuxt): NuxtProjectManifest {
+function resolveNuxtManifest (nuxt: Nuxt): NuxtProjectManifest {
   const manifest: NuxtProjectManifest = {
     _hash: null,
     project: {

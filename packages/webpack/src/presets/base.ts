@@ -155,7 +155,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 }
 
-export function baseTranspile (ctx: WebpackConfigContext) {
+function baseTranspile (ctx: WebpackConfigContext) {
   const { options } = ctx
 
   const transpile = [
