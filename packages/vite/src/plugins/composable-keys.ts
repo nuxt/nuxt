@@ -235,7 +235,7 @@ function detectImportNames (code: string, composableMeta: Record<string, { sourc
       if (source && matchWithStringOrRegex(i.specifier, source)) {
         return
       }
-      names.add(namedImports![name])
+      names.add(name)
     }
 
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
