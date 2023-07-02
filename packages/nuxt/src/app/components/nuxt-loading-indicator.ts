@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
-import { ErrorTypes, NavigationFailureType } from 'vue-router'
+import { ErrorTypes } from 'vue-router'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 
