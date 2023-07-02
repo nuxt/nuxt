@@ -1,4 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
+import { ErrorTypes, NavigationFailureType } from 'vue-router'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 
@@ -45,9 +46,16 @@ export default defineComponent({
         indicator.finish()
       }
     })
+
+    router.afterEach((_to, _from, failure) => {
+      if (failure && failure.type === ErrorTypes.NAVIGATION_ABORTED) {
+        indicator.finish()
+      }
+    })
+
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
-    nuxtApp.hook('app:navigation:aborted', indicator.finish)
+
     onBeforeUnmount(() => {
       globalMiddleware.splice(globalMiddleware.indexOf(indicator.start, 1))
       indicator.clear()
