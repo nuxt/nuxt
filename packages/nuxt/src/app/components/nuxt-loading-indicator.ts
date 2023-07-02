@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
-import { ErrorTypes } from 'vue-router'
+import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 
@@ -48,7 +48,7 @@ export default defineComponent({
     })
 
     router.afterEach((_to, _from, failure) => {
-      if (failure && failure.type === ErrorTypes.NAVIGATION_ABORTED) {
+      if (isNavigationFailure(failure, NavigationFailureType.aborted)) {
         indicator.finish()
       }
     })
