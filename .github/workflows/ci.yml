@@ -226,6 +226,9 @@ jobs:
       - name: Test (unit)
         run: pnpm test:unit
 
+      - name: Test (runtime unit)
+        run: pnpm test:runtime
+
       - name: Test (fixtures)
         run: pnpm test:fixtures
         env:

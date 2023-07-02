@@ -22,6 +22,7 @@
     "test:fixtures:payload": "TEST_PAYLOAD=js pnpm test:fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
+    "test:runtime": "vitest -c vitest.nuxt.config.ts",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run --dir packages",
     "typecheck": "tsc --noEmit"
@@ -63,6 +64,7 @@
     "markdownlint-cli": "^0.33.0",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
+    "nuxt-vitest": "^0.8.7",
     "ofetch": "1.1.1",
     "pathe": "1.1.1",
     "playwright": "1.35.1",
@@ -73,6 +75,7 @@
     "ufo": "1.1.2",
     "vite": "4.3.9",
     "vitest": "0.32.2",
+    "vitest-environment-nuxt": "^0.8.7",
     "vue": "3.3.4",
     "vue-eslint-parser": "9.3.1",
     "vue-tsc": "1.8.3"
