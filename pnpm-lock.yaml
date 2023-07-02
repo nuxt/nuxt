@@ -93,7 +93,7 @@ importers:
         specifier: workspace:*
         version: link:packages/nuxt
       nuxt-vitest:
-        specifier: ^0.8.7
+        specifier: 0.8.7
         version: 0.8.7(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(vite@4.3.9)(vitest@0.32.2)(vue-router@4.2.2)(vue@3.3.4)
       ofetch:
         specifier: 1.1.1
@@ -126,7 +126,7 @@ importers:
         specifier: 0.32.2
         version: 0.32.2(playwright@1.35.1)
       vitest-environment-nuxt:
-        specifier: ^0.8.7
+        specifier: 0.8.7
         version: 0.8.7(vitest@0.32.2)(vue-router@4.2.2)(vue@3.3.4)
       vue:
         specifier: 3.3.4
