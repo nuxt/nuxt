@@ -106,7 +106,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
   return prepareRoutes(routes)
 }
 
-const SFC_SCRIPT_RE = /<script\s+.*?>([\s\S]*?)<\/script>/i
+const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
 function extractScriptContent (html: string) {
   const match = html.match(SFC_SCRIPT_RE)
 
