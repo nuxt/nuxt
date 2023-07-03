@@ -65,13 +65,6 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       file,
       children: []
     }
-
-    const fileContent = file in nuxt.vfs ? nuxt.vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
-    const overrideRouteName = await getRouteName(fileContent)
-    if (overrideRouteName) {
-      route.name = overrideRouteName
-    }
-
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
@@ -82,7 +75,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       const segmentName = tokens.map(({ value }) => value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
-      if (!overrideRouteName) { route.name += (route.name && '/') + segmentName }
+      route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
       const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
@@ -95,6 +88,12 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       } else if (segmentName !== 'index') {
         route.path += getRoutePath(tokens)
       }
+    }
+
+    const fileContent = file in nuxt.vfs ? nuxt.vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+    const overrideRouteName = await getRouteName(fileContent)
+    if (overrideRouteName) {
+      route.name = overrideRouteName
     }
 
     parent.push(route)
