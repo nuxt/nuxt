@@ -28,6 +28,7 @@ export default defineComponent({
       type: String,
       required: true
     },
+    lazy: Boolean,
     props: {
       type: Object,
       default: () => undefined
@@ -131,7 +132,10 @@ export default defineComponent({
       watch(props, debounce(fetchComponent, 100))
     }
 
-    if (process.server || !nuxtApp.isHydrating) {
+    console.log(props.props)
+    if (process.client && !nuxtApp.isHydrating && props.lazy) {
+      fetchComponent()
+    } else if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
 
