@@ -36,7 +36,7 @@
     "@jest/globals": "29.5.0",
     "playwright": "1.35.1",
     "unbuild": "latest",
-    "vitest": "0.32.2"
+    "vitest": "0.32.4"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",

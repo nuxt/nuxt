@@ -24,7 +24,7 @@
     "c12": "^1.4.2",
     "consola": "^3.2.2",
     "defu": "^6.1.2",
-    "globby": "^13.2.0",
+    "globby": "^13.2.1",
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
     "jiti": "^1.18.2",
@@ -46,8 +46,8 @@
     "nitropack": "2.5.2",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.32.2",
-    "webpack": "5.88.0"
+    "vitest": "0.32.4",
+    "webpack": "5.88.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
