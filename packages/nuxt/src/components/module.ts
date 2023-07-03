@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { relative, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -232,7 +232,8 @@ export default defineNuxtModule<ComponentsOptions>({
           name: 'nuxt-server-component-hmr',
           handleHotUpdate (ctx) {
             const components = getComponents()
-            const comp = components.find(c => c.filePath === ctx.file)
+            const filePath = normalize(ctx.file)
+            const comp = components.find(c => c.filePath === filePath)
             if (comp?.mode === 'server') {
               ctx.server.ws.send({
                 event: `nuxt-server-component:${comp.pascalName}`,
