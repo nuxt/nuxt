@@ -333,10 +333,11 @@ describe('pages:generateRoutesFromFiles', () => {
           [file.path]: 'template' in file ? file.template : ''
         }), {})
       }
-      if (test.error) {
-        expect(() => generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, nuxtApp as Nuxt)).to.throws(test.error)
-      } else {
-        expect(await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, nuxtApp as Nuxt)).to.deep.equal(test.output)
+      try {
+        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, nuxtApp as Nuxt)
+        expect(result).to.deep.equal(test.output)
+      } catch (error: any) {
+        expect(error.message).toEqual(test.error)
       }
     })
   }

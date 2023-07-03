@@ -7,8 +7,9 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-import { parse } from '@typescript-eslint/typescript-estree'
-import type { CallExpression, ExpressionStatement, ObjectExpression, Property } from 'estree'
+import { transform } from 'esbuild'
+import { parse } from 'acorn'
+import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import { uniqueBy } from '../core/utils'
 
 enum SegmentParserState {
@@ -50,7 +51,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   return uniqueBy(allRoutes, 'path')
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt: Nuxt): NuxtPage[] {
+export async function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt: Nuxt): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -66,7 +67,7 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt
     }
 
     const fileContent = file in nuxt.vfs ? nuxt.vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
-    const overrideRouteName = getRouteName(fileContent)
+    const overrideRouteName = await getRouteName(fileContent)
     if (overrideRouteName) {
       route.name = overrideRouteName
     }
@@ -114,19 +115,18 @@ function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
-function extractDefinePageMeta (input: string) {
-  const match = input.match(PAGE_META_RE)
-  return match && match[1] ? match[1] : null
-}
 
-function getRouteName (file: string) {
+async function getRouteName (file: string) {
   const script = extractScriptContent(file)
   if (!script) { return null }
 
-  const extractedPageMeta = extractDefinePageMeta(script)
-  if (!extractedPageMeta) { return null }
+  if (!PAGE_META_RE.test(script)) { return null }
 
-  const ast = parse(extractedPageMeta)
+  const js = await transform(script, { loader: 'ts' })
+  const ast = parse(js.code, {
+    sourceType: 'module',
+    ecmaVersion: 'latest'
+  }) as unknown as Program
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
   if (!pageMetaAST) { return null }
 
