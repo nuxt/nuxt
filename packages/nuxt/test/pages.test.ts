@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { NuxtPage } from 'nuxt/schema'
 import { generateRoutesFromFiles } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
