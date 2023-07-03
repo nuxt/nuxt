@@ -4,11 +4,13 @@ on:
   push:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
   pull_request:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
       - "!v[0-9]*"
@@ -223,6 +225,9 @@ jobs:
 
       - name: Test (unit)
         run: pnpm test:unit
+
+      - name: Test (runtime unit)
+        run: pnpm test:runtime
 
       - name: Test (fixtures)
         run: pnpm test:fixtures

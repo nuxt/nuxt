@@ -1,9 +1,10 @@
+import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
-import { normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt/test-utils'
+import { join, normalize } from 'pathe'
+import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -114,6 +115,11 @@ describe('pages', () => {
   it('respects redirects in page metadata', async () => {
     const { headers } = await fetch('/redirect', { redirect: 'manual' })
     expect(headers.get('location')).toEqual('/')
+  })
+
+  it('allows routes to be added dynamically', async () => {
+    const html = await $fetch('/add-route-test')
+    expect(html).toContain('Hello Nuxt 3!')
   })
 
   it('includes page metadata from pages added in pages:extend hook', async () => {
@@ -424,39 +430,6 @@ describe('pages', () => {
     expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
     // #20833
     expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
-    await page.close()
-  })
-
-  it('/islands', async () => {
-    const page = await createPage('/islands')
-    await page.waitForLoadState('networkidle')
-    await page.locator('#increase-pure-component').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
-    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
-
-    // test fallback slot with v-for
-    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
-    // test islands update
-    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
-    await page.locator('#update-server-components').click()
-    await Promise.all([
-      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
-      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
-    ])
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
-    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
-
-    // test islands slots interactivity
-    await page.locator('#first-sugar-counter button').click()
-    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
-
-    // test islands mounted client side with slot
-    await page.locator('#show-island').click()
-    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
-
     await page.close()
   })
 
@@ -1195,10 +1168,10 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     '{--global:"global";', // global css from nuxt.config
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
-    '{--scoped:"scoped"}' // <style lang=css>
+    '{--scoped:"scoped"}', // <style lang=css>
+    '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
-    // '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
     // '{--functional:"functional"}', // CSS imported ambiently in a functional component
   ]
@@ -1208,6 +1181,24 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     for (const style of inlinedCSS) {
       expect(html).toContain(style)
     }
+  })
+
+  it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
+    const globalCSS = [
+      '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+      '{--global:"global";' // global css from nuxt.config
+    ]
+    const html = await $fetch('/route-rules/spa')
+    for (const style of globalCSS) {
+      expect(html).toContain(style)
+    }
+  })
+
+  it('should emit assets referenced in inlined CSS', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
+    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
   it('should not include inlined CSS in generated CSS file', async () => {
@@ -1252,6 +1243,51 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it.todo('renders client-only styles only', async () => {
     const html = await $fetch('/styles')
     expect(html).toContain('{--client-only:"client-only"}')
+  })
+})
+
+describe('server components/islands', () => {
+  it('/islands', async () => {
+    const page = await createPage('/islands')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#increase-pure-component').click()
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
+    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    // test fallback slot with v-for
+    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
+    // test islands update
+    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('#update-server-components').click()
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
+    ])
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
+    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    // test islands mounted client side with slot
+    await page.locator('#show-island').click()
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    expect(await readdir(join(publicDir, 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain(
+      isRenderingJson
+        ? '_payload.json'
+        : '_payload.js'
+    )
   })
 })
 

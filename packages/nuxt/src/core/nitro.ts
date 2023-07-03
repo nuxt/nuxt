@@ -1,8 +1,9 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
+import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -31,15 +32,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
 
-  const spaLoadingTemplatePath = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
-  if (spaLoadingTemplatePath !== false && !existsSync(spaLoadingTemplatePath)) {
-    if (nuxt.options.spaLoadingTemplate) {
-      console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplatePath}\`.`)
-    }
+  const spaLoadingTemplate = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && !existsSync(spaLoadingTemplate)) {
+    console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
-    static: nuxt.options._generate,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
@@ -87,10 +85,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
       '#spa-template': () => {
+        if (!spaLoadingTemplate) { return 'export const template = ""' }
         try {
-          if (spaLoadingTemplatePath) {
-            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplatePath, 'utf-8'))}`
-          }
+          return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
         } catch {}
         return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }
@@ -101,7 +98,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
       nitro: {
-        // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1336
         envPrefix: 'NUXT_',
         ...nuxt.options.runtimeConfig.nitro
       }
@@ -134,10 +130,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir }))
     ],
     prerender: {
-      crawlLinks: nuxt.options._generate ?? undefined,
-      routes: ([] as string[])
-        .concat(nuxt.options.generate.routes)
-        .concat(nuxt.options._generate ? [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html'] : [])
+      failOnError: true,
+      concurrency: cpus().length * 4 || 4,
+      routes: ([] as string[]).concat(nuxt.options.generate.routes)
     },
     sourceMap: nuxt.options.sourcemap.server,
     externals: {
@@ -168,13 +163,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ]
     },
     alias: {
-      ...nuxt.options.experimental.externalVue
-        ? {}
-        : {
-            'vue/compiler-sfc': 'vue/compiler-sfc',
-            'vue/server-renderer': 'vue/server-renderer',
-            vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
-          },
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
@@ -368,6 +356,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
+  if (nitro.options.static) {
+    nitro.hooks.hook('prerender:routes', (routes) => {
+      for (const route of [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html']) {
+        routes.add(route)
+      }
+    })
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
@@ -383,7 +379,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
       logger.wrapAll()
 
-      if (nuxt.options._generate) {
+      if (nitro.options.static) {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
           await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})

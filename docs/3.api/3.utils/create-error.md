@@ -41,7 +41,7 @@ export default eventHandler(() => {
     statusCode: 404,
     statusMessage: 'Page Not Found'
   })
-}
+})
 ```
 
 ::ReadMore{link="/docs/getting-started/error-handling"}

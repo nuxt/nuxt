@@ -2,7 +2,7 @@ import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
 import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
-export interface ComponentsTemplateContext {
+interface ComponentsTemplateContext {
   app: NuxtApp
   nuxt: Nuxt
   options: {
@@ -11,7 +11,7 @@ export interface ComponentsTemplateContext {
   }
 }
 
-export type ImportMagicCommentsOptions = {
+type ImportMagicCommentsOptions = {
   chunkName: string
   prefetch?: boolean | number
   preload?: boolean | number

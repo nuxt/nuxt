@@ -14,11 +14,11 @@ export function getModulePaths (paths?: string | string[]): string[] {
 
 const _require = createRequire(process.cwd())
 
-export function resolveModule (id: string, paths?: string | string[]) {
+function resolveModule (id: string, paths?: string | string[]) {
   return normalize(_require.resolve(id, { paths: getModulePaths(paths) }))
 }
 
-export function requireModule (id: string, paths?: string | string[]) {
+function requireModule (id: string, paths?: string | string[]) {
   return _require(resolveModule(id, paths))
 }
 
