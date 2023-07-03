@@ -327,14 +327,12 @@ describe('pages:generateRoutesFromFiles', () => {
 
   for (const test of tests) {
     it(test.description, async () => {
-      const nuxtApp = {
-        vfs: test.files.reduce((virtualFiles, file) => ({
-          ...virtualFiles,
-          [file.path]: 'template' in file ? file.template : ''
-        }), {})
-      }
+      const vfs = Object.fromEntries(
+        test.files.map(file => [file.path, 'template' in file ? file.template : ''])
+      ) as Record<string, string>
+
       try {
-        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, nuxtApp as Nuxt)
+        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
         expect(result).to.deep.equal(test.output)
       } catch (error: any) {
         expect(error.message).toEqual(test.error)

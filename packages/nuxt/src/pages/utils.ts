@@ -6,10 +6,11 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
+import type { NuxtPage } from 'nuxt/schema'
+
 import { uniqueBy } from '../core/utils'
 
 enum SegmentParserState {
@@ -44,14 +45,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
       const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
-      return generateRoutesFromFiles(files, dir, nuxt)
+      return generateRoutesFromFiles(files, dir, nuxt.options.experimental.typedPages, nuxt.vfs)
     })
   )).flat()
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: string[], pagesDir: string, nuxt: Nuxt): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: string[], pagesDir: string, shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -65,6 +66,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       file,
       children: []
     }
+
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
@@ -90,10 +92,12 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       }
     }
 
-    const fileContent = file in nuxt.vfs ? nuxt.vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
-    const overrideRouteName = await getRouteName(fileContent)
-    if (overrideRouteName) {
-      route.name = overrideRouteName
+    if (shouldExtractBuildMeta && vfs) {
+      const fileContent = file in vfs ? vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+      const overrideRouteName = await getRouteName(fileContent)
+      if (overrideRouteName) {
+        route.name = overrideRouteName
+      }
     }
 
     parent.push(route)
