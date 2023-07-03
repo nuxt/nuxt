@@ -240,7 +240,7 @@ export default defineNuxtModule<ComponentsOptions>({
                 type: 'custom'
               })
             }
-          },
+          }
         })
       }
     })
