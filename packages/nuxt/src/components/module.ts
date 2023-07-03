@@ -227,6 +227,21 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents
         }))
       }
+      if (!isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push({
+          name: 'nuxt-server-component-hmr',
+          handleHotUpdate (ctx) {
+            const components = getComponents()
+            const comp = components.find(c => c.filePath === ctx.file)
+            if (comp?.mode === 'server') {
+              ctx.server.ws.send({
+                event: `nuxt-server-component:${comp.pascalName}`,
+                type: 'custom'
+              })
+            }
+          },
+        })
+      }
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
