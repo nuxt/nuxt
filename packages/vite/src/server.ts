@@ -15,7 +15,7 @@ import { transpile } from './utils/transpile'
 export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
-  const nitroDependencies = await tryResolveModule('nitropack/package.json').then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
+  const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir).then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, {
     configFile: false,
     base: ctx.nuxt.options.dev
