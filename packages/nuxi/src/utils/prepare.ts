@@ -30,8 +30,8 @@ export const writeTypes = async (nuxt: Nuxt) => {
       './nuxt.d.ts',
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
-      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...nuxt.options._layers.reduce((paths: string[], layer) => { if (layer.config.srcDir && layer.config.srcDir !== nuxt.options.rootDir) { paths.push(join(layer.config.srcDir, '**/*')) } return paths }, [])
+      ...nuxt.options._layers.filter(layer => !(layer.config.srcDir ?? layer.cwd).startsWith(nuxt.options.rootDir)).map(layer => join(relative(nuxt.options.buildDir, layer.config.srcDir ?? layer.cwd), '**/*')),
+      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
