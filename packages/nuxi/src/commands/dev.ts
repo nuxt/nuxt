@@ -63,8 +63,8 @@ export default defineNuxtCommand({
       hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
-            cert: args['ssl-cert'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
-            key: args['ssl-key'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
+            cert: args['ssl-cert'] || process.env.NITRO_SSL_CERT || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
+            key: args['ssl-key'] || process.env.NITRO_SSL_KEY || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
           }
         : false
     })
