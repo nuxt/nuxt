@@ -1037,12 +1037,16 @@ describe('deferred app suspense resolve', () => {
 })
 
 describe('nested suspense', () => {
-  const navigations = [
+  const navigations = ([
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
     ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
-  ]
+  ]).flatMap(([start, end]) => [
+    [start, end],
+    [start, end + '?layout=custom'],
+    [start + '?layout=custom', end]
+  ])
 
   it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
@@ -1054,7 +1058,7 @@ describe('nested suspense', () => {
     })
     await page.waitForLoadState('networkidle')
 
-    const slug = nav.replace(/[/-]+/g, '-')
+    const slug = nav.replace(/\?.*$/, '').replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
     const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
@@ -1079,8 +1083,6 @@ describe('nested suspense', () => {
       // [first load] from child
       `[${first.parentType}] [${first.childType}]`,
       ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
-      // `[${last.parentType}] [${last.childType}]`,
-      // `[${last.parentType}] [2] [${last.childType}] [1] running async data`,
       // [navigation] from parent
       `[${last.parentType}]`,
       ...last.parentType === 'async' ? ['[async] running async data'] : [],
