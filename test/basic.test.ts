@@ -1046,6 +1046,12 @@ describe('nested suspense', () => {
 
   it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
     await page.waitForLoadState('networkidle')
 
     const slug = nav.replace(/[/-]+/g, '-')
@@ -1063,6 +1069,26 @@ describe('nested suspense', () => {
     expect(text).toContain('Async child: 2 - 1')
     expect(text).toContain('parent: 2')
 
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // `[${last.parentType}] [${last.childType}]`,
+      // `[${last.parentType}] [2] [${last.childType}] [1] running async data`,
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ])
+
     await page.close()
   })
 
@@ -1073,6 +1099,12 @@ describe('nested suspense', () => {
 
   it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
     await page.waitForLoadState('networkidle')
 
     await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
@@ -1087,6 +1119,21 @@ describe('nested suspense', () => {
 
     expect(text).toContain('Async parent: 1')
 
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+
+    expect(logs).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : []
+    ])
+
     await page.close()
   })
 
@@ -1097,6 +1144,12 @@ describe('nested suspense', () => {
 
   it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
     await page.waitForLoadState('networkidle')
 
     const slug = nav.replace(/[/-]+/g, '-')
@@ -1109,6 +1162,21 @@ describe('nested suspense', () => {
 
     // const text = await parent.innerText()
     expect(text).toContain('Async parent: 1')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ])
 
     await page.close()
   })
