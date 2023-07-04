@@ -50,6 +50,7 @@
         "@types/terser-webpack-plugin",
         "@types/webpack-bundle-analyzer",
         "@types/webpack-hot-middleware",
+        "webpack-dev-middleware",
         "wrap-ansi",
         "globby",
         "execa",

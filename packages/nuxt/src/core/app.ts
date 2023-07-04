@@ -6,6 +6,7 @@ import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } fr
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
+import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -57,7 +58,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templatesGenerated', app)
 }
 
-export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
@@ -148,4 +149,22 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
       [key]: await resolvePath(resolveAlias(item[key]))
     }
   }))
+}
+
+export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
+  const _plugins: NuxtPlugin[] = []
+  for (const plugin of plugins) {
+    try {
+      const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
+      _plugins.push({
+        ...await extractMetadata(code),
+        ...plugin
+      })
+    } catch (e) {
+      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
+      _plugins.push(plugin)
+    }
+  }
+
+  return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }

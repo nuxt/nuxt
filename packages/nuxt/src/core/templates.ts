@@ -8,8 +8,9 @@ import { camelCase } from 'scule'
 import { resolvePath } from 'mlly'
 import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
+import { annotatePlugins } from './app'
 
-export interface TemplateContext {
+interface TemplateContext {
   nuxt: Nuxt
   app: NuxtApp
 }
@@ -54,8 +55,9 @@ export const cssTemplate: NuxtTemplate<TemplateContext> = {
 
 export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/client.mjs',
-  getContents (ctx) {
-    const clientPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server')
+  async getContents (ctx) {
+    const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
+    await annotatePlugins(ctx.nuxt, clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of clientPlugins) {
@@ -73,8 +75,8 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
 
 export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
-  getContents (ctx) {
-    const serverPlugins = ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client')
+  async getContents (ctx) {
+    const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of serverPlugins) {
@@ -173,9 +175,10 @@ export const layoutTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
+      return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
     }))
     return [
+      'import { defineAsyncComponent } from \'vue\'',
       `export default ${layoutsObject}`
     ].join('\n')
   }
@@ -193,6 +196,39 @@ export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
       `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
       `export const namedMiddleware = ${namedMiddlewareObject}`
     ].join('\n')
+  }
+}
+
+export const nitroSchemaTemplate: NuxtTemplate = {
+  filename: 'types/nitro-nuxt.d.ts',
+  getContents: () => {
+    return /* typescript */`
+/// <reference path="./schema.d.ts" />
+
+import type { RuntimeConfig } from 'nuxt/schema'
+import type { H3Event } from 'h3'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/dist/core/runtime/nitro/renderer'
+
+declare module 'nitropack' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRuntimeHooks {
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+`
   }
 }
 

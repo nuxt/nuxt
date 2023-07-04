@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { relative, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -178,7 +178,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
-      tsConfig.compilerOptions!.paths['#components'] = [withLeadingDot(relative(nuxt.options.buildDir, resolve(nuxt.options.buildDir, 'components')))]
+      tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
@@ -222,9 +222,27 @@ export default defineNuxtModule<ComponentsOptions>({
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
 
-      config.plugins.push(islandsTransform.vite({
-        getComponents
-      }))
+      if (isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push(islandsTransform.vite({
+          getComponents
+        }))
+      }
+      if (!isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push({
+          name: 'nuxt-server-component-hmr',
+          handleHotUpdate (ctx) {
+            const components = getComponents()
+            const filePath = normalize(ctx.file)
+            const comp = components.find(c => c.filePath === filePath)
+            if (comp?.mode === 'server') {
+              ctx.server.ws.send({
+                event: `nuxt-server-component:${comp.pascalName}`,
+                type: 'custom'
+              })
+            }
+          }
+        })
+      }
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -248,18 +266,12 @@ export default defineNuxtModule<ComponentsOptions>({
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
 
-        config.plugins.push(islandsTransform.webpack({
-          getComponents
-        }))
+        if (nuxt.options.experimental.componentIslands && mode === 'server') {
+          config.plugins.push(islandsTransform.webpack({
+            getComponents
+          }))
+        }
       })
     })
   }
 })
-
-const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
-function withLeadingDot (path: string) {
-  if (LEADING_DOT_RE.test(path)) {
-    return path
-  }
-  return `./${path}`
-}

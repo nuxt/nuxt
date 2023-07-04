@@ -65,11 +65,11 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 
 ## Return Values
 
-* **data**: the result of the asynchronous function that is passed in
-* **pending**: a boolean indicating whether the data is still being fetched
-* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function
-* **error**: an error object if the data fetching failed
-* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`)
+* **data**: the result of the asynchronous function that is passed in.
+* **pending**: a boolean indicating whether the data is still being fetched.
+* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function.
+* **error**: an error object if the data fetching failed.
+* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 

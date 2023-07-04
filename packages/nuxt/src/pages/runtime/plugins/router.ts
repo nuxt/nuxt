@@ -175,7 +175,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return false
             }
           }
-          if (result || result === false) { return result }
+
+          if (result || result === false) {
+            return result
+          }
         }
       }
     })
@@ -198,7 +201,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (process.server && to.redirectedFrom) {
+      } else if (process.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })

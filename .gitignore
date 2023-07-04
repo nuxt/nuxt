@@ -20,7 +20,10 @@ packages/*/LICENSE
 dist
 .nuxt
 .nuxt-*
+.vercel
+.netlify
 .output
+.output-*
 .gen
 
 # Junit reports

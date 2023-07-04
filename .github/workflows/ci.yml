@@ -4,11 +4,13 @@ on:
   push:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
   pull_request:
     paths-ignore:
       - "docs/**"
+      - "*.md"
     branches:
       - main
       - "!v[0-9]*"
@@ -84,7 +86,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@6c089f53dd51dc3fc7e599c3cb5356453a52ca9e # v2.20.0
+        uses: github/codeql-action/init@004c5de30b6423267685b897a3d595e944f7fed5 # v2.20.2
         with:
           languages: javascript
           queries: +security-and-quality
@@ -96,19 +98,21 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@6c089f53dd51dc3fc7e599c3cb5356453a52ca9e # v2.20.0
+        uses: github/codeql-action/analyze@004c5de30b6423267685b897a3d595e944f7fed5 # v2.20.2
         with:
           category: "/language:javascript"
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     needs:
       - build
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         module: ['bundler', 'node']
+        base: ['with-base-url', 'without-base-url']
 
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
@@ -131,6 +135,7 @@ jobs:
         run: pnpm test:types
         env:
           MODULE_RESOLUTION: ${{ matrix.module }}
+          TS_BASE_URL: ${{ matrix.base }}
 
   lint:
     # autofix workflow will be triggered instead for PRs
@@ -220,6 +225,9 @@ jobs:
 
       - name: Test (unit)
         run: pnpm test:unit
+
+      - name: Test (runtime unit)
+        run: pnpm test:runtime
 
       - name: Test (fixtures)
         run: pnpm test:fixtures
