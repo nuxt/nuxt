@@ -63,6 +63,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
   } else if (process.server) {
     const nuxtApp = useNuxtApp()
+    if (!isEqual(cookie.value, cookies[name])) {
+      writeServerTempararyCookie(useRequestEvent(nuxtApp), name, cookie.value)
+    }
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
         writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts)
@@ -96,6 +99,16 @@ function serializeCookie (name: string, value: any, opts: CookieSerializeOptions
 function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (process.client) {
     document.cookie = serializeCookie(name, value, opts)
+  }
+}
+
+function writeServerTempararyCookie (event: H3Event, name: string, value: any) {
+  // add cookie to req.headers.cookie  ex) cookie is added or updated in plugin
+  if (event) {
+    const cookie = event.node.req.headers.cookie || ''
+    event.node.req.headers.cookie = cookie
+      ? `${cookie}; ${name}=${value}`
+      : `${name}=${value}`
   }
 }
 
