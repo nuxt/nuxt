@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useCustomKeyedComposable} from "~/other-composables-folder/custom-keyed-composable";
+import { useCustomKeyedComposable } from '~/other-composables-folder/custom-keyed-composable'
 
 const useLocalState = () => useState(() => {
   if (process.client) { console.error('running usestate') }
