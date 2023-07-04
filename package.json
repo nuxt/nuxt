@@ -37,7 +37,7 @@
     "nuxt": "workspace:*",
     "vite": "4.3.9",
     "vue": "3.3.4",
-    "magic-string": "^0.30.0"
+    "magic-string": "^0.30.1"
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
@@ -48,7 +48,7 @@
     "@types/semver": "7.5.0",
     "case-police": "0.6.1",
     "chalk": "5.3.0",
-    "changelogen": "0.5.3",
+    "changelogen": "0.5.4",
     "cheerio": "1.0.0-rc.12",
     "consola": "3.2.2",
     "devalue": "4.3.2",
@@ -60,7 +60,7 @@
     "fs-extra": "11.1.1",
     "globby": "13.2.1",
     "h3": "1.7.1",
-    "jiti": "1.18.2",
+    "jiti": "1.19.1",
     "markdownlint-cli": "^0.33.0",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
@@ -80,7 +80,7 @@
     "vue-eslint-parser": "9.3.1",
     "vue-tsc": "1.8.3"
   },
-  "packageManager": "pnpm@8.6.5",
+  "packageManager": "pnpm@8.6.6",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   }
