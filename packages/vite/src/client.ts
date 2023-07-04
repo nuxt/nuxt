@@ -52,11 +52,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       },
       dedupe: [
-        'vue',
-        // basic reactivity
-        '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared',
-        // runtime compiler
-        '@vue/compiler-sfc', '@vue/compiler-dom', '@vue/compiler-core', '@vue/compiler-ssr'
+        'vue'
       ]
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
