@@ -45,13 +45,14 @@ export default defineComponent({
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
-          default: () => _wrapIf(LayoutProvider, hasLayout && {
+          // @ts-expect-error seems to be an issue in vue types
+          default: () => h(LayoutProvider, {
             layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
             key: layout.value,
             name: layout.value,
             shouldProvide: !props.name,
             hasTransition: !!transitionProps
-          }, context.slots).default()
+          }, context.slots)
         })
       }).default()
     }
@@ -63,7 +64,7 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: String
+      type: [String, Boolean]
     },
     layoutProps: {
       type: Object
@@ -77,33 +78,41 @@ const LayoutProvider = defineComponent({
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
+    // eslint-disable-next-line vue/no-setup-props-destructure
+    const name = props.name
     if (props.shouldProvide) {
-      // eslint-disable-next-line vue/no-setup-props-destructure
-      const name = props.name
       provide(LayoutMetaSymbol, {
         isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default')
       })
     }
 
-    let vnode: VNode
+    let vnode: VNode | undefined
     if (process.dev && process.client) {
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            console.warn(`[nuxt] \`${props.name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+            console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
           }
         })
       })
     }
 
     return () => {
+      if (!name) {
+        if (process.dev && process.client && props.hasTransition) {
+          vnode = context.slots.default?.() as VNode | undefined
+          return vnode
+        }
+        return context.slots.default?.()
+      }
+
       if (process.dev && process.client && props.hasTransition) {
-        vnode = h(layouts[props.name], props.layoutProps, context.slots)
+        vnode = h(layouts[name], props.layoutProps, context.slots)
 
         return vnode
       }
 
-      return h(layouts[props.name], props.layoutProps, context.slots)
+      return h(layouts[name], props.layoutProps, context.slots)
     }
   }
 })
