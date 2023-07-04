@@ -49,7 +49,6 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
-          if (vnode) { return vnode }
           const isRenderingNewRouteInOldFork = process.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
           const hasSameChildren = process.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
 
