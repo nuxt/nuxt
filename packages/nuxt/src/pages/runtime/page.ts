@@ -8,7 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
-import { LayoutMetaSymbol } from '#app/components/layout'
+import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -38,7 +38,7 @@ export default defineComponent({
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
-    const forkRoute = inject<RouteLocationNormalizedLoaded | null>('_route', null)
+    const forkRoute = inject(PageRouteSymbol, null)
 
     expose({ pageRef })
 
@@ -130,7 +130,7 @@ const RouteProvider = defineComponent({
       (route as any)[key] = computed(() => previousKey === props.pageKey ? props.routeProps.route[key] : previousRoute[key])
     }
 
-    provide('_route', reactive(route))
+    provide(PageRouteSymbol, reactive(route))
 
     let vnode: VNode
     if (process.dev && process.client && props.hasTransition) {

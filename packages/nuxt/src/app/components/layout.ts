@@ -1,7 +1,9 @@
-import type { InjectionKey, Ref, VNode } from 'vue'
+import type { Ref, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
+import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+
 import { useRoute } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -10,12 +12,6 @@ import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 import { useNuxtApp } from '#app'
-
-export interface LayoutMeta {
-  isCurrent: (route: RouteLocationNormalizedLoaded) => boolean
-}
-
-export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
 
 export default defineComponent({
   name: 'NuxtLayout',
@@ -29,7 +25,7 @@ export default defineComponent({
   setup (props, context) {
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
-    const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
+    const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
