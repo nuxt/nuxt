@@ -130,6 +130,11 @@ describe('typed router integration', () => {
     router.push({ name: 'param-id', params: { id: 4 } })
   })
 
+  it('correctly reads custom names typed in `definePageMeta`', () => {
+    const router = useRouter()
+    router.push({ name: 'some-custom-name' })
+  })
+
   it('allows typing useRoute', () => {
     const route = useRoute('param-id')
     // @ts-expect-error this param does not exist
