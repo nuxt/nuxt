@@ -30,7 +30,9 @@ export const writeTypes = async (nuxt: Nuxt) => {
       './nuxt.d.ts',
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
-      ...nuxt.options._layers.filter(layer => !(layer.config.srcDir ?? layer.cwd).startsWith(nuxt.options.rootDir)).map(layer => join(relative(nuxt.options.buildDir, layer.config.srcDir ?? layer.cwd), '**/*')),
+      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
+        .filter(srcOrCwd => !srcOrCwd.startsWith(nuxt.options.rootDir) || srcOrCwd.includes('node_modules'))
+        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
