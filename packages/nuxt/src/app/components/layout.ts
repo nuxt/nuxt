@@ -98,7 +98,7 @@ const LayoutProvider = defineComponent({
     }
 
     return () => {
-      if (!name) {
+      if (!name || (typeof name === 'string' && !(name in layouts))) {
         if (process.dev && process.client && props.hasTransition) {
           vnode = context.slots.default?.() as VNode | undefined
           return vnode
