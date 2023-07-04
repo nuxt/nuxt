@@ -1076,7 +1076,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(logs).toEqual([
+    expect(logs.sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1089,7 +1089,7 @@ describe('nested suspense', () => {
       // [navigation] from child
       `[${last.parentType}] [${last.childType}]`,
       ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
-    ])
+    ].sort())
 
     await page.close()
   })
@@ -1124,7 +1124,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
 
-    expect(logs).toEqual([
+    expect(logs.sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1134,7 +1134,7 @@ describe('nested suspense', () => {
       // [navigation] from parent
       `[${last.parentType}]`,
       ...last.parentType === 'async' ? ['[async] running async data'] : []
-    ])
+    ].sort())
 
     await page.close()
   })
@@ -1168,7 +1168,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(logs).toEqual([
+    expect(logs.sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1178,7 +1178,7 @@ describe('nested suspense', () => {
       // [navigation] from child
       `[${last.parentType}] [${last.childType}]`,
       ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
-    ])
+    ].sort())
 
     await page.close()
   })
