@@ -126,7 +126,17 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       }
     })
 
-    nuxt.hook('app:templatesGenerated', async () => {
+    const commentsDisable = ['@unimport-disable', '@imports-disable']
+
+    nuxt.hook('app:templatesGenerated', async (_, templates) => {
+      // Do not regenerate imports if all regenerated templates are not auto-imported
+      if (templates.every((i) => {
+        const content = nuxt.vfs[i.filename]
+        return !commentsDisable.some(comment => content?.includes(comment))
+      })) {
+        return
+      }
+
       await regenerateImports()
     })
   }

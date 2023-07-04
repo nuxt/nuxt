@@ -33,8 +33,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   // Compile templates into vfs
   const templateContext = { utils: templateUtils, nuxt, app }
-  await Promise.all((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
+
+  await Promise.all(filteredTemplates
     .map(async (template) => {
       const contents = await compileTemplate(template, templateContext)
 
@@ -55,7 +57,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       }
     }))
 
-  await nuxt.callHook('app:templatesGenerated', app)
+  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
 async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
