@@ -1,14 +1,15 @@
-import { Suspense, Transition, computed, defineComponent, h, inject, nextTick, onMounted, provide, reactive, ref } from 'vue'
+import { Suspense, Transition, defineComponent, h, inject, nextTick, ref } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
-import type { RouteLocation, RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
+import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
-import { LayoutMetaSymbol } from '#app/components/layout'
+import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -38,6 +39,7 @@ export default defineComponent({
   setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
+    const forkRoute = inject(PageRouteSymbol, null)
 
     expose({ pageRef })
 
@@ -47,11 +49,30 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
-          if (!routeProps.Component) { return }
+          const isRenderingNewRouteInOldFork = process.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
+          const hasSameChildren = process.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
+
+          if (!routeProps.Component) {
+            // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
+            // we'll render the old vnode until the new route finishes resolving
+            if (process.client && vnode && !hasSameChildren) {
+              return vnode
+            }
+            return
+          }
 
           // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-          if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+          if (process.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
             return vnode
+          }
+
+          if (process.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
+            // if leaving a route with an existing child route, render the old vnode
+            if (hasSameChildren) {
+              return vnode
+            }
+            // If _leaving_ null child route, return null vnode
+            return null
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
@@ -70,7 +91,17 @@ export default defineComponent({
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
-            }, { default: () => h(RouteProvider, { key, routeProps, pageKey: key, hasTransition, pageRef } as {}) })
+            }, {
+              // @ts-expect-error seems to be an issue in vue types
+              default: () => h(RouteProvider, {
+                key,
+                vnode: routeProps.Component,
+                route: routeProps.route,
+                renderKey: key,
+                trackRootNodes: hasTransition,
+                vnodeRef: pageRef
+              })
+            })
             )).default()
 
           return vnode
@@ -92,45 +123,15 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 
-const RouteProvider = defineComponent({
-  name: 'RouteProvider',
-  // TODO: Type props
-  // eslint-disable-next-line vue/require-prop-types
-  props: ['routeProps', 'pageKey', 'hasTransition', 'pageRef'],
-  setup (props) {
-    // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    const previousKey = props.pageKey
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    const previousRoute = props.routeProps.route
+function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+  if (!fork) { return false }
 
-    // Provide a reactive route within the page
-    const route = {} as RouteLocation
-    for (const key in props.routeProps.route) {
-      (route as any)[key] = computed(() => previousKey === props.pageKey ? props.routeProps.route[key] : previousRoute[key])
-    }
+  const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  if (!index || index === -1) { return false }
 
-    provide('_route', reactive(route))
-
-    let vnode: VNode
-    if (process.dev && process.client && props.hasTransition) {
-      onMounted(() => {
-        nextTick(() => {
-          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
-            console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
-          }
-        })
-      })
-    }
-
-    return () => {
-      if (process.dev && process.client) {
-        vnode = h(props.routeProps.Component, { ref: props.pageRef })
-        return vnode
-      }
-
-      return h(props.routeProps.Component, { ref: props.pageRef })
-    }
-  }
-})
+  // we only care whether the parent route components have had to rerender
+  return newRoute.matched.slice(0, index)
+    .some(
+      (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
+        (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
+}
