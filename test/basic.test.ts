@@ -168,6 +168,15 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
+  it('expect no loading indicator on middleware abortNavigation', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#middleware-abort-non-fatal').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
+    await page.locator('#middleware-abort-non-fatal-error').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
+  })
+
   it('should render correctly when loaded on a different path', async () => {
     const page = await createPage('/proxy')
 

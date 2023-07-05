@@ -67,9 +67,9 @@ export default defineComponent({
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
-    async function _fetchComponent () {
+    async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
-      if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+      if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
 
       const url = `/__nuxt_island/${key}`
       if (process.server && process.env.prerender) {
@@ -106,10 +106,10 @@ export default defineComponent({
       return result
     }
     const key = ref(0)
-    async function fetchComponent () {
+    async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
-        nuxtApp[pKey][uid.value] = _fetchComponent().finally(() => {
+        nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
           delete nuxtApp[pKey]![uid.value]
         })
       }
@@ -127,10 +127,17 @@ export default defineComponent({
       setUid()
     }
 
-    if (process.client) {
-      watch(props, debounce(fetchComponent, 100))
+    if (import.meta.hot) {
+      import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
+        fetchComponent(true)
+      })
     }
 
+    if (process.client) {
+      watch(props, debounce(() => fetchComponent(), 100))
+    }
+
+    // TODO: allow lazy loading server islands
     if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }

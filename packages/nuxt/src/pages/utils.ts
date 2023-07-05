@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
 import { resolveFiles, useNuxt } from '@nuxt/kit'
@@ -5,6 +6,9 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
+import { transform } from 'esbuild'
+import { parse } from 'acorn'
+import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
@@ -41,14 +45,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
       const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
       // Sort to make sure parent are listed first
       files.sort()
-      return generateRoutesFromFiles(files, dir)
+      return generateRoutesFromFiles(files, dir, nuxt.options.experimental.typedPages, nuxt.vfs)
     })
   )).flat()
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtPage[] {
+export async function generateRoutesFromFiles (files: string[], pagesDir: string, shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -88,10 +92,52 @@ export function generateRoutesFromFiles (files: string[], pagesDir: string): Nux
       }
     }
 
+    if (shouldExtractBuildMeta && vfs) {
+      const fileContent = file in vfs ? vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+      const overrideRouteName = await getRouteName(fileContent)
+      if (overrideRouteName) {
+        route.name = overrideRouteName
+      }
+    }
+
     parent.push(route)
   }
 
   return prepareRoutes(routes)
+}
+
+const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
+function extractScriptContent (html: string) {
+  const match = html.match(SFC_SCRIPT_RE)
+
+  if (match && match[1]) {
+    return match[1].trim()
+  }
+
+  return null
+}
+
+const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
+
+async function getRouteName (file: string) {
+  const script = extractScriptContent(file)
+  if (!script) { return null }
+
+  if (!PAGE_META_RE.test(script)) { return null }
+
+  const js = await transform(script, { loader: 'ts' })
+  const ast = parse(js.code, {
+    sourceType: 'module',
+    ecmaVersion: 'latest'
+  }) as unknown as Program
+  const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
+  if (!pageMetaAST) { return null }
+
+  const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+  const nameProperty = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === 'name') as Property
+  if (!nameProperty || nameProperty.value.type !== 'Literal' || typeof nameProperty.value.value !== 'string') { return null }
+
+  return nameProperty.value.value
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
