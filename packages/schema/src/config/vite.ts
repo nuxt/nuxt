@@ -30,7 +30,6 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $schema: { deprecated: 'use `dir.public` option instead' },
       $resolve: async (val, get) => {
         if (val) {
           console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
