@@ -96,7 +96,7 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
   $schema: SchemaDefinition
 }
 
-export interface ViteConfig extends ViteUserConfig {
+export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /** The path to the entrypoint for the Vite build. */
   entry?: string
   /**
@@ -126,6 +126,14 @@ export interface ViteConfig extends ViteUserConfig {
    * Use environment variables or top level `server` options to configure Nuxt server.
    */
   server?: Omit<ViteServerOptions, 'port' | 'host'>
+  /**
+   * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
+   *
+   * You can read more in <https://nuxt.com/docs/api/configuration/nuxt-config#public>.
+   *
+   * @deprecated
+   */
+  publicDir?: never
 }
 
 

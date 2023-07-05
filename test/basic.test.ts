@@ -117,6 +117,11 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
+  it('allows routes to be added dynamically', async () => {
+    const html = await $fetch('/add-route-test')
+    expect(html).toContain('Hello Nuxt 3!')
+  })
+
   it('includes page metadata from pages added in pages:extend hook', async () => {
     const res = await fetch('/page-extend')
     expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
@@ -161,6 +166,15 @@ describe('pages', () => {
     expect(html).toContain('Middleware ran: true')
 
     await expectNoClientErrors('/not-found')
+  })
+
+  it('expect no loading indicator on middleware abortNavigation', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#middleware-abort-non-fatal').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
+    await page.locator('#middleware-abort-non-fatal-error').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
   })
 
   it('should render correctly when loaded on a different path', async () => {
@@ -1023,21 +1037,31 @@ describe('deferred app suspense resolve', () => {
 })
 
 describe('nested suspense', () => {
-  const navigations = [
+  const navigations = ([
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
     ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
-  ]
+  ]).flatMap(([start, end]) => [
+    [start, end],
+    [start, end + '?layout=custom'],
+    [start + '?layout=custom', end]
+  ])
 
   it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
     await page.waitForLoadState('networkidle')
 
-    const slug = nav.replace(/[/-]+/g, '-')
+    const slug = nav.replace(/\?.*$/, '').replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
-    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
       // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
@@ -1047,6 +1071,114 @@ describe('nested suspense', () => {
 
     // const text = await parent.innerText()
     expect(text).toContain('Async child: 2 - 1')
+    expect(text).toContain('parent: 2')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ].sort())
+
+    await page.close()
+  })
+
+  const outwardNavigations = [
+    ['/suspense/async-2/async-1/', '/suspense/async-1/'],
+    ['/suspense/async-2/sync-1/', '/suspense/async-1/']
+  ]
+
+  it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
+    await page.waitForLoadState('networkidle')
+
+    await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
+
+    const slug = start.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector disappears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:not(:has(#child${slug}))`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    expect(text).toContain('Async parent: 1')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : []
+    ].sort())
+
+    await page.close()
+  })
+
+  const inwardNavigations = [
+    ['/suspense/async-2/', '/suspense/async-1/async-1/'],
+    ['/suspense/async-2/', '/suspense/async-1/sync-1/']
+  ]
+
+  it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
+    await page.waitForLoadState('networkidle')
+
+    const slug = nav.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector appears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async parent: 1')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ].sort())
 
     await page.close()
   })

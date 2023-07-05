@@ -1,16 +1,22 @@
 import { describe, expect, it } from 'vitest'
+import type { NuxtPage } from 'nuxt/schema'
 import { generateRoutesFromFiles } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
-  const tests = [
+  const tests: Array<{
+    description: string
+    files: Array<{ path: string; template?: string; }>
+    output?: NuxtPage[]
+    error?: string
+  }> = [
     {
       description: 'should generate correct routes for index pages',
       files: [
-        `${pagesDir}/index.vue`,
-        `${pagesDir}/parent/index.vue`,
-        `${pagesDir}/parent/child/index.vue`
+        { path: `${pagesDir}/index.vue` },
+        { path: `${pagesDir}/parent/index.vue` },
+        { path: `${pagesDir}/parent/child/index.vue` }
       ],
       output: [
         {
@@ -36,8 +42,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct routes for parent/child',
       files: [
-        `${pagesDir}/parent.vue`,
-        `${pagesDir}/parent/child.vue`
+        { path: `${pagesDir}/parent.vue` },
+        { path: `${pagesDir}/parent/child.vue` }
       ],
       output: [
         {
@@ -58,8 +64,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should not generate colliding route names when hyphens are in file name',
       files: [
-        `${pagesDir}/parent/[child].vue`,
-        `${pagesDir}/parent-[child].vue`
+        { path: `${pagesDir}/parent/[child].vue` },
+        { path: `${pagesDir}/parent-[child].vue` }
       ],
       output: [
         {
@@ -79,8 +85,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct id for catchall (order 1)',
       files: [
-        `${pagesDir}/[...stories].vue`,
-        `${pagesDir}/stories/[id].vue`
+        { path: `${pagesDir}/[...stories].vue` },
+        { path: `${pagesDir}/stories/[id].vue` }
       ],
       output: [
         {
@@ -100,8 +106,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct id for catchall (order 2)',
       files: [
-        `${pagesDir}/stories/[id].vue`,
-        `${pagesDir}/[...stories].vue`
+        { path: `${pagesDir}/stories/[id].vue` },
+        { path: `${pagesDir}/[...stories].vue` }
       ],
       output: [
         {
@@ -121,7 +127,7 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct route for snake_case file',
       files: [
-        `${pagesDir}/snake_case.vue`
+        { path: `${pagesDir}/snake_case.vue` }
       ],
       output: [
         {
@@ -134,7 +140,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct route for kebab-case file',
-      files: [`${pagesDir}/kebab-case.vue`],
+      files: [{ path: `${pagesDir}/kebab-case.vue` }],
       output: [
         {
           name: 'kebab-case',
@@ -147,14 +153,14 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct dynamic routes',
       files: [
-        `${pagesDir}/index.vue`,
-        `${pagesDir}/[slug].vue`,
-        `${pagesDir}/[[foo]]`,
-        `${pagesDir}/[[foo]]/index.vue`,
-        `${pagesDir}/[bar]/index.vue`,
-        `${pagesDir}/nonopt/[slug].vue`,
-        `${pagesDir}/opt/[[slug]].vue`,
-        `${pagesDir}/[[sub]]/route-[slug].vue`
+        { path: `${pagesDir}/index.vue` },
+        { path: `${pagesDir}/[slug].vue` },
+        { path: `${pagesDir}/[[foo]]` },
+        { path: `${pagesDir}/[[foo]]/index.vue` },
+        { path: `${pagesDir}/[bar]/index.vue` },
+        { path: `${pagesDir}/nonopt/[slug].vue` },
+        { path: `${pagesDir}/opt/[[slug]].vue` },
+        { path: `${pagesDir}/[[sub]]/route-[slug].vue` }
       ],
       output: [
         {
@@ -210,7 +216,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [`${pagesDir}/[...slug].vue`, `${pagesDir}/index.vue`],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
       output: [
         {
           name: 'slug',
@@ -228,24 +234,24 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should throw unfinished param error for dynamic route',
-      files: [`${pagesDir}/[slug.vue`],
+      files: [{ path: `${pagesDir}/[slug.vue` }],
       error: 'Unfinished param "slug"'
     },
     {
       description: 'should throw empty param error for dynamic route',
       files: [
-        `${pagesDir}/[].vue`
+        { path: `${pagesDir}/[].vue` }
       ],
       error: 'Empty param'
     },
     {
       description: 'should only allow "_" & "." as special character for dynamic route',
       files: [
-        `${pagesDir}/[a1_1a].vue`,
-        `${pagesDir}/[b2.2b].vue`,
-        `${pagesDir}/[b2]_[2b].vue`,
-        `${pagesDir}/[[c3@3c]].vue`,
-        `${pagesDir}/[[d4-4d]].vue`
+        { path: `${pagesDir}/[a1_1a].vue` },
+        { path: `${pagesDir}/[b2.2b].vue` },
+        { path: `${pagesDir}/[b2]_[2b].vue` },
+        { path: `${pagesDir}/[[c3@3c]].vue` },
+        { path: `${pagesDir}/[[d4-4d]].vue` }
       ],
       output: [
         {
@@ -281,9 +287,32 @@ describe('pages:generateRoutesFromFiles', () => {
       ]
     },
     {
+      description: 'should properly override route name if definePageMeta name override is defined.',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              name: 'home'
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'home',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: []
+        }
+      ]
+    },
+    {
       description: 'should allow pages with `:` in their path',
       files: [
-        `${pagesDir}/test:name.vue`
+        { path: `${pagesDir}/test:name.vue` }
       ],
       output: [
         {
@@ -298,10 +327,15 @@ describe('pages:generateRoutesFromFiles', () => {
 
   for (const test of tests) {
     it(test.description, async () => {
-      if (test.error) {
-        expect(() => generateRoutesFromFiles(test.files, pagesDir)).to.throws(test.error)
-      } else {
-        expect(await generateRoutesFromFiles(test.files, pagesDir)).to.deep.equal(test.output)
+      const vfs = Object.fromEntries(
+        test.files.map(file => [file.path, 'template' in file ? file.template : ''])
+      ) as Record<string, string>
+
+      try {
+        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
+        expect(result).to.deep.equal(test.output)
+      } catch (error: any) {
+        expect(error.message).toEqual(test.error)
       }
     })
   }

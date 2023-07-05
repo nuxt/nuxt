@@ -12,6 +12,7 @@ import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from
 import { useNuxtApp } from '#app/nuxt'
 import { isNuxtError, showError, useError } from '#app/composables/error'
 import { useRoute } from '#app/composables/router'
+import { PageRouteSymbol } from '#app/components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
 
@@ -27,7 +28,7 @@ const SingleRenderer = process.test && process.dev && process.server && url.star
   .then(r => r.default(process.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route
-provide('_route', useRoute())
+provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
