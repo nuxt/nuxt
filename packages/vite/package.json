@@ -42,7 +42,7 @@
     "get-port-please": "^3.0.1",
     "h3": "^1.7.1",
     "knitwork": "^1.0.0",
-    "magic-string": "^0.30.0",
+    "magic-string": "^0.30.1",
     "mlly": "^1.4.0",
     "ohash": "^1.1.2",
     "pathe": "^1.1.1",
