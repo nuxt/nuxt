@@ -69,7 +69,6 @@ export async function buildServer (ctx: ViteBuildContext) {
       ]
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),
-    publicDir: resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.public),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),

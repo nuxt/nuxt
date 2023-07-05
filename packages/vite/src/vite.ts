@@ -173,12 +173,6 @@ export async function bundle (nuxt: Nuxt) {
     })
   }
 
-  nuxt.hook('vite:extendConfig', (config) => {
-    if (config.publicDir) {
-      consola.warn('Using `options.vite.publicDir` option is not supported together with Nuxt. Use `options.dir.public` instead. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
-    }
-  })
-
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
     ctx.nuxt.hook('app:templatesGenerated', () => {
