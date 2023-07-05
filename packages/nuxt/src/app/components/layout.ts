@@ -91,7 +91,11 @@ const LayoutProvider = defineComponent({
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+            if (name) {
+              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+            } else {
+              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+            }
           }
         })
       })
