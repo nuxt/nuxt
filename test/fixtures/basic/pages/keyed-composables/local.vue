@@ -39,9 +39,12 @@ function localScopedComposables () {
     })()]
   }
 
-  return [...basic(), ...hoisting(), ...complex(), ...deeperScope()]
-}
+  function useCustomKeyedComposable (arg?: string) {
+    return _assert(arg)
+  }
 
+  return [...basic(), ...hoisting(), ...complex(), ...deeperScope(), useCustomKeyedComposable()]
+}
 const skippedLocalScopedComposables = localScopedComposables().every(res => res === 'was not keyed')
 </script>
 

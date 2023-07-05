@@ -224,7 +224,7 @@ class ScopedVarsCollector {
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
-function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
+export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
   const imports = findStaticImports(code)
   const names = new Set<string>()
   for (const i of imports) {
@@ -235,7 +235,7 @@ function detectImportNames (code: string, composableMeta: Record<string, { sourc
       if (source && matchWithStringOrRegex(i.specifier, source)) {
         return
       }
-      names.add(namedImports![name])
+      names.add(name)
     }
 
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)

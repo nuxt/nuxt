@@ -63,7 +63,7 @@ export default defineNuxtConfig({
     keyedComposables: [
       {
         name: 'useCustomKeyedComposable',
-        source: 'pages/keyed-composables/index.vue',
+        source: '~/other-composables-folder/custom-keyed-composable',
         argumentLength: 1
       }
     ]
