@@ -26,7 +26,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/telemetry": "2.2.0",
+    "@nuxt/telemetry": "2.3.0",
     "@types/file-loader": "5.0.1",
     "@types/pug": "2.0.6",
     "@types/sass-loader": "8.0.5",
@@ -44,7 +44,7 @@
     "vue": "3.3.4",
     "vue-bundle-renderer": "1.0.3",
     "vue-loader": "17.2.2",
-    "vue-router": "4.2.2",
+    "vue-router": "4.2.3",
     "webpack": "5.88.1",
     "webpack-dev-middleware": "6.1.1"
   },
