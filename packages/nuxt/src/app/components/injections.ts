@@ -1,6 +1,5 @@
 import type { InjectionKey } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { _wrapIf } from './utils'
 
 export interface LayoutMeta {
   isCurrent: (route: RouteLocationNormalizedLoaded) => boolean
