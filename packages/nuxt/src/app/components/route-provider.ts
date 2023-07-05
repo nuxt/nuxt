@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, nextTick, onMounted, provide, reactive } from 'vue'
+import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
 import { PageRouteSymbol } from '#app/components/injections'
@@ -28,10 +28,12 @@ export const RouteProvider = defineComponent({
     // Provide a reactive route within the page
     const route = {} as RouteLocation
     for (const key in props.route) {
-      (route as any)[key] = computed(() => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded])
+      Object.defineProperty(route, key, {
+        get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded]
+      })
     }
 
-    provide(PageRouteSymbol, reactive(route))
+    provide(PageRouteSymbol, shallowReactive(route))
 
     let vnode: VNode
     if (process.dev && process.client && props.trackRootNodes) {
