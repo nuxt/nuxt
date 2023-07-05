@@ -5,6 +5,7 @@ import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { withQuery } from 'ufo'
+import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
@@ -42,7 +43,8 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
-    const eventFetch = process.server ? event.fetch : globalThis.fetch
+    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
+    const eventFetch = process.server ? event.fetch : process.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
@@ -81,7 +83,7 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
-      const result = await r.json() as NuxtIslandResponse
+      const result = process.server || !process.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers
       if (process.server && process.env.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
