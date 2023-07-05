@@ -958,7 +958,7 @@ importers:
         version: 0.32.4(playwright@1.35.1)
       vue-router:
         specifier: latest
-        version: 4.2.2(vue@3.3.4)
+        version: 4.2.3(vue@3.3.4)
 
   test/fixtures/minimal:
     dependencies:
@@ -9114,15 +9114,6 @@ packages:
       vue: 3.3.4
       watchpack: 2.4.0
       webpack: 5.88.1
-
-  /vue-router@4.2.2(vue@3.3.4):
-    resolution: {integrity: sha512-cChBPPmAflgBGmy3tBsjeoe3f3VOSG6naKyY5pjtrqLGbNEXdzCigFUHgBvp9e3ysAtFtEx7OLqcSDh/1Cq2TQ==}
-    peerDependencies:
-      vue: ^3.2.0
-    dependencies:
-      '@vue/devtools-api': 6.5.0
-      vue: 3.3.4
-    dev: true
 
   /vue-router@4.2.3(vue@3.3.4):
     resolution: {integrity: sha512-ynQ/edCZNUC/9koONOSgxGJbEBXZ1nUA0lKI3xTiOd3Ywe4QRCf2q8pGCG1v5ovdzPggoq3M09FxNCZTM9pZfw==}
