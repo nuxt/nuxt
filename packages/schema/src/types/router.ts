@@ -5,6 +5,7 @@ export type RouterOptions = Partial<Omit<_RouterOptions, 'history' | 'routes'>> 
   history?: (baseURL?: string) => RouterHistory
   routes?: (_routes: _RouterOptions['routes']) => _RouterOptions['routes']
   hashMode?: boolean
+  smoothScrollBehavior?: boolean
 }
 
 export type RouterConfig = RouterOptions
