@@ -72,7 +72,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",
-    "globby": "^13.2.1",
+    "globby": "^13.2.2",
     "h3": "^1.7.1",
     "hookable": "^5.5.3",
     "jiti": "^1.19.1",
