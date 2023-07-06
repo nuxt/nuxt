@@ -130,7 +130,6 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     })
     const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
     node.shouldExternalize = async (id: string) => {
-      id = await resolveModule(id, { url: ctx.nuxt.options.modulesDir }).catch(() => id)
       const result = await isExternal(id)
       if (result?.external) {
         return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir })
