@@ -100,7 +100,7 @@ importers:
         version: link:packages/nuxt
       nuxt-vitest:
         specifier: 0.8.7
-        version: 0.8.7(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(vite@4.3.9)(vitest@0.32.4)(vue-router@4.2.3)(vue@3.3.4)
+        version: 0.8.7(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(vite@4.3.9)(vitest@0.32.4)(vue-router@4.2.4)(vue@3.3.4)
       ofetch:
         specifier: 1.1.1
         version: 1.1.1
@@ -133,7 +133,7 @@ importers:
         version: 0.32.4(playwright@1.35.1)
       vitest-environment-nuxt:
         specifier: 0.8.7
-        version: 0.8.7(vitest@0.32.4)(vue-router@4.2.3)(vue@3.3.4)
+        version: 0.8.7(vitest@0.32.4)(vue-router@4.2.4)(vue@3.3.4)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -141,8 +141,8 @@ importers:
         specifier: 9.3.1
         version: 9.3.1(eslint@8.44.0)
       vue-router:
-        specifier: 4.2.3
-        version: 4.2.3(vue@3.3.4)
+        specifier: 4.2.4
+        version: 4.2.4(vue@3.3.4)
       vue-tsc:
         specifier: 1.8.4
         version: 1.8.4(typescript@5.0.4)
@@ -488,7 +488,7 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       vue-router:
-        specifier: ^4.2.3
+        specifier: ^4.2.4
         version: 4.2.4(vue@3.3.4)
     devDependencies:
       '@parcel/watcher':
@@ -601,8 +601,8 @@ importers:
         specifier: 17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.88.1)
       vue-router:
-        specifier: 4.2.3
-        version: 4.2.3(vue@3.3.4)
+        specifier: 4.2.4
+        version: 4.2.4(vue@3.3.4)
       webpack:
         specifier: 5.88.1
         version: 5.88.1
@@ -6881,7 +6881,7 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxt-vitest@0.8.7(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(vite@4.3.9)(vitest@0.32.4)(vue-router@4.2.3)(vue@3.3.4):
+  /nuxt-vitest@0.8.7(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(vite@4.3.9)(vitest@0.32.4)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-OaQqF8QxfLKzYzSrwcfkhv5BeyLQGGvrSvOedjV3OHuDjOaTJa6OPU2VTCZBVNvPMjnbm2h71/CsXbH6smvEJw==}
     peerDependencies:
       '@vitejs/plugin-vue': '*'
@@ -6899,7 +6899,7 @@ packages:
       std-env: 3.3.3
       vite: 4.3.9(@types/node@18.16.19)
       vitest: 0.32.4(playwright@1.35.1)
-      vitest-environment-nuxt: 0.8.7(vitest@0.32.4)(vue-router@4.2.3)(vue@3.3.4)
+      vitest-environment-nuxt: 0.8.7(vitest@0.32.4)(vue-router@4.2.4)(vue@3.3.4)
     transitivePeerDependencies:
       - '@vue/compiler-dom'
       - '@vue/server-renderer'
@@ -9026,7 +9026,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest-environment-nuxt@0.8.7(vitest@0.32.4)(vue-router@4.2.3)(vue@3.3.4):
+  /vitest-environment-nuxt@0.8.7(vitest@0.32.4)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-wk0Jn+PmZqF3jT3R/pkrgP7C98K6+/B3yq0dG9I8Qanwmp3014ljQgpiukrAZ6ZeF4k/8wrNBRliBcqtxCKFcw==}
     peerDependencies:
       vitest: ^0.24.5 || ^0.26.0 || ^0.27.0 || ^0.28.0 || ^0.29.0 || ^0.30.0
@@ -9044,7 +9044,7 @@ packages:
       unenv: 1.5.1
       vitest: 0.32.4(playwright@1.35.1)
       vue: 3.3.4
-      vue-router: 4.2.3(vue@3.3.4)
+      vue-router: 4.2.4(vue@3.3.4)
     transitivePeerDependencies:
       - '@vue/compiler-dom'
       - '@vue/server-renderer'
@@ -9273,15 +9273,6 @@ packages:
       vue: 3.3.4
       watchpack: 2.4.0
       webpack: 5.88.1
-
-  /vue-router@4.2.3(vue@3.3.4):
-    resolution: {integrity: sha512-ynQ/edCZNUC/9koONOSgxGJbEBXZ1nUA0lKI3xTiOd3Ywe4QRCf2q8pGCG1v5ovdzPggoq3M09FxNCZTM9pZfw==}
-    peerDependencies:
-      vue: ^3.2.0
-    dependencies:
-      '@vue/devtools-api': 6.5.0
-      vue: 3.3.4
-    dev: true
 
   /vue-router@4.2.4(vue@3.3.4):
     resolution: {integrity: sha512-9PISkmaCO02OzPVOMq2w82ilty6+xJmQrarYZDkjZBfl4RvYAlt4PKnEX21oW4KTtWfa9OuO/b3qk1Od3AEdCQ==}
