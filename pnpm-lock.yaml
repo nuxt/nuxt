@@ -927,6 +927,9 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4
 
   test/fixtures/basic:
     dependencies:
@@ -943,6 +946,9 @@ importers:
       unplugin:
         specifier: latest
         version: 1.3.2
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4
 
   test/fixtures/basic-types:
     dependencies:
@@ -956,6 +962,9 @@ importers:
       vitest:
         specifier: latest
         version: 0.32.4(playwright@1.35.1)
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4
       vue-router:
         specifier: latest
         version: 4.2.3(vue@3.3.4)
@@ -965,12 +974,18 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4
 
   test/fixtures/minimal-types:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4
 
   test/fixtures/runtime-compiler:
     dependencies:
