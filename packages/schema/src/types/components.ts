@@ -16,6 +16,11 @@ export interface Component {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * This prevent the component to be transformed with a `createClientOnly()` cleint-side if the mode isn't `all`
+   * An example is the `<NuxtClientFallback>` component which handles it's hydration client-side
+   */
+  noClientOnlyTransform?: boolean
 }
 
 export interface ScanDir {
