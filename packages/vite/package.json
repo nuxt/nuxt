@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:../schema",
+    "@types/clear": "0.1.2",
     "@types/estree": "1.0.1",
     "@types/fs-extra": "11.0.1",
     "unbuild": "latest",
