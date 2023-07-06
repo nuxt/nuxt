@@ -52,6 +52,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
   const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
   tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+  tsConfig.include = tsConfig.include || []
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
@@ -63,8 +64,17 @@ export const writeTypes = async (nuxt: Nuxt) => {
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [absolutePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+
+      if (!absolutePath.startsWith(nuxt.options.srcDir)) {
+        tsConfig.include.push(absolutePath)
+        tsConfig.include.push(`${absolutePath}/*`)
+      }
     } else {
       tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+
+      if (!absolutePath.startsWith(nuxt.options.srcDir)) {
+        tsConfig.include.push(absolutePath.replace(/(?<=\w)\.\w+$/g, ''))
+      }
     }
   }
 
