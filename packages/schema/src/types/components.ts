@@ -17,7 +17,7 @@ export interface Component {
    */
   priority?: number
   /**
-   * This prevent the component to be transformed with a `createClientOnly()` cleint-side if the mode isn't `all`
+   * This prevent the component to be transformed with a `createClientOnly()` client-side if the mode is `client`
    * An example is the `<NuxtClientFallback>` component which handles it's hydration client-side
    */
   noClientOnlyTransform?: boolean
