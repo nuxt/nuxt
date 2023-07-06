@@ -22,9 +22,9 @@
   "dependencies": {
     "@nuxt/schema": "workspace:../schema",
     "c12": "^1.4.2",
-    "consola": "^3.2.2",
+    "consola": "^3.2.3",
     "defu": "^6.1.2",
-    "globby": "^13.2.1",
+    "globby": "^13.2.2",
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
     "jiti": "^1.19.1",
