@@ -46,7 +46,7 @@ The above route middleware will redirect a user to the custom error page defined
 
 ### Redirection
 
-Use `useState` in combination with `navigateTo` helper function inside the route middleware to redirect users to different routes based on their authentication status:
+Use [`useState`](/docs/api/composables/use-state) in combination with `navigateTo` helper function inside the route middleware to redirect users to different routes based on their authentication status:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {

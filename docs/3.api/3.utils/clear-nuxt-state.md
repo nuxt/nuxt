@@ -12,4 +12,4 @@ clearNuxtState (keys?: string | string[] | ((key: string) => boolean)): void
 
 ## Parameters
 
-* `keys`: One or an array of keys that are used in `useState` to delete their cached state. If no keys are provided, **all state** will be invalidated.
+* `keys`: One or an array of keys that are used in [`useState`](/docs/api/composables/use-state) to delete their cached state. If no keys are provided, **all state** will be invalidated.
