@@ -8,11 +8,11 @@
     "dist"
   ],
   "dependencies": {
-    "consola": "^3.1.0",
+    "consola": "^3.2.3",
     "create-require": "^1.1.1",
     "fs-extra": "^10.1.0",
     "hash-sum": "^2.0.0",
-    "jiti": "^1.18.2",
+    "jiti": "^1.19.1",
     "lodash": "^4.17.21",
     "proper-lockfile": "^4.1.2",
     "semver": "^7.5.3",
