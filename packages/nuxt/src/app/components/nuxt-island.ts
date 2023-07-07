@@ -6,11 +6,12 @@ import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
+import { join } from 'pathe'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 
 const pKey = '_islandPromises'
@@ -39,6 +40,7 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
+    const appConfig = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
@@ -79,7 +81,7 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const r = await eventFetch(withQuery(url, {
+      const r = await eventFetch(withQuery(join(appConfig.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
