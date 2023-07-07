@@ -1,7 +1,7 @@
 ---
 description: useAsyncData provides access to data that resolves asynchronously.
 ---
-# [`useAsyncData`](/docs/api/composables/use-async-data) 
+# [`useAsyncData`](/docs/api/composables/use-async-data)
 
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
