@@ -2,7 +2,7 @@
 description: useHead customizes the head properties of individual pages of your Nuxt app.
 ---
 
-# [`useHead`](/docs/api/composables/use-head) 
+# useHead
 
 The [`useHead`](/docs/api/composables/use-head) composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
 
