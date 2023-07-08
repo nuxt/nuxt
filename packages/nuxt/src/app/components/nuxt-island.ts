@@ -81,7 +81,8 @@ export default defineComponent({
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const r = await eventFetch(withQuery(join(appConfig.app.baseURL ?? '', url), {
+      // $fetch handles the app.baseURL in dev
+      const r = await eventFetch(withQuery(process.dev && process.client ? url : join(appConfig.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
