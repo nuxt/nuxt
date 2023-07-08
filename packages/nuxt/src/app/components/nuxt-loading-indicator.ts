@@ -37,13 +37,24 @@ export default defineComponent({
     const router = useRouter()
 
     globalMiddleware.unshift(indicator.start)
+    router.onError(() => {
+      indicator.finish()
+    })
     router.beforeResolve((to, from) => {
       if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
         indicator.finish()
       }
     })
+
+    router.afterEach((_to, _from, failure) => {
+      if (failure) {
+        indicator.finish()
+      }
+    })
+
     nuxtApp.hook('page:finish', indicator.finish)
     nuxtApp.hook('vue:error', indicator.finish)
+
     onBeforeUnmount(() => {
       const index = globalMiddleware.indexOf(indicator.start)
       if (index >= 0) {

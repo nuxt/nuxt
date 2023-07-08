@@ -5,7 +5,7 @@ description: "Use useRequestHeaders to access the incoming request headers."
 
 # `useRequestHeaders`
 
-You can use built-in `useRequestHeaders` composable to access the incoming request headers within your pages, components, and plugins.
+You can use built-in [`useRequestHeaders`](/docs/api/composables/use-request-headers) composable to access the incoming request headers within your pages, components, and plugins.
 
 ```js
 // Get all request headers
@@ -16,12 +16,12 @@ const headers = useRequestHeaders(['cookie'])
 ```
 
 ::alert{icon=👉}
-In the browser, `useRequestHeaders` will return an empty object.
+In the browser, [`useRequestHeaders`](/docs/api/composables/use-request-headers) will return an empty object.
 ::
 
 ## Example
 
-We can use `useRequestHeaders` to access and proxy the initial request's `authorization` header to any future internal requests during SSR.
+We can use [`useRequestHeaders`](/docs/api/composables/use-request-headers) to access and proxy the initial request's `authorization` header to any future internal requests during SSR.
 
 The example below adds the `authorization` request header to an isomorphic `$fetch` call.
 

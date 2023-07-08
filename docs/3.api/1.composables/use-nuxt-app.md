@@ -87,7 +87,7 @@ await nuxtApp.callHook('my-plugin:init')
 `payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - **serverRendered** (boolean) - Indicates if response is server-side-rendered.
-- **data** (object) - When you fetch the data from an API endpoint using either `useFetch` or `useAsyncData`, resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
+- **data** (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
 ```vue [app.vue]
 export default defineComponent({
@@ -97,11 +97,11 @@ export default defineComponent({
 })
 ```
 
-After fetching the value of `count` using `useAsyncData` in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
+After fetching the value of `count` using [`useAsyncData`](/docs/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
 
 When accessing the same `payload.data` from [ssrcontext](#ssrcontext), you can access the same value on the server side as well.
 
-- **state** (object) - When you use `useState` composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
+- **state** (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
 ```js [plugins/my-plugin.ts]
 export const useColor = () => useState<string>('color', () => 'pink')

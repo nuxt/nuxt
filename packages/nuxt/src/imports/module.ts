@@ -126,7 +126,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       }
     })
 
-    nuxt.hook('builder:generateApp', async () => {
+    nuxt.hook('app:templatesGenerated', async () => {
       await regenerateImports()
     })
   }
