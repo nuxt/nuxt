@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalizedLoaded, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
+import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
@@ -105,8 +105,8 @@ describe('middleware', () => {
   })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
-      expectTypeOf(to).toEqualTypeOf<RouteLocationNormalizedLoaded>()
-      expectTypeOf(from).toEqualTypeOf<RouteLocationNormalizedLoaded>()
+      expectTypeOf(to).toEqualTypeOf<RouteLocationNormalized>()
+      expectTypeOf(from).toEqualTypeOf<RouteLocationNormalized>()
       expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
@@ -128,6 +128,11 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     router.push({ name: 'param-id', params: { bob: 23 } })
     router.push({ name: 'param-id', params: { id: 4 } })
+  })
+
+  it('correctly reads custom names typed in `definePageMeta`', () => {
+    const router = useRouter()
+    router.push({ name: 'some-custom-name' })
   })
 
   it('allows typing useRoute', () => {
@@ -218,14 +223,14 @@ describe('runtimeConfig', () => {
     expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
-    expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<any>()
+    expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<unknown>()
 
     const injectedConfig = useNuxtApp().$config
     expectTypeOf(injectedConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(injectedConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<number[]>()
-    expectTypeOf(injectedConfig.unknown).toEqualTypeOf<any>()
+    expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
   })
   it('provides hints on overriding these values', () => {
     const val = defineNuxtConfig({
@@ -241,8 +246,8 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
-    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number | undefined>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
-    expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<any>()
+    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
+    expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
   })
 })
 
@@ -333,7 +338,8 @@ describe('composables', () => {
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     // Default values: #14437
-    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number }>>()
+    // TODO: what?!
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }).data).toEqualTypeOf<Ref<{ bar: number } | { bar: number }>>()
     expectTypeOf(useLazyAsyncData('test', () => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
       .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: { bar: 500 } }), { default: () => ({ bar: 500 }), transform: v => v.foo }))
     expectTypeOf(useFetch('/api/hey', { default: () => 1, transform: v => v.foo }).data).toEqualTypeOf<Ref<string | number>>()

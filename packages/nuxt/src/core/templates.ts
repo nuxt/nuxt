@@ -10,7 +10,7 @@ import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 import { annotatePlugins } from './app'
 
-export interface TemplateContext {
+interface TemplateContext {
   nuxt: Nuxt
   app: NuxtApp
 }
@@ -175,9 +175,10 @@ export const layoutTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
+      return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
     }))
     return [
+      'import { defineAsyncComponent } from \'vue\'',
       `export default ${layoutsObject}`
     ].join('\n')
   }
@@ -195,6 +196,39 @@ export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
       `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
       `export const namedMiddleware = ${namedMiddlewareObject}`
     ].join('\n')
+  }
+}
+
+export const nitroSchemaTemplate: NuxtTemplate = {
+  filename: 'types/nitro-nuxt.d.ts',
+  getContents: () => {
+    return /* typescript */`
+/// <reference path="./schema.d.ts" />
+
+import type { RuntimeConfig } from 'nuxt/schema'
+import type { H3Event } from 'h3'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/dist/core/runtime/nitro/renderer'
+
+declare module 'nitropack' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRuntimeHooks {
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+`
   }
 }
 

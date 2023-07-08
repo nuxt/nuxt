@@ -38,7 +38,7 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 </script>
 ```
 
-:button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/nuxt/tree/main/examples/composables/use-cookie?terminal=dev&file=app.vue" blank}
+:button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/examples/tree/main/advanced/use-cookie?terminal=dev&file=app.vue" blank}
 
 ## Options
 
@@ -216,5 +216,5 @@ export default defineEventHandler(event => {
 })
 ```
 
-::LinkExample{link="/docs/examples/composables/use-cookie"}
+::LinkExample{link="/docs/examples/advanced/use-cookie"}
 ::

@@ -14,7 +14,7 @@ import { defineRenderHandler, getRouteRules, useRuntimeConfig } from '#internal/
 import { useNitroApp } from '#internal/nitro/app'
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtApp, NuxtSSRContext } from '#app/nuxt'
+import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -66,7 +66,10 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryId: () => Promise<string> = () => getClientManifest().then(r => Object.values(r).find(r => r.isEntry)!.src!)
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
+  // @ts-expect-error internal key set by CSS inlining configuration
+  r._globalCSS
+).map(r => r.src!))
 
 // @ts-expect-error virtual file
 const getStaticRenderedHead = (): Promise<NuxtMeta> => import('#head-static').then(r => r.default || r)
@@ -126,8 +129,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig()
+    ssrContext.modules = ssrContext.modules || new Set<string>()
     ssrContext!.payload = {
-      path: ssrContext.url,
       _errors: {},
       serverRendered: false,
       data: {},
@@ -179,7 +182,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we're rendering an error page
   const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as Exclude<NuxtApp['payload']['error'], Error>
+    ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
     : null
 
   if (ssrError && ssrError.statusCode) {
@@ -230,7 +233,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       (process.env.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
-    payload: (ssrError ? { error: ssrError } : {}) as NuxtSSRContext['payload'],
+    payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     islandContext
   }
@@ -289,11 +292,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const renderedMeta = await ssrContext.renderMeta?.() ?? {}
 
   if (process.env.NUXT_INLINE_STYLES && !islandContext) {
-    const entryId = await getEntryId()
-    if (ssrContext.modules) {
-      ssrContext.modules.add(entryId)
-    } else if (ssrContext._registeredComponents) {
-      ssrContext._registeredComponents.add(entryId)
+    const source = ssrContext.modules ?? ssrContext._registeredComponents
+    if (source) {
+      for (const id of await getEntryIds()) {
+        source.add(id)
+      }
     }
   }
 
@@ -367,7 +370,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
-    const response: RenderResponse = {
+    const response = {
       body: JSON.stringify(islandResponse, null, 2),
       statusCode: event.node.res.statusCode,
       statusMessage: event.node.res.statusMessage,
@@ -375,7 +378,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
       }
-    }
+    } satisfies RenderResponse
     if (process.env.prerender) {
       ISLAND_CACHE!.set(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
     }
@@ -383,7 +386,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Construct HTML response
-  const response: RenderResponse = {
+  const response = {
     body: renderHTMLDocument(htmlContext),
     statusCode: event.node.res.statusCode,
     statusMessage: event.node.res.statusMessage,
@@ -391,7 +394,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       'content-type': 'text/html;charset=utf-8',
       'x-powered-by': 'Nuxt'
     }
-  }
+  } satisfies RenderResponse
 
   return response
 })
@@ -456,7 +459,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
-  return <RenderResponse> {
+  return {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
@@ -466,7 +469,7 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
       'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt'
     }
-  }
+  } satisfies RenderResponse
 }
 
 function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }) {

@@ -1,7 +1,8 @@
 import type { CallExpression, Property, SpreadElement } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
-import { parse } from '@typescript-eslint/typescript-estree'
+import { transform } from 'esbuild'
+import { parse } from 'acorn'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
@@ -40,12 +41,16 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
 }
 
 const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
-export function extractMetadata (code: string) {
+export async function extractMetadata (code: string) {
   let meta: PluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
   }
-  walk(parse(code) as Node, {
+  const js = await transform(code, { loader: 'ts' })
+  walk(parse(js.code, {
+    sourceType: 'module',
+    ecmaVersion: 'latest'
+  }) as Node, {
     enter (_node) {
       if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
       const node = _node as CallExpression & { start: number, end: number }
@@ -108,7 +113,6 @@ function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
     name: 'nuxt:remove-plugin-metadata',
-    enforce: 'pre',
     transform (code, id) {
       id = normalize(id)
       const plugin = nuxt.apps.default.plugins.find(p => p.src === id)
@@ -129,7 +133,10 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       let wrapped = false
 
       try {
-        walk(parse(code, { range: true }) as Node, {
+        walk(this.parse(code, {
+          sourceType: 'module',
+          ecmaVersion: 'latest'
+        }) as Node, {
           enter (_node) {
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
@@ -156,14 +163,21 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
 
             // Remove metadata that already has been extracted
             if (!('order' in plugin) && !('name' in plugin)) { return }
-            for (const [argIndex, arg] of node.arguments.entries()) {
-              if (arg.type !== 'ObjectExpression') { continue }
-              for (const [propertyIndex, property] of arg.properties.entries()) {
-                if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
-                const propertyKey = property.key.name
+            for (const [argIndex, _arg] of node.arguments.entries()) {
+              if (_arg.type !== 'ObjectExpression') { continue }
+
+              const arg = _arg as typeof _arg & { start: number, end: number }
+              for (const [propertyIndex, _property] of arg.properties.entries()) {
+                if (_property.type === 'SpreadElement' || !('name' in _property.key)) { continue }
+
+                const property = _property as typeof _property & { start: number, end: number }
+                const propertyKey = _property.key.name
                 if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
-                  const nextIndex = arg.properties[propertyIndex + 1]?.range?.[0] || node.arguments[argIndex + 1]?.range?.[0] || (arg.range![1] - 1)
-                  s.remove(property.range![0], nextIndex)
+                  const _nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
+                  const nextNode = _nextNode as typeof _nextNode & { start: number, end: number }
+                  const nextIndex = nextNode?.start || (arg.end - 1)
+
+                  s.remove(property.start, nextIndex)
                 }
               }
             }

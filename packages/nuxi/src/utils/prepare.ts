@@ -30,6 +30,9 @@ export const writeTypes = async (nuxt: Nuxt) => {
       './nuxt.d.ts',
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
+      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
+        .filter(srcOrCwd => !srcOrCwd.startsWith(nuxt.options.rootDir) || srcOrCwd.includes('node_modules'))
+        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
@@ -48,6 +51,8 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
@@ -55,7 +60,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
     const absolutePath = resolve(basePath, aliases[alias])
 
     const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
-    tsConfig.compilerOptions = tsConfig.compilerOptions || {}
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [absolutePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]

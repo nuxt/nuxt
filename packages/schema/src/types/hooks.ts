@@ -11,6 +11,7 @@ import type { Nitro, NitroConfig } from 'nitropack'
 import type { Component, ComponentsOptions } from './components'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Schema, SchemaDefinition } from 'untyped'
+import type { RouteLocationRaw } from 'vue-router'
 
 export type HookResult = Promise<void> | void
 
@@ -25,7 +26,7 @@ export type NuxtPage = {
   file?: string
   meta?: Record<string, any>
   alias?: string[] | string
-  redirect?: string
+  redirect?: RouteLocationRaw
   children?: NuxtPage[]
 }
 

@@ -4,9 +4,9 @@ const route = useRoute('suspense-async-parent')
 </script>
 
 <template>
-  <div :id="route.path.replace(/[/-]+/g, '-')">
+  <main :id="route.path.replace(/[/-]+/g, '-')">
     Sync parent: {{ route.params.parent }}
     <hr>
     <NuxtPage />
-  </div>
+  </main>
 </template>
