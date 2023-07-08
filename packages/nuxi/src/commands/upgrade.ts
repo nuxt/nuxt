@@ -51,7 +51,7 @@ export default defineNuxtCommand({
 
     // Install latest version
     consola.info('Installing latest Nuxt 3 release...')
-    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} -D nuxt`, { stdio: 'inherit', cwd: rootDir })
+    execSync(`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'} nuxt`, { stdio: 'inherit', cwd: rootDir })
 
     // Cleanup after upgrade
     await cleanupNuxtDirs(rootDir)
