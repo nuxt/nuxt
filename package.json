@@ -84,7 +84,7 @@
     "rollup-plugin-license": "3.0.1",
     "sass": "1.63.6",
     "sass-loader": "^10.1.1",
-    "sort-package-json": "2.5.0",
+    "sort-package-json": "2.5.1",
     "typescript": "5.1.6",
     "vue-jest": "4.0.1"
   },
