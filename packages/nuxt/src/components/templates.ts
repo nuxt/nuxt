@@ -95,7 +95,7 @@ export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.d.ts',
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
-    const componentTypes = app.components.filter(c => !c.island).map(c => [
+    const componentTypes = app.components.filter(c => !c.island && c.pascalName).map(c => [
       c.pascalName,
       `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')
