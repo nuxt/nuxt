@@ -131,7 +131,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       // Ignore component if component is already defined (with same mode)
-      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
+      if (component.pascalName && !components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
         components.push(component)
       }
     }
