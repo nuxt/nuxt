@@ -60,21 +60,17 @@ export default defineComponent({
       }
     }
 
-    const ssrHTML = ref('<div></div>')
-    if (process.client) {
-      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
-      if (renderedHTML) {
-        ssrHTML.value = renderedHTML
-        setPayload(`${props.name}_${hashId.value}`, {
-          html: renderedHTML,
-          state: {},
-          head: {
-            link: [],
-            style: []
-          }
-        })
-      }
-      ssrHTML.value = renderedHTML
+    const ssrHTML = ref(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+
+    if (process.client && ssrHTML.value) {
+      setPayload(`${props.name}_${hashId.value}`, {
+        html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+        state: {},
+        head: {
+          link: [],
+          style: []
+        }
+      })
     }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
