@@ -64,7 +64,6 @@ export default defineComponent({
     if (process.client) {
       const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
       if (renderedHTML && nuxtApp.isHydrating) {
-        ssrHTML.value = renderedHTML
         setPayload(`${props.name}_${hashId.value}`, {
           html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
           state: {},
