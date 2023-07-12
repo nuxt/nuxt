@@ -4,13 +4,13 @@ description: This wrapper around useFetch triggers navigation immediately.
 
 # `useLazyFetch`
 
-`useLazyFetch` provides a wrapper around `useFetch` that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+`useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ## Description
 
 By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved.
 
-> `useLazyFetch` has the same signature as `useFetch`.
+> [`useLazyFetch`](/docs/api/composables/use-lazy-fetch) has the same signature as `useFetch`.
 
 :ReadMore{link="/docs/api/composables/use-fetch"}
 

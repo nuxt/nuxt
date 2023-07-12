@@ -1,6 +1,6 @@
 # `useRuntimeConfig`
 
-The `useRuntimeConfig` composable is used to expose config variables within your app.
+The [`useRuntimeConfig`](/docs/api/composables/use-runtime-config) composable is used to expose config variables within your app.
 
 ## Usage
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useCustomKeyedComposable } from '~/other-composables-folder/custom-keyed-composable'
+
 const useLocalState = () => useState(() => {
   if (process.client) { console.error('running usestate') }
   return { foo: Math.random() }
@@ -33,7 +35,6 @@ const useLocalLazyFetch = () => useLazyFetch(() => '/api/counter')
 const { data: useLazyFetchTest1 } = await useLocalLazyFetch()
 const { data: useLazyFetchTest2 } = await useLocalLazyFetch()
 
-const useCustomKeyedComposable = (arg?: string) => arg
 const useLocalCustomKeyedComposable = () => useCustomKeyedComposable()
 const useMyAsyncDataTest1 = useLocalCustomKeyedComposable()
 const useMyAsyncDataTest2 = useLocalCustomKeyedComposable()

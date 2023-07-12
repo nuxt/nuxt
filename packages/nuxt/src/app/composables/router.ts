@@ -10,6 +10,7 @@ import { createError, showError } from './error'
 import { useState } from './state'
 
 import type { PageMeta } from '#app'
+import { PageRouteSymbol } from '#app/components/injections'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -20,7 +21,7 @@ export const useRoute: typeof _useRoute = () => {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
   }
   if (hasInjectionContext()) {
-    return inject('_route', useNuxtApp()._route)
+    return inject(PageRouteSymbol, useNuxtApp()._route)
   }
   return useNuxtApp()._route
 }
