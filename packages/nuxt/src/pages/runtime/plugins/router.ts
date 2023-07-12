@@ -1,4 +1,4 @@
-import { computed, isReadonly, reactive, shallowRef } from 'vue'
+import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
 import {
@@ -108,10 +108,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
     const route = {} as RouteLocation
     for (const key in _route.value) {
-      (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
+      Object.defineProperty(route, key, {
+        get: () => _route.value[key as keyof RouteLocation]
+      })
     }
 
-    nuxtApp._route = reactive(route)
+    nuxtApp._route = shallowReactive(route)
 
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],

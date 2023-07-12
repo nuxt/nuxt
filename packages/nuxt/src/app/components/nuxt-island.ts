@@ -5,6 +5,7 @@ import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { withQuery } from 'ufo'
+import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
@@ -42,11 +43,38 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
-    const eventFetch = process.server ? event.fetch : globalThis.fetch
+    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
+    const eventFetch = process.server ? event.fetch : process.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
-    const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    function setPayload (key: string, result: NuxtIslandResponse) {
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...(process.server && process.env.prerender)
+            ? {}
+            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
+        },
+        ...result
+      }
+    }
+
+    const ssrHTML = ref('<div></div>')
+    if (process.client) {
+      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      if (renderedHTML && nuxtApp.isHydrating) {
+        setPayload(`${props.name}_${hashId.value}`, {
+          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+          state: {},
+          head: {
+            link: [],
+            style: []
+          }
+        })
+      }
+      ssrHTML.value = renderedHTML ?? '<div></div>'
+    }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
@@ -81,7 +109,7 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
-      const result = await r.json() as NuxtIslandResponse
+      const result = process.server || !process.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers
       if (process.server && process.env.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
@@ -89,20 +117,7 @@ export default defineComponent({
           appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
-      nuxtApp.payload.data[key] = {
-        __nuxt_island: {
-          key,
-          ...(process.server && process.env.prerender)
-            ? {}
-            : {
-                params: {
-                  ...props.context,
-                  props: props.props ? JSON.stringify(props.props) : undefined
-                }
-              }
-        },
-        ...result
-      }
+      setPayload(key, result)
       return result
     }
     const key = ref(0)

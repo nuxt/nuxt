@@ -5,13 +5,13 @@ description: The useRoute composable returns the current route.
 
 # `useRoute`
 
-The `useRoute` composable returns the current route and must be called in a `setup` function, plugin, or route middleware.
+The [`useRoute`](/docs/api/composables/use-route) composable returns the current route and must be called in a `setup` function, plugin, or route middleware.
 
 Within the template of a Vue component, you can access the route using `$route`.
 
 ## Example
 
-In the following example, we call an API via `useFetch` using a dynamic page parameter - `slug` - as part of the URL.
+In the following example, we call an API via [`useFetch`](/docs/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
 
 ```html [~/pages/[slug].vue]
 <script setup>

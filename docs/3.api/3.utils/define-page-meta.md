@@ -4,7 +4,7 @@ title: "definePageMeta"
 
 # `definePageMeta`
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the `pages/` directory (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/` directory](/docs/guide/directory-structure/pages) (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
 <script setup>
@@ -161,7 +161,7 @@ The example below shows how the middleware can be defined using a `function` dir
 
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the `layouts/` directory. You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
 
 ```vue [pages/some-page.vue]
 <script setup>

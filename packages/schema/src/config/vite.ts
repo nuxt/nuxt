@@ -30,7 +30,12 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: async (val, get) => val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      $resolve: async (val, get) => {
+        if (val) {
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
+        }
+        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      }
     },
     vue: {
       isProduction: {
