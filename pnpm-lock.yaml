@@ -107,7 +107,7 @@ importers:
       pathe:
         specifier: 1.1.1
         version: 1.1.1
-      playwright:
+      playwright-core:
         specifier: 1.35.1
         version: 1.35.1
       rimraf:
@@ -130,7 +130,7 @@ importers:
         version: 4.3.9(@types/node@18.16.19)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(playwright@1.35.1)
+        version: 0.33.0
       vitest-environment-nuxt:
         specifier: 0.8.7
         version: 0.8.7(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
@@ -224,7 +224,7 @@ importers:
         version: 4.3.9(@types/node@18.16.19)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(playwright@1.35.1)
+        version: 0.33.0
       webpack:
         specifier: 5.88.1
         version: 5.88.1
@@ -514,7 +514,7 @@ importers:
         version: 4.3.9(@types/node@18.16.19)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(playwright@1.35.1)
+        version: 0.33.0
 
   packages/schema:
     dependencies:
@@ -646,7 +646,7 @@ importers:
       '@jest/globals':
         specifier: 29.6.0
         version: 29.6.0
-      playwright:
+      playwright-core:
         specifier: 1.35.1
         version: 1.35.1
       unbuild:
@@ -654,7 +654,7 @@ importers:
         version: 1.2.1
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(playwright@1.35.1)
+        version: 0.33.0
 
   packages/vite:
     dependencies:
@@ -976,7 +976,7 @@ importers:
         version: 1.1.1
       vitest:
         specifier: latest
-        version: 0.33.0(playwright@1.35.1)
+        version: 0.33.0
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -6860,7 +6860,7 @@ packages:
       perfect-debounce: 1.0.0
       std-env: 3.3.3
       vite: 4.3.9(@types/node@18.16.19)
-      vitest: 0.33.0(playwright@1.35.1)
+      vitest: 0.33.0
       vitest-environment-nuxt: 0.8.7(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
     transitivePeerDependencies:
       - '@vue/compiler-dom'
@@ -7147,15 +7147,6 @@ packages:
     resolution: {integrity: sha512-pNXb6CQ7OqmGDRspEjlxE49w+4YtR6a3X6mT1hZXeJHWmsEz7SunmvZeiG/+y1yyMZdHnnn73WKYdtV1er0Xyg==}
     engines: {node: '>=16'}
     hasBin: true
-    dev: true
-
-  /playwright@1.35.1:
-    resolution: {integrity: sha512-NbwBeGJLu5m7VGM0+xtlmLAH9VUfWwYOhUi/lSEDyGg46r1CA9RWlvoc5yywxR9AzQb0mOCm7bWtOXV7/w43ZA==}
-    engines: {node: '>=16'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      playwright-core: 1.35.1
     dev: true
 
   /pluralize@8.0.0:
@@ -8978,7 +8969,7 @@ packages:
       magic-string: 0.30.1
       ofetch: 1.1.1
       unenv: 1.5.1
-      vitest: 0.33.0(playwright@1.35.1)
+      vitest: 0.33.0
       vue: 3.3.4
       vue-router: 4.2.4(vue@3.3.4)
     transitivePeerDependencies:
@@ -8986,7 +8977,7 @@ packages:
       - '@vue/server-renderer'
     dev: true
 
-  /vitest@0.33.0(playwright@1.35.1):
+  /vitest@0.33.0:
     resolution: {integrity: sha512-1CxaugJ50xskkQ0e969R/hW47za4YXDUfWJDxip1hwbnhUjYolpfUn2AMOulqG/Dtd9WYAtkHmM/m3yKVrEejQ==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -9034,7 +9025,6 @@ packages:
       magic-string: 0.30.1
       pathe: 1.1.1
       picocolors: 1.0.0
-      playwright: 1.35.1
       std-env: 3.3.3
       strip-literal: 1.0.1
       tinybench: 2.5.0
