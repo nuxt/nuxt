@@ -107,7 +107,7 @@ importers:
       pathe:
         specifier: 1.1.1
         version: 1.1.1
-      playwright:
+      playwright-core:
         specifier: 1.35.1
         version: 1.35.1
       rimraf:
@@ -636,6 +636,9 @@ importers:
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
+      playwright:
+        specifier: ^1.34.3
+        version: 1.35.1
       ufo:
         specifier: ^1.1.2
         version: 1.1.2
@@ -646,7 +649,7 @@ importers:
       '@jest/globals':
         specifier: 29.6.0
         version: 29.6.0
-      playwright:
+      playwright-core:
         specifier: 1.35.1
         version: 1.35.1
       unbuild:
@@ -7147,7 +7150,6 @@ packages:
     resolution: {integrity: sha512-pNXb6CQ7OqmGDRspEjlxE49w+4YtR6a3X6mT1hZXeJHWmsEz7SunmvZeiG/+y1yyMZdHnnn73WKYdtV1er0Xyg==}
     engines: {node: '>=16'}
     hasBin: true
-    dev: true
 
   /playwright@1.35.1:
     resolution: {integrity: sha512-NbwBeGJLu5m7VGM0+xtlmLAH9VUfWwYOhUi/lSEDyGg46r1CA9RWlvoc5yywxR9AzQb0mOCm7bWtOXV7/w43ZA==}
@@ -7156,7 +7158,6 @@ packages:
     requiresBuild: true
     dependencies:
       playwright-core: 1.35.1
-    dev: true
 
   /pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}

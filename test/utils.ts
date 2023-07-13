@@ -1,6 +1,6 @@
 import { Script, createContext } from 'node:vm'
 import { expect } from 'vitest'
-import type { Page } from 'playwright'
+import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
