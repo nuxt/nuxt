@@ -1751,6 +1751,14 @@ describe('component islands', () => {
 
     await page.close()
   })
+
+  it('should not render an error when having a baseURL', async () => {
+    process.env.NUXT_APP_BASE_URL = '/foo/'
+    await startServer()
+
+    const result = await fetch('/foo/islands')
+    expect(result.status).toBe(200)
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
