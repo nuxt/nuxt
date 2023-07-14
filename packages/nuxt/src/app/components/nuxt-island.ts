@@ -48,7 +48,33 @@ export default defineComponent({
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
-    const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    function setPayload (key: string, result: NuxtIslandResponse) {
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...(process.server && process.env.prerender)
+            ? {}
+            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
+        },
+        ...result
+      }
+    }
+
+    const ssrHTML = ref('<div></div>')
+    if (process.client) {
+      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      if (renderedHTML && nuxtApp.isHydrating) {
+        setPayload(`${props.name}_${hashId.value}`, {
+          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+          state: {},
+          head: {
+            link: [],
+            style: []
+          }
+        })
+      }
+      ssrHTML.value = renderedHTML ?? '<div></div>'
+    }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
@@ -91,20 +117,7 @@ export default defineComponent({
           appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
-      nuxtApp.payload.data[key] = {
-        __nuxt_island: {
-          key,
-          ...(process.server && process.env.prerender)
-            ? {}
-            : {
-                params: {
-                  ...props.context,
-                  props: props.props ? JSON.stringify(props.props) : undefined
-                }
-              }
-        },
-        ...result
-      }
+      setPayload(key, result)
       return result
     }
     const key = ref(0)

@@ -90,11 +90,9 @@ await nuxtApp.callHook('my-plugin:init')
 - **data** (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
 ```vue [app.vue]
-export default defineComponent({
-  async setup() {
-    const { data } = await useAsyncData('count', () => $fetch('/api/count'))
-  }
-})
+<script setup>
+const { data } = await useAsyncData('count', () => $fetch('/api/count'))
+</script>
 ```
 
 After fetching the value of `count` using [`useAsyncData`](/docs/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
