@@ -17,7 +17,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       jsx: 'preserve',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: nuxt.options.experimental.typescriptBundlerResolution ? 'Bundler' : 'Node',
+      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
       strict: nuxt.options.typescript?.strict ?? true,
       allowJs: true,
