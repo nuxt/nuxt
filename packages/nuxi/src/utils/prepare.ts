@@ -14,9 +14,9 @@ export const writeTypes = async (nuxt: Nuxt) => {
       jsx: 'preserve',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: 'Node',
+      moduleResolution: nuxt.options.experimental.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
-      strict: nuxt.options.typescript?.strict ?? false,
+      strict: nuxt.options.typescript?.strict ?? true,
       allowJs: true,
       // TODO: remove by default in 3.7
       baseUrl: nuxt.options.srcDir,
