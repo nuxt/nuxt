@@ -9,9 +9,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const router = useRouter()
 
-  router.beforeResolve((to) => {
-    if (to.meta.pageTransition === false) { return }
-
+  router.beforeResolve((to, from) => {
+    if (to.path === from.path || to.meta.pageTransition === false) { return }
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
       abortTransition = reject
