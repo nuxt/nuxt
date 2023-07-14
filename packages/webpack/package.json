@@ -30,7 +30,7 @@
     "optimize-css-assets-webpack-plugin": "^6.0.1",
     "pify": "^5.0.0",
     "pnp-webpack-plugin": "^1.7.0",
-    "postcss": "^8.4.25",
+    "postcss": "^8.4.26",
     "postcss-import": "^15.1.0",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^4.3.0",
