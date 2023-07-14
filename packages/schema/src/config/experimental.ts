@@ -157,7 +157,16 @@ export default defineUntypedSchema({
      *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
-    typescriptBundlerResolution: false,
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
