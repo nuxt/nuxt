@@ -3,10 +3,13 @@ import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
+import { withTrailingSlash } from 'ufo'
 import { getModulePaths, getNearestPackage } from './cjs'
 
 export const writeTypes = async (nuxt: Nuxt) => {
   const modulePaths = getModulePaths(nuxt.options.modulesDir)
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -31,7 +34,7 @@ export const writeTypes = async (nuxt: Nuxt) => {
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
       ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
-        .filter(srcOrCwd => !srcOrCwd.startsWith(nuxt.options.rootDir) || srcOrCwd.includes('node_modules'))
+        .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
@@ -65,14 +68,14 @@ export const writeTypes = async (nuxt: Nuxt) => {
       tsConfig.compilerOptions.paths[alias] = [absolutePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
 
-      if (!absolutePath.startsWith(nuxt.options.srcDir)) {
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
         tsConfig.include.push(absolutePath)
         tsConfig.include.push(`${absolutePath}/*`)
       }
     } else {
       tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
 
-      if (!absolutePath.startsWith(nuxt.options.srcDir)) {
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
         tsConfig.include.push(absolutePath.replace(/(?<=\w)\.\w+$/g, ''))
       }
     }
