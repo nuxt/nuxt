@@ -1758,7 +1758,9 @@ describe('component islands', () => {
 
     const result = await fetch('/foo/islands')
     expect(result.status).toBe(200)
+
     process.env.NUXT_APP_BASE_URL = undefined
+    await startServer()
   })
 })
 
