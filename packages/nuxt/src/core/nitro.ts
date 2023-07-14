@@ -37,6 +37,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
+  // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -44,6 +45,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     srcDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
+    experimental: {
+      // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowercase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowercase() === 'bundler'
+    },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       imports: [
