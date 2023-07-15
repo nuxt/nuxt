@@ -369,15 +369,16 @@ async function initNuxt (nuxt: Nuxt) {
 
   addModuleTranspiles()
 
-  // Init nitro
-  await initNitro(nuxt)
-
   // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
   // Add prerender payload support
-  if (useNitro().options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+  if (nuxt.options.nitro?.static && nuxt.options.experimental.payloadExtraction === undefined) {
     console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
+
+  // Init nitro
+  await initNitro(nuxt)
+  
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
