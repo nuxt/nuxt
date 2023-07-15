@@ -23,6 +23,11 @@ const cookie = useCookie(name, options)
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
 
 ```vue
+<script setup>
+const counter = useCookie('counter')
+counter.value = counter.value || Math.round(Math.random() * 1000)
+</script>
+
 <template>
   <div>
     <h1>Counter: {{ counter || '-' }}</h1>
@@ -31,11 +36,6 @@ The example below creates a cookie called `counter`. If the cookie doesn't exist
     <button @click="counter++">+</button>
   </div>
 </template>
-
-<script setup>
-const counter = useCookie('counter')
-counter.value = counter.value || Math.round(Math.random() * 1000)
-</script>
 ```
 
 :button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/examples/tree/main/advanced/use-cookie?terminal=dev&file=app.vue" blank}
@@ -143,10 +143,6 @@ Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reac
 **Example 1:**
 
 ```vue
-<template>
-  <div>User score: {{ user?.score }}</div>
-</template>
-
 <script setup>
 const user = useCookie(
   'userInfo',
@@ -160,20 +156,15 @@ if (user.value && user.value !== null) {
   user.value.score++; // userInfo cookie not update with this change
 }
 </script>
+
+<template>
+  <div>User score: {{ user?.score }}</div>
+</template>
 ```
 
 **Example 2:**
 
 ```vue
-<template>
-  <div>
-    <h1>List</h1>
-    <pre>{{ list }}</pre>
-    <button @click="add">Add</button>
-    <button @click="save">Save</button>
-  </div>
-</template>
-
 <script setup>
 const list = useCookie(
   'list',
@@ -195,6 +186,15 @@ function save() {
   }
 }
 </script>
+
+<template>
+  <div>
+    <h1>List</h1>
+    <pre>{{ list }}</pre>
+    <button @click="add">Add</button>
+    <button @click="save">Save</button>
+  </div>
+</template>
 ```
 
 ## Handling Cookies in API Routes

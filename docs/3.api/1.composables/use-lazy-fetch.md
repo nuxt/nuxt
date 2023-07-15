@@ -17,17 +17,6 @@ By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until 
 ## Example
 
 ```vue
-<template>
-  <div v-if="pending">
-    Loading ...
-  </div>
-  <div v-else>
-    <div v-for="post in posts">
-      <!-- do something -->
-    </div>
-  </div>
-</template>
-
 <script setup>
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
@@ -38,6 +27,17 @@ watch(posts, (newPosts) => {
   // to its contents immediately, but you can watch it.
 })
 </script>
+
+<template>
+  <div v-if="pending">
+    Loading ...
+  </div>
+  <div v-else>
+    <div v-for="post in posts">
+      <!-- do something -->
+    </div>
+  </div>
+</template>
 ```
 
 ::alert{type=warning}
