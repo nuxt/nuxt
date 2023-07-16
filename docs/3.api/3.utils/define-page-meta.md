@@ -7,10 +7,10 @@ title: "definePageMeta"
 `definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/` directory](/docs/guide/directory-structure/pages) (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
-<script setup>
-  definePageMeta({
-    layout: 'default'
-  })
+<script setup lang="ts">
+definePageMeta({
+  layout: 'default'
+})
 </script>
 ```
 
@@ -115,16 +115,16 @@ The example below demonstrates:
 - adding `pageType` as a custom property:
 
 ```vue [pages/some-page.vue]
-<script setup>
-  definePageMeta({
-    key: (route) => route.fullPath,
+<script setup lang="ts">
+definePageMeta({
+  key: (route) => route.fullPath,
 
-    keepalive: {
-      exclude: ['modal']
-    },
+  keepalive: {
+    exclude: ['modal']
+  },
 
-    pageType: 'Checkout'
-  })
+  pageType: 'Checkout'
+})
 </script>
 ```
 
@@ -133,28 +133,28 @@ The example below demonstrates:
 The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `middleware/` directory:
 
 ```vue [pages/some-page.vue]
-<script setup>
-  definePageMeta({
-    // define middleware as a function
-    middleware: [
-      function (to, from) {
-        const auth = useState('auth')
+<script setup lang="ts">
+definePageMeta({
+  // define middleware as a function
+  middleware: [
+    function (to, from) {
+      const auth = useState('auth')
 
-        if (!auth.value.authenticated) {
-            return navigateTo('/login')
-        }
-
-        if (to.path !== '/checkout') {
-          return navigateTo('/checkout')
-        }
+      if (!auth.value.authenticated) {
+          return navigateTo('/login')
       }
-    ],
 
-    // ... or a string
-    middleware: 'auth'
+      if (to.path !== '/checkout') {
+        return navigateTo('/checkout')
+      }
+    }
+  ],
 
-    // ... or multiple strings
-    middleware: ['auth', 'another-named-middleware']
+  // ... or a string
+  middleware: 'auth'
+
+  // ... or multiple strings
+  middleware: ['auth', 'another-named-middleware']
 })
 </script>
 ```
@@ -164,13 +164,13 @@ The example below shows how the middleware can be defined using a `function` dir
 You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
 
 ```vue [pages/some-page.vue]
-<script setup>
-  definePageMeta({
-    // set custom layout
-    layout: 'admin'
+<script setup lang="ts">
+definePageMeta({
+  // set custom layout
+  layout: 'admin'
 
-    // ... or disable a default layout
-    layout: false
-  })
+  // ... or disable a default layout
+  layout: false
+})
 </script>
 ```

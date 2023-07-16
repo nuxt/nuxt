@@ -23,7 +23,7 @@ const cookie = useCookie(name, options)
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const counter = useCookie('counter')
 counter.value = counter.value || Math.round(Math.random() * 1000)
 </script>
@@ -143,7 +143,7 @@ Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reac
 **Example 1:**
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const user = useCookie(
   'userInfo',
   {
@@ -165,7 +165,7 @@ if (user.value && user.value !== null) {
 **Example 2:**
 
 ```vue
-<script setup>
+<script setup lang="ts">
 const list = useCookie(
   'list',
   {

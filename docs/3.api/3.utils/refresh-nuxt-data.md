@@ -28,7 +28,7 @@ refreshNuxtData(keys?: string | string[])
 This example below refreshes all data being fetched using [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) on the current page.
 
 ```vue [pages/some-page.vue]
-<script setup>
+<script setup lang="ts">
 const refreshing = ref(false)
 const refreshAll = async () => {
   refreshing.value = true
@@ -54,7 +54,7 @@ const refreshAll = async () => {
 This example below refreshes only data where the key matches to `count`.
 
 ```vue [pages/some-page.vue]
-<script setup>
+<script setup lang="ts">
 const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 const refresh = () => refreshNuxtData('count')
 </script>

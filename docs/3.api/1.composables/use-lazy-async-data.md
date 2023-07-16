@@ -17,7 +17,7 @@ By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigati
 ## Example
 
 ```vue
-<script setup>
+<script setup lang="ts">
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
 */

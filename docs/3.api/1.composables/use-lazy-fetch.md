@@ -17,7 +17,7 @@ By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until 
 ## Example
 
 ```vue
-<script setup>
+<script setup lang="ts">
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
 */
