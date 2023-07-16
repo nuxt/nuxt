@@ -47,7 +47,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     buildDir: nuxt.options.buildDir,
     experimental: {
       // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowercase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowercase() === 'bundler'
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
