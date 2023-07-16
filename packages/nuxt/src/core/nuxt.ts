@@ -378,7 +378,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init nitro
   await initNitro(nuxt)
-  
+
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
