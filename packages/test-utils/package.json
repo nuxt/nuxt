@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -34,21 +34,21 @@
   },
   "devDependencies": {
     "@jest/globals": "29.6.0",
-    "playwright": "1.35.1",
+    "playwright-core": "1.35.1",
     "unbuild": "latest",
-    "vitest": "0.32.4"
+    "vitest": "0.33.0"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",
-    "playwright": "^1.34.3",
-    "vitest": "^0.30.0 || ^0.31.0 || ^0.32.0",
+    "playwright-core": "^1.34.3",
+    "vitest": "^0.30.0 || ^0.31.0 || ^0.32.0 || ^0.33.0",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "@jest/globals": {
       "optional": true
     },
-    "playwright": {
+    "playwright-core": {
       "optional": true
     },
     "vitest": {

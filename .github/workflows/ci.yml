@@ -214,8 +214,7 @@ jobs:
             ${{ runner.os }}-playwright-bin-v1-
 
       - name: Install Playwright
-        # does not need to explicitly set chromium after https://github.com/microsoft/playwright/issues/14862 is solved
-        run: pnpm playwright install chromium
+        run: pnpm playwright-core install chromium
 
       - name: Restore dist cache
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2

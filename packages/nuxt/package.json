@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.6.2",
+  "version": "3.6.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -103,7 +103,7 @@
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.3"
+    "vue-router": "^4.2.4"
   },
   "devDependencies": {
     "@parcel/watcher": "2.2.0",
@@ -113,7 +113,7 @@
     "@vitejs/plugin-vue": "4.2.3",
     "unbuild": "latest",
     "vite": "4.3.9",
-    "vitest": "0.32.4"
+    "vitest": "0.33.0"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
