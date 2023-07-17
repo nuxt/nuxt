@@ -1,9 +1,9 @@
 import {
   createRenderer,
+  getPrefetchLinks,
   getPreloadLinks,
   getRequestDependencies,
-  renderResourceHeaders,
-  getPrefetchLinks
+  renderResourceHeaders
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
@@ -24,7 +24,7 @@ import type { Link, Script } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
 import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
-import { appRootId, appRootTag, appHead } from '#internal/nuxt.config.mjs'
+import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
@@ -346,7 +346,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }, {
       // this should come before another end of body scripts
       tagPosition: 'bodyClose',
-      tagPriority: 'high',
+      tagPriority: 'high'
     })
   }
 
@@ -504,7 +504,7 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
     type: 'application/json',
     id: opts.id,
     innerHTML: contents,
-    'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
+    'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR)
   }
   if (opts.src) {
     payload['data-src'] = opts.src
@@ -512,7 +512,7 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
   return [
     payload,
     {
-      innerHTML: `window.__NUXT__={};window.__NUXT__.config=${uneval(opts.ssrContext.config)}`,
+      innerHTML: `window.__NUXT__={};window.__NUXT__.config=${uneval(opts.ssrContext.config)}`
     }
   ]
 }
@@ -524,13 +524,13 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`,
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`
       }
     ]
   }
   return [
     {
-      innerHTML: `window.__NUXT__=${devalue(opts.data)}`,
+      innerHTML: `window.__NUXT__=${devalue(opts.data)}`
     }
   ]
 }

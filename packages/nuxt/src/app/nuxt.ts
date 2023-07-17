@@ -10,7 +10,7 @@ import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 
-import type { VueHeadClient, MergeHead } from '@unhead/vue'
+import type { MergeHead, VueHeadClient } from '@unhead/vue'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
