@@ -344,7 +344,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
           ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload })
     }, {
-      // this should come before other end of body scripts
+      // this should come before another end of body scripts
+      tagPosition: 'bodyClose',
       tagPriority: 'high',
     })
   }
@@ -504,7 +505,6 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
     id: opts.id,
     innerHTML: contents,
     'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
-    tagPosition: 'bodyClose'
   }
   if (opts.src) {
     payload['data-src'] = opts.src
@@ -513,7 +513,6 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
     payload,
     {
       innerHTML: `window.__NUXT__={};window.__NUXT__.config=${uneval(opts.ssrContext.config)}`,
-      tagPosition: 'bodyClose'
     }
   ]
 }
@@ -526,16 +525,12 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
       {
         type: 'module',
         innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`,
-        tagPosition: 'bodyClose',
-        tagPriority: 'high'
       }
     ]
   }
   return [
     {
       innerHTML: `window.__NUXT__=${devalue(opts.data)}`,
-      tagPosition: 'bodyClose',
-      tagPriority: 'high'
     }
   ]
 }
