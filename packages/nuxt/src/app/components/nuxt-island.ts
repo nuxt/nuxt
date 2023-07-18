@@ -40,7 +40,7 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
-    const appConfig = useRuntimeConfig()
+    const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const hashId = computed(() => hash([props.name, props.props, props.context]))
     const instance = getCurrentInstance()!
@@ -108,7 +108,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(process.dev && process.client ? url : join(appConfig.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery(process.dev && process.client ? url : join(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
