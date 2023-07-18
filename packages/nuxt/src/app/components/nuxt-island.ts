@@ -4,9 +4,8 @@ import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
-import { withQuery } from 'ufo'
+import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
-import { join } from 'pathe'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
@@ -108,7 +107,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(process.dev && process.client ? url : join(config.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery(process.dev && process.client ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
