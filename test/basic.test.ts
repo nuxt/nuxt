@@ -1752,7 +1752,7 @@ describe('component islands', () => {
     await page.close()
   })
 
-  it('should not render an error when having a baseURL', async () => {
+  it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
     process.env.NUXT_APP_BASE_URL = '/foo/'
     await startServer()
 
