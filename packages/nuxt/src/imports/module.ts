@@ -88,7 +88,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
-        // clear old imports
+        // Clear old imports
         imports.length = 0
         // Scan `composables/`
         const composableImports = await scanDirExports(composablesDirs)
