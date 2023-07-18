@@ -22,6 +22,7 @@ import { useNitroApp } from '#internal/nitro/app'
 
 import type { Link, Script } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
+// eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
