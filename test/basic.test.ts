@@ -1034,6 +1034,16 @@ describe('deferred app suspense resolve', () => {
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
   })
+  it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
+    const page = await createPage('/hydration/spa-redirection/start')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('fully hydrated and ready to go')
+  })
 })
 
 describe('nested suspense', () => {

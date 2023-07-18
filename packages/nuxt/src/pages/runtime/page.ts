@@ -46,6 +46,8 @@ export default defineComponent({
     const _layoutMeta = inject(LayoutMetaSymbol, null)
     let vnode: VNode
 
+    const done = nuxtApp.deferHydration()
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -76,7 +78,6 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
-          const done = nuxtApp.deferHydration()
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([

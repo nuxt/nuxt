@@ -48,6 +48,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
