@@ -14,7 +14,7 @@ Within the template of a Vue component, you can access the route using `$route`.
 In the following example, we call an API via [`useFetch`](/docs/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
 
 ```html [~/pages/[slug].vue]
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 const { data: mountain } = await useFetch(`https://api.nuxtjs.dev/mountains/${route.params.slug}`)
 </script>

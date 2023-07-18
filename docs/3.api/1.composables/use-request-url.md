@@ -5,7 +5,7 @@
 ::code-group
 
 ```vue [pages/about.vue]
-<script setup>
+<script setup lang="ts">
 const url = useRequestURL()
 </script>
 
