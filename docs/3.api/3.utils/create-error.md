@@ -20,7 +20,7 @@ If you throw an error created with `createError`:
 ### Example
 
 ```vue [pages/movies/[slug].vue]
-<script setup>
+<script setup lang="ts">
 const route = useRoute()
 const { data } = await useFetch(`/api/movies/${route.params.slug}`)
 if (!data.value) {
