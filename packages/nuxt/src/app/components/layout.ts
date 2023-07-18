@@ -33,8 +33,9 @@ export default defineComponent({
     const layoutRef = ref()
     context.expose({ layoutRef })
 
+    const done = nuxtApp.deferHydration()
+
     return () => {
-      const done = nuxtApp.deferHydration()
       const hasLayout = layout.value && layout.value in layouts
       if (process.dev && layout.value && !hasLayout && layout.value !== 'default') {
         console.warn(`Invalid layout \`${layout.value}\` selected.`)
