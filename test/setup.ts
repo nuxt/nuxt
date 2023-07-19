@@ -10,7 +10,9 @@ export async function setup () {
   if (fs.existsSync(tempDir)) {
     await fs.remove(tempDir)
   }
-  await fs.copy(fixtureDir, tempDir)
+  await fs.copy(fixtureDir, tempDir, {
+    filter: src => !src.includes('.nuxt') && !src.includes('.cache')
+  })
 }
 
 export async function teardown () {
