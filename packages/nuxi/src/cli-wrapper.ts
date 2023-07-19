@@ -4,7 +4,6 @@
 import { fileURLToPath } from 'node:url'
 import { fork } from 'node:child_process'
 import type { ChildProcess } from 'node:child_process'
-import mri from 'mri'
 
 const cliEntry = new URL('../dist/cli-run.mjs', import.meta.url)
 
@@ -34,17 +33,9 @@ function startSubprocess () {
   start()
 
   function start () {
-    const _argv = (process.env.__CLI_ARGV__ ? JSON.parse(process.env.__CLI_ARGV__) : process.argv).slice(2)
-    const args = mri(_argv, {
-      boolean: [
-        'no-clear'
-      ]
-    })
-    const execArguments: string[] = []
-    if (args.inspect) {
-      const inspectHostPort = args.inspect === true ? '0.0.0.0' : args.inspect
-      execArguments.push(`--inspect=${inspectHostPort}`)
-    }
+    const _argv: string[] = (process.env.__CLI_ARGV__ ? JSON.parse(process.env.__CLI_ARGV__) : process.argv).slice(2)
+    const execArguments: string[] = getInspectArgs()
+
     childProc = fork(fileURLToPath(cliEntry), [], { execArgv: execArguments })
     childProc.on('close', (code) => { if (code) { process.exit(code) } })
     childProc.on('message', (message) => {
@@ -53,5 +44,15 @@ function startSubprocess () {
         startSubprocess()
       }
     })
+
+    function getInspectArgs (): string[] {
+      const inspectArgv = _argv.find(argvItem => argvItem.includes('--inspect'))
+
+      if (!inspectArgv) {
+        return []
+      }
+
+      return [inspectArgv]
+    }
   }
 }
