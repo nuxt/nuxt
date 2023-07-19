@@ -149,7 +149,6 @@ async function createParcelWatcher () {
       }, {
         ignore: [
           ...nuxt.options.ignore,
-          '.nuxt',
           'node_modules'
         ]
       })
