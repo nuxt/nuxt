@@ -13,6 +13,21 @@ import layouts from '#build/layouts'
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 import { useNuxtApp } from '#app'
 
+// TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
+const LayoutLoader = defineComponent({
+  name: 'LayoutLoader',
+  inheritAttrs: false,
+  props: {
+    name: String,
+    layoutProps: Object
+  },
+  async setup (props, context) {
+    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
+
+    return () => h(LayoutComponent, props.layoutProps, context.slots)
+  }
+})
+
 export default defineComponent({
   name: 'NuxtLayout',
   inheritAttrs: false,
@@ -46,14 +61,16 @@ export default defineComponent({
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
-          // @ts-expect-error seems to be an issue in vue types
-          default: () => h(LayoutProvider, {
-            layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-            key: layout.value,
-            name: layout.value,
-            shouldProvide: !props.name,
-            hasTransition: !!transitionProps
-          }, context.slots)
+          default: () => h(
+            // @ts-expect-error seems to be an issue in vue types
+            LayoutProvider,
+            {
+              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              key: layout.value,
+              name: layout.value,
+              shouldProvide: !props.name,
+              hasTransition: !!transitionProps
+            }, context.slots)
         })
       }).default()
     }
@@ -112,12 +129,22 @@ const LayoutProvider = defineComponent({
       }
 
       if (process.dev && process.client && props.hasTransition) {
-        vnode = h(layouts[name], props.layoutProps, context.slots)
+        vnode = h(
+          // @ts-expect-error seems to be an issue in vue types
+          LayoutLoader,
+          { key: name, layoutProps: props.layoutProps, name },
+          context.slots
+        )
 
         return vnode
       }
 
-      return h(layouts[name], props.layoutProps, context.slots)
+      return h(
+        // @ts-expect-error seems to be an issue in vue types
+        LayoutLoader,
+        { key: name, layoutProps: props.layoutProps, name },
+        context.slots
+      )
     }
   }
 })
