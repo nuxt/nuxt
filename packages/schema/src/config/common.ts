@@ -352,15 +352,11 @@ export default defineUntypedSchema({
    */
   ignore: {
     $resolve: async (val, get) => [
-      '**/*.stories.{js,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
-      '**/*.d.ts', // ignore type declarations
+      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+      '**/*.d.{cts,mts,ts}', // ignore type declarations
+      '**/.{vercel,netlify,output,git,cache}',
       '**/dist',
-      '**/.vercel',
-      '**/.netlify',
-      '**/.output',
-      '**/.git',
-      '**/.cache',
       relative(await get('rootDir'), await get('analyzeDir')),
       relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
