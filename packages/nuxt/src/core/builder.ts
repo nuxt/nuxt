@@ -76,7 +76,6 @@ function createWatcher () {
     ignoreInitial: true,
     ignored: [
       isIgnored,
-      '.nuxt',
       'node_modules'
     ]
   })

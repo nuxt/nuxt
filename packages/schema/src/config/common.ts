@@ -1,5 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
-import { join, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -358,8 +358,8 @@ export default defineUntypedSchema({
       '.output',
       '.git',
       '.cache',
-      await get('analyzeDir'),
-      await get('buildDir'),
+      relative(await get('rootDir'), await get('analyzeDir')),
+      relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },
