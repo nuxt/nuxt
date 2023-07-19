@@ -44,16 +44,6 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
 
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
-    enforce: 'post',
-    transformInclude (id) {
-      // Vue files
-      if (isVue(id, { type: ['script', 'template'] })) {
-        return true
-      }
-
-      // JavaScript files
-      return isJS(id)
-    },
     async transform (code, id) {
       // Virtual component wrapper
       if (COMPONENT_QUERY_RE.test(id)) {
