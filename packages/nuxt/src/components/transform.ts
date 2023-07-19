@@ -46,7 +46,8 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
     transformInclude (id) {
-      return !isIgnored(id) || normalize(id).startsWith(nuxt.options.buildDir)
+      id = normalize(id)
+      return id.startsWith('virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id)
     },
     async transform (code, id) {
       // Virtual component wrapper
