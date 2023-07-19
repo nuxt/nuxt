@@ -1,7 +1,9 @@
-import type { InjectionKey, Ref, VNode } from 'vue'
+import type { Ref, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
+import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+
 import { useRoute } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -11,11 +13,20 @@ import layouts from '#build/layouts'
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 import { useNuxtApp } from '#app'
 
-export interface LayoutMeta {
-  isCurrent: (route: RouteLocationNormalizedLoaded) => boolean
-}
+// TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
+const LayoutLoader = defineComponent({
+  name: 'LayoutLoader',
+  inheritAttrs: false,
+  props: {
+    name: String,
+    layoutProps: Object
+  },
+  async setup (props, context) {
+    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
-export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
+    return () => h(LayoutComponent, props.layoutProps, context.slots)
+  }
+})
 
 export default defineComponent({
   name: 'NuxtLayout',
@@ -29,7 +40,7 @@ export default defineComponent({
   setup (props, context) {
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
-    const injectedRoute = inject('_route') as RouteLocationNormalizedLoaded
+    const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
     const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
@@ -37,8 +48,9 @@ export default defineComponent({
     const layoutRef = ref()
     context.expose({ layoutRef })
 
+    const done = nuxtApp.deferHydration()
+
     return () => {
-      const done = nuxtApp.deferHydration()
       const hasLayout = layout.value && layout.value in layouts
       if (process.dev && layout.value && !hasLayout && layout.value !== 'default') {
         console.warn(`Invalid layout \`${layout.value}\` selected.`)
@@ -49,13 +61,16 @@ export default defineComponent({
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
-          default: () => _wrapIf(LayoutProvider, hasLayout && {
-            layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-            key: layout.value,
-            name: layout.value,
-            shouldProvide: !props.name,
-            hasTransition: !!transitionProps
-          }, context.slots).default()
+          default: () => h(
+            // @ts-expect-error seems to be an issue in vue types
+            LayoutProvider,
+            {
+              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              key: layout.value,
+              name: layout.value,
+              shouldProvide: !props.name,
+              hasTransition: !!transitionProps
+            }, context.slots)
         })
       }).default()
     }
@@ -67,7 +82,7 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: String
+      type: [String, Boolean]
     },
     layoutProps: {
       type: Object
@@ -81,33 +96,55 @@ const LayoutProvider = defineComponent({
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
+    // eslint-disable-next-line vue/no-setup-props-destructure
+    const name = props.name
     if (props.shouldProvide) {
-      // eslint-disable-next-line vue/no-setup-props-destructure
-      const name = props.name
       provide(LayoutMetaSymbol, {
         isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default')
       })
     }
 
-    let vnode: VNode
+    let vnode: VNode | undefined
     if (process.dev && process.client) {
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            console.warn(`[nuxt] \`${props.name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+            if (name) {
+              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+            } else {
+              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+            }
           }
         })
       })
     }
 
     return () => {
+      if (!name || (typeof name === 'string' && !(name in layouts))) {
+        if (process.dev && process.client && props.hasTransition) {
+          vnode = context.slots.default?.() as VNode | undefined
+          return vnode
+        }
+        return context.slots.default?.()
+      }
+
       if (process.dev && process.client && props.hasTransition) {
-        vnode = h(layouts[props.name], props.layoutProps, context.slots)
+        vnode = h(
+          // @ts-expect-error seems to be an issue in vue types
+          LayoutLoader,
+          { key: name, layoutProps: props.layoutProps, name },
+          context.slots
+        )
 
         return vnode
       }
 
-      return h(layouts[props.name], props.layoutProps, context.slots)
+      return h(
+        // @ts-expect-error seems to be an issue in vue types
+        LayoutLoader,
+        { key: name, layoutProps: props.layoutProps, name },
+        context.slots
+      )
     }
   }
 })
