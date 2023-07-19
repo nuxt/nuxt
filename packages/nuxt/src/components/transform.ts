@@ -1,10 +1,10 @@
-import { isIgnored } from '@nuxt/kit'
 import type { Nuxt } from 'nuxt/schema'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
+import { isJS, isVue } from '../core/utils'
 import type { getComponentsT } from './module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
@@ -45,7 +45,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
     transformInclude (id) {
-      return !isIgnored(id)
+      return isVue(id) || isJS(id)
     },
     async transform (code, id) {
       // Virtual component wrapper
