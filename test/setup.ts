@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import fs from 'fs-extra'
+import { execaCommand } from 'execa'
 
 const dir = dirname(fileURLToPath(import.meta.url))
 const fixtureDir = join(dir, 'fixtures')
@@ -13,6 +14,7 @@ export async function setup () {
   await fs.copy(fixtureDir, tempDir, {
     filter: src => !src.includes('.nuxt') && !src.includes('.cache')
   })
+  await execaCommand(`pnpm nuxi prepare ${tempDir}`)
 }
 
 export async function teardown () {
