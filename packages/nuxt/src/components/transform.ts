@@ -5,6 +5,7 @@ import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
+import { normalize } from 'pathe'
 import type { getComponentsT } from './module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
@@ -45,7 +46,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
     transformInclude (id) {
-      return !isIgnored(id) || id.includes(nuxt.options.buildDir)
+      return !isIgnored(id) || normalize(id).startsWith(nuxt.options.buildDir)
     },
     async transform (code, id) {
       // Virtual component wrapper
