@@ -5,8 +5,8 @@
 You can use `useNuxtApp()` within composables, plugins and components.
 
 ```vue [app.vue]
-<script setup>
-  const nuxtApp = useNuxtApp()
+<script setup lang="ts">
+const nuxtApp = useNuxtApp()
 </script>
 ```
 
@@ -90,7 +90,7 @@ await nuxtApp.callHook('my-plugin:init')
 - **data** (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
 ```vue [app.vue]
-<script setup>
+<script setup lang="ts">
 const { data } = await useAsyncData('count', () => $fetch('/api/count'))
 </script>
 ```
