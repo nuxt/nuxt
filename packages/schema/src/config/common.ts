@@ -355,6 +355,9 @@ export default defineUntypedSchema({
       '**/*.stories.{js,ts,jsx,tsx}', // ignore storybook files
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
+      '**/dist',
+      '**/.vercel',
+      '**/.netlify',
       '**/.output',
       '**/.git',
       '**/.cache',
