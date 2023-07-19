@@ -355,9 +355,9 @@ export default defineUntypedSchema({
       '**/*.stories.{js,ts,jsx,tsx}', // ignore storybook files
       '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
       '**/*.d.ts', // ignore type declarations
-      '.output',
-      '.git',
-      '.cache',
+      '**/.output',
+      '**/.git',
+      '**/.cache',
       relative(await get('rootDir'), await get('analyzeDir')),
       relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
