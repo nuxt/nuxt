@@ -356,7 +356,6 @@ export default defineUntypedSchema({
       '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
       '**/*.d.{cts,mts,ts}', // ignore type declarations
       '**/.{vercel,netlify,output,git,cache,data}',
-      '**/dist',
       relative(await get('rootDir'), await get('analyzeDir')),
       relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
