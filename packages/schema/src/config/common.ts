@@ -355,7 +355,7 @@ export default defineUntypedSchema({
       '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
       '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
       '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{vercel,netlify,output,git,cache}',
+      '**/.{vercel,netlify,output,git,cache,data}',
       '**/dist',
       relative(await get('rootDir'), await get('analyzeDir')),
       relative(await get('rootDir'), await get('buildDir')),
