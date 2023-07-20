@@ -38,7 +38,7 @@
     "giget": "1.1.2",
     "h3": "1.7.1",
     "jiti": "1.19.1",
-    "listhen": "1.0.4",
+    "listhen": "1.1.2",
     "mlly": "1.4.0",
     "mri": "1.2.0",
     "ohash": "1.1.2",
@@ -46,7 +46,7 @@
     "perfect-debounce": "1.0.0",
     "pkg-types": "1.0.3",
     "scule": "1.0.0",
-    "semver": "7.5.3",
+    "semver": "7.5.4",
     "ufo": "1.1.2",
     "unbuild": "latest"
   },
