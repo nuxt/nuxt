@@ -291,7 +291,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
   nitro.hooks.hook('prerender:routes', (routes) => {
-    nuxt.callHook('prerender:routes', { routes })
+    return nuxt.callHook('prerender:routes', { routes })
   })
 
   // Enable runtime compiler client side
