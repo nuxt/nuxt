@@ -87,9 +87,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
     const regenerateImports = async () => {
-      ctx.clearDynamicImports()
       await ctx.modifyDynamicImports(async (imports) => {
-        // Scan composables/
+        // Clear old imports
+        imports.length = 0
+        // Scan `composables/`
         const composableImports = await scanDirExports(composablesDirs)
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
@@ -97,6 +98,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         imports.push(...composableImports)
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
+        return imports
       })
     }
 

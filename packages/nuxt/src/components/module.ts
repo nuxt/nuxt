@@ -98,7 +98,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.ts', // .d.ts files
+            '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || [])
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)

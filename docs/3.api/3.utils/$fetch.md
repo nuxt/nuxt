@@ -14,7 +14,7 @@ However, using `$fetch` in components without wrapping it with [`useAsyncData`](
 We recommend to use [`useFetch`](https://nuxt.com/docs/api/composables/use-fetch) or [`useAsyncData`](https://nuxt.com/docs/api/composables/use-async-data) + `$fetch` to prevent double data fetching when fetching the component data.
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // During SSR data is fetched twice, once on the server and once on the client.
 const dataTwice = await $fetch('/api/item')
 
@@ -31,7 +31,7 @@ const { data } = await useFetch('/api/item')
 You can use `$fetch` for any method that are executed only on client-side.
 
 ```vue
-<script setup>
+<script setup lang="ts">
 function contactForm() {
   $fetch('/api/contact', {
     method: 'POST',
