@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release-pr:
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
+    if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && github.event.comment.body == '/trigger release'
     permissions:
       id-token: write
       pull-requests: write
