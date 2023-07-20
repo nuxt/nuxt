@@ -61,7 +61,7 @@
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
     "h3": "1.7.1",
-    "happy-dom": "^10.5.2",
+    "happy-dom": "10.5.2",
     "jiti": "1.19.1",
     "markdownlint-cli": "^0.33.0",
     "nitropack": "2.5.2",
