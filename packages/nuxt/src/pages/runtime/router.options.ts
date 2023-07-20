@@ -12,6 +12,7 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
+    const behavior = this.scrollBehaviorType ?? 'auto'
 
     // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
     // savedPosition is only available for popstate navigations (back button)
@@ -28,7 +29,7 @@ export default <RouterConfig> {
         return { left: 0, top: 0 }
       }
       if (to.hash) {
-        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash) }
+        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
       }
     }
 
@@ -39,7 +40,7 @@ export default <RouterConfig> {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
         await nextTick()
         if (to.hash) {
-          position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash) }
+          position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
         }
         resolve(position)
       })
