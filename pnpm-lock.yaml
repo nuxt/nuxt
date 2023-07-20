@@ -84,7 +84,7 @@ importers:
         specifier: 1.7.1
         version: 1.7.1
       happy-dom:
-        specifier: ^10.5.2
+        specifier: 10.5.2
         version: 10.5.2
       jiti:
         specifier: 1.19.1
