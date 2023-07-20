@@ -1020,7 +1020,7 @@ describe('deferred app suspense resolve', () => {
       await page.goto(url(path))
       await page.waitForLoadState('networkidle')
 
-      // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
+      // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
@@ -1033,6 +1033,26 @@ describe('deferred app suspense resolve', () => {
   })
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
+  })
+  it('should wait for suspense in parent layout', async () => {
+    const page = await createPage('/hydration/layout')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('Tests whether hydration is properly resolved within an async layout')
+  })
+  it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
+    const page = await createPage('/hydration/spa-redirection/start')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('fully hydrated and ready to go')
   })
 })
 
@@ -1750,6 +1770,17 @@ describe('component islands', () => {
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
 
     await page.close()
+  })
+
+  it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
+    process.env.NUXT_APP_BASE_URL = '/foo/'
+    await startServer()
+
+    const result = await fetch('/foo/islands')
+    expect(result.status).toBe(200)
+
+    process.env.NUXT_APP_BASE_URL = undefined
+    await startServer()
   })
 })
 

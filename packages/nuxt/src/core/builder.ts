@@ -76,13 +76,12 @@ function createWatcher () {
     ignoreInitial: true,
     ignored: [
       isIgnored,
-      '.nuxt',
       'node_modules'
     ]
   })
 
   watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
-  nuxt.hook('close', () => watcher.close())
+  nuxt.hook('close', () => watcher?.close())
 }
 
 function createGranularWatcher () {
@@ -104,7 +103,7 @@ function createGranularWatcher () {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidar.watch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored] })
+    const watcher = chokidar.watch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, '**/node_modules'] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
@@ -113,13 +112,13 @@ function createGranularWatcher () {
         nuxt.callHook('builder:watch', event, path)
       }
       if (event === 'unlinkDir' && path in watchers) {
-        watchers[path].close()
+        watchers[path]?.close()
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
         watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         watchers[path].on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
-        nuxt.hook('close', () => watchers[path].close())
+        nuxt.hook('close', () => watchers[path]?.close())
       }
     })
     watcher.on('ready', () => {
@@ -150,7 +149,6 @@ async function createParcelWatcher () {
       }, {
         ignore: [
           ...nuxt.options.ignore,
-          '.nuxt',
           'node_modules'
         ]
       })

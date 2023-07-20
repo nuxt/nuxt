@@ -33,7 +33,10 @@ function startSubprocess () {
   start()
 
   function start () {
-    childProc = fork(fileURLToPath(cliEntry))
+    const _argv: string[] = (process.env.__CLI_ARGV__ ? JSON.parse(process.env.__CLI_ARGV__) : process.argv).slice(2)
+    const execArguments: string[] = getInspectArgs()
+
+    childProc = fork(fileURLToPath(cliEntry), [], { execArgv: execArguments })
     childProc.on('close', (code) => { if (code) { process.exit(code) } })
     childProc.on('message', (message) => {
       if ((message as { type: string })?.type === 'nuxt:restart') {
@@ -41,5 +44,15 @@ function startSubprocess () {
         startSubprocess()
       }
     })
+
+    function getInspectArgs (): string[] {
+      const inspectArgv = _argv.find(argvItem => argvItem.includes('--inspect'))
+
+      if (!inspectArgv) {
+        return []
+      }
+
+      return [inspectArgv]
+    }
   }
 }
