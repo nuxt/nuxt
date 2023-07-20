@@ -83,7 +83,28 @@ export function useAsyncData<
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
@@ -272,12 +293,34 @@ export function useLazyAsyncData<
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useLazyAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useLazyAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
