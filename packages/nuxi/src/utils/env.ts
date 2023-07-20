@@ -5,4 +5,5 @@ export const overrideEnv = (targetEnv: string) => {
   }
 
   process.env.NODE_ENV = targetEnv
+  process.dev = targetEnv === 'development'
 }
