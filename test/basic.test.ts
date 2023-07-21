@@ -1418,6 +1418,30 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page with lazy server component').click()
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section></section>"')
+    expect(text).not.toContain('async component that was very long')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('section')).toContain('async component that was very long')
+    await page.close()
+  })
+
+  it('non-lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page without lazy server component').click()
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toContain('async component that was very long')
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('section')).toContain('async component that was very long')
+    await page.close()
+  })
+
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
