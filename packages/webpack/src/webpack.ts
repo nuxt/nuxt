@@ -143,7 +143,9 @@ async function compile (compiler: Compiler) {
         compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
         // Start watch
         createDevMiddleware(compiler).then((devMiddleware) => {
-          compilersWatching.push(devMiddleware.context.watching)
+          if (devMiddleware.context.watching) {
+            compilersWatching.push(devMiddleware.context.watching)
+          }
         })
       })
     }

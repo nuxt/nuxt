@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { relative, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -98,7 +98,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.ts', // .d.ts files
+            '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || [])
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)
@@ -226,6 +226,22 @@ export default defineNuxtModule<ComponentsOptions>({
         config.plugins.push(islandsTransform.vite({
           getComponents
         }))
+      }
+      if (!isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push({
+          name: 'nuxt-server-component-hmr',
+          handleHotUpdate (ctx) {
+            const components = getComponents()
+            const filePath = normalize(ctx.file)
+            const comp = components.find(c => c.filePath === filePath)
+            if (comp?.mode === 'server') {
+              ctx.server.ws.send({
+                event: `nuxt-server-component:${comp.pascalName}`,
+                type: 'custom'
+              })
+            }
+          }
+        })
       }
     })
     nuxt.hook('webpack:config', (configs) => {

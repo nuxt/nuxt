@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
@@ -15,6 +15,7 @@ import { transpile } from './utils/transpile'
 export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
+  const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir).then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, {
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -56,12 +57,9 @@ export async function buildServer (ctx: ViteBuildContext) {
       }
     },
     ssr: {
-      external: ['#internal/nitro', '#internal/nitro/utils'],
+      external: ['#internal/nitro', '#internal/nitro/utils', ...nitroDependencies],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
-        // TODO: Use externality for production (rollup) build
-        /\/esm\/.*\.js$/,
-        /\.(es|esm|esm-browser|esm-bundler).js$/,
         '/__vue-jsx',
         '#app',
         /^nuxt(\/|$)/,

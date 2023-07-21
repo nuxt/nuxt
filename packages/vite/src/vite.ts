@@ -76,7 +76,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          include: ['vue', '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared'],
+          include: ['vue'],
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
