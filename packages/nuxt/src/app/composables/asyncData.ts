@@ -120,8 +120,9 @@ export function useAsyncData<
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
-  const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
-  const hasCachedData = () => getCachedData() !== undefined
+  // toRef to make sure asyncData and useNuxtData are synced
+  const getCachedData = () => nuxt.isHydrating ? toRef(nuxt.payload.data, key) : nuxt.static.data[key]
+  const hasCachedData = () => unref(getCachedData()) !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key]) {
