@@ -1422,11 +1422,19 @@ describe('server components/islands', () => {
     const page = await createPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page with lazy server component').click()
+
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section data-testid=\\"fallback\\"> Loading server component </section><section data-testid=\\"no-fallback\\"><div></div></section>"')
     expect(text).not.toContain('async component that was very long')
-    await page.waitForLoadState('networkidle')
-    expect(await page.innerText('section')).toContain('async component that was very long')
+    expect(text).toContain('Loading server component')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => document.querySelector('section')?.innerText?.includes('async component'))
+
+    expect(await page.getByTestId('no-fallback').innerText()).toContain('async component that was very long')
+    expect(await page.getByTestId('fallback').innerText()).toContain('async component that was very long')
     await page.close()
   })
 
@@ -1434,11 +1442,18 @@ describe('server components/islands', () => {
     const page = await createPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
+
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section data-testid=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section data-testid=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
-    await page.waitForLoadState('networkidle')
-    expect(await page.innerText('section')).toContain('async component that was very long')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => document.querySelector('section')?.innerText?.includes('async component'))
+
+    expect(await page.getByTestId('no-fallback').innerText()).toContain('async component that was very long')
+    expect(await page.getByTestId('fallback').innerText()).toContain('async component that was very long')
     await page.close()
   })
 

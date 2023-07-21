@@ -62,7 +62,7 @@ export default defineComponent({
       }
     }
 
-    const ssrHTML = ref('<div></div>')
+    const ssrHTML = ref<string>('')
     if (process.client) {
       const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
       if (renderedHTML && nuxtApp.isHydrating) {
@@ -75,7 +75,7 @@ export default defineComponent({
           }
         })
       }
-      ssrHTML.value = renderedHTML ?? '<div></div>'
+      ssrHTML.value = renderedHTML
     }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
@@ -162,9 +162,12 @@ export default defineComponent({
     }
 
     return () => {
+      if (!html.value && 'fallback' in slots) {
+        return slots.fallback?.()
+      }
       const nodes = [createVNode(Fragment, {
         key: key.value
-      }, [h(createStaticVNode(html.value, 1))])]
+      }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
       if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
