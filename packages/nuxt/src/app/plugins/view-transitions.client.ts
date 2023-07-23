@@ -3,7 +3,7 @@ import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!document.startViewTransition) { return }
+  if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return }
 
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
