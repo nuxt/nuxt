@@ -38,15 +38,13 @@ export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigP
 }
 
 export function fileName (ctx: WebpackConfigContext, key: string) {
-  const { options } = ctx
-
-  let fileName = options.webpack.filenames[key]
+  let fileName = ctx.options.webpack.filenames[key]
 
   if (typeof fileName === 'function') {
     fileName = fileName(ctx)
   }
 
-  if (typeof fileName === 'string' && options.dev) {
+  if (typeof fileName === 'string' && ctx.options.dev) {
     const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
     if (hash) {
       logger.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)

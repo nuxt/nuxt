@@ -119,13 +119,11 @@ async function createDevMiddleware (compiler: Compiler) {
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
-  const { name } = compiler.options
-
-  await nuxt.callHook('webpack:compile', { name: name!, compiler })
+  await nuxt.callHook('webpack:compile', { name: compiler.options.name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('webpack:compiled', { name: name!, compiler, stats })
+    await nuxt.callHook('webpack:compiled', { name: compiler.options.name!, compiler, stats })
   })
 
   // --- Dev Build ---
@@ -137,7 +135,7 @@ async function compile (compiler: Compiler) {
     })
 
     // Client build
-    if (name === 'client') {
+    if (compiler.options.name === 'client') {
       return new Promise((resolve, reject) => {
         compiler.hooks.done.tap('nuxt-dev', () => { resolve(null) })
         compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
