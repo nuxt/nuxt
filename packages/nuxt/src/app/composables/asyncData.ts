@@ -38,7 +38,9 @@ export interface AsyncDataOptions<
   DefaultT = null,
 > {
   server?: boolean
+  /** @deprecated Use strategy: 'lazy' */
   lazy?: boolean
+  strategy?: 'lazy' | 'parallel' | 'blocking'
   default?: () => DefaultT | Ref<DefaultT>
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
@@ -135,7 +137,7 @@ export function useAsyncData<
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
 
-  options.lazy = options.lazy ?? false
+  options.strategy = options.strategy || (options.lazy ? 'lazy' : 'blocking')
   options.immediate = options.immediate ?? true
 
   // Setup nuxt instance payload
@@ -251,7 +253,7 @@ export function useAsyncData<
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy) && options.immediate) {
+    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.strategy === 'lazy') && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
@@ -332,7 +334,7 @@ export function useLazyAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
   // @ts-expect-error we pass an extra argument to prevent a key being injected
-  return useAsyncData(key, handler, { ...options, lazy: true }, null)
+  return useAsyncData(key, handler, { ...options, strategy: 'lazy' }, null)
 }
 
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
