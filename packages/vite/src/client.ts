@@ -20,7 +20,7 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, {
+  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
@@ -82,7 +82,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     server: {
       middlewareMode: true
     }
-  } satisfies vite.InlineConfig)
+  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 
