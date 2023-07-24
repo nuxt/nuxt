@@ -354,12 +354,14 @@ async function initNuxt (nuxt: Nuxt) {
       for (const layer of nuxt.options._layers) {
         if (!layer.config.watch) { continue }
         const normalizedPath = relative(layer.config.srcDir, path)
+        // not inside layer srcDir
+        if (normalizedPath.startsWith('..') || isAbsolute(normalizedPath)) { continue }
         for (const pattern of await Promise.all(layer.config.watch)) {
           if (typeof pattern === 'string') {
             if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
             continue
           }
-          // @ts-expect-error: pattern is filtered
+          // @ts-expect-error: 'pattern' is possibly 'undefined'.ts(18048) => pattern is filtered
           if (pattern.test(path) || pattern.test(normalizedPath)) { return nuxt.callHook('restart') }
         }
       }
