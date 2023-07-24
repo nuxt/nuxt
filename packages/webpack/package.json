@@ -41,7 +41,7 @@
     "ohash": "^1.1.2",
     "pathe": "^1.1.1",
     "pify": "^6.1.0",
-    "postcss": "^8.4.26",
+    "postcss": "^8.4.27",
     "postcss-import": "^15.1.0",
     "postcss-loader": "^7.3.3",
     "postcss-url": "^10.1.3",
