@@ -1,4 +1,4 @@
-import { join, normalize, relative, resolve } from 'pathe'
+import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -347,13 +347,16 @@ async function initNuxt (nuxt: Nuxt) {
       return nuxt.callHook('restart', { hard: true })
     }
 
-    // User provided patterns
+    // User provided patterns:
+    // - nuxt.options.watch relative to srcDir
+    // - path can be absolute
+    const normalizedPath = isAbsolute(path) ? relative(nuxt.options.srcDir, path) : path
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        if (pattern === path) { return nuxt.callHook('restart') }
+        if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
         continue
       }
-      if (pattern.test(path)) { return nuxt.callHook('restart') }
+      if (pattern.test(path) || pattern.test(normalizedPath)) { return nuxt.callHook('restart') }
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
