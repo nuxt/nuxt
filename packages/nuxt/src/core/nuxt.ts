@@ -341,7 +341,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', async (event, path) => {
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
@@ -351,7 +351,7 @@ async function initNuxt (nuxt: Nuxt) {
     // - nuxt.options.watch relative to srcDir
     // - path can be absolute
     const normalizedPath = isAbsolute(path) ? relative(nuxt.options.srcDir, path) : path
-    for (const pattern of nuxt.options.watch) {
+    for (const pattern of await Promise.all(nuxt.options.watch)) {
       if (typeof pattern === 'string') {
         if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
         continue

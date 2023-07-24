@@ -371,7 +371,9 @@ export default defineUntypedSchema({
    * @type {Array<string | RegExp>}
    */
   watch: {
-    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
+    $resolve: async (val, get) => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp).map(
+      async (b: string | RegExp) => typeof b === 'string' ? resolve(await get('srcDir'), b) : b
+    )
   },
 
   /**
