@@ -55,7 +55,7 @@
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
-    "@nuxt/telemetry": "^2.3.1",
+    "@nuxt/telemetry": "^2.3.2",
     "@nuxt/ui-templates": "^1.2.0",
     "@nuxt/vite-builder": "workspace:../vite",
     "@unhead/ssr": "^1.1.32",
@@ -68,7 +68,7 @@
     "defu": "^6.1.2",
     "destr": "^2.0.0",
     "devalue": "^4.3.2",
-    "esbuild": "^0.18.14",
+    "esbuild": "^0.18.16",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",
@@ -112,7 +112,7 @@
     "@types/prompts": "2.4.4",
     "@vitejs/plugin-vue": "4.2.3",
     "unbuild": "latest",
-    "vite": "4.4.4",
+    "vite": "4.4.6",
     "vitest": "0.33.0"
   },
   "peerDependencies": {
