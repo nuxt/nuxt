@@ -349,14 +349,20 @@ async function initNuxt (nuxt: Nuxt) {
 
     // User provided patterns:
     // - nuxt.options.watch relative to srcDir
-    // - path can be absolute
-    const normalizedPath = isAbsolute(path) ? relative(nuxt.options.srcDir, path) : path
-    for (const pattern of await Promise.all(nuxt.options.watch)) {
-      if (typeof pattern === 'string') {
-        if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
-        continue
+    // - path should be absolute
+    if (isAbsolute(path)) {
+      for (const layer of nuxt.options._layers) {
+        if (!layer.config.watch) { continue }
+        const normalizedPath = relative(layer.config.srcDir, path)
+        for (const pattern of await Promise.all(layer.config.watch)) {
+          if (typeof pattern === 'string') {
+            if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
+            continue
+          }
+          // @ts-expect-error: pattern is filtered
+          if (pattern.test(path) || pattern.test(normalizedPath)) { return nuxt.callHook('restart') }
+        }
       }
-      if (pattern.test(path) || pattern.test(normalizedPath)) { return nuxt.callHook('restart') }
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
