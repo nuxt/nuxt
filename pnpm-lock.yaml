@@ -12,7 +12,7 @@ overrides:
   '@nuxt/webpack-builder': workspace:*
   nuxi: workspace:*
   nuxt: workspace:*
-  vite: 4.4.6
+  vite: 4.4.7
   vue: 3.3.4
   magic-string: ^0.30.1
 
@@ -103,7 +103,7 @@ importers:
         version: link:packages/nuxt
       nuxt-vitest:
         specifier: 0.10.1
-        version: 0.10.1(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(happy-dom@10.5.2)(vite@4.4.6)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.10.1(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(happy-dom@10.5.2)(vite@4.4.7)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
       ofetch:
         specifier: 1.1.1
         version: 1.1.1
@@ -129,8 +129,8 @@ importers:
         specifier: 1.1.2
         version: 1.1.2
       vite:
-        specifier: 4.4.6
-        version: 4.4.6(@types/node@18.17.0)
+        specifier: 4.4.7
+        version: 4.4.7(@types/node@18.17.0)
       vitest:
         specifier: 0.33.0
         version: 0.33.0(happy-dom@10.5.2)
@@ -223,8 +223,8 @@ importers:
         specifier: latest
         version: 1.2.1
       vite:
-        specifier: 4.4.6
-        version: 4.4.6(@types/node@18.17.0)
+        specifier: 4.4.7
+        version: 4.4.7(@types/node@18.17.0)
       vitest:
         specifier: 0.33.0
         version: 0.33.0(happy-dom@10.5.2)
@@ -508,13 +508,13 @@ importers:
         version: 2.4.4
       '@vitejs/plugin-vue':
         specifier: 4.2.3
-        version: 4.2.3(vite@4.4.6)(vue@3.3.4)
+        version: 4.2.3(vite@4.4.7)(vue@3.3.4)
       unbuild:
         specifier: latest
         version: 1.2.1
       vite:
-        specifier: 4.4.6
-        version: 4.4.6(@types/node@18.17.0)
+        specifier: 4.4.7
+        version: 4.4.7(@types/node@18.17.0)
       vitest:
         specifier: 0.33.0
         version: 0.33.0(happy-dom@10.5.2)
@@ -566,10 +566,10 @@ importers:
         version: 1.1.32
       '@vitejs/plugin-vue':
         specifier: 4.2.3
-        version: 4.2.3(vite@4.4.6)(vue@3.3.4)
+        version: 4.2.3(vite@4.4.7)(vue@3.3.4)
       '@vitejs/plugin-vue-jsx':
         specifier: 3.0.1
-        version: 3.0.1(vite@4.4.6)(vue@3.3.4)
+        version: 3.0.1(vite@4.4.7)(vue@3.3.4)
       '@vue/compiler-core':
         specifier: 3.3.4
         version: 3.3.4
@@ -592,8 +592,8 @@ importers:
         specifier: 2.3.1
         version: 2.3.1
       vite:
-        specifier: 4.4.6
-        version: 4.4.6(@types/node@18.17.0)
+        specifier: 4.4.7
+        version: 4.4.7(@types/node@18.17.0)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -669,10 +669,10 @@ importers:
         version: 5.0.2(rollup@3.26.0)
       '@vitejs/plugin-vue':
         specifier: ^4.2.3
-        version: 4.2.3(vite@4.4.6)(vue@3.3.4)
+        version: 4.2.3(vite@4.4.7)(vue@3.3.4)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.1
-        version: 3.0.1(vite@4.4.6)(vue@3.3.4)
+        version: 3.0.1(vite@4.4.7)(vue@3.3.4)
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.14(postcss@8.4.27)
@@ -755,14 +755,14 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       vite:
-        specifier: 4.4.6
-        version: 4.4.6(@types/node@18.17.0)
+        specifier: 4.4.7
+        version: 4.4.7(@types/node@18.17.0)
       vite-node:
         specifier: ^0.33.0
         version: 0.33.0(@types/node@18.17.0)
       vite-plugin-checker:
         specifier: ^0.6.1
-        version: 0.6.1(eslint@8.45.0)(typescript@5.0.4)(vite@4.4.6)(vue-tsc@1.8.6)
+        version: 0.6.1(eslint@8.45.0)(typescript@5.0.4)(vite@4.4.7)(vue-tsc@1.8.6)
       vue-bundle-renderer:
         specifier: ^1.0.3
         version: 1.0.3
@@ -2844,7 +2844,7 @@ packages:
       - encoding
       - supports-color
 
-  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.4.6)(vue@3.3.4):
+  /@vitejs/plugin-vue-jsx@3.0.1(vite@4.4.7)(vue@3.3.4):
     resolution: {integrity: sha512-+Jb7ggL48FSPS1uhPnJbJwWa9Sr90vQ+d0InW+AhBM22n+cfuYqJZDckBc+W3QSHe1WDvewMZfa4wZOtk5pRgw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -2854,19 +2854,19 @@ packages:
       '@babel/core': 7.22.5
       '@babel/plugin-transform-typescript': 7.21.0(@babel/core@7.22.5)
       '@vue/babel-plugin-jsx': 1.1.1(@babel/core@7.22.5)
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
       vue: 3.3.4
     transitivePeerDependencies:
       - supports-color
 
-  /@vitejs/plugin-vue@4.2.3(vite@4.4.6)(vue@3.3.4):
+  /@vitejs/plugin-vue@4.2.3(vite@4.4.7)(vue@3.3.4):
     resolution: {integrity: sha512-R6JDUfiZbJA9cMiguQ7jxALsgiprjBeHL5ikpXfJCH62pPHtI+JdJ5xWj6Ev73yXSlYl86+blXn1kZHQ7uElxw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.0.0
       vue: ^3.2.25
     dependencies:
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
       vue: 3.3.4
 
   /@vitest/expect@0.33.0:
@@ -6807,7 +6807,7 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxt-vitest@0.10.1(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(happy-dom@10.5.2)(vite@4.4.6)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
+  /nuxt-vitest@0.10.1(@vitejs/plugin-vue-jsx@3.0.1)(@vitejs/plugin-vue@4.2.3)(happy-dom@10.5.2)(vite@4.4.7)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-Lee+r2Cs1L9OgLjmGC51aggE5xnbspbEMmt7oYYVOyNHmSz5zAp+YHTGU42BdD1ueYXDZ8QKmknlR0cxj1vLBw==}
     peerDependencies:
       '@vitejs/plugin-vue': '*'
@@ -6816,14 +6816,14 @@ packages:
       vitest: ^0.24.5 || ^0.26.0 || ^0.27.0 || ^0.28.0 || ^0.29.0 || ^0.30.0 || ^0.33.0
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@vitejs/plugin-vue': 4.2.3(vite@4.4.6)(vue@3.3.4)
-      '@vitejs/plugin-vue-jsx': 3.0.1(vite@4.4.6)(vue@3.3.4)
+      '@vitejs/plugin-vue': 4.2.3(vite@4.4.7)(vue@3.3.4)
+      '@vitejs/plugin-vue-jsx': 3.0.1(vite@4.4.7)(vue@3.3.4)
       '@vitest/ui': 0.33.0(vitest@0.33.0)
       defu: 6.1.2
       get-port-please: 3.0.1
       perfect-debounce: 1.0.0
       std-env: 3.3.3
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
       vitest: 0.33.0(happy-dom@10.5.2)
       vitest-environment-nuxt: 0.10.1(happy-dom@10.5.2)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
     transitivePeerDependencies:
@@ -8805,7 +8805,7 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -8816,7 +8816,7 @@ packages:
       - supports-color
       - terser
 
-  /vite-plugin-checker@0.6.1(eslint@8.45.0)(typescript@5.0.4)(vite@4.4.6)(vue-tsc@1.8.6):
+  /vite-plugin-checker@0.6.1(eslint@8.45.0)(typescript@5.0.4)(vite@4.4.7)(vue-tsc@1.8.6):
     resolution: {integrity: sha512-4fAiu3W/IwRJuJkkUZlWbLunSzsvijDf0eDN6g/MGh6BUK4SMclOTGbLJCPvdAcMOQvVmm8JyJeYLYd4//8CkA==}
     engines: {node: '>=14.16'}
     peerDependencies:
@@ -8862,7 +8862,7 @@ packages:
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
       typescript: 5.0.4
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
       vscode-languageclient: 7.0.0
       vscode-languageserver: 7.0.0
       vscode-languageserver-textdocument: 1.0.8
@@ -8870,8 +8870,8 @@ packages:
       vue-tsc: 1.8.6(typescript@5.0.4)
     dev: false
 
-  /vite@4.4.6(@types/node@18.17.0):
-    resolution: {integrity: sha512-EY6Mm8vJ++S3D4tNAckaZfw3JwG3wa794Vt70M6cNJ6NxT87yhq7EC8Rcap3ahyHdo8AhCmV9PTk+vG1HiYn1A==}
+  /vite@4.4.7(@types/node@18.17.0):
+    resolution: {integrity: sha512-6pYf9QJ1mHylfVh39HpuSfMPojPSKVxZvnclX1K1FyZ1PXDOcLBibdq5t1qxJSnL63ca8Wf4zts6mD8u8oc9Fw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8990,7 +8990,7 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.6(@types/node@18.17.0)
+      vite: 4.4.7(@types/node@18.17.0)
       vite-node: 0.33.0(@types/node@18.17.0)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
