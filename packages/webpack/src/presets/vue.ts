@@ -14,7 +14,7 @@ export function vue (ctx: WebpackConfigContext) {
     loader: 'vue-loader',
     options: {
       reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
-      ...ctx.options.webpack.loaders.vue
+      ...ctx.userConfig.loaders.vue
     }
   })
 

@@ -77,10 +77,10 @@ function serverPlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins = ctx.config.plugins || []
 
   // Server polyfills
-  if (ctx.options.webpack.serverURLPolyfill) {
+  if (ctx.userConfig.serverURLPolyfill) {
     ctx.config.plugins.push(new webpack.ProvidePlugin({
-      URL: [ctx.options.webpack.serverURLPolyfill, 'URL'],
-      URLSearchParams: [ctx.options.webpack.serverURLPolyfill, 'URLSearchParams']
+      URL: [ctx.userConfig.serverURLPolyfill, 'URL'],
+      URLSearchParams: [ctx.userConfig.serverURLPolyfill, 'URLSearchParams']
     }))
   }
 

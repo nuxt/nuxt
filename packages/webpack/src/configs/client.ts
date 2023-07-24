@@ -51,7 +51,7 @@ function clientHMR (ctx: WebpackConfigContext) {
     return
   }
 
-  const clientOptions = ctx.options.webpack.hotMiddleware?.client || {}
+  const clientOptions = ctx.userConfig.hotMiddleware?.client || {}
   const hotMiddlewareClientOptions = {
     reload: true,
     timeout: 30000,
@@ -81,7 +81,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
-  if (!ctx.isDev && ctx.name === 'client' && ctx.options.webpack.analyze) {
+  if (!ctx.isDev && ctx.name === 'client' && ctx.userConfig.analyze) {
     const statsDir = resolve(ctx.options.analyzeDir)
 
     ctx.config.plugins!.push(new BundleAnalyzerPlugin({
@@ -91,7 +91,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
       openAnalyzer: true,
       reportFilename: resolve(statsDir, `${ctx.name}.html`),
       statsFilename: resolve(statsDir, `${ctx.name}.json`),
-      ...ctx.options.webpack.analyze === true ? {} : ctx.options.webpack.analyze
+      ...ctx.userConfig.analyze === true ? {} : ctx.userConfig.analyze
     }))
   }
 

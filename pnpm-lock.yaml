@@ -806,6 +806,9 @@ importers:
       cssnano:
         specifier: ^6.0.1
         version: 6.0.1(postcss@8.4.27)
+      defu:
+        specifier: ^6.1.2
+        version: 6.1.2
       esbuild-loader:
         specifier: ^3.0.1
         version: 3.0.1(webpack@5.88.2)

@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash-es'
 import type { Configuration } from 'webpack'
-import type { Nuxt } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 
 export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext> {}
@@ -12,6 +12,7 @@ export function createWebpackConfigContext (nuxt: Nuxt) {
   return {
     nuxt,
     options: nuxt.options,
+    userConfig: nuxt.options.webpack as Omit<NuxtOptions['webpack'], '$client' | '$server'>,
     config: {} as Configuration,
 
     name: 'base',
@@ -38,7 +39,7 @@ export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigP
 }
 
 export function fileName (ctx: WebpackConfigContext, key: string) {
-  let fileName = ctx.options.webpack.filenames[key]
+  let fileName = ctx.userConfig.filenames[key]
 
   if (typeof fileName === 'function') {
     fileName = fileName(ctx)

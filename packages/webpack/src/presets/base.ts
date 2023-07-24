@@ -34,11 +34,11 @@ function baseConfig (ctx: WebpackConfigContext) {
     plugins: [],
     externals: [],
     optimization: {
-      ...ctx.options.webpack.optimization,
+      ...ctx.userConfig.optimization,
       minimizer: []
     },
     experiments: {
-      ...ctx.options.webpack.experiments
+      ...ctx.userConfig.experiments
     },
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
@@ -57,7 +57,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   }
 
   // User plugins
-  ctx.config.plugins.push(...(ctx.options.webpack.plugins || []))
+  ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
   // Ignore empty warnings
   ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
@@ -66,7 +66,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
-  if (ctx.isServer || (ctx.isDev && ctx.options.webpack.friendlyErrors)) {
+  if (ctx.isServer || (ctx.isDev && ctx.userConfig.friendlyErrors)) {
     ctx.config.plugins.push(
       new FriendlyErrorsWebpackPlugin({
         clearConsole: false,
@@ -207,7 +207,7 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
     warn => warn.name === 'ModuleDependencyWarning' &&
       warn.message.includes('export \'default\'') &&
       warn.message.includes('nuxt_plugin_'),
-    ...(ctx.options.webpack.warningIgnoreFilters || [])
+    ...(ctx.userConfig.warningIgnoreFilters || [])
   ]
 
   return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
@@ -226,7 +226,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.server': ctx.isServer
   }
 
-  if (ctx.options.webpack.aggressiveCodeRemoval) {
+  if (ctx.userConfig.aggressiveCodeRemoval) {
     _env['typeof process'] = JSON.stringify(ctx.isServer ? 'object' : 'undefined')
     _env['typeof window'] = _env['typeof document'] = JSON.stringify(!ctx.isServer ? 'object' : 'undefined')
   }
