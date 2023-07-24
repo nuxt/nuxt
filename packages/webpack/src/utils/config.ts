@@ -3,25 +3,36 @@ import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 
-export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext> {}
+export interface WebpackConfigContext {
+  nuxt: Nuxt
+  options: NuxtOptions
+  userConfig: Omit<NuxtOptions['webpack'], '$client' | '$server'>
+  config: Configuration
+  name: string
+  isDev: boolean
+  isServer: boolean
+  isClient: boolean
+  alias: { [index: string]: string | false | string[] }
+  transpile: RegExp[]
+}
 
 type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void
 type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
 
-export function createWebpackConfigContext (nuxt: Nuxt) {
+export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   return {
     nuxt,
     options: nuxt.options,
-    userConfig: nuxt.options.webpack as Omit<NuxtOptions['webpack'], '$client' | '$server'>,
-    config: {} as Configuration,
+    userConfig: nuxt.options.webpack,
+    config: {},
 
     name: 'base',
     isDev: nuxt.options.dev,
     isServer: false,
     isClient: false,
 
-    alias: {} as { [index: string]: string | false | string[] },
-    transpile: [] as RegExp[]
+    alias: {},
+    transpile: []
   }
 }
 
