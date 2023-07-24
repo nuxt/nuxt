@@ -103,7 +103,7 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
-  _asyncDataPromises: Record<string, Promise<any> | undefined>
+  _asyncDataPromises: Record<string, Promise<any> & { strategy?: 'lazy' | 'blocking' | 'parallel' } | undefined>
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>

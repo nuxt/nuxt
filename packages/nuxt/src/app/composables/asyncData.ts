@@ -215,7 +215,7 @@ export function useAsyncData<
         }
         delete nuxt._asyncDataPromises[key]
       })
-    nuxt._asyncDataPromises[key] = promise
+    nuxt._asyncDataPromises[key] = Object.assign(promise, { strategy: options.strategy })
     return nuxt._asyncDataPromises[key]
   }
 
