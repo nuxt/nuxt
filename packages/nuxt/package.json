@@ -112,7 +112,7 @@
     "@types/prompts": "2.4.4",
     "@vitejs/plugin-vue": "4.2.3",
     "unbuild": "latest",
-    "vite": "4.4.6",
+    "vite": "4.4.7",
     "vitest": "0.33.0"
   },
   "peerDependencies": {
