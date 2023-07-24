@@ -25,6 +25,7 @@
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "cssnano": "^6.0.1",
+    "defu": "^6.1.2",
     "esbuild-loader": "^3.0.1",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
