@@ -13,20 +13,18 @@ import { loadNuxtModuleInstance } from './install'
 export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
   // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
-        // check modules to be installed
-        Boolean(
-          nuxt.options.modules
-            .find((m) => {
-              // input may either a string, an array or a module instance
-              function resolveModuleEntry (input: typeof m): boolean {
-                if (typeof input === 'object' && !Array.isArray(input)) {
-                  return (input as any as NuxtModule).name === moduleName
-                }
-                return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
-              }
-              return resolveModuleEntry(m)
-            })
-        )
+    // check modules to be installed
+    nuxt.options.modules
+      .some((m) => {
+        // input may either a string, an array or a module instance
+        function resolveModuleEntry (input: typeof m): boolean {
+          if (typeof input === 'object' && !Array.isArray(input)) {
+            return (input as any as NuxtModule).name === moduleName
+          }
+          return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
+        }
+        return resolveModuleEntry(m)
+      })
 }
 
 /**
