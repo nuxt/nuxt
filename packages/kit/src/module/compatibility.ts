@@ -1,8 +1,18 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
-import type { Nuxt, NuxtModule } from '@nuxt/schema'
+import type { Nuxt, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { useNuxt } from '../context'
 import { normalizeSemanticVersion } from '../compatibility'
 import { loadNuxtModuleInstance } from './install'
+
+export function resolveNuxtModuleEntryName(m: NuxtOptions['modules'][number]): string | false {
+  if (typeof m === 'object' && !Array.isArray(m)) {
+    return (m as any as NuxtModule).name
+  }
+  if (Array.isArray(m)) {
+    return resolveNuxtModuleEntryName(m[0] as string)
+  }
+  return m as string || false
+}
 
 /**
  * Check if a Nuxt module is installed by name.
@@ -14,17 +24,7 @@ export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boo
   // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
     // check modules to be installed
-    nuxt.options.modules
-      .some((m) => {
-        // input may either a string, an array or a module instance
-        function resolveModuleEntry (input: typeof m): boolean {
-          if (typeof input === 'object' && !Array.isArray(input)) {
-            return (input as any as NuxtModule).name === moduleName
-          }
-          return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
-        }
-        return resolveModuleEntry(m)
-      })
+    nuxt.options.modules.some(m => resolveNuxtModuleEntryName(m))
 }
 
 /**
