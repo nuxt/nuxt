@@ -133,6 +133,8 @@ function baseResolve (ctx: WebpackConfigContext) {
   // TODO: this might be refactored as default modulesDir?
   const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
 
+  // console.log({webpackModulesDir})
+
   ctx.config.resolve = {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
     alias: ctx.alias,
@@ -142,7 +144,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   }
 
   ctx.config.resolveLoader = {
-    modules: webpackModulesDir,
+    // modules: webpackModulesDir,
     ...ctx.config.resolveLoader
   }
 }

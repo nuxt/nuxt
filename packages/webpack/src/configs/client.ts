@@ -1,8 +1,9 @@
 import querystring from 'node:querystring'
+import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import { logger } from '@nuxt/kit'
+import { logger, tryResolveModule } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
@@ -46,7 +47,7 @@ function clientPerformance (ctx: WebpackConfigContext) {
   }
 }
 
-function clientHMR (ctx: WebpackConfigContext) {
+async function clientHMR (ctx: WebpackConfigContext) {
   if (!ctx.isDev) {
     return
   }
@@ -65,9 +66,10 @@ function clientHMR (ctx: WebpackConfigContext) {
 
   // Add HMR support
   const app = (ctx.config.entry as any).app as any
+  const hotMiddlewarePath = await tryResolveModule('webpack-hot-middleware/client', import.meta.url) || 'webpack-hot-middleware/client'
   app.unshift(
     // https://github.com/glenjamin/webpack-hot-middleware#config
-    `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+    `${pathToFileURL(hotMiddlewarePath)}?${hotMiddlewareClientOptionsStr}`
   )
 
   ctx.config.plugins = ctx.config.plugins || []

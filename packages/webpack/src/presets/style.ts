@@ -1,5 +1,6 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+import { tryResolveModule } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
@@ -31,32 +32,32 @@ function extractCSS (ctx: WebpackConfigContext) {
   }
 }
 
-function loaders (ctx: WebpackConfigContext) {
+async function loaders (ctx: WebpackConfigContext) {
   // CSS
-  ctx.config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('css', /\.css$/i, null, ctx))
 
   // PostCSS
-  ctx.config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
 
   // Less
-  const lessLoader = { loader: 'less-loader', options: ctx.userConfig.loaders.less }
-  ctx.config.module!.rules!.push(createdStyleRule('less', /\.less$/i, lessLoader, ctx))
+  const lessLoader = { loader: await tryResolveModule('less-loader', import.meta.url) ?? 'less-loader', options: ctx.userConfig.loaders.less }
+  ctx.config.module!.rules!.push(await createdStyleRule('less', /\.less$/i, lessLoader, ctx))
 
   // Sass (TODO: optional dependency)
-  const sassLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.sass }
-  ctx.config.module!.rules!.push(createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
+  const sassLoader = { loader: await tryResolveModule('sass-loader', import.meta.url) ?? 'sass-loader', options: ctx.userConfig.loaders.sass }
+  ctx.config.module!.rules!.push(await createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
 
-  const scssLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.scss }
-  ctx.config.module!.rules!.push(createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
+  const scssLoader = { loader: await tryResolveModule('sass-loader', import.meta.url) ?? 'sass-loader', options: ctx.userConfig.loaders.scss }
+  ctx.config.module!.rules!.push(await createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
 
   // Stylus
-  const stylusLoader = { loader: 'stylus-loader', options: ctx.userConfig.loaders.stylus }
-  ctx.config.module!.rules!.push(createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
+  const stylusLoader = { loader: await tryResolveModule('stylus-loader', import.meta.url) ?? 'stylus-loader', options: ctx.userConfig.loaders.stylus }
+  ctx.config.module!.rules!.push(await createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
 }
 
-function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
+async function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
   const styleLoaders = [
-    createPostcssLoadersRule(ctx),
+    await createPostcssLoadersRule(ctx),
     processorLoader
   ].filter(Boolean)
 
@@ -64,8 +65,8 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx
     ctx.userConfig.loaders.cssModules.importLoaders =
     styleLoaders.length
 
-  const cssLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.css)
-  const cssModuleLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.cssModules)
+  const cssLoaders = await createCssLoadersRule(ctx, ctx.userConfig.loaders.css)
+  const cssModuleLoaders = await createCssLoadersRule(ctx, ctx.userConfig.loaders.cssModules)
 
   return {
     test,
@@ -83,8 +84,8 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx
   }
 }
 
-function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any) {
-  const cssLoader = { loader: 'css-loader', options: cssLoaderOptions }
+async function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any) {
+  const cssLoader = { loader: await tryResolveModule('css-loader', import.meta.url) ?? 'css-loader', options: cssLoaderOptions }
 
   if (ctx.userConfig.extractCSS) {
     if (ctx.isServer) {
@@ -106,14 +107,14 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
   return [
     // https://github.com/vuejs/vue-style-loader/issues/56
     // {
-    //   loader: 'vue-style-loader',
+    //   loader: await tryResolveModule('vue-style-loader', import.meta.url) ?? 'vue-style-loader',
     //   options: options.webpack.loaders.vueStyle
     // },
     cssLoader
   ]
 }
 
-function createPostcssLoadersRule (ctx: WebpackConfigContext) {
+async function createPostcssLoadersRule (ctx: WebpackConfigContext) {
   if (!ctx.options.postcss) { return }
 
   const config = getPostcssConfig(ctx.nuxt)
@@ -123,7 +124,7 @@ function createPostcssLoadersRule (ctx: WebpackConfigContext) {
   }
 
   return {
-    loader: 'postcss-loader',
+    loader: await tryResolveModule('postcss-loader', import.meta.url) ?? 'postcss-loader',
     options: config
   }
 }
