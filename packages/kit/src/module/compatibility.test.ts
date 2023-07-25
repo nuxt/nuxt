@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { loadNuxt } from '../loader/nuxt'
-import { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility'
+import { getNuxtModuleOptions, getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './compatibility'
 import { defineNuxtModule } from './define'
 
 describe('nuxt module compatibility', () => {
@@ -40,6 +40,40 @@ describe('nuxt module compatibility', () => {
     })
     expect(await hasNuxtModuleCompatibility(module, '^1.0.0', nuxt)).toStrictEqual(true)
     expect(await hasNuxtModuleCompatibility(module, '^2.0.0', nuxt)).toStrictEqual(false)
+    await nuxt.close()
+  })
+
+  it('get module options string', async () => {
+    const fooModule = defineNuxtModule<{ defaultVal?: 'foo'; inlineVal?: 'bar'; number?: number }>({
+      meta: {
+        name: 'nuxt-module-foo',
+        configKey: 'foo'
+      },
+      defaults: {
+        defaultVal: 'foo'
+      }
+    })
+    const nuxt = await loadNuxt({
+      overrides: {
+        modules: [
+          [
+            fooModule,
+            {
+              inlineVal: 'bar'
+            }
+          ]
+        ],
+        // @ts-expect-error runtime
+        foo: { number: 10 }
+      }
+    })
+    expect(await getNuxtModuleOptions(fooModule, nuxt)).toStrictEqual(
+      {
+        defaultVal: 'foo',
+        inlineVal: 'bar',
+        number: 10
+      }
+    )
     await nuxt.close()
   })
 })
