@@ -1,0 +1,34 @@
+name: Semantic pull request
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  main:
+    if: github.repository == 'nuxt/nuxt'
+    runs-on: ubuntu-latest
+    name: Semantic pull request
+    steps:
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          scopes: |
+            kit
+            nuxi
+            nuxt
+            schema
+            test-utils
+            vite
+            webpack
+            deps
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

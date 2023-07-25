@@ -16,7 +16,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
   const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir).then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
-  const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, {
+  const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
@@ -100,7 +100,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig']
       })
     ]
-  } satisfies vite.InlineConfig)
+  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 

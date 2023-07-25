@@ -1,5 +1,6 @@
 <template>
   <div>
+    <ClientBinding />
     <ClientScript ref="clientScript" class="client-only-script" foo="bar" />
     <ClientSetupScript
       ref="clientSetupScript"

@@ -28,15 +28,7 @@ refreshNuxtData(keys?: string | string[])
 This example below refreshes all data being fetched using [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) on the current page.
 
 ```vue [pages/some-page.vue]
-<template>
-  <div>
-    <button :disabled="refreshing" @click="refreshAll">
-      Refetch All Data
-    </button>
-  </div>
-</template>
-
-<script setup>
+<script setup lang="ts">
 const refreshing = ref(false)
 const refreshAll = async () => {
   refreshing.value = true
@@ -47,6 +39,14 @@ const refreshAll = async () => {
   }
 }
 </script>
+
+<template>
+  <div>
+    <button :disabled="refreshing" @click="refreshAll">
+      Refetch All Data
+    </button>
+  </div>
+</template>
 ```
 
 ### Refresh Specific Data
@@ -54,17 +54,17 @@ const refreshAll = async () => {
 This example below refreshes only data where the key matches to `count`.
 
 ```vue [pages/some-page.vue]
+<script setup lang="ts">
+const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
+const refresh = () => refreshNuxtData('count')
+</script>
+
 <template>
   <div>
     {{ pending ? 'Loading' : count }}
   </div>
   <button @click="refresh">Refresh</button>
 </template>
-
-<script setup>
-const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
-const refresh = () => refreshNuxtData('count')
-</script>
 ```
 
 ::ReadMore{link="/docs/getting-started/data-fetching"}

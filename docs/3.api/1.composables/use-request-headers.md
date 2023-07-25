@@ -26,7 +26,7 @@ We can use [`useRequestHeaders`](/docs/api/composables/use-request-headers) to a
 The example below adds the `authorization` request header to an isomorphic `$fetch` call.
 
 ```vue [pages/some-page.vue]
-<script setup>
+<script setup lang="ts">
 const { data } = await useFetch('/api/confidential', {
   headers: useRequestHeaders(['authorization'])
 })

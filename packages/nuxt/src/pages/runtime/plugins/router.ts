@@ -9,7 +9,7 @@ import {
   createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
-import { withoutBase } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -42,7 +42,8 @@ function createCurrentLocation (
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
     return withoutBase(pathFromHash, '')
   }
-  const path = renderedPath || withoutBase(pathname, base)
+  const displayedPath = withoutBase(pathname, base)
+  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 

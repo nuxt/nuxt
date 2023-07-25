@@ -28,6 +28,7 @@ export async function startServer () {
       }
     })
     await waitForPort(port, { retries: 32 })
+    let lastError
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
@@ -35,10 +36,12 @@ export async function startServer () {
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
-      } catch {}
+      } catch (e) {
+        lastError = e
+      }
     }
     ctx.serverProcess.kill()
-    throw new Error('Timeout waiting for dev server!')
+    throw lastError || new Error('Timeout waiting for dev server!')
   } else {
     ctx.serverProcess = execa('node', [
       resolve(ctx.nuxt!.options.nitro.output!.dir!, 'server/index.mjs')

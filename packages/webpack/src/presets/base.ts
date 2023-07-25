@@ -27,20 +27,18 @@ export function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
-  const { options } = ctx
-
   ctx.config = {
     name: ctx.name,
-    entry: { app: [resolve(options.appDir, options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
+    entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
     module: { rules: [] },
     plugins: [],
     externals: [],
     optimization: {
-      ...options.webpack.optimization,
+      ...ctx.userConfig.optimization,
       minimizer: []
     },
     experiments: {
-      ...options.webpack.experiments
+      ...ctx.userConfig.experiments
     },
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
@@ -51,27 +49,25 @@ function baseConfig (ctx: WebpackConfigContext) {
 }
 
 function basePlugins (ctx: WebpackConfigContext) {
-  const { config, options, nuxt } = ctx
-
-  config.plugins = config.plugins || []
+  ctx.config.plugins = ctx.config.plugins || []
 
   // Add timefix-plugin before other plugins
-  if (options.dev) {
-    config.plugins.push(new TimeFixPlugin())
+  if (ctx.options.dev) {
+    ctx.config.plugins.push(new TimeFixPlugin())
   }
 
   // User plugins
-  config.plugins.push(...(options.webpack.plugins || []))
+  ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
   // Ignore empty warnings
-  config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
+  ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
 
   // Provide env via DefinePlugin
-  config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
+  ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
-  if (ctx.isServer || (ctx.isDev && options.webpack.friendlyErrors)) {
-    config.plugins.push(
+  if (ctx.isServer || (ctx.isDev && ctx.userConfig.friendlyErrors)) {
+    ctx.config.plugins.push(
       new FriendlyErrorsWebpackPlugin({
         clearConsole: false,
         reporter: 'consola',
@@ -80,14 +76,14 @@ function basePlugins (ctx: WebpackConfigContext) {
     )
   }
 
-  if (nuxt.options.webpack.profile) {
+  if (ctx.nuxt.options.webpack.profile) {
     // Webpackbar
     const colors = {
       client: 'green',
       server: 'orange',
       modern: 'blue'
     }
-    config.plugins.push(new WebpackBar({
+    ctx.config.plugins.push(new WebpackBar({
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
@@ -97,21 +93,21 @@ function basePlugins (ctx: WebpackConfigContext) {
         reporter: {
           change: (_, { shortPath }) => {
             if (!ctx.isServer) {
-              nuxt.callHook('webpack:change', shortPath)
+              ctx.nuxt.callHook('webpack:change', shortPath)
             }
           },
           done: ({ state }) => {
             if (state.hasErrors) {
-              nuxt.callHook('webpack:error')
+              ctx.nuxt.callHook('webpack:error')
             } else {
               logger.success(`${state.name} ${state.message}`)
             }
           },
           allDone: () => {
-            nuxt.callHook('webpack:done')
+            ctx.nuxt.callHook('webpack:done')
           },
           progress ({ statesArray }) {
-            nuxt.callHook('webpack:progress', statesArray)
+            ctx.nuxt.callHook('webpack:progress', statesArray)
           }
         }
       }
@@ -120,13 +116,11 @@ function basePlugins (ctx: WebpackConfigContext) {
 }
 
 function baseAlias (ctx: WebpackConfigContext) {
-  const { options } = ctx
-
   ctx.alias = {
-    '#app': options.appDir,
-    '#build/plugins': resolve(options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
-    '#build': options.buildDir,
-    ...options.alias,
+    '#app': ctx.options.appDir,
+    '#build/plugins': resolve(ctx.options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
+    '#build': ctx.options.buildDir,
+    ...ctx.options.alias,
     ...ctx.alias
   }
   if (ctx.isClient) {
@@ -135,29 +129,25 @@ function baseAlias (ctx: WebpackConfigContext) {
 }
 
 function baseResolve (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
   // Prioritize nested node_modules in webpack search path (#2558)
   // TODO: this might be refactored as default modulesDir?
-  const webpackModulesDir = ['node_modules'].concat(options.modulesDir)
+  const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
 
-  config.resolve = {
+  ctx.config.resolve = {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
     alias: ctx.alias,
     modules: webpackModulesDir,
     fullySpecified: false,
-    ...config.resolve
+    ...ctx.config.resolve
   }
 
-  config.resolveLoader = {
+  ctx.config.resolveLoader = {
     modules: webpackModulesDir,
-    ...config.resolveLoader
+    ...ctx.config.resolveLoader
   }
 }
 
 function baseTranspile (ctx: WebpackConfigContext) {
-  const { options } = ctx
-
   const transpile = [
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
@@ -165,7 +155,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
     /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/
   ]
 
-  for (let pattern of options.build.transpile) {
+  for (let pattern of ctx.options.build.transpile) {
     if (typeof pattern === 'function') {
       const result = pattern(ctx)
       if (result) { pattern = result }
@@ -182,9 +172,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
 }
 
 function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
-  const { options } = ctx
-
-  if (!options.dev) {
+  if (!ctx.options.dev) {
     return false
   }
 
@@ -205,37 +193,31 @@ function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
 }
 
 function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] {
-  const { options } = ctx
-
   return {
-    path: resolve(options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', options.app.buildAssetsDir)),
+    path: resolve(ctx.options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', ctx.options.app.buildAssetsDir)),
     filename: fileName(ctx, 'app'),
     chunkFilename: fileName(ctx, 'chunk'),
-    publicPath: joinURL(options.app.baseURL, options.app.buildAssetsDir)
+    publicPath: joinURL(ctx.options.app.baseURL, ctx.options.app.buildAssetsDir)
   }
 }
 
 function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
-  const { options } = ctx
-
   const filters: WarningFilter[] = [
     // Hide warnings about plugins without a default export (#1179)
     warn => warn.name === 'ModuleDependencyWarning' &&
       warn.message.includes('export \'default\'') &&
       warn.message.includes('nuxt_plugin_'),
-    ...(options.webpack.warningIgnoreFilters || [])
+    ...(ctx.userConfig.warningIgnoreFilters || [])
   ]
 
   return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
 }
 
 function getEnv (ctx: WebpackConfigContext) {
-  const { options } = ctx
-
   const _env: Record<string, string | boolean> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     'process.mode': JSON.stringify(ctx.config.mode),
-    'process.dev': options.dev,
+    'process.dev': ctx.options.dev,
     'process.test': isTest,
     __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
@@ -244,7 +226,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.server': ctx.isServer
   }
 
-  if (options.webpack.aggressiveCodeRemoval) {
+  if (ctx.userConfig.aggressiveCodeRemoval) {
     _env['typeof process'] = JSON.stringify(ctx.isServer ? 'object' : 'undefined')
     _env['typeof window'] = _env['typeof document'] = JSON.stringify(!ctx.isServer ? 'object' : 'undefined')
   }

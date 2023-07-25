@@ -127,7 +127,7 @@ An object accepting the following properties:
 ### Navigating Within a Vue Component
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // passing 'to' as a string
 await navigateTo('/search')
 
@@ -162,7 +162,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 ### Navigating to an External URL
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // will throw an error;
 // navigating to an external URL is not allowed by default
 await navigateTo('https://nuxt.com')
@@ -177,7 +177,7 @@ await navigateTo('https://nuxt.com', {
 ### Navigating using open()
 
 ```vue
-<script setup>
+<script setup lang="ts">
 // will open 'https://nuxt.com' in a new tab
 await navigateTo('https://nuxt.com', {  
   open: {
