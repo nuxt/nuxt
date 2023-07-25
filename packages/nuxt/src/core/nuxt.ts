@@ -341,7 +341,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', async (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, path) => {
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
@@ -356,7 +356,7 @@ async function initNuxt (nuxt: Nuxt) {
         const normalizedPath = relative(layer.config.srcDir, path)
         // not inside layer srcDir
         if (normalizedPath.startsWith('..') || isAbsolute(normalizedPath)) { continue }
-        for (const pattern of await Promise.all(layer.config.watch)) {
+        for (const pattern of layer.config.watch) {
           if (typeof pattern === 'string') {
             if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
             continue

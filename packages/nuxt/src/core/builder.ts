@@ -64,7 +64,7 @@ async function watch (nuxt: Nuxt) {
     return createWatcher()
   }
 
-  return await createGranularWatcher()
+  return createGranularWatcher()
 }
 
 function createWatcher () {
@@ -84,7 +84,7 @@ function createWatcher () {
   nuxt.hook('close', () => watcher?.close())
 }
 
-async function createGranularWatcher () {
+function createGranularWatcher () {
   const nuxt = useNuxt()
 
   if (nuxt.options.debug) {
@@ -95,7 +95,7 @@ async function createGranularWatcher () {
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
   const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir).filter(d => d && !isIgnored(d))
-  for (const pattern of await Promise.all(nuxt.options.watch)) {
+  for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
     if (pathsToWatch.some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
