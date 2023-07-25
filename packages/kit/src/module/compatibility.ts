@@ -4,7 +4,7 @@ import { useNuxt } from '../context'
 import { normalizeSemanticVersion } from '../compatibility'
 import { loadNuxtModuleInstance } from './install'
 
-export function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string | false {
+function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string | false {
   if (typeof m === 'object' && !Array.isArray(m)) {
     return (m as any as NuxtModule).name
   }
