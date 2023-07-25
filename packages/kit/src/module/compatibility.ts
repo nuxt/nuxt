@@ -24,7 +24,7 @@ export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boo
   // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
     // check modules to be installed
-    nuxt.options.modules.some(m => resolveNuxtModuleEntryName(m))
+    nuxt.options.modules.some(m => moduleName === resolveNuxtModuleEntryName(m))
 }
 
 /**
