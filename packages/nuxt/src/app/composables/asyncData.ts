@@ -31,6 +31,8 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+export type AsyncDataStrategy = 'lazy' | 'parallel' | 'blocking'
+
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
@@ -40,7 +42,7 @@ export interface AsyncDataOptions<
   server?: boolean
   /** @deprecated Use strategy: 'lazy' */
   lazy?: boolean
-  strategy?: 'lazy' | 'parallel' | 'blocking'
+  strategy?: AsyncDataStrategy
   default?: () => DefaultT | Ref<DefaultT>
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
