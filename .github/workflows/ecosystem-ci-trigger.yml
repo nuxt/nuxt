@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/ecosystem-ci run')
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         with:
           script: |
             const user = context.payload.sender.login
@@ -48,7 +48,7 @@ jobs:
               })
               throw new Error('not allowed')
             }
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         id: get-pr-data
         with:
           script: |
@@ -64,12 +64,12 @@ jobs:
               repo: pr.head.repo.full_name
             }
       - id: generate-token
-        uses: tibdex/github-app-token@v1
+        uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92 # v1.8.0
         with:
           app_id: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_ID }}
           private_key: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_PRIVATE_KEY }}
           repository: "${{ github.repository_owner }}/ecosystem-ci"
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         id: trigger
         env:
           COMMENT: ${{ github.event.comment.body }}

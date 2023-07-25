@@ -116,6 +116,21 @@ describe('middleware', () => {
       abortNavigation(true)
     }, { global: true })
   })
+  it('handles return types of validate', () => {
+    definePageMeta({
+      validate: async () => {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        // eslint-disable-next-line
+        if (0) {
+          return createError({
+            statusCode: 404,
+            statusMessage: 'resource-type-not-found'
+          })
+        }
+        return true
+      }
+    })
+  })
 })
 
 describe('typed router integration', () => {
