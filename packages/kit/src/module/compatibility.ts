@@ -9,7 +9,7 @@ function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string 
     return (m as any as NuxtModule).name
   }
   if (Array.isArray(m)) {
-    return resolveNuxtModuleEntryName(m[0] as string)
+    return resolveNuxtModuleEntryName(m[0])
   }
   return m as string || false
 }
