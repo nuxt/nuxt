@@ -12,7 +12,7 @@ import { loadNuxtModuleInstance } from './install'
  */
 export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
-      nuxt.options.modules.includes(moduleName)
+    nuxt.options.modules.includes(moduleName)
 }
 
 /**
@@ -40,7 +40,7 @@ export async function getNuxtModuleVersion (module: string | NuxtModule, nuxt: N
   if (!moduleMeta.name) { return false }
   // maybe the version got attached within the installed module instance?
   const version = nuxt.options._installedModules
-  // @ts-expect-error _installedModules is not typed
+     // @ts-expect-error _installedModules is not typed
     .filter(m => m.meta.name === moduleMeta.name).map(m => m.meta.version)?.[0]
   if (version) {
     return version
