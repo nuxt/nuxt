@@ -19,7 +19,9 @@ export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boo
             .find((m) => {
               // input may either a string, an array or a module instance
               function resolveModuleEntry (input: typeof m): boolean {
-                if (typeof input === 'object') { return (input as any as NuxtModule).name === moduleName }
+                if (typeof input === 'object' && !Array.isArray(input)) {
+                  return (input as any as NuxtModule).name === moduleName
+                }
                 return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
               }
               return resolveModuleEntry(m)
