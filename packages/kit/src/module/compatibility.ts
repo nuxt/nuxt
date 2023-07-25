@@ -11,8 +11,20 @@ import { loadNuxtModuleInstance } from './install'
  * that it cannot detect if a module is _going to be_ installed programmatically by another module.
  */
 export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
+  // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
-    nuxt.options.modules.includes(moduleName)
+        // check modules to be installed
+        Boolean(
+          nuxt.options.modules
+            .find((m) => {
+              // input may either a string, an array or a module instance
+              function resolveModuleEntry (input: typeof m): boolean {
+                if (typeof input === 'object') { return (input as any as NuxtModule).name === moduleName }
+                return Array.isArray(input) ? resolveModuleEntry(input[0]) : input === moduleName
+              }
+              return resolveModuleEntry(m)
+            })
+        )
 }
 
 /**
@@ -46,7 +58,7 @@ export async function getNuxtModuleVersion (module: string | NuxtModule, nuxt: N
     return version
   }
   // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
-  if (nuxt.options.modules.includes(moduleMeta.name)) {
+  if (hasNuxtModule(moduleMeta.name)) {
     const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name, nuxt)
     return buildTimeModuleMeta.version || false
   }
