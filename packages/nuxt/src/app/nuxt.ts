@@ -14,7 +14,7 @@ import type { RenderResponse } from 'nitropack'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
-import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
+import type { AsyncDataOptions, AsyncDataRequestStatus } from '../app/composables/asyncData'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
 
@@ -103,7 +103,7 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
-  _asyncDataPromises: Record<string, Promise<any> & { strategy?: 'lazy' | 'blocking' | 'parallel' } | undefined>
+  _asyncDataPromises: Record<string, Promise<any> & { strategy?: AsyncDataOptions<any>['strategy'] } | undefined>
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>
