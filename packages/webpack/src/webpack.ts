@@ -25,12 +25,12 @@ import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './ut
 export async function bundle (nuxt: Nuxt) {
   registerVirtualModules()
 
-  const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
+  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
-    applyPresets(ctx, preset)
+    await applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
-  })
+  }))
 
   await nuxt.callHook('webpack:config', webpackConfigs)
 

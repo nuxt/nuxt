@@ -4,8 +4,8 @@ import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
 
-export function style (ctx: WebpackConfigContext) {
-  applyPresets(ctx, [
+export async function style (ctx: WebpackConfigContext) {
+  await applyPresets(ctx, [
     loaders,
     extractCSS,
     minimizer
