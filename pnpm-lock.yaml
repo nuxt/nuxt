@@ -521,6 +521,9 @@ importers:
 
   packages/schema:
     dependencies:
+      '@nuxt/ui-templates':
+        specifier: ^1.2.0
+        version: 1.2.0
       defu:
         specifier: ^6.1.2
         version: 6.1.2
