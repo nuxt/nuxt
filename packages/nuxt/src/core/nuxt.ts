@@ -1,4 +1,4 @@
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
