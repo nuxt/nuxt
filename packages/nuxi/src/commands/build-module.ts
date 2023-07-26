@@ -1,5 +1,5 @@
 import { execa } from 'execa'
-import consola from 'consola'
+import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { tryResolveModule } from '../utils/esm'
 import { defineNuxtCommand } from './index'
@@ -18,7 +18,8 @@ export default defineNuxtCommand({
     const hasLocal = await tryResolveModule(`${MODULE_BUILDER_PKG}/package.json`, rootDir)
 
     const execArgs = Object.entries({
-      '--stub': args.stub
+      '--stub': args.stub,
+      '--prepare': args.prepare
     }).filter(([, value]) => value).map(([key]) => key)
 
     let cmd = 'nuxt-module-build'

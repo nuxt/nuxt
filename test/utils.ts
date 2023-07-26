@@ -1,6 +1,12 @@
+import { Script, createContext } from 'node:vm'
 import { expect } from 'vitest'
-import type { Page } from 'playwright'
+import type { Page } from 'playwright-core'
+import { parse } from 'devalue'
+import { reactive, ref, shallowReactive, shallowRef } from 'vue'
+import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
+
+export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -87,5 +93,40 @@ export async function withLogs (callback: (page: Page, logs: string[]) => Promis
   } finally {
     done = true
     await page.close()
+  }
+}
+
+const revivers = {
+  NuxtError: (data: any) => createError(data),
+  EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
+  EmptyRef: (data: any) => ref(JSON.parse(data)),
+  ShallowRef: (data: any) => shallowRef(data),
+  ShallowReactive: (data: any) => shallowReactive(data),
+  Island: (key: any) => key,
+  Ref: (data: any) => ref(data),
+  Reactive: (data: any) => reactive(data),
+  // test fixture reviver only
+  BlinkingText: () => '<revivified-blink>'
+}
+export function parsePayload (payload: string) {
+  return parse(payload || '', revivers)
+}
+export function parseData (html: string) {
+  if (!isRenderingJson) {
+    const { script } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
+    const _script = new Script(script)
+    return {
+      script: _script.runInContext(createContext({ window: {} })),
+      attrs: {}
+    }
+  }
+  const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
+  const _attrs: Record<string, string> = {}
+  for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)+="(?<value>[^"]+)"/g)) {
+    _attrs[attr!.groups!.key] = attr!.groups!.value
+  }
+  return {
+    script: parsePayload(script || ''),
+    attrs: _attrs
   }
 }

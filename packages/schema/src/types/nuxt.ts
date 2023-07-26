@@ -1,6 +1,7 @@
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
+import type { Component } from './components'
 import type { NuxtOptions } from './config'
 
 export interface Nuxt {
@@ -22,6 +23,8 @@ export interface Nuxt {
   server?: any
 
   vfs: Record<string, string>
+
+  apps: Record<string, NuxtApp>
 }
 
 export interface NuxtTemplate<Options = Record<string, any>> {
@@ -49,6 +52,13 @@ export interface NuxtPlugin {
   ssr?: boolean
   src: string
   mode?: 'all' | 'server' | 'client'
+  /**
+   * This allows more granular control over plugin order and should only be used by advanced users.
+   * Lower numbers run first, and user plugins default to `0`.
+   *
+   * Default Nuxt priorities can be seen at [here](https://github.com/nuxt/nuxt/blob/9904849bc87c53dfbd3ea3528140a5684c63c8d8/packages/nuxt/src/core/plugins/plugin-metadata.ts#L15-L34).
+   */
+  order?: number
 }
 
 export interface NuxtApp {
@@ -58,6 +68,7 @@ export interface NuxtApp {
   dir: string
   extensions: string[]
   plugins: NuxtPlugin[]
+  components: Component[]
   layouts: Record<string, NuxtLayout>
   middleware: NuxtMiddleware[]
   templates: NuxtTemplate[]

@@ -1,8 +1,8 @@
-import { join, normalize, relative, resolve } from 'pathe'
-import { createHooks, createDebugger } from 'hookable'
+import { join, normalize, resolve } from 'pathe'
+import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { resolvePath, resolveAlias, resolveFiles, loadNuxtConfig, nuxtCtx, installModule, addComponent, addVitePlugin, addWebpackPlugin, tryResolveModule, addPlugin } from '@nuxt/kit'
-import type { Nuxt, NuxtOptions, NuxtHooks } from 'nuxt/schema'
+import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -24,6 +24,7 @@ import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
+import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -37,7 +38,8 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
     close: () => Promise.resolve(hooks.callHook('close', nuxt)),
-    vfs: {}
+    vfs: {},
+    apps: {}
   }
 
   return nuxt
@@ -71,6 +73,9 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Add plugin normalisation plugin
+  addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
+
   // Add import protection
   const config = {
     rootDir: nuxt.options.rootDir,
@@ -78,18 +83,22 @@ async function initNuxt (nuxt: Nuxt) {
     exclude: [join(nuxt.options.rootDir, 'index.html')],
     patterns: vueAppPatterns(nuxt)
   }
-  addVitePlugin(ImportProtectionPlugin.vite(config))
-  addWebpackPlugin(ImportProtectionPlugin.webpack(config))
+  addVitePlugin(() => ImportProtectionPlugin.vite(config))
+  addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
-    addVitePlugin(LayerAliasingPlugin.vite({
+    addVitePlugin(() => LayerAliasingPlugin.vite({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
-    addWebpackPlugin(LayerAliasingPlugin.webpack({
+    addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      dev: nuxt.options.dev,
+      root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
       transform: true
@@ -98,8 +107,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   nuxt.hook('modules:done', () => {
     // Add unctx transform
-    addVitePlugin(UnctxTransformPlugin(nuxt).vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(UnctxTransformPlugin(nuxt).webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    const options = {
+      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      transformerOptions: nuxt.options.optimization.asyncTransforms
+    }
+    addVitePlugin(() => UnctxTransformPlugin.vite(options))
+    addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
@@ -107,23 +120,23 @@ async function initNuxt (nuxt: Nuxt) {
       composables: nuxt.options.optimization.treeShake.composables.server
     }
     if (Object.keys(serverTreeShakeOptions.composables).length) {
-      addVitePlugin(TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
-      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
+      addVitePlugin(() => TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
+      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
     const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
       sourcemap: nuxt.options.sourcemap.client,
       composables: nuxt.options.optimization.treeShake.composables.client
     }
     if (Object.keys(clientTreeShakeOptions.composables).length) {
-      addVitePlugin(TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
-      addWebpackPlugin(TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
+      addVitePlugin(() => TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
+      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
     }
   })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addVitePlugin(DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -167,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)
@@ -181,7 +194,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue'))!
+    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
   })
 
   addComponent({
@@ -258,15 +271,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add prerender payload support
-  if (nuxt.options._generate && nuxt.options.experimental.payloadExtraction === undefined) {
-    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
-  }
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
@@ -281,10 +285,46 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
   }
 
+  // Add experimental automatic view transition api support
+  if (nuxt.options.experimental.viewTransition) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+  }
+
+  // Add experimental support for custom types in JSON payload
+  if (nuxt.options.experimental.renderJsonPayloads) {
+    nuxt.hooks.hook('modules:done', () => {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+    })
+  }
+
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
+
+  const envMap = {
+    // defaults from `builder` based on package name
+    '@nuxt/vite-builder': 'vite/client',
+    '@nuxt/webpack-builder': 'webpack/module',
+    // simpler overrides from `typescript.builder` for better DX
+    vite: 'vite/client',
+    webpack: 'webpack/module',
+    // default 'merged' builder environment for module authors
+    shared: '@nuxt/schema/builder-env'
+  }
+
+  nuxt.hook('prepare:types', ({ references }) => {
+    // Disable entirely if `typescript.builder` is false
+    if (nuxt.options.typescript.builder === false) { return }
+
+    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
+    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
+    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
+    const types = overrideEnv || defaultEnv
+
+    if (types) { references.push({ types }) }
+  })
 
   // Add nuxt app debugger
   if (nuxt.options.debug) {
@@ -301,7 +341,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
@@ -318,7 +359,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
-    if (isFileChange && path.match(/^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i)) {
+    if (isFileChange && RESTART_RE.test(path)) {
       console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
@@ -332,6 +373,20 @@ async function initNuxt (nuxt: Nuxt) {
   // Init nitro
   await initNitro(nuxt)
 
+  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
+  // Add prerender payload support
+  const nitro = useNitro()
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
+  nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
+  nitro.options._config.replace!['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
+
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
+
   await nuxt.callHook('ready', nuxt)
 }
 
@@ -341,6 +396,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
+
+  // Nuxt DevTools is currently opt-in
+  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
+    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
+      options._modules.push('@nuxt/devtools')
+    } else {
+      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+    }
+  }
+
+  // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
@@ -352,7 +418,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
-  options.build.transpile.push('@nuxt/ui-templates')
+  options.build.transpile.push(
+    '@nuxt/ui-templates', // this exposes vue SFCs
+    'std-env' // we need to statically replace process.env when used in runtime code
+  )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
@@ -371,3 +440,5 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   return nuxt
 }
+
+const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i

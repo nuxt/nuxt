@@ -2,8 +2,9 @@ import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import fse from 'fs-extra'
-import { resolve, normalize } from 'pathe'
+import { isAbsolute, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
+import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
@@ -47,7 +48,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
           markInvalidates(server.moduleGraph.getModulesByFile(typeof plugin === 'string' ? plugin : plugin.src))
         }
         for (const template of ctx.nuxt.options.build.templates) {
-          markInvalidates(server.moduleGraph.getModulesByFile(template?.src))
+          markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
         }
       }
 
@@ -117,7 +118,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     const node: ViteNodeServer = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
-          /\/(nuxt|nuxt3)\//,
+          /\/node_modules\/(.*\/)?(nuxt|nuxt3)\//,
           /^#/,
           ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev })
         ]
@@ -127,7 +128,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         web: []
       }
     })
-    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir)
+    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
@@ -140,6 +141,9 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       const moduleId = decodeURI(event.node.req.url!).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
+      }
+      if (isAbsolute(moduleId) && !isFileServingAllowed(moduleId, viteServer)) {
+        throw createError({ statusCode: 403 /* Restricted */ })
       }
       const module = await node.fetchModule(moduleId).catch((err) => {
         const errorData = {
@@ -157,6 +161,13 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
   return app
 }
 
+export type ViteNodeServerOptions = {
+  baseURL: string
+  root: string
+  entryPath: string
+  base: string
+}
+
 export async function initViteNodeServer (ctx: ViteBuildContext) {
   // Serialize and pass vite-node runtime options
   const viteNodeServerOptions = {
@@ -164,7 +175,7 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
     root: ctx.nuxt.options.srcDir,
     entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/'
-  }
+  } satisfies ViteNodeServerOptions
   process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')

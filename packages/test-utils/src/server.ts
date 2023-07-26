@@ -1,19 +1,19 @@
-import { resolve } from 'node:path'
 import { execa } from 'execa'
 import { getRandomPort, waitForPort } from 'get-port-please'
 import type { FetchOptions } from 'ofetch'
-import { fetch as _fetch, $fetch as _$fetch } from 'ofetch'
+import { $fetch as _$fetch, fetch as _fetch } from 'ofetch'
 import * as _kit from '@nuxt/kit'
+import { resolve } from 'pathe'
 import { useTestContext } from './context'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
 // eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 
 export async function startServer () {
   const ctx = useTestContext()
   await stopServer()
-  const port = await getRandomPort()
+  const port = ctx.options.port || await getRandomPort()
   ctx.url = 'http://127.0.0.1:' + port
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
@@ -28,6 +28,7 @@ export async function startServer () {
       }
     })
     await waitForPort(port, { retries: 32 })
+    let lastError
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
@@ -35,10 +36,12 @@ export async function startServer () {
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
-      } catch {}
+      } catch (e) {
+        lastError = e
+      }
     }
     ctx.serverProcess.kill()
-    throw new Error('Timeout waiting for dev server!')
+    throw lastError || new Error('Timeout waiting for dev server!')
   } else {
     ctx.serverProcess = execa('node', [
       resolve(ctx.nuxt!.options.nitro.output!.dir!, 'server/index.mjs')
@@ -74,6 +77,9 @@ export function url (path: string) {
   const ctx = useTestContext()
   if (!ctx.url) {
     throw new Error('url is not available (is server option enabled?)')
+  }
+  if (path.startsWith(ctx.url)) {
+    return path
   }
   return ctx.url + path
 }

@@ -5,7 +5,7 @@ Updates [app config](/docs/guide/directory-structure/app-config) using deep assi
 **Usage:**
 
 ```js
-const appConfig = useAppConfig() // { foo: 'bar' }
+const appConfig = useAppConfig() // { foo: 'bar' }
 
 const newAppConfig = { foo: 'baz' }
 

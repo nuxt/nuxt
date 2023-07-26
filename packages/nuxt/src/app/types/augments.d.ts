@@ -1,4 +1,4 @@
-import type { NuxtApp } from '../nuxt'
+import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
   namespace NodeJS {
@@ -14,12 +14,16 @@ declare global {
 
   interface Window {
     __NUXT__?: Record<string, any>
+    useNuxtApp?: typeof useNuxtApp
   }
 }
 
 declare module 'vue' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface App<HostElement> {
+    $nuxt: NuxtApp
+  }
+  interface ComponentCustomProperties {
     $nuxt: NuxtApp
   }
   interface ComponentInternalInstance {

@@ -5,14 +5,16 @@
 <script setup>
 import { defineAsyncComponent } from 'vue'
 
-// Deliberately prevent reactive update when error is cleared
-// eslint-disable-next-line vue/no-setup-props-destructure
-const { error } = defineProps({
+const props = defineProps({
   error: Object
 })
 
+// Deliberately prevent reactive update when error is cleared
+// eslint-disable-next-line vue/no-setup-props-destructure
+const _error = props.error
+
 // TODO: extract to a separate utility
-const stacktrace = (error.stack || '')
+const stacktrace = (_error.stack || '')
   .split('\n')
   .splice(1)
   .map((line) => {
@@ -29,12 +31,12 @@ const stacktrace = (error.stack || '')
   }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
 
 // Error page props
-const statusCode = Number(error.statusCode || 500)
+const statusCode = Number(_error.statusCode || 500)
 const is404 = statusCode === 404
 
-const statusMessage = error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
-const description = error.message || error.toString()
-const stack = process.dev && !is404 ? error.description || `<pre>${stacktrace}</pre>` : undefined
+const statusMessage = _error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
+const description = _error.message || _error.toString()
+const stack = process.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 
 // TODO: Investigate side-effect issue with imports
 const _Error404 = defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-404.vue').then(r => r.default || r))

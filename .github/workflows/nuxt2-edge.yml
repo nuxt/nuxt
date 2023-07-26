@@ -5,20 +5,31 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 
+# https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+
+permissions:
+  contents: read
+
 jobs:
   nightly:
     if: github.repository_owner == 'nuxt'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           ref: '2.x'
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
         with:
-          node-version: 14
+          node-version: 16
           registry-url: 'https://registry.npmjs.org'
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
@@ -28,8 +39,6 @@ jobs:
         run: yarn run audit
       - name: build
         run: yarn test:fixtures -i
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
       - name: lint app
         run: yarn lint:app
       - name: test types
@@ -48,4 +57,5 @@ jobs:
         run: ./scripts/workspace-run npm publish -q
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
 

@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.3.3",
+  "version": "3.6.5",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -37,14 +37,6 @@
     "#app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
-    },
-    "#head": {
-      "types": "./dist/head/runtime/index.d.ts",
-      "import": "./dist/head/runtime/index.js"
-    },
-    "#pages": {
-      "types": "./dist/pages/runtime/index.d.ts",
-      "import": "./dist/pages/runtime/index.js"
     }
   },
   "files": [
@@ -60,56 +52,79 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/devalue": "^2.0.0",
+    "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
-    "@nuxt/telemetry": "^2.1.10",
-    "@nuxt/ui-templates": "^1.1.1",
+    "@nuxt/telemetry": "^2.3.2",
+    "@nuxt/ui-templates": "^1.2.0",
     "@nuxt/vite-builder": "workspace:../vite",
-    "@unhead/ssr": "^1.1.25",
-    "@unhead/vue": "^1.1.25",
-    "@vue/reactivity": "^3.2.47",
-    "@vue/shared": "^3.2.47",
+    "@unhead/ssr": "^1.1.32",
+    "@unhead/vue": "^1.1.32",
+    "@vue/shared": "^3.3.4",
+    "acorn": "8.10.0",
+    "c12": "^1.4.2",
     "chokidar": "^3.5.3",
-    "cookie-es": "^0.5.0",
+    "cookie-es": "^1.0.0",
     "defu": "^6.1.2",
-    "destr": "^1.2.2",
+    "destr": "^2.0.0",
+    "devalue": "^4.3.2",
+    "esbuild": "^0.18.16",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.1.1",
-    "globby": "^13.1.3",
-    "h3": "^1.6.4",
-    "hash-sum": "^2.0.0",
+    "globby": "^13.2.2",
+    "h3": "^1.7.1",
     "hookable": "^5.5.3",
-    "jiti": "^1.18.2",
+    "jiti": "^1.19.1",
+    "klona": "^2.0.6",
     "knitwork": "^1.0.0",
-    "magic-string": "^0.30.0",
-    "mlly": "^1.2.0",
-    "nitropack": "^2.3.2",
+    "local-pkg": "^0.4.3",
+    "magic-string": "^0.30.1",
+    "mlly": "^1.4.0",
+    "nitropack": "^2.5.2",
     "nuxi": "workspace:../nuxi",
-    "ofetch": "^1.0.1",
-    "ohash": "^1.0.0",
-    "pathe": "^1.1.0",
-    "perfect-debounce": "^0.1.3",
+    "nypm": "^0.2.2",
+    "ofetch": "^1.1.1",
+    "ohash": "^1.1.2",
+    "pathe": "^1.1.1",
+    "perfect-debounce": "^1.0.0",
+    "prompts": "^2.4.2",
     "scule": "^1.0.0",
     "strip-literal": "^1.0.1",
-    "ufo": "^1.1.1",
-    "unctx": "^2.1.2",
-    "unenv": "^1.2.2",
-    "unimport": "^3.0.4",
-    "unplugin": "^1.3.1",
+    "ufo": "^1.1.2",
+    "ultrahtml": "^1.3.0",
+    "uncrypto": "^0.1.3",
+    "unctx": "^2.3.1",
+    "unenv": "^1.5.2",
+    "unimport": "^3.1.0",
+    "unplugin": "^1.4.0",
+    "unplugin-vue-router": "^0.6.4",
     "untyped": "^1.3.2",
-    "vue": "^3.2.47",
+    "vue": "^3.3.4",
     "vue-bundle-renderer": "^1.0.3",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.2.4"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.1",
-    "@types/hash-sum": "^1.0.0",
-    "unbuild": "latest"
+    "@parcel/watcher": "2.2.0",
+    "@types/estree": "1.0.1",
+    "@types/fs-extra": "11.0.1",
+    "@types/prompts": "2.4.4",
+    "@vitejs/plugin-vue": "4.2.3",
+    "unbuild": "latest",
+    "vite": "4.4.7",
+    "vitest": "0.33.0"
+  },
+  "peerDependencies": {
+    "@parcel/watcher": "^2.1.0",
+    "@types/node": "^14.18.0 || >=16.10.0"
+  },
+  "peerDependenciesMeta": {
+    "@parcel/watcher": {
+      "optional": true
+    }
   },
   "engines": {
-    "node": "^14.18.0 || ^16.10.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+    "node": "^14.18.0 || >=16.10.0"
   }
 }

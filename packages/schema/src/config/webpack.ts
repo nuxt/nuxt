@@ -22,10 +22,11 @@ export default defineUntypedSchema({
           return val ?? false
         }
         const rootDir = await get('rootDir')
+        const analyzeDir = await get('analyzeDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(rootDir, '.nuxt/stats', '{name}.html')
+          filename: join(analyzeDir, '{name}.html')
         }
       }
     },
@@ -40,12 +41,11 @@ export default defineUntypedSchema({
     profile: process.argv.includes('--profile'),
 
     /**
-     * Enables Common CSS Extraction using
-     * [Vue Server Renderer guidelines](https://ssr.vuejs.org/guide/css.html).
+     * Enables Common CSS Extraction.
      *
-     * Using [extract-css-chunks-webpack-plugin](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/) under the hood, your CSS will be extracted
+     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
-     * JavaScript separately and is worth trying if you have a lot of global or shared CSS.
+     * JavaScript separately.
      *
      * @example
      * ```js
@@ -120,6 +120,24 @@ export default defineUntypedSchema({
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
+     * 
+     * @type {
+     *  Record<
+     *    string,
+     *    string |
+     *    ((
+     *      ctx: {
+     *        nuxt: import('../src/types/nuxt').Nuxt,
+     *        options: import('../src/types/nuxt').Nuxt['options'],
+     *        name: string,
+     *        isDev: boolean,
+     *        isServer: boolean,
+     *        isClient: boolean,
+     *        alias: { [index: string]: string | false | string[] },
+     *        transpile: RegExp[]
+     *      }) => string)
+     *  >
+     * }
      */
     filenames: {
       app: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
@@ -147,12 +165,57 @@ export default defineUntypedSchema({
         }
         return val
       },
+
+      /**
+       * See https://github.com/esbuild-kit/esbuild-loader
+       * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
+      */
+      esbuild: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false }
+       * ```
+       */
       file: { esModule: false },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       fontUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       *
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       imgUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://pugjs.org/api/reference.html#options
+       * @type {typeof import('pug')['Options']}
+       */
       pugPlain: {},
+
+      /**
+       * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
+       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
+       */
       vue: {
-        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
@@ -160,7 +223,10 @@ export default defineUntypedSchema({
           embed: 'src'
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
+        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
       },
+
       css: {
         importLoaders: 0,
         url: {
@@ -168,6 +234,7 @@ export default defineUntypedSchema({
         },
         esModule: false
       },
+
       cssModules: {
         importLoaders: 0,
         url: {
@@ -178,14 +245,42 @@ export default defineUntypedSchema({
           localIdentName: '[local]_[hash:base64:5]'
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/less-loader#options
+       */
       less: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @type {typeof import('sass-loader')['Options']}
+       * 
+       * @default
+       * ```ts
+       * {
+       *   sassOptions: {
+       *     indentedSyntax: true
+       *   }
+       * }
+       * ```
+       */
       sass: {
         sassOptions: {
           indentedSyntax: true
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @type {typeof import('sass-loader')['Options']}
+       */
       scss: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/stylus-loader#options
+       */
       stylus: {},
+
       vueStyle: {}
     },
 
@@ -205,20 +300,6 @@ export default defineUntypedSchema({
      * ```
      */
     plugins: [],
-
-    /**
-     * Terser plugin options.
-     *
-     * Set to false to disable this plugin, or pass an object of options.
-     *
-     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin).
-     *
-     * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
-     * the end of each output file if webpack `config.devtool` is set to `source-map`.
-     *
-     * @type {false | typeof import('terser-webpack-plugin').BasePluginOptions & typeof import('terser-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
-     */
-    terser: {},
 
     /**
      * Hard-replaces `typeof process`, `typeof window` and `typeof document` to tree-shake bundle.
@@ -258,9 +339,10 @@ export default defineUntypedSchema({
     /**
      * Customize PostCSS Loader.
      * Same options as https://github.com/webpack-contrib/postcss-loader#options
+     *
+     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
-      execute: undefined,
       postcssOptions: {
         config: {
           $resolve: async (val, get) => val ?? (await get('postcss.config'))
@@ -269,9 +351,6 @@ export default defineUntypedSchema({
           $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
         }
       },
-      sourceMap: undefined,
-      implementation: undefined,
-      order: ''
     },
 
     /**
@@ -298,5 +377,11 @@ export default defineUntypedSchema({
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
+
+    /**
+     * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
+     * @type {false | typeof import('webpack').Configuration['experiments']}
+     */
+    experiments: {}
   }
 })

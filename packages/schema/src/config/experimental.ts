@@ -12,9 +12,15 @@ export default defineUntypedSchema({
     /**
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     *
+     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
+     * removed from core in Vue 3.4.
+     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
      */
     reactivityTransform: false,
 
+    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see https://github.com/nuxt/nuxt/issues/13632
@@ -68,30 +74,6 @@ export default defineUntypedSchema({
     restoreState: false,
 
     /**
-     * Use vite-node for on-demand server chunk loading
-     *
-     * @deprecated use `vite.devBundler: 'vite-node'`
-     */
-    viteNode: {
-      $resolve: (val) => {
-        val = process.env.EXPERIMENTAL_VITE_NODE ? true : val
-        if (val === true) {
-          console.warn('`vite-node` is now enabled by default. You can safely remove `experimental.viteNode` from your config.')
-        } else if (val === false) {
-          console.warn('`vite-node` is now enabled by default. To disable it, set `vite.devBundler` to `legacy` instead.')
-        }
-        return val ?? true
-      }
-    },
-
-    /**
-     * Split server bundle into multiple chunks and dynamically import them.
-     *
-     * @see https://github.com/nuxt/nuxt/issues/14525
-     */
-    viteServerDynamicImports: true,
-
-    /**
      * Inline styles when rendering HTML (currently vite only).
      *
      * You can also pass a function that receives the path of a Vue component
@@ -111,8 +93,12 @@ export default defineUntypedSchema({
 
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
      */
     noScripts: false,
+
+    /** Render JSON payloads with support for revivifying complex types. */
+    renderJsonPayloads: true,
 
     /**
      * Disable vue server renderer endpoint within nitro.
@@ -121,6 +107,8 @@ export default defineUntypedSchema({
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     *
+     * @type {boolean | undefined}
      */
     payloadExtraction: undefined,
 
@@ -132,6 +120,13 @@ export default defineUntypedSchema({
 
     /** Enable cross-origin prefetch using the Speculation Rules API. */
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     *
+     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     */
+    viewTransition: false,
 
     /**
      * Write early hints when using node server.
@@ -153,17 +148,58 @@ export default defineUntypedSchema({
     configSchema: true,
 
     /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * This is only not enabled by default because it could be a breaking change for some projects.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+
+    /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
      * `@vueuse/head` API.
      *
      * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
      */
-    polyfillVueUseHead: true,
+    polyfillVueUseHead: false,
 
     /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
     respectNoSSRHeader: false,
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
+
+    /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
+    typedPages: false,
+
+    /**
+     * Set an alternative watcher that will be used as the watching service for Nuxt.
+     *
+     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
+     * (like `node_modules` and `.git`) that are excluded from watching.
+     *
+     * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
+     * performance in large projects or on Windows platforms.
+     *
+     * You can also set this to `chokidar` to watch all files in your source directory.
+     *
+     * @see https://github.com/paulmillr/chokidar
+     * @see https://github.com/parcel-bundler/watcher
+     * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
+     */
+    watcher: 'chokidar-granular'
   }
 })

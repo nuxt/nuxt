@@ -3,24 +3,25 @@ import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { ServerOptions, BuildOptions } from 'vite'
+import type { BuildOptions, ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
-import { cacheDirPlugin } from './plugins/cache-dir'
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
+import { typeCheckPlugin } from './plugins/type-check'
 import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, {
+  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
+    configFile: false,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
       : './',
@@ -37,6 +38,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       devSourcemap: ctx.nuxt.options.sourcemap.client
     },
     define: {
+      'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
       'process.server': false,
       'process.client': true,
       'module.hot': false
@@ -49,8 +51,11 @@ export async function buildClient (ctx: ViteBuildContext) {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       },
-      dedupe: ['vue']
+      dedupe: [
+        'vue'
+      ]
     },
+    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? true : false,
       manifest: true,
@@ -60,7 +65,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       }
     },
     plugins: [
-      cacheDirPlugin(ctx.nuxt.options.rootDir, 'client'),
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
@@ -78,7 +82,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     server: {
       middlewareMode: true
     }
-  } satisfies vite.InlineConfig)
+  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 
@@ -121,12 +125,19 @@ export async function buildClient (ctx: ViteBuildContext) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
+  // Add type checking client panel
+  if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
+  }
+
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
     vuePlugin(clientConfig.vue),
     viteJsxPlugin(clientConfig.vueJsx)
   )
+
+  await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
   if (ctx.nuxt.options.dev) {
     // Dev

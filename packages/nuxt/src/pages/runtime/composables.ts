@@ -1,9 +1,11 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from 'vue-router'
+import { getCurrentInstance } from 'vue'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
+import { useRoute } from 'vue-router'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
-  [key: string]: any
+  [key: string]: unknown
   /**
    * Validate whether a given route can validly be rendered with this page.
    *
@@ -12,7 +14,7 @@ export interface PageMeta {
    * statusCode/statusMessage to respond immediately with an error (other matches
    * will not be checked).
    */
-  validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
+  validate?: (route: RouteLocationNormalized) => boolean | Partial<NuxtError> | Promise<boolean | Partial<NuxtError>>
   /**
    * Where to redirect if the route is directly matched. The redirection happens
    * before any navigation guard and triggers a new navigation with the new
@@ -51,6 +53,14 @@ const warnRuntimeUsage = (method: string) =>
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
   if (process.dev) {
+    const component = getCurrentInstance()?.type
+    try {
+      const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
+      if (isRouteComponent) {
+        // don't warn if it's being used in a route component
+        return
+      }
+    } catch {}
     warnRuntimeUsage('definePageMeta')
   }
 }

@@ -4,7 +4,7 @@ import { defu } from 'defu'
 import * as _kit from '@nuxt/kit'
 import { useTestContext } from './context'
 
-// @ts-ignore type cast
+// @ts-expect-error type cast
 // eslint-disable-next-line
 const kit: typeof _kit = _kit.default || _kit
 

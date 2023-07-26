@@ -1,9 +1,9 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { setResponseHeader, getRequestHeaders, setResponseStatus } from 'h3'
+import { getRequestHeaders, setResponseHeader, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
-import { normalizeError, isJsonRequest } from '#internal/nitro/utils'
+import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
@@ -21,9 +21,6 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     data: error.data
   }
 
-  // Set response code and message
-  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
-
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
@@ -35,6 +32,11 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     ].filter(Boolean).join(' ')
     console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
+
+  if (event.handled) { return }
+
+  // Set response code and message
+  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
 
   // JSON response
   if (isJsonRequest(event)) {
@@ -55,24 +57,27 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Fallback to static rendered error page
   if (!res) {
     const { template } = process.dev
-      // @ts-ignore
+      // @ts-expect-error TODO: add legacy type support for subpath imports
       ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
-      // @ts-ignore
+      // @ts-expect-error TODO: add legacy type support for subpath imports
       : await import('@nuxt/ui-templates/templates/error-500.mjs')
     if (process.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
+    if (event.handled) { return }
     setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
     event.node.res.end(template(errorObject))
     return
   }
 
+  const html = await res.text()
+  if (event.handled) { return }
+
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
   }
-
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
-  event.node.res.end(await res.text())
+  event.node.res.end(html)
 }

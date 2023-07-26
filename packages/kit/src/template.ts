@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { basename, parse, resolve } from 'pathe'
 import hash from 'hash-sum'
 import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
-import { useNuxt, tryUseNuxt } from './context'
+import { tryUseNuxt, useNuxt } from './context'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
@@ -19,6 +19,27 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
+
+  return template
+}
+
+/**
+ * Renders given types using lodash template during build into the project buildDir
+ * and register them as types.
+ */
+export function addTypeTemplate (_template: NuxtTemplate<any>) {
+  const nuxt = useNuxt()
+
+  const template = addTemplate(_template)
+
+  if (!template.filename.endsWith('.d.ts')) {
+    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+  }
+
+  // Add template to types reference
+  nuxt.hook('prepare:types', ({ references }) => {
+    references.push({ path: template.dst })
+  })
 
   return template
 }
