@@ -74,7 +74,7 @@
     "rimraf": "5.0.1",
     "semver": "7.5.4",
     "std-env": "3.3.3",
-    "typescript": "5.0.4",
+    "typescript": "5.1.6",
     "ufo": "1.1.2",
     "vite": "4.4.7",
     "vitest": "0.33.0",
