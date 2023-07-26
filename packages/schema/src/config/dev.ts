@@ -38,7 +38,11 @@ export default defineUntypedSchema({
      */
     url: 'http://localhost:3000',
 
-    /** Template to show a loading screen */
+    /**
+     * Template to show a loading screen
+     *
+     * @type {(data: { loading?: string }) => string}
+     */
     loadingTemplate: loadingTemplate
   }
 })
