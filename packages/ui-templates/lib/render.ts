@@ -129,7 +129,7 @@ export const RenderPlugin = () => {
 
         // Generate types
         const types = [
-          `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ')}, string | boolean | number >`,
+          `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
           'declare const template: (data: Partial<DefaultMessages>) => string',
           'export { template }'
         ].join('\n')
