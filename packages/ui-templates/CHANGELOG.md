@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.2.0...@nuxt/ui-templates@1.2.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* handle empty message object when generating declaration ([5f229ef](https://github.com/nuxt/ui/commit/5f229ef1a3849ee042fe46e228ecf0094ef564fc))
+
+
+
+
+
 # [1.2.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.1.1...@nuxt/ui-templates@1.2.0) (2023-06-20)
 
 
