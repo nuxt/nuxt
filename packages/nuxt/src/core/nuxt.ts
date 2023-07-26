@@ -1,4 +1,4 @@
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -180,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)
@@ -341,7 +341,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
