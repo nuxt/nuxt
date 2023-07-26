@@ -105,6 +105,7 @@ describe('pages', () => {
     // should import JSX/TSX components with custom elements
     expect(html).toContain('TSX component')
     expect(html).toContain('<custom-component>custom</custom-component>')
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
   })
 
   it('respects aliases in page metadata', async () => {
