@@ -347,8 +347,8 @@ importers:
         specifier: ^2.3.2
         version: 2.3.2
       '@nuxt/ui-templates':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
@@ -521,6 +521,9 @@ importers:
 
   packages/schema:
     dependencies:
+      '@nuxt/ui-templates':
+        specifier: ^1.2.1
+        version: 1.2.1
       defu:
         specifier: ^6.1.2
         version: 6.1.2
@@ -2075,8 +2078,8 @@ packages:
       rc9: 2.1.1
       std-env: 3.3.3
 
-  /@nuxt/ui-templates@1.2.0:
-    resolution: {integrity: sha512-MSZza7dxccNb/p7nuzGF8/m4POaFpHzVhNdR7f4xahOpH7Ja02lFeYR+rHtoHIJC0yym4qriqv0mQ+Qf/R61bQ==}
+  /@nuxt/ui-templates@1.2.1:
+    resolution: {integrity: sha512-Nt1nTkPsji/X8z/BCqUgb8uADs+kT0FZboVDwyCdMlCgjEQKrAZUlunKXGywa6ssz4/RohGmvuB1cFre6dSKXQ==}
     dev: false
 
   /@nuxtjs/eslint-config-typescript@12.0.0(eslint@8.45.0)(typescript@5.0.4):
