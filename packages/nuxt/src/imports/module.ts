@@ -64,11 +64,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Restart nuxt when composable directories are added/removed
     nuxt.hook('builder:watch', (event, path) => {
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const fullPath = resolve(nuxt.options.srcDir, path)
+      if (!['addDir', 'unlinkDir'].includes(event)) { return }
 
-      if (isDirChange && composablesDirs.includes(fullPath)) {
-        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      if (composablesDirs.includes(path)) {
+        const relativePath = relative(nuxt.options.srcDir, path)
+        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })
@@ -120,8 +120,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       'imports.mjs'
     ]
     nuxt.hook('builder:watch', async (_, path) => {
-      const _resolved = resolve(nuxt.options.srcDir, path)
-      if (composablesDirs.find(dir => _resolved.startsWith(dir))) {
+      if (composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         await updateTemplates({
           filter: template => templates.includes(template.filename)
         })

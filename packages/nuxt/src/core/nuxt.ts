@@ -180,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)

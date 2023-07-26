@@ -5,7 +5,7 @@ import chokidar from 'chokidar'
 import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
-import { normalize, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
@@ -20,11 +20,14 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, path) => {
-      if (event !== 'change' && /^(app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(path)) {
-        if (path.startsWith('app')) {
+      if (event === 'change') { return }
+      const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
+      const restartPath = relativePaths.find(relativePath => /^(app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(relativePath))
+      if (restartPath) {
+        if (restartPath.startsWith('app')) {
           app.mainComponent = undefined
         }
-        if (path.startsWith('error')) {
+        if (restartPath.startsWith('error')) {
           app.errorComponent = undefined
         }
         await generateApp()
@@ -72,7 +75,6 @@ function createWatcher () {
 
   const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
-    cwd: nuxt.options.srcDir,
     ignoreInitial: true,
     ignored: [
       isIgnored,

@@ -55,9 +55,9 @@ export default defineNuxtModule({
       join(layer.config.srcDir, 'app/router.options.ts'),
       join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
     ])
+
     nuxt.hooks.hook('builder:watch', async (event, path) => {
-      const fullPath = join(nuxt.options.srcDir, path)
-      if (restartPaths.some(path => path === fullPath || fullPath.startsWith(path + '/'))) {
+      if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
         const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
           console.info('Pages', newSetting ? 'enabled' : 'disabled')
@@ -174,15 +174,16 @@ export default defineNuxtModule({
     })
 
     // Regenerate templates when adding or removing pages
-    nuxt.hook('builder:watch', async (event, path) => {
-      const dirs = [
-        nuxt.options.dir.pages,
-        nuxt.options.dir.layouts,
-        nuxt.options.dir.middleware
-      ].filter(Boolean)
+    const updateTemplatePaths = nuxt.options._layers.flatMap(l => [
+      join(l.config.srcDir || l.cwd, l.config.dir?.pages || 'pages') + '/',
+      join(l.config.srcDir || l.cwd, l.config.dir?.layouts || 'layouts') + '/',
+      join(l.config.srcDir || l.cwd, l.config.dir?.middleware || 'middleware') + '/'
+    ])
 
-      const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
-      if (event !== 'change' && pathPattern.test(path)) {
+    nuxt.hook('builder:watch', async (event, path) => {
+      if (event === 'change') { return }
+
+      if (updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
