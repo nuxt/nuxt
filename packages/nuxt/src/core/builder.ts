@@ -98,7 +98,7 @@ function createGranularWatcher () {
   let pending = 0
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
-  const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir).filter(d => d && !isIgnored(d))
+  const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir || layer.cwd).filter(d => d && !isIgnored(d))
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
@@ -114,7 +114,7 @@ function createGranularWatcher () {
       path = normalize(path)
       if (!pending) {
         // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        nuxt.callHook('builder:watch', event, relative(dir, path))
+        nuxt.callHook('builder:watch', event, relative(nuxt.options.srcDir, path))
       }
       if (event === 'unlinkDir' && path in watchers) {
         watchers[path]?.close()
@@ -123,7 +123,7 @@ function createGranularWatcher () {
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
         watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(relative(path, p))))
+        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(relative(nuxt.options.srcDir, p))))
         nuxt.hook('close', () => watchers[path]?.close())
       }
     })

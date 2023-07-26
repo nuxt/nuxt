@@ -51,12 +51,13 @@ export default defineNuxtModule({
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap(layer => [
-      join(layer.config.srcDir, 'app/router.options.ts'),
-      join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+      join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
+      join(layer.config.srcDir || layer.cwd, layer.config.dir?.pages || 'pages')
     ])
 
     nuxt.hooks.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
+      console.log({ relativePath, path, restartPaths })
       if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
         const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
