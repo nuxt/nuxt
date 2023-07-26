@@ -341,7 +341,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })

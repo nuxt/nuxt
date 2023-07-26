@@ -148,13 +148,13 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Restart dev server when component directories are added/removed
-    nuxt.hook('builder:watch', (event, path) => {
+    nuxt.hook('builder:watch', (event, relativePath) => {
       if (!['addDir', 'unlinkDir'].includes(event)) {
         return
       }
 
+      const path = resolve(nuxt.options.srcDir, relativePath)
       if (componentDirs.some(dir => dir.path === path)) {
-        const relativePath = relative(nuxt.options.srcDir!, path)
         console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
@@ -185,10 +185,11 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Watch for changes
-    nuxt.hook('builder:watch', async (event, path) => {
+    nuxt.hook('builder:watch', async (event, relativePath) => {
       if (!['add', 'unlink'].includes(event)) {
         return
       }
+      const path = resolve(nuxt.options.srcDir, relativePath)
       if (componentDirs.some(dir => path.startsWith(dir.path + '/'))) {
         await updateTemplates({
           filter: template => [
