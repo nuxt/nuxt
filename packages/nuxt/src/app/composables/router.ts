@@ -219,7 +219,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 }
 
 export const setPageLayout = (
-  layout: Exclude<PageMeta['layout'], false | undefined>
+  layout: PageMeta['layout']
 ) => {
   if (process.server) {
     if (
