@@ -136,8 +136,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
-  if (isExternal && parseURL(toPath).protocol === 'script:') {
-    throw new Error('Cannot navigate to an URL with script protocol.')
+  if (isExternal && parseURL(toPath).protocol === 'javascript:') {
+    throw new Error('Cannot navigate to an URL with javascript protocol.')
   }
 
   const inMiddleware = isProcessingMiddleware()
