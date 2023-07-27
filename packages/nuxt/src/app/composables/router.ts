@@ -136,7 +136,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
-  if (isExternal && /^data:javascript:|vbscript:$/.test(parseURL(toPath).protocol)) {
+  if (isExternal && /^data:javascript:|vbscript:$/.test(parseURL(toPath).protocol || '')) {
     throw new Error('Cannot navigate to an URL with javascript protocol.')
   }
 
