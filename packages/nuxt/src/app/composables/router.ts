@@ -218,7 +218,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
-export const setPageLayout = (layout: PageMeta['layout']) => {
+export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
   if (process.server) {
     if (process.dev && getCurrentInstance() && useState('_layout').value !== layout) {
       console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
