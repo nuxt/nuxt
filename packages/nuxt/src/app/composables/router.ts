@@ -109,6 +109,12 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
+const SCRIPT_PROTOCOLS_RE = /^(data|javascript|vbscript):$/
+function hasScriptProtocol (url: string) {
+  const protocol = parseURL(url).protocol
+  return !!protocol && SCRIPT_PROTOCOLS_RE.test(protocol)
+}
+
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
@@ -136,7 +142,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (isExternal && !options?.external) {
     throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
   }
-  if (isExternal && /^(data|javascript|vbscript):$/.test(parseURL(toPath).protocol || '')) {
+  if (isExternal && hasScriptProtocol(toPath)) {
     throw new Error('Cannot navigate to an URL with javascript protocol.')
   }
 
