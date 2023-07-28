@@ -32,13 +32,16 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
   // Compile templates into vfs
-  // TODO: remove utils and support for compiling ejs templates in v4
+  // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
   const writes: Array<() => void> = []
-  await Promise.all((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  await Promise.allSettled((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
     .map(async (template) => {
-      const contents = await compileTemplate(template, templateContext)
+      const contents = await compileTemplate(template, templateContext).catch(e => {
+        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        throw e
+      })
 
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       nuxt.vfs[fullPath] = contents
