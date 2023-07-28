@@ -62,7 +62,8 @@ export const RouteProvider = defineComponent({
 const ResolvePendingPromises = defineComponent({
   async setup () {
     const nuxtApp = useNuxtApp()
-    await Promise.all(Object.values(nuxtApp._asyncDataPromises).filter(p => p?.strategy !== 'lazy'))
+    const promises = Object.values(nuxtApp._asyncDataPromises).filter(p => p?.strategy !== 'lazy')
+    await (Promise.allSettled?.(promises) ?? Promise.all(promises).catch(() => {}))
   },
   render: () => null
 })
