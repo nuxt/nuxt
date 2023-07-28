@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.2.1...@nuxt/ui-templates@1.3.0) (2023-07-28)
+
+
+### Features
+
+* update nuxt logo ([#213](https://github.com/nuxt/ui/issues/213)) ([a8ee040](https://github.com/nuxt/ui/commit/a8ee0408521e5a9b1a2b387a57bece0750a43b03))
+
+
+
+
+
 ## [1.2.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.2.0...@nuxt/ui-templates@1.2.1) (2023-07-26)
 
 
