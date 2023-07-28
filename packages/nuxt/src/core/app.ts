@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
@@ -32,7 +32,9 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
   // Compile templates into vfs
+  // TODO: remove utils and support for compiling ejs templates in v4
   const templateContext = { utils: templateUtils, nuxt, app }
+  const writes: Array<() => void> = []
   await Promise.all((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
     .map(async (template) => {
@@ -50,10 +52,14 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       }
 
       if (template.write) {
-        await fsp.mkdir(dirname(fullPath), { recursive: true })
-        await fsp.writeFile(fullPath, contents, 'utf8')
+        writes.push(() => {
+          mkdirSync(dirname(fullPath), { recursive: true })
+          writeFileSync(fullPath, contents, 'utf8')
+        })
       }
     }))
+
+  for (const write of writes) { write() }
 
   await nuxt.callHook('app:templatesGenerated', app)
 }
