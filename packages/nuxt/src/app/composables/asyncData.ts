@@ -278,7 +278,7 @@ export function useAsyncData<
 
   // Allow directly awaiting on asyncData
   const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, DataE>
-  Object.assign(asyncDataPromise, asyncData)
+  Object.assign(options.strategy === 'blocking' ? asyncDataPromise : Promise.resolve(asyncData), asyncData)
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, DataE>
 }
