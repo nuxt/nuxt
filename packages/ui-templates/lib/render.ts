@@ -35,8 +35,10 @@ export const RenderPlugin = () => {
         let html = await fsp.readFile(fileName, 'utf-8')
         const isCompleteHTML = html.includes('<!DOCTYPE html>')
 
-        // Apply critters to inline styles
-        html = await critters.process(html)
+        if (html.includes('<html')) {
+          // Apply critters to inline styles
+          html = await critters.process(html)
+        }
         // We no longer need references to external CSS
         html = html.replace(/<link[^>]*>/g, '')
 
