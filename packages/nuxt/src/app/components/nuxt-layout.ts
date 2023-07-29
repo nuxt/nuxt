@@ -1,4 +1,4 @@
-import type { MaybeRef, Ref, VNode } from 'vue'
+import type { MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
