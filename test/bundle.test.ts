@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.5k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.4k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2377k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2330k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -62,7 +62,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "estree-walker",
         "h3",
-        "h3/node_modules/ufo",
         "has-flag",
         "hookable",
         "http-graceful-shutdown",
@@ -71,7 +70,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "ms",
         "node-fetch-native",
         "ofetch",
-        "ofetch/node_modules/ufo",
         "ohash",
         "pathe",
         "radix3",
@@ -86,7 +84,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unstorage",
         "vue",
         "vue-bundle-renderer",
-        "vue-bundle-renderer/node_modules/ufo",
       ]
     `)
   })
@@ -98,7 +95,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"370k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"622k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"591k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -115,7 +112,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "destr",
         "devalue",
         "h3",
-        "h3/node_modules/ufo",
         "has-flag",
         "hookable",
         "http-graceful-shutdown",
@@ -124,7 +120,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "ms",
         "node-fetch-native",
         "ofetch",
-        "ofetch/node_modules/ufo",
         "ohash",
         "pathe",
         "radix3",
