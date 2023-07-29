@@ -139,7 +139,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     }
     const protocol = parseURL(toPath).protocol
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
   }
 
