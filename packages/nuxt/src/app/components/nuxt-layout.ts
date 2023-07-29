@@ -1,8 +1,9 @@
-import type { Ref, VNode } from 'vue'
+import type { MaybeRef, Ref, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
+import type { PageMeta } from '#app'
 
 import { useRoute } from '#app/composables/router'
 // @ts-expect-error virtual file
@@ -33,7 +34,13 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean, Object] as unknown as () => string | false | Ref<string | false>,
+      type: [
+        String,
+        Boolean,
+        Object
+      ] as unknown as () => unknown extends PageMeta['layout']
+        ? MaybeRef<string | false>
+        : PageMeta['layout'] | MaybeRef<false>,
       default: null
     }
   },
@@ -41,9 +48,12 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
     const injectedRoute = inject(PageRouteSymbol)
-    const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
+    const route =
+      injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
-    const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+    const layout = computed(
+      () => unref(props.name) ?? (route.meta.layout as string) ?? 'default'
+    )
 
     const layoutRef = ref()
     context.expose({ layoutRef })
@@ -52,26 +62,45 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      if (process.dev && layout.value && !hasLayout && layout.value !== 'default') {
+      if (
+        process.dev &&
+        layout.value &&
+        !hasLayout &&
+        layout.value !== 'default'
+      ) {
         console.warn(`Invalid layout \`${layout.value}\` selected.`)
       }
 
-      const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps =
+        route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
-          default: () => h(
-            // @ts-expect-error seems to be an issue in vue types
-            LayoutProvider,
+        default: () =>
+          h(
+            Suspense,
             {
-              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-              key: layout.value,
-              name: layout.value,
-              shouldProvide: !props.name,
-              hasTransition: !!transitionProps
-            }, context.slots)
-        })
+              suspensible: true,
+              onResolve: () => {
+                nextTick(done)
+              }
+            },
+            {
+              default: () =>
+                h(
+                  // @ts-expect-error seems to be an issue in vue types
+                  LayoutProvider,
+                  {
+                    layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+                    key: layout.value,
+                    name: layout.value,
+                    shouldProvide: !props.name,
+                    hasTransition: !!transitionProps
+                  },
+                  context.slots
+                )
+            }
+          )
       }).default()
     }
   }
