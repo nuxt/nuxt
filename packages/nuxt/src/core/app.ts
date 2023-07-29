@@ -38,12 +38,13 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await Promise.allSettled((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
     .map(async (template) => {
-      const contents = await compileTemplate(template, templateContext).catch(e => {
+      const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
+      const mark = performance.mark(fullPath)
+      const contents = await compileTemplate(template, templateContext).catch((e) => {
         console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
-      const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       nuxt.vfs[fullPath] = contents
 
       const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
@@ -52,6 +53,13 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       // In case a non-normalized absolute path is called for on Windows
       if (process.platform === 'win32') {
         nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+      }
+
+      const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
+      const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+
+      if (nuxt.options.debug || setupTime > 500) {
+        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
       if (template.write) {
