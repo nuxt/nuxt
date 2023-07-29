@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.1](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.3.0...@nuxt/ui-templates@1.3.1) (2023-07-29)
+
+
+### Bug Fixes
+
+* **deps:** revert critters upgrade ([0341634](https://github.com/nuxt/ui/commit/03416341f7664f232da121deebb2fb53ab3dd864))
+
+
+
+
+
 # [1.3.0](https://github.com/nuxt/ui/compare/@nuxt/ui-templates@1.2.1...@nuxt/ui-templates@1.3.0) (2023-07-28)
 
 
