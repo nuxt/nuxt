@@ -8,7 +8,7 @@ import { consola } from 'consola'
 import { withTrailingSlash } from 'ufo'
 import { setupDotenv } from 'c12'
 import { showBanner, showVersions } from '../utils/banner'
-import { writeTypes } from '../utils/prepare'
+import { writeTypes as writeTypesLegacy } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
@@ -30,7 +30,7 @@ export default defineNuxtCommand({
 
     await setupDotenv({ cwd: rootDir, fileName: args.dotenv })
 
-    const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
+    const { loadNuxt, loadNuxtConfig, buildNuxt, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
