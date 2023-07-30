@@ -69,15 +69,6 @@ export function useFetch<
   arg2?: string
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
-  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof request === 'string' ? request : '', unref(opts.params || opts.query)])
-  if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
-  }
-  if (!request) {
-    throw new Error('[nuxt] [useFetch] request is missing.')
-  }
-
-  const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
     let r = request
@@ -86,6 +77,16 @@ export function useFetch<
     }
     return unref(r)
   })
+
+  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
+  if (!_key || typeof _key !== 'string') {
+    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
+  }
+  if (!request) {
+    throw new Error('[nuxt] [useFetch] request is missing.')
+  }
+
+  const key = _key === autoKey ? '$f' + _key : _key
 
   if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')

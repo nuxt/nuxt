@@ -2,7 +2,7 @@ import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vu
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
@@ -133,11 +133,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   }
 
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
-  if (isExternal && !options?.external) {
-    throw new Error('Navigating to external URL is not allowed by default. Use `navigateTo (url, { external: true })`.')
-  }
-  if (isExternal && parseURL(toPath).protocol === 'script:') {
-    throw new Error('Cannot navigate to an URL with script protocol.')
+  if (isExternal) {
+    if (!options?.external) {
+      throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
+    }
+    const protocol = parseURL(toPath).protocol
+    if (protocol && isScriptProtocol(protocol)) {
+      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+    }
   }
 
   const inMiddleware = isProcessingMiddleware()
