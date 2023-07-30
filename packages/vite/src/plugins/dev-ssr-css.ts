@@ -2,7 +2,7 @@ import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
 import { isCSS } from '../utils'
 
-export interface DevStyleSSRPluginOptions {
+interface DevStyleSSRPluginOptions {
   srcDir: string
   buildAssetsURL: string
 }

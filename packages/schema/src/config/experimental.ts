@@ -12,8 +12,8 @@ export default defineUntypedSchema({
     /**
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
-     * 
-     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be 
+     *
+     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
      * removed from core in Vue 3.4.
      * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
      */
@@ -107,7 +107,7 @@ export default defineUntypedSchema({
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
-     * 
+     *
      * @type {boolean | undefined}
      */
     payloadExtraction: undefined,
@@ -146,6 +146,27 @@ export default defineUntypedSchema({
      * @see https://github.com/nuxt/nuxt/issues/15592
      */
     configSchema: true,
+
+    /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * This is only not enabled by default because it could be a breaking change for some projects.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old

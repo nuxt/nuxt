@@ -8,7 +8,7 @@ export function pug (ctx: WebpackConfigContext) {
         resourceQuery: /^\?vue/i,
         use: [{
           loader: 'pug-plain-loader',
-          options: ctx.options.webpack.loaders.pugPlain
+          options: ctx.userConfig.loaders.pugPlain
         }]
       },
       {
@@ -16,7 +16,7 @@ export function pug (ctx: WebpackConfigContext) {
           'raw-loader',
           {
             loader: 'pug-plain-loader',
-            options: ctx.options.webpack.loaders.pugPlain
+            options: ctx.userConfig.loaders.pugPlain
           }
         ]
       }

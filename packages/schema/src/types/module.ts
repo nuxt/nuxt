@@ -20,7 +20,7 @@ export interface ModuleMeta {
    */
   compatibility?: NuxtCompatibility
 
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /** The options received.  */

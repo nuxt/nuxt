@@ -77,7 +77,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
     // Measure setup time
-    if (setupTime > 5000) {
+    if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
       logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
     } else if (nuxt.options.debug) {
       logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)

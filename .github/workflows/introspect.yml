@@ -25,5 +25,5 @@ jobs:
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
         run: |
-          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/590d3bd9dde0c91f7a66071d40eb84716526e5a6/scripts/download-actionlint.bash)
           ./actionlint -color -shellcheck=""

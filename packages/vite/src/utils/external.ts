@@ -2,7 +2,7 @@ import type { ExternalsOptions } from 'externality'
 import { ExternalsDefaults, isExternal } from 'externality'
 import type { ViteDevServer } from 'vite'
 
-export function createIsExternal (viteServer: ViteDevServer, rootDir: string) {
+export function createIsExternal (viteServer: ViteDevServer, rootDir: string, modulesDirs?: string[]) {
   const externalOpts: ExternalsOptions = {
     inline: [
       /virtual:/,
@@ -15,6 +15,7 @@ export function createIsExternal (viteServer: ViteDevServer, rootDir: string) {
       /node_modules/
     ],
     resolve: {
+      modules: modulesDirs,
       type: 'module',
       extensions: ['.ts', '.js', '.json', '.vue', '.mjs', '.jsx', '.tsx', '.wasm']
     }
