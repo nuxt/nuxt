@@ -373,9 +373,10 @@ export default defineUntypedSchema({
    */
   watch: {
     $resolve: async (val, get) => {
-      return Promise.all([].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp).map(
-        async (b: string | RegExp) => typeof b === 'string' ? resolve(await get('srcDir'), b) : b
-      ))
+      const srcDir = await get('srcDir')
+      return [].concat(val)
+        .filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
+        .map((b: string | RegExp) => typeof b === 'string' ? resolve(srcDir, b) : b)
     }
   },
 
