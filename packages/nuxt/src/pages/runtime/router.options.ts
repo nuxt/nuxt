@@ -63,7 +63,7 @@ function _getHashElementScrollMarginTop (selector: string): number {
 }
 
 function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
-  const samePageComponent = to.matched.every((comp, index) => comp.components?.default === from.matched[index]?.components?.default)
+  const samePageComponent = to.path === from.path
 
   if (!samePageComponent) {
     return true
