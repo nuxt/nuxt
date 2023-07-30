@@ -395,15 +395,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: [],
       style: []
     }
-    const headTags = await head.resolveTags()
-    headTags.forEach((tag) => {
+    for (const tag of await head.resolveTags()) {
       if (tag.tag === 'link' && tag.props.rel === 'stylesheet' && tag.props.href.includes('scoped') && !tag.props.href.includes('pages/')) {
         islandHead.link.push({ ...tag.props, key: 'island-link-' + hash(tag.props.href) })
       }
       if (tag.tag === 'style' && tag.innerHTML) {
         islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
       }
-    })
+    }
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,
