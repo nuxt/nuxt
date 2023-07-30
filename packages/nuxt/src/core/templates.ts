@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
+import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
@@ -144,7 +145,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
       ),
       modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
       '  }',
-      generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public'))),
+      generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public')) as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,
@@ -152,7 +153,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
           allowExtraKeys: false,
           indentation: 2
         }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
           interfaceName: 'PublicRuntimeConfig',
           addExport: false,
