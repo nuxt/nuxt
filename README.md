@@ -55,7 +55,7 @@ Nuxt's goal is to make web development intuitive and performant, with a great de
   <td>
     <h3>Examples</h3>
     <p>
-      Explore different ways of using Nuxt features and get inspired with <a href="https://nuxt.com/docs/examples/essentials/hello-world">our list of examples</a>.
+      Explore different ways of using Nuxt features and get inspired with <a href="https://nuxt.com/docs/examples/hello-world">our list of examples</a>.
     </p>
   </td>
 </tr>

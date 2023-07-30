@@ -1,4 +1,4 @@
 :root {
   --global: 'global';
-  --asset: url('~/assets/logo.svg');
+  --asset: url('~/assets/css-only-asset.svg');
 }

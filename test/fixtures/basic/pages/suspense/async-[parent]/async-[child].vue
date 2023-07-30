@@ -7,7 +7,7 @@ const data = route.params
 </script>
 
 <template>
-  <div>
+  <div :id="'child' + route.path.replace(/[/-]+/g, '-')">
     Async child: {{ route.params.parent }} - {{ route.params.child }}
     <hr>
     {{ data }}

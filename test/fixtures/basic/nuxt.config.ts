@@ -48,6 +48,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
@@ -63,7 +64,7 @@ export default defineNuxtConfig({
     keyedComposables: [
       {
         name: 'useCustomKeyedComposable',
-        source: 'pages/keyed-composables/index.vue',
+        source: '~/other-composables-folder/custom-keyed-composable',
         argumentLength: 1
       }
     ]

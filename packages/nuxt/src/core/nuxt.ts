@@ -1,7 +1,7 @@
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -154,14 +154,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Transpile #app if it is imported directly from subpath export
   nuxt.options.build.transpile.push('nuxt/app')
 
-  // This is currently a placeholder for future augmentations that need to be applied in Nitro context
-  addTemplate({
-    filename: 'types/nitro-nuxt.d.ts',
-    getContents: () => {
-      return 'export {}'
-    }
-  })
-
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string)
@@ -188,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)
@@ -279,15 +271,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add prerender payload support
-  if (nuxt.options._generate && nuxt.options.experimental.payloadExtraction === undefined) {
-    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
-  }
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
@@ -358,7 +341,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
@@ -388,6 +372,20 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init nitro
   await initNitro(nuxt)
+
+  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
+  // Add prerender payload support
+  const nitro = useNitro()
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
+  nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
+  nitro.options._config.replace!['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
+
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
 
   await nuxt.callHook('ready', nuxt)
 }

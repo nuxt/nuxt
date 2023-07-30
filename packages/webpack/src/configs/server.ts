@@ -25,13 +25,11 @@ export function server (ctx: WebpackConfigContext) {
 }
 
 function serverPreset (ctx: WebpackConfigContext) {
-  const { config } = ctx
+  ctx.config.output!.filename = 'server.mjs'
 
-  config.output!.filename = 'server.mjs'
+  ctx.config.devtool = ctx.nuxt.options.sourcemap.server ? ctx.isDev ? 'cheap-module-source-map' : 'source-map' : false
 
-  config.devtool = ctx.nuxt.options.sourcemap.server ? ctx.isDev ? 'cheap-module-source-map' : 'source-map' : false
-
-  config.optimization = {
+  ctx.config.optimization = {
     splitChunks: false,
     minimize: false
   }
@@ -76,21 +74,19 @@ function serverStandalone (ctx: WebpackConfigContext) {
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
-  const { config, options } = ctx
-
-  config.plugins = config.plugins || []
+  ctx.config.plugins = ctx.config.plugins || []
 
   // Server polyfills
-  if (options.webpack.serverURLPolyfill) {
-    config.plugins.push(new webpack.ProvidePlugin({
-      URL: [options.webpack.serverURLPolyfill, 'URL'],
-      URLSearchParams: [options.webpack.serverURLPolyfill, 'URLSearchParams']
+  if (ctx.userConfig.serverURLPolyfill) {
+    ctx.config.plugins.push(new webpack.ProvidePlugin({
+      URL: [ctx.userConfig.serverURLPolyfill, 'URL'],
+      URLSearchParams: [ctx.userConfig.serverURLPolyfill, 'URLSearchParams']
     }))
   }
 
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-    config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+    ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
       logger
     }))
   }

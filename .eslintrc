@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/eslintrc",
   "globals": {
     "NodeJS": true,
     "$fetch": true
