@@ -6,13 +6,13 @@ import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 import type { PageMeta } from '#app'
 
 import { useRoute } from '#app/composables/router'
+import { useNuxtApp } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
 // @ts-expect-error virtual file
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
-import { useNuxtApp } from '#app'
 
 // TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
 const LayoutLoader = defineComponent({
