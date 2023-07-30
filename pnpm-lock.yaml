@@ -415,9 +415,6 @@ importers:
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
-      local-pkg:
-        specifier: ^0.4.3
-        version: 0.4.3
       magic-string:
         specifier: ^0.30.2
         version: 0.30.2
@@ -445,6 +442,9 @@ importers:
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
+      pkg-types:
+        specifier: ^1.0.3
+        version: 1.0.3
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
