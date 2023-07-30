@@ -7,7 +7,9 @@ import type { Nuxt } from '@nuxt/schema'
 import { consola } from 'consola'
 import { withTrailingSlash } from 'ufo'
 import { setupDotenv } from 'c12'
-import { writeTypes as writeTypesLegacy } from '@nuxt/kit'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
 import { showBanner, showVersions } from '../utils/banner'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'

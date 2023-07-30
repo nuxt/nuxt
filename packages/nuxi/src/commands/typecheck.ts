@@ -1,9 +1,9 @@
 import { execa } from 'execa'
 import { resolve } from 'pathe'
-import { tryResolveModule } from '../utils/esm'
 
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
 import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
-
+import { tryResolveModule } from '../utils/esm'
 import { loadKit } from '../utils/kit'
 import { defineNuxtCommand } from './index'
 

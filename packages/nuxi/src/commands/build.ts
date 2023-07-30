@@ -1,6 +1,8 @@
 import { relative, resolve } from 'pathe'
 import { consola } from 'consola'
-import { writeTypes as writeTypesLegacy } from '@nuxt/kit'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
 import { loadKit } from '../utils/kit'
 import { clearBuildDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
