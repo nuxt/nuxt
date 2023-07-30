@@ -175,10 +175,14 @@ export async function writeTypes (nuxt: Nuxt) {
         tsConfig.include.push(relativePath)
       }
     } else {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+      const path = stats?.isFile()
+        ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
+        : absolutePath
+
+      tsConfig.compilerOptions.paths[alias] = [path]
 
       if (!absolutePath.startsWith(rootDirWithSlash)) {
-        tsConfig.include.push(relativePath.replace(/(?<=\w)\.\w+$/g, ''))
+        tsConfig.include.push(path)
       }
     }
   }
