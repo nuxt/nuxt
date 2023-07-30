@@ -75,8 +75,8 @@ export const writeTypes = async (nuxt: Nuxt) => {
     } else {
       const path = stats?.isFile()
         ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
-        : absolutePath;
-      
+        : absolutePath
+
       tsConfig.compilerOptions.paths[alias] = [path]
 
       if (!absolutePath.startsWith(rootDirWithSlash)) {
