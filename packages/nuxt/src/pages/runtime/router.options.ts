@@ -63,13 +63,7 @@ function _getHashElementScrollMarginTop (selector: string): number {
 }
 
 function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
-  const samePageComponent = to.path === from.path
+  const isSamePath = to.path === from.path
 
-  if (!samePageComponent) {
-    return true
-  }
-  if (samePageComponent && JSON.stringify(from.params) !== JSON.stringify(to.params)) {
-    return true
-  }
-  return false
+  return isSamePath ? JSON.stringify(from.params) !== JSON.stringify(to.params) : true
 }
