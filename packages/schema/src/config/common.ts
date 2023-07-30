@@ -366,18 +366,13 @@ export default defineUntypedSchema({
    * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
    *
    * It is an array of strings or regular expressions. Strings should be either absolute paths or
-   * relative to the project `srcDir`. Regular expressions will be matched against the path relative
-   * to the project `srcDir`.
+   * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
+   * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
    *
    * @type {Array<string | RegExp>}
    */
   watch: {
-    $resolve: async (val, get) => {
-      const srcDir = await get('srcDir')
-      return [].concat(val)
-        .filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
-        .map((b: string | RegExp) => typeof b === 'string' ? resolve(srcDir, b) : b)
-    }
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
   },
 
   /**

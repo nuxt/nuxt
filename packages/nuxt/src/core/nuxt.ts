@@ -341,10 +341,6 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  // Normalise user-provided relative paths
-  nuxt.options.watch = nuxt.options.watch
-    .map((b: string | RegExp) => typeof b === 'string' ? resolve(nuxt.options.srcDir, b) : b)
-
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -353,17 +349,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     // User provided patterns
+    const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        // Test (normalised) strings against absolute path
-        if (pattern === path) { return nuxt.callHook('restart') }
+        // Test (normalised) strings against absolute path and relative path to any layer `srcDir`
+        if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
         continue
       }
       // Test regular expressions against path to _any_ layer `srcDir`
-      if (nuxt.options._layers.some((l) => {
-        const layerRelativePath = relative(l.config.srcDir || l.cwd, path)
-        return pattern.test(layerRelativePath)
-      })) {
+      if (layerRelativePaths.some(p => pattern.test(p))) {
         return nuxt.callHook('restart')
       }
     }
