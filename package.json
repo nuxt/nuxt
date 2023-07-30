@@ -75,7 +75,7 @@
     "semver": "7.5.4",
     "std-env": "3.3.3",
     "typescript": "5.1.6",
-    "ufo": "1.1.2",
+    "ufo": "1.2.0",
     "vite": "4.4.7",
     "vitest": "0.33.0",
     "vitest-environment-nuxt": "0.10.2",
