@@ -4,7 +4,7 @@ export default defineNuxtModule({
   meta: {
     name: 'page-extend'
   },
-  setup() {
+  setup () {
     const nuxt = useNuxt()
     const resolver = createResolver(import.meta.url)
 
