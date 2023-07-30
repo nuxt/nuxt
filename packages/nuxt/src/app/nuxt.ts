@@ -168,7 +168,6 @@ export interface PluginEnvContext {
 export interface ResolvedPluginMeta {
   name?: string
   parallel?: boolean
-  env: PluginEnvContext
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
