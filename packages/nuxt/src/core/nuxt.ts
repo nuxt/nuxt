@@ -1,4 +1,4 @@
-import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -341,6 +341,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
+  // Normalise user-provided relative paths
+  nuxt.options.watch = nuxt.options.watch
+    .map((b: string | RegExp) => typeof b === 'string' ? resolve(nuxt.options.srcDir, b) : b)
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -348,23 +352,19 @@ async function initNuxt (nuxt: Nuxt) {
       return nuxt.callHook('restart', { hard: true })
     }
 
-    // User provided patterns:
-    // - nuxt.options.watch relative to srcDir
-    // - path should be absolute
-    if (isAbsolute(path)) {
-      for (const layer of nuxt.options._layers) {
-        if (!layer.config.watch) { continue }
-        const normalizedPath = relative(layer.config.srcDir, path)
-        // not inside layer srcDir
-        if (normalizedPath.startsWith('..') || isAbsolute(normalizedPath)) { continue }
-        for (const pattern of layer.config.watch) {
-          if (typeof pattern === 'string') {
-            if (pattern === path || pattern === normalizedPath) { return nuxt.callHook('restart') }
-            continue
-          }
-          // @ts-expect-error: 'pattern' is possibly 'undefined'.ts(18048) => pattern is filtered
-          if (pattern.test(path) || pattern.test(normalizedPath)) { return nuxt.callHook('restart') }
-        }
+    // User provided patterns
+    for (const pattern of nuxt.options.watch) {
+      if (typeof pattern === 'string') {
+        // Test (normalised) strings against absolute path
+        if (pattern === path) { return nuxt.callHook('restart') }
+        continue
+      }
+      // Test regular expressions against path to _any_ layer `srcDir`
+      if (nuxt.options._layers.some((l) => {
+        const layerRelativePath = relative(l.config.srcDir || l.cwd, path)
+        return pattern.test(layerRelativePath)
+      })) {
+        return nuxt.callHook('restart')
       }
     }
 
