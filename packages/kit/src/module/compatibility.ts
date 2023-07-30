@@ -1,8 +1,18 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
-import type { Nuxt, NuxtModule } from '@nuxt/schema'
+import type { Nuxt, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { useNuxt } from '../context'
 import { normalizeSemanticVersion } from '../compatibility'
 import { loadNuxtModuleInstance } from './install'
+
+function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string | false {
+  if (typeof m === 'object' && !Array.isArray(m)) {
+    return (m as any as NuxtModule).name
+  }
+  if (Array.isArray(m)) {
+    return resolveNuxtModuleEntryName(m[0])
+  }
+  return m as string || false
+}
 
 /**
  * Check if a Nuxt module is installed by name.
@@ -11,8 +21,10 @@ import { loadNuxtModuleInstance } from './install'
  * that it cannot detect if a module is _going to be_ installed programmatically by another module.
  */
 export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
+  // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
-    nuxt.options.modules.includes(moduleName)
+    // check modules to be installed
+    nuxt.options.modules.some(m => moduleName === resolveNuxtModuleEntryName(m))
 }
 
 /**
@@ -46,7 +58,7 @@ export async function getNuxtModuleVersion (module: string | NuxtModule, nuxt: N
     return version
   }
   // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
-  if (nuxt.options.modules.includes(moduleMeta.name)) {
+  if (hasNuxtModule(moduleMeta.name)) {
     const { buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleMeta.name, nuxt)
     return buildTimeModuleMeta.version || false
   }

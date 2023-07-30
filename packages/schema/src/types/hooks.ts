@@ -123,7 +123,7 @@ export interface NuxtHooks {
    * @param app The configured `NuxtApp` object
    * @returns Promise
    */
-  'app:templatesGenerated': (app: NuxtApp) => HookResult
+  'app:templatesGenerated': (app: NuxtApp, templates: ResolvedNuxtTemplate[], options?: GenerateAppOptions) => HookResult
 
   /**
    * Called before Nuxt bundle builder.
