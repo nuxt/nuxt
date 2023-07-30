@@ -23,6 +23,7 @@ dist
 .vercel
 .netlify
 .output
+.output-*
 .gen
 
 # Junit reports

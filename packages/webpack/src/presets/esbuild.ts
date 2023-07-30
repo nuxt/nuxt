@@ -2,17 +2,15 @@ import { EsbuildPlugin } from 'esbuild-loader'
 import type { WebpackConfigContext } from '../utils/config'
 
 export function esbuild (ctx: WebpackConfigContext) {
-  const { config } = ctx
-
   // https://esbuild.github.io/getting-started/#bundling-for-the-browser
   // https://gs.statcounter.com/browser-version-market-share
   // https://nodejs.org/en/
   const target = ctx.isServer ? 'es2019' : 'chrome85'
 
   // https://github.com/nuxt/nuxt/issues/13052
-  config.optimization!.minimizer!.push(new EsbuildPlugin())
+  ctx.config.optimization!.minimizer!.push(new EsbuildPlugin())
 
-  config.module!.rules!.push(
+  ctx.config.module!.rules!.push(
     {
       test: /\.m?[jt]s$/i,
       loader: 'esbuild-loader',

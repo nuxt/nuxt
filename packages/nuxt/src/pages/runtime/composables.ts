@@ -14,7 +14,7 @@ export interface PageMeta {
    * statusCode/statusMessage to respond immediately with an error (other matches
    * will not be checked).
    */
-  validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
+  validate?: (route: RouteLocationNormalized) => boolean | Partial<NuxtError> | Promise<boolean | Partial<NuxtError>>
   /**
    * Where to redirect if the route is directly matched. The redirection happens
    * before any navigation guard and triggers a new navigation with the new
@@ -36,7 +36,7 @@ export interface PageMeta {
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
-  scrollToTop?: boolean
+  scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
 }
 
 declare module 'vue-router' {

@@ -47,17 +47,15 @@ function clientPerformance (ctx: WebpackConfigContext) {
 }
 
 function clientHMR (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
   if (!ctx.isDev) {
     return
   }
 
-  const clientOptions = options.webpack.hotMiddleware?.client || {}
+  const clientOptions = ctx.userConfig.hotMiddleware?.client || {}
   const hotMiddlewareClientOptions = {
     reload: true,
     timeout: 30000,
-    path: joinURL(options.app.baseURL, '__webpack_hmr', ctx.name),
+    path: joinURL(ctx.options.app.baseURL, '__webpack_hmr', ctx.name),
     ...clientOptions,
     ansiColors: JSON.stringify(clientOptions.ansiColors || {}),
     overlayStyles: JSON.stringify(clientOptions.overlayStyles || {}),
@@ -66,14 +64,14 @@ function clientHMR (ctx: WebpackConfigContext) {
   const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
   // Add HMR support
-  const app = (config.entry as any).app as any
+  const app = (ctx.config.entry as any).app as any
   app.unshift(
     // https://github.com/glenjamin/webpack-hot-middleware#config
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
-  config.plugins = config.plugins || []
-  config.plugins.push(new webpack.HotModuleReplacementPlugin())
+  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
 function clientOptimization (_ctx: WebpackConfigContext) {
@@ -81,21 +79,19 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 }
 
 function clientPlugins (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
-  if (!ctx.isDev && ctx.name === 'client' && options.webpack.analyze) {
-    const statsDir = resolve(options.analyzeDir)
+  if (!ctx.isDev && ctx.name === 'client' && ctx.userConfig.analyze) {
+    const statsDir = resolve(ctx.options.analyzeDir)
 
-    config.plugins!.push(new BundleAnalyzerPlugin({
+    ctx.config.plugins!.push(new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       defaultSizes: 'gzip',
       generateStatsFile: true,
       openAnalyzer: true,
       reportFilename: resolve(statsDir, `${ctx.name}.html`),
       statsFilename: resolve(statsDir, `${ctx.name}.json`),
-      ...options.webpack.analyze === true ? {} : options.webpack.analyze
+      ...ctx.userConfig.analyze === true ? {} : ctx.userConfig.analyze
     }))
   }
 
@@ -103,7 +99,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
     if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
-      config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+      ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
         logger
       }))
     }

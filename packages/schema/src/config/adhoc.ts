@@ -58,7 +58,7 @@ export default defineUntypedSchema({
    *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    *
-   * @type {typeof import('@nuxt/telemetry').ModuleOptions}
+   * @type {boolean | Record<string, any>}
   */
   telemetry: undefined,
 

@@ -56,6 +56,8 @@ export async function bundle (nuxt: Nuxt) {
     allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
   }
 
+  const { $client, $server, ...viteConfig } = nuxt.options.vite
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -76,7 +78,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         },
         optimizeDeps: {
-          include: ['vue', '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared'],
+          include: ['vue'],
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
@@ -121,7 +123,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         }
       } satisfies ViteConfig,
-      nuxt.options.vite
+      viteConfig
     )
   }
 
@@ -166,6 +168,10 @@ export async function bundle (nuxt: Nuxt) {
       for (const key in manifest) {
         const entry = manifest[key]
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
+        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
+          // @ts-expect-error internal key
+          entry._globalCSS = true
+        }
         if (shouldRemoveCSS && entry.css) {
           entry.css = []
         }

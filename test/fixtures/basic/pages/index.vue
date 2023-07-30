@@ -29,6 +29,12 @@
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal" to="/middleware-abort-non-fatal" :prefetch="false">
+      Middleware abort navigation
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal-error" to="/middleware-abort-non-fatal?error=someerror" :prefetch="false">
+      Middleware abort navigation with error
+    </NuxtLink>
     Some value: {{ someValue }}
     <button @click="someValue++">
       Increment state
