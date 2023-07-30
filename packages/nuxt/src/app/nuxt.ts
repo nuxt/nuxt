@@ -329,7 +329,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
-    if (nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    if (process.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
