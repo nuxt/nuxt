@@ -12,14 +12,14 @@ const lazy = useRoute().query.lazy === 'true'
   <div ref="page" class="end-page">
     End page
     <pre>{{ mountedHTML }}</pre>
-    <section data-testid="fallback">
+    <section id="fallback">
       <AsyncServerComponent :lazy="lazy" :count="42">
         <template #fallback>
           Loading server component
         </template>
       </AsyncServerComponent>
     </section>
-    <section data-testid="no-fallback">
+    <section id="no-fallback">
       <AsyncServerComponent :lazy="lazy" :count="42" />
     </section>
   </div>
