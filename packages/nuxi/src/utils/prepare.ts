@@ -73,10 +73,14 @@ export const writeTypes = async (nuxt: Nuxt) => {
         tsConfig.include.push(`${absolutePath}/*`)
       }
     } else {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+      const path = stats?.isFile()
+        ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
+        : absolutePath
+
+      tsConfig.compilerOptions.paths[alias] = [path]
 
       if (!absolutePath.startsWith(rootDirWithSlash)) {
-        tsConfig.include.push(absolutePath.replace(/(?<=\w)\.\w+$/g, ''))
+        tsConfig.include.push(path)
       }
     }
   }
