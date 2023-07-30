@@ -21,9 +21,6 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     data: error.data
   }
 
-  // Set response code and message
-  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
-
   // Console output
   if (error.unhandled || error.fatal) {
     const tags = [
@@ -35,6 +32,11 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     ].filter(Boolean).join(' ')
     console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
+
+  if (event.handled) { return }
+
+  // Set response code and message
+  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
 
   // JSON response
   if (isJsonRequest(event)) {
@@ -63,16 +65,19 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
+    if (event.handled) { return }
     setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
     event.node.res.end(template(errorObject))
     return
   }
 
+  const html = await res.text()
+  if (event.handled) { return }
+
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
   }
-
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
-  event.node.res.end(await res.text())
+  event.node.res.end(html)
 }

@@ -95,7 +95,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        console.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
+        console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
           `\n - ${filePath}` +
           `\n - ${resolvedNames.get(componentName)}`
         )
@@ -128,6 +128,12 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       if (typeof dir.extendComponent === 'function') {
         component = (await dir.extendComponent(component)) || component
+      }
+
+      // Ignore files like `~/components/index.vue` which end up not having a name at all
+      if (!componentName) {
+        console.warn(`[nuxt] Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        continue
       }
 
       // Ignore component if component is already defined (with same mode)

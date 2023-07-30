@@ -193,7 +193,7 @@ export default defineUntypedSchema({
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
      *
-     * @type {typeof import('unctx').TransformerOptions}
+     * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],

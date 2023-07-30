@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, setCookie } from 'h3'
@@ -39,7 +39,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(cookie.value)
+      channel?.postMessage(toRaw(cookie.value))
     }
 
     let watchPaused = false

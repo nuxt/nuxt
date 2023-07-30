@@ -1,12 +1,15 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
+import { withTrailingSlash } from 'ufo'
 import { getModulePaths, getNearestPackage } from './cjs'
 
 export const writeTypes = async (nuxt: Nuxt) => {
   const modulePaths = getModulePaths(nuxt.options.modulesDir)
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -14,10 +17,12 @@ export const writeTypes = async (nuxt: Nuxt) => {
       jsx: 'preserve',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: 'Node',
+      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
-      strict: nuxt.options.typescript?.strict ?? false,
+      strict: nuxt.options.typescript?.strict ?? true,
       allowJs: true,
+      // TODO: remove by default in 3.7
+      baseUrl: nuxt.options.srcDir,
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
@@ -28,13 +33,16 @@ export const writeTypes = async (nuxt: Nuxt) => {
       './nuxt.d.ts',
       join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
+      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
+        .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
+        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
-  })
+  } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
@@ -46,21 +54,34 @@ export const writeTypes = async (nuxt: Nuxt) => {
 
   const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
 
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+  tsConfig.include = tsConfig.include || []
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const relativePath = isAbsolute(aliases[alias])
-      ? relativeTo(basePath, aliases[alias])
-      : aliases[alias]
+    const absolutePath = resolve(basePath, aliases[alias])
 
-    const stats = await fsp.stat(resolve(basePath, relativePath)).catch(() => null /* file does not exist */)
-    tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (stats?.isDirectory()) {
-      tsConfig.compilerOptions.paths[alias] = [relativePath]
-      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
+      tsConfig.compilerOptions.paths[alias] = [absolutePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
+        tsConfig.include.push(absolutePath)
+        tsConfig.include.push(`${absolutePath}/*`)
+      }
     } else {
-      tsConfig.compilerOptions.paths[alias] = [relativePath.replace(/(?<=\w)\.\w+$/g, '')] /* remove extension */
+      const path = stats?.isFile()
+        ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
+        : absolutePath
+
+      tsConfig.compilerOptions.paths[alias] = [path]
+
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
+        tsConfig.include.push(path)
+      }
     }
   }
 
@@ -78,18 +99,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
   const declarations: string[] = []
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
-
-  // Normalise aliases to be relative to buildDir for backward compatibility
-  for (const alias in tsConfig.compilerOptions!.paths!) {
-    const paths = tsConfig.compilerOptions!.paths![alias] as string[]
-    for (const [index, path] of paths.entries()) {
-      if (isAbsolute(path) || LEADING_DOT_RE.test(path)) { continue }
-      const resolvedPath = join(nuxt.options.rootDir, path) /* previously basePath was set to rootDir */
-      if (existsSync(resolvedPath)) {
-        paths[index] = relativeTo(basePath, resolvedPath)
-      }
-    }
-  }
 
   const declaration = [
     ...references.map((ref) => {
@@ -121,18 +130,6 @@ export const writeTypes = async (nuxt: Nuxt) => {
   nuxt.hook('builder:prepared', writeFile)
 
   await writeFile()
-}
-
-const LEADING_DOT_RE = /^\.{1,2}(\/|$)/
-function withLeadingDot (path: string) {
-  if (LEADING_DOT_RE.test(path)) {
-    return path
-  }
-  return `./${path}`
-}
-
-function relativeTo (from: string, to: string) {
-  return withLeadingDot(relative(from, to) || '.')
 }
 
 function renderAttrs (obj: Record<string, string>) {
