@@ -105,6 +105,7 @@ describe('pages', () => {
     // should import JSX/TSX components with custom elements
     expect(html).toContain('TSX component')
     expect(html).toContain('<custom-component>custom</custom-component>')
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
   })
 
   it('respects aliases in page metadata', async () => {
@@ -1045,7 +1046,7 @@ describe('deferred app suspense resolve', () => {
       await page.goto(url(path))
       await page.waitForLoadState('networkidle')
 
-      // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
+      // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
@@ -1058,6 +1059,26 @@ describe('deferred app suspense resolve', () => {
   })
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
+  })
+  it('should wait for suspense in parent layout', async () => {
+    const page = await createPage('/hydration/layout')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('Tests whether hydration is properly resolved within an async layout')
+  })
+  it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
+    const page = await createPage('/hydration/spa-redirection/start')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('fully hydrated and ready to go')
   })
 })
 
@@ -1653,7 +1674,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
+        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div>  <div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
       }
     `)
@@ -1775,6 +1796,17 @@ describe('component islands', () => {
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
 
     await page.close()
+  })
+
+  it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
+    process.env.NUXT_APP_BASE_URL = '/foo/'
+    await startServer()
+
+    const result = await fetch('/foo/islands')
+    expect(result.status).toBe(200)
+
+    process.env.NUXT_APP_BASE_URL = undefined
+    await startServer()
   })
 })
 

@@ -61,7 +61,9 @@ const appPreset = defineUnimportPreset({
     'preloadPayload',
     'isPrerendered',
     'definePayloadReducer',
-    'definePayloadReviver'
+    'definePayloadReviver',
+    'requestIdleCallback',
+    'cancelIdleCallback'
   ]
 })
 

@@ -8,8 +8,6 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from '@unhead/vue'
-import { renderSSRHead } from '@unhead/ssr'
 import type { Nuxt } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
@@ -37,6 +35,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
+  // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -44,6 +43,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     srcDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
+    experimental: {
+      // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+    },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       imports: [
@@ -186,7 +189,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
-      'process.env.NUXT_PAYLOAD_EXTRACTION': !!nuxt.options.experimental.payloadExtraction,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.dev': nuxt.options.dev,
@@ -200,12 +202,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-
-  // Add head chunk for SPA renders
-  const head = createHeadCore()
-  head.push(nuxt.options.app.head)
-  const headChunk = await renderSSRHead(head)
-  nitroConfig.virtual!['#head-static'] = `export default ${JSON.stringify(headChunk)}`
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
@@ -287,7 +283,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
   nitro.hooks.hook('prerender:routes', (routes) => {
-    nuxt.callHook('prerender:routes', { routes })
+    return nuxt.callHook('prerender:routes', { routes })
   })
 
   // Enable runtime compiler client side

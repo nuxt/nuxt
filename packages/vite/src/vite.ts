@@ -56,6 +56,8 @@ export async function bundle (nuxt: Nuxt) {
     allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
   }
 
+  const { $client, $server, ...viteConfig } = nuxt.options.vite
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -121,7 +123,7 @@ export async function bundle (nuxt: Nuxt) {
           }
         }
       } satisfies ViteConfig,
-      nuxt.options.vite
+      viteConfig
     )
   }
 

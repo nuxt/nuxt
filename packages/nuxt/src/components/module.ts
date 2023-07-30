@@ -98,7 +98,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.ts', // .d.ts files
+            '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || [])
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)
@@ -129,11 +129,11 @@ export default defineNuxtModule<ComponentsOptions>({
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
     const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
-    addVitePlugin(unpluginServer.vite(), { server: true, client: false })
-    addVitePlugin(unpluginClient.vite(), { server: false, client: true })
+    addVitePlugin(() => unpluginServer.vite(), { server: true, client: false })
+    addVitePlugin(() => unpluginClient.vite(), { server: false, client: true })
 
-    addWebpackPlugin(unpluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(unpluginClient.webpack(), { server: false, client: true })
+    addWebpackPlugin(() => unpluginServer.webpack(), { server: true, client: false })
+    addWebpackPlugin(() => unpluginClient.webpack(), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -148,12 +148,14 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Restart dev server when component directories are added/removed
-    nuxt.hook('builder:watch', (event, path) => {
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const fullPath = resolve(nuxt.options.srcDir, path)
+    nuxt.hook('builder:watch', (event, relativePath) => {
+      if (!['addDir', 'unlinkDir'].includes(event)) {
+        return
+      }
 
-      if (isDirChange && componentDirs.some(dir => dir.path === fullPath)) {
-        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (componentDirs.some(dir => dir.path === path)) {
+        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })
@@ -183,12 +185,12 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Watch for changes
-    nuxt.hook('builder:watch', async (event, path) => {
+    nuxt.hook('builder:watch', async (event, relativePath) => {
       if (!['add', 'unlink'].includes(event)) {
         return
       }
-      const fPath = resolve(nuxt.options.srcDir, path)
-      if (componentDirs.find(dir => fPath.startsWith(dir.path))) {
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (componentDirs.some(dir => path.startsWith(dir.path + '/'))) {
         await updateTemplates({
           filter: template => [
             'components.plugin.mjs',
