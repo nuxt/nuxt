@@ -180,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)
@@ -341,7 +341,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })

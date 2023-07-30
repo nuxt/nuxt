@@ -6,10 +6,11 @@ import type { OutputFileSystem } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Watching } from 'webpack'
-
+import { defu } from 'defu'
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
+
 import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
@@ -26,6 +27,7 @@ export async function bundle (nuxt: Nuxt) {
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
     const ctx = createWebpackConfigContext(nuxt)
+    ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
   })
@@ -119,13 +121,11 @@ async function createDevMiddleware (compiler: Compiler) {
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
-  const { name } = compiler.options
-
-  await nuxt.callHook('webpack:compile', { name: name!, compiler })
+  await nuxt.callHook('webpack:compile', { name: compiler.options.name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('webpack:compiled', { name: name!, compiler, stats })
+    await nuxt.callHook('webpack:compiled', { name: compiler.options.name!, compiler, stats })
   })
 
   // --- Dev Build ---
@@ -137,7 +137,7 @@ async function compile (compiler: Compiler) {
     })
 
     // Client build
-    if (name === 'client') {
+    if (compiler.options.name === 'client') {
       return new Promise((resolve, reject) => {
         compiler.hooks.done.tap('nuxt-dev', () => { resolve(null) })
         compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })

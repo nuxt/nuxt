@@ -1,26 +1,38 @@
 import { cloneDeep } from 'lodash-es'
 import type { Configuration } from 'webpack'
-import type { Nuxt } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 
-export interface WebpackConfigContext extends ReturnType<typeof createWebpackConfigContext> {}
+export interface WebpackConfigContext {
+  nuxt: Nuxt
+  options: NuxtOptions
+  userConfig: Omit<NuxtOptions['webpack'], '$client' | '$server'>
+  config: Configuration
+  name: string
+  isDev: boolean
+  isServer: boolean
+  isClient: boolean
+  alias: { [index: string]: string | false | string[] }
+  transpile: RegExp[]
+}
 
 type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void
 type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
 
-export function createWebpackConfigContext (nuxt: Nuxt) {
+export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   return {
     nuxt,
     options: nuxt.options,
-    config: {} as Configuration,
+    userConfig: nuxt.options.webpack,
+    config: {},
 
     name: 'base',
     isDev: nuxt.options.dev,
     isServer: false,
     isClient: false,
 
-    alias: {} as { [index: string]: string | false | string[] },
-    transpile: [] as RegExp[]
+    alias: {},
+    transpile: []
   }
 }
 
@@ -38,15 +50,13 @@ export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigP
 }
 
 export function fileName (ctx: WebpackConfigContext, key: string) {
-  const { options } = ctx
-
-  let fileName = options.webpack.filenames[key]
+  let fileName = ctx.userConfig.filenames[key]
 
   if (typeof fileName === 'function') {
     fileName = fileName(ctx)
   }
 
-  if (typeof fileName === 'string' && options.dev) {
+  if (typeof fileName === 'string' && ctx.options.dev) {
     const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
     if (hash) {
       logger.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
