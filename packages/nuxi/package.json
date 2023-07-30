@@ -47,7 +47,7 @@
     "pkg-types": "1.0.3",
     "scule": "1.0.0",
     "semver": "7.5.4",
-    "ufo": "1.1.2",
+    "ufo": "1.2.0",
     "unbuild": "latest"
   },
   "optionalDependencies": {

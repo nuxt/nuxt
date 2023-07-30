@@ -1,12 +1,13 @@
 /// <reference types="nitropack" />
 export * from './dist/index'
 
+import type { DefineNuxtConfig } from 'nuxt/config'
 import type { SchemaDefinition, RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/core/runtime/nitro/renderer'
 
 declare global {
-  const defineNuxtConfig: typeof import('nuxt/config')['defineNuxtConfig']
+  const defineNuxtConfig: DefineNuxtConfig
   const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
 }
 
