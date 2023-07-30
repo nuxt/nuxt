@@ -72,6 +72,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       }
     }))
 
+  // Write template files in single synchronous step to avoid (possible) additional
+  // runtime overhead of cascading HMRs from vite/webpack
   for (const write of writes) { write() }
 
   await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
