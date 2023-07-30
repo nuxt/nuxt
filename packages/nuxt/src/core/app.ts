@@ -34,9 +34,11 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Compile templates into vfs
   // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  const writes: Array<() => void> = []
-  await Promise.allSettled((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
+
+  const writes: Array<() => void> = []
+  await Promise.allSettled(filteredTemplates
     .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
@@ -72,7 +74,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   for (const write of writes) { write() }
 
-  await nuxt.callHook('app:templatesGenerated', app)
+  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
 async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
