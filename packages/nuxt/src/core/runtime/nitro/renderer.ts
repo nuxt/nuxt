@@ -500,7 +500,7 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
 
 function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
-  const payload : Script = {
+  const payload: Script = {
     type: 'application/json',
     id: opts.id,
     innerHTML: contents,
