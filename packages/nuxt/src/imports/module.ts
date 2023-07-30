@@ -63,12 +63,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     composablesDirs = composablesDirs.map(dir => normalize(dir))
 
     // Restart nuxt when composable directories are added/removed
-    nuxt.hook('builder:watch', (event, path) => {
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const fullPath = resolve(nuxt.options.srcDir, path)
+    nuxt.hook('builder:watch', (event, relativePath) => {
+      if (!['addDir', 'unlinkDir'].includes(event)) { return }
 
-      if (isDirChange && composablesDirs.includes(fullPath)) {
-        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (composablesDirs.includes(path)) {
+        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })
@@ -87,9 +87,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
     const regenerateImports = async () => {
-      ctx.clearDynamicImports()
       await ctx.modifyDynamicImports(async (imports) => {
-        // Scan composables/
+        // Clear old imports
+        imports.length = 0
+        // Scan `composables/`
         const composableImports = await scanDirExports(composablesDirs)
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
@@ -97,6 +98,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         imports.push(...composableImports)
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
+        return imports
       })
     }
 
@@ -117,16 +119,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       'imports.d.ts',
       'imports.mjs'
     ]
-    nuxt.hook('builder:watch', async (_, path) => {
-      const _resolved = resolve(nuxt.options.srcDir, path)
-      if (composablesDirs.find(dir => _resolved.startsWith(dir))) {
+    nuxt.hook('builder:watch', async (_, relativePath) => {
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         await updateTemplates({
           filter: template => templates.includes(template.filename)
         })
       }
     })
 
-    nuxt.hook('builder:generateApp', async () => {
+    nuxt.hook('app:templatesGenerated', async () => {
       await regenerateImports()
     })
   }

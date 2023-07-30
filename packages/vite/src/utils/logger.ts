@@ -14,7 +14,7 @@ export const logLevelMap: Record<NuxtOptions['logLevel'], vite.UserConfig['logLe
   verbose: 'info'
 }
 
-export const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, number> = {
+const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, number> = {
   silent: 0,
   error: 1,
   warn: 2,

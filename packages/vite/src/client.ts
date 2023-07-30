@@ -20,7 +20,7 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, {
+  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
       ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
@@ -52,13 +52,8 @@ export async function buildClient (ctx: ViteBuildContext) {
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       },
       dedupe: [
-        'vue',
-        // basic reactivity
-        '@vue/reactivity', '@vue/runtime-core', '@vue/runtime-dom', '@vue/shared',
-        // runtime compiler
-        '@vue/compiler-sfc', '@vue/compiler-dom', '@vue/compiler-core', '@vue/compiler-ssr'
+        'vue'
       ]
-
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
@@ -87,7 +82,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     server: {
       middlewareMode: true
     }
-  } satisfies vite.InlineConfig)
+  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 

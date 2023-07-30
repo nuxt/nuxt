@@ -3,7 +3,7 @@ import { createUnplugin } from 'unplugin'
 import { stripLiteral } from 'strip-literal'
 import { isJS, isVue } from '../../../nuxt/src/core/utils/plugins'
 
-export interface PureAnnotationsOptions {
+interface PureAnnotationsOptions {
   sourcemap: boolean
   functions: string[]
 }

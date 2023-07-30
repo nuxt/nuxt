@@ -68,6 +68,10 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'run
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
   runtimeConfig?: Overrideable<RuntimeConfig>
+  webpack?: ConfigSchema['webpack'] & {
+    $client?: ConfigSchema['webpack']
+    $server?: ConfigSchema['webpack']
+  }
 
   /**
    * Experimental custom config schema
@@ -89,14 +93,18 @@ export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
 }>
 
 /** Normalized Nuxt options available as `nuxt.options.*` */
-export interface NuxtOptions extends Omit<ConfigSchema, 'builder'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | { bundle: (nuxt: Nuxt) => Promise<void> }
+  webpack: ConfigSchema['webpack'] & {
+    $client: ConfigSchema['webpack']
+    $server: ConfigSchema['webpack']
+  }
   _layers: NuxtConfigLayer[]
   $schema: SchemaDefinition
 }
 
-export interface ViteConfig extends ViteUserConfig {
+export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /** The path to the entrypoint for the Vite build. */
   entry?: string
   /**
@@ -126,6 +134,14 @@ export interface ViteConfig extends ViteUserConfig {
    * Use environment variables or top level `server` options to configure Nuxt server.
    */
   server?: Omit<ViteServerOptions, 'port' | 'host'>
+  /**
+   * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
+   *
+   * You can read more in <https://nuxt.com/docs/api/configuration/nuxt-config#public>.
+   *
+   * @deprecated
+   */
+  publicDir?: never
 }
 
 

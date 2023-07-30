@@ -1,14 +1,13 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
+import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolvePath } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from '@unhead/vue'
-import { renderSSRHead } from '@unhead/ssr'
 import type { Nuxt } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
@@ -36,14 +35,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
+  // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
-    static: nuxt.options._generate,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     srcDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
+    experimental: {
+      // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+    },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       imports: [
@@ -98,7 +101,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
       nitro: {
-        // @ts-expect-error TODO: https://github.com/unjs/nitro/pull/1336
         envPrefix: 'NUXT_',
         ...nuxt.options.runtimeConfig.nitro
       }
@@ -131,10 +133,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir }))
     ],
     prerender: {
-      crawlLinks: nuxt.options._generate ?? undefined,
-      routes: ([] as string[])
-        .concat(nuxt.options.generate.routes)
-        .concat(nuxt.options._generate ? [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html'] : [])
+      failOnError: true,
+      concurrency: cpus().length * 4 || 4,
+      routes: ([] as string[]).concat(nuxt.options.generate.routes)
     },
     sourceMap: nuxt.options.sourcemap.server,
     externals: {
@@ -165,13 +166,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ]
     },
     alias: {
-      ...nuxt.options.experimental.externalVue
-        ? {}
-        : {
-            'vue/compiler-sfc': 'vue/compiler-sfc',
-            'vue/server-renderer': 'vue/server-renderer',
-            vue: await resolvePath(`vue/dist/vue.cjs${nuxt.options.dev ? '' : '.prod'}.js`)
-          },
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
@@ -195,7 +189,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
-      'process.env.NUXT_PAYLOAD_EXTRACTION': !!nuxt.options.experimental.payloadExtraction,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.dev': nuxt.options.dev,
@@ -209,12 +202,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-
-  // Add head chunk for SPA renders
-  const head = createHeadCore()
-  head.push(nuxt.options.app.head)
-  const headChunk = await renderSSRHead(head)
-  nitroConfig.virtual!['#head-static'] = `export default ${JSON.stringify(headChunk)}`
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
@@ -296,7 +283,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
   nitro.hooks.hook('prerender:routes', (routes) => {
-    nuxt.callHook('prerender:routes', { routes })
+    return nuxt.callHook('prerender:routes', { routes })
   })
 
   // Enable runtime compiler client side
@@ -365,6 +352,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
+  if (nitro.options.static) {
+    nitro.hooks.hook('prerender:routes', (routes) => {
+      for (const route of [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html']) {
+        routes.add(route)
+      }
+    })
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
@@ -380,7 +375,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
       logger.wrapAll()
 
-      if (nuxt.options._generate) {
+      if (nitro.options.static) {
         const distDir = resolve(nuxt.options.rootDir, 'dist')
         if (!existsSync(distDir)) {
           await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
