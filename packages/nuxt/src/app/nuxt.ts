@@ -155,7 +155,7 @@ export interface PluginMeta {
   order?: number
 }
 
-interface PluginEnvContext {
+export interface PluginEnvContext {
   /**
    * This enable the plugin for islands components.
    * Require `experimental.componentsIslands`.
