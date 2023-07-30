@@ -4,7 +4,7 @@ export default defineNuxtModule({
   meta: {
     name: 'page-extend'
   },
-  setup () {
+  setup() {
     const nuxt = useNuxt()
     const resolver = createResolver(import.meta.url)
 
@@ -12,7 +12,13 @@ export default defineNuxtModule({
       pages.push({
         name: 'page-extend',
         path: '/page-extend',
-        file: resolver.resolve('./runtime/page.vue')
+        file: resolver.resolve('../runtime/page.vue')
+      }, {
+        path: '/big-page-1',
+        file: '@/modules/page-extend/pages/big-page.vue'
+      }, {
+        path: '/big-page-2',
+        file: '@/modules/page-extend/pages/big-page.vue'
       })
     })
   }
