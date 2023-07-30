@@ -8,8 +8,6 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import { createHeadCore } from '@unhead/vue'
-import { renderSSRHead } from '@unhead/ssr'
 import type { Nuxt } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
@@ -204,12 +202,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-
-  // Add head chunk for SPA renders
-  const head = createHeadCore()
-  head.push(nuxt.options.app.head)
-  const headChunk = await renderSSRHead(head)
-  nitroConfig.virtual!['#head-static'] = `export default ${JSON.stringify(headChunk)}`
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {

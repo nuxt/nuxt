@@ -25,7 +25,6 @@
         "main"
       ],
       "ignoreDeps": [
-        "typescript",
         "markdownlint-cli",
         "nuxt",
         "nuxt3",
