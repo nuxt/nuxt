@@ -2,7 +2,7 @@ import { relative, resolve } from 'pathe'
 import { consola } from 'consola'
 import { clearBuildDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
-import { writeTypes as writeTypesLegacy } from '../utils/prepare'
+import { writeTypes as writeTypesLegacy } from '@nuxt/kit'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({

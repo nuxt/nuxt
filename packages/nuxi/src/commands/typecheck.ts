@@ -2,8 +2,9 @@ import { execa } from 'execa'
 import { resolve } from 'pathe'
 import { tryResolveModule } from '../utils/esm'
 
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
+
 import { loadKit } from '../utils/kit'
-import { writeTypes as writeTypesLegacy } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
