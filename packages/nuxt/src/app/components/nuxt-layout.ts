@@ -34,7 +34,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'] | MaybeRef<false>,
+      type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : MaybeRef<PageMeta['layout'] | false>,
       default: null
     }
   },
