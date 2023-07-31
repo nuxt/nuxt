@@ -1,4 +1,4 @@
-import type { MaybeRef, VNode } from 'vue'
+import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { _wrapIf } from './utils'
@@ -34,7 +34,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : MaybeRef<PageMeta['layout'] | false>,
+      type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'],
       default: null
     }
   },
@@ -76,7 +76,9 @@ export default defineComponent({
       }).default()
     }
   }
-})
+}) as unknown as DefineComponent<{
+  name: unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']
+}>
 
 const LayoutProvider = defineComponent({
   name: 'NuxtLayoutProvider',
