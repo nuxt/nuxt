@@ -1,4 +1,4 @@
-import { type Ref, reactive, readonly, toRef } from 'vue'
+import { reactive, readonly, toRef } from 'vue'
 
 import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
 
@@ -61,5 +61,5 @@ export function usePreviewMode<Controls extends boolean = false> (options?: { co
 
   return (options.controls
     ? { enabled, token }
-    : enabled) as Controls extends true ? { enabled: Readonly<Ref<boolean>>, token: Readonly<Ref<string | null>>} : Readonly<Ref<boolean>>
+    : enabled) as Controls extends true ? { enabled: typeof enabled, token: typeof token } : typeof enabled
 }
