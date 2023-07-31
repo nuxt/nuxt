@@ -155,6 +155,16 @@ export interface PluginMeta {
   order?: number
 }
 
+export interface PluginEnvContext {
+  /**
+   * This enable the plugin for islands components.
+   * Require `experimental.componentsIslands`.
+   *
+   * @default true
+   */
+  islands?: boolean
+}
+
 export interface ResolvedPluginMeta {
   name?: string
   parallel?: boolean
@@ -169,6 +179,7 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPlugin<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
+  env?: PluginEnvContext
   /**
    * Execute plugin in parallel with other parallel plugins.
    *
@@ -318,6 +329,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
+    if (process.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))

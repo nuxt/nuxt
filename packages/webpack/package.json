@@ -52,7 +52,7 @@
     "ufo": "^1.2.0",
     "unplugin": "^1.4.0",
     "url-loader": "^4.1.1",
-    "vue-bundle-renderer": "^1.0.3",
+    "vue-bundle-renderer": "^2.0.0",
     "vue-loader": "^17.2.2",
     "webpack": "^5.88.2",
     "webpack-bundle-analyzer": "^4.9.0",

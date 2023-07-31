@@ -200,7 +200,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtLayout',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/layout')
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-layout')
   })
 
   // Add <NuxtErrorBoundary>
