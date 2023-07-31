@@ -7,6 +7,7 @@ import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
+import { tryResolveModule } from './internal/esm'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
 
@@ -161,11 +162,17 @@ export async function writeTypes (nuxt: Nuxt) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const absolutePath = resolve(basePath, aliases[alias])
+    let absolutePath = resolve(basePath, aliases[alias])
+    let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    if (!stats) {
+      const resolvedModule = await tryResolveModule(aliases[alias], nuxt.options.modulesDir)
+      if (resolvedModule) {
+        absolutePath = resolvedModule
+        stats = await fsp.stat(resolvedModule).catch(() => null)
+      }
+    }
+
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
-
-    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
-
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
@@ -175,8 +182,10 @@ export async function writeTypes (nuxt: Nuxt) {
       }
     } else {
       const path = stats?.isFile()
-        ? relativePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
-        : aliases[alias] /* neither file nor directory, this is probably a package in node_modules and shouldn't be resolved */
+        // remove extension
+        ? relativePath.replace(/(?<=\w)\.\w+$/g, '')
+        // non-existent file probably shouldn't be resolved
+        : aliases[alias]
 
       tsConfig.compilerOptions.paths[alias] = [path]
 
