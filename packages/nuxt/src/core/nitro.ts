@@ -417,7 +417,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             prerenderedRoutes.add(url)
           }
         }
-        
       })
       await prerender(nitro)
 
