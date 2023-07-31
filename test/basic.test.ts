@@ -1363,11 +1363,9 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch('/styles')
-    // TODO: remove preload if possible from bundle-renderer
     expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
         "<link rel=\\"stylesheet\\" href=\\"/_nuxt/entry.css\\">",
-        "<link rel=\\"preload\\" as=\\"style\\" href=\\"/_nuxt/entry.css\\">",
       ]
     `)
   })
