@@ -1,8 +1,14 @@
-import { existsSync } from 'node:fs'
-import { basename, parse, resolve } from 'pathe'
+import { existsSync, promises as fsp } from 'node:fs'
+import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { NuxtTemplate, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import { withTrailingSlash } from 'ufo'
+import { defu } from 'defu'
+import type { TSConfig } from 'pkg-types'
+import { readPackageJSON } from 'pkg-types'
+
 import { tryUseNuxt, useNuxt } from './context'
+import { getModulePaths } from './internal/cjs'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
@@ -100,4 +106,143 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
  */
 export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }) {
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
+}
+export async function writeTypes (nuxt: Nuxt) {
+  const modulePaths = getModulePaths(nuxt.options.modulesDir)
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+    compilerOptions: {
+      forceConsistentCasingInFileNames: true,
+      jsx: 'preserve',
+      target: 'ESNext',
+      module: 'ESNext',
+      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
+      skipLibCheck: true,
+      strict: nuxt.options.typescript?.strict ?? true,
+      allowJs: true,
+      // TODO: remove by default in 3.7
+      baseUrl: nuxt.options.srcDir,
+      noEmit: true,
+      resolveJsonModule: true,
+      allowSyntheticDefaultImports: true,
+      types: ['node'],
+      paths: {}
+    },
+    include: [
+      './nuxt.d.ts',
+      join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
+      ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
+      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
+        .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
+        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
+      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
+    ],
+    exclude: [
+      ...nuxt.options.modulesDir.map(m => relative(nuxt.options.buildDir, m)),
+      // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+      relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
+    ]
+  } satisfies TSConfig)
+
+  const aliases: Record<string, string> = {
+    ...nuxt.options.alias,
+    '#build': nuxt.options.buildDir
+  }
+
+  // Exclude bridge alias types to support Volar
+  const excludedAlias = [/^@vue\/.*$/]
+
+  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
+
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+  tsConfig.include = tsConfig.include || []
+
+  for (const alias in aliases) {
+    if (excludedAlias.some(re => re.test(alias))) {
+      continue
+    }
+    const absolutePath = resolve(basePath, aliases[alias])
+    const relativePath = relative(nuxt.options.buildDir, absolutePath)
+
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[alias] = [absolutePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
+        tsConfig.include.push(relativePath)
+      }
+    } else {
+      const path = stats?.isFile()
+        ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
+        : absolutePath
+
+      tsConfig.compilerOptions.paths[alias] = [path]
+
+      if (!absolutePath.startsWith(rootDirWithSlash)) {
+        tsConfig.include.push(path)
+      }
+    }
+  }
+
+  const references: TSReference[] = await Promise.all([
+    ...nuxt.options.modules,
+    ...nuxt.options._modules
+  ]
+    .filter(f => typeof f === 'string')
+    .map(async id => ({ types: (await readPackageJSON(id, { url: modulePaths }).catch(() => null))?.name || id })))
+
+  if (nuxt.options.experimental?.reactivityTransform) {
+    references.push({ types: 'vue/macros-global' })
+  }
+
+  const declarations: string[] = []
+
+  tsConfig.include = [...new Set(tsConfig.include)]
+  tsConfig.exclude = [...new Set(tsConfig.exclude)]
+
+  await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
+
+  const declaration = [
+    ...references.map((ref) => {
+      if ('path' in ref && isAbsolute(ref.path)) {
+        ref.path = relative(nuxt.options.buildDir, ref.path)
+      }
+      return `/// <reference ${renderAttrs(ref)} />`
+    }),
+    ...declarations,
+    '',
+    'export {}',
+    ''
+  ].join('\n')
+
+  async function writeFile () {
+    const GeneratedBy = '// Generated by nuxi'
+
+    const tsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.json')
+    await fsp.mkdir(nuxt.options.buildDir, { recursive: true })
+    await fsp.writeFile(tsConfigPath, GeneratedBy + '\n' + JSON.stringify(tsConfig, null, 2))
+
+    const declarationPath = resolve(nuxt.options.buildDir, 'nuxt.d.ts')
+    await fsp.writeFile(declarationPath, GeneratedBy + '\n' + declaration)
+  }
+
+  // This is needed for Nuxt 2 which clears the build directory again before building
+  // https://github.com/nuxt/nuxt/blob/2.x/packages/builder/src/builder.js#L144
+  // @ts-expect-error TODO: Nuxt 2 hook
+  const unsub = nuxt.hook('builder:prepared', writeFile)
+
+  await writeFile()
+
+  unsub()
+}
+
+function renderAttrs (obj: Record<string, string>) {
+  return Object.entries(obj).map(e => renderAttr(e[0], e[1])).join(' ')
+}
+
+function renderAttr (key: string, value: string) {
+  return value ? `${key}="${value}"` : ''
 }
