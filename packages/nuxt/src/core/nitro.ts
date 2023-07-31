@@ -210,7 +210,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // TODO: expose build id to nitro
   const buildId = randomUUID()
   if (nitroConfig.prerender?.routes) {
-    const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
+    const manifestPrefix = '/_builds'
     nitroConfig.prerender.routes.push(joinURL(manifestPrefix, 'latest.json'))
     nitroConfig.prerender.routes.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
     nitroConfig.devHandlers!.push({
@@ -417,11 +417,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             prerenderedRoutes.add(url)
           }
         }
+        
       })
       await prerender(nitro)
 
-      for (const file of ['builds/latest.json', `builds/meta.${buildId}.json`]) {
-        const manifestFile = join(nitro.options.output.publicDir, nuxt.options.app.buildAssetsDir, file)
+      for (const file of ['latest.json', `meta.${buildId}.json`]) {
+        const manifestFile = join(nitro.options.output.publicDir, '_builds', file)
         const manifest = await fsp.readFile(manifestFile, 'utf-8')
         await fsp.writeFile(manifestFile, manifest.replace(/['"]__NUXT_PRERENDERED_ROUTES__['"]/, JSON.stringify([...prerenderedRoutes])))
       }
