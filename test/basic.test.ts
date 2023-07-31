@@ -1419,6 +1419,43 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page with lazy server component').click()
+
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"> Loading server component </section><section id=\\"no-fallback\\"><div></div></section>"')
+    expect(text).not.toContain('async component that was very long')
+    expect(text).toContain('Loading server component')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => (document.querySelector('#no-fallback') as HTMLElement)?.innerText?.includes('async component'))
+    await page.waitForFunction(() => (document.querySelector('#fallback') as HTMLElement)?.innerText?.includes('async component'))
+
+    await page.close()
+  })
+
+  it('non-lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page without lazy server component').click()
+
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toContain('async component that was very long')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => (document.querySelector('#no-fallback') as HTMLElement)?.innerText?.includes('async component'))
+    await page.waitForFunction(() => (document.querySelector('#fallback') as HTMLElement)?.innerText?.includes('async component'))
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
