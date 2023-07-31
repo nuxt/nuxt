@@ -485,8 +485,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
       vue-devtools-stub:
         specifier: ^0.1.0
         version: 0.1.0
@@ -601,8 +601,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       vue-bundle-renderer:
-        specifier: 1.0.3
-        version: 1.0.3
+        specifier: 2.0.0
+        version: 2.0.0
       vue-loader:
         specifier: 17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.88.2)
@@ -767,8 +767,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1(eslint@8.46.0)(typescript@5.1.6)(vite@4.4.7)(vue-tsc@1.8.8)
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -891,8 +891,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0)(webpack@5.88.2)
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
       vue-loader:
         specifier: ^17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.88.2)
@@ -9089,8 +9089,8 @@ packages:
     resolution: {integrity: sha512-eOpPHogvorZRobNqJGhapa0JdwaxpjVvyBp0QIUMRMSf8ZAlqOdEquKuRmw9Qwu0qXtJIWqFtMkmvJjUZmMjVA==}
     dev: false
 
-  /vue-bundle-renderer@1.0.3:
-    resolution: {integrity: sha512-EfjX+5TTUl70bki9hPuVp+54JiZOvFIfoWBcfXsSwLzKEiDYyHNi5iX8srnqLIv3YRnvxgbntdcG1WPq0MvffQ==}
+  /vue-bundle-renderer@2.0.0:
+    resolution: {integrity: sha512-oYATTQyh8XVkUWe2kaKxhxKVuuzK2Qcehe+yr3bGiaQAhK3ry2kYE4FWOfL+KO3hVFwCdLmzDQTzYhTi9C+R2A==}
     dependencies:
       ufo: 1.2.0
 

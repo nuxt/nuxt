@@ -1365,7 +1365,6 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     const html: string = await $fetch('/styles')
     expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel=\\"preload\\" as=\\"style\\" href=\\"/_nuxt/entry.css\\">",
         "<link rel=\\"stylesheet\\" href=\\"/_nuxt/entry.css\\">",
       ]
     `)

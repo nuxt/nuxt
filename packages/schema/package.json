@@ -42,7 +42,7 @@
     "unctx": "2.3.1",
     "vite": "4.4.7",
     "vue": "3.3.4",
-    "vue-bundle-renderer": "1.0.3",
+    "vue-bundle-renderer": "2.0.0",
     "vue-loader": "17.2.2",
     "vue-router": "4.2.4",
     "webpack": "5.88.2",
