@@ -326,16 +326,25 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     })
   }
 
+  // 2. Styles
+  head.push({
+    link: Object.values(styles)
+      .map(resource =>
+        ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
+      ),
+    style: inlinedStyles
+  })
+
   if (!NO_SCRIPTS) {
-    // 2. Resource Hints
-    // @todo add priorities based on Capo
+    // 3. Resource Hints
+    // TODO: add priorities based on Capo
     head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[]
     })
     head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[]
     })
-    // 3. Payloads
+    // 4. Payloads
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
@@ -351,16 +360,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     })
   }
 
-  // 4. Styles
-  head.push({
-    link: Object.values(styles)
-      .map(resource =>
-        ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
-      ),
-    style: inlinedStyles
-  })
-
-  // 4. Scripts
+  // 5. Scripts
   if (!routeOptions.experimentalNoScripts) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
