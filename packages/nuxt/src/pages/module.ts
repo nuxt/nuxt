@@ -357,7 +357,7 @@ export default defineNuxtModule({
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
-          '    layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>',
+          '    layout?: false | LayoutKey | Ref<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
           '}'
         ].join('\n')
