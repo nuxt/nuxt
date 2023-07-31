@@ -1,65 +1,65 @@
-import { reactive, readonly, toRef, toRefs } from 'vue'
+import { type Ref, reactive, readonly, toRef } from 'vue'
 
-import { refreshNuxtData, useRoute, useRouter } from '#app'
+import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
 
-export interface PreviewOptions {
-  controls: boolean
+export interface PreviewOptions<Controls extends boolean = false> {
+  controls: Controls
   tokenQueryName: string
 }
 
 interface PreviewState {
   enabled: boolean
   token: string | null
+  addedAfterNavigationCallback: boolean
 }
 
 const previewQueryName = 'preview'
-const previewDefaultOptions: PreviewOptions = {
-  controls: false,
-  tokenQueryName: 'token'
-}
 
-const tokensMap = new Map<string, string | null>()
-
-let isPreviewEnabled: boolean
-let addedAfterNavigationCallback = false
-
-export function usePreviewMode (options?: PreviewOptions) {
-  options = { ...previewDefaultOptions, ...(options || {}) }
-
-  const preview = reactive<PreviewState>({
-    enabled: false,
-    token: null
-  })
+export function usePreviewMode<Controls extends boolean = false> (options?: { controls?: Controls, tokenQueryName?: string }) {
+  options = {
+    controls: false as Controls,
+    tokenQueryName: 'token',
+    ...(options || {})
+  }
 
   const router = useRouter()
   const route = useRoute()
 
-  const previewParam = route.query[previewQueryName]
+  const previewState = useState('_preview-composable', () => reactive<PreviewState>({
+    enabled: false,
+    token: null,
+    addedAfterNavigationCallback: false
+  }))
 
-  preview.enabled = isPreviewEnabled ?? (!!previewParam && previewParam === 'true')
+  if (!previewState.value.enabled) {
+    const previewParam = route.query[previewQueryName]
 
-  isPreviewEnabled = preview.enabled
+    previewState.value.enabled = !!previewParam && previewParam === 'true'
 
-  if (preview.enabled && !tokensMap.get(options!.tokenQueryName)) {
-    const query = route.query[options!.tokenQueryName]
-    const token = Array.isArray(query) ? query[0] : query
+    if (previewState.value.enabled && !previewState.value.token) {
+      const query = route.query[options!.tokenQueryName!]
+      const token = Array.isArray(query) ? query[0] : query
 
-    tokensMap.set(options!.tokenQueryName, token)
+      if (token) {
+        previewState.value.token = token
+      }
+    }
   }
 
-  preview.token = tokensMap.get(options!.tokenQueryName) || null
-
   const refreshData = () => {
-    addedAfterNavigationCallback = true
+    previewState.value.addedAfterNavigationCallback = true
     refreshNuxtData()
   }
 
-  if (preview.enabled && !addedAfterNavigationCallback && process.client) {
+  if (previewState.value.enabled && !previewState.value.addedAfterNavigationCallback && process.client) {
     refreshData()
     router.afterEach(refreshData)
   }
 
-  return options.controls
-    ? toRefs(readonly(preview))
-    : readonly(toRef(preview, 'enabled'))
+  const enabled = readonly(toRef(previewState.value, 'enabled'))
+  const token = readonly(toRef(previewState.value, 'token'))
+
+  return (options.controls
+    ? { enabled, token }
+    : enabled) as Controls extends true ? { enabled: Readonly<Ref<boolean>>, token: Readonly<Ref<string | null>>} : Readonly<Ref<boolean>>
 }
