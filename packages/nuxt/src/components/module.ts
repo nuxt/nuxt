@@ -221,7 +221,7 @@ export default defineNuxtModule<ComponentsOptions>({
         getComponents,
         mode,
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-        experimentalComponentIslands: nuxt.options.experimental.componentIslands
+        experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
       }))
 
       if (isServer && nuxt.options.experimental.componentIslands) {
@@ -265,7 +265,7 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents,
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-          experimentalComponentIslands: nuxt.options.experimental.componentIslands
+          experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
         }))
 
         if (nuxt.options.experimental.componentIslands && mode === 'server') {
