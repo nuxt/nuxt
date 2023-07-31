@@ -14,7 +14,7 @@ async function main () {
   nuxtPkg.data.dependencies.nitropack = `npm:nitropack-edge@^${latestNitro}`
 
   const { version: latestNuxi } = await $fetch<{ version: string }>('https://registry.npmjs.org/nuxi-ng/latest')
-  nuxtPkg.data.dependencies.nitropack = `npm:nuxi-ng@^${latestNuxi}`
+  nuxtPkg.data.dependencies.nuxi = `npm:nuxi-ng@^${latestNuxi}`
 
   const bumpType = await determineBumpType()
 
