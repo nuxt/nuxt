@@ -2,16 +2,6 @@ import { existsSync, promises as fsp } from 'node:fs'
 import { dirname, join } from 'pathe'
 import { consola } from 'consola'
 
-// Check if a file exists
-export async function exists (path: string) {
-  try {
-    await fsp.access(path)
-    return true
-  } catch {
-    return false
-  }
-}
-
 export async function clearDir (path: string, exclude?: string[]) {
   if (!exclude) {
     await fsp.rm(path, { recursive: true, force: true })

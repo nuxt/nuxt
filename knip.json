@@ -1,0 +1,37 @@
+{
+  "$schema": "https://unpkg.com/knip@2/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "scripts/*"
+      ]
+    },
+    "packages/*": {
+      "entry": [
+        "src/index.ts",
+        "src/runtime/**/*.ts"
+      ]
+    },
+    "packages/test-utils": {
+      "entry": [
+        "src/experimental.ts",
+        "src/index.ts"
+      ]
+    },
+    "packages/nuxi": {
+      "entry": [
+        "src/index.ts",
+        "src/commands/*.ts"
+      ]
+    },
+    "packages/nuxt": {
+      "entry": [
+        "src/app/**/*.ts",
+        "src/app/*.ts",
+        "src/*/runtime/**/*.ts",
+        "src/core/templates.ts",
+        "src/index.ts"
+      ]
+    }
+  }
+}

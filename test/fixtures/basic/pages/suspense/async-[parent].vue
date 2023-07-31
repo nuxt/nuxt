@@ -6,9 +6,9 @@ console.log('[async] running async data')
 </script>
 
 <template>
-  <div :id="route.path.replace(/[/-]+/g, '-')">
+  <main :id="route.path.replace(/[/-]+/g, '-')">
     Async parent: {{ route.params.parent }}
     <hr>
     <NuxtPage />
-  </div>
+  </main>
 </template>

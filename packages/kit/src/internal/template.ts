@@ -6,6 +6,7 @@ import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import type { NuxtTemplate } from '@nuxt/schema'
 
 /** @deprecated */
+// TODO: Remove support for compiling ejs templates in v4
 export async function compileTemplate (template: NuxtTemplate, ctx: any) {
   const data = { ...ctx, options: template.options }
   if (template.src) {

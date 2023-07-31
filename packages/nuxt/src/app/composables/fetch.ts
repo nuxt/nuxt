@@ -49,6 +49,19 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  request: Ref<ReqT> | ReqT | (() => ReqT),
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+export function useFetch<
+  ResT = void,
+  ErrorT = FetchError,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
@@ -56,15 +69,6 @@ export function useFetch<
   arg2?: string
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
-  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof request === 'string' ? request : '', unref(opts.params || opts.query)])
-  if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
-  }
-  if (!request) {
-    throw new Error('[nuxt] [useFetch] request is missing.')
-  }
-
-  const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
     let r = request
@@ -73,6 +77,16 @@ export function useFetch<
     }
     return unref(r)
   })
+
+  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
+  if (!_key || typeof _key !== 'string') {
+    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
+  }
+  if (!request) {
+    throw new Error('[nuxt] [useFetch] request is missing.')
+  }
+
+  const key = _key === autoKey ? '$f' + _key : _key
 
   if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
@@ -132,6 +146,19 @@ export function useLazyFetch<
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
+> (
+  request: Ref<ReqT> | ReqT | (() => ReqT),
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+export function useLazyFetch<
+  ResT = void,
+  ErrorT = FetchError,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>

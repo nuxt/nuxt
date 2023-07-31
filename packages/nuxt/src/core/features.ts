@@ -1,10 +1,10 @@
 import { addDependency } from 'nypm'
-import { isPackageExists } from 'local-pkg'
+import { resolvePackageJSON } from 'pkg-types'
 import { logger } from '@nuxt/kit'
 import prompts from 'prompts'
 
 export async function ensurePackageInstalled (rootDir: string, name: string, searchPaths?: string[]) {
-  if (isPackageExists(name, { paths: searchPaths })) {
+  if (await resolvePackageJSON(name, { url: searchPaths }).catch(() => null)) {
     return true
   }
 

@@ -10,7 +10,7 @@ export default defineUntypedSchema({
    * See https://vitejs.dev/config for more information.
    * Please note that not all vite options are supported in Nuxt.
    *
-   * @type {typeof import('../src/types/config').ViteConfig}
+   * @type {typeof import('../src/types/config').ViteConfig & { $client?: typeof import('../src/types/config').ViteConfig, $server?: typeof import('../src/types/config').ViteConfig }}
    */
   vite: {
     root: {
@@ -30,7 +30,12 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: async (val, get) => val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      $resolve: async (val, get) => {
+        if (val) {
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
+        }
+        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      }
     },
     vue: {
       isProduction: {

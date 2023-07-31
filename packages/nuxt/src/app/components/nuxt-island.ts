@@ -4,11 +4,17 @@ import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
+import { joinURL, withQuery } from 'ufo'
+import type { FetchResponse } from 'ofetch'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
+
+// @ts-expect-error virtual file
+import { remoteComponentIslands } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
@@ -26,6 +32,7 @@ export default defineComponent({
       type: String,
       required: true
     },
+    lazy: Boolean,
     props: {
       type: Object,
       default: () => undefined
@@ -33,21 +40,54 @@ export default defineComponent({
     context: {
       type: Object,
       default: () => ({})
+    },
+    source: {
+      type: String,
+      default: () => undefined
     }
   },
   async setup (props, { slots }) {
+    const error = ref<unknown>(null)
+    const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const hashId = computed(() => hash([props.name, props.props, props.context]))
+    const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
+    const eventFetch = process.server ? event.fetch : process.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
-    const ssrHTML = ref<string>(process.client ? getFragmentHTML(instance.vnode?.el ?? null).join('') ?? '<div></div>' : '<div></div>')
+    function setPayload (key: string, result: NuxtIslandResponse) {
+      nuxtApp.payload.data[key] = {
+        __nuxt_island: {
+          key,
+          ...(process.server && process.env.prerender)
+            ? {}
+            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
+        },
+        ...result
+      }
+    }
+
+    const ssrHTML = ref<string>('')
+    if (process.client) {
+      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      if (renderedHTML && nuxtApp.isHydrating) {
+        setPayload(`${props.name}_${hashId.value}`, {
+          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+          state: {},
+          head: {
+            link: [],
+            style: []
+          }
+        })
+      }
+      ssrHTML.value = renderedHTML
+    }
+    const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
-    const availableSlots = computed(() => {
-      return [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])
-    })
+    const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
@@ -64,77 +104,84 @@ export default defineComponent({
     }
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
-    const slotProps = computed(() => {
-      return getSlotProps(ssrHTML.value)
-    })
 
-    async function _fetchComponent () {
+    async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
-      if (nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+      if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
 
-      const url = `/__nuxt_island/${key}`
+      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
+
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
-      const result = await $fetch<NuxtIslandResponse>(url, {
-        responseType: 'json',
-        params: {
-          ...props.context,
-          props: props.props ? JSON.stringify(props.props) : undefined
+      // $fetch handles the app.baseURL in dev
+      const r = await eventFetch(withQuery(process.dev && process.client ? url : joinURL(config.app.baseURL ?? '', url), {
+        ...props.context,
+        props: props.props ? JSON.stringify(props.props) : undefined
+      }))
+      const result = process.server || !process.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+      // TODO: support passing on more headers
+      if (process.server && process.env.prerender) {
+        const hints = r.headers.get('x-nitro-prerender')
+        if (hints) {
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
-      })
-      nuxtApp.payload.data[key] = {
-        __nuxt_island: {
-          key,
-          ...(process.server && process.env.prerender)
-            ? {}
-            : {
-                params: {
-                  ...props.context,
-                  props: props.props ? JSON.stringify(props.props) : undefined
-                }
-              }
-        },
-        ...result
       }
+      setPayload(key, result)
       return result
     }
     const key = ref(0)
-    async function fetchComponent () {
+    async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
-        nuxtApp[pKey][uid.value] = _fetchComponent().finally(() => {
+        nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
           delete nuxtApp[pKey]![uid.value]
         })
       }
-      const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-      cHead.value.link = res.head.link
-      cHead.value.style = res.head.style
-      ssrHTML.value = res.html.replace(UID_ATTR, () => {
-        return `nuxt-ssr-component-uid="${getId()}"`
-      })
-      key.value++
-      if (process.client) {
-        // must await next tick for Teleport to work correctly with static node re-rendering
-        await nextTick()
+      try {
+        const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
+        cHead.value.link = res.head.link
+        cHead.value.style = res.head.style
+        ssrHTML.value = res.html.replace(UID_ATTR, () => {
+          return `nuxt-ssr-component-uid="${getId()}"`
+        })
+        key.value++
+        error.value = null
+        if (process.client) {
+          // must await next tick for Teleport to work correctly with static node re-rendering
+          await nextTick()
+        }
+        setUid()
+      } catch (e) {
+        error.value = e
       }
-      setUid()
+    }
+
+    if (import.meta.hot) {
+      import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
+        fetchComponent(true)
+      })
     }
 
     if (process.client) {
-      watch(props, debounce(fetchComponent, 100))
+      watch(props, debounce(() => fetchComponent(), 100))
     }
 
-    if (process.server || !nuxtApp.isHydrating) {
+    if (process.client && !nuxtApp.isHydrating && props.lazy) {
+      fetchComponent()
+    } else if (process.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     }
 
     return () => {
+      if ((!html.value || error.value) && slots.fallback) {
+        return [slots.fallback({ error: error.value })]
+      }
       const nodes = [createVNode(Fragment, {
         key: key.value
-      }, [h(createStaticVNode(html.value, 1))])]
+      }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
       if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
