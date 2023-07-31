@@ -1,5 +1,5 @@
-import type { FetchError } from 'ofetch'
-import type { NitroFetchOptions, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
+import type { FetchError, FetchOptions } from 'ofetch'
+import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
 import type { Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
@@ -14,6 +14,10 @@ export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRoute
 
 type ComputedOptions<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
+}
+
+interface NitroFetchOptions<R extends NitroFetchRequest, M extends (AvailableRouterMethod<R> | Uppercase<AvailableRouterMethod<R>>) = AvailableRouterMethod<R>> extends FetchOptions {
+  method?: M;
 }
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
