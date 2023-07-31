@@ -137,8 +137,15 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     * @type {true | 'local' | 'local+remote' | false}
      */
-    componentIslands: false,
+    componentIslands: {
+      $resolve: (val) => {
+        if (typeof val === 'string') { return val }
+        if (val === true) { return 'local' }
+        return false
+      }
+    },
 
     /**
      * Config schema support
