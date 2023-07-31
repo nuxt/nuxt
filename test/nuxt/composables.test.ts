@@ -63,7 +63,8 @@ describe('composables', () => {
       'useRoute',
       'useRouter',
       'useSeoMeta',
-      'useServerSeoMeta'
+      'useServerSeoMeta',
+      'usePreviewMode'
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
