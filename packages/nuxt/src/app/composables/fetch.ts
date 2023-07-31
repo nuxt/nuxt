@@ -16,7 +16,7 @@ type ComputedOptions<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
 }
 
-interface NitroFetchOptions<R extends NitroFetchRequest, M extends (AvailableRouterMethod<R> | Uppercase<AvailableRouterMethod<R>>) = AvailableRouterMethod<R>> extends FetchOptions {
+interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
   method?: M;
 }
 
