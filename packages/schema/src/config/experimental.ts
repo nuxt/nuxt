@@ -12,6 +12,10 @@ export default defineUntypedSchema({
     /**
      * Enable Vue's reactivity transform
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     *
+     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
+     * removed from core in Vue 3.4.
+     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
      */
     reactivityTransform: false,
 
@@ -103,6 +107,8 @@ export default defineUntypedSchema({
 
     /**
      * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     *
+     * @type {boolean | undefined}
      */
     payloadExtraction: undefined,
 
@@ -142,6 +148,27 @@ export default defineUntypedSchema({
     configSchema: true,
 
     /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * This is only not enabled by default because it could be a breaking change for some projects.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+
+    /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
      * `@vueuse/head` API.
      *
@@ -161,15 +188,18 @@ export default defineUntypedSchema({
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar' by default, but by setting this to `parcel` it will use
-     * `@parcel/watcher` instead. This may improve performance in large projects or
-     * on Windows platforms.
+     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
+     * (like `node_modules` and `.git`) that are excluded from watching.
+     *
+     * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
+     * performance in large projects or on Windows platforms.
+     *
+     * You can also set this to `chokidar` to watch all files in your source directory.
      *
      * @see https://github.com/paulmillr/chokidar
      * @see https://github.com/parcel-bundler/watcher
-     * @default chokidar
-     * @type {'chokidar' | 'parcel'}
+     * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar'
+    watcher: 'chokidar-granular'
   }
 })

@@ -22,7 +22,7 @@ abortNavigation(err?: Error | string): false
 
 - **Type**: [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) | `string`
 
-  Optional error to be thrown by `abortNavigation`.
+  Optional error to be thrown by `abortNavigation`.
 
 ## Examples
 
@@ -48,7 +48,7 @@ You can pass the error as a string:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  const auth = useState('auth')
+  const user = useState('user')
 
   if (!user.value.isAuthorized) {
     return abortNavigation('Insufficient permissions.')

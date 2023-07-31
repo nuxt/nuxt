@@ -11,12 +11,29 @@
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
+    <div>
+      <DevOnly>
+        Some dev-only info
+        <template #fallback>
+          Some prod-only info
+        </template>
+      </DevOnly>
+    </div>
     <div>Path: {{ $route.fullPath }}</div>
     <NuxtLink to="/">
       Link
     </NuxtLink>
+    <NuxtLink id="islands" to="/islands">
+      islands
+    </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal" to="/middleware-abort-non-fatal" :prefetch="false">
+      Middleware abort navigation
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal-error" to="/middleware-abort-non-fatal?error=someerror" :prefetch="false">
+      Middleware abort navigation with error
     </NuxtLink>
     Some value: {{ someValue }}
     <button @click="someValue++">

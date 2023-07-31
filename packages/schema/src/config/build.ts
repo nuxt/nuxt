@@ -81,7 +81,7 @@ export default defineUntypedSchema({
      * You can provide your own templates which will be rendered based
      * on Nuxt configuration. This feature is specially useful for using with modules.
      *
-     * Templates are rendered using [`lodash.template`](https://lodash.com/docs/4.17.15#template).
+     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      *
      * @example
      * ```js
@@ -96,6 +96,8 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
+     *
+     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -142,10 +144,11 @@ export default defineUntypedSchema({
      *
      * The key will be unique based on the location of the function being invoked within the file.
      *
-     * @type {Array<{ name: string, argumentLength: number }>}
+     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
       $resolve: (val) => [
+        { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
@@ -190,7 +193,7 @@ export default defineUntypedSchema({
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
      *
-     * @type {import('unctx').TransformerOptions}
+     * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],

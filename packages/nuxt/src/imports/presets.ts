@@ -27,12 +27,14 @@ const appPreset = defineUnimportPreset({
     'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
+    'clearNuxtState',
     'useFetch',
     'useLazyFetch',
     'useCookie',
     'useRequestHeaders',
     'useRequestEvent',
     'useRequestFetch',
+    'useRequestURL',
     'setResponseStatus',
     'setPageLayout',
     'onNuxtReady',
@@ -58,7 +60,9 @@ const appPreset = defineUnimportPreset({
     'preloadPayload',
     'isPrerendered',
     'definePayloadReducer',
-    'definePayloadReviver'
+    'definePayloadReviver',
+    'requestIdleCallback',
+    'cancelIdleCallback'
   ]
 })
 
@@ -160,9 +164,13 @@ const vueTypesPreset = defineUnimportPreset({
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'ExtractPropTypes',
+    'ExtractPublicPropTypes',
     'InjectionKey',
     'PropType',
     'Ref',
+    'MaybeRef',
+    'MaybeRefOrGetter',
     'VNode'
   ]
 })

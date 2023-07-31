@@ -2,9 +2,9 @@
 description: useHead customizes the head properties of individual pages of your Nuxt app.
 ---
 
-# `useHead`
+# useHead
 
-The `useHead` composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
+The [`useHead`](/docs/api/composables/use-head) composable function allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.harlanzw.com/). If the data comes from a user or other untrusted source, we recommend you check out [`useHeadSafe`](/docs/api/composables/use-head-safe)
 
 :ReadMore{link="/docs/getting-started/seo-meta"}
 
@@ -14,7 +14,7 @@ The `useHead` composable function allows you to manage your head tags in a progr
 useHead(meta: MaybeComputedRef<MetaObject>): void
 ```
 
-Below are the non-reactive types for `useHead`.
+Below are the non-reactive types for [`useHead`](/docs/api/composables/use-head) .
 
 ```ts
 interface MetaObject {
@@ -34,7 +34,7 @@ interface MetaObject {
 See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/schema/src/schema.ts) for more detailed types.
 
 ::alert{type=info}
-The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `reactive` properties. `meta` parameter can also accept a function returning an object to make the entire object reactive.
+The properties of [`useHead`](/docs/api/composables/use-head) can be dynamic, accepting `ref`, `computed` and `reactive` properties. `meta` parameter can also accept a function returning an object to make the entire object reactive.
 ::
 
 ## Parameters

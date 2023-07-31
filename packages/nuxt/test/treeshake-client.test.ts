@@ -9,12 +9,6 @@ import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
 import { fixtureDir, normalizeLineEndings } from './utils'
 
-vi.mock('node:crypto', () => ({
-  update: vi.fn().mockReturnThis(),
-  digest: vi.fn().mockReturnValue('one-hash-to-rule-them-all'),
-  createHash: vi.fn().mockReturnThis()
-}))
-
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {
   if (to.includes('SomeComponent')) {
@@ -90,7 +84,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
   return typeof result === 'string' ? result : result?.code
 }
 
-const stateToTest: {name: string, options: Partial<Options & {devServer: {config: {server: any}}}> }[] = [
+const stateToTest: { name: string, options: Partial<Options & { devServer: { config: { server: any } } }> }[] = [
   {
     name: 'prod',
     options: {
@@ -188,7 +182,7 @@ describe('treeshake client only in ssr', () => {
         expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
         expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
       }
-      expect(treeshaken).toMatchSnapshot()
+      expect(treeshaken.replace(/data-v-[\d\w]{8}/g, 'data-v-one-hash').replace(/scoped=[\d\w]{8}/g, 'scoped=one-hash')).toMatchSnapshot()
     })
   }
 })

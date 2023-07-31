@@ -55,7 +55,7 @@ Nuxt's goal is to make web development intuitive and performant, with a great de
   <td>
     <h3>Examples</h3>
     <p>
-      Explore different ways of using Nuxt features and get inspired with <a href="https://nuxt.com/docs/examples/essentials/hello-world">our list of examples</a>.
+      Explore different ways of using Nuxt features and get inspired with <a href="https://nuxt.com/docs/examples/hello-world">our list of examples</a>.
     </p>
   </td>
 </tr>
@@ -115,7 +115,7 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 
 ## Nuxt 2
 
-You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [nuxtjs.org](https://nuxtjs.org).
+You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [v2.nuxt.com](https://v2.nuxt.com).
 
 ## Follow us
 

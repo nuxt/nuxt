@@ -1,5 +1,5 @@
 import { statSync } from 'node:fs'
-import { relative, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -9,6 +9,7 @@ import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemp
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
+import { islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -97,7 +98,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.ts', // .d.ts files
+            '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || [])
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)
@@ -128,11 +129,11 @@ export default defineNuxtModule<ComponentsOptions>({
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
     const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
-    addVitePlugin(unpluginServer.vite(), { server: true, client: false })
-    addVitePlugin(unpluginClient.vite(), { server: false, client: true })
+    addVitePlugin(() => unpluginServer.vite(), { server: true, client: false })
+    addVitePlugin(() => unpluginClient.vite(), { server: false, client: true })
 
-    addWebpackPlugin(unpluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(unpluginClient.webpack(), { server: false, client: true })
+    addWebpackPlugin(() => unpluginServer.webpack(), { server: true, client: false })
+    addWebpackPlugin(() => unpluginClient.webpack(), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -147,12 +148,14 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // Restart dev server when component directories are added/removed
-    nuxt.hook('builder:watch', (event, path) => {
-      const isDirChange = ['addDir', 'unlinkDir'].includes(event)
-      const fullPath = resolve(nuxt.options.srcDir, path)
+    nuxt.hook('builder:watch', (event, relativePath) => {
+      if (!['addDir', 'unlinkDir'].includes(event)) {
+        return
+      }
 
-      if (isDirChange && componentDirs.some(dir => dir.path === fullPath)) {
-        console.info(`Directory \`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (componentDirs.some(dir => dir.path === path)) {
+        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })
@@ -177,17 +180,17 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {
-      tsConfig.compilerOptions!.paths['#components'] = [relative(nuxt.options.rootDir, resolve(nuxt.options.buildDir, 'components'))]
+      tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
       references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
     // Watch for changes
-    nuxt.hook('builder:watch', async (event, path) => {
+    nuxt.hook('builder:watch', async (event, relativePath) => {
       if (!['add', 'unlink'].includes(event)) {
         return
       }
-      const fPath = resolve(nuxt.options.srcDir, path)
-      if (componentDirs.find(dir => fPath.startsWith(dir.path))) {
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (componentDirs.some(dir => path.startsWith(dir.path + '/'))) {
         await updateTemplates({
           filter: template => [
             'components.plugin.mjs',
@@ -220,6 +223,28 @@ export default defineNuxtModule<ComponentsOptions>({
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
         experimentalComponentIslands: nuxt.options.experimental.componentIslands
       }))
+
+      if (isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push(islandsTransform.vite({
+          getComponents
+        }))
+      }
+      if (!isServer && nuxt.options.experimental.componentIslands) {
+        config.plugins.push({
+          name: 'nuxt-server-component-hmr',
+          handleHotUpdate (ctx) {
+            const components = getComponents()
+            const filePath = normalize(ctx.file)
+            const comp = components.find(c => c.filePath === filePath)
+            if (comp?.mode === 'server') {
+              ctx.server.ws.send({
+                event: `nuxt-server-component:${comp.pascalName}`,
+                type: 'custom'
+              })
+            }
+          }
+        })
+      }
     })
     nuxt.hook('webpack:config', (configs) => {
       configs.forEach((config) => {
@@ -242,6 +267,12 @@ export default defineNuxtModule<ComponentsOptions>({
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
           experimentalComponentIslands: nuxt.options.experimental.componentIslands
         }))
+
+        if (nuxt.options.experimental.componentIslands && mode === 'server') {
+          config.plugins.push(islandsTransform.webpack({
+            getComponents
+          }))
+        }
       })
     })
   }
