@@ -13,6 +13,9 @@ import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
 
+// @ts-expect-error virtual file
+import { remoteComponentIslands } from '#build/nuxt.config.mjs'
+
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
 const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
@@ -106,7 +109,7 @@ export default defineComponent({
       const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
 
-      const url = props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
+      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
 
       if (process.server && process.env.prerender) {
         // Hint to Nitro to prerender the island component
