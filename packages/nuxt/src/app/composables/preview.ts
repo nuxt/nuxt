@@ -3,8 +3,8 @@ import { reactive, readonly, toRef } from 'vue'
 import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
 
 export interface PreviewOptions<Controls extends boolean = false> {
-  controls: Controls
-  tokenQueryName: string
+  controls?: Controls
+  tokenQueryName?: string
 }
 
 interface PreviewState {
@@ -15,7 +15,7 @@ interface PreviewState {
 
 const previewQueryName = 'preview'
 
-export function usePreviewMode<Controls extends boolean = false> (options?: { controls?: Controls, tokenQueryName?: string }) {
+export function usePreviewMode<Controls extends boolean = false> (options?: PreviewOptions<Controls>) {
   options = {
     controls: false as Controls,
     tokenQueryName: 'token',
