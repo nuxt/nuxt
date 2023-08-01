@@ -8,6 +8,5 @@
 </template>
 
 <script setup lang="ts">
-const nuxtApp = useNuxtApp()
-const data = await nuxtApp.runWithContext(() => nestedAsyncComposable())
+const data = await nestedAsyncComposable()
 </script>
