@@ -207,6 +207,11 @@ export default defineUntypedSchema({
      * @see https://github.com/parcel-bundler/watcher
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular'
+    watcher: 'chokidar-granular',
+
+    /**
+     * Add the CAPO head plugin in order to render tags in of the head in a more performant way.
+     */
+    headCapoPlugin: false
   }
 })
