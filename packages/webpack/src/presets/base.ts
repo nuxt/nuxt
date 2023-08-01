@@ -221,6 +221,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.test': isTest,
     __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
+    'process.env.NUXT_NATIVE_ASYNC_CONTEXT': ctx.options.experimental.nativeAsyncContext,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
     'process.server': ctx.isServer
