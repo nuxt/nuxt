@@ -211,8 +211,6 @@ export default defineUntypedSchema({
 
     /**
      * Add the CAPO head plugin in order to render tags in of the head in a more performant way.
-     *
-     * @default false
      */
     headCapoPlugin: false
   }
