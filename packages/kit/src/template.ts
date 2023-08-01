@@ -7,6 +7,7 @@ import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
+import { tryResolveModule } from './internal/esm'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
 
@@ -122,8 +123,6 @@ export async function writeTypes (nuxt: Nuxt) {
       skipLibCheck: true,
       strict: nuxt.options.typescript?.strict ?? true,
       allowJs: true,
-      // TODO: remove by default in 3.7
-      baseUrl: nuxt.options.srcDir,
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
@@ -132,7 +131,7 @@ export async function writeTypes (nuxt: Nuxt) {
     },
     include: [
       './nuxt.d.ts',
-      join(relative(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
+      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
       ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
@@ -140,9 +139,9 @@ export async function writeTypes (nuxt: Nuxt) {
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
     ],
     exclude: [
-      ...nuxt.options.modulesDir.map(m => relative(nuxt.options.buildDir, m)),
+      ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
-      relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
+      relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
   } satisfies TSConfig)
 
@@ -163,21 +162,30 @@ export async function writeTypes (nuxt: Nuxt) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    const absolutePath = resolve(basePath, aliases[alias])
-    const relativePath = relative(nuxt.options.buildDir, absolutePath)
+    let absolutePath = resolve(basePath, aliases[alias])
+    let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    if (!stats) {
+      const resolvedModule = await tryResolveModule(aliases[alias], nuxt.options.modulesDir)
+      if (resolvedModule) {
+        absolutePath = resolvedModule
+        stats = await fsp.stat(resolvedModule).catch(() => null)
+      }
+    }
 
-    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
     if (stats?.isDirectory()) {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath]
-      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+      tsConfig.compilerOptions.paths[alias] = [relativePath]
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
 
       if (!absolutePath.startsWith(rootDirWithSlash)) {
         tsConfig.include.push(relativePath)
       }
     } else {
       const path = stats?.isFile()
-        ? absolutePath.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */
-        : absolutePath
+        // remove extension
+        ? relativePath.replace(/(?<=\w)\.\w+$/g, '')
+        // non-existent file probably shouldn't be resolved
+        : aliases[alias]
 
       tsConfig.compilerOptions.paths[alias] = [path]
 
@@ -200,10 +208,19 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const declarations: string[] = []
 
-  tsConfig.include = [...new Set(tsConfig.include)]
-  tsConfig.exclude = [...new Set(tsConfig.exclude)]
-
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
+
+  for (const alias in tsConfig.compilerOptions!.paths) {
+    const paths = tsConfig.compilerOptions!.paths[alias]
+    tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
+      if (!isAbsolute(path)) { return path }
+      const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
+      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */ : path)
+    }))
+  }
+
+  tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
+  tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
   const declaration = [
     ...references.map((ref) => {
@@ -243,4 +260,8 @@ function renderAttrs (obj: Record<string, string>) {
 
 function renderAttr (key: string, value: string) {
   return value ? `${key}="${value}"` : ''
+}
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }

@@ -194,6 +194,9 @@ importers:
       semver:
         specifier: ^7.5.4
         version: 7.5.4
+      ufo:
+        specifier: ^1.2.0
+        version: 1.2.0
       unctx:
         specifier: ^2.3.1
         version: 2.3.1
