@@ -194,7 +194,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_NATIVE_ASYNC_CONTEXT': !!nuxt.options.experimental.nativeAsyncContext,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
-
     },
     rollupConfig: {
       output: {},
