@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -36,7 +36,10 @@ jobs:
       - name: Test (unit)
         run: pnpm test:unit -u
 
+      - name: Run build
+        run: pnpm build
+
       - name: Update bundle size
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@8bc06253bec489732e5f9c52884c7cace15c0160
+      - uses: autofix-ci/action@8caa572fd27b0019a65e4c695447089c8d3138b9

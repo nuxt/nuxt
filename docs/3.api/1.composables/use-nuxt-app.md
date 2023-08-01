@@ -5,8 +5,8 @@
 You can use `useNuxtApp()` within composables, plugins and components.
 
 ```vue [app.vue]
-<script setup>
-  const nuxtApp = useNuxtApp()
+<script setup lang="ts">
+const nuxtApp = useNuxtApp()
 </script>
 ```
 
@@ -14,7 +14,7 @@ You can use `useNuxtApp()` within composables, plugins and components.
 
 ### `provide (name, value)`
 
-`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
+`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
 
 `provide` function accepts `name` and `value` parameters.
 
@@ -70,7 +70,7 @@ await nuxtApp.callHook('my-plugin:init')
 
 - [**component()**](https://vuejs.org/api/application.html#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
 - [**directive()**](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/guide/directory-structure/plugins#vue-directives).
-- [**use()**](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/guide/directory-structure/plugins#vue-plugins).
+- [**use()**](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/guide/directory-structure/plugins#vue-plugins).
 
 :ReadMore{link="https://vuejs.org/api/application.html#application-api"}
 
@@ -87,21 +87,19 @@ await nuxtApp.callHook('my-plugin:init')
 `payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - **serverRendered** (boolean) - Indicates if response is server-side-rendered.
-- **data** (object) - When you fetch the data from an API endpoint using either `useFetch` or `useAsyncData`, resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
+- **data** (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
 ```vue [app.vue]
-export default defineComponent({
-  async setup() {
-    const { data } = await useAsyncData('count', () => $fetch('/api/count'))
-  }
-})
+<script setup lang="ts">
+const { data } = await useAsyncData('count', () => $fetch('/api/count'))
+</script>
 ```
 
-After fetching the value of `count` using `useAsyncData` in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
+After fetching the value of `count` using [`useAsyncData`](/docs/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
 
 When accessing the same `payload.data` from [ssrcontext](#ssrcontext), you can access the same value on the server side as well.
 
-- **state** (object) - When you use `useState` composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
+- **state** (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
 ```js [plugins/my-plugin.ts]
 export const useColor = () => useState<string>('color', () => 'pink')

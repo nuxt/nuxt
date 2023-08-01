@@ -1,6 +1,6 @@
 import { Script, createContext } from 'node:vm'
 import { expect } from 'vitest'
-import type { Page } from 'playwright'
+import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
@@ -102,6 +102,7 @@ const revivers = {
   EmptyRef: (data: any) => ref(JSON.parse(data)),
   ShallowRef: (data: any) => shallowRef(data),
   ShallowReactive: (data: any) => shallowReactive(data),
+  Island: (key: any) => key,
   Ref: (data: any) => ref(data),
   Reactive: (data: any) => reactive(data),
   // test fixture reviver only

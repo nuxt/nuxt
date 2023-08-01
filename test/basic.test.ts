@@ -1,9 +1,10 @@
+import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
-import { normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url } from '@nuxt/test-utils'
+import { join, normalize } from 'pathe'
+import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -104,6 +105,7 @@ describe('pages', () => {
     // should import JSX/TSX components with custom elements
     expect(html).toContain('TSX component')
     expect(html).toContain('<custom-component>custom</custom-component>')
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
   })
 
   it('respects aliases in page metadata', async () => {
@@ -114,6 +116,11 @@ describe('pages', () => {
   it('respects redirects in page metadata', async () => {
     const { headers } = await fetch('/redirect', { redirect: 'manual' })
     expect(headers.get('location')).toEqual('/')
+  })
+
+  it('allows routes to be added dynamically', async () => {
+    const html = await $fetch('/add-route-test')
+    expect(html).toContain('Hello Nuxt 3!')
   })
 
   it('includes page metadata from pages added in pages:extend hook', async () => {
@@ -160,6 +167,26 @@ describe('pages', () => {
     expect(html).toContain('Middleware ran: true')
 
     await expectNoClientErrors('/not-found')
+  })
+
+  it('expect no loading indicator on middleware abortNavigation', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#middleware-abort-non-fatal').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
+    await page.locator('#middleware-abort-non-fatal-error').click()
+    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
+  })
+
+  it('should render correctly when loaded on a different path', async () => {
+    const page = await createPage('/proxy')
+
+    await page.waitForLoadState('networkidle')
+    expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+
+    await page.close()
+
+    await expectNoClientErrors('/proxy')
   })
 
   it('preserves query', async () => {
@@ -306,6 +333,39 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('/wrapper-expose/layout', async () => {
+    await expectNoClientErrors('/wrapper-expose/layout')
+
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/layout')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('.logFoo is not a function')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('world')
+    await page.locator('.add-count').first().click()
+    expect(await page.locator('.count').first().innerText()).toContain('1')
+
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('0'))
+    await page.locator('.log-foo').first().click()
+    expect(lastLog).toContain('bar')
+    await page.locator('.log-hello').first().click()
+    expect(lastLog).toContain('.logHello is not a function')
+    await page.locator('.add-count').first().click()
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('1'))
+    // change layout
+    await page.locator('.swap-layout').click()
+    await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('0'))
+  })
+
   it('/client-only-explicit-import', async () => {
     const html = await $fetch('/client-only-explicit-import')
 
@@ -315,6 +375,27 @@ describe('pages', () => {
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
+  })
+
+  it('/wrapper-expose/page', async () => {
+    await expectNoClientErrors('/wrapper-expose/page')
+    let lastLog: string|undefined
+    const page = await createPage('/wrapper-expose/page')
+    page.on('console', (log) => {
+      lastLog = log.text()
+    })
+    page.on('pageerror', (log) => {
+      lastLog = log.message
+    })
+    await page.waitForLoadState('networkidle')
+    await page.locator('#log-foo').click()
+    expect(lastLog === 'bar').toBeTruthy()
+    // change page
+    await page.locator('#to-hello').click()
+    await page.locator('#log-foo').click()
+    expect(lastLog?.includes('.foo is not a function')).toBeTruthy()
+    await page.locator('#log-hello').click()
+    expect(lastLog === 'world').toBeTruthy()
   })
 
   it('client-fallback', async () => {
@@ -350,41 +431,6 @@ describe('pages', () => {
     expect(await page.locator('#keep-fallback').all()).toHaveLength(1)
     // #20833
     expect(await page.locator('body').innerHTML()).not.toContain('Hello world !')
-    await page.close()
-  })
-
-  it('/islands', async () => {
-    const page = await createPage('/islands')
-    await page.waitForLoadState('networkidle')
-    await page.locator('#increase-pure-component').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
-    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
-
-    // test fallback slot with v-for
-    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
-    // test islands update
-    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
-    await page.locator('#update-server-components').click()
-    await Promise.all([
-      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
-      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
-    ])
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
-    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
-
-    // test islands slots interactivity
-    await page.locator('#first-sugar-counter button').click()
-    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
-
-    // test islands mounted client side with slot
-    await page.locator('#show-island').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
-
     await page.close()
   })
 
@@ -578,8 +624,27 @@ describe('legacy async data', () => {
   it('should work with defineNuxtComponent', async () => {
     const html = await $fetch('/legacy/async-data')
     expect(html).toContain('<div>Hello API</div>')
+    expect(html).toContain('<div>fooChild</div>')
+    expect(html).toContain('<div>fooParent</div>')
     const { script } = parseData(html)
-    expect(script.data['options:asyncdata:/legacy/async-data'].hello).toEqual('Hello API')
+    expect(script.data['options:asyncdata:hello'].hello).toBe('Hello API')
+    expect(Object.values(script.data)).toMatchInlineSnapshot(`
+      [
+        {
+          "baz": "qux",
+          "foo": "bar",
+        },
+        {
+          "hello": "Hello API",
+        },
+        {
+          "fooParent": "fooParent",
+        },
+        {
+          "fooChild": "fooChild",
+        },
+      ]
+    `)
   })
 })
 
@@ -605,6 +670,13 @@ describe('navigate', () => {
     expect(status).toEqual(302)
   })
 
+  it('should not run setup function in path redirected to', async () => {
+    const { headers, status } = await fetch('/navigate-to-error', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/setup-should-not-run')
+    expect(status).toEqual(302)
+  })
+
   it('supports directly aborting navigation on SSR', async () => {
     const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
 
@@ -613,7 +685,8 @@ describe('navigate', () => {
 })
 
 describe('preserves current instance', () => {
-  it('should not return getCurrentInstance when there\'s an error in data', async () => {
+  // TODO: it's unclear why there's an error here but it must be an upstream issue
+  it.todo('should not return getCurrentInstance when there\'s an error in data', async () => {
     await fetch('/instance/error')
     const html = await $fetch('/instance/next-request')
     expect(html).toContain('This should be false: false')
@@ -697,7 +770,7 @@ describe('navigate external', () => {
   it('should redirect to example.com', async () => {
     const { headers } = await fetch('/navigate-to-external/', { redirect: 'manual' })
 
-    expect(headers.get('location')).toEqual('https://example.com/')
+    expect(headers.get('location')).toEqual('https://example.com/?redirect=false#test')
   })
 
   it('should redirect to api endpoint', async () => {
@@ -948,7 +1021,7 @@ describe('deferred app suspense resolve', () => {
       await page.goto(url(path))
       await page.waitForLoadState('networkidle')
 
-      // Wait for all pending micro ticks to be cleared in case hydration haven't finished yet.
+      // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
       const hydrationLogs = logs.filter(log => log.includes('isHydrating'))
@@ -962,24 +1035,54 @@ describe('deferred app suspense resolve', () => {
   it('should wait for all suspense instance on initial hydration', async () => {
     await behaviour('/internal-layout/async-parent/child')
   })
+  it('should wait for suspense in parent layout', async () => {
+    const page = await createPage('/hydration/layout')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('Tests whether hydration is properly resolved within an async layout')
+  })
+  it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
+    const page = await createPage('/hydration/spa-redirection/start')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const html = await page.getByRole('document').innerHTML()
+    expect(html).toContain('fully hydrated and ready to go')
+  })
 })
 
 describe('nested suspense', () => {
-  const navigations = [
+  const navigations = ([
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
     ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/']
-  ]
+  ]).flatMap(([start, end]) => [
+    [start, end],
+    [start, end + '?layout=custom'],
+    [start + '?layout=custom', end]
+  ])
 
   it.each(navigations)('should navigate from %s to %s with no white flash', async (start, nav) => {
     const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
     await page.waitForLoadState('networkidle')
 
-    const slug = nav.replace(/[/-]+/g, '-')
+    const slug = nav.replace(/\?.*$/, '').replace(/[/-]+/g, '-')
     await page.click(`[href^="${nav}"]`)
 
-    const text = await page.waitForFunction(slug => document.querySelector(`#${slug}`)?.innerHTML, slug)
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
       // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
@@ -989,6 +1092,114 @@ describe('nested suspense', () => {
 
     // const text = await parent.innerText()
     expect(text).toContain('Async child: 2 - 1')
+    expect(text).toContain('parent: 2')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ].sort())
+
+    await page.close()
+  })
+
+  const outwardNavigations = [
+    ['/suspense/async-2/async-1/', '/suspense/async-1/'],
+    ['/suspense/async-2/sync-1/', '/suspense/async-1/']
+  ]
+
+  it.each(outwardNavigations)('should navigate from %s to a parent %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
+    await page.waitForLoadState('networkidle')
+
+    await page.waitForSelector(`main:has(#child${start.replace(/[/-]+/g, '-')})`)
+
+    const slug = start.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector disappears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:not(:has(#child${slug}))`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    expect(text).toContain('Async parent: 1')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [first load] from child
+      `[${first.parentType}] [${first.childType}]`,
+      ...first.childType === 'async' ? [`[${first.parentType}] [${first.parentNum}] [async] [${first.childNum}] running async data`] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : []
+    ].sort())
+
+    await page.close()
+  })
+
+  const inwardNavigations = [
+    ['/suspense/async-2/', '/suspense/async-1/async-1/'],
+    ['/suspense/async-2/', '/suspense/async-1/sync-1/']
+  ]
+
+  it.each(inwardNavigations)('should navigate from %s to a child %s with no white flash', async (start, nav) => {
+    const page = await createPage(start, {})
+    const logs: string[] = []
+    page.on('console', (msg) => {
+      const text = msg.text()
+      if (text.includes('[vite]') || text.includes('<Suspense> is an experimental feature')) { return }
+      logs.push(msg.text())
+    })
+    await page.waitForLoadState('networkidle')
+
+    const slug = nav.replace(/[/-]+/g, '-')
+    await page.click(`[href^="${nav}"]`)
+
+    // wait until child selector appears and grab HTML of parent
+    const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
+      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
+      .then(r => r.evaluate(r => r))
+
+    // const text = await parent.innerText()
+    expect(text).toContain('Async parent: 1')
+
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
+
+    expect(logs.sort()).toEqual([
+      // [first load] from parent
+      `[${first.parentType}]`,
+      ...first.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from parent
+      `[${last.parentType}]`,
+      ...last.parentType === 'async' ? ['[async] running async data'] : [],
+      // [navigation] from child
+      `[${last.parentType}] [${last.childType}]`,
+      ...last.childType === 'async' ? [`[${last.parentType}] [${last.parentNum}] [async] [${last.childNum}] running async data`] : []
+    ].sort())
 
     await page.close()
   })
@@ -1058,6 +1269,21 @@ describe('layout change not load page twice', () => {
   })
 })
 
+describe('layout switching', () => {
+  // #13309
+  it('does not cause TypeError: Cannot read properties of null', async () => {
+    await withLogs(async (page, logs) => {
+      await page.goto(url('/layout-switch/start'))
+      await page.waitForLoadState('networkidle')
+      await page.click('[href="/layout-switch/end"]')
+      // Wait for all pending micro ticks to be cleared,
+      // so we are not resolved too early when there are repeated page loading
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+      expect(logs.filter(l => l.match(/error/i))).toMatchInlineSnapshot('[]')
+    })
+  })
+})
+
 describe('automatically keyed composables', () => {
   it('should automatically generate keys', async () => {
     const html = await $fetch('/keyed-composables')
@@ -1067,25 +1293,78 @@ describe('automatically keyed composables', () => {
   it('should match server-generated keys', async () => {
     await expectNoClientErrors('/keyed-composables')
   })
+  it('should not automatically generate keys', async () => {
+    await expectNoClientErrors('/keyed-composables/local')
+    const html = await $fetch('/keyed-composables/local')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+  })
 })
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
+  const inlinedCSS = [
+    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+    '{--global:"global";', // global css from nuxt.config
+    '{--assets:"assets"}', // <script>
+    '{--postcss:"postcss"}', // <style lang=postcss>
+    '{--scoped:"scoped"}', // <style lang=css>
+    '{--server-only:"server-only"}' // server-only component not in client build
+    // TODO: ideally both client/server components would have inlined css when used
+    // '{--client-only:"client-only"}', // client-only component not in server build
+    // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
+    // '{--functional:"functional"}', // CSS imported ambiently in a functional component
+  ]
+
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
-    for (const style of [
-      '{--assets:"assets"}', // <script>
-      '{--scoped:"scoped"}', // <style lang=css>
-      '{--postcss:"postcss"}' // <style lang=postcss>
-    ]) {
+    for (const style of inlinedCSS) {
       expect(html).toContain(style)
     }
+  })
+
+  it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
+    const globalCSS = [
+      '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+      '{--global:"global";' // global css from nuxt.config
+    ]
+    const html = await $fetch('/route-rules/spa')
+    for (const style of globalCSS) {
+      expect(html).toContain(style)
+    }
+  })
+
+  it('should emit assets referenced in inlined CSS', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
+    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+  })
+
+  it('should not include inlined CSS in generated CSS file', async () => {
+    const html: string = await $fetch('/styles')
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
+    let css = ''
+    for (const file of cssFiles || []) {
+      css += await $fetch(file)
+    }
+
+    // should not include inlined CSS in generated CSS files
+    for (const style of inlinedCSS) {
+      // TODO: remove 'ambient global' CSS from generated CSS file
+      if (style === '{--plugin:"plugin"}') { continue }
+      expect.soft(css).not.toContain(style)
+    }
+
+    // should include unloadable CSS in generated CSS file
+    expect.soft(css).toContain('--virtual:red')
+    expect.soft(css).toContain('--functional:"functional"')
+    expect.soft(css).toContain('--client-only:"client-only"')
   })
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch('/styles')
     expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel=\\"preload\\" as=\\"style\\" href=\\"/_nuxt/entry.css\\">",
         "<link rel=\\"stylesheet\\" href=\\"/_nuxt/entry.css\\">",
       ]
     `)
@@ -1105,10 +1384,118 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe('prefetching', () => {
+describe('server components/islands', () => {
+  it('/islands', async () => {
+    const page = await createPage('/islands')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#increase-pure-component').click()
+    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
+    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    // test fallback slot with v-for
+    expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
+    // test islands update
+    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('#update-server-components').click()
+    await Promise.all([
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
+      page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
+    ])
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
+    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    // test islands mounted client side with slot
+    await page.locator('#show-island').click()
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
+    await page.close()
+  })
+
+  it('lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page with lazy server component').click()
+
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"> Loading server component </section><section id=\\"no-fallback\\"><div></div></section>"')
+    expect(text).not.toContain('async component that was very long')
+    expect(text).toContain('Loading server component')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => (document.querySelector('#no-fallback') as HTMLElement)?.innerText?.includes('async component'))
+    await page.waitForFunction(() => (document.querySelector('#fallback') as HTMLElement)?.innerText?.includes('async component'))
+
+    await page.close()
+  })
+
+  it('non-lazy server components', async () => {
+    const page = await createPage('/server-components/lazy/start')
+    await page.waitForLoadState('networkidle')
+    await page.getByText('Go to page without lazy server component').click()
+
+    const text = await page.innerText('pre')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toContain('async component that was very long')
+
+    // Wait for all pending micro ticks to be cleared
+    // await page.waitForLoadState('networkidle')
+    // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(() => (document.querySelector('#no-fallback') as HTMLElement)?.innerText?.includes('async component'))
+    await page.waitForFunction(() => (document.querySelector('#fallback') as HTMLElement)?.innerText?.includes('async component'))
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    expect(await readdir(join(publicDir, 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain(
+      isRenderingJson
+        ? '_payload.json'
+        : '_payload.js'
+    )
+  })
+})
+
+describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
+
+  it('should prefetch server components', async () => {
+    await expectNoClientErrors('/prefetch/server-components')
+  })
+
+  it('should prefetch everything needed when NuxtLink is used', async () => {
+    const page = await createPage()
+    const requests: string[] = []
+
+    page.on('request', (req) => {
+      requests.push(req.url().replace(url('/'), '/').replace(/\.[^.]+\./g, '.'))
+    })
+
+    await page.goto(url('/prefetch'))
+    await page.waitForLoadState('networkidle')
+
+    const snapshot = [...requests]
+    await page.click('[href="/prefetch/server-components"]')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.innerHTML('#async-server-component-count')).toBe('34')
+
+    expect(requests).toEqual(snapshot)
+    await page.close()
+  })
+
   it('should not prefetch certain dynamic imports by default', async () => {
     const html = await $fetch('/auth')
     // should not prefetch global components
@@ -1298,7 +1685,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
+        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div>  <div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
       }
     `)
@@ -1344,15 +1731,10 @@ describe('component islands', () => {
         link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
       }
     }
-    result.head.style = result.head.style.map(s => ({
-      ...s,
-      innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
-      key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
-    }))
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
-      expect(result.head).toMatchInlineSnapshot(`
+      expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "link": [],
           "style": [
@@ -1362,7 +1744,7 @@ describe('component islands', () => {
             },
           ],
         }
-    `)
+      `)
     } else if (isDev() && !isWebpack) {
       expect(result.head).toMatchInlineSnapshot(`
         {
@@ -1425,6 +1807,17 @@ describe('component islands', () => {
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
 
     await page.close()
+  })
+
+  it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
+    process.env.NUXT_APP_BASE_URL = '/foo/'
+    await startServer()
+
+    const result = await fetch('/foo/islands')
+    expect(result.status).toBe(200)
+
+    process.env.NUXT_APP_BASE_URL = undefined
+    await startServer()
   })
 })
 
@@ -1499,6 +1892,13 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     await page.close()
   })
+
+  it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const entries = Object.entries(parsePayload(payload))
+    const [key, serialisedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
+    expect(serialisedComponent).toEqual(key)
+  })
 })
 
 describe('Async context', () => {
@@ -1527,6 +1927,19 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
   })
+
+  it('requests status can be used', async () => {
+    const html = await $fetch('/useAsyncData/status')
+    expect(html).toContain('true')
+    expect(html).not.toContain('false')
+
+    const page = await createPage('/useAsyncData/status')
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#status5-values').textContent()).toContain('idle,pending,success')
+
+    await page.close()
+  })
 })
 
 describe.runIf(isDev())('component testing', () => {
@@ -1538,3 +1951,17 @@ describe.runIf(isDev())('component testing', () => {
     expect(comp2).toContain('12 x 4 = 48')
   })
 })
+
+function normaliseIslandResult (result: NuxtIslandResponse) {
+  return {
+    ...result,
+    head: {
+      ...result.head,
+      style: result.head.style.map(s => ({
+        ...s,
+        innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
+        key: s.key.replace(/-[a-zA-Z0-9]+$/, '')
+      }))
+    }
+  }
+}

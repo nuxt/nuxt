@@ -8,7 +8,7 @@ export function assets (ctx: WebpackConfigContext) {
       use: [{
         loader: 'url-loader',
         options: {
-          ...ctx.options.webpack.loaders.imgUrl,
+          ...ctx.userConfig.loaders.imgUrl,
           name: fileName(ctx, 'img')
         }
       }]
@@ -18,7 +18,7 @@ export function assets (ctx: WebpackConfigContext) {
       use: [{
         loader: 'url-loader',
         options: {
-          ...ctx.options.webpack.loaders.fontUrl,
+          ...ctx.userConfig.loaders.fontUrl,
           name: fileName(ctx, 'font')
         }
       }]
@@ -28,7 +28,7 @@ export function assets (ctx: WebpackConfigContext) {
       use: [{
         loader: 'file-loader',
         options: {
-          ...ctx.options.webpack.loaders.file,
+          ...ctx.userConfig.loaders.file,
           name: fileName(ctx, 'video')
         }
       }]

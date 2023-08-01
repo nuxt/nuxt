@@ -1,5 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
-import { join, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -352,14 +352,12 @@ export default defineUntypedSchema({
    */
   ignore: {
     $resolve: async (val, get) => [
-      '**/*.stories.{js,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,ts,jsx,tsx}', // ignore tests
-      '**/*.d.ts', // ignore type declarations
-      '.output',
-      '.git',
-      '.cache',
-      await get('analyzeDir'),
-      await get('buildDir'),
+      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+      '**/*.d.{cts,mts,ts}', // ignore type declarations
+      '**/.{vercel,netlify,output,git,cache,data}',
+      relative(await get('rootDir'), await get('analyzeDir')),
+      relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },
@@ -367,8 +365,9 @@ export default defineUntypedSchema({
   /**
    * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
    *
-   * It is an array of strings or regular expressions, which will be matched against the file path
-   * relative to the project `srcDir`.
+   * It is an array of strings or regular expressions. Strings should be either absolute paths or
+   * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
+   * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
    *
    * @type {Array<string | RegExp>}
    */

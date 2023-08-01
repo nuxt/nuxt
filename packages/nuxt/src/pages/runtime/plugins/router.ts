@@ -1,4 +1,4 @@
-import { computed, isReadonly, reactive, shallowRef } from 'vue'
+import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
 import {
@@ -9,7 +9,7 @@ import {
   createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
-import { withoutBase } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -27,7 +27,8 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
   base: string,
-  location: Location
+  location: Location,
+  renderedPath?: string
 ): string {
   const { pathname, search, hash } = location
   // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
@@ -41,8 +42,9 @@ function createCurrentLocation (
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
     return withoutBase(pathFromHash, '')
   }
-  const path = withoutBase(pathname, base)
-  return path + search + hash
+  const displayedPath = withoutBase(pathname, base)
+  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  return path + (path.includes('?') ? '' : search) + hash
 }
 
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
@@ -63,7 +65,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = process.server ? nuxtApp.ssrContext!.url : createCurrentLocation(routerBase, window.location)
+    const initialURL = process.server
+      ? nuxtApp.ssrContext!.url
+      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
     const router = createRouter({
       ...routerOptions,
       scrollBehavior: (to, from, savedPosition) => {
@@ -104,10 +109,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
     const route = {} as RouteLocation
     for (const key in _route.value) {
-      (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
+      Object.defineProperty(route, key, {
+        get: () => _route.value[key as keyof RouteLocation]
+      })
     }
 
-    nuxtApp._route = reactive(route)
+    nuxtApp._route = shallowReactive(route)
 
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
@@ -171,7 +178,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return false
             }
           }
-          if (result || result === false) { return result }
+
+          if (result || result === false) {
+            return result
+          }
         }
       }
     })
@@ -194,7 +204,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (process.server && to.redirectedFrom) {
+      } else if (process.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })

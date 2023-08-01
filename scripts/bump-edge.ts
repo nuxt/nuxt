@@ -10,9 +10,11 @@ async function main () {
   const date = Math.round(Date.now() / (1000 * 60))
 
   const nuxtPkg = workspace.find('nuxt')
-  const nitroInfo = await $fetch('https://registry.npmjs.org/nitropack-edge')
-  const latestNitro = nitroInfo['dist-tags'].latest
+  const { version: latestNitro } = await $fetch<{ version: string }>('https://registry.npmjs.org/nitropack-edge/latest')
   nuxtPkg.data.dependencies.nitropack = `npm:nitropack-edge@^${latestNitro}`
+
+  const { version: latestNuxi } = await $fetch<{ version: string }>('https://registry.npmjs.org/nuxi-ng/latest')
+  nuxtPkg.data.dependencies.nuxi = `npm:nuxi-ng@^${latestNuxi}`
 
   const bumpType = await determineBumpType()
 

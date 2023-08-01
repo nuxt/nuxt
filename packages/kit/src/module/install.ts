@@ -1,6 +1,7 @@
-import { lstatSync } from 'node:fs'
-import type { Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute } from 'pathe'
+import { existsSync, promises as fsp, lstatSync } from 'node:fs'
+import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
+import { dirname, isAbsolute, join } from 'pathe'
+import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule } from '../internal/cjs'
@@ -8,9 +9,8 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 
 /** Installs a module on a Nuxt instance. */
-export async function installModule (moduleToInstall: string | NuxtModule, _inlineOptions?: any, _nuxt?: Nuxt) {
-  const nuxt = useNuxt()
-  const { nuxtModule, inlineOptions } = await normalizeModule(moduleToInstall, _inlineOptions)
+export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
+  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   // Call module
   const res = (
@@ -29,7 +29,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, _inli
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({
-    meta: await nuxtModule.getMeta?.(),
+    meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
     timings: res.timings,
     entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
   })
@@ -48,9 +48,8 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return p.split('node_modules/').pop() as string
 }
 
-async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?: any) {
-  const nuxt = useNuxt()
-
+export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
+  let buildTimeModuleMeta: ModuleMeta = {}
   // Import if input is string
   if (typeof nuxtModule === 'string') {
     const src = await resolvePath(nuxtModule)
@@ -61,6 +60,10 @@ async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?:
       console.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
       throw error
     }
+    // nuxt-module-builder generates a module.json with metadata including the version
+    if (existsSync(join(dirname(src), 'module.json'))) {
+      buildTimeModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
+    }
   }
 
   // Throw error if input is not a function
@@ -68,5 +71,5 @@ async function normalizeModule (nuxtModule: string | NuxtModule, inlineOptions?:
     throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
   }
 
-  return { nuxtModule, inlineOptions } as { nuxtModule: NuxtModule<any>, inlineOptions: undefined | Record<string, any> }
+  return { nuxtModule, buildTimeModuleMeta } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
 }

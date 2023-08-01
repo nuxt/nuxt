@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release-pr:
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/trigger release' }}
+    if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && github.event.comment.body == '/trigger release'
     permissions:
       id-token: write
       pull-requests: write
@@ -22,20 +22,20 @@ jobs:
 
     steps:
       - name: Ensure action is by maintainer
-        uses: octokit/request-action@352d2ae93e1805721b5fe308598555ba3bd2c8e2 # v2.x
+        uses: octokit/request-action@89697eb6635e52c6e1e5559f15b5c91ba5100cb0 # v2.1.9
         id: check_role
         with:
           route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           ref: refs/pull/${{ github.event.issue.number }}/merge
           fetch-depth: 0
 
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
         with:
           node-version: 20
           cache: "pnpm"

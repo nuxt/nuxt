@@ -4,18 +4,23 @@ import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
+import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
+const HAS_SLOT_RE = /<slot[ /]/
+const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
     transformInclude (id) {
+      if (!isVue(id)) { return false }
+
       const components = options.getComponents()
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
@@ -24,9 +29,10 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       return islands.some(c => c.filePath === pathname)
     },
     async transform (code, id) {
-      if (!code.includes('<slot ')) { return }
-      const template = code.match(/<template>([\s\S]*)<\/template>/)
+      if (!HAS_SLOT_RE.test(code)) { return }
+      const template = code.match(TEMPLATE_RE)
       if (!template) { return }
+      const startingIndex = template.index || 0
       const s = new MagicString(code)
 
       s.replace(SCRIPT_RE, (full) => {
@@ -51,25 +57,25 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           const bindings = getBindings(attributes, vfor)
 
           if (isSelfClosingTag) {
-            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
           } else {
-            s.overwrite(loc[0].start, loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
-            s.overwrite(loc[1].start, loc[1].end, '</div>')
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
+            s.overwrite(startingIndex + loc[1].start, startingIndex + loc[1].end, '</div>')
 
             if (children.length > 1) {
               // need to wrap instead of applying v-for on each child
               const wrapperTag = `<div ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} style="display: contents;">`
-              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
-              s.appendLeft(loc[1].start, '</div><div nuxt-slot-fallback-end/>')
+              s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
+              s.appendLeft(startingIndex + loc[1].start, '</div><div nuxt-slot-fallback-end/>')
             } else if (children.length === 1) {
               if (vfor && children[0].type === ELEMENT_NODE) {
                 const { loc, name, attributes, isSelfClosingTag } = children[0]
                 const attrs = Object.entries(attributes).map(([attr, val]) => `${attr}="${val}"`).join(' ')
-                s.overwrite(loc[0].start, loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
+                s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
               }
 
-              s.appendRight(loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
-              s.appendLeft(loc[1].start, '<div nuxt-slot-fallback-end/>')
+              s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
+              s.appendLeft(startingIndex + loc[1].start, '<div nuxt-slot-fallback-end/>')
             }
           }
         }

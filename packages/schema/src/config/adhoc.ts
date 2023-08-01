@@ -58,19 +58,19 @@ export default defineUntypedSchema({
    *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    *
-   * @type {typeof import('@nuxt/telemetry').ModuleOptions}
+   * @type {boolean | Record<string, any>}
   */
   telemetry: undefined,
 
   /**
    * Enable Nuxt DevTools for development.
-   * 
+   *
    * This is an experimental feature.
    * Breaking changes for devtools might not reflect on the version of Nuxt.
-   * 
+   *
    * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
    * @experimental
-   * @type {boolean | { enabled: boolean }}
+   * @type {boolean | { enabled: boolean, [key: string]: any }}
    */
   devtools: false
 })

@@ -15,10 +15,10 @@ export default defineConfig({
     'process.env.NUXT_NATIVE_ASYNC_CONTEXT': 'false'
   },
   test: {
-    globalSetup: 'test/setup.ts',
+    globalSetup: './test/setup.ts',
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-    exclude: [...configDefaults.exclude, '**/this-should-not-load.spec.js'],
+    exclude: [...configDefaults.exclude, '**/test/nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
     maxThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined,
     minThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined
   }

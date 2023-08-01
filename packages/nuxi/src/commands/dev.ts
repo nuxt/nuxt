@@ -7,8 +7,10 @@ import type { Nuxt } from '@nuxt/schema'
 import { consola } from 'consola'
 import { withTrailingSlash } from 'ufo'
 import { setupDotenv } from 'c12'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
 import { showBanner, showVersions } from '../utils/banner'
-import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
@@ -25,26 +27,12 @@ export default defineNuxtCommand({
   async invoke (args, options = {}) {
     overrideEnv('development')
 
-    const { listen } = await import('listhen')
-    const { toNodeListener } = await import('h3')
-    let currentHandler: RequestListener | undefined
-    let loadingMessage = 'Nuxt is starting...'
-    const loadingHandler: RequestListener = async (_req, res) => {
-      const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates')
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
-      res.statusCode = 503 // Service Unavailable
-      res.end(loadingTemplate({ loading: loadingMessage }))
-    }
-    const serverHandler: RequestListener = (req, res) => {
-      return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
-    }
-
     const rootDir = resolve(args._[0] || '.')
     showVersions(rootDir)
 
     await setupDotenv({ cwd: rootDir, fileName: args.dotenv })
 
-    const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
+    const { loadNuxt, loadNuxtConfig, buildNuxt, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
@@ -55,16 +43,30 @@ export default defineNuxtCommand({
       }
     })
 
+    const { listen } = await import('listhen')
+    const { toNodeListener } = await import('h3')
+    let currentHandler: RequestListener | undefined
+    let loadingMessage = 'Nuxt is starting...'
+    const loadingHandler: RequestListener = async (_req, res) => {
+      const loadingTemplate = config.devServer.loadingTemplate ?? await importModule('@nuxt/ui-templates', config.modulesDir).then(r => r.loading)
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
+      res.statusCode = 503 // Service Unavailable
+      res.end(loadingTemplate({ loading: loadingMessage }))
+    }
+    const serverHandler: RequestListener = (req, res) => {
+      return currentHandler ? currentHandler(req, res) : loadingHandler(req, res)
+    }
+
     const listener = await listen(serverHandler, {
       showURL: false,
       clipboard: args.clipboard,
       open: args.open || args.o,
-      port: args.port || args.p || process.env.NUXT_PORT || config.devServer.port,
-      hostname: args.host || args.h || process.env.NUXT_HOST || config.devServer.host,
+      port: args.port || args.p || process.env.NUXT_PORT || process.env.NITRO_PORT || config.devServer.port,
+      hostname: args.host || args.h || process.env.NUXT_HOST || process.env.NITRO_HOST || config.devServer.host,
       https: (args.https !== false && (args.https || config.devServer.https))
         ? {
-            cert: args['ssl-cert'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
-            key: args['ssl-key'] || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
+            cert: args['ssl-cert'] || process.env.NUXT_SSL_CERT || process.env.NITRO_SSL_CERT || (typeof config.devServer.https !== 'boolean' && config.devServer.https.cert) || undefined,
+            key: args['ssl-key'] || process.env.NUXT_SSL_KEY || process.env.NITRO_SSL_KEY || (typeof config.devServer.https !== 'boolean' && config.devServer.https.key) || undefined
           }
         : false
     })

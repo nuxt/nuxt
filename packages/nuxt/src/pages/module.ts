@@ -3,7 +3,6 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
-import escapeRE from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
@@ -52,12 +51,13 @@ export default defineNuxtModule({
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap(layer => [
-      join(layer.config.srcDir, 'app/router.options.ts'),
-      join(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+      join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
+      join(layer.config.srcDir || layer.cwd, layer.config.dir?.pages || 'pages')
     ])
-    nuxt.hooks.hook('builder:watch', async (event, path) => {
-      const fullPath = join(nuxt.options.srcDir, path)
-      if (restartPaths.some(path => path === fullPath || fullPath.startsWith(path + '/'))) {
+
+    nuxt.hooks.hook('builder:watch', async (event, relativePath) => {
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
         const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
           console.info('Pages', newSetting ? 'enabled' : 'disabled')
@@ -174,15 +174,17 @@ export default defineNuxtModule({
     })
 
     // Regenerate templates when adding or removing pages
-    nuxt.hook('builder:watch', async (event, path) => {
-      const dirs = [
-        nuxt.options.dir.pages,
-        nuxt.options.dir.layouts,
-        nuxt.options.dir.middleware
-      ].filter(Boolean)
+    const updateTemplatePaths = nuxt.options._layers.flatMap(l => [
+      join(l.config.srcDir || l.cwd, l.config.dir?.pages || 'pages') + '/',
+      join(l.config.srcDir || l.cwd, l.config.dir?.layouts || 'layouts') + '/',
+      join(l.config.srcDir || l.cwd, l.config.dir?.middleware || 'middleware') + '/'
+    ])
 
-      const pathPattern = new RegExp(`(^|\\/)(${dirs.map(escapeRE).join('|')})/`)
-      if (event !== 'change' && pathPattern.test(path)) {
+    nuxt.hook('builder:watch', async (event, relativePath) => {
+      if (event === 'change') { return }
+
+      const path = resolve(nuxt.options.srcDir, relativePath)
+      if (updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -201,25 +203,24 @@ export default defineNuxtModule({
       })
     })
 
-    // Prerender all non-dynamic page routes when generating app
-    if (!nuxt.options.dev && nuxt.options._generate) {
+    nuxt.hook('nitro:init', (nitro) => {
+      if (nuxt.options.dev || !nitro.options.static) { return }
+      // Prerender all non-dynamic page routes when generating app
       const prerenderRoutes = new Set<string>()
-      nuxt.hook('modules:done', () => {
-        nuxt.hook('pages:extend', (pages) => {
-          prerenderRoutes.clear()
-          const processPages = (pages: NuxtPage[], currentPath = '/') => {
-            for (const page of pages) {
-              // Add root of optional dynamic paths and catchalls
-              if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) { prerenderRoutes.add(currentPath) }
-              // Skip dynamic paths
-              if (page.path.includes(':')) { continue }
-              const route = joinURL(currentPath, page.path)
-              prerenderRoutes.add(route)
-              if (page.children) { processPages(page.children, route) }
-            }
+      nuxt.hook('pages:extend', (pages) => {
+        prerenderRoutes.clear()
+        const processPages = (pages: NuxtPage[], currentPath = '/') => {
+          for (const page of pages) {
+            // Add root of optional dynamic paths and catchalls
+            if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) { prerenderRoutes.add(currentPath) }
+            // Skip dynamic paths
+            if (page.path.includes(':')) { continue }
+            const route = joinURL(currentPath, page.path)
+            prerenderRoutes.add(route)
+            if (page.children) { processPages(page.children, route) }
           }
-          processPages(pages)
-        })
+        }
+        processPages(pages)
       })
       nuxt.hook('nitro:build:before', (nitro) => {
         for (const route of nitro.options.prerender.routes || []) {
@@ -230,7 +231,7 @@ export default defineNuxtModule({
         }
         nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
-    }
+    })
 
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
@@ -352,11 +353,11 @@ export default defineNuxtModule({
       getContents: ({ app }: { app: NuxtApp }) => {
         const composablesFile = resolve(runtimeDir, 'composables')
         return [
-          'import { ComputedRef, Ref } from \'vue\'',
+          'import { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
-          '    layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
           '}'
         ].join('\n')
