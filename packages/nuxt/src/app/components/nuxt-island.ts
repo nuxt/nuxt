@@ -62,7 +62,7 @@ export default defineComponent({
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
-          ...(import.meta.server && process.env.prerender)
+          ...(import.meta.server && import.meta.prerender)
             ? {}
             : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
         },
@@ -111,7 +111,7 @@ export default defineComponent({
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
 
-      if (import.meta.server && process.env.prerender) {
+      if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
         appendResponseHeader(event, 'x-nitro-prerender', url)
       }
@@ -123,7 +123,7 @@ export default defineComponent({
       }))
       const result = import.meta.server || !process.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers
-      if (import.meta.server && process.env.prerender) {
+      if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
           appendResponseHeader(event, 'x-nitro-prerender', hints)
