@@ -42,9 +42,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       'process.server': false,
       'process.client': true,
       'process.browser': true,
-      'import.meta.server': false,
-      'import.meta.client': true,
-      'import.meta.browser': true,
       'module.hot': false
     },
     optimizeDeps: {

@@ -146,6 +146,12 @@ export async function bundle (nuxt: Nuxt) {
 
   await nuxt.callHook('vite:extend', ctx)
 
+  nuxt.hook('vite:extendConfig', (config) => {
+    config.plugins!.push(replace({
+      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('process.')).map(([key, value]) => [key.replace('process.', 'import.meta.'), JSON.stringify(value)]))
+    }))
+  })
+
   if (!ctx.nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()
     const clientCSSMap = {}
