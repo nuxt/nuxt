@@ -41,8 +41,10 @@ export async function buildClient (ctx: ViteBuildContext) {
       'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
       'process.server': false,
       'process.client': true,
+      'process.browser': true,
       'import.meta.server': false,
       'import.meta.client': true,
+      'import.meta.browser': true,
       'module.hot': false
     },
     optimizeDeps: {

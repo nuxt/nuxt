@@ -23,6 +23,8 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
         'process.test': isTest,
+        'import.meta.dev': await get('dev'),
+        'import.meta.test': isTest,
         ...val || {}
       })
     },
