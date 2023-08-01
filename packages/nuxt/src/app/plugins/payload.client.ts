@@ -26,7 +26,7 @@ export default defineNuxtPlugin({
           await loadPayload(url)
         }
       })
-      getAppManifest()
+      setTimeout(getAppManifest, 1000)
     })
   }
 })
