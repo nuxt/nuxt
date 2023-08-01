@@ -1,4 +1,4 @@
-import { injectHead, CapoPlugin } from '@unhead/vue'
+import { CapoPlugin, injectHead } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin({
