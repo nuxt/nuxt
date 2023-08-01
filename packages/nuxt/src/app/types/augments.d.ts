@@ -5,6 +5,7 @@ interface NuxtStaticBuildFlags {
   client: boolean
   dev: boolean
   server: boolean
+  test: boolean
 }
 
 declare global {
