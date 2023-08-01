@@ -365,8 +365,9 @@ export default defineUntypedSchema({
   /**
    * The watch property lets you define patterns that will restart the Nuxt dev server when changed.
    *
-   * It is an array of strings or regular expressions, which will be matched against the file path
-   * relative to the project `srcDir`.
+   * It is an array of strings or regular expressions. Strings should be either absolute paths or
+   * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
+   * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
    *
    * @type {Array<string | RegExp>}
    */

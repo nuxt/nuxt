@@ -194,6 +194,9 @@ importers:
       semver:
         specifier: ^7.5.4
         version: 7.5.4
+      ufo:
+        specifier: ^1.2.0
+        version: 1.2.0
       unctx:
         specifier: ^2.3.1
         version: 2.3.1
@@ -356,11 +359,11 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 18.17.1
       '@unhead/ssr':
-        specifier: ^1.1.33
-        version: 1.1.33
+        specifier: ^1.1.35
+        version: 1.1.35
       '@unhead/vue':
-        specifier: ^1.1.33
-        version: 1.1.33(vue@3.3.4)
+        specifier: ^1.1.35
+        version: 1.1.35(vue@3.3.4)
       '@vue/shared':
         specifier: ^3.3.4
         version: 3.3.4
@@ -415,9 +418,6 @@ importers:
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
-      local-pkg:
-        specifier: ^0.4.3
-        version: 0.4.3
       magic-string:
         specifier: ^0.30.2
         version: 0.30.2
@@ -445,6 +445,9 @@ importers:
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
+      pkg-types:
+        specifier: ^1.0.3
+        version: 1.0.3
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
@@ -485,8 +488,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
       vue-devtools-stub:
         specifier: ^0.1.0
         version: 0.1.0
@@ -565,8 +568,8 @@ importers:
         specifier: 8.0.5
         version: 8.0.5
       '@unhead/schema':
-        specifier: 1.1.33
-        version: 1.1.33
+        specifier: 1.1.35
+        version: 1.1.35
       '@vitejs/plugin-vue':
         specifier: 4.2.3
         version: 4.2.3(vite@4.4.7)(vue@3.3.4)
@@ -601,8 +604,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       vue-bundle-renderer:
-        specifier: 1.0.3
-        version: 1.0.3
+        specifier: 2.0.0
+        version: 2.0.0
       vue-loader:
         specifier: 17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.88.2)
@@ -767,8 +770,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1(eslint@8.46.0)(typescript@5.1.6)(vite@4.4.7)(vue-tsc@1.8.8)
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -891,8 +894,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0)(webpack@5.88.2)
       vue-bundle-renderer:
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^2.0.0
+        version: 2.0.0
       vue-loader:
         specifier: ^17.2.2
         version: 17.2.2(vue@3.3.4)(webpack@5.88.2)
@@ -2786,41 +2789,41 @@ packages:
       eslint-visitor-keys: 3.4.2
     dev: true
 
-  /@unhead/dom@1.1.33:
-    resolution: {integrity: sha512-HKe8ppDQvFJeKkz4Hz8qmZHaEniChA3fooaE56/jW/ZQtmguU7xRU09PDm0VEV/08xiI3WRt93IYq+RtqrkzAw==}
+  /@unhead/dom@1.1.35:
+    resolution: {integrity: sha512-/VAwHHiZGHAKS9V0JaYBWxIBc8OpPMfjVk0TRcKoerFCmYRMsuWtpWauWx644j177kCbzCCT1HOA2fB7R07uXQ==}
     dependencies:
-      '@unhead/schema': 1.1.33
-      '@unhead/shared': 1.1.33
+      '@unhead/schema': 1.1.35
+      '@unhead/shared': 1.1.35
     dev: false
 
-  /@unhead/schema@1.1.33:
-    resolution: {integrity: sha512-QC73j5goOht4/sUQjADPM3Bg+WKHm5k+062Ns8tCrC8/YE10y7aeD33vpAF6z9BM4GCBODlDUlpOUuGfqovP5w==}
+  /@unhead/schema@1.1.35:
+    resolution: {integrity: sha512-hB1uHbK38+WoZn2PHRl0eJJ2Lip374+eHHxUbHY4rFQeL4mTgxAFL0KltpMZr5Eo7ZMV/zNL7LZ89KBd9L43Zg==}
     dependencies:
       hookable: 5.5.3
       zhead: 2.0.10
 
-  /@unhead/shared@1.1.33:
-    resolution: {integrity: sha512-zEviDmj61MAFAMR3Ts4lHgnBFPmRaLhkwsS00l4K9nHOkghoj575cGImhzSJ863r0KDr3dVDCalgF8remhz9pg==}
+  /@unhead/shared@1.1.35:
+    resolution: {integrity: sha512-SmR2tyAVYfvN+bPp71Bp4igHpv19X6VAoVP14qq3Yqdw1nWJKknla2QEkpqAgygit9b69Gyu+Wi5WABpZKUA+A==}
     dependencies:
-      '@unhead/schema': 1.1.33
+      '@unhead/schema': 1.1.35
     dev: false
 
-  /@unhead/ssr@1.1.33:
-    resolution: {integrity: sha512-nboGQZ5X62HOZYcsdEFugLRYnz57XBoJv+7zyuH6qk8jB2ebzSnkz0cR3eawpcgIzEPi9tQ2Q3RfGuJ0m5KIhA==}
+  /@unhead/ssr@1.1.35:
+    resolution: {integrity: sha512-VFIWcqGX358v05tzEPgZ8N7YhAhrrGxeecmRVE/jHtwimKCXa/xsQnhHe5ytswDiuTCTd/qBHEqVTVg8tGseUg==}
     dependencies:
-      '@unhead/schema': 1.1.33
-      '@unhead/shared': 1.1.33
+      '@unhead/schema': 1.1.35
+      '@unhead/shared': 1.1.35
     dev: false
 
-  /@unhead/vue@1.1.33(vue@3.3.4):
-    resolution: {integrity: sha512-cbq2k8RII9gDzpGC+CMaPezid6k8b8mV2KxhrtidnsHfK/ZmEaChrVCQ06C9xTtHMHfnNbCUn9vvQh96dHHF9A==}
+  /@unhead/vue@1.1.35(vue@3.3.4):
+    resolution: {integrity: sha512-U0iM9B8pq06FS1DLK7g25+ddMqDnQkqy+fgQyC0Gv+e4m8XEKsI7JKSbzAjFnsG69orCKd8M6jvcOyst8gvn5g==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.1.33
-      '@unhead/shared': 1.1.33
+      '@unhead/schema': 1.1.35
+      '@unhead/shared': 1.1.35
       hookable: 5.5.3
-      unhead: 1.1.33
+      unhead: 1.1.35
       vue: 3.3.4
     dev: false
 
@@ -8659,12 +8662,12 @@ packages:
       node-fetch-native: 1.2.0
       pathe: 1.1.1
 
-  /unhead@1.1.33:
-    resolution: {integrity: sha512-Qm94ySKOPwoXubGkdkeuLr9FcCv706PSL+GEApOcupBIf8M9kkmmYmRT5dCAoQcoUJDrvpeynTxiRkfA1jNRkA==}
+  /unhead@1.1.35:
+    resolution: {integrity: sha512-YEHXxJeSM313yPRcJdBQOSCnkcck1uhg7e2ZoEO+X0KVLuhqV1iYXU+tzvLU+ZId6IZOcEVDfsJ0hHfLkM6Itw==}
     dependencies:
-      '@unhead/dom': 1.1.33
-      '@unhead/schema': 1.1.33
-      '@unhead/shared': 1.1.33
+      '@unhead/dom': 1.1.35
+      '@unhead/schema': 1.1.35
+      '@unhead/shared': 1.1.35
       hookable: 5.5.3
     dev: false
 
@@ -9089,8 +9092,8 @@ packages:
     resolution: {integrity: sha512-eOpPHogvorZRobNqJGhapa0JdwaxpjVvyBp0QIUMRMSf8ZAlqOdEquKuRmw9Qwu0qXtJIWqFtMkmvJjUZmMjVA==}
     dev: false
 
-  /vue-bundle-renderer@1.0.3:
-    resolution: {integrity: sha512-EfjX+5TTUl70bki9hPuVp+54JiZOvFIfoWBcfXsSwLzKEiDYyHNi5iX8srnqLIv3YRnvxgbntdcG1WPq0MvffQ==}
+  /vue-bundle-renderer@2.0.0:
+    resolution: {integrity: sha512-oYATTQyh8XVkUWe2kaKxhxKVuuzK2Qcehe+yr3bGiaQAhK3ry2kYE4FWOfL+KO3hVFwCdLmzDQTzYhTi9C+R2A==}
     dependencies:
       ufo: 1.2.0
 
