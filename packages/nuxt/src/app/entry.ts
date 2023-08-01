@@ -48,7 +48,7 @@ if (import.meta.server) {
 if (import.meta.client) {
   // TODO: temporary webpack 5 HMR fix
   // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
-  if (process.dev && import.meta.webpackHot) {
+  if (import.meta.dev && import.meta.webpackHot) {
     import.meta.webpackHot.accept()
   }
 

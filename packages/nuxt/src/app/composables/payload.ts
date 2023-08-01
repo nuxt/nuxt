@@ -124,7 +124,7 @@ export function definePayloadReviver (
   name: string,
   revive: (data: string) => any | undefined
 ) {
-  if (process.dev && getCurrentInstance()) {
+  if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
   }
   if (import.meta.client) {

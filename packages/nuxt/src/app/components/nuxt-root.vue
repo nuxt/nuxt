@@ -24,7 +24,7 @@ const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
-const SingleRenderer = import.meta.test && process.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && /* #__PURE__ */ defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
+const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && /* #__PURE__ */ defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
   .then(r => r.default(import.meta.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route
@@ -32,7 +32,7 @@ provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
-if (process.dev && results && results.some(i => i && 'then' in i)) {
+if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
   console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
 }
 

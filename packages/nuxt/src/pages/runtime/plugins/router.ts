@@ -161,7 +161,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
-            if (process.dev) {
+            if (import.meta.dev) {
               throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
             }
             throw new Error(`Unknown route middleware: '${entry}'.`)
