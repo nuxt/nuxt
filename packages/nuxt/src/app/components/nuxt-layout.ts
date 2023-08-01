@@ -108,7 +108,7 @@ const LayoutProvider = defineComponent({
     }
 
     let vnode: VNode | undefined
-    if (process.dev && process.client) {
+    if (process.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
@@ -124,14 +124,14 @@ const LayoutProvider = defineComponent({
 
     return () => {
       if (!name || (typeof name === 'string' && !(name in layouts))) {
-        if (process.dev && process.client && props.hasTransition) {
+        if (process.dev && import.meta.client && props.hasTransition) {
           vnode = context.slots.default?.() as VNode | undefined
           return vnode
         }
         return context.slots.default?.()
       }
 
-      if (process.dev && process.client && props.hasTransition) {
+      if (process.dev && import.meta.client && props.hasTransition) {
         vnode = h(
           // @ts-expect-error seems to be an issue in vue types
           LayoutLoader,

@@ -38,7 +38,7 @@ function deepAssign (obj: any, newObj: any) {
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
   if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = (process.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
+    nuxtApp._appConfig = (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
   }
   return nuxtApp._appConfig
 }

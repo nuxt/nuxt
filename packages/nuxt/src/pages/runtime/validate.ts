@@ -12,7 +12,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (result === true) {
     return
   }
-  if (process.server) {
+  if (import.meta.server) {
     return result
   }
   const error = createError({

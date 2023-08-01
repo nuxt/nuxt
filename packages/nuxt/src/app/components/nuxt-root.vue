@@ -16,16 +16,16 @@ import { PageRouteSymbol } from '#app/components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
 
-const IslandRenderer = process.server
+const IslandRenderer = import.meta.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 
-const url = process.server ? nuxtApp.ssrContext.url : window.location.pathname
-const SingleRenderer = process.test && process.dev && process.server && url.startsWith('/__nuxt_component_test__/') && /* #__PURE__ */ defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
-  .then(r => r.default(process.server ? url : window.location.href)))
+const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
+const SingleRenderer = process.test && process.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && /* #__PURE__ */ defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
+  .then(r => r.default(import.meta.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route
 provide(PageRouteSymbol, useRoute())
@@ -40,7 +40,7 @@ if (process.dev && results && results.some(i => i && 'then' in i)) {
 const error = useError()
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info).catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
-  if (process.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
+  if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
     const p = nuxtApp.runWithContext(() => showError(err))
     onServerPrefetch(() => p)
     return false // suppress error from breaking render
@@ -48,5 +48,5 @@ onErrorCaptured((err, target, info) => {
 })
 
 // Component islands context
-const { islandContext } = process.server && nuxtApp.ssrContext
+const { islandContext } = import.meta.server && nuxtApp.ssrContext
 </script>

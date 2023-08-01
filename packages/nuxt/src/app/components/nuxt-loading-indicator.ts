@@ -99,7 +99,7 @@ function useLoadingIndicator (opts: {
   function start () {
     clear()
     progress.value = 0
-    if (opts.throttle && process.client) {
+    if (opts.throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
         _startTimer()
@@ -127,7 +127,7 @@ function useLoadingIndicator (opts: {
 
   function _hide () {
     clear()
-    if (process.client) {
+    if (import.meta.client) {
       setTimeout(() => {
         isLoading.value = false
         setTimeout(() => { progress.value = 0 }, 400)
@@ -136,7 +136,7 @@ function useLoadingIndicator (opts: {
   }
 
   function _startTimer () {
-    if (process.client) {
+    if (import.meta.client) {
       _timer = setInterval(() => { _increase(step.value) }, 100)
     }
   }
