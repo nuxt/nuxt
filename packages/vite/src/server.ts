@@ -42,6 +42,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     define: {
       'process.server': true,
       'process.client': false,
+      'import.meta.server': true,
+      'import.meta.client': false,
       'typeof window': '"undefined"',
       'typeof document': '"undefined"',
       'typeof navigator': '"undefined"',

@@ -223,7 +223,9 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
-    'process.server': ctx.isServer
+    'process.server': ctx.isServer,
+    'import.meta.client': ctx.isClient,
+    'import.meta.server': ctx.isServer
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {
