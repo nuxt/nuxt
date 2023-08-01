@@ -2,6 +2,8 @@
 
 import { describe, expect, it, vi } from 'vitest'
 
+import { registerEndpoint } from 'nuxt-vitest/utils'
+
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -14,6 +16,13 @@ import { useRequestURL } from '#app/composables/url'
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
 }))
+
+registerEndpoint('/_builds/latest.json', defineEventHandler(() => ({
+  id: 'dev',
+  timestamp: Date.now(),
+  routeRules: {},
+  prerendered: []
+})))
 
 describe('composables', () => {
   it('are all tested', () => {
