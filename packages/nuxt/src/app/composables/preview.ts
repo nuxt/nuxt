@@ -1,4 +1,4 @@
-import { reactive, readonly, toRef } from 'vue'
+import { reactive, readonly, shallowReactive, toRef } from 'vue'
 import { defu } from 'defu';
 
 import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
@@ -10,12 +10,19 @@ interface PreviewState {
 }
 
 type GetPreviewStateFunc = (currentState: PreviewState['state']) => Record<any, unknown> | null | undefined | void;
+type ShouldEnablePreviewMode = (currentState: PreviewState['state']) => boolean | null | undefined | void;
 
-const previewQueryName = 'preview'
+let shouldEnablePreviewMode: ShouldEnablePreviewMode = () => {
+  const route = useRoute();
+  const previewQueryName = 'preview'
+
+  return route.query[previewQueryName] === 'true'
+}
 
 export function usePreviewMode<Controls extends boolean = false, GetPreviewState extends GetPreviewStateFunc = GetPreviewStateFunc> (options?: {
   controls?: Controls,
   getPreviewState?: GetPreviewState
+  shouldEnablePreviewMode?: ShouldEnablePreviewMode;
 }) {
   const normalizedOptions = defu(options, {
     controls: false,
@@ -29,18 +36,22 @@ export function usePreviewMode<Controls extends boolean = false, GetPreviewState
   })
 
   const router = useRouter()
-  const route = useRoute()
 
-  const previewState = useState('_preview-composable', () => reactive<PreviewState>({
+  const previewState = useState('_preview-composable', () => shallowReactive<PreviewState>({
     enabled: false,
-    state: {},
+    state: reactive({}),
     addedAfterNavigationCallback: false,
   }))
 
+  if (normalizedOptions.shouldEnablePreviewMode) {
+    shouldEnablePreviewMode = normalizedOptions.shouldEnablePreviewMode
+  }
+  
   if (!previewState.value.enabled) {
-    const previewParam = route.query[previewQueryName]
+    const result = shouldEnablePreviewMode(previewState.value.state);
 
-    previewState.value.enabled = previewParam === 'true'
+    if (typeof result === 'boolean')
+      previewState.value.enabled = result
   }
 
   if (previewState.value.enabled) {
