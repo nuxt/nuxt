@@ -13,26 +13,40 @@ export interface NuxtAppManifest {
   prerendered: string[]
 }
 
+let timeout: NodeJS.Timeout
 let manifest: Promise<NuxtAppManifest>
 let matcher: RouteMatcher
 
-export function getAppManifest (): Promise<NuxtAppManifest> {
+function fetchManifest () {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
   const config = useRuntimeConfig()
   // TODO: use build id injected
-  manifest ||= $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, '_builds/latest.json'))
+  manifest = $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, '_builds/latest.json'))
+  manifest.then((m) => {
+    matcher = toRouteMatcher(
+      createRadixRouter({ routes: m.routeRules })
+    )
+  })
+  if (process.client) {
+    clearTimeout(timeout)
+    timeout = setTimeout(fetchManifest, 1000 * 60 * 60)
+  }
   return manifest
+}
+
+export function getAppManifest (): Promise<NuxtAppManifest> {
+  if (!isAppManifestEnabled) {
+    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+  }
+  return manifest || fetchManifest()
 }
 
 export async function getRouteRules (url: string) {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  const manifest = await getAppManifest()
-  matcher ||= toRouteMatcher(
-    createRadixRouter({ routes: manifest.routeRules })
-  )
+  await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
 }
