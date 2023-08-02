@@ -1,6 +1,7 @@
 import { joinURL } from 'ufo'
 import type { RouteMatcher } from 'radix3'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import { defu } from 'defu'
 import { useRuntimeConfig } from '#app'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -25,7 +26,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   return manifest
 }
 
-export async function getRouteRuleMatcher () {
+export async function getRouteRules (url: string) {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
@@ -33,5 +34,5 @@ export async function getRouteRuleMatcher () {
   matcher ||= toRouteMatcher(
     createRadixRouter({ routes: manifest.routeRules })
   )
-  return matcher
+  return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
 }

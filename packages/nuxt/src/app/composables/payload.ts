@@ -2,10 +2,9 @@ import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
-import { defu } from 'defu'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
-import { getAppManifest, getRouteRuleMatcher } from '#app/composables/manifest'
+import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useRoute } from '#app/composables'
 
 // @ts-expect-error virtual import
@@ -86,8 +85,8 @@ export async function isPrerendered (url = useRoute().path) {
   if (manifest.prerendered.includes(url)) {
     return true
   }
-  const matcher = await getRouteRuleMatcher()
-  return !!defu({} as Record<string, any>, ...matcher.matchAll(url).reverse()).prerender
+  const rules = await getRouteRules(url)
+  return !!rules.prerender
 }
 
 let payloadCache: any = null

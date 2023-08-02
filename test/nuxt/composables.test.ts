@@ -13,7 +13,7 @@ import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
-import { getAppManifest } from '#app/composables/manifest'
+import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -39,6 +39,7 @@ describe('composables', () => {
       'showError',
       'useError',
       'getAppManifest',
+      'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
       'useRequestEvent',
@@ -228,5 +229,9 @@ describe('app manifests', () => {
         "routeRules": {},
       }
     `)
+  })
+  it('getRouteRules', async () => {
+    const rules = await getRouteRules('/')
+    expect(rules).toMatchInlineSnapshot('{}')
   })
 })
