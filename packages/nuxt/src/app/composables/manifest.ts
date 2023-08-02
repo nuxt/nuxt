@@ -16,13 +16,13 @@ let matcher: RouteMatcher
 export function getAppManifest (): Promise<NuxtAppManifest> {
   const config = useRuntimeConfig()
   // TODO: use build id injected
-  manifest = manifest || $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, '_builds/latest.json'))
+  manifest ||= $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, '_builds/latest.json'))
   return manifest
 }
 
 export async function getRouteRuleMatcher () {
   const manifest = await getAppManifest()
-  matcher = matcher || toRouteMatcher(
+  matcher ||= toRouteMatcher(
     createRadixRouter({ routes: manifest.routeRules })
   )
   return matcher
