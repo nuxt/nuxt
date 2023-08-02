@@ -67,7 +67,7 @@ export default defineUntypedSchema({
      * By enabling this option a mixin will be injected to keep the `$route` template object
      * in sync with Nuxt's managed `useRoute()`.
      */
-    templateRouteMixin: false,
+    templateRouteInjection: true,
 
     /**
      * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
