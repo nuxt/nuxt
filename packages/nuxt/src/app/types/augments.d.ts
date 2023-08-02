@@ -1,4 +1,4 @@
-import type { NuxtApp } from '../nuxt'
+import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
   namespace NodeJS {
@@ -14,6 +14,7 @@ declare global {
 
   interface Window {
     __NUXT__?: Record<string, any>
+    useNuxtApp?: typeof useNuxtApp
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.5.3",
+  "version": "3.6.5",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -24,31 +24,31 @@
   "dependencies": {
     "@nuxt/kit": "workspace:../kit",
     "@nuxt/schema": "workspace:../schema",
-    "consola": "^3.1.0",
+    "consola": "^3.2.3",
     "defu": "^6.1.2",
-    "execa": "^7.1.1",
+    "execa": "^7.2.0",
     "get-port-please": "^3.0.1",
-    "ofetch": "^1.1.0",
+    "ofetch": "^1.1.1",
     "pathe": "^1.1.1",
-    "ufo": "^1.1.2"
+    "ufo": "^1.2.0"
   },
   "devDependencies": {
-    "@jest/globals": "29.5.0",
-    "playwright": "1.35.0",
+    "@jest/globals": "29.6.2",
+    "playwright-core": "1.36.2",
     "unbuild": "latest",
-    "vitest": "0.32.0"
+    "vitest": "0.33.0"
   },
   "peerDependencies": {
     "@jest/globals": "^29.5.0",
-    "playwright": "^1.34.3",
-    "vitest": "^0.30.0 || ^0.31.0 || ^0.32.0",
+    "playwright-core": "^1.34.3",
+    "vitest": "^0.30.0 || ^0.31.0 || ^0.32.0 || ^0.33.0",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "@jest/globals": {
       "optional": true
     },
-    "playwright": {
+    "playwright-core": {
       "optional": true
     },
     "vitest": {

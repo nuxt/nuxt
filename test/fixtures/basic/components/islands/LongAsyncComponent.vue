@@ -8,6 +8,7 @@
     <div id="long-async-component-count">
       {{ count }}
     </div>
+    {{ headers['custom-head'] }}
     <slot name="test" :count="count" />
     <p>hello world !!!</p>
     <slot v-for="(t, index) in 3" name="hello" :t="t">
@@ -28,8 +29,12 @@
 </template>
 
 <script setup lang="ts">
+import { getResponseHeaders } from 'h3'
 defineProps<{
   count: number
 }>()
+
+const evt = useRequestEvent()
+const headers = getResponseHeaders(evt)
 const { data } = await useFetch('/api/very-long-request')
 </script>

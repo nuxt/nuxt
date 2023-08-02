@@ -1,4 +1,4 @@
-import { computed, isReadonly, reactive, shallowRef } from 'vue'
+import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
 import {
@@ -9,7 +9,7 @@ import {
   createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
-import { withoutBase } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -42,7 +42,8 @@ function createCurrentLocation (
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
     return withoutBase(pathFromHash, '')
   }
-  const path = renderedPath || withoutBase(pathname, base)
+  const displayedPath = withoutBase(pathname, base)
+  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
@@ -108,10 +109,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
     const route = {} as RouteLocation
     for (const key in _route.value) {
-      (route as any)[key] = computed(() => _route.value[key as keyof RouteLocation])
+      Object.defineProperty(route, key, {
+        get: () => _route.value[key as keyof RouteLocation]
+      })
     }
 
-    nuxtApp._route = reactive(route)
+    nuxtApp._route = shallowReactive(route)
 
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
@@ -175,7 +178,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return false
             }
           }
-          if (result || result === false) { return result }
+
+          if (result || result === false) {
+            return result
+          }
         }
       }
     })
@@ -198,7 +204,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (process.server && to.redirectedFrom) {
+      } else if (process.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
