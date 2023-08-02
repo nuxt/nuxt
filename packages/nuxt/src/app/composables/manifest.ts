@@ -6,9 +6,12 @@ import { useAppConfig, useRuntimeConfig } from '#app'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
-export interface NuxtAppManifest {
+export interface NuxtAppManifestMeta {
   id: string
   timestamp: number
+}
+
+export interface NuxtAppManifest extends NuxtAppManifestMeta {
   routeRules: Record<string, any>
   prerendered: string[]
 }

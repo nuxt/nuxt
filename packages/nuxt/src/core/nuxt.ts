@@ -89,9 +89,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
       name: 'manifest-route-rule',
-      path: resolve(distDir, 'app/middleware/manifest-route-rule'),
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
       global: true
     })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
   }
 
   if (nuxt.options.experimental.localLayerAliases) {

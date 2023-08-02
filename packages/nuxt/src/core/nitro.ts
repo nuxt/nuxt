@@ -220,6 +220,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       export const buildTimestamp = ${JSON.stringify(timestamp)}
     `
     nitroConfig.handlers!.unshift({
+      route: joinURL(manifestPrefix, 'latest.json'),
+      handler: resolve(distDir, 'core/runtime/nitro/manifest-latest')
+    })
+    nitroConfig.handlers!.unshift({
       route: joinURL(manifestPrefix, '**'),
       handler: resolve(distDir, 'core/runtime/nitro/manifest')
     })
