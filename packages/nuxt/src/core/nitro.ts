@@ -209,32 +209,19 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add app manifest handler and prerender configuration
   // TODO: expose build id to nitro
   const buildId = randomUUID()
-  if (nitroConfig.prerender?.routes) {
-    const manifestPrefix = '/_builds'
-    nitroConfig.prerender.routes.push(joinURL(manifestPrefix, 'latest.json'))
-    nitroConfig.prerender.routes.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
-    nitroConfig.devHandlers!.push({
-      route: joinURL(manifestPrefix, '**'),
-      handler: defineEventHandler(() => ({
-        id: 'dev',
-        timestamp: Date.now(),
-        routeRules: {},
-        prerendered: []
-      }))
-    })
+  const manifestPrefix = '/_builds'
+  nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, 'latest.json'))
+  nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
 
-    if (!nuxt.options.dev) {
-      const timestamp = Date.now()
-      nitroConfig.virtual!['#app-manifest'] = () => `
-        export const hashId = ${JSON.stringify(buildId)}
-        export const buildTimestamp = ${JSON.stringify(timestamp)}
-      `
-      nitroConfig.handlers!.push({
-        route: joinURL(manifestPrefix, '**'),
-        handler: resolve(distDir, 'core/runtime/nitro/manifest')
-      })
-    }
-  }
+  const timestamp = Date.now()
+  nitroConfig.virtual!['#app-manifest'] = () => `
+    export const hashId = ${JSON.stringify(buildId)}
+    export const buildTimestamp = ${JSON.stringify(timestamp)}
+  `
+  nitroConfig.handlers!.unshift({
+    route: joinURL(manifestPrefix, '**'),
+    handler: resolve(distDir, 'core/runtime/nitro/manifest')
+  })
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
