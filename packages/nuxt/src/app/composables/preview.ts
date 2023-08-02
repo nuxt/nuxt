@@ -34,7 +34,7 @@ export function usePreviewMode<Controls extends boolean = false> (options?: Prev
   if (!previewState.value.enabled) {
     const previewParam = route.query[previewQueryName]
 
-    previewState.value.enabled = !!previewParam && previewParam === 'true'
+    previewState.value.enabled = previewParam === 'true'
 
     if (previewState.value.enabled && !previewState.value.token) {
       const query = route.query[options!.tokenQueryName!]
