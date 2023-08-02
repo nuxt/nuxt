@@ -137,8 +137,15 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     * @type {true | 'local' | 'local+remote' | false}
      */
-    componentIslands: false,
+    componentIslands: {
+      $resolve: (val) => {
+        if (typeof val === 'string') { return val }
+        if (val === true) { return 'local' }
+        return false
+      }
+    },
 
     /**
      * Config schema support
@@ -200,6 +207,11 @@ export default defineUntypedSchema({
      * @see https://github.com/parcel-bundler/watcher
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular'
+    watcher: 'chokidar-granular',
+
+    /**
+     * Add the CAPO head plugin in order to render tags in of the head in a more performant way.
+     */
+    headCapoPlugin: false
   }
 })

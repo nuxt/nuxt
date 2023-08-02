@@ -54,6 +54,10 @@ export default defineNuxtModule({
       addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
     }
 
+    if (nuxt.options.experimental.headCapoPlugin) {
+      addPlugin({ src: resolve(runtimeDir, 'plugins/capo') })
+    }
+
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
   }
