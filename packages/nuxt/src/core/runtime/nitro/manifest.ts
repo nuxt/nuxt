@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '#internal/nitro'
 import { buildTimestamp, hashId } from '#app-manifest'
 
 export default defineEventHandler(() => {
-  if (!process.env.prerender) { return }
+  if (!process.env.prerender && !process.dev) { return }
   const routeRules = {} as Record<string, any>
   const _routeRules = useRuntimeConfig().nitro.routeRules
   for (const key in _routeRules) {
