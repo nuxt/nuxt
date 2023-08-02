@@ -1,10 +1,11 @@
-import { hasProtocol, joinURL, withTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
+import { defu } from 'defu'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
-import { getAppManifest } from '#app/composables/manifest'
+import { getAppManifest, getRouteRuleMatcher } from '#app/composables/manifest'
 import { useRoute } from '#app/composables'
 
 // @ts-expect-error virtual import
@@ -74,21 +75,6 @@ async function _importPayload (payloadURL: string) {
   return null
 }
 
-// TODO: refactor with minimal version of radix3
-/** @internal */
-export function _routeMatches (routeRules: Record<string, any>, path: string) {
-  path = withTrailingSlash(path)
-  for (const key in routeRules) {
-    if (key === path) {
-      return routeRules[key]
-    }
-    if (key.endsWith('/**') && path.startsWith(key.replace('/**', '/'))) {
-      return routeRules[key]
-    }
-  }
-  return {}
-}
-
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   const nuxtApp = useNuxtApp()
@@ -99,7 +85,8 @@ export async function isPrerendered (url = useRoute().path) {
   if (manifest.prerendered.includes(url)) {
     return true
   }
-  return !!_routeMatches(manifest.routeRules, url).prerender
+  const matcher = await getRouteRuleMatcher()
+  return !!defu({} as Record<string, any>, ...matcher.matchAll(url).reverse()).prerender
 }
 
 let payloadCache: any = null
