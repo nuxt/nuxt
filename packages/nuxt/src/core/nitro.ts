@@ -10,7 +10,7 @@ import { logger } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
-import { defineEventHandler, dynamicEventHandler } from 'h3'
+import { dynamicEventHandler } from 'h3'
 import type { Nuxt } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
@@ -209,19 +209,21 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add app manifest handler and prerender configuration
   // TODO: expose build id to nitro
   const buildId = randomUUID()
-  const manifestPrefix = '/_builds'
-  nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, 'latest.json'))
-  nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
+  if (nuxt.options.experimental.appManifest) {
+    const manifestPrefix = '/_builds'
+    nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, 'latest.json'))
+    nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, `meta.${buildId}.json`))
 
-  const timestamp = Date.now()
-  nitroConfig.virtual!['#app-manifest'] = () => `
-    export const hashId = ${JSON.stringify(buildId)}
-    export const buildTimestamp = ${JSON.stringify(timestamp)}
-  `
-  nitroConfig.handlers!.unshift({
-    route: joinURL(manifestPrefix, '**'),
-    handler: resolve(distDir, 'core/runtime/nitro/manifest')
-  })
+    const timestamp = Date.now()
+    nitroConfig.virtual!['#app-manifest'] = () => `
+      export const hashId = ${JSON.stringify(buildId)}
+      export const buildTimestamp = ${JSON.stringify(timestamp)}
+    `
+    nitroConfig.handlers!.unshift({
+      route: joinURL(manifestPrefix, '**'),
+      handler: resolve(distDir, 'core/runtime/nitro/manifest')
+    })
+  }
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
@@ -407,10 +409,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       })
       await prerender(nitro)
 
-      for (const file of ['latest.json', `meta.${buildId}.json`]) {
-        const manifestFile = join(nitro.options.output.publicDir, '_builds', file)
-        const manifest = await fsp.readFile(manifestFile, 'utf-8')
-        await fsp.writeFile(manifestFile, manifest.replace(/['"]__NUXT_PRERENDERED_ROUTES__['"]/, JSON.stringify([...prerenderedRoutes])))
+      if (nuxt.options.experimental.appManifest) {
+        for (const file of ['latest.json', `meta.${buildId}.json`]) {
+          const manifestFile = join(nitro.options.output.publicDir, '_builds', file)
+          const manifest = await fsp.readFile(manifestFile, 'utf-8')
+          await fsp.writeFile(manifestFile, manifest.replace(/['"]__NUXT_PRERENDERED_ROUTES__['"]/, JSON.stringify([...prerenderedRoutes])))
+        }
       }
 
       logger.restoreAll()

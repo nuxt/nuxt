@@ -193,6 +193,15 @@ export default defineUntypedSchema({
     typedPages: false,
 
     /**
+     * Use app manifests to respect route rules on client-side.
+     * 
+     * This is enabled when `experimental.payloadExtraction` is set to `true`.
+     */
+    appManifest: {
+      $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
+    },
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
      * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories

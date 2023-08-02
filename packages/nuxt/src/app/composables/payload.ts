@@ -9,7 +9,7 @@ import { getAppManifest, getRouteRuleMatcher } from '#app/composables/manifest'
 import { useRoute } from '#app/composables'
 
 // @ts-expect-error virtual import
-import { payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -81,6 +81,7 @@ export async function isPrerendered (url = useRoute().path) {
   if (nuxtApp.payload.prerenderedAt) {
     return true
   }
+  if (!appManifest) { return false }
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
