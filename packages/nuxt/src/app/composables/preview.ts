@@ -1,48 +1,53 @@
 import { reactive, readonly, toRef } from 'vue'
+import { defu } from 'defu';
 
 import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
 
-export interface PreviewOptions<Controls extends boolean = false> {
-  controls?: Controls
-  tokenQueryName?: string
-}
-
 interface PreviewState {
   enabled: boolean
-  token: string | null
+  state: Record<any, unknown>
   addedAfterNavigationCallback: boolean
 }
 
+type GetPreviewStateFunc = (currentState: PreviewState['state']) => Record<any, unknown> | null | undefined | void;
+
 const previewQueryName = 'preview'
 
-export function usePreviewMode<Controls extends boolean = false> (options?: PreviewOptions<Controls>) {
-  options = {
-    controls: false as Controls,
-    tokenQueryName: 'token',
-    ...(options || {})
-  }
+export function usePreviewMode<Controls extends boolean = false, GetPreviewState extends GetPreviewStateFunc = GetPreviewStateFunc> (options?: {
+  controls?: Controls,
+  getPreviewState?: GetPreviewState
+}) {
+  const normalizedOptions = defu(options, {
+    controls: false,
+    getPreviewState: (state: PreviewState['state']) => {
+      const route = useRoute()
+      const token = state.token 
+        ?? (Array.isArray(route.query.token) ? route.query.token[0] : route.query.token);
+
+      return { token: token as string } as PreviewState['state']
+    },
+  })
 
   const router = useRouter()
   const route = useRoute()
 
   const previewState = useState('_preview-composable', () => reactive<PreviewState>({
     enabled: false,
-    token: null,
-    addedAfterNavigationCallback: false
+    state: {},
+    addedAfterNavigationCallback: false,
   }))
 
   if (!previewState.value.enabled) {
     const previewParam = route.query[previewQueryName]
 
     previewState.value.enabled = previewParam === 'true'
+  }
 
-    if (previewState.value.enabled && !previewState.value.token) {
-      const query = route.query[options!.tokenQueryName!]
-      const token = Array.isArray(query) ? query[0] : query
+  if (previewState.value.enabled) {
+    const newState = normalizedOptions.getPreviewState(previewState.value.state)
 
-      if (token) {
-        previewState.value.token = token
-      }
+    if (newState) {
+      Object.assign(previewState.value.state, newState)
     }
   }
 
@@ -57,9 +62,9 @@ export function usePreviewMode<Controls extends boolean = false> (options?: Prev
   }
 
   const enabled = readonly(toRef(previewState.value, 'enabled'))
-  const token = readonly(toRef(previewState.value, 'token'))
+  const state = previewState.value.state as NonNullable<ReturnType<GetPreviewState>>
 
-  return (options.controls
-    ? { enabled, token }
-    : enabled) as Controls extends true ? { enabled: typeof enabled, token: typeof token } : typeof enabled
+  return (normalizedOptions.controls
+    ? { enabled, state }
+    : enabled) as Controls extends true ? { enabled: typeof enabled, state: typeof state } : typeof enabled
 }
