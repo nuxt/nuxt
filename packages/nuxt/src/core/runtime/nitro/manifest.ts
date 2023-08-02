@@ -26,6 +26,6 @@ export default defineEventHandler(() => {
     id: hashId,
     timestamp: buildTimestamp,
     routeRules,
-    prerendered: '__NUXT_PRERENDERED_ROUTES__'
+    prerendered: process.dev ? [] : '__NUXT_PRERENDERED_ROUTES__'
   }
 })
