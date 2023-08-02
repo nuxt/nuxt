@@ -76,7 +76,7 @@
     "lerna": "7.1.4",
     "lodash": "4.17.21",
     "node-fetch-native": "1.2.0",
-    "puppeteer-core": "20.9.0",
+    "puppeteer-core": "21.0.0",
     "request": "2.88.2",
     "rimraf": "4.4.1",
     "rollup": "3.26.3",
