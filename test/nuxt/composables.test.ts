@@ -7,7 +7,6 @@ import { registerEndpoint } from 'nuxt-vitest/utils'
 
 import * as composables from '#app/composables'
 
-import { useAppConfig } from '#app'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
