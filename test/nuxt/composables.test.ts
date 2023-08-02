@@ -7,6 +7,7 @@ import { registerEndpoint } from 'nuxt-vitest/utils'
 
 import * as composables from '#app/composables'
 
+import { useAppConfig } from '#app'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -19,9 +20,14 @@ vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
 }))
 
+const timestamp = Date.now()
 registerEndpoint('/_builds/latest.json', defineEventHandler(() => ({
-  id: 'dev',
-  timestamp: Date.now(),
+  id: 'test',
+  timestamp
+})))
+registerEndpoint('/_builds/meta.test.json', defineEventHandler(() => ({
+  id: 'test',
+  timestamp,
   routeRules: {},
   prerendered: []
 })))

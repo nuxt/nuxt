@@ -26,7 +26,6 @@ function fetchManifest () {
   const config = useRuntimeConfig()
   // @ts-expect-error private property
   const buildId = useAppConfig().nuxt?.buildId
-  // TODO: use build id injected
   manifest = $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, `_builds/meta.${buildId}.json`))
   manifest.then((m) => {
     matcher = toRouteMatcher(

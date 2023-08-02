@@ -207,8 +207,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
 
   // Add app manifest handler and prerender configuration
-  const buildId = randomUUID()
-  nuxt.options.appConfig.nuxt = defu(nuxt.options.appConfig.nuxt || {}, { buildId })
+  // @ts-expect-error untyped nuxt property
+  const buildId = nuxt.options.appConfig.nuxt!.buildId ||= randomUUID()
   if (nuxt.options.experimental.appManifest) {
     const manifestPrefix = '/_builds'
     nitroConfig.prerender!.routes!.push(joinURL(manifestPrefix, 'latest.json'))
