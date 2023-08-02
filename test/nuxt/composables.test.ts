@@ -1,6 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { describe, expect, it, vi } from 'vitest'
+import { defineEventHandler } from 'h3'
 
 import { registerEndpoint } from 'nuxt-vitest/utils'
 
@@ -12,6 +13,7 @@ import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
+import { getAppManifest } from '#app/composables/manifest'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -36,6 +38,7 @@ describe('composables', () => {
       'clearError',
       'showError',
       'useError',
+      'getAppManifest',
       'onNuxtReady',
       'setResponseStatus',
       'useRequestEvent',
@@ -211,5 +214,19 @@ describe('url', () => {
     expect(url.hostname).toMatchInlineSnapshot('"localhost"')
     expect(url.port).toMatchInlineSnapshot('"3000"')
     expect(url.protocol).toMatchInlineSnapshot('"http:"')
+  })
+})
+
+describe('app manifests', () => {
+  it('getAppManifest', async () => {
+    const manifest = await getAppManifest()
+    delete manifest.timestamp
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "id": "dev",
+        "prerendered": [],
+        "routeRules": {},
+      }
+    `)
   })
 })
