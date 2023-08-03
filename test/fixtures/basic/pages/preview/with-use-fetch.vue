@@ -1,17 +1,21 @@
 <script setup>
-const { token } = usePreviewMode({ controls: true })
+const { enabled, state } = usePreviewMode({ controls: true })
 
 const { data } = await useFetch('/api/preview', {
   query: {
-    apiKey: token.value || undefined
+    apiKey: state.token || undefined
   }
 })
 </script>
 
 <template>
   <div>
+    <p id="enabled">
+      {{ enabled }}
+    </p>
+
     <p id="token-check">
-      {{ token }}
+      {{ state.token }}
     </p>
 
     <p id="correct-api-key-check">

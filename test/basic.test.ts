@@ -443,7 +443,7 @@ describe('pages', () => {
   it('respects preview mode', async () => {
     const token = 'hehe'
 
-    const page = await createPage(`/preview?preview=true&token=${token}`)
+    let page = await createPage(`/preview?preview=true&token=${token}`)
 
     const hasRunOnClient = await new Promise<boolean>((resolve) => {
       page.on('console', (message) => {
@@ -463,6 +463,29 @@ describe('pages', () => {
 
     expect(await page.locator('#token-check').textContent()).toContain(token)
     expect(await page.locator('#correct-api-key-check').textContent()).toContain('true')
+
+    page = await createPage('/preview/with-custom-state?preview=true');
+    await page.waitForLoadState('networkidle');
+
+    expect(await page.locator('#data1').textContent()).toContain('data1 updated')
+    expect(await page.locator('#data2').textContent()).toContain('data2')
+
+    await page.click('#toggle-preview') // manually turns off preview mode
+    await page.click('#with-use-fetch')
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+    expect(await page.locator('#token-check').textContent()).toEqual('')
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('false')
+
+    page = await createPage('/preview/with-custom-enable?preview=true');
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+
+    page = await createPage('/preview/with-custom-enable?customPreview=true');
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.locator('#enabled').textContent()).toContain('true')
   })
 })
 
