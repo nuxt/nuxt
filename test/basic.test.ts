@@ -486,6 +486,8 @@ describe('pages', () => {
     await page.waitForLoadState('networkidle')
 
     expect(await page.locator('#enabled').textContent()).toContain('true')
+
+    await page.close()
   })
 })
 
