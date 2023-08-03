@@ -19,7 +19,7 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // TODO: Remove in v3.8 when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
@@ -209,12 +209,18 @@ export default defineUntypedSchema({
      */
     watcher: 'chokidar-granular',
 
-
     /**
      * Enable native async context to be accessable for nested composables
      *
      * @see https://github.com/nuxt/nuxt/pull/20918
      */
-    nativeAsyncContext: false
+    nativeAsyncContext: false,
+
+    /**
+     * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     *
+     * @see https://rviscomi.github.io/capo.js/user/rules/
+     */
+    headCapoPlugin: false
   }
 })
