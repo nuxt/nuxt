@@ -14,6 +14,7 @@
     "lint:docs": "markdownlint ./docs && case-police 'docs/**/*.md' *.md",
     "lint:docs:fix": "markdownlint ./docs --fix && case-police 'docs/**/*.md' *.md --fix",
     "lint:knip": "pnpx knip",
+    "docs:dev": "nuxi dev .website",
     "play": "nuxi dev playground",
     "play:build": "nuxi build playground",
     "play:preview": "nuxi preview playground",
