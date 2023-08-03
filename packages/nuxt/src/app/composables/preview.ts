@@ -43,6 +43,9 @@ export function usePreviewMode<Controls extends boolean = false, GetPreviewState
     addedAfterNavigationCallback: false,
   }))
 
+  // Because of how vue works we can not know ahead of time whether
+  // some components down the tree have `shouldEnable` function. So
+  // most upper call `usePreviewMode` with `shouldEnable` will be executed.
   if (normalizedOptions.shouldEnable) {
     shouldEnablePreviewMode = normalizedOptions.shouldEnable
   }
