@@ -2768,7 +2768,7 @@ packages:
   /@types/jsonfile@6.1.1:
     resolution: {integrity: sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==}
     dependencies:
-      '@types/node': 20.4.6
+      '@types/node': 18.17.1
     dev: true
 
   /@types/lodash-es@4.17.8:
@@ -2803,9 +2803,6 @@ packages:
 
   /@types/node@18.17.1:
     resolution: {integrity: sha512-xlR1jahfizdplZYRU59JlUx9uzF1ARa8jbhM11ccpCJya8kvos5jwdm2ZAgxSCwOl0fq21svP18EVwPBXMQudw==}
-
-  /@types/node@20.4.6:
-    resolution: {integrity: sha512-q0RkvNgMweWWIvSMDiXhflGUKMdIxBo2M2tYM/0kEGDueQByFzK4KZAgu5YHGFNxziTlppNpTIBcqHQAxlfHdA==}
 
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -2927,7 +2924,7 @@ packages:
   /@types/webpack@4.41.33:
     resolution: {integrity: sha512-PPajH64Ft2vWevkerISMtnZ8rTs4YmRbs+23c402J0INmxDKCrhZNvwZYtzx96gY2wAtXdrK1BS2fiC8MlLr3g==}
     dependencies:
-      '@types/node': 20.4.6
+      '@types/node': 18.17.1
       '@types/tapable': 1.0.8
       '@types/uglify-js': 3.17.1
       '@types/webpack-sources': 3.2.0
@@ -6861,7 +6858,7 @@ packages:
     resolution: {integrity: sha512-l3ccBOabTdkng8I/ORCkADz4eSMKejTYv1vB/Z83UiubqhC1oQ5Li6dWCyqOIvSifGjUBxuvxvlm6KGK2DtuAQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
-      '@types/node': 20.4.6
+      '@types/node': 18.17.1
       jest-util: 29.6.2
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -7930,7 +7927,7 @@ packages:
       uncrypto: 0.1.3
       unenv: 1.6.1
       unimport: 3.1.3(rollup@3.26.3)
-      unstorage: 1.7.0
+      unstorage: 1.8.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -9877,12 +9874,6 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  /strip-literal@1.2.0:
-    resolution: {integrity: sha512-tbehiynUAVoOhVKgpGG/xSIEPq3mDH3MmZ3957hiCBt2SnxkgOfXnZ8X2Kjfzb2L/6Vsv8Lnh8WT9qV5zQ0tMA==}
-    dependencies:
-      acorn: 8.10.0
-    dev: true
-
   /strip-literal@1.3.0:
     resolution: {integrity: sha512-PugKzOsyXpArk0yWmUwqOZecSO0GH0bPoctLcqNDH9J04pVW3lflYE0ujElBGTloevcxF5MofAOZ7C5l2b+wLg==}
     dependencies:
@@ -10452,52 +10443,6 @@ packages:
       webpack-sources: 3.2.3
       webpack-virtual-modules: 0.5.0
 
-  /unstorage@1.7.0:
-    resolution: {integrity: sha512-f78UtR4HyUGWuET35iNPdKMvCh9YPQpC7WvkGpP6XiLlolT/9wjyAICYN9AMD/tlB8ZdOqWQHZn+j7mXcTSO4w==}
-    peerDependencies:
-      '@azure/app-configuration': ^1.4.1
-      '@azure/cosmos': ^3.17.3
-      '@azure/data-tables': ^13.2.2
-      '@azure/identity': ^3.2.2
-      '@azure/keyvault-secrets': ^4.7.0
-      '@azure/storage-blob': ^12.14.0
-      '@planetscale/database': ^1.7.0
-      '@upstash/redis': ^1.20.6
-      '@vercel/kv': ^0.2.1
-    peerDependenciesMeta:
-      '@azure/app-configuration':
-        optional: true
-      '@azure/cosmos':
-        optional: true
-      '@azure/data-tables':
-        optional: true
-      '@azure/identity':
-        optional: true
-      '@azure/keyvault-secrets':
-        optional: true
-      '@azure/storage-blob':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@upstash/redis':
-        optional: true
-      '@vercel/kv':
-        optional: true
-    dependencies:
-      anymatch: 3.1.3
-      chokidar: 3.5.3
-      destr: 2.0.1
-      h3: 1.7.1
-      ioredis: 5.3.2
-      listhen: 1.2.2
-      lru-cache: 10.0.0
-      mri: 1.2.0
-      node-fetch-native: 1.2.0
-      ofetch: 1.1.1
-      ufo: 1.2.0
-    transitivePeerDependencies:
-      - supports-color
-
   /unstorage@1.8.0:
     resolution: {integrity: sha512-Wl6a0fYIIPx8yWIHAVNzsNRcIpagVnBV05UXeIFCNqPZ5tu0w0MPE+eTjpRe/yxCD60K7qX55K5Px/PeKvNntw==}
     peerDependencies:
@@ -10543,7 +10488,6 @@ packages:
       ufo: 1.2.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
@@ -10881,7 +10825,7 @@ packages:
       pathe: 1.1.1
       picocolors: 1.0.0
       std-env: 3.3.3
-      strip-literal: 1.2.0
+      strip-literal: 1.3.0
       tinybench: 2.5.0
       tinypool: 0.6.0
       vite: 4.4.8(@types/node@18.17.1)
