@@ -1,5 +1,5 @@
 <script setup>
-const route = useRoute();
+const route = useRoute()
 
 const enabled = usePreviewMode({
   shouldEnable: () => {
@@ -10,6 +10,8 @@ const enabled = usePreviewMode({
 
 <template>
   <div>
-    <p id="enabled">{{ enabled }}</p>
+    <p id="enabled">
+      {{ enabled }}
+    </p>
   </div>
 </template>
