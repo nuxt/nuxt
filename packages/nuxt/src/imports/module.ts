@@ -4,8 +4,8 @@ import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions } from 'nuxt/schema'
 
-import { TransformPlugin } from './transform'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
+import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
@@ -148,7 +148,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       if (resolvedImportPathMap.has(i.from)) { continue }
       let path = resolveAlias(i.from)
       if (!isAbsolute(path)) {
-        path = await tryResolveModule(i.from, nuxt.options.modulesDir).then(async r => {
+        path = await tryResolveModule(i.from, nuxt.options.modulesDir).then(async (r) => {
+          if (!r) { return r }
+
           const { dir, name } = parseNodeModulePath(r)
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
