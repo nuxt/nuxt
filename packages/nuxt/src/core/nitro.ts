@@ -273,6 +273,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig)
 
+  // Set prerender-only options
+  nitro.options._config.storage ||= {}
+  nitro.options._config.storage['internal:nitro:prerender'] = { driver: 'memory' }
+  nitro.options._config.storage['internal:nitro:prerender:island'] = { driver: 'lruCache' }
+  nitro.options._config.storage['internal:nitro:prerender:payload'] = { driver: 'lruCache' }
+
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
