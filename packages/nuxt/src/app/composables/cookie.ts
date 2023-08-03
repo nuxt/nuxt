@@ -54,7 +54,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     if (opts.watch) {
       watch(cookie, (newVal, oldVal) => {
-        if (watchPaused || isEqual(newVal, oldVal)) { return }
+        if (watchPaused) { return }
         callback()
       },
       { deep: opts.watch !== 'shallow' })
