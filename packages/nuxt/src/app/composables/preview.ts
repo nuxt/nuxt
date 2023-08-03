@@ -1,4 +1,4 @@
-import { reactive, readonly, shallowReactive, toRef } from 'vue'
+import { reactive, readonly, toRef } from 'vue'
 import { defu } from 'defu';
 
 import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
@@ -37,9 +37,9 @@ export function usePreviewMode<Controls extends boolean = false, GetPreviewState
 
   const router = useRouter()
 
-  const preview = useState('_preview-composable', () => shallowReactive<Preview>({
+  const preview = useState('_preview-composable', () => reactive<Preview>({
     enabled: false,
-    state: reactive({}),
+    state: {},
     addedAfterNavigationCallback: false,
   }))
 
