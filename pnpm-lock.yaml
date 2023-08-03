@@ -4345,9 +4345,6 @@ packages:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
 
-  /destr@2.0.0:
-    resolution: {integrity: sha512-FJ9RDpf3GicEBvzI3jxc2XhHzbqD8p4ANw/1kPsFBfTvP1b7Gn/Lg1vO7R9J4IVgoMbyUmFrFGZafJ1hPZpvlg==}
-
   /destr@2.0.1:
     resolution: {integrity: sha512-M1Ob1zPSIvlARiJUkKqvAZ3VAqQY6Jcuth/pBKQ2b1dX/Qx0OnJ8Vux6J2H5PTMQeRzWrrbTu70VxBfv/OPDJA==}
 
@@ -4712,7 +4709,7 @@ packages:
       eslint: 8.46.0
       eslint-module-utils: 2.8.0(@typescript-eslint/parser@5.59.9)(eslint-import-resolver-node@0.3.7)(eslint-import-resolver-typescript@3.5.5)(eslint@8.46.0)
       eslint-plugin-import: 2.28.0(@typescript-eslint/parser@5.59.9)(eslint-import-resolver-typescript@3.5.5)(eslint@8.46.0)
-      get-tsconfig: 4.5.0
+      get-tsconfig: 4.6.2
       globby: 13.2.2
       is-core-module: 2.12.1
       is-glob: 4.0.3
@@ -5387,10 +5384,6 @@ packages:
     dependencies:
       call-bind: 1.0.2
       get-intrinsic: 1.2.1
-    dev: true
-
-  /get-tsconfig@4.5.0:
-    resolution: {integrity: sha512-MjhiaIWCJ1sAU4pIQ5i5OfOuHHxVo1oYeNsWTON7jxYkod8pHocXeh+SSbmu5OZZZK73B6cbJ2XADzXehLyovQ==}
     dev: true
 
   /get-tsconfig@4.6.2:
@@ -6302,22 +6295,6 @@ packages:
       uc.micro: 1.0.6
     dev: true
 
-  /listhen@1.1.2:
-    resolution: {integrity: sha512-rLX5V57oonazmc6zoZ2LzfbSOfGzDOLdQ/eTEh/d3f1xYMACH1yIU8nr0YGl2WiR+l31o3QCN4/VH2dUNyYvTA==}
-    hasBin: true
-    dependencies:
-      citty: 0.1.2
-      clipboardy: 3.0.0
-      consola: 3.2.3
-      defu: 6.1.2
-      get-port-please: 3.0.1
-      http-shutdown: 1.2.2
-      jiti: 1.19.1
-      mlly: 1.4.0
-      node-forge: 1.3.1
-      pathe: 1.1.1
-      ufo: 1.2.0
-
   /listhen@1.2.2:
     resolution: {integrity: sha512-fQaXe+DAQ5QiYP1B4uXfAgwqIwNS+0WMIwRd5l2a3npQAEhlCJ1pN11d41yHtbeReE7oRtfL+h6Nzxq+Wc4vIg==}
     hasBin: true
@@ -6774,7 +6751,7 @@ packages:
       consola: 3.2.3
       cookie-es: 1.0.0
       defu: 6.1.2
-      destr: 2.0.0
+      destr: 2.0.1
       dot-prop: 7.2.0
       esbuild: 0.18.17
       escape-string-regexp: 5.0.0
@@ -6790,7 +6767,7 @@ packages:
       jiti: 1.19.1
       klona: 2.0.6
       knitwork: 1.0.0
-      listhen: 1.1.2
+      listhen: 1.2.2
       magic-string: 0.30.2
       mime: 3.0.0
       mlly: 1.4.0
@@ -6814,7 +6791,7 @@ packages:
       std-env: 3.3.3
       ufo: 1.2.0
       uncrypto: 0.1.3
-      unenv: 1.5.2
+      unenv: 1.6.1
       unimport: 3.1.2(rollup@3.26.3)
       unstorage: 1.7.0
     transitivePeerDependencies:
@@ -8405,12 +8382,6 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  /strip-literal@1.0.1:
-    resolution: {integrity: sha512-QZTsipNpa2Ppr6v1AmJHESqJ3Uz247MUS0OjrnnZjFAvEoWqxuyFuXn2xLgMtRnijJShAa1HL0gtJyUs7u7n3Q==}
-    dependencies:
-      acorn: 8.10.0
-    dev: true
-
   /strip-literal@1.2.0:
     resolution: {integrity: sha512-tbehiynUAVoOhVKgpGG/xSIEPq3mDH3MmZ3957hiCBt2SnxkgOfXnZ8X2Kjfzb2L/6Vsv8Lnh8WT9qV5zQ0tMA==}
     dependencies:
@@ -8780,15 +8751,6 @@ packages:
     engines: {node: '>=14.0'}
     dependencies:
       busboy: 1.6.0
-
-  /unenv@1.5.2:
-    resolution: {integrity: sha512-fpQW0nx3hGx0q0wq/35+ng9Dm4m1/2V00UmU5Jxdr1woyrMbT4RydQn5eh/hZyM81HKAPzaf50TKX0XfYpBaqg==}
-    dependencies:
-      consola: 3.2.3
-      defu: 6.1.2
-      mime: 3.0.0
-      node-fetch-native: 1.2.0
-      pathe: 1.1.1
 
   /unenv@1.6.1:
     resolution: {integrity: sha512-cjQnvJctZluBwOCBtFT4ZRR1cCJOVrcDK/TXzdqc6I+ZKWBFVDs6JjH0qkK6d8RsFSRHbQkWRgSzu66e52FHBA==}
@@ -9190,7 +9152,7 @@ packages:
       pathe: 1.1.1
       picocolors: 1.0.0
       std-env: 3.3.3
-      strip-literal: 1.0.1
+      strip-literal: 1.2.0
       tinybench: 2.5.0
       tinypool: 0.6.0
       vite: 4.4.8(@types/node@18.17.1)
