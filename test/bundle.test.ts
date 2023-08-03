@@ -35,7 +35,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.4k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2331k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2332k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

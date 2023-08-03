@@ -210,7 +210,9 @@ export default defineUntypedSchema({
     watcher: 'chokidar-granular',
 
     /**
-     * Add the CAPO head plugin in order to render tags in of the head in a more performant way.
+     * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     *
+     * @see https://rviscomi.github.io/capo.js/user/rules/
      */
     headCapoPlugin: false
   }
