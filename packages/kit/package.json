@@ -36,7 +36,7 @@
     "semver": "^7.5.4",
     "ufo": "^1.2.0",
     "unctx": "^2.3.1",
-    "unimport": "^3.1.0",
+    "unimport": "^3.1.2",
     "untyped": "^1.4.0"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "lodash-es": "4.17.21",
     "nitropack": "2.5.2",
     "unbuild": "latest",
-    "vite": "4.4.7",
+    "vite": "4.4.8",
     "vitest": "0.33.0",
     "webpack": "5.88.2"
   },
