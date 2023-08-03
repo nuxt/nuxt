@@ -8,6 +8,7 @@ export default () => ({
   cssSourceMap: undefined,
   ssr: undefined,
   parallel: false,
+  prodParallelRunner: false,
   cache: false,
   standalone: false,
   publicPath: '/_nuxt/',

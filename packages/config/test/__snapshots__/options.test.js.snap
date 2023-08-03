@@ -140,6 +140,7 @@ exports[`config: options should return default nuxt config 1`] = `
     "postcss": {
       "postcssOptions": {},
     },
+    "prodParallelRunner": false,
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,

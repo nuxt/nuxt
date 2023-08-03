@@ -70,6 +70,7 @@ export default {
     publicPath: '/orion/',
     cssSourceMap: true,
     parallel: true,
+    prodParallelRunner: false,
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true,

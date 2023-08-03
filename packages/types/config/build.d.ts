@@ -166,6 +166,7 @@ export interface NuxtOptionsBuild {
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean
+  prodParallelRunner?: boolean
   plugins?: WebpackPlugin[]
   postcss?: string[] | boolean | { postcssOptions: PostcssConfiguration | (() => PostcssConfiguration) }
   profile?: boolean

@@ -372,6 +372,10 @@ export function getNuxtConfig (_options) {
     options.build.stats = false
   }
 
+  if (options.build.prodParallelRunner !== true) {
+    options.build.prodParallelRunner = false
+  }
+
   // Vendor backward compatibility with nuxt 1.x
   if (typeof options.build.vendor !== 'undefined') {
     delete options.build.vendor

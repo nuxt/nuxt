@@ -24,6 +24,7 @@ describe('webpack configuration', () => {
         },
         buildOptions: {
           parallel: true,
+          prodParallelRunner: false, // must have no effect with `dev` option
           cache: true
         }
       },

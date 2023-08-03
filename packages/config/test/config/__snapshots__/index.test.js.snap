@@ -112,6 +112,7 @@ exports[`config should return default nuxt configurations 1`] = `
     "postcss": {
       "postcssOptions": {},
     },
+    "prodParallelRunner": false,
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
@@ -500,6 +501,7 @@ exports[`config should return nuxt configurations with custom env 1`] = `
     "postcss": {
       "postcssOptions": {},
     },
+    "prodParallelRunner": false,
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
