@@ -6,27 +6,25 @@ import VueSSRServerPlugin from '../plugins/vue/server'
 import type { WebpackConfigContext } from '../utils/config'
 
 export function vue (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
   // @ts-expect-error de-default vue-loader
-  config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
+  ctx.config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
 
-  config.module!.rules!.push({
+  ctx.config.module!.rules!.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
     options: {
       reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
-      ...options.webpack.loaders.vue
+      ...ctx.userConfig.loaders.vue
     }
   })
 
   if (ctx.isClient) {
-    config.plugins!.push(new VueSSRClientPlugin({
-      filename: resolve(options.buildDir, 'dist/server', `${ctx.name}.manifest.json`),
+    ctx.config.plugins!.push(new VueSSRClientPlugin({
+      filename: resolve(ctx.options.buildDir, 'dist/server', `${ctx.name}.manifest.json`),
       nuxt: ctx.nuxt
     }))
   } else {
-    config.plugins!.push(new VueSSRServerPlugin({
+    ctx.config.plugins!.push(new VueSSRServerPlugin({
       filename: `${ctx.name}.manifest.json`
     }))
   }
@@ -34,7 +32,7 @@ export function vue (ctx: WebpackConfigContext) {
   // Feature flags
   // https://github.com/vuejs/vue-next/tree/master/packages/vue#bundler-build-feature-flags
   // TODO: Provide options to toggle
-  config.plugins!.push(new webpack.DefinePlugin({
+  ctx.config.plugins!.push(new webpack.DefinePlugin({
     __VUE_OPTIONS_API__: 'true',
     __VUE_PROD_DEVTOOLS__: 'false'
   }))

@@ -31,7 +31,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] })
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
     },
     transform (code) {
       const components = options.getComponents()

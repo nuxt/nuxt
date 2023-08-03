@@ -46,7 +46,7 @@ export default defineUntypedSchema({
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
-     * @type {typeof import('pkg-types')['readPackageJSON']}
+     * @type {typeof import('pkg-types')['TSConfig']}
      */
     tsConfig: {},
 
