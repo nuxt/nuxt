@@ -1,6 +1,6 @@
 # Nuxt Docs Website
 
-This is a tempory directory until we open source the repository for nuxt.com.
+This is a temporary directory until we open source the repository for nuxt.com.
 
 The goal is to simplify the contribution in the meantine to the documentation by having the possibility to preview the changes locally.
 
@@ -15,7 +15,7 @@ pnpm i
 Then stub the dependencies:
 
 ```bash
-npm run build:stub
+pnpm build:stub
 ```
 
 ## Development
@@ -23,7 +23,7 @@ npm run build:stub
 In the root of the `nuxt` folder, run:
 
 ```bash
-npm run docs
+pnpm docs:dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
