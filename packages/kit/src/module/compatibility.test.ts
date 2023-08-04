@@ -12,11 +12,22 @@ describe('nuxt module compatibility', () => {
             meta: {
               name: 'nuxt-module-foo'
             }
-          })
+          }),
+          [
+            defineNuxtModule({
+              meta: {
+                name: 'module-instance-with-options'
+              }
+            }),
+            {
+              foo: 'bar'
+            }
+          ]
         ]
       }
     })
     expect(hasNuxtModule('nuxt-module-foo', nuxt)).toStrictEqual(true)
+    expect(hasNuxtModule('module-instance-with-options', nuxt)).toStrictEqual(true)
     await nuxt.close()
   })
   it('can retrieve module version from module instance', async () => {

@@ -10,6 +10,7 @@ import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 
+import type { MergeHead, VueHeadClient } from '@unhead/vue'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
@@ -17,15 +18,6 @@ import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app')
-
-type NuxtMeta = {
-  htmlAttrs?: string
-  headAttrs?: string
-  bodyAttrs?: string
-  headTags?: string
-  bodyScriptsPrepend?: string
-  bodyScripts?: string
-}
 
 type HookResult = Promise<void> | void
 
@@ -59,10 +51,10 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: NuxtPayload
+  head: VueHeadClient<MergeHead>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
-  renderMeta?: () => Promise<NuxtMeta> | NuxtMeta
   islandContext?: NuxtIslandContext
   /** @internal */
   _renderResponse?: Partial<RenderResponse>
@@ -163,6 +155,16 @@ export interface PluginMeta {
   order?: number
 }
 
+export interface PluginEnvContext {
+  /**
+   * This enable the plugin for islands components.
+   * Require `experimental.componentsIslands`.
+   *
+   * @default true
+   */
+  islands?: boolean
+}
+
 export interface ResolvedPluginMeta {
   name?: string
   parallel?: boolean
@@ -177,6 +179,7 @@ export interface Plugin<Injections extends Record<string, unknown> = Record<stri
 export interface ObjectPlugin<Injections extends Record<string, unknown> = Record<string, unknown>> extends PluginMeta {
   hooks?: Partial<RuntimeNuxtHooks>
   setup?: Plugin<Injections>
+  env?: PluginEnvContext
   /**
    * Execute plugin in parallel with other parallel plugins.
    *
@@ -326,6 +329,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
+    if (process.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))

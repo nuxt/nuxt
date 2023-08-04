@@ -180,7 +180,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(relative(config.srcDir, mod))
+      watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.push(mod)
@@ -200,7 +200,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtLayout',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/layout')
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-layout')
   })
 
   // Add <NuxtErrorBoundary>
@@ -341,19 +341,25 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
-  nuxt.hooks.hook('builder:watch', (event, path) => {
+  nuxt.hooks.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
     if (watchedPaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
     }
 
     // User provided patterns
+    const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        if (pattern === path) { return nuxt.callHook('restart') }
+        // Test (normalised) strings against absolute path and relative path to any layer `srcDir`
+        if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
         continue
       }
-      if (pattern.test(path)) { return nuxt.callHook('restart') }
+      // Test regular expressions against path to _any_ layer `srcDir`
+      if (layerRelativePaths.some(p => pattern.test(p))) {
+        return nuxt.callHook('restart')
+      }
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
@@ -402,6 +408,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       options._modules.push('@nuxt/devtools')
     } else {
       logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+    }
+  }
+
+  // Nuxt Webpack Builder is currently opt-in
+  if (options.builder === '@nuxt/webpack-builder') {
+    if (!await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/webpack-builder', options.modulesDir))) {
+      logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
     }
   }
 

@@ -7,8 +7,10 @@ import type { Nuxt } from '@nuxt/schema'
 import { consola } from 'consola'
 import { withTrailingSlash } from 'ufo'
 import { setupDotenv } from 'c12'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
 import { showBanner, showVersions } from '../utils/banner'
-import { writeTypes } from '../utils/prepare'
 import { loadKit } from '../utils/kit'
 import { importModule } from '../utils/esm'
 import { overrideEnv } from '../utils/env'
@@ -30,7 +32,7 @@ export default defineNuxtCommand({
 
     await setupDotenv({ cwd: rootDir, fileName: args.dotenv })
 
-    const { loadNuxt, loadNuxtConfig, buildNuxt } = await loadKit(rootDir)
+    const { loadNuxt, loadNuxtConfig, buildNuxt, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
 
     const config = await loadNuxtConfig({
       cwd: rootDir,
@@ -46,7 +48,7 @@ export default defineNuxtCommand({
     let currentHandler: RequestListener | undefined
     let loadingMessage = 'Nuxt is starting...'
     const loadingHandler: RequestListener = async (_req, res) => {
-      const { loading: loadingTemplate } = await importModule('@nuxt/ui-templates', config.modulesDir)
+      const loadingTemplate = config.devServer.loadingTemplate ?? await importModule('@nuxt/ui-templates', config.modulesDir).then(r => r.loading)
       res.setHeader('Content-Type', 'text/html; charset=UTF-8')
       res.statusCode = 503 // Service Unavailable
       res.end(loadingTemplate({ loading: loadingMessage }))
