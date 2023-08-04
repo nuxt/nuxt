@@ -15,6 +15,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       const { dir } = parseNodeModulePath(importer)
       return await this.resolve?.(id, dir || pkgDir, { skipSelf: true }) ?? await resolvePath(id, {
         url: [dir || pkgDir, ...nuxt.options.modulesDir],
+        // TODO: respect nitro runtime conditions
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
       }).catch(() => {
         console.log('[nuxt] Could not resolve id', id, importer)
