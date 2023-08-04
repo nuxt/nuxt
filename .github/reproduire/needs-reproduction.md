@@ -1,46 +1,51 @@
-# This Issue Needs A Reproduction
+# This Issue Needs A Valid Reproduction
 
-We cannot recreate the issue with the provided information. **Please add a reproduction in order for us to be able to investigate.**
+We can't replicate the issue with the details that you provided. **Please add a reproduction so that we can investigate further.**
 
-## **Why was this issue marked with the \`needs-reproduction\` label?**
+## **Why was the \`needs-reproduction\` label added to this issue?**
 
-To be able to investigate, we need access to a reproduction to identify what triggered the issue. Please provide a link to either :
+For our investigation, a reproduction is vital to pinpoint the origin of the problem.
 
-- a public GitHub repository
-- a [CodeSandbox](https://codesandbox.io/)
-- a [StackBlitz](https://stackblitz.com/).
+Kindly use one of the templates provided below to generate a minimal reproduction :
 
-To make sure the issue is resolved as quickly as possible, please make sure that the reproduction is as **minimal** as possible. This means that you should **remove unnecessary code, files, and dependencies** that do not contribute to the issue.
+👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
+👉 https://codesandbox.io/s/github/nuxt/starter/v3-codesandbox
 
-## **I added a link, why was it still marked?**
+A public Github repository would also be acceptable.
 
-Ensure the link is pointing to a codebase that is accessible (e.g. not a private repository). "[example.com](http://example.com/)", "n/a", "will add later", etc. are not acceptable links -- we need to see a public codebase. See the above section for accepted links.
+Please ensure that the reproduction is as **minimal** as possible.
+That implies you should **eliminate any code, files, and dependencies** that aren't directly related to the issue.
 
-## **What happens if I don't provide a sufficient minimal reproduction?**
+## **Why was the \`needs-reproduction\` label not removed even after I included a link?**
 
-Issues with the \`needs-reproduction\` label that receives no meaningful activity (e.g. new comments with a reproduction link) will be closed by the maintainers and won't be looked at.
+Make sure your link refers to a codebase that's open for access (e.g., not a private repository).
+Links such as "[example.com](http://example.com/)", "n/a", "will add later", and so on are not acceptable -- we require a visible public codebase.
+Refer to the previous section for acceptable links.
 
-## **I did not open this issue, but it is relevant to me, what can I do to help?**
+## **What will occur if I fail to provide a sufficient minimal reproduction?**
 
-Anyone experiencing the same issue is welcome to provide a minimal reproduction following the above steps. Furthermore, you can upvote the issue using a reaction on the topmost comment.
+If the \`needs-reproduction\` labeled issues don't receive any substantial activity (e.g., new comments featuring a reproduction link), they will be closed by the maintainers.
 
-- Please **do not** comment "I have the same issue" without repro steps
-- Please **do not** comment un-helpful messages such as "+1" on an issue, use reactions on the first comment instead.
+## **What can I do to assist if the issue matters to me but I didn't open it?**
 
-## **I think my reproduction is good enough, why aren't you looking into it quicker?**
+If you're facing the same problem, feel free to offer a minimal reproduction by following the previous instructions.
+Moreover, you can react on the initial comment of the issue.
 
-We constantly monitor open issues for new comments.
+- Avoid commenting "I have the same issue" without providing reproduction steps or meaningful information.
+- Please refrain from posting unhelpful messages such as "+1" on an issue, use reactions on the first comment instead.
 
-However, sometimes we might miss one or two. We apologize, and kindly ask you to refrain from tagging core maintainers, as that will usually not result in increased priority.
+## **Why isn't my issue given prompt attention even though I believe my reproduction is satisfactory?**
 
-Upvoting issues to show your interest will help us prioritize and address them as quickly as possible.
+Our team is regularly scanning open issues for new comments.
+Reacting on issues to indicate your interest can help us prioritize and tackle them more swiftly.
 
-## **I have a minimal reproduction to contribute to a closed issue.**
+## **I can provide a minimal reproduction for an issue that's already been closed.**
 
-If you have a minimal reproduction for a closed issue, please write a comment on the issue with a link to the reproduction.
+If you have a minimal reproduction for a closed issue, please post a comment on the issue with the reproduction link.
 We will review it and reopen the issue if it is sufficient.
 
-## **Useful Resources**
+## **Helpful Links**
 
-- [Why reproductions are required](https://antfu.me/posts/why-reproductions-are-required)
-- [How to create a Minimal, Complete, and Verifiable example](https://stackoverflow.com/help/mcve)
+- [Nuxt Contribution Guidelines](https://nuxt.com/docs/community/reporting-bugs)
+- [The Importance of Reproductions](https://antfu.me/posts/why-reproductions-are-required)
+- [How to Generate a Minimal, Complete, and Verifiable Example](https://stackoverflow.com/help/mcve)
