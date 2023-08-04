@@ -153,7 +153,7 @@ importers:
   .website:
     devDependencies:
       '@nuxt-themes/docus':
-        specifier: ^1.14.6
+        specifier: 1.14.6
         version: 1.14.6(nuxt@packages+nuxt)(postcss@8.4.27)(vue@3.3.4)
 
   packages/kit:
