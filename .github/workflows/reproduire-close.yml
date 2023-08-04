@@ -19,5 +19,5 @@ jobs:
           days-before-issue-close: 7
           ignore-updates: true
           remove-stale-when-updated: false
-          close-issue-message: This issue was closed because it was open for 7 days without a valid reproduction.
+          close-issue-message: This issue was closed because it was open for 7 days without a reproduction.
           close-issue-label: closed-by-reproduire
