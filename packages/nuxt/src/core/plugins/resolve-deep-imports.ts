@@ -17,7 +17,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
         url: [dir || pkgDir, ...nuxt.options.modulesDir],
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
       }).catch(() => {
-        console.log('could not resolve id', id, importer)
+        console.log('[nuxt] Could not resolve id', id, importer)
         return null
       })
     }
