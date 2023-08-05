@@ -7,7 +7,7 @@ import type { CallExpression, Expression, Identifier } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { isAbsolute, normalize } from 'pathe'
+import { isAbsolute } from 'pathe'
 
 export interface PageMetaPluginOptions {
   dev?: boolean
