@@ -40,10 +40,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
     transformInclude (id) {
-      const query = parseMacroQuery(id)
-      id = normalize(id)
-
-      return !!query.macro
+      return !!parseMacroQuery(id).macro
     },
     transform (code, id) {
       const query = parseMacroQuery(id)
