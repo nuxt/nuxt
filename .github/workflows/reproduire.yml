@@ -12,3 +12,5 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - uses: Hebilicious/reproduire@4b686ae9cbb72dad60f001d278b6e3b2ce40a9ac # v0.0.9-mp
+        with:
+          label: needs reproduction
