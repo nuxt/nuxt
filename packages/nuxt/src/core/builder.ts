@@ -6,7 +6,7 @@ import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
 
@@ -175,10 +175,10 @@ async function createParcelWatcher () {
 async function bundle (nuxt: Nuxt) {
   try {
     const { bundle } = typeof nuxt.options.builder === 'string'
-      ? await loadBuilder(nuxt, nuxt.options.builder)
+      ? (await loadBuilder(nuxt, nuxt.options.builder))!
       : nuxt.options.builder
 
-    return bundle(nuxt)
+    await bundle(nuxt)
   } catch (error: any) {
     await nuxt.callHook('build:error', error)
 
@@ -192,7 +192,7 @@ async function bundle (nuxt: Nuxt) {
   }
 }
 
-async function loadBuilder (nuxt: Nuxt, builder: string) {
+async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder | undefined> {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
   if (builderPath) {
     return import(pathToFileURL(builderPath).href)

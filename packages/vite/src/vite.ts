@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
-import type { Nuxt, ViteConfig } from '@nuxt/schema'
+import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -26,7 +26,7 @@ export interface ViteBuildContext {
   ssrServer?: vite.ViteDevServer
 }
 
-export async function bundle (nuxt: Nuxt) {
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
   const viteConfigPrefix = resolve(nuxt.options.rootDir, 'vite.config')
   const viteConfigFile = await resolvePath(viteConfigPrefix).catch(() => null)
