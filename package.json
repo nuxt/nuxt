@@ -78,7 +78,7 @@
     "typescript": "5.1.6",
     "ufo": "1.2.0",
     "vite": "4.4.9",
-    "vitest": "0.33.0",
+    "vitest": "0.34.1",
     "vitest-environment-nuxt": "0.10.2",
     "vue": "3.3.4",
     "vue-eslint-parser": "9.3.1",
