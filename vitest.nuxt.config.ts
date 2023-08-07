@@ -7,6 +7,6 @@ export default defineVitestConfig({
   },
   define: {
     'import.meta.client': true,
-    'import.meta.server': false,
+    'import.meta.server': false
   }
 })

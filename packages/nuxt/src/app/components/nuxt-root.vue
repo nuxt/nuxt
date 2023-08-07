@@ -48,5 +48,5 @@ onErrorCaptured((err, target, info) => {
 })
 
 // Component islands context
-const { islandContext } = import.meta.server && nuxtApp.ssrContext
+const islandContext = import.meta.server && nuxtApp.ssrContext.islandContext
 </script>
