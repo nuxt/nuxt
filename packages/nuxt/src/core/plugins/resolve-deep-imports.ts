@@ -1,5 +1,5 @@
 import { parseNodeModulePath, resolvePath } from 'mlly'
-import { isAbsolute } from 'pathe'
+import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
 import { resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
@@ -14,6 +14,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       if (!importer || isAbsolute(id) || !isAbsolute(importer) || id.startsWith('virtual:') || id.startsWith('/__skip_vite')) {
         return
       }
+      id = normalize(id)
       id = resolveAlias(id, nuxt.options.alias)
       const { dir } = parseNodeModulePath(importer)
       return await this.resolve?.(id, dir || pkgDir, { skipSelf: true }) ?? await resolvePath(id, {
