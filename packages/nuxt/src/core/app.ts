@@ -90,7 +90,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
+    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir)) ?? '@nuxt/ui-templates/templates/welcome.vue'
   }
 
   // Resolve root component
