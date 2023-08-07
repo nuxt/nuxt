@@ -21,7 +21,7 @@ type ExtractUpperChunk<T extends string> = T extends `${infer A}${infer B}`
     : ''
   : never
 
-  type SliceLast<T extends string> = T extends `${infer A}${infer B}`
+type SliceLast<T extends string> = T extends `${infer A}${infer B}`
   ? B extends `${infer C}${infer D}`
     ? D extends ''
       ? A
@@ -29,7 +29,7 @@ type ExtractUpperChunk<T extends string> = T extends `${infer A}${infer B}`
     : ''
   : never
 
-  type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
+type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
   ? A extends Uppercase<A>
     ? A extends `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0}`
       ? `${A}${UpperSnakeCase<B, 'lower'>}`
