@@ -1901,6 +1901,12 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   })
 })
 
+describe('Async context', () => {
+  it('should be available', async () => {
+    expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
+  })
+})
+
 describe.skipIf(isWindows)('useAsyncData', () => {
   it('single request resolves', async () => {
     await expectNoClientErrors('/useAsyncData/single')

@@ -82,7 +82,10 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
-        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
+        define: {
+          __NUXT_VERSION__: JSON.stringify(nuxt._version),
+          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+        },
         build: {
           copyPublicDir: false,
           rollupOptions: {

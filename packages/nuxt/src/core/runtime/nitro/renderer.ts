@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import {
   createRenderer,
   getPrefetchLinks,
@@ -33,6 +34,11 @@ import { buildAssetsURL, publicAssetsURL } from '#paths'
 globalThis.__buildAssetsURL = buildAssetsURL
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
+
+// Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
+if (process.env.NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
+  (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
+}
 
 export interface NuxtRenderHTMLContext {
   island?: boolean
