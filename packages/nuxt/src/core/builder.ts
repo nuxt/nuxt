@@ -176,7 +176,7 @@ async function createParcelWatcher () {
 async function bundle (nuxt: Nuxt) {
   try {
     const { bundle } = typeof nuxt.options.builder === 'string'
-      ? (await loadBuilder(nuxt, nuxt.options.builder))!
+      ? await loadBuilder(nuxt, nuxt.options.builder)
       : nuxt.options.builder
 
     await bundle(nuxt)
@@ -191,9 +191,11 @@ async function bundle (nuxt: Nuxt) {
   }
 }
 
-async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder | undefined> {
+async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
-  if (builderPath) {
-    return import(pathToFileURL(builderPath).href)
+
+  if (!builderPath) {
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/configuration/nuxt-config#builder\``)
   }
+  return import(pathToFileURL(builderPath).href)
 }
