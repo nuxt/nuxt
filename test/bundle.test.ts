@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"66.9k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"68.4k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2573k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2702k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -44,11 +44,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(packages).toMatchInlineSnapshot(`
       [
         "@babel/parser",
-        "@nuxt/devalue",
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/vue",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
@@ -68,6 +66,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "estree-walker",
         "fill-range",
+        "fsevents",
         "glob-parent",
         "h3",
         "has-flag",
@@ -108,10 +107,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"73.9k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"374k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2564k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"963k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -119,20 +118,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@nuxt/devalue",
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/vue",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
         "anymatch",
         "binary-extensions",
         "braces",
@@ -142,8 +130,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "defu",
         "destr",
         "devalue",
-        "estree-walker",
         "fill-range",
+        "fsevents",
         "glob-parent",
         "h3",
         "has-flag",
@@ -165,7 +153,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "radix3",
         "readdirp",
         "scule",
-        "source-map-js",
         "supports-color",
         "to-regex-range",
         "ufo",
@@ -174,7 +161,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "unenv",
         "unhead",
         "unstorage",
-        "vue",
       ]
     `)
   })
