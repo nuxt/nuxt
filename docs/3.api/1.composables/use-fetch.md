@@ -38,11 +38,14 @@ type AsyncData<DataT, ErrorT> = {
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
 }
 
 interface AsyncDataExecuteOptions {
   dedupe?: boolean
 }
+
+type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
 ## Params

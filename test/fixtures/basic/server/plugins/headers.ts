@@ -1,4 +1,3 @@
-
 export default defineNitroPlugin((nitroApp) => {
   if (!process.dev) { return }
 
