@@ -7,8 +7,8 @@ import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
-
 import { generateApp as _generateApp, createApp } from './app'
+import { checkForExternalConfigurationFiles } from './external-config-files'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -43,7 +43,7 @@ export async function build (nuxt: Nuxt) {
 
   await nuxt.callHook('build:before')
   if (!nuxt.options._prepare) {
-    await bundle(nuxt)
+    await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
     await nuxt.callHook('build:done')
   }
 
