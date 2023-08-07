@@ -39,7 +39,7 @@ type AsyncData<DataT, ErrorT> = {
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
-};
+}
 
 interface AsyncDataExecuteOptions {
   dedupe?: boolean
