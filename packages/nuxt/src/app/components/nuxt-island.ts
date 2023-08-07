@@ -121,10 +121,10 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
-      const result = process.server || !process.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+      const result = process.server || !process.dev ? await (r as Response).json() : (r as FetchResponse<NuxtIslandResponse>)._data!
       // TODO: support passing on more headers
       if (process.server && process.env.prerender) {
-        const hints = r.headers.get('x-nitro-prerender')
+        const hints = (r as Response | FetchResponse<NuxtIslandResponse>).headers.get('x-nitro-prerender')
         if (hints) {
           appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
