@@ -25,6 +25,7 @@ import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
+import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -85,6 +86,9 @@ async function initNuxt (nuxt: Nuxt) {
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
+
+  // add resolver for modules used in virtual files
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
