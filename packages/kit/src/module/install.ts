@@ -25,7 +25,10 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
 
   if (typeof moduleToInstall === 'string') {
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
-    nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
+    const directory = getDirectory(moduleToInstall)
+    if (directory !== moduleToInstall) {
+      nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
+    }
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
