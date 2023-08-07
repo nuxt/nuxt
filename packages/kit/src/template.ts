@@ -121,6 +121,8 @@ export async function writeTypes (nuxt: Nuxt) {
       module: 'ESNext',
       moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
+      isolatedModules: true,
+      useDefineForClassFields: true,
       strict: nuxt.options.typescript?.strict ?? true,
       allowJs: true,
       noEmit: true,

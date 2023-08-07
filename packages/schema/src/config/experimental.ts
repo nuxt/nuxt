@@ -19,7 +19,7 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // TODO: Remove in v3.8 when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
@@ -57,6 +57,17 @@ export default defineUntypedSchema({
         return val ?? 'automatic'
       },
     },
+
+    /**
+     * By default the route object returned by the auto-imported `useRoute()` composable
+     * is kept in sync with the current page in view in `<NuxtPage>`. This is not true for
+     * `vue-router`'s exported `useRoute` or for the default `$route` object available in your
+     * Vue templates.
+     * 
+     * By enabling this option a mixin will be injected to keep the `$route` template object
+     * in sync with Nuxt's managed `useRoute()`.
+     */
+    templateRouteInjection: true,
 
     /**
      * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
@@ -207,6 +218,13 @@ export default defineUntypedSchema({
      * @see https://github.com/parcel-bundler/watcher
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular'
+    watcher: 'chokidar-granular',
+
+    /**
+     * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     *
+     * @see https://rviscomi.github.io/capo.js/user/rules/
+     */
+    headCapoPlugin: false
   }
 })

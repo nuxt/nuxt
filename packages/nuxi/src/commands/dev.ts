@@ -86,9 +86,7 @@ export default defineNuxtCommand({
         await currentNuxt.close().catch(() => {})
         await watcher.close().catch(() => {})
         await distWatcher.close().catch(() => {})
-        if (reason) {
-          consola.info(`${reason ? reason + '. ' : ''}Restarting nuxt...`)
-        }
+        consola.info(`${reason ? reason + '. ' : ''}Restarting nuxt...`)
         process.send({ type: 'nuxt:restart' })
       } else {
         await load(true, reason)

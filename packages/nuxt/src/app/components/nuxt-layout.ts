@@ -23,6 +23,10 @@ const LayoutLoader = defineComponent({
     layoutProps: Object
   },
   async setup (props, context) {
+    // This is a deliberate hack - this component must always be called with an explicit key to ensure
+    // that setup reruns when the name changes.
+
+    // eslint-disable-next-line vue/no-setup-props-destructure
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => h(LayoutComponent, props.layoutProps, context.slots)
