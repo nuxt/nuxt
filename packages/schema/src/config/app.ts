@@ -168,12 +168,13 @@ export default defineUntypedSchema({
 
     /**
      * Customize Nuxt root element id.
+     * 
+     * @type {string | false}
      */
     rootId: '__nuxt',
 
     /**
      * Customize Nuxt root element tag.
-     *
      */
     rootTag: 'div',
   },
