@@ -7,7 +7,7 @@ import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
-import { resolvePath } from 'mlly'
+import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
@@ -132,7 +132,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
-        return resolvePath(result.id, {
+        return resolveModule(result.id, {
           url: ctx.nuxt.options.modulesDir,
           conditions: ['node', 'import', 'require']
         }).catch(() => false)
