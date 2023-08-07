@@ -128,7 +128,6 @@ export async function writeTypes (nuxt: Nuxt) {
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
-      types: ['node'],
       paths: {}
     },
     include: [

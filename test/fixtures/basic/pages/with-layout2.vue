@@ -1,4 +1,3 @@
-
 <script setup>
 definePageMeta({
   layout: 'custom2'

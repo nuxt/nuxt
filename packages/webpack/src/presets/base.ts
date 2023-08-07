@@ -216,14 +216,18 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
-    'process.mode': JSON.stringify(ctx.config.mode),
-    'process.dev': ctx.options.dev,
-    'process.test': isTest,
     __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
+    'process.dev': ctx.options.dev,
+    'process.test': isTest,
     'process.browser': ctx.isClient,
     'process.client': ctx.isClient,
-    'process.server': ctx.isServer
+    'process.server': ctx.isServer,
+    'import.meta.dev': ctx.options.dev,
+    'import.meta.test': isTest,
+    'import.meta.browser': ctx.isClient,
+    'import.meta.client': ctx.isClient,
+    'import.meta.server': ctx.isServer
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {
