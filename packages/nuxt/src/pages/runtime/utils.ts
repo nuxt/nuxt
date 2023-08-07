@@ -19,5 +19,5 @@ export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: str
 }
 
 export const wrapInKeepAlive = (props: any, children: any) => {
-  return { default: () => process.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
+  return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }

@@ -313,7 +313,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '}',
 
       // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
-      'if (process.client) {',
+      'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
       '}'
