@@ -5,7 +5,7 @@ import { generateApp as _generateApp } from './app'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
- * and warns the user about their existence.
+ * and warns the user about them.
  *
  * @see {@link https://nuxt.com/docs/getting-started/configuration#external-configuration-files}
  */
@@ -13,12 +13,16 @@ export async function checkForExternalConfigurationFiles () {
   const checkResults = await Promise.all([checkViteConfig(), checkWebpackConfig(), checkNitroConfig(), checkPostCSSConfig()])
   const warningMessages = checkResults.filter(Boolean) as string[]
 
+  if (!warningMessages.length) {
+    return
+  }
+
   const foundOneExternalConfig = warningMessages.length === 1
   if (foundOneExternalConfig) {
     consola.warn(warningMessages[0])
   } else {
-    const warningAsListElements = warningMessages.map(message => `- ${message}`)
-    const warning = `Found multiple external configuration files: \n\n${warningAsListElements.join('\n')}`
+    const warningsAsList = warningMessages.map(message => `- ${message}`).join('\n')
+    const warning = `Found multiple external configuration files: \n\n${warningsAsList}`
     consola.warn(warning)
   }
 }
