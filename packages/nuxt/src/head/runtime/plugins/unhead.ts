@@ -4,11 +4,11 @@ import { defineNuxtPlugin } from '#app/nuxt'
 export default defineNuxtPlugin({
   name: 'nuxt:head',
   setup (nuxtApp) {
-    const head = process.server ? nuxtApp.ssrContext!.head : createClientHead()
+    const head = import.meta.server ? nuxtApp.ssrContext!.head : createClientHead()
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
-    if (process.client) {
+    if (import.meta.client) {
       // pause dom updates until page is ready and between page transitions
       let pauseDOMUpdates = true
       const unpauseDom = () => {

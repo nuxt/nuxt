@@ -210,13 +210,13 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      ...(process.client ? window.__NUXT__ ?? {} : { serverRendered: true })
+      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
       data: {}
     },
     runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
-    isHydrating: process.client,
+    isHydrating: import.meta.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
 
@@ -244,7 +244,7 @@ export function createNuxtApp (options: CreateOptions) {
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
 
-  if (process.server) {
+  if (import.meta.server) {
     async function contextCaller (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
@@ -267,7 +267,7 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
-  if (process.server) {
+  if (import.meta.server) {
     if (nuxtApp.ssrContext) {
       // Expose nuxt to the renderContext
       nuxtApp.ssrContext.nuxt = nuxtApp
@@ -291,7 +291,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Listen to chunk load errors
-  if (process.client) {
+  if (import.meta.client) {
     window.addEventListener('nuxt.preloadError', (event) => {
       nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
     })
@@ -305,7 +305,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = process.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
+  const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
@@ -329,7 +329,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   for (const plugin of plugins) {
-    if (process.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     const promise = applyPlugin(nuxtApp, plugin)
     if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
@@ -363,7 +363,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  if (process.server) {
+  if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
     // In client side we could assume nuxt app is singleton
@@ -385,7 +385,7 @@ export function useNuxtApp (): NuxtApp {
   nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
 
   if (!nuxtAppInstance) {
-    if (process.dev) {
+    if (import.meta.dev) {
       throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')

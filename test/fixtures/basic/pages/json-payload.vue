@@ -2,7 +2,7 @@
 const state = useState(() => shallowRef({} as Record<string, any>))
 const nonDisplayedState = useState(() => shallowRef({} as Record<string, any>))
 
-if (process.server) {
+if (import.meta.server) {
   const r = ref('')
   state.value.ref = r
   state.value.shallowReactive = shallowReactive({ nested: { ref: r } })
