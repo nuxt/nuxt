@@ -14,6 +14,8 @@
     "plugin:import/typescript"
   ],
   "rules": {
+    "vue/no-setup-props-destructure": "warn",
+    "no-multiple-empty-lines": "off",
     "sort-imports": [
       "error",
       {

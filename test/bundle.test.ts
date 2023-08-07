@@ -19,7 +19,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
       const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"97.4k"')
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"106k"')
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
           "_nuxt/entry.js",
@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.4k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"66.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2346k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2573k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -44,9 +44,11 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(packages).toMatchInlineSnapshot(`
       [
         "@babel/parser",
+        "@nuxt/devalue",
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
+        "@unhead/vue",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
@@ -55,27 +57,41 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
+        "anymatch",
+        "binary-extensions",
+        "braces",
+        "chokidar",
         "cookie-es",
         "debug",
         "defu",
         "destr",
         "devalue",
         "estree-walker",
+        "fill-range",
+        "glob-parent",
         "h3",
         "has-flag",
         "hookable",
         "http-graceful-shutdown",
         "iron-webcrypto",
+        "is-binary-path",
+        "is-extglob",
+        "is-glob",
+        "is-number",
         "klona",
         "ms",
         "node-fetch-native",
+        "normalize-path",
         "ofetch",
         "ohash",
         "pathe",
+        "picomatch",
         "radix3",
+        "readdirp",
         "scule",
         "source-map-js",
         "supports-color",
+        "to-regex-range",
         "ufo",
         "uncrypto",
         "unctx",
@@ -92,10 +108,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"370k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"73.9k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"608k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2564k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -103,34 +119,62 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "@babel/parser",
+        "@nuxt/devalue",
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
+        "@unhead/vue",
+        "@vue/compiler-core",
+        "@vue/compiler-dom",
+        "@vue/compiler-ssr",
+        "@vue/reactivity",
+        "@vue/runtime-core",
+        "@vue/runtime-dom",
+        "@vue/server-renderer",
+        "@vue/shared",
+        "anymatch",
+        "binary-extensions",
+        "braces",
+        "chokidar",
         "cookie-es",
         "debug",
         "defu",
         "destr",
         "devalue",
+        "estree-walker",
+        "fill-range",
+        "glob-parent",
         "h3",
         "has-flag",
         "hookable",
         "http-graceful-shutdown",
         "iron-webcrypto",
+        "is-binary-path",
+        "is-extglob",
+        "is-glob",
+        "is-number",
         "klona",
         "ms",
         "node-fetch-native",
+        "normalize-path",
         "ofetch",
         "ohash",
         "pathe",
+        "picomatch",
         "radix3",
+        "readdirp",
         "scule",
+        "source-map-js",
         "supports-color",
+        "to-regex-range",
         "ufo",
         "uncrypto",
         "unctx",
         "unenv",
         "unhead",
         "unstorage",
+        "vue",
       ]
     `)
   })
