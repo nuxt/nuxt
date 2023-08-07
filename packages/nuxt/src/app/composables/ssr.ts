@@ -1,4 +1,3 @@
-
 import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus } from 'h3'
 import type { NuxtApp } from '../nuxt'
