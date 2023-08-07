@@ -84,7 +84,7 @@ export async function bundle (nuxt: Nuxt) {
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          'process.env.NUXT_NATIVE_ASYNC_CONTEXT': nuxt.options.experimental.nativeAsyncContext
+          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
         },
         build: {
           copyPublicDir: false,

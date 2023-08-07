@@ -145,7 +145,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
-  if (nuxt.options.experimental.nativeAsyncContext) {
+  if (nuxt.options.experimental.asyncContext) {
     addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
   }
 

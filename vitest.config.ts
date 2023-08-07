@@ -12,7 +12,7 @@ export default defineConfig({
     }
   },
   define: {
-    'process.env.NUXT_NATIVE_ASYNC_CONTEXT': 'false'
+    'process.env.NUXT_ASYNC_CONTEXT': 'false'
   },
   test: {
     globalSetup: './test/setup.ts',

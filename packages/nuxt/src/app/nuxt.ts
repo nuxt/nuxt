@@ -18,7 +18,7 @@ import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!process.env.NUXT_NATIVE_ASYNC_CONTEXT && process.server
+  asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
 })
 
 type HookResult = Promise<void> | void

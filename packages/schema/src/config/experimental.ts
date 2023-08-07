@@ -63,7 +63,7 @@ export default defineUntypedSchema({
      * is kept in sync with the current page in view in `<NuxtPage>`. This is not true for
      * `vue-router`'s exported `useRoute` or for the default `$route` object available in your
      * Vue templates.
-     * 
+     *
      * By enabling this option a mixin will be injected to keep the `$route` template object
      * in sync with Nuxt's managed `useRoute()`.
      */
@@ -225,7 +225,7 @@ export default defineUntypedSchema({
      *
      * @see https://github.com/nuxt/nuxt/pull/20918
      */
-    nativeAsyncContext: false,
+    asyncContext: false,
 
     /**
      * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
