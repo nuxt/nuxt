@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -13,6 +13,7 @@ import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
+import { RouteInjectionPlugin } from './route-injection'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
@@ -252,6 +253,11 @@ export default defineNuxtModule({
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
+
+    // Add build plugin to ensure template $route is kept in sync with `<NuxtPage>`
+    if (nuxt.options.experimental.templateRouteInjection) {
+      addBuildPlugin(RouteInjectionPlugin(nuxt), { server: false })
+    }
 
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
