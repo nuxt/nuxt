@@ -97,9 +97,18 @@
       }
     ],
     "jsdoc/check-tag-names": ["error", {
-      "definedTags": ["__NO_SIDE_EFFECTS__"]
+      "definedTags": ["__NO_SIDE_EFFECTS__", "experimental"]
     }]
   },
+  "overrides": [
+    {
+        "files": ["packages/schema/**"],
+        "rules": {
+            "jsdoc/no-undefined-types": "off",
+            "jsdoc/valid-types": "off"
+        }
+    }
+  ],
   "settings": {
     "jsdoc": {
       "ignoreInternal": true,
