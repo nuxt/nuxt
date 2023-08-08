@@ -175,14 +175,14 @@ export default defineUntypedSchema({
      * Customize Nuxt root element id.
      */
     rootId: {
-      $resolve: (val) => val || '__nuxt'
+      $resolve: val => val || '__nuxt'
     },
 
     /**
      * Customize Nuxt root element tag.
      */
     rootTag: {
-      $resolve: (val) => val || 'div'
+      $resolve: val => val || 'div'
     }
   },
 
