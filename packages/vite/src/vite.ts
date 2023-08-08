@@ -151,6 +151,7 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('vite:extendConfig', (config) => {
     config.plugins!.push(replace({
+      preventAssignment: true,
       ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('process.')).map(([key, value]) => [key.replace('process.', 'import.meta.'), JSON.stringify(value)]))
     }))
   })
