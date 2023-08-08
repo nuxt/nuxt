@@ -95,13 +95,17 @@ export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
 /** Normalized Nuxt options available as `nuxt.options.*` */
 export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | { bundle: (nuxt: Nuxt) => Promise<void> }
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
   }
   _layers: NuxtConfigLayer[]
   $schema: SchemaDefinition
+}
+
+export interface NuxtBuilder {
+  bundle: (nuxt: Nuxt) => Promise<void>
 }
 
 export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
