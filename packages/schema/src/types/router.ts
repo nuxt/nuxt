@@ -1,5 +1,4 @@
-import type { RouterOptions as _RouterOptions, RouterHistory } from 'vue-router'
-
+import type { RouterHistory, RouterOptions as _RouterOptions } from 'vue-router'
 
 export type RouterOptions = Partial<Omit<_RouterOptions, 'history' | 'routes'>> & {
   history?: (baseURL?: string) => RouterHistory

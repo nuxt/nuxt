@@ -10,6 +10,7 @@ export default defineUntypedSchema({
   vue: {
     /**
      * Options for the Vue compiler that will be passed at build time.
+     *
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
@@ -19,11 +20,12 @@ export default defineUntypedSchema({
      * Include Vue compiler in runtime bundle.
      */
     runtimeCompiler: {
-      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false,
+      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false
     },
 
     /**
      * Vue Experimental: Enable reactive destructure for `defineProps`
+     *
      * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
      * @type {boolean}
      */
@@ -31,6 +33,7 @@ export default defineUntypedSchema({
 
     /**
      * Vue Experimental: Enable macro `defineModel`
+     *
      * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
      * @type {boolean}
      */
@@ -45,24 +48,26 @@ export default defineUntypedSchema({
      * The base path of your Nuxt application.
      *
      * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
+     *
      * @example
      * ```bash
      * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
      * ```
      */
     baseURL: {
-      $resolve: async (val) => val || process.env.NUXT_APP_BASE_URL || '/',
+      $resolve: val => val || process.env.NUXT_APP_BASE_URL || '/'
     },
 
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
-      $resolve: async (val) => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/',
+      $resolve: val => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
     },
 
     /**
      * An absolute URL to serve the public folder from (production-only).
      *
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
+     *
      * @example
      * ```bash
      * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
@@ -175,10 +180,11 @@ export default defineUntypedSchema({
      * Customize Nuxt root element tag.
      *
      */
-    rootTag: 'div',
+    rootTag: 'div'
   },
 
-  /** A path to an HTML file, the contents of which will be inserted into any HTML page
+  /**
+   * A path to an HTML file, the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
    *
    * By default Nuxt will look in `~/app/spa-loading-template.html` for this file.
@@ -230,7 +236,6 @@ export default defineUntypedSchema({
    * }
    * </style>
    * ```
-   *
    * @type {string | false}
    */
   spaLoadingTemplate: {
@@ -249,9 +254,7 @@ export default defineUntypedSchema({
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
-   *
    * @see https://nuxt.com/docs/guide/directory-structure/plugins
-   *
    * @example
    * ```js
    * plugins: [
