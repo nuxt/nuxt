@@ -51,12 +51,12 @@ export default defineUntypedSchema({
      * ```
      */
     baseURL: {
-      $resolve: async (val) => val || process.env.NUXT_APP_BASE_URL || '/',
+      $resolve: (val) => val || process.env.NUXT_APP_BASE_URL || '/',
     },
 
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
-      $resolve: async (val) => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/',
+      $resolve: (val) => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/',
     },
 
     /**
