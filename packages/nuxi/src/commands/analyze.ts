@@ -77,7 +77,7 @@ export default defineNuxtCommand({
 
       const serveFile = (filePath: string) => lazyEventHandler(async () => {
         const contents = await fsp.readFile(filePath, 'utf-8')
-        return eventHandler((event) => { event.node.res.end(contents) })
+        return eventHandler(() => contents)
       })
 
       console.info('Starting stats server...')

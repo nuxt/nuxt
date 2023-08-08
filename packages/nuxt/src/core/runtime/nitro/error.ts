@@ -11,7 +11,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // Create an error object
   const errorObject = {
-    url: event.node.req.url,
+    url: event.path,
     statusCode,
     statusMessage,
     message,
@@ -41,12 +41,11 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // JSON response
   if (isJsonRequest(event)) {
     setResponseHeader(event, 'Content-Type', 'application/json')
-    event.node.res.end(JSON.stringify(errorObject))
-    return
+    return errorObject
   }
 
   // HTML response (via SSR)
-  const isErrorPage = event.node.req.url?.startsWith('/__nuxt_error')
+  const isErrorPage = event.path?.startsWith('/__nuxt_error')
   const res = !isErrorPage
     ? await useNitroApp().localFetch(withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject), {
       headers: getRequestHeaders(event) as Record<string, string>,
@@ -67,8 +66,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     }
     if (event.handled) { return }
     setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
-    event.node.res.end(template(errorObject))
-    return
+    return template(errorObject)
   }
 
   const html = await res.text()
@@ -79,5 +77,5 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
-  event.node.res.end(html)
+  return html
 }

@@ -159,7 +159,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
     const viteMiddleware = defineEventHandler(async (event) => {
       // Workaround: vite devmiddleware modifies req.url
-      const originalURL = event.node.req.url!
+      const originalURL = event.path
 
       const viteRoutes = viteServer.middlewares.stack.map(m => m.route).filter(r => r.length > 1)
       if (!originalURL.startsWith(clientConfig.base!) && !viteRoutes.some(route => originalURL.startsWith(route))) {
@@ -169,7 +169,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
       await new Promise((resolve, reject) => {
         viteServer.middlewares.handle(event.node.req, event.node.res, (err: Error) => {
-          event.node.req.url = originalURL
+          event._path = originalURL
           return err ? reject(err) : resolve(null)
         })
       })
