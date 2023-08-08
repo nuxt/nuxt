@@ -1901,7 +1901,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   })
 })
 
-describe('Async context', () => {
+describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
   it('should be available', async () => {
     expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
   })
