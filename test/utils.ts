@@ -6,7 +6,7 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
-export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
+export const isRenderingJson = true
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
