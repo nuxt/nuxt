@@ -39,7 +39,8 @@
     "vite": "4.4.9",
     "vue": "3.3.4",
     "magic-string": "^0.30.2",
-    "h3": "^1.8.0-rc.3"
+    "h3": "^1.8.0-rc.3",
+    "unenv": "^1.6.2"
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
