@@ -2,8 +2,9 @@
 </script>
 
 <template>
+  <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    <NuxtPage />
+    Nuxt 3 Playground
   </div>
 </template>
 
