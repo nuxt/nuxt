@@ -1,6 +1,5 @@
 import { findPath } from '@nuxt/kit'
 import { basename } from 'pathe'
-import { consola } from 'consola'
 import { generateApp as _generateApp } from './app'
 
 /**
@@ -19,11 +18,11 @@ export async function checkForExternalConfigurationFiles () {
 
   const foundOneExternalConfig = warningMessages.length === 1
   if (foundOneExternalConfig) {
-    consola.warn(warningMessages[0])
+    console.warn(warningMessages[0])
   } else {
     const warningsAsList = warningMessages.map(message => `- ${message}`).join('\n')
     const warning = `Found multiple external configuration files: \n\n${warningsAsList}`
-    consola.warn(warning)
+    console.warn(warning)
   }
 }
 

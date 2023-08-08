@@ -27,7 +27,6 @@ export default defineBuildConfig({
     'ofetch'
   ],
   externals: [
-    'consola',
     'nuxt',
     'nuxt/schema',
     '@vue/shared',
