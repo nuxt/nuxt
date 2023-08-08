@@ -1,5 +1,5 @@
 export default defineNitroPlugin((nitroApp) => {
-  if (!process.dev) { return }
+  if (!import.meta.dev) { return }
 
   const onError = nitroApp.h3App.options.onError!
   nitroApp.h3App.options.onError = (error, event) => {

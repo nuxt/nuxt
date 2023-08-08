@@ -122,6 +122,9 @@
   "peerDependenciesMeta": {
     "@parcel/watcher": {
       "optional": true
+    },
+    "@types/node": {
+      "optional": true
     }
   },
   "engines": {

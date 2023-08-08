@@ -68,9 +68,9 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'run
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
   runtimeConfig?: Overrideable<RuntimeConfig>
-  webpack?: ConfigSchema['webpack'] & {
-    $client?: ConfigSchema['webpack']
-    $server?: ConfigSchema['webpack']
+  webpack?: DeepPartial<ConfigSchema['webpack']> & {
+    $client?: DeepPartial<ConfigSchema['webpack']>
+    $server?: DeepPartial<ConfigSchema['webpack']>
   }
 
   /**

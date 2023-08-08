@@ -59,6 +59,17 @@ export default defineUntypedSchema({
     },
 
     /**
+     * By default the route object returned by the auto-imported `useRoute()` composable
+     * is kept in sync with the current page in view in `<NuxtPage>`. This is not true for
+     * `vue-router`'s exported `useRoute` or for the default `$route` object available in your
+     * Vue templates.
+     *
+     * By enabling this option a mixin will be injected to keep the `$route` template object
+     * in sync with Nuxt's managed `useRoute()`.
+     */
+    templateRouteInjection: true,
+
+    /**
      * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
      * after a chunk error or manual `reloadNuxtApp()` call.
      *
@@ -208,6 +219,13 @@ export default defineUntypedSchema({
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: 'chokidar-granular',
+
+    /**
+     * Enable native async context to be accessable for nested composables
+     *
+     * @see https://github.com/nuxt/nuxt/pull/20918
+     */
+    asyncContext: false,
 
     /**
      * Add the capo.js head plugin in order to render tags in of the head in a more performant way.

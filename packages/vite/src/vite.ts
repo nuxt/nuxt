@@ -82,7 +82,10 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
-        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
+        define: {
+          __NUXT_VERSION__: JSON.stringify(nuxt._version),
+          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+        },
         build: {
           copyPublicDir: false,
           rollupOptions: {
@@ -145,6 +148,12 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('vite:extend', ctx)
+
+  nuxt.hook('vite:extendConfig', (config) => {
+    config.plugins!.push(replace({
+      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('process.')).map(([key, value]) => [key.replace('process.', 'import.meta.'), JSON.stringify(value)]))
+    }))
+  })
 
   if (!ctx.nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()

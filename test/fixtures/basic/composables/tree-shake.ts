@@ -1,12 +1,12 @@
 export function useServerOnlyComposable () {
-  if (process.client) {
+  if (import.meta.client) {
     throw new Error('this should not be called in the browser')
   }
 }
 
 export function useClientOnlyComposable () {
   // need to do some code that fails in node but not in the browser
-  if (process.server) {
+  if (import.meta.server) {
     throw new Error('this should not be called on the server')
   }
 }

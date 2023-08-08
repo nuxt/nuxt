@@ -134,7 +134,7 @@ export function useFetch<
     const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
     let _$fetch = opts.$fetch || globalThis.$fetch
     // Use fetch with request context and headers for server direct API calls
-    if (process.server && !opts.$fetch && isLocalFetch) {
+    if (import.meta.server && !opts.$fetch && isLocalFetch) {
       _$fetch = useRequestFetch()
     }
 
