@@ -39,7 +39,7 @@
     "vite": "4.4.9",
     "vue": "3.3.4",
     "magic-string": "^0.30.2",
-    "h3": "^1.8.0-rc.2"
+    "h3": "^1.8.0-rc.3"
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
@@ -62,11 +62,11 @@
     "execa": "7.2.0",
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
-    "h3": "^1.8.0-rc.2",
+    "h3": "^1.8.0-rc.3",
     "happy-dom": "10.8.0",
     "jiti": "1.19.1",
     "markdownlint-cli": "^0.33.0",
-    "nitropack": "npm:nitropack-edge@2.6.0-28190435.4f4c017",
+    "nitropack": "npm:nitropack-edge@2.6.0-28190904.9ba8fe9",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "nuxt-vitest": "0.10.2",
