@@ -1,13 +1,17 @@
 {
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "packages/schema/schema",
+    "**/*.tmpl.*",
+    "sw.js"
+  ],
   "$schema": "https://json.schemastore.org/eslintrc",
   "globals": {
     "NodeJS": true,
     "$fetch": true
   },
-  "plugins": [
-    "jsdoc",
-    "no-only-tests"
-  ],
+  "plugins": ["jsdoc", "no-only-tests"],
   "extends": [
     "plugin:jsdoc/recommended",
     "@nuxtjs/eslint-config-typescript",
@@ -96,9 +100,12 @@
         "ignoreRestSiblings": true
       }
     ],
-    "jsdoc/check-tag-names": ["error", {
-      "definedTags": ["__NO_SIDE_EFFECTS__"]
-    }]
+    "jsdoc/check-tag-names": [
+      "error",
+      {
+        "definedTags": ["__NO_SIDE_EFFECTS__"]
+      }
+    ]
   },
   "overrides": [
     {

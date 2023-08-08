@@ -1,5 +1,0 @@
-dist
-node_modules
-packages/schema/schema
-**/*.tmpl.*
-sw.js
