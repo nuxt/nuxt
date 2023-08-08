@@ -50,27 +50,27 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 ## Params
 
-* **URL**: The URL to fetch.
-* **Options (extends [unjs/ofetch](https://github.com/unjs/ofetch) options & [AsyncDataOptions](/docs/api/composables/use-async-data#params))**:
-  * `method`: Request method.
-  * `query`: Adds query search params to URL using [ufo](https://github.com/unjs/ufo)
-  * `params`: Alias for `query`
-  * `body`: Request body - automatically stringified (if an object is passed).
-  * `headers`: Request headers.
-  * `baseURL`: Base URL for the request.
+- **URL**: The URL to fetch.
+- **Options (extends [unjs/ofetch](https://github.com/unjs/ofetch) options & [AsyncDataOptions](/docs/api/composables/use-async-data#params))**:
+  - `method`: Request method.
+  - `query`: Adds query search params to URL using [ufo](https://github.com/unjs/ufo)
+  - `params`: Alias for `query`
+  - `body`: Request body - automatically stringified (if an object is passed).
+  - `headers`: Request headers.
+  - `baseURL`: Base URL for the request.
 
 ::alert{type=info}
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
 ::
 
-* **Options (from [`useAsyncData`](/docs/api/composables/use-async-data) )**:
-  * `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where [`useAsyncData`](/docs/api/composables/use-async-data) is used.
-  * `server`: Whether to fetch the data on the server (defaults to `true`).
-  * `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
-  * `pick`: Only pick specified keys in this array from the `handler` function result.
-  * `watch`: Watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
-  * `transform`: A function that can be used to alter `handler` function result after resolving.
-  * `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
+- **Options (from [`useAsyncData`](/docs/api/composables/use-async-data) )**:
+  - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where [`useAsyncData`](/docs/api/composables/use-async-data) is used.
+  - `server`: Whether to fetch the data on the server (defaults to `true`).
+  - `default`: A factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option.
+  - `pick`: Only pick specified keys in this array from the `handler` function result.
+  - `watch`: Watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
+  - `transform`: A function that can be used to alter `handler` function result after resolving.
+  - `immediate`: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 
 ::alert{type=warning}
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the [`useFetch`](/docs/api/composables/use-fetch) call will not match other [`useFetch`](/docs/api/composables/use-fetch) calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
@@ -78,11 +78,11 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 
 ## Return Values
 
-* **data**: the result of the asynchronous function that is passed in.
-* **pending**: a boolean indicating whether the data is still being fetched.
-* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function.
-* **error**: an error object if the data fetching failed.
-* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- **data**: the result of the asynchronous function that is passed in.
+- **pending**: a boolean indicating whether the data is still being fetched.
+- **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function.
+- **error**: an error object if the data fetching failed.
+- **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
@@ -93,9 +93,14 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Example
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    pick: ['title']
-})
+const route = useRoute();
+
+const { data, pending, error, refresh } = await useFetch(
+  `https://api.nuxtjs.dev/mountains/${route.params.slug}`,
+  {
+    pick: ["title"],
+  }
+);
 ```
 
 Adding Query Search Params:
@@ -103,10 +108,13 @@ Adding Query Search Params:
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts
-const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    query: { param1, param2: 'value2' }
-})
+const param1 = ref("value1");
+const { data, pending, error, refresh } = await useFetch(
+  "https://api.nuxtjs.dev/mountains",
+  {
+    query: { param1, param2: "value2" },
+  }
+);
 ```
 
 Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
@@ -114,23 +122,23 @@ Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
 Using [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
+const { data, pending, error, refresh } = await useFetch("/api/auth/login", {
   onRequest({ request, options }) {
     // Set the request headers
-    options.headers = options.headers || {}
-    options.headers.authorization = '...'
+    options.headers = options.headers || {};
+    options.headers.authorization = "...";
   },
   onRequestError({ request, options, error }) {
     // Handle the request errors
   },
   onResponse({ request, response, options }) {
     // Process the response data
-    localStorage.setItem('token', response._data.token)
+    localStorage.setItem("token", response._data.token);
   },
   onResponseError({ request, response, options }) {
     // Handle the response errors
-  }
-})
+  },
+});
 ```
 
 ::alert{type=warning}
