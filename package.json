@@ -20,7 +20,6 @@
     "play:preview": "nuxi preview playground",
     "test": "pnpm test:fixtures && pnpm test:fixtures:payload && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm typecheck",
     "test:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && vitest run --dir test",
-    "test:fixtures:payload": "TEST_PAYLOAD=js pnpm test:fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:runtime": "vitest -c vitest.nuxt.config.ts",

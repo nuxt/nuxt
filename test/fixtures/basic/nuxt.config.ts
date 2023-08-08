@@ -179,7 +179,6 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     polyfillVueUseHead: true,
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
