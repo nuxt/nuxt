@@ -199,7 +199,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
-  const ssrError = event.path?.startsWith('/__nuxt_error')
+  const ssrError = event.path.startsWith('/__nuxt_error')
     ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
     : null
 
@@ -215,7 +215,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Check for island component rendering
-  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.path?.startsWith('/__nuxt_island'))
+  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.path.startsWith('/__nuxt_island'))
     ? await getIslandContext(event)
     : undefined
 
