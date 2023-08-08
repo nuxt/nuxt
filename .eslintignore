@@ -1,5 +1,5 @@
 dist
 node_modules
-schema
+packages/schema/schema
 **/*.tmpl.*
 sw.js

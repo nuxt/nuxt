@@ -100,6 +100,21 @@
       "definedTags": ["__NO_SIDE_EFFECTS__"]
     }]
   },
+  "overrides": [
+    {
+        "files": ["packages/schema/**"],
+        "rules": {
+          "jsdoc/no-undefined-types": "off",
+          "jsdoc/valid-types": "off",
+          "jsdoc/check-tag-names": [
+            "error",
+            {
+              "definedTags": ["experimental"]
+            }
+          ]
+        }
+    }
+  ],
   "settings": {
     "jsdoc": {
       "ignoreInternal": true,

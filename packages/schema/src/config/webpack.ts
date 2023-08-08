@@ -65,7 +65,6 @@ export default defineUntypedSchema({
      * Extracting into multiple CSS files is better for caching and preload isolation. It
      * can also improve page performance by downloading and resolving only those resources
      * that are needed.
-     *
      * @example
      * ```js
      * export default {
@@ -113,14 +112,12 @@ export default defineUntypedSchema({
      * as most browsers will cache the asset and not detect the changes on first load.
      *
      * This example changes fancy chunk names to numerical ids:
-     *
      * @example
      * ```js
      * filenames: {
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
-     * 
      * @type {
      *  Record<
      *    string,
@@ -140,8 +137,8 @@ export default defineUntypedSchema({
      * }
      */
     filenames: {
-      app: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
-      chunk: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
+      app: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
+      chunk: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
       css: ({ isDev }: { isDev: boolean }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
@@ -168,14 +165,15 @@ export default defineUntypedSchema({
 
       /**
        * See https://github.com/esbuild-kit/esbuild-loader
+       *
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
-      */
+       */
       esbuild: {},
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false }
@@ -185,8 +183,8 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false, limit: 1000  }
@@ -196,8 +194,8 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false, limit: 1000  }
@@ -207,12 +205,14 @@ export default defineUntypedSchema({
 
       /**
        * See: https://pugjs.org/api/reference.html#options
+       *
        * @type {typeof import('pug')['Options']}
        */
       pugPlain: {},
 
       /**
        * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
+       *
        * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
@@ -224,13 +224,13 @@ export default defineUntypedSchema({
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
         propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
-        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) }
       },
 
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false
       },
@@ -238,7 +238,7 @@ export default defineUntypedSchema({
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false,
         modules: {
@@ -253,8 +253,8 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/sass-loader#options
+       *
        * @type {typeof import('sass-loader')['Options']}
-       * 
        * @default
        * ```ts
        * {
@@ -272,6 +272,7 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/sass-loader#options
+       *
        * @type {typeof import('sass-loader')['Options']}
        */
       scss: {},
@@ -312,7 +313,6 @@ export default defineUntypedSchema({
      * Defaults to true when `extractCSS` is enabled.
      *
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     *
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
     optimizeCSS: {
@@ -321,6 +321,7 @@ export default defineUntypedSchema({
 
     /**
      * Configure [webpack optimization](https://webpack.js.org/configuration/optimization/).
+     *
      * @type {false | typeof import('webpack').Configuration['optimization']}
      */
     optimization: {
@@ -350,11 +351,12 @@ export default defineUntypedSchema({
         plugins: {
           $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
         }
-      },
+      }
     },
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
+     *
      * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
@@ -363,6 +365,7 @@ export default defineUntypedSchema({
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
+     *
      * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
      */
     hotMiddleware: {},
@@ -374,12 +377,14 @@ export default defineUntypedSchema({
 
     /**
      * Filters to hide build warnings.
+     *
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
+     *
      * @type {false | typeof import('webpack').Configuration['experiments']}
      */
     experiments: {}
