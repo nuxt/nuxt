@@ -39,7 +39,7 @@
     "vue": "3.3.4",
     "magic-string": "^0.30.2",
     "h3": "^1.8.0-rc.3",
-    "unenv": "^1.7.0"
+    "unenv": "^1.7.1"
   },
   "devDependencies": {
     "@actions/core": "1.10.0",
