@@ -588,8 +588,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       esbuild-loader:
-        specifier: 3.1.0
-        version: 3.1.0(webpack@5.88.2)
+        specifier: 4.0.0
+        version: 4.0.0(webpack@5.88.2)
       h3:
         specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
@@ -824,8 +824,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       esbuild-loader:
-        specifier: ^3.1.0
-        version: 3.1.0(webpack@5.88.2)
+        specifier: ^4.0.0
+        version: 4.0.0(webpack@5.88.2)
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
@@ -5332,12 +5332,12 @@ packages:
     resolution: {integrity: sha512-MEl9uirslVwqQU369iHNWZXsI8yaZYGg/D65aOgZkeyFJwHYSxilf7rQzXKI7DdDuBPrBXbfk3sl9hJhmd5AUw==}
     dev: true
 
-  /esbuild-loader@3.1.0(webpack@5.88.2):
-    resolution: {integrity: sha512-BoI+QDtBNcXuuhLWxa+ooAy3e6RDVQr4cadFFYo0T7KE9cBs0nuGnv8ExL77lfqRmeGVAd3NqVzC8GWNj6su6A==}
+  /esbuild-loader@4.0.0(webpack@5.88.2):
+    resolution: {integrity: sha512-J7TJWyHV2YHmflZaXLZ0Vf4wYmixDyGTw26bt4Ok+XOqSyYA4VWAVt2zJGqIfCA7TwZRDKN8hvus4akN2yAbmA==}
     peerDependencies:
       webpack: ^4.40.0 || ^5.0.0
     dependencies:
-      esbuild: 0.18.20
+      esbuild: 0.19.0
       get-tsconfig: 4.6.2
       loader-utils: 2.0.4
       webpack: 5.88.2
