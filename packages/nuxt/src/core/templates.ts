@@ -280,9 +280,17 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents: async ({ app, nuxt }) => {
     return `
+import { updateAppConfig } from '#app'
 import { defuFn } from '${await _resolveId('defu')}'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+
+// Vite - webpack is handled directly in #app/config
+if (import.meta.hot) {
+  import.meta.hot.accept((newModule) => {
+    updateAppConfig(newModule.default)
+  })
+}
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
@@ -313,7 +321,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '}',
 
       // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
-      'if (process.client) {',
+      'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
       '}'

@@ -86,7 +86,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0ba4244466797eb048eb91a6cd43d5c03ca8bd05 # v2.21.2
+        uses: github/codeql-action/init@5b6282e01c62d02e720b81eb8a51204f527c3624 # v2.21.3
         with:
           languages: javascript
           queries: +security-and-quality
@@ -98,7 +98,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0ba4244466797eb048eb91a6cd43d5c03ca8bd05 # v2.21.2
+        uses: github/codeql-action/analyze@5b6282e01c62d02e720b81eb8a51204f527c3624 # v2.21.3
         with:
           category: "/language:javascript"
 
@@ -169,7 +169,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
-        payload: ['json', 'js']
+        context: ['async', 'default']
         node: [16]
         exclude:
           - env: 'dev'
@@ -231,8 +231,8 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          TEST_PAYLOAD: ${{ matrix.payload }}
-          SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.payload == 'js' || runner.os == 'Windows' }}
+          TEST_CONTEXT: ${{ matrix.context }}
+          SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || runner.os == 'Windows' }}
 
   build-release:
     permissions:

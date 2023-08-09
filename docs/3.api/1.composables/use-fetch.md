@@ -93,8 +93,10 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Example
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    pick: ['title']
+const route = useRoute()
+
+const { data, pending, error, refresh } = await useFetch(`https://api.nuxtjs.dev/mountains/${route.params.slug}`, {
+  pick: ['title']
 })
 ```
 
@@ -104,8 +106,8 @@ Using the `query` option, you can add search parameters to your query. This opti
 
 ```ts
 const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    query: { param1, param2: 'value2' }
+const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains', {
+  query: { param1, param2: 'value2' }
 })
 ```
 

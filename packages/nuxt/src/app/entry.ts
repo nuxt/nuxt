@@ -26,7 +26,7 @@ if (!globalThis.$fetch) {
 
 let entry: Function
 
-if (process.server) {
+if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
@@ -45,10 +45,10 @@ if (process.server) {
   }
 }
 
-if (process.client) {
+if (import.meta.client) {
   // TODO: temporary webpack 5 HMR fix
   // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
-  if (process.dev && import.meta.webpackHot) {
+  if (import.meta.dev && import.meta.webpackHot) {
     import.meta.webpackHot.accept()
   }
 
