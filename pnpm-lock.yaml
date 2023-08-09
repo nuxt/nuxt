@@ -15,7 +15,7 @@ overrides:
   vite: 4.4.9
   vue: 3.3.4
   magic-string: ^0.30.2
-  h3: ^1.8.0-rc.3
+  h3: 1.8.0-rc.3
   unenv: ^1.7.1
 
 importers:
@@ -83,7 +83,7 @@ importers:
         specifier: 13.2.2
         version: 13.2.2
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       happy-dom:
         specifier: 10.9.0
@@ -95,8 +95,8 @@ importers:
         specifier: ^0.33.0
         version: 0.33.0
       nitropack:
-        specifier: npm:nitropack-edge@2.6.0-28190904.9ba8fe9
-        version: /nitropack-edge@2.6.0-28190904.9ba8fe9
+        specifier: npm:nitropack-edge@2.6.0-28192270.7fa8408
+        version: /nitropack-edge@2.6.0-28192270.7fa8408
       nuxi:
         specifier: workspace:*
         version: link:packages/nuxi
@@ -228,8 +228,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: npm:nitropack-edge@2.6.0-28190904.9ba8fe9
-        version: /nitropack-edge@2.6.0-28190904.9ba8fe9
+        specifier: npm:nitropack-edge@2.6.0-28192270.7fa8408
+        version: /nitropack-edge@2.6.0-28192270.7fa8408
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -304,7 +304,7 @@ importers:
         specifier: 1.1.2
         version: 1.1.2
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       jiti:
         specifier: 1.19.1
@@ -412,7 +412,7 @@ importers:
         specifier: ^13.2.2
         version: 13.2.2
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       hookable:
         specifier: ^5.5.3
@@ -433,8 +433,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       nitropack:
-        specifier: npm:nitropack-edge@2.6.0-28190904.9ba8fe9
-        version: /nitropack-edge@2.6.0-28190904.9ba8fe9
+        specifier: npm:nitropack-edge@2.6.0-28192270.7fa8408
+        version: /nitropack-edge@2.6.0-28192270.7fa8408
       nuxi:
         specifier: workspace:*
         version: link:../nuxi
@@ -591,14 +591,14 @@ importers:
         specifier: 3.1.0
         version: 3.1.0(webpack@5.88.2)
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       ignore:
         specifier: 5.2.4
         version: 5.2.4
       nitropack:
-        specifier: npm:nitropack-edge@2.6.0-28190904.9ba8fe9
-        version: /nitropack-edge@2.6.0-28190904.9ba8fe9
+        specifier: npm:nitropack-edge@2.6.0-28192270.7fa8408
+        version: /nitropack-edge@2.6.0-28192270.7fa8408
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -721,7 +721,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       knitwork:
         specifier: ^1.0.0
@@ -842,7 +842,7 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       h3:
-        specifier: ^1.8.0-rc.3
+        specifier: 1.8.0-rc.3
         version: 1.8.0-rc.3
       hash-sum:
         specifier: ^2.0.0
@@ -1492,7 +1492,6 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-arm@0.17.19:
@@ -1518,7 +1517,6 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-x64@0.17.19:
@@ -1544,7 +1542,6 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-arm64@0.17.19:
@@ -1570,7 +1567,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-x64@0.17.19:
@@ -1596,7 +1592,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-arm64@0.17.19:
@@ -1622,7 +1617,6 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-x64@0.17.19:
@@ -1648,7 +1642,6 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm64@0.17.19:
@@ -1674,7 +1667,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm@0.17.19:
@@ -1700,7 +1692,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ia32@0.17.19:
@@ -1726,7 +1717,6 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-loong64@0.17.19:
@@ -1752,7 +1742,6 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-mips64el@0.17.19:
@@ -1778,7 +1767,6 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ppc64@0.17.19:
@@ -1804,7 +1792,6 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-riscv64@0.17.19:
@@ -1830,7 +1817,6 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-s390x@0.17.19:
@@ -1856,7 +1842,6 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-x64@0.17.19:
@@ -1882,7 +1867,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/netbsd-x64@0.17.19:
@@ -1908,7 +1892,6 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/openbsd-x64@0.17.19:
@@ -1934,7 +1917,6 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/sunos-x64@0.17.19:
@@ -1960,7 +1942,6 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-arm64@0.17.19:
@@ -1986,7 +1967,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-ia32@0.17.19:
@@ -2012,7 +1992,6 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-x64@0.17.19:
@@ -2038,7 +2017,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.46.0):
@@ -5158,11 +5136,11 @@ packages:
       tslib: 2.6.1
     dev: true
 
-  /dot-prop@7.2.0:
-    resolution: {integrity: sha512-Ol/IPXUARn9CSbkrdV4VJo7uCy1I3VuSiWCaFSg+8BdUOzF9n3jefIpcgAydvUZbTdEBZs2vEiTiS9m61ssiDA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+  /dot-prop@8.0.2:
+    resolution: {integrity: sha512-xaBe6ZT4DHPkg0k4Ytbvn5xoxgpG0jOS1dYxSOwAHPuNLjP3/OzN0gH55SrLqpx8cBfSaVt91lXYkApjb+nYdQ==}
+    engines: {node: '>=16'}
     dependencies:
-      type-fest: 2.19.0
+      type-fest: 3.13.1
 
   /dotenv@16.3.1:
     resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
@@ -5452,7 +5430,6 @@ packages:
       '@esbuild/win32-arm64': 0.19.0
       '@esbuild/win32-ia32': 0.19.0
       '@esbuild/win32-x64': 0.19.0
-    dev: false
 
   /escalade@3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
@@ -8089,8 +8066,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge@2.6.0-28190904.9ba8fe9:
-    resolution: {integrity: sha512-S4KPn/GZrXyrCMaXs/o5sGwTm7q5DtGbGOf0tRM1asvMUJr15O8RfXiwmcec+fwJvTDc5ekXGw9MWGuGu9jjUw==}
+  /nitropack-edge@2.6.0-28192270.7fa8408:
+    resolution: {integrity: sha512-APczejNbEYZHO1S5VfsxNTStOrYLg6+VzlHHYSIwQM3ljtqmV15AOA2xaKn0AHkQqnstkITXJCXmR3+KEYv9jg==}
     engines: {node: ^14.16.0 || ^16.11.0 || >=17.0.0}
     hasBin: true
     dependencies:
@@ -8116,8 +8093,8 @@ packages:
       cookie-es: 1.0.0
       defu: 6.1.2
       destr: 2.0.1
-      dot-prop: 7.2.0
-      esbuild: 0.18.20
+      dot-prop: 8.0.2
+      esbuild: 0.19.0
       escape-string-regexp: 5.0.0
       etag: 1.8.1
       fs-extra: 11.1.1
@@ -8138,7 +8115,7 @@ packages:
       node-fetch-native: 1.2.0
       ofetch: 1.1.1
       ohash: 1.1.2
-      openapi-typescript: 6.4.0
+      openapi-typescript: 6.4.3
       pathe: 1.1.1
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
@@ -8468,8 +8445,8 @@ packages:
       is-wsl: 2.2.0
     dev: true
 
-  /openapi-typescript@6.4.0:
-    resolution: {integrity: sha512-qTa5HGcVdTic2zmvC+aE3tEJqFUZGkXFk8ygAexTPzsHY3a0etay8bBSQjdNP4ZI8TaA+gtHJtTKvhkUhJd6Jw==}
+  /openapi-typescript@6.4.3:
+    resolution: {integrity: sha512-GbAkQkiadlLRFRfPoIrETa1vwyOUah8NWnW221ykp5eEG+B1la67Ci1gfdIJggCYKueYqj9dISXswRWX3+LmUw==}
     hasBin: true
     dependencies:
       ansi-colors: 4.1.3
@@ -10412,9 +10389,9 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /type-fest@2.19.0:
-    resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
-    engines: {node: '>=12.20'}
+  /type-fest@3.13.1:
+    resolution: {integrity: sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==}
+    engines: {node: '>=14.16'}
 
   /typed-array-buffer@1.0.0:
     resolution: {integrity: sha512-Y8KTSIglk9OZEr8zywiIHG/kmQ7KWyjseXs1CbSo8vC42w7hg2HgYTxSWwP0+is7bWDc1H+Fo026CpHFwm8tkw==}
