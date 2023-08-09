@@ -586,8 +586,8 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       esbuild-loader:
-        specifier: 3.1.0
-        version: 3.1.0(webpack@5.88.2)
+        specifier: 4.0.0
+        version: 4.0.0(webpack@5.88.2)
       h3:
         specifier: 1.7.1
         version: 1.7.1
@@ -822,8 +822,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       esbuild-loader:
-        specifier: ^3.1.0
-        version: 3.1.0(webpack@5.88.2)
+        specifier: ^4.0.0
+        version: 4.0.0(webpack@5.88.2)
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
@@ -1490,7 +1490,6 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-arm@0.17.19:
@@ -1516,7 +1515,6 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/android-x64@0.17.19:
@@ -1542,7 +1540,6 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-arm64@0.17.19:
@@ -1568,7 +1565,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/darwin-x64@0.17.19:
@@ -1594,7 +1590,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-arm64@0.17.19:
@@ -1620,7 +1615,6 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/freebsd-x64@0.17.19:
@@ -1646,7 +1640,6 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm64@0.17.19:
@@ -1672,7 +1665,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-arm@0.17.19:
@@ -1698,7 +1690,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ia32@0.17.19:
@@ -1724,7 +1715,6 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-loong64@0.17.19:
@@ -1750,7 +1740,6 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-mips64el@0.17.19:
@@ -1776,7 +1765,6 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-ppc64@0.17.19:
@@ -1802,7 +1790,6 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-riscv64@0.17.19:
@@ -1828,7 +1815,6 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-s390x@0.17.19:
@@ -1854,7 +1840,6 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/linux-x64@0.17.19:
@@ -1880,7 +1865,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/netbsd-x64@0.17.19:
@@ -1906,7 +1890,6 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/openbsd-x64@0.17.19:
@@ -1932,7 +1915,6 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/sunos-x64@0.17.19:
@@ -1958,7 +1940,6 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-arm64@0.17.19:
@@ -1984,7 +1965,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-ia32@0.17.19:
@@ -2010,7 +1990,6 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@esbuild/win32-x64@0.17.19:
@@ -2036,7 +2015,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.46.0):
@@ -5349,12 +5327,12 @@ packages:
     resolution: {integrity: sha512-MEl9uirslVwqQU369iHNWZXsI8yaZYGg/D65aOgZkeyFJwHYSxilf7rQzXKI7DdDuBPrBXbfk3sl9hJhmd5AUw==}
     dev: true
 
-  /esbuild-loader@3.1.0(webpack@5.88.2):
-    resolution: {integrity: sha512-BoI+QDtBNcXuuhLWxa+ooAy3e6RDVQr4cadFFYo0T7KE9cBs0nuGnv8ExL77lfqRmeGVAd3NqVzC8GWNj6su6A==}
+  /esbuild-loader@4.0.0(webpack@5.88.2):
+    resolution: {integrity: sha512-J7TJWyHV2YHmflZaXLZ0Vf4wYmixDyGTw26bt4Ok+XOqSyYA4VWAVt2zJGqIfCA7TwZRDKN8hvus4akN2yAbmA==}
     peerDependencies:
       webpack: ^4.40.0 || ^5.0.0
     dependencies:
-      esbuild: 0.18.20
+      esbuild: 0.19.0
       get-tsconfig: 4.6.2
       loader-utils: 2.0.4
       webpack: 5.88.2
@@ -5447,7 +5425,6 @@ packages:
       '@esbuild/win32-arm64': 0.19.0
       '@esbuild/win32-ia32': 0.19.0
       '@esbuild/win32-x64': 0.19.0
-    dev: false
 
   /escalade@3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
