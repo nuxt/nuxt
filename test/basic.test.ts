@@ -94,6 +94,7 @@ describe('pages', () => {
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
+    expect(html).toContain('This is a synchronously registered global component')
 
     await expectNoClientErrors('/')
   })

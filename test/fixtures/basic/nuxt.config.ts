@@ -146,6 +146,13 @@ export default defineNuxtConfig({
         filePath: '~/other-components-folder/named-export'
       })
     },
+    'components:extend' (components) {
+      for (const comp of components) {
+        if (comp.pascalName === 'GlobalSync') {
+          comp.global = 'sync'
+        }
+      }
+    },
     'vite:extendConfig' (config) {
       config.plugins!.push({
         name: 'nuxt:server',
