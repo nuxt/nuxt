@@ -224,7 +224,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Request url
-  let url = ssrError?.url as string || islandContext?.url || event.path!
+  let url = ssrError?.url as string || islandContext?.url || event.path
 
   // Whether we are rendering payload route
   const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
@@ -437,7 +437,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     } satisfies RenderResponse
     if (import.meta.prerender) {
       await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.path!)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.path)
     }
     return response
   }
