@@ -60,6 +60,7 @@
     "@nuxt/vite-builder": "workspace:../vite",
     "@unhead/ssr": "^1.2.2",
     "@unhead/vue": "^1.2.2",
+    "@unhead/dom": "^1.2.2",
     "@vue/shared": "^3.3.4",
     "acorn": "8.10.0",
     "c12": "^1.4.2",

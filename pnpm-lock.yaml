@@ -364,6 +364,9 @@ importers:
       '@types/node':
         specifier: ^14.18.0 || >=16.10.0
         version: 18.17.4
+      '@unhead/dom':
+        specifier: ^1.2.2
+        version: 1.2.2
       '@unhead/ssr':
         specifier: ^1.2.2
         version: 1.2.2
@@ -7189,7 +7192,7 @@ packages:
       graceful-fs: 4.2.11
 
   /jstransformer@1.0.0:
-    resolution: {integrity: sha512-C9YK3Rf8q6VAPDCCU9fnqo3mAfOH6vUGnMcP4AQAYIEpWtfGLpwOTmZ+igtdK5y+VvI2n3CyYSzy4Qh34eq24A==}
+    resolution: {integrity: sha1-7Yvwkh4vPx7U1cGkT2hwntJHIsM=}
     dependencies:
       is-promise: 2.2.2
       promise: 7.3.1
@@ -10320,7 +10323,7 @@ packages:
     engines: {node: '>=0.6'}
 
   /token-stream@1.0.0:
-    resolution: {integrity: sha512-VSsyNPPW74RpHwR8Fc21uubwHY7wMDeJLys2IX5zJNih+OnAnaifKHo+1LHT7DAdloQ7apeaaWg8l7qnf/TnEg==}
+    resolution: {integrity: sha1-zCAOqyYT9BZtJ/+a/HylbUnfbrQ=}
     dev: false
 
   /totalist@1.1.0:
