@@ -207,7 +207,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ssrError.statusCode = parseInt(ssrError.statusCode as any)
   }
 
-  if (ssrError && event.node && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
+  if (ssrError && event.node?.req.__unenv__ /* direct request */) {
     throw createError({
       statusCode: 404,
       statusMessage: 'Page Not Found: /__nuxt_error'
