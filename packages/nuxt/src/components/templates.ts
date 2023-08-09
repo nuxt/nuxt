@@ -49,7 +49,6 @@ export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateCont
 
     const lazyComponents = [...lazyGlobalComponents]
     const syncComponents = [...syncGlobalComponents]
-    console.log({ lazyComponents, syncComponents })
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
 import { ${[...lazyComponents.map(c => 'Lazy' + c), ...syncComponents].join(', ')} } from '#components'
