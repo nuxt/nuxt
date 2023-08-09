@@ -1,6 +1,6 @@
 import { createHead as createClientHead } from '@unhead/vue'
-import { defineNuxtPlugin } from '#app/nuxt'
 import { renderDOMHead } from '@unhead/dom'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 export default defineNuxtPlugin({
   name: 'nuxt:head',
