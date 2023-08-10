@@ -20,7 +20,7 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const s = new MagicString(code)
       s.replace(INJECTION_RE, () => {
         replaced = true
-        return '_ctx._.provides[__nuxt_route_symbol]'
+        return '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)'
       })
       if (replaced) {
         s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
