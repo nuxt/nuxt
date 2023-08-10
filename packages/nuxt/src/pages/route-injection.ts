@@ -14,7 +14,7 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       return isVue(id, { type: ['template', 'script'] })
     },
     transform (code) {
-      if (!INJECTION_SINGLE_RE.test(code)) { return }
+      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol')) { return }
 
       let replaced = false
       const s = new MagicString(code)
