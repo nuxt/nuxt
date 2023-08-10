@@ -1,14 +1,14 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { basename, dirname, join, resolve } from 'pathe'
-import type { Nuxt, ViteConfig } from '@nuxt/schema'
+import { dirname, join, resolve } from 'pathe'
+import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
-import { consola } from 'consola'
+
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -26,14 +26,7 @@ export interface ViteBuildContext {
   ssrServer?: vite.ViteDevServer
 }
 
-export async function bundle (nuxt: Nuxt) {
-  // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
-  const viteConfigPrefix = resolve(nuxt.options.rootDir, 'vite.config')
-  const viteConfigFile = await resolvePath(viteConfigPrefix).catch(() => null)
-  if (viteConfigFile && viteConfigFile !== viteConfigPrefix) {
-    consola.warn(`Using \`${basename(viteConfigFile)}\` is not supported together with Nuxt. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`)
-  }
-
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
@@ -82,7 +75,10 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
-        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
+        define: {
+          __NUXT_VERSION__: JSON.stringify(nuxt._version),
+          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+        },
         build: {
           copyPublicDir: false,
           rollupOptions: {
@@ -145,6 +141,13 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('vite:extend', ctx)
+
+  nuxt.hook('vite:extendConfig', (config) => {
+    config.plugins!.push(replace({
+      preventAssignment: true,
+      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.')))
+    }))
+  })
 
   if (!ctx.nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()

@@ -1,19 +1,14 @@
-import { createHead as createClientHead, createServerHead } from '@unhead/vue'
-import { renderSSRHead } from '@unhead/ssr'
+import { createHead as createClientHead } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
-// @ts-expect-error untyped
-import { appHead } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin({
   name: 'nuxt:head',
   setup (nuxtApp) {
-    const createHead = process.server ? createServerHead : createClientHead
-    const head = createHead()
-    head.push(appHead)
-
+    const head = import.meta.server ? nuxtApp.ssrContext!.head : createClientHead()
+    // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
-    if (process.client) {
+    if (import.meta.client) {
       // pause dom updates until page is ready and between page transitions
       let pauseDOMUpdates = true
       const unpauseDom = () => {
@@ -27,18 +22,6 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('page:finish', unpauseDom)
       // unpause the DOM once the mount suspense is resolved
       nuxtApp.hooks.hook('app:suspense:resolve', unpauseDom)
-    }
-
-    if (process.server) {
-      nuxtApp.ssrContext!.renderMeta = async () => {
-        const meta = await renderSSRHead(head)
-        return {
-          ...meta,
-          bodyScriptsPrepend: meta.bodyTagsOpen,
-          // resolves naming difference with NuxtMeta and Unhead
-          bodyScripts: meta.bodyTags
-        }
-      }
     }
   }
 })

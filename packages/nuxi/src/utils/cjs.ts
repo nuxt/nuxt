@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
-import { dirname, normalize } from 'pathe'
+import { normalize } from 'pathe'
 
-export function getModulePaths (paths?: string | string[]): string[] {
+function getModulePaths (paths?: string | string[]): string[] {
   return ([] as Array<string | undefined>)
     .concat(
       global.__NUXT_PREPATHS__,
@@ -24,12 +24,4 @@ function requireModule (id: string, paths?: string | string[]) {
 
 export function tryRequireModule (id: string, paths?: string | string[]) {
   try { return requireModule(id, paths) } catch { return null }
-}
-
-export function getNearestPackage (id: string, paths?: string | string[]) {
-  while (dirname(id) !== id) {
-    try { return requireModule(id + '/package.json', paths) } catch {}
-    id = dirname(id)
-  }
-  return null
 }

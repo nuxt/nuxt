@@ -1,4 +1,4 @@
-import { join, normalize, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -25,6 +25,8 @@ import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
+import { AsyncContextInjectionPlugin } from './plugins/async-context'
+import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -86,6 +88,9 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
 
+  // add resolver for modules used in virtual files
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
@@ -137,6 +142,11 @@ async function initNuxt (nuxt: Nuxt) {
     // DevOnly component tree-shaking - build time only
     addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+  }
+
+  // Transform initial composable call within `<script setup>` to preserve context
+  if (nuxt.options.experimental.asyncContext) {
+    addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -200,7 +210,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtLayout',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/layout')
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-layout')
   })
 
   // Add <NuxtErrorBoundary>
@@ -353,12 +363,17 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     // User provided patterns
+    const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        if (pattern === path) { return nuxt.callHook('restart') }
+        // Test (normalised) strings against absolute path and relative path to any layer `srcDir`
+        if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
         continue
       }
-      if (pattern.test(path)) { return nuxt.callHook('restart') }
+      // Test regular expressions against path to _any_ layer `srcDir`
+      if (layerRelativePaths.some(p => pattern.test(p))) {
+        return nuxt.callHook('restart')
+      }
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
@@ -407,6 +422,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       options._modules.push('@nuxt/devtools')
     } else {
       logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+    }
+  }
+
+  // Nuxt Webpack Builder is currently opt-in
+  if (options.builder === '@nuxt/webpack-builder') {
+    if (!await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/webpack-builder', options.modulesDir))) {
+      logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
     }
   }
 

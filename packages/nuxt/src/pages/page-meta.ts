@@ -7,7 +7,7 @@ import type { CallExpression, Expression, Identifier } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
-import { isAbsolute, normalize } from 'pathe'
+import { isAbsolute } from 'pathe'
 
 export interface PageMetaPluginOptions {
   dev?: boolean
@@ -40,10 +40,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
     transformInclude (id) {
-      const query = parseMacroQuery(id)
-      id = normalize(id)
-
-      return !!query.macro
+      return !!parseMacroQuery(id).macro
     },
     transform (code, id) {
       const query = parseMacroQuery(id)

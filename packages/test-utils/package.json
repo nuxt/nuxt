@@ -26,15 +26,15 @@
     "@nuxt/schema": "workspace:../schema",
     "consola": "^3.2.3",
     "defu": "^6.1.2",
-    "execa": "^7.1.1",
+    "execa": "^7.2.0",
     "get-port-please": "^3.0.1",
     "ofetch": "^1.1.1",
     "pathe": "^1.1.1",
     "ufo": "^1.2.0"
   },
   "devDependencies": {
-    "@jest/globals": "29.6.1",
-    "playwright-core": "1.36.1",
+    "@jest/globals": "29.6.2",
+    "playwright-core": "1.36.2",
     "unbuild": "latest",
     "vitest": "0.33.0"
   },

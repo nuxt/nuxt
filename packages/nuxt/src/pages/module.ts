@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -13,6 +13,7 @@ import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes } from './utils'
 import type { PageMetaPluginOptions } from './page-meta'
 import { PageMetaPlugin } from './page-meta'
+import { RouteInjectionPlugin } from './route-injection'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
@@ -253,6 +254,11 @@ export default defineNuxtModule({
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
 
+    // Add build plugin to ensure template $route is kept in sync with `<NuxtPage>`
+    if (nuxt.options.experimental.templateRouteInjection) {
+      addBuildPlugin(RouteInjectionPlugin(nuxt), { server: false })
+    }
+
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
@@ -353,11 +359,11 @@ export default defineNuxtModule({
       getContents: ({ app }: { app: NuxtApp }) => {
         const composablesFile = resolve(runtimeDir, 'composables')
         return [
-          'import { ComputedRef, Ref } from \'vue\'',
+          'import { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
-          '    layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
           '}'
         ].join('\n')

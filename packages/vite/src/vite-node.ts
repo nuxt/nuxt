@@ -132,7 +132,10 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir })
+        return resolveModule(result.id, {
+          url: ctx.nuxt.options.modulesDir,
+          conditions: ['node', 'import', 'require']
+        }).catch(() => false)
       }
       return false
     }

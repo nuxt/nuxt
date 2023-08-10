@@ -45,7 +45,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
   nuxtApp.hook('vue:error', (..._args) => {
     console.log('vue:error')
-    // if (process.client) {
+    // if (import.meta.client) {
     //   console.log(..._args)
     // }
   })
@@ -105,7 +105,7 @@ When accessing the same `payload.data` from [ssrcontext](#ssrcontext), you can a
 export const useColor = () => useState<string>('color', () => 'pink')
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (process.server) {
+  if (import.meta.server) {
     const color = useColor()
   }
 })
@@ -137,7 +137,7 @@ export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
     onErrorCaptured((err) => {
-      if (process.client && !nuxtApp.isHydrating) {
+      if (import.meta.client && !nuxtApp.isHydrating) {
         // ...
       }
     })

@@ -15,6 +15,7 @@ export default async (ssrContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   process.server = true
+  import.meta.server = true
 
   // Invalidate cache for files changed since last rendering
   const invalidates = await viteNodeFetch('/invalidates')

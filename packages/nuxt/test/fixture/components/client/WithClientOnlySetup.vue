@@ -59,7 +59,7 @@ const ByeBye = defineAsyncComponent(() => import('./../some-glob.global.vue'))
 
 const NotDotClientComponent = defineAsyncComponent(() => import('./../some.island.vue'))
 const SomeIsland = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../some.island.vue'))
   }
 
@@ -67,7 +67,7 @@ const SomeIsland = defineAsyncComponent(async () => {
 })
 
 const NotToBeTreeShaken = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -75,7 +75,7 @@ const NotToBeTreeShaken = defineAsyncComponent(async () => {
 })
 
 const { ObjectPattern } = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -83,7 +83,7 @@ const { ObjectPattern } = defineAsyncComponent(async () => {
 })
 
 const { ObjectPattern: ObjectPatternDeclaration } = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -91,7 +91,7 @@ const { ObjectPattern: ObjectPatternDeclaration } = defineAsyncComponent(async (
 })
 
 const { ObjectPattern: Halllo, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -100,7 +100,7 @@ const { ObjectPattern: Halllo, ButShouldNotBeTreeShaken } = defineAsyncComponent
 const isThis = {}
 
 const { woooooo, What = isThis } = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -110,7 +110,7 @@ const { woooooo, What = isThis } = defineAsyncComponent(async () => {
 console.log(woooooo)
 
 const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -118,7 +118,7 @@ const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(asy
 })
 
 const [FromArray] = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
@@ -126,7 +126,7 @@ const [FromArray] = defineAsyncComponent(async () => {
 })
 
 const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
-  if (process.client) {
+  if (import.meta.client) {
     return (await import('./../HelloWorld.vue'))
   }
 
