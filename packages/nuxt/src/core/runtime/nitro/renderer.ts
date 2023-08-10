@@ -424,7 +424,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
       }
     }
- 
+
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,

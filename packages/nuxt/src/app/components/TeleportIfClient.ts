@@ -1,6 +1,6 @@
+import { relative } from 'node:path'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app'
-import { relative } from 'path'
 
 /**
  * component only used with componentsIsland
@@ -24,7 +24,6 @@ export default defineComponent({
     }
   },
   setup (props, { slots }) {
-  
     const app = useNuxtApp()
 
     const islandContext = app.ssrContext!.islandContext
@@ -33,14 +32,13 @@ export default defineComponent({
     console.log(slot)
     if (process.dev) {
       console.log(app)
-      const path = '__nuxt/' + relative(props.rootDir, slot.type.__file)
+      const path = '_nuxt/' + relative(props.rootDir, slot.type.__file)
 
       islandContext.chunks[slot.type.__name] = path
     }
     islandContext.propsData[props.to] = slot.props || {}
     // todo set prop in payload
     return () => {
-
       if (props.nuxtClient) {
         return [h('div', {
           style: 'display: contents;',

@@ -1,3 +1,4 @@
+import type { Component } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -6,6 +7,7 @@ import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
+import { join } from 'pathe'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
@@ -24,18 +26,17 @@ const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
 let id = 0
-const getId = process.client ? () => (id++).toString() : randomUUID
-const components = process.client ? new Map<string, unknown>() : undefined
+const getId = import.meta.client ? () => (id++).toString() : randomUUID
+const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (paths: Record<string, string>) {
+async function loadComponents (source = '/', paths: Record<string, string>) {
   const promises = []
 
-  debugger
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const c = await import('http://localhost:3000/__nuxt/components/SugarCounter.vue')
-        debugger
+        const chunkSource = join(source, paths[component])
+        const c = await import(chunkSource)
         components!.set(component, c.default ?? c)
       })())
     }
@@ -109,9 +110,24 @@ export default defineComponent({
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
+    // no need for reactivity
+    let interactiveComponentsList: Record<string, Record<string, any>> = {}
+
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      return ssrHTML.value.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
+      let html = ssrHTML.value
+      if (process.client) {
+        const el = document.createElement('html')
+        el.innerHTML = html
+        Object.entries(interactiveComponentsList).forEach(([id]) => {
+          const interactiveWrapper = el.querySelector(`[nuxt-ssr-client="${id}"]`)
+          if (interactiveWrapper) {
+            interactiveWrapper.innerHTML = ''
+          }
+        })
+        html = el.innerHTML
+      }
+      return html.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
           return ''
@@ -120,8 +136,6 @@ export default defineComponent({
       })
     })
 
-    // no need for reactivity
-    let interactiveComponentsList = {}
     function setUid () {
       uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
@@ -176,15 +190,15 @@ export default defineComponent({
           // must await next tick for Teleport to work correctly with static node re-rendering
           await nextTick()
         }
+
+        if (process.client) {
+          await loadComponents(props.source, res.chunks)
+          interactiveComponentsList = res.props
+        }
+
         setUid()
       } catch (e) {
         error.value = e
-      }
-      setUid()
-
-      if (process.client) {
-        await loadComponents(res.chunks)
-        interactiveComponentsList = res.props
       }
     }
 
@@ -221,10 +235,11 @@ export default defineComponent({
           }
         }
         if (process.client && html.value.includes('nuxt-ssr-client') && mounted.value) {
-          
-          for (const id in interactiveComponentsList) {
+          for (const [id, props] of Object.entries(interactiveComponentsList)) {
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
-              default: () => [h(components!.get(id.split('-')[0]), interactiveComponentsList[id])]
+              default: () => {
+                return [h(components!.get(id.split('-')[0])!, props)]
+              }
             })
             nodes.push(vnode)
           }
