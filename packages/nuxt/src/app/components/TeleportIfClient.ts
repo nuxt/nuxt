@@ -1,6 +1,7 @@
 import { relative } from 'node:path'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app'
+// todo import manifest in production
 
 /**
  * component only used with componentsIsland
@@ -36,6 +37,7 @@ export default defineComponent({
 
       islandContext.chunks[slot.type.__name] = path
     }
+    // todo chunk path in production
     islandContext.propsData[props.to] = slot.props || {}
     // todo set prop in payload
     return () => {
