@@ -40,6 +40,10 @@ export interface NuxtIslandContext {
   name: string
   props?: Record<string, any>
   url?: string
+  // chunks to load components
+  chunks: Record<string, string>
+  // props to be sent back
+  propsData: Record<string, any>
 }
 
 export interface NuxtIslandResponse {
@@ -50,6 +54,8 @@ export interface NuxtIslandResponse {
     link: (Record<string, string>)[]
     style: ({ innerHTML: string, key: string })[]
   }
+  chunks: Record<string, string>
+  props: Record<string, Record<string, any>>
 }
 
 export interface NuxtRenderResponse {
@@ -164,7 +170,9 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    uid: destr(context.uid) || undefined
+    uid: destr(context.uid) || undefined,
+    chunks: {},
+    propsData: {}
   }
 
   return ctx
@@ -360,12 +368,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         innerHTML: tag.innerHTML
       }))
     }
-
+ 
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head,
       html: getServerComponentHTML(htmlContext.body),
-      state: ssrContext.payload.state
+      state: ssrContext.payload.state,
+      chunks: islandContext.chunks,
+      props: islandContext.propsData
     }
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })

@@ -5,6 +5,13 @@
     <div id="async-server-component-count">
       {{ count }}
     </div>
+
+    <div style="border: solid 1px red;"> 
+      The component bellow is not a slot but declared as interactive
+      
+    <SugarCounter nuxt-client :multiplier="1" /> 
+    </div>
+     
     <slot />
   </div>
 </template>

@@ -226,7 +226,8 @@ export default defineNuxtModule<ComponentsOptions>({
 
       if (isServer && nuxt.options.experimental.componentIslands) {
         config.plugins.push(islandsTransform.vite({
-          getComponents
+          getComponents,
+          rootDir: nuxt.options.rootDir
         }))
       }
       if (!isServer && nuxt.options.experimental.componentIslands) {

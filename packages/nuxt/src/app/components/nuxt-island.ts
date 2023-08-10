@@ -9,6 +9,7 @@ import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { useRequestEvent } from '#app/composables/ssr'
@@ -21,6 +22,23 @@ const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>((
 
 let id = 0
 const getId = process.client ? () => (id++).toString() : randomUUID
+const components = process.client ? new Map<string, unknown>() : undefined
+
+async function loadComponents (paths: Record<string, string>) {
+  const promises = []
+
+  debugger
+  for (const component in paths) {
+    if (!(components!.has(component))) {
+      promises.push((async () => {
+        const c = await import('http://localhost:3000/__nuxt/components/SugarCounter.vue')
+        debugger
+        components!.set(component, c.default ?? c)
+      })())
+    }
+  }
+  await Promise.all(promises)
+}
 
 export default defineComponent({
   name: 'NuxtIsland',
@@ -71,7 +89,9 @@ export default defineComponent({
           head: {
             link: [],
             style: []
-          }
+          },
+          chunks: {},
+          props: {}
         })
       }
       ssrHTML.value = renderedHTML ?? '<div></div>'
@@ -90,6 +110,9 @@ export default defineComponent({
         return content
       })
     })
+
+    // no need for reactivity
+    let interactiveComponentsList = {}
     function setUid () {
       uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
@@ -142,6 +165,11 @@ export default defineComponent({
         await nextTick()
       }
       setUid()
+
+      if (process.client) {
+        await loadComponents(res.chunks)
+        interactiveComponentsList = res.props
+      }
     }
 
     if (import.meta.hot) {
@@ -163,12 +191,22 @@ export default defineComponent({
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [h(createStaticVNode(html.value, 1))])]
+
       if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: process.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
               default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
             }))
+          }
+        }
+        if (process.client && html.value.includes('nuxt-ssr-client') && mounted.value) {
+          
+          for (const id in interactiveComponentsList) {
+            const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
+              default: () => [h(components!.get(id.split('-')[0]), interactiveComponentsList[id])]
+            })
+            nodes.push(vnode)
           }
         }
       }

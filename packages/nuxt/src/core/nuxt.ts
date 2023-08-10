@@ -269,6 +269,10 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
+
+    nuxt.hook('build:manifest', (manifest) => {
+      debugger
+    })
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API
