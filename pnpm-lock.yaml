@@ -111,8 +111,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       playwright-core:
-        specifier: 1.36.2
-        version: 1.36.2
+        specifier: 1.37.0
+        version: 1.37.0
       rimraf:
         specifier: 5.0.1
         version: 5.0.1
@@ -317,8 +317,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       ohash:
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 1.1.3
+        version: 1.1.3
       pathe:
         specifier: 1.1.1
         version: 1.1.1
@@ -353,8 +353,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@nuxt/telemetry':
-        specifier: ^2.3.2
-        version: 2.3.2
+        specifier: ^2.4.1
+        version: 2.4.1
       '@nuxt/ui-templates':
         specifier: ^1.3.1
         version: 1.3.1
@@ -446,8 +446,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       ohash:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^1.1.3
+        version: 1.1.3
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -565,8 +565,8 @@ importers:
         version: 1.4.0
     devDependencies:
       '@nuxt/telemetry':
-        specifier: 2.3.2
-        version: 2.3.2
+        specifier: 2.4.1
+        version: 2.4.1
       '@types/file-loader':
         specifier: 5.0.1
         version: 5.0.1
@@ -665,8 +665,8 @@ importers:
         specifier: 29.6.2
         version: 29.6.2
       playwright-core:
-        specifier: 1.36.2
-        version: 1.36.2
+        specifier: 1.37.0
+        version: 1.37.0
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -734,8 +734,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       ohash:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^1.1.3
+        version: 1.1.3
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -864,8 +864,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       ohash:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^1.1.3
+        version: 1.1.3
       pathe:
         specifier: ^1.1.1
         version: 1.1.1
@@ -2377,7 +2377,7 @@ packages:
       listhen: 1.2.2
       mdast-util-to-hast: 12.3.0
       mdurl: 1.0.1
-      ohash: 1.1.2
+      ohash: 1.1.3
       pathe: 1.1.1
       property-information: 6.2.0
       rehype-external-links: 2.1.0
@@ -2435,8 +2435,8 @@ packages:
       webpack: 5.88.2
     dev: false
 
-  /@nuxt/telemetry@2.3.2:
-    resolution: {integrity: sha512-S2sF4hLQWS48lWPpRT8xqVUFuwFGTgeKvojp8vL/iP79fWxudua2DWXR15T8C2zpauYwNgEpEWJmy6vxY2ZQeg==}
+  /@nuxt/telemetry@2.4.1:
+    resolution: {integrity: sha512-Cj+4sXjO5pZNW2sX7Y+djYpf4pZwgYF3rV/YHLWIOq9nAjo2UcDXjh1z7qnhkoUkvJN3lHnvhnCNhfAioe6k/A==}
     hasBin: true
     dependencies:
       '@nuxt/kit': link:packages/kit
@@ -2456,6 +2456,7 @@ packages:
       node-fetch: 3.3.2
       ofetch: 1.1.1
       parse-git-config: 3.0.0
+      pathe: 1.1.1
       rc9: 2.1.1
       std-env: 3.3.3
 
@@ -4333,7 +4334,7 @@ packages:
       giget: 1.1.2
       jiti: 1.19.1
       mlly: 1.4.0
-      ohash: 1.1.2
+      ohash: 1.1.3
       pathe: 1.1.1
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
@@ -8135,7 +8136,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 1.2.0
       ofetch: 1.1.1
-      ohash: 1.1.2
+      ohash: 1.1.3
       openapi-typescript: 6.4.0
       pathe: 1.1.1
       perfect-debounce: 1.0.0
@@ -8420,8 +8421,8 @@ packages:
       node-fetch-native: 1.2.0
       ufo: 1.2.0
 
-  /ohash@1.1.2:
-    resolution: {integrity: sha512-9CIOSq5945rI045GFtcO3uudyOkYVY1nyfFxVQp+9BRgslr8jPNiSSrsFGg/BNTUFOLqx0P5tng6G32brIPw0w==}
+  /ohash@1.1.3:
+    resolution: {integrity: sha512-zuHHiGTYTA1sYJ/wZN+t5HKZaH23i4yI1HMwbuXm24Nid7Dv0KcuRlKoNKS9UNfAVSBlnGLcuQrnOKWOZoEGaw==}
 
   /on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -8695,7 +8696,7 @@ packages:
       defu: 6.1.2
       magic-string: 0.30.2
       nanoid: 4.0.2
-      ohash: 1.1.2
+      ohash: 1.1.3
       paneer: 0.1.0
       pathe: 1.1.1
       postcss-custom-properties: 13.1.4(postcss@8.4.27)
@@ -8724,8 +8725,8 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
 
-  /playwright-core@1.36.2:
-    resolution: {integrity: sha512-sQYZt31dwkqxOrP7xy2ggDfEzUxM1lodjhsQ3NMMv5uGTRDsLxU0e4xf4wwMkF2gplIxf17QMBCodSFgm6bFVQ==}
+  /playwright-core@1.37.0:
+    resolution: {integrity: sha512-1c46jhTH/myQw6sesrcuHVtLoSNfJv8Pfy9t3rs6subY7kARv0HRw5PpyfPYPpPtQvBOmgbE6K+qgYUpj81LAA==}
     engines: {node: '>=16'}
     hasBin: true
     dev: true

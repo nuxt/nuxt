@@ -39,7 +39,7 @@
     "memfs": "^4.2.1",
     "mini-css-extract-plugin": "^2.7.6",
     "mlly": "^1.4.0",
-    "ohash": "^1.1.2",
+    "ohash": "^1.1.3",
     "pathe": "^1.1.1",
     "pify": "^6.1.0",
     "postcss": "^8.4.27",

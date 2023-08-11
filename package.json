@@ -70,7 +70,7 @@
     "nuxt-vitest": "0.10.2",
     "ofetch": "1.1.1",
     "pathe": "1.1.1",
-    "playwright-core": "1.36.2",
+    "playwright-core": "1.37.0",
     "rimraf": "5.0.1",
     "semver": "7.5.4",
     "std-env": "3.3.3",
