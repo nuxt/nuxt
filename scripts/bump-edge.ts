@@ -1,5 +1,4 @@
 import { execSync } from 'node:child_process'
-import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { determineBumpType, loadWorkspace } from './_utils'
 
@@ -15,12 +14,6 @@ async function main () {
   const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim().slice(0, 8)
   const date = Math.round(Date.now() / (1000 * 60))
 
-  const resolutions: Record<string, string> = {}
-  for (const [pkg, name] of Object.entries(nightlyPackages)) {
-    const { version: latest } = await $fetch<{ version: string }>(`https://registry.npmjs.org/${name}/latest`)
-    resolutions[pkg] = `npm:${name}@^${latest}`
-  }
-
   const bumpType = await determineBumpType()
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
@@ -28,9 +21,9 @@ async function main () {
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`, {
       updateDeps: true
     })
-    for (const [name, version] of Object.entries(resolutions)) {
+    for (const [name, nightlyName] of Object.entries(nightlyPackages)) {
       if (name in pkg.data.dependencies) {
-        pkg.data.dependencies[name] = version
+        pkg.data.dependencies[name] = `npm:${nightlyName}@latest`
       }
     }
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
