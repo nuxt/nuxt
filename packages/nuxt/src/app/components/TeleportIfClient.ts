@@ -30,9 +30,7 @@ export default defineComponent({
     const islandContext = app.ssrContext!.islandContext
 
     const slot = slots.default!()[0]
-    console.log(slot)
     if (process.dev) {
-      console.log(app)
       const path = '_nuxt/' + relative(props.rootDir, slot.type.__file)
 
       islandContext.chunks[slot.type.__name] = path

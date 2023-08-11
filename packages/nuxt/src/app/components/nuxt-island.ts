@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -111,20 +111,23 @@ export default defineComponent({
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     // no need for reactivity
-    let interactiveComponentsList: Record<string, Record<string, any>> = {}
+    let interactiveProps: Record<string, Record<string, any>> = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props : {}
+    const interactiveChunksList = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
 
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
-      if (process.client) {
-        const el = document.createElement('html')
+      if (import.meta.client) {
+        const el = document.createElement('div')
         el.innerHTML = html
-        Object.entries(interactiveComponentsList).forEach(([id]) => {
+
+        Object.entries(interactiveProps).forEach(([id]) => {
           const interactiveWrapper = el.querySelector(`[nuxt-ssr-client="${id}"]`)
           if (interactiveWrapper) {
             interactiveWrapper.innerHTML = ''
           }
         })
+
         html = el.innerHTML
       }
       return html.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
@@ -135,10 +138,10 @@ export default defineComponent({
         return content
       })
     })
-
     function setUid () {
       uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
+
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
@@ -190,10 +193,14 @@ export default defineComponent({
           // must await next tick for Teleport to work correctly with static node re-rendering
           await nextTick()
         }
+        nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`] = {
+          chunks: res.chunks,
+          props: res.props
+        }
 
         if (process.client) {
           await loadComponents(props.source, res.chunks)
-          interactiveComponentsList = res.props
+          interactiveProps = res.props
         }
 
         setUid()
@@ -216,11 +223,13 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating) {
       await fetchComponent()
+    } else if (nuxtApp.isHydrating) {
+      await loadComponents(props.source, interactiveChunksList)
     }
 
     return () => {
       if ((!html.value || error.value) && slots.fallback) {
-        return [slots.fallback({ error: error.value })]
+         return [slots.fallback({ error: error.value })]
       }
       const nodes = [createVNode(Fragment, {
         key: key.value
@@ -234,8 +243,8 @@ export default defineComponent({
             }))
           }
         }
-        if (process.client && html.value.includes('nuxt-ssr-client') && mounted.value) {
-          for (const [id, props] of Object.entries(interactiveComponentsList)) {
+        if (process.client && html.value.includes('nuxt-ssr-client')) {
+          for (const [id, props] of Object.entries(interactiveProps)) {
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
               default: () => {
                 return [h(components!.get(id.split('-')[0])!, props)]
