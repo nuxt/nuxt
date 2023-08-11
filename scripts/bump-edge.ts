@@ -32,9 +32,6 @@ async function main () {
       if (name in pkg.data.dependencies) {
         pkg.data.dependencies[name] = version
       }
-      if (name in pkg.data.devDependencies) {
-        pkg.data.dependencies[name] = version
-      }
     }
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
     workspace.rename(pkg.data.name, newname)
