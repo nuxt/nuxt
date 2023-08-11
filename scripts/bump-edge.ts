@@ -22,7 +22,7 @@ async function main () {
       updateDeps: true
     })
     for (const [name, nightlyName] of Object.entries(nightlyPackages)) {
-      if (name in pkg.data.dependencies) {
+      if (pkg.data.dependencies && name in pkg.data.dependencies) {
         pkg.data.dependencies[name] = `npm:${nightlyName}@latest`
       }
     }
