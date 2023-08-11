@@ -15,10 +15,10 @@ async function main () {
   const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim().slice(0, 8)
   const date = Math.round(Date.now() / (1000 * 60))
 
-  const nuxtPkg = workspace.find('nuxt')
+  const resolutions: Record<string, string> = {}
   for (const [pkg, name] of Object.entries(nightlyPackages)) {
     const { version: latest } = await $fetch<{ version: string }>(`https://registry.npmjs.org/${name}/latest`)
-    nuxtPkg.data.dependencies[pkg] = `npm:${name}@^${latest}`
+    resolutions[pkg] = `npm:${name}@^${latest}`
   }
 
   const bumpType = await determineBumpType()
@@ -28,6 +28,14 @@ async function main () {
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`, {
       updateDeps: true
     })
+    for (const [name, version] of Object.entries(resolutions)) {
+      if (name in pkg.data.dependencies) {
+        pkg.data.dependencies[name] = version
+      }
+      if (name in pkg.data.devDependencies) {
+        pkg.data.dependencies[name] = version
+      }
+    }
     const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
     workspace.rename(pkg.data.name, newname)
   }
