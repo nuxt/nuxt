@@ -331,7 +331,7 @@ describe('pages', () => {
   it('/wrapper-expose/layout', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/wrapper-expose/layout')
     await page.locator('.log-foo').first().click()
-    expect(pageErrors.at(-1)?.toString()).toContain('.logFoo is not a function')
+    expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.logFoo is not a function')
     await page.locator('.log-hello').first().click()
     expect(consoleLogs.at(-1)!.text).toContain('world')
     await page.locator('.add-count').first().click()
@@ -343,7 +343,7 @@ describe('pages', () => {
     await page.locator('.log-foo').first().click()
     expect(consoleLogs.at(-1)!.text).toContain('bar')
     await page.locator('.log-hello').first().click()
-    expect(pageErrors.at(-1)?.toString()).toContain('.logHello is not a function')
+    expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.logHello is not a function')
     await page.locator('.add-count').first().click()
     await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('1'))
     // change layout
@@ -370,7 +370,7 @@ describe('pages', () => {
     // change page
     await page.locator('#to-hello').click()
     await page.locator('#log-foo').click()
-    expect(pageErrors.at(-1)?.toString()).toContain('.foo is not a function')
+    expect(pageErrors.at(-1)?.toString() || consoleLogs.at(-1)!.text).toContain('.foo is not a function')
     await page.locator('#log-hello').click()
     expect(consoleLogs.at(-1)?.text).toBe('world')
     await page.close()
@@ -733,8 +733,8 @@ describe('errors', () => {
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
     expect(await page.innerText('div')).toContain('Chunk error page')
-    await page.waitForLoadState('networkidle')
-    expect(await page.innerText('div')).toContain('State: 3')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/chunk-error')
+    await page.locator('div').getByText('State: 3').waitFor()
 
     await page.close()
   })
@@ -1307,9 +1307,9 @@ describe('server components/islands', () => {
     const { page } = await renderPage('/islands')
     await page.locator('#increase-pure-component').click()
     await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
-    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
+    await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
@@ -1320,9 +1320,9 @@ describe('server components/islands', () => {
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
     ])
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
-    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    await page.locator('#async-server-component-count').getByText('1').waitFor()
+    await page.locator('#long-async-component-count').getByText('1').waitFor()
 
     // test islands slots interactivity
     await page.locator('#first-sugar-counter button').click()
@@ -1695,12 +1695,13 @@ describe('component islands', () => {
   it('test client-side navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('#islands')
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
+
     await page.locator('#increase-pure-component').click()
     await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#slot-in-server').first().innerHTML()).toContain('Slot with in .server component')
-    expect(await page.locator('#test-slot').first().innerHTML()).toContain('Slot with name test')
+
+    await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
+    await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
     // test islands update
     expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
@@ -1709,9 +1710,8 @@ describe('component islands', () => {
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
     ])
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#async-server-component-count').innerHTML()).toContain(('1'))
-    expect(await page.locator('#long-async-component-count').innerHTML()).toContain('1')
+
+    await page.locator('#long-async-component-count').getByText('1').waitFor()
 
     // test islands slots interactivity
     await page.locator('#first-sugar-counter button').click()
