@@ -343,7 +343,7 @@ describe('pages', () => {
     await page.locator('.log-foo').first().click()
     expect(consoleLogs.at(-1)!.text).toContain('bar')
     await page.locator('.log-hello').first().click()
-    expect(consoleLogs.at(-1)!.text).toContain('.logHello is not a function')
+    expect(pageErrors.at(-1)?.toString()).toContain('.logHello is not a function')
     await page.locator('.add-count').first().click()
     await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('1'))
     // change layout
