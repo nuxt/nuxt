@@ -15,7 +15,7 @@
     "fs-extra": "^10.1.0",
     "lodash": "^4.17.21",
     "lru-cache": "^5.1.1",
-    "ufo": "^1.1.2",
+    "ufo": "^1.2.0",
     "vue": "^2.7.10",
     "vue-meta": "^2.4.0",
     "vue-server-renderer": "^2.7.14"
