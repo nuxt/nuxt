@@ -39,6 +39,7 @@
     "vue": "3.3.4",
     "magic-string": "^0.30.2",
     "h3": "npm:h3-nightly@latest",
+    "nitropack": "npm:nitropack-edge@latest",
     "unenv": "^1.7.1"
   },
   "devDependencies": {
@@ -62,11 +63,11 @@
     "execa": "7.2.0",
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
-    "h3": "npm:h3-nightly@latest",
+    "h3": "1.7.1",
     "happy-dom": "10.9.0",
     "jiti": "1.19.1",
     "markdownlint-cli": "^0.33.0",
-    "nitropack": "npm:nitropack-edge@latest",
+    "nitropack": "2.5.2",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "nuxt-vitest": "0.10.2",

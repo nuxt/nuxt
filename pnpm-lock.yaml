@@ -16,6 +16,7 @@ overrides:
   vue: 3.3.4
   magic-string: ^0.30.2
   h3: npm:h3-nightly@latest
+  nitropack: npm:nitropack-edge@latest
   unenv: ^1.7.1
 
 importers:
