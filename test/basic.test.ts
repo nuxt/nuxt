@@ -331,7 +331,7 @@ describe('pages', () => {
   it('/wrapper-expose/layout', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/wrapper-expose/layout')
     await page.locator('.log-foo').first().click()
-    expect(consoleLogs.at(-1)!.text).toContain('.logFoo is not a function')
+    expect(pageErrors.at(-1)?.toString()).toContain('.logFoo is not a function')
     await page.locator('.log-hello').first().click()
     expect(consoleLogs.at(-1)!.text).toContain('world')
     await page.locator('.add-count').first().click()
@@ -349,7 +349,6 @@ describe('pages', () => {
     // change layout
     await page.locator('.swap-layout').click()
     await page.waitForFunction(() => document.querySelector('.count')?.innerHTML.includes('0'))
-    expect(pageErrors).toEqual([])
     await page.close()
   })
 
@@ -371,10 +370,9 @@ describe('pages', () => {
     // change page
     await page.locator('#to-hello').click()
     await page.locator('#log-foo').click()
-    expect(consoleLogs.at(-1)?.text?.includes('.foo is not a function')).toBeTruthy()
+    expect(pageErrors.at(-1)?.toString()).toContain('.foo is not a function')
     await page.locator('#log-hello').click()
     expect(consoleLogs.at(-1)?.text).toBe('world')
-    expect(pageErrors).toEqual([])
     await page.close()
   })
 
