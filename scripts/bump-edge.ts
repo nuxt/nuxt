@@ -3,6 +3,12 @@ import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { determineBumpType, loadWorkspace } from './_utils'
 
+const nightlyPackages = {
+  nitropack: 'nitropack-edge',
+  h3: 'h3-nightly',
+  nuxi: 'nuxi-ng'
+}
+
 async function main () {
   const workspace = await loadWorkspace(process.cwd())
 
@@ -10,11 +16,10 @@ async function main () {
   const date = Math.round(Date.now() / (1000 * 60))
 
   const nuxtPkg = workspace.find('nuxt')
-  const { version: latestNitro } = await $fetch<{ version: string }>('https://registry.npmjs.org/nitropack-edge/latest')
-  nuxtPkg.data.dependencies.nitropack = `npm:nitropack-edge@^${latestNitro}`
-
-  const { version: latestNuxi } = await $fetch<{ version: string }>('https://registry.npmjs.org/nuxi-ng/latest')
-  nuxtPkg.data.dependencies.nuxi = `npm:nuxi-ng@^${latestNuxi}`
+  for (const [pkg, name] of Object.entries(nightlyPackages)) {
+    const { version: latest } = await $fetch<{ version: string }>(`https://registry.npmjs.org/${name}/latest`)
+    nuxtPkg.data.dependencies[pkg] = `npm:${name}@^${latest}`
+  }
 
   const bumpType = await determineBumpType()
 
