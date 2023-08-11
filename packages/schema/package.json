@@ -26,7 +26,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/telemetry": "2.3.2",
+    "@nuxt/telemetry": "2.4.1",
     "@types/file-loader": "5.0.1",
     "@types/pug": "2.0.6",
     "@types/sass-loader": "8.0.5",
