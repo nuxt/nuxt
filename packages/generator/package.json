@@ -16,7 +16,7 @@
     "fs-extra": "^10.1.0",
     "html-minifier": "^4.0.0",
     "node-html-parser": "^6.1.5",
-    "ufo": "^1.1.2"
+    "ufo": "^1.2.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

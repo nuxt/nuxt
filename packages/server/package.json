@@ -24,7 +24,7 @@
     "serve-placeholder": "^2.0.1",
     "serve-static": "^1.15.0",
     "server-destroy": "^1.0.1",
-    "ufo": "^1.1.2"
+    "ufo": "^1.2.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
