@@ -7,7 +7,7 @@ export function useRequestHeaders<K extends string = string> (include: K[]): { [
 export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
   if (import.meta.client) { return {} }
-  const event = import.meta.server && useNuxtApp().ssrContext?.event
+  const event = useNuxtApp().ssrContext?.event
   const headers = event ? getRequestHeaders(event) : {}
   if (!include) { return headers }
   return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
