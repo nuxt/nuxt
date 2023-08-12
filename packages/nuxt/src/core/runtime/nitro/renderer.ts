@@ -207,8 +207,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ssrError.statusCode = parseInt(ssrError.statusCode as any)
   }
 
-  // @ts-expect-error __unenv__ is a private property
-  if (ssrError && event.node?.req.__unenv__ /* direct request */) {
+  if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
     throw createError({
       statusCode: 404,
       statusMessage: 'Page Not Found: /__nuxt_error'
@@ -233,6 +232,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     url = url.substring(0, url.lastIndexOf('/')) || '/'
 
     event._path = url
+    event.node.req.url = url
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
       return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
     }
