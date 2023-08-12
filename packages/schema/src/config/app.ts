@@ -173,9 +173,11 @@ export default defineUntypedSchema({
 
     /**
      * Customize Nuxt root element id.
+     *
+     * @type {string | false}
      */
     rootId: {
-      $resolve: val => val || '__nuxt'
+      $resolve: val => val === false ? false : val || '__nuxt'
     },
 
     /**
