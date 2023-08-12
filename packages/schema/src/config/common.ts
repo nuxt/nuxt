@@ -14,7 +14,6 @@ export default defineUntypedSchema({
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
    *
    * @type {string|string[]}
-   *
    */
   extends: null,
 
@@ -26,7 +25,6 @@ export default defineUntypedSchema({
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
    *
    * @type {string}
-   *
    */
   theme: null,
 
@@ -170,7 +168,7 @@ export default defineUntypedSchema({
    *
    */
   debug: {
-    $resolve: async (val, get) => val ?? isDebug
+    $resolve: val => val ?? isDebug
   },
 
   /**
@@ -178,7 +176,7 @@ export default defineUntypedSchema({
    * If set to `false` generated pages will have no content.
    */
   ssr: {
-    $resolve: (val) => val ?? true,
+    $resolve: val => val ?? true
   },
 
   /**
@@ -191,7 +189,6 @@ export default defineUntypedSchema({
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
    *
    * @note Modules are executed sequentially so the order is important.
-   *
    * @example
    * ```js
    * modules: [
@@ -252,12 +249,12 @@ export default defineUntypedSchema({
      * and copied across into your `dist` folder when your app is generated.
      */
     public: {
-      $resolve: async (val, get) => val || await get('dir.static') || 'public',
+      $resolve: async (val, get) => val || await get('dir.static') || 'public'
     },
 
     static: {
       $schema: { deprecated: 'use `dir.public` option instead' },
-      $resolve: async (val, get) => val || await get('dir.public') || 'public',
+      $resolve: async (val, get) => val || await get('dir.public') || 'public'
     }
   },
 
@@ -274,11 +271,9 @@ export default defineUntypedSchema({
    *
    * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
-   *
    * @note These aliases will be automatically added to the generated `.nuxt/tsconfig.json` so you can get full
    * type support and path auto-complete. In case you need to extend options provided by `./.nuxt/tsconfig.json`
    * further, make sure to add them here or within the `typescript.tsConfig` property in `nuxt.config`.
-   *
    * @example
    * ```js
    * export default {
@@ -309,7 +304,6 @@ export default defineUntypedSchema({
    * }
    * </style>
    * ```
-   *
    * @type {Record<string, string>}
    */
   alias: {
@@ -328,7 +322,6 @@ export default defineUntypedSchema({
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).
    *
    * @see [node-ignore](https://github.com/kaelzhang/node-ignore)
-   *
    * @example
    * ```js
    * ignoreOptions: {
@@ -343,7 +336,7 @@ export default defineUntypedSchema({
    * building if its filename starts with the prefix specified by `ignorePrefix`.
    */
   ignorePrefix: {
-    $resolve: (val) => val ?? '-',
+    $resolve: val => val ?? '-'
   },
 
   /**
@@ -372,7 +365,7 @@ export default defineUntypedSchema({
    * @type {Array<string | RegExp>}
    */
   watch: {
-    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp),
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
   },
 
   /**
@@ -385,7 +378,7 @@ export default defineUntypedSchema({
      * `watchOptions` to pass directly to webpack.
      *
      * @see [webpack@4 watch options](https://v4.webpack.js.org/configuration/watch/#watchoptions).
-     *  */
+     */
     webpack: {
       aggregateTimeout: 1000
     },
@@ -464,7 +457,7 @@ export default defineUntypedSchema({
         app: {
           baseURL: (await get('app')).baseURL,
           buildAssetsDir: (await get('app')).buildAssetsDir,
-          cdnURL: (await get('app')).cdnURL,
+          cdnURL: (await get('app')).cdnURL
         }
       })
     }

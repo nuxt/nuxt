@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.4k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"73.6k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2346k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2385k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -56,18 +56,15 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/server-renderer",
         "@vue/shared",
         "cookie-es",
-        "debug",
         "defu",
         "destr",
         "devalue",
         "estree-walker",
         "h3",
-        "has-flag",
+        "h3-nightly",
         "hookable",
-        "http-graceful-shutdown",
         "iron-webcrypto",
         "klona",
-        "ms",
         "node-fetch-native",
         "ofetch",
         "ohash",
@@ -75,7 +72,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "radix3",
         "scule",
         "source-map-js",
-        "supports-color",
         "ufo",
         "uncrypto",
         "unctx",
@@ -92,10 +88,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"370k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"379k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"607k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"647k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -107,24 +103,20 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@unhead/shared",
         "@unhead/ssr",
         "cookie-es",
-        "debug",
         "defu",
         "destr",
         "devalue",
         "h3",
-        "has-flag",
+        "h3-nightly",
         "hookable",
-        "http-graceful-shutdown",
         "iron-webcrypto",
         "klona",
-        "ms",
         "node-fetch-native",
         "ofetch",
         "ohash",
         "pathe",
         "radix3",
         "scule",
-        "supports-color",
         "ufo",
         "uncrypto",
         "unctx",

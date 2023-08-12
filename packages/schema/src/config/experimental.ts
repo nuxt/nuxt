@@ -6,11 +6,12 @@ export default defineUntypedSchema({
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: (val) => val ?? false
+      $resolve: val => val ?? false
     },
 
     /**
      * Enable Vue's reactivity transform
+     *
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
      *
      * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
@@ -23,12 +24,14 @@ export default defineUntypedSchema({
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
+     *
      * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
+     *
      * @see https://github.com/nuxt/framework/pull/5750
      */
     treeshakeClientOnly: true,
@@ -47,7 +50,7 @@ export default defineUntypedSchema({
      * @type {false | 'manual' | 'automatic'}
      */
     emitRouteChunkError: {
-      $resolve: val => {
+      $resolve: (val) => {
         if (val === true) {
           return 'manual'
         }
@@ -55,7 +58,7 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      },
+      }
     },
 
     /**
@@ -113,7 +116,7 @@ export default defineUntypedSchema({
 
     /**
      * Disable vue server renderer endpoint within nitro.
-    */
+     */
     noVueServer: false,
 
     /**
@@ -148,6 +151,7 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     *
      * @type {true | 'local' | 'local+remote' | false}
      */
     componentIslands: {
