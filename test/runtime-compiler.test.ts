@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import { describe, expect, it } from 'vitest'
 import { $fetch, setup } from '@nuxt/test-utils'
+import { isWindows } from 'std-env'
 import { expectNoClientErrors, renderPage } from './utils'
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -10,7 +10,7 @@ await setup({
   dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
-  setupTimeout: (isWindows ? 240 : 120) * 1000,
+  setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite'
   }
