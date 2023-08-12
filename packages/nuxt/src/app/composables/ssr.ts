@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus } from 'h3'
+import { setResponseStatus as _setResponseStatus, getRequestHeaders } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 
@@ -7,7 +7,8 @@ export function useRequestHeaders<K extends string = string> (include: K[]): { [
 export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
   if (import.meta.client) { return {} }
-  const headers = useNuxtApp().ssrContext?.event.node.req.headers ?? {}
+  const event = useNuxtApp().ssrContext?.event
+  const headers = event ? getRequestHeaders(event) : {}
   if (!include) { return headers }
   return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
 }
