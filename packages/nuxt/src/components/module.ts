@@ -1,5 +1,6 @@
-import { statSync } from 'node:fs'
-import { normalize, relative, resolve } from 'pathe'
+import fs, { statSync } from 'node:fs'
+
+import { join, normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -9,7 +10,7 @@ import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemp
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
-import { islandsTransform } from './islandsTransform'
+import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -224,11 +225,24 @@ export default defineNuxtModule<ComponentsOptions>({
         experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
       }))
 
-      if (isServer && nuxt.options.experimental.componentIslands) {
-        config.plugins.push(islandsTransform.vite({
-          getComponents,
-          rootDir: nuxt.options.rootDir
-        }))
+      if (nuxt.options.experimental.componentIslands) {
+        if (isClient) {
+          fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+        }
+
+        if (isServer) {
+          config.plugins.push(islandsTransform.vite({
+            getComponents,
+            rootDir: nuxt.options.rootDir,
+            nuxt
+          }))
+        } else {
+          config.plugins.push(componentsChunkPlugin.vite({
+            getComponents,
+            rootDir: nuxt.options.rootDir,
+            nuxt
+          }))
+        }
       }
       if (!isServer && nuxt.options.experimental.componentIslands) {
         config.plugins.push({
@@ -269,10 +283,12 @@ export default defineNuxtModule<ComponentsOptions>({
           experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
         }))
 
-        if (nuxt.options.experimental.componentIslands && mode === 'server') {
-          config.plugins.push(islandsTransform.webpack({
-            getComponents
-          }))
+        if (nuxt.options.experimental.componentIslands) {
+          if (mode === 'server') {
+            config.plugins.push(islandsTransform.webpack({
+              getComponents
+            }))
+          }
         }
       })
     })

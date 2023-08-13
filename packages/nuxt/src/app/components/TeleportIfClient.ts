@@ -1,7 +1,8 @@
 import { relative } from 'node:path'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app'
-// todo import manifest in production
+// @ts-expect-error virtual file
+import { paths } from '#build/components-chunk'
 
 /**
  * component only used with componentsIsland
@@ -10,7 +11,10 @@ import { useNuxtApp } from '#app'
 export default defineComponent({
   name: 'TeleportIfClient',
   props: {
-    to: String,
+    to: {
+      type: String,
+      required: true
+    },
     nuxtClient: {
       type: Boolean,
       default: false
@@ -27,13 +31,15 @@ export default defineComponent({
   setup (props, { slots }) {
     const app = useNuxtApp()
 
-    const islandContext = app.ssrContext!.islandContext
+    const islandContext = app.ssrContext!.islandContext!
 
     const slot = slots.default!()[0]
     if (process.dev) {
       const path = '_nuxt/' + relative(props.rootDir, slot.type.__file)
 
       islandContext.chunks[slot.type.__name] = path
+    } else { 
+      islandContext.chunks[slot.type.__name] = paths[slot.type.__name]
     }
     // todo chunk path in production
     islandContext.propsData[props.to] = slot.props || {}

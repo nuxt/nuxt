@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeMount, onMounted, ref, watch } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -36,7 +36,7 @@ async function loadComponents (source = '/', paths: Record<string, string>) {
     if (!(components!.has(component))) {
       promises.push((async () => {
         const chunkSource = join(source, paths[component])
-        const c = await import(chunkSource)
+        const c = await import(chunkSource).then(m => m.default || m)
         components!.set(component, c.default ?? c)
       })())
     }
@@ -111,7 +111,7 @@ export default defineComponent({
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     // no need for reactivity
-    let interactiveProps: Record<string, Record<string, any>> = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props : {}
+    let interactiveProps: Record<string, Record<string, any>> = process.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props) : {}
     const interactiveChunksList = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
 
     const html = computed(() => {
@@ -229,8 +229,9 @@ export default defineComponent({
 
     return () => {
       if ((!html.value || error.value) && slots.fallback) {
-         return [slots.fallback({ error: error.value })]
+        return [slots.fallback({ error: error.value })]
       }
+
       const nodes = [createVNode(Fragment, {
         key: key.value
       }, [h(createStaticVNode(html.value, 1))])]
@@ -245,9 +246,10 @@ export default defineComponent({
         }
         if (process.client && html.value.includes('nuxt-ssr-client')) {
           for (const [id, props] of Object.entries(interactiveProps)) {
+            const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
               default: () => {
-                return [h(components!.get(id.split('-')[0])!, props)]
+                return [h(component, props)]
               }
             })
             nodes.push(vnode)

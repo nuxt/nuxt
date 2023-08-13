@@ -1,5 +1,7 @@
 import { pathToFileURL } from 'node:url'
-import type { Component } from '@nuxt/schema'
+import { basename, join } from 'node:path'
+import fs from 'node:fs'
+import type { Component, Nuxt } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
@@ -20,14 +22,17 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_RE = /<slot[ /]/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 
-export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {
+export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions & {nuxt: Nuxt}) => {
+  const components = options.getComponents()
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
+    vite: {
+
+    },
     transformInclude (id) {
       if (!isVue(id)) { return false }
 
-      const components = options.getComponents()
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
       )
@@ -118,4 +123,54 @@ function getBindings (bindings: Record<string, string>, vfor?: [string, string])
   } else {
     return `:nuxt-ssr-slot-data="JSON.stringify(__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data})))"`
   }
+}
+
+export const componentsChunkPlugin = createUnplugin((options: ServerOnlyComponentTransformPluginOptions & {nuxt: Nuxt}) => {
+  return {
+    name: 'componentsChunkPlugin',
+    vite: {
+      config (config) {
+        const components = options.getComponents()
+        config.build = config.build || {}
+        config.build.rollupOptions = config.build.rollupOptions || {}
+        config.build.rollupOptions.output = config.build.rollupOptions.output || {}
+        if (Array.isArray(config.build.rollupOptions.output)) {
+        } else {
+          config.build.rollupOptions.output.manualChunks = (id, { getModuleIds, getModuleInfo }) => {
+            if (components.some(c => c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
+              return basename(id)
+            }
+          }
+        }
+      },
+
+      generateBundle (opts, bundle) {
+        const components = options.getComponents()
+        const componentsChunks = Object.entries(bundle).filter(([_chunkPath, chunkInfo]) => {
+          if (chunkInfo.type !== 'chunk') { return false }
+          return components.some((component) => {
+            if (chunkInfo.facadeModuleId) {
+              const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
+
+              const isPath = component.filePath === pathname
+              if (isPath) { return true }
+            }
+
+            return chunkInfo.moduleIds.map((path) => {
+              return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
+            }).includes(component.filePath)
+          })
+        })
+
+        fs.writeFileSync(join(options.nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = /* #__PURE__ */ ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
+          if (chunkInfo.type && chunkInfo.name && chunkInfo.exports && chunkInfo.exports.length > 0) { return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath }) }
+          return acc
+        }, {}))}`)
+      }
+    }
+  }
+})
+
+function withoutClientSuffixAndExtension (filePath: string): string {
+  return filePath.replace(/(\.client)?\.(vue|ts|js)$/, '')
 }
