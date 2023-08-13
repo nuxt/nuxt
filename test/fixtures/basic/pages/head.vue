@@ -18,7 +18,7 @@ export default defineNuxtComponent({
       script: [
         {
           src: 'https://a-body-appended-script.com',
-          tagPosition: 'bodyClose',
+          tagPosition: 'bodyClose'
         }
       ],
       meta: [{ name: 'description', content: 'first' }]
