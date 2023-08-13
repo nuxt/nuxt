@@ -17,5 +17,5 @@ Option        | Default          | Description
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 
 ::alert{type=info}
-Read more about [pre-rendering and static hosting](/docs/1.getting-started/10.deployment.md#static-hosting).
+Read more about [pre-rendering and static hosting](/docs/getting-started/deployment#static-hosting).
 ::
