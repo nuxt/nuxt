@@ -117,7 +117,7 @@ export default defineComponent({
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
-      if (import.meta.client) {
+      if (import.meta.client && mounted.value) {
         const el = document.createElement('div')
         el.innerHTML = html
 
@@ -244,7 +244,7 @@ export default defineComponent({
             }))
           }
         }
-        if (process.client && html.value.includes('nuxt-ssr-client')) {
+        if (process.client && html.value.includes('nuxt-ssr-client') && mounted.value) {
           for (const [id, props] of Object.entries(interactiveProps)) {
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
