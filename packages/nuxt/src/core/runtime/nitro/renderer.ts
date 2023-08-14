@@ -17,12 +17,15 @@ import { joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
+import type { HeadEntryOptions } from '@unhead/schema'
 
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
 import type { Link, Script } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
+// @ts-expect-error virtual file
+import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
@@ -239,8 +242,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead()
-  head.push(appHead)
+  const head = createServerHead({
+    plugins: unheadPlugins
+  })
+  // needed for hash hydration plugin to work
+  const headEntryOptions: HeadEntryOptions = { mode: 'server' }
+  head.push(appHead, headEntryOptions)
 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = {
@@ -336,7 +343,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
           ? { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }
           : { rel: 'modulepreload', href: payloadURL }
       ]
-    })
+    }, headEntryOptions)
   }
 
   // 2. Styles
@@ -346,17 +353,17 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       ),
     style: inlinedStyles
-  })
+  }, headEntryOptions)
 
   if (!NO_SCRIPTS) {
     // 3. Resource Hints
     // TODO: add priorities based on Capo
     head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[]
-    })
+    }, headEntryOptions)
     head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[]
-    })
+    }, headEntryOptions)
     // 4. Payloads
     head.push({
       script: _PAYLOAD_EXTRACTION
@@ -367,6 +374,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
           ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload })
     }, {
+      ...headEntryOptions,
       // this should come before another end of body scripts
       tagPosition: 'bodyClose',
       tagPriority: 'high'
@@ -382,7 +390,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         defer: resource.module ? null : true,
         crossorigin: ''
       }))
-    })
+    }, headEntryOptions)
   }
 
   // remove certain tags for nuxt islands

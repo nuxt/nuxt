@@ -232,10 +232,12 @@ export default defineUntypedSchema({
     asyncContext: false,
 
     /**
-     * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * Use new experimental head optimisations:
+     * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @see https://rviscomi.github.io/capo.js/user/rules/
+     * @see https://github.com/nuxt/nuxt/discussions/22632
      */
-    headCapoPlugin: false
+    headNext: false
   }
 })
