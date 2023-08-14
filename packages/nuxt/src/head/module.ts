@@ -61,10 +61,11 @@ export default defineNuxtModule({
           return 'export default []'
         }
         return `import { CapoPlugin, HashHydrationPlugin } from '@unhead/vue'
-       export default [
-         CapoPlugin({ track: true }),
-         HashHydrationPlugin()
-       ]`
+const plugins = [HashHydrationPlugin()];
+if (process.server) {
+  plugins.push(CapoPlugin({ track: true }));
+}
+export default plugin;`
       }
     })
 
