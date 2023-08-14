@@ -113,23 +113,11 @@ export default defineComponent({
     // no need for reactivity
     let interactiveProps: Record<string, Record<string, any>> = process.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props) : {}
     const interactiveChunksList = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
-
+let interactiveTeleports = {}
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
-      if (import.meta.client && mounted.value) {
-        const el = document.createElement('div')
-        el.innerHTML = html
-
-        Object.entries(interactiveProps).forEach(([id]) => {
-          const interactiveWrapper = el.querySelector(`[nuxt-ssr-client="${id}"]`)
-          if (interactiveWrapper) {
-            interactiveWrapper.innerHTML = ''
-          }
-        })
-
-        html = el.innerHTML
-      }
+       
       return html.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
         if (currentSlots.includes(slotName)) {
@@ -201,6 +189,8 @@ export default defineComponent({
         if (process.client) {
           await loadComponents(props.source, res.chunks)
           interactiveProps = res.props
+        } else { 
+          interactiveTeleports = res.teleports ||{}
         }
 
         setUid()
@@ -244,7 +234,21 @@ export default defineComponent({
             }))
           }
         }
-        if (process.client && html.value.includes('nuxt-ssr-client') && mounted.value) {
+        if (process.server) {
+          for (const [id, html] of Object.entries(interactiveTeleports)) {
+            console.log(id, html)
+            nuxtApp.ssrContext.teleports =  nuxtApp.ssrContext.teleports || {}
+            nuxtApp.ssrContext.teleports[`uid=${uid.value};client=${id}`] = html 
+            console.log("TPPPPPPPPP CA MARCHE PASSSSSSSSSSSSSSSSSSSSSSSSS",  nuxtApp.ssrContext.teleports || {}
+              )
+            // nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}`}, {
+            //   default: () => {
+            //     return createStaticVNode(html, 1)
+            //   }
+            // }))
+          }
+        }
+        if (process.client && html.value.includes('nuxt-ssr-client') ) {
           for (const [id, props] of Object.entries(interactiveProps)) {
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {

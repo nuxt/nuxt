@@ -49,7 +49,7 @@ export default defineComponent({
         return [h('div', {
           style: 'display: contents;',
           'nuxt-ssr-client': props.to
-        }, [slot]), h(Teleport, { to: props.to }, slot)]
+        }, []), h(Teleport, { to: props.to }, slot)]
       }
 
       return slot
