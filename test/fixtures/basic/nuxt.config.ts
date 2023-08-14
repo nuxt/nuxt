@@ -195,7 +195,7 @@ export default defineNuxtConfig({
     treeshakeClientOnly: true,
     payloadExtraction: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
-    headCapoPlugin: true
+    headNext: true
   },
   appConfig: {
     fromNuxtConfig: true,
