@@ -236,16 +236,11 @@ let interactiveTeleports = {}
         }
         if (process.server) {
           for (const [id, html] of Object.entries(interactiveTeleports)) {
-            console.log(id, html)
-            nuxtApp.ssrContext.teleports =  nuxtApp.ssrContext.teleports || {}
-            nuxtApp.ssrContext.teleports[`uid=${uid.value};client=${id}`] = html 
-            console.log("TPPPPPPPPP CA MARCHE PASSSSSSSSSSSSSSSSSSSSSSSSS",  nuxtApp.ssrContext.teleports || {}
-              )
-            // nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}`}, {
-            //   default: () => {
-            //     return createStaticVNode(html, 1)
-            //   }
-            // }))
+            
+            nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}`}, {
+              default: () =>  [createStaticVNode(html, 1)]
+               
+            }))
           }
         }
         if (process.client && html.value.includes('nuxt-ssr-client') ) {
