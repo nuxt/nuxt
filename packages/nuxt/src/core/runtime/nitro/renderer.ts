@@ -23,6 +23,8 @@ import { useNitroApp } from '#internal/nitro/app'
 
 import type { Link, Script } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
+// @ts-expect-error virtual file
+import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // @ts-expect-error virtual file
@@ -239,7 +241,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead()
+  const head = createServerHead({
+    plugins: unheadPlugins
+  })
   head.push(appHead)
 
   // Initialize ssr context
