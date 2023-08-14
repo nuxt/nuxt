@@ -134,17 +134,21 @@ export const componentsChunkPlugin = createUnplugin((options: ServerOnlyComponen
         config.build = config.build || {}
         config.build.rollupOptions = config.build.rollupOptions || {}
         config.build.rollupOptions.output = config.build.rollupOptions.output || {}
-        if (Array.isArray(config.build.rollupOptions.output)) {
-        } else {
-          config.build.rollupOptions.output.manualChunks = (id, { getModuleIds, getModuleInfo }) => {
-            if (components.some(c => c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
-              return basename(id)
-            }
+        const componentManualChunk = (id: string) => {
+          if (components.some(c => c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
+            return basename(id)
           }
+        }
+        if (Array.isArray(config.build.rollupOptions.output)) {
+          config.build.rollupOptions.output.forEach((output) => {
+            output.manualChunks = componentManualChunk
+          })
+        } else {
+          config.build.rollupOptions.output.manualChunks = componentManualChunk
         }
       },
 
-      generateBundle (opts, bundle) {
+      generateBundle (_opts, bundle) {
         const components = options.getComponents()
         const componentsChunks = Object.entries(bundle).filter(([_chunkPath, chunkInfo]) => {
           if (chunkInfo.type !== 'chunk') { return false }
@@ -162,8 +166,8 @@ export const componentsChunkPlugin = createUnplugin((options: ServerOnlyComponen
           })
         })
 
-        fs.writeFileSync(join(options.nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = /* #__PURE__ */ ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
-          if (chunkInfo.type && chunkInfo.name && chunkInfo.exports && chunkInfo.exports.length > 0) { return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath }) }
+        fs.writeFileSync(join(options.nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
+          if (chunkInfo.type === 'chunk' && chunkInfo.name && chunkInfo.exports.length > 0) { return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath }) }
           return acc
         }, {}))}`)
       }

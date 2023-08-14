@@ -1,8 +1,14 @@
 import { relative } from 'node:path'
+import type { Component } from 'vue'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
+
+type ExtendedComponent = Component & {
+  __file: string,
+  __name: string
+}
 
 /**
  * component only used with componentsIsland
@@ -34,12 +40,14 @@ export default defineComponent({
     const islandContext = app.ssrContext!.islandContext!
 
     const slot = slots.default!()[0]
-    if (process.dev) {
-      const path = '_nuxt/' + relative(props.rootDir, slot.type.__file)
+    const slotType = (slot.type as ExtendedComponent)
 
-      islandContext.chunks[slot.type.__name] = path
-    } else { 
-      islandContext.chunks[slot.type.__name] = paths[slot.type.__name]
+    if (process.dev) {
+      const path = '_nuxt/' + relative(props.rootDir, slotType.__file)
+
+      islandContext.chunks[slotType.__name] = path
+    } else {
+      islandContext.chunks[slotType.__name] = paths[slotType.__name]
     }
     // todo chunk path in production
     islandContext.propsData[props.to] = slot.props || {}
