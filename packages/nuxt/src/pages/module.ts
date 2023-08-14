@@ -4,7 +4,7 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, ad
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { NuxtApp, NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -339,8 +339,8 @@ export default defineNuxtModule({
 
     addTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ app }: { app: NuxtApp }) => {
-        const composablesFile = resolve(runtimeDir, 'composables')
+      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           'import type { NavigationGuard } from \'vue-router\'',
@@ -356,8 +356,8 @@ export default defineNuxtModule({
 
     addTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ app }: { app: NuxtApp }) => {
-        const composablesFile = resolve(runtimeDir, 'composables')
+      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         return [
           'import { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
