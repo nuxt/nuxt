@@ -317,7 +317,7 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       nitropack:
-        specifier: ^2.5.2
+        specifier: 2.5.2
         version: 2.5.2
       ohash:
         specifier: 1.1.3
