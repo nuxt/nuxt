@@ -33,7 +33,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
-  if (process.client) {
+  if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
 
@@ -61,7 +61,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     } else {
       callback()
     }
-  } else if (process.server) {
+  } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
@@ -79,9 +79,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
-  if (process.server) {
+  if (import.meta.server) {
     return parse(useRequestEvent()?.node.req.headers.cookie || '', opts)
-  } else if (process.client) {
+  } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
 }
@@ -94,7 +94,7 @@ function serializeCookie (name: string, value: any, opts: CookieSerializeOptions
 }
 
 function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
-  if (process.client) {
+  if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
   }
 }

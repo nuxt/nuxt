@@ -52,7 +52,7 @@ const warnRuntimeUsage = (method: string) =>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
-  if (process.dev) {
+  if (import.meta.dev) {
     const component = getCurrentInstance()?.type
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))

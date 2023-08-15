@@ -15,7 +15,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     statusCode,
     statusMessage,
     message,
-    stack: process.dev && statusCode !== 404
+    stack: import.meta.dev && statusCode !== 404
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : '',
     data: error.data
@@ -56,12 +56,12 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = process.dev
+    const { template } = import.meta.dev
       // @ts-expect-error TODO: add legacy type support for subpath imports
       ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
       // @ts-expect-error TODO: add legacy type support for subpath imports
       : await import('@nuxt/ui-templates/templates/error-500.mjs')
-    if (process.dev) {
+    if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }

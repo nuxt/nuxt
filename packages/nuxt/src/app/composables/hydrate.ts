@@ -11,13 +11,13 @@ import type { NuxtPayload } from '#app'
 export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (key: K, get: () => T, set: (value: T) => void) => {
   const nuxt = useNuxtApp()
 
-  if (process.server) {
+  if (import.meta.server) {
     nuxt.hooks.hook('app:rendered', () => {
       nuxt.payload[key] = get()
     })
   }
 
-  if (process.client) {
+  if (import.meta.client) {
     nuxt.hooks.hook('app:created', () => {
       set(nuxt.payload[key] as T)
     })

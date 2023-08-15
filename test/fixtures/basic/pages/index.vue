@@ -44,6 +44,7 @@
     </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
+    <component :is="`global${'-'.toString()}sync`" />
     <Spin>Test</Spin>
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />

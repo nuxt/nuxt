@@ -2,7 +2,7 @@ import { useNuxtApp } from '../nuxt'
 import { requestIdleCallback } from '../compat/idle-callback'
 
 export const onNuxtReady = (callback: () => any) => {
-  if (process.server) { return }
+  if (import.meta.server) { return }
 
   const nuxtApp = useNuxtApp()
   if (nuxtApp.isHydrating) {

@@ -99,7 +99,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
   name: 'nuxt:router',
   enforce: 'pre',
   setup (nuxtApp) {
-    const initialURL = process.client
+    const initialURL = import.meta.client
       ? withoutBase(window.location.pathname, useRuntimeConfig().app.baseURL) + window.location.search + window.location.hash
       : nuxtApp.ssrContext!.url
 
@@ -138,7 +138,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
         // Perform navigation
         Object.assign(route, to)
-        if (process.client) {
+        if (import.meta.client) {
           window.history[replace ? 'replaceState' : 'pushState']({}, '', joinURL(baseURL, to.fullPath))
           if (!nuxtApp.isHydrating) {
             // Clear any existing errors
@@ -150,7 +150,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           await middleware(to, route)
         }
       } catch (err) {
-        if (process.dev && !hooks.error.length) {
+        if (import.meta.dev && !hooks.error.length) {
           console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`', err)
         }
         for (const handler of hooks.error) {
@@ -211,7 +211,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     })
 
-    if (process.client) {
+    if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
         const location = (event.target as Window).location
         router.replace(location.href.replace(location.origin, ''))
@@ -235,12 +235,12 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
         nuxtApp._processingMiddleware = true
 
-        if (process.client || !nuxtApp.ssrContext?.islandContext) {
+        if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           for (const middleware of middlewareEntries) {
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
-            if (process.server) {
+            if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
                   statusCode: 404,
