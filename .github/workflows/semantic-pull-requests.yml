@@ -6,8 +6,6 @@ on:
       - opened
       - edited
       - synchronize
-    branches-ignore:
-      - "v[0-9]*"
 
 permissions:
   contents: read
@@ -17,7 +15,7 @@ jobs:
     permissions:
       pull-requests: read  # for amannn/action-semantic-pull-request to analyze PRs
       statuses: write  # for amannn/action-semantic-pull-request to mark status of analyzed PR
-    if: github.repository == 'nuxt/nuxt'
+    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v')
     runs-on: ubuntu-latest
     name: Semantic pull request
     steps:
