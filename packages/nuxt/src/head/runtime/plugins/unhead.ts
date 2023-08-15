@@ -2,10 +2,17 @@ import { createHead as createClientHead } from '@unhead/vue'
 import { renderDOMHead } from '@unhead/dom'
 import { defineNuxtPlugin } from '#app/nuxt'
 
+// @ts-expect-error virtual file
+import unheadPlugins from '#build/unhead-plugins.mjs'
+
 export default defineNuxtPlugin({
   name: 'nuxt:head',
   setup (nuxtApp) {
-    const head = import.meta.server ? nuxtApp.ssrContext!.head : createClientHead()
+    const head = import.meta.server
+      ? nuxtApp.ssrContext!.head
+      : createClientHead({
+        plugins: unheadPlugins
+      })
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 
