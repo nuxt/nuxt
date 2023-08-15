@@ -27,6 +27,7 @@ const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>((
 
 let id = 0
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
+
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
 async function loadComponents (source = '/', paths: Record<string, string>) {
@@ -63,15 +64,22 @@ export default defineComponent({
     source: {
       type: String,
       default: () => undefined
+    },
+    dangerouslyLoadClientComponents: {
+      type: Boolean,
+      default: false
     }
   },
   async setup (props, { slots }) {
+    const key = ref(0)
+    const canLoadClientComponent = computed(() => props.dangerouslyLoadClientComponents || !props.source)
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
@@ -90,6 +98,7 @@ export default defineComponent({
     }
 
     const ssrHTML = ref<string>('')
+
     if (import.meta.client) {
       const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
       if (renderedHTML && nuxtApp.isHydrating) {
@@ -107,18 +116,25 @@ export default defineComponent({
       }
       ssrHTML.value = renderedHTML
     }
+
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     // no need for reactivity
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    let interactiveProps: Record<string, Record<string, any>> = import.meta.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props) : {}
-    const interactiveChunksList = import.meta.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
-    let interactiveTeleports: Record<string, string> = {}
+    const interactivePayload: Pick<NuxtIslandResponse, 'chunks' | 'props' | 'teleports'> = import.meta.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data)[`${props.name}_${hashId.value}_interactive`] : {}
+
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      const html = ssrHTML.value
+      let html = ssrHTML.value
+
+      if (import.meta.client && !canLoadClientComponent.value && Object.keys(interactivePayload.teleports).length) {
+        for (const key in interactivePayload.teleports) {
+          html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
+            return full + interactivePayload.teleports[key]
+          })
+        }
+      }
 
       return html.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
         // remove fallback to insert slots
@@ -128,6 +144,7 @@ export default defineComponent({
         return content
       })
     })
+
     function setUid () {
       uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
     }
@@ -162,7 +179,7 @@ export default defineComponent({
       setPayload(key, result)
       return result
     }
-    const key = ref(0)
+
     async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
@@ -179,20 +196,24 @@ export default defineComponent({
         })
         key.value++
         error.value = null
+
+        nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`] = {
+          chunks: res.chunks,
+          props: res.props,
+          teleports: res.teleports
+        }
+        if (import.meta.client) {
+          if (canLoadClientComponent.value) {
+            await loadComponents(props.source, res.chunks)
+          }
+          interactivePayload.props = res.props
+        }
+        interactivePayload.teleports = res.teleports
+        interactivePayload.chunks = res.chunks
+
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
           await nextTick()
-        }
-        nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`] = {
-          chunks: res.chunks,
-          props: res.props
-        }
-
-        if (import.meta.client) {
-          await loadComponents(props.source, res.chunks)
-          interactiveProps = res.props
-        } else {
-          interactiveTeleports = res.teleports || {}
         }
 
         setUid()
@@ -215,8 +236,8 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating) {
       await fetchComponent()
-    } else if (nuxtApp.isHydrating) {
-      await loadComponents(props.source, interactiveChunksList)
+    } else if (nuxtApp.isHydrating && canLoadClientComponent.value) {
+      await loadComponents(props.source, interactivePayload.chunks)
     }
 
     return () => {
@@ -237,14 +258,14 @@ export default defineComponent({
           }
         }
         if (import.meta.server) {
-          for (const [id, html] of Object.entries(interactiveTeleports)) {
+          for (const [id, html] of Object.entries(interactivePayload.teleports)) {
             nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
               default: () => [createStaticVNode(html, 1)]
             }))
           }
         }
-        if (import.meta.client && html.value.includes('nuxt-ssr-client')) {
-          for (const [id, props] of Object.entries(interactiveProps)) {
+        if (import.meta.client && canLoadClientComponent.value && html.value.includes('nuxt-ssr-client')) {
+          for (const [id, props] of Object.entries(interactivePayload.props)) {
             // @ts-expect-error _ is the component's default export in build chunks
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
