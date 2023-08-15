@@ -81,8 +81,8 @@ importers:
         specifier: 13.2.2
         version: 13.2.2
       h3:
-        specifier: 1.7.1
-        version: 1.7.1
+        specifier: 1.8.0
+        version: 1.8.0
       happy-dom:
         specifier: 10.9.0
         version: 10.9.0
@@ -302,8 +302,8 @@ importers:
         specifier: 1.1.2
         version: 1.1.2
       h3:
-        specifier: 1.7.1
-        version: 1.7.1
+        specifier: 1.8.0
+        version: 1.8.0
       jiti:
         specifier: 1.19.1
         version: 1.19.1
@@ -416,8 +416,8 @@ importers:
         specifier: ^13.2.2
         version: 13.2.2
       h3:
-        specifier: ^1.7.1
-        version: 1.7.1
+        specifier: ^1.8.0
+        version: 1.8.0
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -598,8 +598,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(webpack@5.88.2)
       h3:
-        specifier: 1.7.1
-        version: 1.7.1
+        specifier: 1.8.0
+        version: 1.8.0
       ignore:
         specifier: 5.2.4
         version: 5.2.4
@@ -728,8 +728,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       h3:
-        specifier: ^1.7.1
-        version: 1.7.1
+        specifier: ^1.8.0
+        version: 1.8.0
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
@@ -849,8 +849,8 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       h3:
-        specifier: ^1.7.1
-        version: 1.7.1
+        specifier: ^1.8.0
+        version: 1.8.0
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -6338,19 +6338,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3@1.7.1:
-    resolution: {integrity: sha512-A9V2NEDNHet7v1gCg7CMwerSigLi0SRbhTy7C3lGb0N4YKIpPmLDjedTUopqp4dnn7COHfqUjjaz3zbtz4QduA==}
-    dependencies:
-      cookie-es: 1.0.0
-      defu: 6.1.2
-      destr: 2.0.1
-      iron-webcrypto: 0.7.1
-      radix3: 1.0.1
-      ufo: 1.2.0
-      uncrypto: 0.1.3
-
-  /h3@1.8.0-rc.3:
-    resolution: {integrity: sha512-NhDCNXhrJkt42BDQF57787yXJa2eX2Hl4OMlu+Ym9QBdBaOByUjBrovYaBc+27mtIhHvs2IqPf56to8qcNBI7Q==}
+  /h3@1.8.0:
+    resolution: {integrity: sha512-057VY83X7Tg5n4XU2GV9M3dsCWUU4jtw2Lc/r4GjAcf9Jb6GI1mD5F8TCQHUcvLMEgtx6lbfobOFu7Vdmejihg==}
     dependencies:
       cookie-es: 1.0.0
       defu: 6.1.2
@@ -6671,9 +6660,6 @@ packages:
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
-
-  /iron-webcrypto@0.7.1:
-    resolution: {integrity: sha512-K/UmlEhPCPXEHV5hAtH5C0tI5JnFuOrv4yO/j7ODPl3HaiiHBLbOLTde+ieUaAyfCATe4LoAnclyF+hmSCOVmQ==}
 
   /iron-webcrypto@0.8.0:
     resolution: {integrity: sha512-gScdcWHjTGclCU15CIv2r069NoQrys1UeUFFfaO1hL++ytLHkVw7N5nXJmFf3J2LEDMz1PkrvC0m62JEeu1axQ==}
@@ -7249,7 +7235,7 @@ packages:
       consola: 3.2.3
       defu: 6.1.2
       get-port-please: 3.0.1
-      h3: 1.8.0-rc.3
+      h3: 1.8.0
       http-shutdown: 1.2.2
       jiti: 1.19.1
       mlly: 1.4.0
@@ -8120,7 +8106,7 @@ packages:
       fs-extra: 11.1.1
       globby: 13.2.2
       gzip-size: 7.0.0
-      h3: 1.7.1
+      h3: 1.8.0
       hookable: 5.5.3
       http-graceful-shutdown: 3.1.13
       http-proxy: 1.18.1
@@ -10726,7 +10712,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 2.0.1
-      h3: 1.7.1
+      h3: 1.8.0
       ioredis: 5.3.2
       listhen: 1.3.0
       lru-cache: 10.0.0
@@ -11020,7 +11006,7 @@ packages:
       '@vue/test-utils': 2.4.1(vue@3.3.4)
       defu: 6.1.2
       estree-walker: 3.0.3
-      h3: 1.7.1
+      h3: 1.8.0
       happy-dom: 10.9.0
       magic-string: 0.30.2
       ofetch: 1.1.1
