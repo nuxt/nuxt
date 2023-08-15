@@ -97,7 +97,7 @@ importers:
         version: 0.33.0
       nitropack:
         specifier: npm:nitropack-edge@latest
-        version: /nitropack-edge@2.6.0-28200387.12d0e47
+        version: /nitropack-edge@2.6.0-28201391.6af6fd1
       nuxi:
         specifier: workspace:*
         version: link:packages/nuxi
@@ -230,7 +230,7 @@ importers:
         version: 4.17.21
       nitropack:
         specifier: npm:nitropack-edge@latest
-        version: /nitropack-edge@2.6.0-28200387.12d0e47
+        version: /nitropack-edge@2.6.0-28201391.6af6fd1
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -438,7 +438,7 @@ importers:
         version: 1.4.0
       nitropack:
         specifier: npm:nitropack-edge@latest
-        version: /nitropack-edge@2.6.0-28200387.12d0e47
+        version: /nitropack-edge@2.6.0-28201391.6af6fd1
       nuxi:
         specifier: workspace:*
         version: link:../nuxi
@@ -605,7 +605,7 @@ importers:
         version: 5.2.4
       nitropack:
         specifier: npm:nitropack-edge@latest
-        version: /nitropack-edge@2.6.0-28200387.12d0e47
+        version: /nitropack-edge@2.6.0-28201391.6af6fd1
       unbuild:
         specifier: latest
         version: 1.2.1
@@ -8069,8 +8069,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-edge@2.6.0-28200387.12d0e47:
-    resolution: {integrity: sha512-e/pB+S/EM6kbpkNmb8G7qTtveun+Z8GdtJSP+EjBJFuATZKvDrJCNuzCV3H8HqOLBFOy2X6whgbw6XqyjHd4Vw==}
+  /nitropack-edge@2.6.0-28201391.6af6fd1:
+    resolution: {integrity: sha512-16/FBi+t/NqYlXKqQQ4dA4MDBNtAq2OPSplZPR1DLnjXi8T+k5kNmzuZ45VJa16Tyd+7UnReUsGEr1/jERtT9w==}
     engines: {node: ^14.16.0 || ^16.11.0 || >=17.0.0}
     hasBin: true
     dependencies:
