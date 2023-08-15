@@ -113,8 +113,8 @@ export default defineComponent({
 
     // no need for reactivity
     // eslint-disable-next-line vue/no-setup-props-destructure
-    let interactiveProps: Record<string, Record<string, any>> = process.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props) : {}
-    const interactiveChunksList = process.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
+    let interactiveProps: Record<string, Record<string, any>> = import.meta.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].props) : {}
+    const interactiveChunksList = import.meta.client && nuxtApp.isHydrating ? nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`].chunks : {}
     let interactiveTeleports: Record<string, string> = {}
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
@@ -188,7 +188,7 @@ export default defineComponent({
           props: res.props
         }
 
-        if (process.client) {
+        if (import.meta.client) {
           await loadComponents(props.source, res.chunks)
           interactiveProps = res.props
         } else {
@@ -228,7 +228,7 @@ export default defineComponent({
         key: key.value
       }, [h(createStaticVNode(html.value, 1))])]
 
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || process.server)) {
+      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server)) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: import.meta.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
@@ -236,16 +236,16 @@ export default defineComponent({
             }))
           }
         }
-        if (process.server) {
+        if (import.meta.server) {
           for (const [id, html] of Object.entries(interactiveTeleports)) {
             nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
               default: () => [createStaticVNode(html, 1)]
             }))
           }
         }
-        if (process.client && html.value.includes('nuxt-ssr-client')) {
+        if (import.meta.client && html.value.includes('nuxt-ssr-client')) {
           for (const [id, props] of Object.entries(interactiveProps)) {
-            // @ts-expect-error _ is the components default export in build chunks
+            // @ts-expect-error _ is the component's default export in build chunks
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
               default: () => {
