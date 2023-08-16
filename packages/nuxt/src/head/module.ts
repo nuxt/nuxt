@@ -60,13 +60,8 @@ export default defineNuxtModule({
         if (!nuxt.options.experimental.headNext) {
           return 'export default []'
         }
-        // TODO don't use HashHydrationPlugin for SPA
-        return `import { CapoPlugin, HashHydrationPlugin } from '@unhead/vue'
-const plugins = [HashHydrationPlugin()];
-if (process.server) {
-  plugins.push(CapoPlugin({ track: true }));
-}
-export default plugins;`
+        return `import { CapoPlugin } from '@unhead/vue';
+export default process.server ? [CapoPlugin({ track: true })] : [];`
       }
     })
 
