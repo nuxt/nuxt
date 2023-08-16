@@ -36,6 +36,7 @@
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "vite": "4.4.9",
+    "unbuild": "2.0.0-rc.0",
     "vue": "3.3.4",
     "magic-string": "^0.30.2"
   },
