@@ -21,6 +21,7 @@ interface ServerOnlyComponentTransformPluginOptions {
 const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_RE = /<slot[ /]/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions & {nuxt: Nuxt}) => {
   const components = options.getComponents()
@@ -95,7 +96,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
             const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-            s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${options.rootDir ? `root-dir="${options.rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode}</TeleportIfClient>`)
+            s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${options.rootDir ? `root-dir="${options.rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
           }
         }
       })
