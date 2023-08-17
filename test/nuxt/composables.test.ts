@@ -20,11 +20,11 @@ vi.mock('#app/compat/idle-callback', () => ({
 }))
 
 const timestamp = Date.now()
-registerEndpoint('/_builds/latest.json', defineEventHandler(() => ({
+registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
   id: 'test',
   timestamp
 })))
-registerEndpoint('/_builds/meta.test.json', defineEventHandler(() => ({
+registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
   id: 'test',
   timestamp,
   routeRules: {},
@@ -229,7 +229,7 @@ describe('app manifests', () => {
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "dev",
+        "id": "test",
         "prerendered": [],
         "routeRules": {},
       }
