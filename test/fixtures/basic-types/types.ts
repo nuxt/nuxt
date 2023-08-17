@@ -418,6 +418,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      nuxt: { buildId: string }
       fromLayer: boolean
       fromNuxtConfig: boolean
       nested: {
