@@ -21,7 +21,7 @@ By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigati
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
 */
-const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
+const { pending, data: count } = useLazyAsyncData('count', () => $fetch('/api/count'))
 
 watch(count, (newCount) => {
   // Because count might start out null, you won't have access
