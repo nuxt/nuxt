@@ -1550,13 +1550,14 @@ describe('app config', () => {
       nested: {
         val: 2
       },
+      nuxt: { buildId: 'test' },
       fromLayer: true,
       userConfig: 123
     }
-
-    expect(html).toContain(JSON.stringify(expectedAppConfig))
+    expect(html.replace(/"nuxt":\{"buildId":"[^"]+"\}/, '"nuxt":{"buildId":"test"}')).toContain(JSON.stringify(expectedAppConfig))
 
     const serverAppConfig = await $fetch('/api/app-config')
+    serverAppConfig.appConfig.nuxt.buildId = 'test'
     expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })
