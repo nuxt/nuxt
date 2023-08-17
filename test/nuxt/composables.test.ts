@@ -27,8 +27,8 @@ registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
 registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
   id: 'test',
   timestamp,
-  routeRules: {},
-  prerendered: []
+  matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
+  prerendered: ['/specific-prerendered']
 })))
 
 describe('composables', () => {
@@ -49,6 +49,7 @@ describe('composables', () => {
       'setResponseStatus',
       'useRequestEvent',
       'useRequestFetch',
+      'isPrerendered',
       'useRequestHeaders',
       'clearNuxtState',
       'useState',
@@ -61,7 +62,6 @@ describe('composables', () => {
       'defineNuxtRouteMiddleware',
       'definePayloadReducer',
       'definePayloadReviver',
-      'isPrerendered',
       'loadPayload',
       'navigateTo',
       'onBeforeRouteLeave',
@@ -230,13 +230,31 @@ describe('app manifests', () => {
     expect(manifest).toMatchInlineSnapshot(`
       {
         "id": "test",
-        "prerendered": [],
-        "routeRules": {},
+        "matcher": {
+          "dynamic": {},
+          "static": {
+            "/": null,
+            "/pre": null,
+          },
+          "wildcard": {
+            "/pre": {
+              "prerender": true,
+            },
+          },
+        },
+        "prerendered": [
+          "/specific-prerendered",
+        ],
       }
     `)
   })
   it('getRouteRules', async () => {
     const rules = await getRouteRules('/')
     expect(rules).toMatchInlineSnapshot('{}')
+  })
+  it('isPrerendered', async () => {
+    expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
+    expect(await isPrerendered('/prerendered/test')).toBeTruthy()
+    expect(await isPrerendered('/test')).toBeFalsy()
   })
 })

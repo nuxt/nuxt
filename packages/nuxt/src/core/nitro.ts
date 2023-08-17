@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
@@ -253,7 +253,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       // Add pages prerendered but not covered by route rules
       const prerenderedRoutes = new Set<string>()
       const routeRulesMatcher = toRouteMatcher(
-        createRadixRouter({ routes: nitro.options.routeRules })
+        createRadixRouter({ routes: routeRules })
       )
       const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
       for (const route of nitro._prerenderedRoutes || []) {
@@ -269,7 +269,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       const manifest = {
         id: buildId,
         timestamp: buildTimestamp,
-        routeRules,
+        matcher: exportMatcher(routeRulesMatcher),
         prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
       }
 

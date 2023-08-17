@@ -1,6 +1,6 @@
 import { joinURL } from 'ufo'
-import type { RouteMatcher } from 'radix3'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import type { MatcherExport, RouteMatcher } from 'radix3'
+import { createMatcherFromExport } from 'radix3'
 import { defu } from 'defu'
 import { useAppConfig, useRuntimeConfig } from '#app'
 // @ts-expect-error virtual file
@@ -12,7 +12,7 @@ export interface NuxtAppManifestMeta {
 }
 
 export interface NuxtAppManifest extends NuxtAppManifestMeta {
-  routeRules: Record<string, any>
+  matcher: MatcherExport
   prerendered: string[]
 }
 
@@ -28,9 +28,7 @@ function fetchManifest () {
   const buildId = useAppConfig().nuxt?.buildId
   manifest = $fetch<NuxtAppManifest>(joinURL(config.app.cdnURL || config.app.baseURL, config.app.buildAssetsDir, `builds/meta/${buildId}.json`))
   manifest.then((m) => {
-    matcher = toRouteMatcher(
-      createRadixRouter({ routes: m.routeRules })
-    )
+    matcher = createMatcherFromExport(m.matcher)
   })
   return manifest
 }
