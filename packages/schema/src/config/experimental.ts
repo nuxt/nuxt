@@ -209,7 +209,7 @@ export default defineUntypedSchema({
 
     /**
      * Use app manifests to respect route rules on client-side.
-     * 
+     *
      * This is enabled when `experimental.payloadExtraction` is set to `true`.
      */
     appManifest: {
