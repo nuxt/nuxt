@@ -48,7 +48,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     buildDir: nuxt.options.buildDir,
     experimental: {
       // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
+      asyncContext: nuxt.options.experimental.asyncContext
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -194,6 +195,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
+      'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
     },
@@ -298,6 +300,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Init nitro
   const nitro = await createNitro(nitroConfig)
+
+  // Set prerender-only options
+  nitro.options._config.storage ||= {}
+  nitro.options._config.storage['internal:nuxt:prerender'] = { driver: 'memory' }
+  nitro.options._config.storage['internal:nuxt:prerender:island'] = { driver: 'lruCache', max: 1000 }
+  nitro.options._config.storage['internal:nuxt:prerender:payload'] = { driver: 'lruCache', max: 1000 }
 
   // Expose nitro to modules and kit
   nuxt._nitro = nitro

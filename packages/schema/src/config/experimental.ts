@@ -6,11 +6,12 @@ export default defineUntypedSchema({
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: (val) => val ?? false
+      $resolve: val => val ?? false
     },
 
     /**
      * Enable Vue's reactivity transform
+     *
      * @see https://vuejs.org/guide/extras/reactivity-transform.html
      *
      * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
@@ -19,16 +20,18 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // TODO: Remove in v3.8 when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
+     *
      * @see https://github.com/nuxt/nuxt/issues/13632
      */
     externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
+     *
      * @see https://github.com/nuxt/framework/pull/5750
      */
     treeshakeClientOnly: true,
@@ -47,7 +50,7 @@ export default defineUntypedSchema({
      * @type {false | 'manual' | 'automatic'}
      */
     emitRouteChunkError: {
-      $resolve: val => {
+      $resolve: (val) => {
         if (val === true) {
           return 'manual'
         }
@@ -55,8 +58,19 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      },
+      }
     },
+
+    /**
+     * By default the route object returned by the auto-imported `useRoute()` composable
+     * is kept in sync with the current page in view in `<NuxtPage>`. This is not true for
+     * `vue-router`'s exported `useRoute` or for the default `$route` object available in your
+     * Vue templates.
+     *
+     * By enabling this option a mixin will be injected to keep the `$route` template object
+     * in sync with Nuxt's managed `useRoute()`.
+     */
+    templateRouteInjection: true,
 
     /**
      * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
@@ -102,7 +116,7 @@ export default defineUntypedSchema({
 
     /**
      * Disable vue server renderer endpoint within nitro.
-    */
+     */
     noVueServer: false,
 
     /**
@@ -137,6 +151,7 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     *
      * @type {true | 'local' | 'local+remote' | false}
      */
     componentIslands: {
@@ -216,6 +231,22 @@ export default defineUntypedSchema({
      * @see https://github.com/parcel-bundler/watcher
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular'
+    watcher: 'chokidar-granular',
+
+    /**
+     * Enable native async context to be accessable for nested composables
+     *
+     * @see https://github.com/nuxt/nuxt/pull/20918
+     */
+    asyncContext: false,
+
+    /**
+     * Use new experimental head optimisations:
+     * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * - Uses the hash hydration plugin to reduce initial hydration
+     *
+     * @see https://github.com/nuxt/nuxt/discussions/22632
+     */
+    headNext: false
   }
 })

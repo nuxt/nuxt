@@ -17,7 +17,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     dev: true,
     server: true,
     browser: true,
-    setupTimeout: (isWindows ? 240 : 120) * 1000,
+    setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
       builder: isWebpack ? 'webpack' : 'vite',
       buildDir: process.env.NITRO_BUILD_DIR,

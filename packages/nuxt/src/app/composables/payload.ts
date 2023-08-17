@@ -16,7 +16,7 @@ interface LoadPayloadOptions {
 }
 
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
-  if (process.server || !payloadExtraction) { return null }
+  if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
@@ -63,7 +63,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 }
 
 async function _importPayload (payloadURL: string) {
-  if (process.server || !payloadExtraction) { return null }
+  if (import.meta.server || !payloadExtraction) { return null }
   try {
     return renderJsonPayloads
       ? parsePayload(await fetch(payloadURL).then(res => res.text()))
@@ -91,7 +91,7 @@ export async function isPrerendered (url = useRoute().path) {
 
 let payloadCache: any = null
 export async function getNuxtClientPayload () {
-  if (process.server) {
+  if (import.meta.server) {
     return
   }
   if (payloadCache) {
@@ -127,7 +127,7 @@ export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any
 ) {
-  if (process.server) {
+  if (import.meta.server) {
     useNuxtApp().ssrContext!._payloadReducers[name] = reduce
   }
 }
@@ -139,12 +139,12 @@ export function definePayloadReducer (
  */
 export function definePayloadReviver (
   name: string,
-  revive: (data: string) => any | undefined
+  revive: (data: any) => any | undefined
 ) {
-  if (process.dev && getCurrentInstance()) {
+  if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
   }
-  if (process.client) {
+  if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive
   }
 }

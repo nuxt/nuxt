@@ -25,6 +25,8 @@ import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
+import { AsyncContextInjectionPlugin } from './plugins/async-context'
+import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -96,6 +98,9 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
   }
 
+  // add resolver for modules used in virtual files
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
@@ -147,6 +152,11 @@ async function initNuxt (nuxt: Nuxt) {
     // DevOnly component tree-shaking - build time only
     addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+  }
+
+  // Transform initial composable call within `<script setup>` to preserve context
+  if (nuxt.options.experimental.asyncContext) {
+    addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled

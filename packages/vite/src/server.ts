@@ -42,6 +42,10 @@ export async function buildServer (ctx: ViteBuildContext) {
     define: {
       'process.server': true,
       'process.client': false,
+      'process.browser': false,
+      'import.meta.server': true,
+      'import.meta.client': false,
+      'import.meta.browser': false,
       'typeof window': '"undefined"',
       'typeof document': '"undefined"',
       'typeof navigator': '"undefined"',
@@ -57,7 +61,13 @@ export async function buildServer (ctx: ViteBuildContext) {
       }
     },
     ssr: {
-      external: ['#internal/nitro', '#internal/nitro/utils', ...nitroDependencies],
+      external: [
+        '#internal/nitro', '#internal/nitro/utils',
+        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
+        'unhead', '@unhead/ssr', '@unhead/vue', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
+        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
+        ...nitroDependencies
+      ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
         '/__vue-jsx',

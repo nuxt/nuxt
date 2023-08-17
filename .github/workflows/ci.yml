@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -77,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -86,7 +86,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0ba4244466797eb048eb91a6cd43d5c03ca8bd05 # v2.21.2
+        uses: github/codeql-action/init@a09933a12a80f87b87005513f0abb1494c27a716 # v2.21.4
         with:
           languages: javascript
           queries: +security-and-quality
@@ -98,7 +98,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0ba4244466797eb048eb91a6cd43d5c03ca8bd05 # v2.21.2
+        uses: github/codeql-action/analyze@a09933a12a80f87b87005513f0abb1494c27a716 # v2.21.4
         with:
           category: "/language:javascript"
 
@@ -112,12 +112,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         module: ['bundler', 'node']
-        base: ['with-base-url', 'without-base-url']
 
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -135,7 +134,6 @@ jobs:
         run: pnpm test:types
         env:
           MODULE_RESOLUTION: ${{ matrix.module }}
-          TS_BASE_URL: ${{ matrix.base }}
 
   lint:
     # autofix workflow will be triggered instead for PRs
@@ -146,7 +144,7 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -171,18 +169,18 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
-        payload: ['json', 'js']
+        context: ['async', 'default']
         node: [16]
         exclude:
           - env: 'dev'
             builder: 'webpack'
 
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -233,8 +231,8 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          TEST_PAYLOAD: ${{ matrix.payload }}
-          SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.payload == 'js' || runner.os == 'Windows' }}
+          TEST_CONTEXT: ${{ matrix.context }}
+          SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || runner.os == 'Windows' }}
 
   build-release:
     permissions:
@@ -256,7 +254,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -295,7 +293,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+      - uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 20
           cache: "pnpm"
