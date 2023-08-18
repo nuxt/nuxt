@@ -91,47 +91,40 @@ export default defineComponent({
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
+            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+          result: {
+            chunks: result.chunks,
+            props: result.props,
+            teleports: result.teleports
+          }
         },
         ...result
       }
     }
 
-    const ssrHTML = ref<string>('')
-
-    if (import.meta.client) {
-      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
-      if (renderedHTML && nuxtApp.isHydrating) {
-        setPayload(`${props.name}_${hashId.value}`, {
-          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
-          state: {},
-          head: {
-            link: [],
-            style: []
-          },
-          chunks: {},
-          props: {},
-          teleports: {}
-        })
-      }
-      ssrHTML.value = renderedHTML
+    // needs to be non-reactive because we don't want to trigger re-renders
+    // at hydration, we only retrieve props/chunks/teleports from payload. See the reviver at nuxt\src\app\plugins\revive-payload.client.ts
+    const rawPayload = toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? {}
+    const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks'| 'props' | 'teleports'> = {
+      chunks: rawPayload.chunks,
+      props: rawPayload.props,
+      teleports: rawPayload.teleports
     }
+
+    const ssrHTML = ref<string>(getFragmentHTML(instance.vnode?.el ?? null).join(''))
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
-    // no need for reactivity
-    const interactivePayload: Pick<NuxtIslandResponse, 'chunks' | 'props' | 'teleports'> = import.meta.client && nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data)[`${props.name}_${hashId.value}_interactive`] : {}
-
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-      if (import.meta.client && !canLoadClientComponent.value && Object.keys(interactivePayload.teleports).length) {
-        for (const key in interactivePayload.teleports) {
+      if (import.meta.client && !canLoadClientComponent.value && Object.keys(nonReactivePayload.teleports).length) {
+        for (const key in nonReactivePayload.teleports) {
           html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
-            return full + interactivePayload.teleports[key]
+            return full + nonReactivePayload.teleports[key]
           })
         }
       }
@@ -154,7 +147,8 @@ export default defineComponent({
 
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
-      if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
+
+      if (nuxtApp.payload.data[key]?.html && !force) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
 
@@ -197,19 +191,14 @@ export default defineComponent({
         key.value++
         error.value = null
 
-        nuxtApp.payload.data[`${props.name}_${hashId.value}_interactive`] = {
-          chunks: res.chunks,
-          props: res.props,
-          teleports: res.teleports
-        }
         if (import.meta.client) {
           if (canLoadClientComponent.value) {
             await loadComponents(props.source, res.chunks)
           }
-          interactivePayload.props = res.props
+          nonReactivePayload.props = res.props
         }
-        interactivePayload.teleports = res.teleports
-        interactivePayload.chunks = res.chunks
+        nonReactivePayload.teleports = res.teleports
+        nonReactivePayload.chunks = res.chunks
 
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
@@ -237,7 +226,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating) {
       await fetchComponent()
     } else if (nuxtApp.isHydrating && canLoadClientComponent.value) {
-      await loadComponents(props.source, interactivePayload.chunks)
+      await loadComponents(props.source, nonReactivePayload.chunks)
     }
 
     return () => {
@@ -258,14 +247,14 @@ export default defineComponent({
           }
         }
         if (import.meta.server) {
-          for (const [id, html] of Object.entries(interactivePayload.teleports)) {
+          for (const [id, html] of Object.entries(nonReactivePayload.teleports)) {
             nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
               default: () => [createStaticVNode(html, 1)]
             }))
           }
         }
         if (import.meta.client && canLoadClientComponent.value && html.value.includes('nuxt-ssr-client')) {
-          for (const [id, props] of Object.entries(interactivePayload.props)) {
+          for (const [id, props] of Object.entries(nonReactivePayload.props)) {
             // @ts-expect-error _ is the component's default export in build chunks
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
