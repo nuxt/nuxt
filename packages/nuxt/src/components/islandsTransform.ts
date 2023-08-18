@@ -23,14 +23,12 @@ const HAS_SLOT_RE = /<slot[ /]/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 
-export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions & {nuxt: Nuxt}) => {
+export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const components = options.getComponents()
+  const isVite = meta.framework === 'vite'
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
-    vite: {
-
-    },
     transformInclude (id) {
       if (!isVue(id)) { return false }
 
@@ -50,6 +48,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       s.replace(SCRIPT_RE, (full) => {
         return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport TeleportIfClient from \'#app/components/TeleportIfClient\''
       })
+
+      let hasNuxtClient = false
 
       const ast = parse(template[0])
       await walk(ast, (node) => {
@@ -92,14 +92,21 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               }
             }
           } else if ('nuxt-client' in node.attributes) {
-            // handle granular interactivity
-            const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
-            const uid = hash(id + node.loc[0].start + node.loc[0].end)
+            hasNuxtClient = true
+            if (isVite) {
+              // handle granular interactivity
+              const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
+              const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-            s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${options.rootDir ? `root-dir="${options.rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
+              s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${options.rootDir ? `root-dir="${options.rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
+            }
           }
         }
       })
+
+      if (!isVite && hasNuxtClient) {
+        console.warn(`nuxt-client attribute and client components within islands is only supported in vite mode. file: ${id}`)
+      }
 
       if (s.hasChanged()) {
         return {
