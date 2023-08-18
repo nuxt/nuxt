@@ -26,8 +26,8 @@
       "#internal/nitro": [
         "./node_modules/nitropack/dist/runtime"
       ],
-      "#internal/nitro/*": [
-        "./node_modules/nitropack/dist/runtime/*"
+      "#internal/nitro/utils": [
+        "./node_modules/nitropack/dist/runtime/utils"
       ],
       "#vue-router": [
         "./node_modules/vue-router"
