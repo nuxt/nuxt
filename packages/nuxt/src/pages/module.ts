@@ -12,10 +12,10 @@ import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-v
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
-import { normalizeRoutes, pathToNitroGlob, resolvePagesRoutes } from './utils'
+import { normalizeRoutes, resolvePagesRoutes } from './utils'
+import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
-import { routeRuleExtractorPlugin } from './plugins/route-rules'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
@@ -245,50 +245,59 @@ export default defineNuxtModule({
       )
     })
 
-    const routeContext = {
-      routeRules: {} as Record<string, NitroRouteConfig>,
-      pageMap: {} as Record<string, string>,
-      updateConfig: (() => {}) as (() => void | Promise<void>)
-    }
+    // Track mappings of absolute files to globs
+    let pageToGlobMap = {} as { [absolutePath: string]: string | null }
+    nuxt.hook('pages:extend', (pages) => { pageToGlobMap = getMappedPages(pages) })
 
-    function pagesToMap (pages: NuxtPage[], prefix = ''): Array<[id: string, route: string]> {
-      const mappedPages = [] as Array<[id: string, route: string]>
-      for (const page of pages) {
-        if (!page.file) { continue }
-        const glob = pathToNitroGlob(prefix + page.path)
-        if (!glob) { continue }
+    // Extracted route rules defined inline in pages
+    const inlineRules = {} as { [glob: string]: NitroRouteConfig }
+    // User-provided route rules from `nuxt.config`
+    let baseRules: { [glob: string]: NitroRouteConfig } | undefined
+    nuxt.hook('nitro:config', (config) => { baseRules = config.routeRules })
 
-        mappedPages.push([page.file, glob])
-
-        if (page.children) {
-          mappedPages.push(...pagesToMap(page.children, page.path + '/'))
-        }
-      }
-      return mappedPages
-    }
-
-    // Allow other modules to modify generated page paths before we convert them to a map
-    nuxt.hook('modules:done', () => {
-      nuxt.hook('pages:extend', (pages) => {
-        routeContext.pageMap = Object.fromEntries(pagesToMap(pages))
-      })
-    })
-
-    // add vite plugin
-    addVitePlugin(routeRuleExtractorPlugin.vite(routeContext))
-    addWebpackPlugin(routeRuleExtractorPlugin.webpack(routeContext))
-
-    let baseRules: { [path: string]: NitroRouteConfig } | undefined
-
-    nuxt.hook('nitro:config', (config) => {
-      baseRules = config.routeRules
-      config.routeRules = defu(routeContext.routeRules, config.routeRules)
-    })
-
+    // Allow telling Nitro to reload route rules
+    let updateRouteConfig: () => void | Promise<void>
     nuxt.hook('nitro:init', (nitro) => {
-      routeContext.updateConfig = () => nitro.updateConfig({
-        routeRules: defu(routeContext.routeRules, baseRules)
-      })
+      updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, baseRules) })
+    })
+
+    async function updatePage (path: string) {
+      const glob = pageToGlobMap[path]
+      const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
+      try {
+        const extractedRule = await extractRouteRules(code)
+        if (extractedRule) {
+          if (!glob) {
+            const relativePath = relative(nuxt.options.srcDir, path)
+            console.error(`[nuxt] Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
+            return
+          }
+
+          inlineRules[glob] = extractedRule
+        } else if (glob) {
+          delete inlineRules[glob]
+        }
+      } catch (e) {
+        const relativePath = relative(nuxt.options.srcDir, path)
+        console.error(`[nuxt] Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+      }
+    }
+
+    nuxt.hook('builder:watch', async (event, relativePath) => {
+      const path = join(nuxt.options.srcDir, relativePath)
+      if (!(path in pageToGlobMap)) { return }
+      if (event === 'unlink') {
+        delete inlineRules[path]
+        delete pageToGlobMap[path]
+      } else {
+        await updatePage(path)
+      }
+      await updateRouteConfig?.()
+    })
+
+    nuxt.hooks.hookOnce('pages:extend', async () => {
+      for (const page in pageToGlobMap) { await updatePage(page) }
+      await updateRouteConfig?.()
     })
 
     // Extract macros from pages
