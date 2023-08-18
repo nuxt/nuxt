@@ -110,7 +110,8 @@ export default {
 
     const { errors } = await generator.generate({
       init: true,
-      build: cmd.argv.build
+      build: cmd.argv.build,
+      maxErrors: cmd.argv['max-errors']
     })
 
     await nuxt.close()

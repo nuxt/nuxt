@@ -361,6 +361,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -379,6 +383,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -514,7 +519,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -796,6 +801,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -814,6 +823,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -949,7 +959,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -1237,6 +1247,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -1255,6 +1269,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -1390,7 +1405,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -1672,6 +1687,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -1690,6 +1709,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -1825,7 +1845,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -2113,6 +2133,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -2131,6 +2155,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -2266,7 +2291,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -2554,6 +2579,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -2572,6 +2601,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -2707,7 +2737,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -3001,6 +3031,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -3019,6 +3053,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -3154,7 +3189,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -3445,6 +3480,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -3463,6 +3502,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -3598,7 +3638,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -3895,6 +3935,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -3913,6 +3957,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -4048,7 +4093,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -4336,6 +4381,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -4354,6 +4403,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -4489,7 +4539,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -4783,6 +4833,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -4801,6 +4855,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -4936,7 +4991,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
@@ -5224,6 +5279,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-clamp",
                       },
                       Object {
@@ -5242,6 +5301,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
@@ -5377,7 +5437,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.25",
+                    "version": "8.4.27",
                   },
                 ],
               },
