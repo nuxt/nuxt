@@ -26,7 +26,9 @@ export default defineNuxtPlugin({
           await loadPayload(url)
         }
       })
-      setTimeout(getAppManifest, 1000)
+      if (navigator.connection?.effectiveType !== 'slow-2g') {
+        setTimeout(getAppManifest, 1000)
+      }
     })
   }
 })
