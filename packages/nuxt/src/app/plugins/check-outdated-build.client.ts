@@ -3,6 +3,8 @@ import type { NuxtAppManifestMeta } from '#app'
 import { defineNuxtPlugin, getAppManifest, onNuxtReady, useRuntimeConfig } from '#app'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  if (import.meta.test) { return }
+
   let timeout: NodeJS.Timeout
   const config = useRuntimeConfig()
 
