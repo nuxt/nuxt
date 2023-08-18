@@ -2246,10 +2246,10 @@
   resolved "https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.21.tgz#5de5a2385a35309427f6011992b544514d559aa1"
   integrity sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==
 
-"@puppeteer/browsers@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-1.6.0.tgz#d52413a7039e40a5ef72fb13fb6505fd87ce842e"
-  integrity sha512-R2ib8j329427jtKB/qlz0MJbwfJE/6I8ocJLiajsRqJ2PPI8DbjiNzC3lQZeISXEcjOBVhbG2RafN8SlHdcT+A==
+"@puppeteer/browsers@1.7.0":
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/@puppeteer/browsers/-/browsers-1.7.0.tgz#714a25ad6963f5478e36004ea7eda254870a4659"
+  integrity sha512-sl7zI0IkbQGak/+IE3VEEZab5SSOlI5F6558WvzWGC1n3+C722rfewC1ZIkcF9dsoGSsxhsONoseVlNQG4wWvQ==
   dependencies:
     debug "4.3.4"
     extract-zip "2.0.1"
@@ -2285,10 +2285,10 @@
   dependencies:
     "@rollup/pluginutils" "^5.0.1"
 
-"@rollup/plugin-node-resolve@15.1.0":
-  version "15.1.0"
-  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-15.1.0.tgz#9ffcd8e8c457080dba89bb9fcb583a6778dc757e"
-  integrity sha512-xeZHCgsiZ9pzYVgAo9580eCGqwh/XCEUM9q6iQfGNocjgkufHAqC3exA+45URvhiYV8sBF9RlBai650eNs7AsA==
+"@rollup/plugin-node-resolve@15.2.0":
+  version "15.2.0"
+  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-15.2.0.tgz#982053b237f81471aace570472e88a456d211621"
+  integrity sha512-mKur03xNGT8O9ODO6FtT43ITGqHWZbKPdVJHZb+iV9QYcdlhUUB0wgknvA4KCUmC5oHJF6O2W1EgmyOQyVUI4Q==
   dependencies:
     "@rollup/pluginutils" "^5.0.1"
     "@types/resolve" "1.20.2"
@@ -5552,10 +5552,10 @@ devalue@^2.0.1:
   resolved "https://registry.npmjs.org/devalue/-/devalue-2.0.1.tgz#5d368f9adc0928e47b77eea53ca60d2f346f9762"
   integrity sha512-I2TiqT5iWBEyB8GRfTDP0hiLZ0YeDJZ+upDxjBfOC2lebO5LezQMv7QvIUTzdb64jQyAKLf1AHADtGN+jw6v8Q==
 
-devtools-protocol@0.0.1147663:
-  version "0.0.1147663"
-  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1147663.tgz#4ec5610b39a6250d1f87e6b9c7e16688ed0ac78e"
-  integrity sha512-hyWmRrexdhbZ1tcJUGpO95ivbRhWXz++F4Ko+n21AY5PNln2ovoJw+8ZMNDTtip+CNFQfrtLVh/w4009dXO/eQ==
+devtools-protocol@0.0.1159816:
+  version "0.0.1159816"
+  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1159816.tgz#b5848e8597de01e4738589e7553674c7312c8d2a"
+  integrity sha512-2cZlHxC5IlgkIWe2pSDmCrDiTzbSJWywjbDDnupOImEBcG31CQgBLV8wWE+5t+C4rimcjHsbzy7CBzf9oFjboA==
 
 diff-sequences@^29.4.3:
   version "29.4.3"
@@ -8716,7 +8716,12 @@ jest@29.6.2:
     import-local "^3.0.2"
     jest-cli "^29.6.2"
 
-jiti@1.19.1, jiti@^1.16.2, jiti@^1.19.1:
+jiti@1.19.3, jiti@^1.19.3:
+  version "1.19.3"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-1.19.3.tgz#ef554f76465b3c2b222dc077834a71f0d4a37569"
+  integrity sha512-5eEbBDQT/jF1xg6l36P+mWGGoH9Spuy0PCdSr2dtWRDGC6ph/w9ZCL4lmESW8f8F7MwT3XKescfP0wnZWAKL9w==
+
+jiti@^1.16.2:
   version "1.19.1"
   resolved "https://registry.npmjs.org/jiti/-/jiti-1.19.1.tgz#fa99e4b76a23053e0e7cde098efe1704a14c16f1"
   integrity sha512-oVhqoRDaBXf7sjkll95LHVS6Myyyb1zaunVwk4Z0+WPSW4gjS0pl01zYKHScTuyEhQsFxV5L4DR5r+YqSyqyyg==
@@ -9994,10 +9999,10 @@ node-gyp@^9.0.0:
     tar "^6.1.2"
     which "^2.0.2"
 
-node-html-parser@^6.1.5:
-  version "6.1.5"
-  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-6.1.5.tgz#c819dceb13a10a7642ff92f94f870b4f77968097"
-  integrity sha512-fAaM511feX++/Chnhe475a0NHD8M7AxDInsqQpz6x63GRF7xYNdS8Vo5dKsIVPgsOvG7eioRRTZQnWBrhDHBSg==
+node-html-parser@^6.1.6:
+  version "6.1.6"
+  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-6.1.6.tgz#8369a11d629a92ab2db2344bb650261135ac8e13"
+  integrity sha512-C/MGDQ2NjdjzUq41bW9kW00MPZecAe/oo89vZEFLDfWoQVDk/DdML1yuxVVKLDMFIFax2VTq6Vpfzyn7z5yYgQ==
   dependencies:
     css-select "^5.1.0"
     he "1.2.0"
@@ -11876,16 +11881,16 @@ punycode@^2.1.0, punycode@^2.1.1, punycode@^2.3.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
 
-puppeteer-core@21.0.3:
-  version "21.0.3"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-21.0.3.tgz#201bfbf18a9467dbedb10c3c2c9c43462bb9bb84"
-  integrity sha512-AGvopfkA0jLbW5Ba0m6kBuvRIpLo76PXUK3zJYkXOr9NI1LknJESyai6TtXc6GUSewMkinmyEDx1pFgq900hqg==
+puppeteer-core@21.1.0:
+  version "21.1.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-21.1.0.tgz#f7680ed17076fba6a721f9b81fc045a8351bb8b3"
+  integrity sha512-ggfTj09jo81Y6M4DyNj80GrY6Pip+AtDUgGljqoSzP6FG5nz5Aju6Cs/X147fLgkJ4UKTb736U6cDp0ssLzN5Q==
   dependencies:
-    "@puppeteer/browsers" "1.6.0"
+    "@puppeteer/browsers" "1.7.0"
     chromium-bidi "0.4.20"
     cross-fetch "4.0.0"
     debug "4.3.4"
-    devtools-protocol "0.0.1147663"
+    devtools-protocol "0.0.1159816"
     ws "8.13.0"
 
 pure-rand@^6.0.0:
@@ -12483,10 +12488,10 @@ sass-loader@^10.1.1:
     schema-utils "^3.0.0"
     semver "^7.3.2"
 
-sass@1.65.1:
-  version "1.65.1"
-  resolved "https://registry.npmjs.org/sass/-/sass-1.65.1.tgz#8f283b0c26335a88246a448d22e1342ba2ea1432"
-  integrity sha512-9DINwtHmA41SEd36eVPQ9BJKpn7eKDQmUHmpI0y5Zv2Rcorrh0zS+cFrt050hdNbmmCNKTW3hV5mWfuegNRsEA==
+sass@1.66.0:
+  version "1.66.0"
+  resolved "https://registry.npmjs.org/sass/-/sass-1.66.0.tgz#74728eed49b0e490cd729c233e7f1c6ce356e638"
+  integrity sha512-C3U+RgpAAlTXULZkWwzfysgbbBBo8IZudNAOJAVBLslFbIaZv4MBPkTqhuvpK4lqgdoFiWhnOGMoV4L1FyOBag==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
@@ -13079,10 +13084,15 @@ statuses@~1.5.0:
   resolved "https://registry.npmjs.org/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==
 
-std-env@^3.0.1, std-env@^3.3.1, std-env@^3.3.3:
+std-env@^3.0.1, std-env@^3.3.1:
   version "3.3.3"
   resolved "https://registry.npmjs.org/std-env/-/std-env-3.3.3.tgz#a54f06eb245fdcfef53d56f3c0251f1d5c3d01fe"
   integrity sha512-Rz6yejtVyWnVjC1RFvNmYL10kgjC49EOghxWn0RFqlCHGFpQx+Xe7yW3I4ceK1SGrWIGMjD5Kbue8W/udkbMJg==
+
+std-env@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-3.4.0.tgz#d7dc7e088016f4c22b12a699479ce6c6da31b274"
+  integrity sha512-YqHeQIIQ8r1VtUZOTOyjsAXAsjr369SplZ5rlQaiJTBsvodvPSCME7vuz8pnQltbQ0Cw0lyFo5Q8uyNwYQ58Xw==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
