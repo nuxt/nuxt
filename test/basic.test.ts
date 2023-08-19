@@ -1707,27 +1707,38 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
+    const { props, teleports, chunks } = result
+    result.props = {}
+    result.teleports = {}
+    result.chunks = {}
     expect(result).toMatchInlineSnapshot(`
         {
-          "chunks": {
-            "SugarCounter": "_nuxt/SugarCounter.vue.d67a99b8.js",
-          },
+          "chunks": {},
           "head": {
             "link": [],
             "style": [],
           },
           "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter-5rNaTHATD9\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
-          "props": {
-            "SugarCounter-5rNaTHATD9": {
-              "multiplier": 1,
-            },
-          },
+          "props": {},
           "state": {},
-          "teleports": {
-            "SugarCounter-5rNaTHATD9": "<div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->",
-          },
+          "teleports": {},
         }
       `)
+
+    const propsEntries = Object.entries(props)
+    const teleportsEntries = Object.entries(teleports)
+    const chunksEntries = Object.entries(chunks)
+    expect(propsEntries).toHaveLength(1)
+    expect(teleportsEntries).toHaveLength(1)
+    expect(propsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
+    expect(propsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
+    expect(chunksEntries[0][0]).toBe('SugarCounter')
+    expect(propsEntries[0][1]).toMatchInlineSnapshot(`
+      {
+        "multiplier": 1,
+      }
+    `)
+    expect(teleportsEntries[0][1]).toMatchInlineSnapshot('"<div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
   })
 
   it('renders pure components', async () => {
