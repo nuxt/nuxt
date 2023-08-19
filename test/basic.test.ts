@@ -1416,6 +1416,13 @@ describe('server components/islands', () => {
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
+    if (!isWebpack) {
+      // test client component interactivity
+      expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 12')
+      await page.locator('.interactive-component-wrapper button').click()
+      expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 13')
+    }
+
     await page.close()
   })
 
@@ -1445,7 +1452,7 @@ describe('server components/islands', () => {
 
     const text = (await page.innerText('pre')).replace(/nuxt-ssr-client="([^"]*)"/g, (_, content) => `nuxt-ssr-client="${content.split('-')[0]}"`)
 
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
@@ -1720,7 +1727,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\"'nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\"'nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
         "props": {},
         "state": {},
         "teleports": {},
@@ -1836,6 +1843,13 @@ describe('component islands', () => {
     // test islands slots interactivity
     await page.locator('#first-sugar-counter button').click()
     expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
+
+    if (!isWebpack) {
+      // test client component interactivity
+      expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 12')
+      await page.locator('.interactive-component-wrapper button').click()
+      expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 13')
+    }
 
     await page.close()
   })

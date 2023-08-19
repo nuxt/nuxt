@@ -7,7 +7,7 @@
     </div>
 
     <SugarCounter :multiplier="1" />
-    <div style="border: solid 1px red;">
+    <div class="interactive-component-wrapper" style="border: solid 1px red;">
       The component bellow is not a slot but declared as interactive
 
       <SugarCounter nuxt-client :multiplier="1" />
