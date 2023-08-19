@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { basename, join } from 'node:path'
 import fs from 'node:fs'
-import type { Component, Nuxt } from '@nuxt/schema'
+import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
@@ -16,6 +16,12 @@ interface ServerOnlyComponentTransformPluginOptions {
      * should be done only in dev mode as we use build:manifest result in production
      */
     rootDir?: string
+    isDev?: boolean
+}
+
+interface ComponentChunkOptions {
+  getComponents: () => Component[]
+  buildDir: string
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
@@ -26,6 +32,7 @@ const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const components = options.getComponents()
   const isVite = meta.framework === 'vite'
+  const { isDev, rootDir } = options
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
@@ -98,7 +105,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-              s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${options.rootDir ? `root-dir="${options.rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
+              s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
             }
           }
         }
@@ -133,7 +140,8 @@ function getBindings (bindings: Record<string, string>, vfor?: [string, string])
   }
 }
 
-export const componentsChunkPlugin = createUnplugin((options: ServerOnlyComponentTransformPluginOptions & {nuxt: Nuxt}) => {
+export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
+  const { buildDir } = options
   return {
     name: 'componentsChunkPlugin',
     vite: {
@@ -174,7 +182,7 @@ export const componentsChunkPlugin = createUnplugin((options: ServerOnlyComponen
           })
         })
 
-        fs.writeFileSync(join(options.nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
+        fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
           if (chunkInfo.type === 'chunk' && chunkInfo.name && chunkInfo.exports.length > 0) { return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath }) }
           return acc
         }, {}))}`)
