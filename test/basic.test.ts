@@ -1650,7 +1650,7 @@ describe('app config', () => {
   })
 })
 
-describe.only('component islands', () => {
+describe('component islands', () => {
   it('renders components with route', async () => {
     const result: NuxtIslandResponse = await $fetch('/__nuxt_island/RouteComponent?url=/foo')
 
