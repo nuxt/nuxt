@@ -104,14 +104,22 @@ export default defineComponent({
 
     // needs to be non-reactive because we don't want to trigger re-renders
     // at hydration, we only retrieve props/chunks/teleports from payload. See the reviver at nuxt\src\app\plugins\revive-payload.client.ts
-    const rawPayload = toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? {}
+    const rawPayload = toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? {
+      chunks: {},
+      props: {},
+      teleports: {}
+    }
     const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks'| 'props' | 'teleports'> = {
       chunks: rawPayload.chunks,
       props: rawPayload.props,
       teleports: rawPayload.teleports
     }
 
-    const ssrHTML = ref<string>(getFragmentHTML(instance.vnode?.el ?? null).join(''))
+    const ssrHTML = ref<string>('')
+
+    if (import.meta.client) {
+      ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null).join('')
+    }
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
@@ -233,12 +241,11 @@ export default defineComponent({
       if ((!html.value || error.value) && slots.fallback) {
         return [slots.fallback({ error: error.value })]
       }
-
       const nodes = [createVNode(Fragment, {
         key: key.value
-      }, [h(createStaticVNode(html.value, 1))])]
+      }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
 
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server)) {
+      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server) && html.value) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to: import.meta.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
@@ -247,14 +254,14 @@ export default defineComponent({
           }
         }
         if (import.meta.server) {
-          for (const [id, html] of Object.entries(nonReactivePayload.teleports)) {
+          for (const [id, html] of Object.entries(nonReactivePayload.teleports ?? {})) {
             nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
               default: () => [createStaticVNode(html, 1)]
             }))
           }
         }
-        if (import.meta.client && canLoadClientComponent.value && html.value.includes('nuxt-ssr-client')) {
-          for (const [id, props] of Object.entries(nonReactivePayload.props)) {
+        if (import.meta.client && canLoadClientComponent.value) {
+          for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
             // @ts-expect-error _ is the component's default export in build chunks
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
