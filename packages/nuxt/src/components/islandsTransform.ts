@@ -151,7 +151,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build.rollupOptions = config.build.rollupOptions || {}
         config.build.rollupOptions.output = config.build.rollupOptions.output || {}
         const componentManualChunk = (id: string) => {
-          if (components.some(c => c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
+          if (components.some(c => c.mode !== 'server' && !c.island && c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
             return basename(id)
           }
         }
