@@ -1443,8 +1443,8 @@ describe('server components/islands', () => {
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
 
-    const text = await page.innerText('pre')
-    text.replace(/nuxt-ssr-client="([^"])"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
+    const text = (await page.innerText('pre')).replace(/nuxt-ssr-client="([^"]*)"/g, (_, content) => `nuxt-ssr-client="${content.split('-')[0]}"`)
+
     expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
 
@@ -1733,7 +1733,7 @@ describe('component islands', () => {
     expect(propsEntries).toHaveLength(1)
     expect(teleportsEntries).toHaveLength(1)
     expect(propsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
-    expect(propsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
+    expect(teleportsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
     expect(chunksEntries[0][0]).toBe('SugarCounter')
     expect(propsEntries[0][1]).toMatchInlineSnapshot(`
       {
