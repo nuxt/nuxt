@@ -287,6 +287,8 @@ export default defineNuxtModule<ComponentsOptions>({
             config.plugins.push(islandsTransform.webpack({
               getComponents
             }))
+          } else {
+            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           }
         }
       })
