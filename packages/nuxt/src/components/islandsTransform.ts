@@ -25,7 +25,7 @@ interface ComponentChunkOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
-const HAS_SLOT_RE = /<slot[ /]/
+const HAS_SLOT_OR_CLIENT_RE = /(<slot[ /])|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 
@@ -46,7 +46,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       return islands.some(c => c.filePath === pathname)
     },
     async transform (code, id) {
-      if (!HAS_SLOT_RE.test(code)) { return }
+      if (!HAS_SLOT_OR_CLIENT_RE.test(code)) { return }
       const template = code.match(TEMPLATE_RE)
       if (!template) { return }
       const startingIndex = template.index || 0
