@@ -140,7 +140,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
         components.push(component)
       } else {
-        console.warn(`${component.pascalName} is already defined and has been overriden, ${component.filePath} will be ignored.`)
+        console.warn(`${component.pascalName} is already defined, ${component.filePath} will be ignored.`)
       }
     }
     scannedPaths.push(dir.path)
