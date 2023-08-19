@@ -204,6 +204,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  await buildClient(ctx)
-  await buildServer(ctx)
+  await Promise.all([
+    buildClient(ctx),
+    buildServer(ctx),
+  ])
 }
