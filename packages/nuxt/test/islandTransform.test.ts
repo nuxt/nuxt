@@ -6,7 +6,7 @@ import { islandsTransform } from '../src/components/islandsTransform'
 import { normalizeLineEndings } from './utils'
 
 const getComponents = () => [{
-  filePath: 'hello.server.vue',
+  filePath: '/root/hello.server.vue',
   mode: 'server',
   pascalName: 'HelloWorld',
   island: true,
@@ -19,22 +19,26 @@ const getComponents = () => [{
 }] as Component[]
 
 const pluginVite = islandsTransform.raw({
+  getComponents
+}, { framework: 'vite' }) as Plugin
+
+const pluginViteDev = islandsTransform.raw({
   getComponents,
-  rootDir: ''
+  rootDir: '/root',
+  isDev: true
 }, { framework: 'vite' }) as Plugin
 
 const pluginWebpack = islandsTransform.raw({
-  getComponents,
-  rootDir: ''
+  getComponents
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
-const viteTransform = async (source: string, id: string) => {
-  const result = await (pluginVite.transform! as Function).call({ error: null, warn: null } as any, source, id)
+const viteTransform = async (source: string, id: string, dev = false) => {
+  const result = await ((dev ? pluginViteDev : pluginVite).transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
 const webpackTransform = async (source: string, id: string) => {
-  const result = await ((pluginWebpack as UnpluginOptions).transform! as Function).call({ error: null, warn: null } as any, source, id)
+  const result = await ((pluginWebpack as UnpluginOptions).transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -126,6 +130,40 @@ describe('islandTransform - server and island components', () => {
                 <HelloWorld />
                 <!-- should be wrapped by TeleportIfClient -->
                 <TeleportIfClient to=\\"HelloWorld-5tg8bjdS1w\\"  :nuxt-client=\\"true\\"><HelloWorld /></TeleportIfClient>
+              </div>
+            </template>
+            
+            <script setup lang=\\"ts\\">
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import TeleportIfClient from '#app/components/TeleportIfClient'
+            import HelloWorld from './HelloWorld.vue'
+            </script>
+            "
+      `)
+    })
+
+    it('test transform with vite in dev', async () => {
+      const result = await viteTransform(`<template>
+      <div>
+        <!-- should not be wrapped by TeleportIfClient -->
+        <HelloWorld />
+        <!-- should be wrapped by TeleportIfClient with a rootDir attr -->
+        <HelloWorld nuxt-client />
+      </div>
+    </template>
+    
+    <script setup lang="ts">
+    import HelloWorld from './HelloWorld.vue'
+    </script>
+    `, 'hello.server.vue', true)
+
+      expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+        "<template>
+              <div>
+                <!-- should not be wrapped by TeleportIfClient -->
+                <HelloWorld />
+                <!-- should be wrapped by TeleportIfClient with a rootDir attr -->
+                <TeleportIfClient to=\\"HelloWorld-vxDirZrUwF\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></TeleportIfClient>
               </div>
             </template>
             
