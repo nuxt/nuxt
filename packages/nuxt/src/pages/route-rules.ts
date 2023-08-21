@@ -6,6 +6,7 @@ import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack'
+import { normalize } from 'pathe'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
@@ -48,7 +49,8 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
 export function getMappedPages (pages: NuxtPage[], paths = {} as { [absolutePath: string]: string | null }, prefix = '') {
   for (const page of pages) {
     if (page.file) {
-      paths[page.file] = pathToNitroGlob(prefix + page.path)
+      const filename = normalize(page.file)
+      paths[filename] = pathToNitroGlob(prefix + page.path)
     }
     if (page.children) {
       getMappedPages(page.children, paths, page.path + '/')
