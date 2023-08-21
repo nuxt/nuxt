@@ -70,8 +70,10 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     }, 60_000)
 
     it('should detect new routes', async () => {
-      const html = await $fetch('/some-404')
-      expect(html).toContain('catchall at some-404')
+      await expectWithPolling(
+        () => $fetch('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
+        true
+      )
 
       // write new page route
       const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
