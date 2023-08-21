@@ -13,7 +13,7 @@ import type { PageMeta } from '#app'
 import { PageRouteSymbol } from '#app/components/injections'
 
 export const useRouter: typeof _useRouter = () => {
-  return useNuxtApp()?.$router as Router
+  return useNuxtApp()?.$router ?? _useRouter() as Router
 }
 
 export const useRoute: typeof _useRoute = () => {
