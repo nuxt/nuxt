@@ -78,7 +78,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
 
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')),
+        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
         true
       )
     })
