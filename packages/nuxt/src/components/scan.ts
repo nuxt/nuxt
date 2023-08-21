@@ -140,7 +140,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
         components.push(component)
       } else {
-        console.warn(`${component.pascalName} is already defined, ${component.filePath} will be ignored.`)
+        console.warn(`[nuxt] \`<${component.pascalName}>\` is already defined, so \`~/${relative(srcDir, filePath)}\` will be ignored.`)
       }
     }
     scannedPaths.push(dir.path)
