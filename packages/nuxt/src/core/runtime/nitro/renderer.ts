@@ -19,7 +19,8 @@ import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
 
-import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from '#internal/nitro'
+import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
+import { useNitroApp } from '#internal/nitro/app'
 
 import type { Link, Script } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
