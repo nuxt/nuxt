@@ -32,7 +32,7 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
       const node = _node as CallExpression & { start: number, end: number }
       const name = 'name' in node.callee && node.callee.name
       if (name === 'defineRouteRules') {
-        const rulesString = code.slice(node.start, node.end)
+        const rulesString = js.code.slice(node.start, node.end)
         try {
           rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
         } catch {

@@ -277,9 +277,13 @@ export default defineNuxtModule({
         } else if (glob) {
           delete inlineRules[glob]
         }
-      } catch (e) {
-        const relativePath = relative(nuxt.options.srcDir, path)
-        console.error(`[nuxt] Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+      } catch (e: any) {
+        if (e.toString().includes('Error parsing route rules')) {
+          const relativePath = relative(nuxt.options.srcDir, path)
+          console.error(`[nuxt] Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+        } else {
+          console.error(e)
+        }
       }
     }
 
