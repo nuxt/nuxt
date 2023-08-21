@@ -59,7 +59,7 @@
     "unplugin": "^1.4.0",
     "vite": "^4.4.9",
     "vite-node": "^0.33.0",
-    "vite-plugin-checker": "^0.6.1",
+    "vite-plugin-checker": "^0.6.2",
     "vue-bundle-renderer": "^2.0.0"
   },
   "peerDependencies": {
