@@ -38,8 +38,9 @@
     "vite": "4.4.9",
     "vue": "3.3.4",
     "magic-string": "^0.30.2",
-    "h3": "npm:h3-nightly@latest",
-    "nitropack": "npm:nitropack-edge@latest",
+    "h3": "npm:h3-nightly@1.8.1-1692554209.a3ad8c2",
+    "nitropack": "npm:nitropack-edge@2.6.0-28212217.c431b71",
+    "node-fetch-native": "^1.3.3",
     "unenv": "^1.7.1"
   },
   "devDependencies": {
