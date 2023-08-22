@@ -251,14 +251,11 @@ export default defineNuxtModule({
 
     // Extracted route rules defined inline in pages
     const inlineRules = {} as { [glob: string]: NitroRouteConfig }
-    // User-provided route rules from `nuxt.config`
-    let baseRules: { [glob: string]: NitroRouteConfig } | undefined
-    nuxt.hook('nitro:config', (config) => { baseRules = config.routeRules })
 
     // Allow telling Nitro to reload route rules
     let updateRouteConfig: () => void | Promise<void>
     nuxt.hook('nitro:init', (nitro) => {
-      updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, baseRules) })
+      updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
     })
 
     async function updatePage (path: string) {
