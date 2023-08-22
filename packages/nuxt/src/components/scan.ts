@@ -38,7 +38,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       const directory = basename(dir.path)
       if (!siblings.includes(directory)) {
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directory.toLowerCase())
+        const directoryLowerCase = directory.toLowerCase()
+        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
         if (caseCorrected) {
           const nuxt = useNuxt()
           const original = relative(nuxt.options.srcDir, dir.path)
