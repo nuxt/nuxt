@@ -12,15 +12,15 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 ## Type
 
 ```ts [Signature]
-function useAsyncDatas<DataT, ErrorT>(
+function useAsyncData<DataT, DataE>(
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): AsyncData<DataT, ErrorT>
-function useAsyncData<DataT, ErrorT>(
+): AsyncData<DataT, DataE>
+function useAsyncData<DataT, DataE>(
   key: string,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): Promise<AsyncData<DataT, ErrorT>
+): Promise<AsyncData<DataT, DataE>
 
 type AsyncDataOptions<DataT> = {
   server?: boolean
