@@ -97,7 +97,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
         console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
           `\n - ${filePath}` +
-          `\n - ${resolvedNames.get(componentName)}`
+          `\n - ${resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)}`
         )
         continue
       }
