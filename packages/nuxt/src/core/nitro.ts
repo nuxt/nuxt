@@ -115,6 +115,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+        ],
+        exclude: [
+          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+          // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
         ]
       }
     },
@@ -402,4 +407,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
   }
+}
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
