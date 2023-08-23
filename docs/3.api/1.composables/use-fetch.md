@@ -10,10 +10,10 @@ It automatically generates a key based on URL and fetch options, provides type h
 ## Type
 
 ```ts [Signature]
-function useFetch<DataT,ErrorT>(
+function useFetch<DataT, ErrorT>(
   url: string | Request | Ref<string | Request> | () => string | Request,
-  options?: UseFetchOptions<DataT,ErrorT>
-): Promise<AsyncData<DataT>>
+  options?: UseFetchOptions<DataT>
+): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
   key?: string
