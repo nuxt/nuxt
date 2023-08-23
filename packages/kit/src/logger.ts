@@ -1,7 +1,7 @@
-import consola from 'consola'
+import { consola } from 'consola'
 
 export const logger = consola
 
-export function useLogger (scope?: string) {
-  return scope ? logger.withScope(scope) : logger
+export function useLogger (tag?: string) {
+  return tag ? logger.withTag(tag) : logger
 }

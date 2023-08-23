@@ -1,0 +1,13 @@
+{
+  "pnpm": {
+    "overrides": {
+      "@nuxt/kit": "./packages/kit",
+      "@nuxt/schema": "./packages/schema",
+      "@nuxt/test-utils": "./packages/test-utils",
+      "@nuxt/vite": "./packages/vite",
+      "@nuxt/webpack": "./packages/webpack",
+      "nuxi": "./packages/nuxi",
+      "nuxt": "./packages/nuxt"
+    }
+  }
+}

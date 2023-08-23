@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
 
@@ -9,7 +10,7 @@ export default defineUntypedSchema({
    * See https://vitejs.dev/config for more information.
    * Please note that not all vite options are supported in Nuxt.
    *
-   * @type {typeof import('../src/types/config').ViteConfig}
+   * @type {typeof import('../src/types/config').ViteConfig & { $client?: typeof import('../src/types/config').ViteConfig, $server?: typeof import('../src/types/config').ViteConfig }}
    */
   vite: {
     root: {
@@ -21,6 +22,9 @@ export default defineUntypedSchema({
     define: {
       $resolve: async (val, get) => ({
         'process.dev': await get('dev'),
+        'import.meta.dev': await get('dev'),
+        'process.test': isTest,
+        'import.meta.test': isTest,
         ...val || {}
       })
     },
@@ -28,7 +32,12 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: async (val, get) => val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      $resolve: async (val, get) => {
+        if (val) {
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
+        }
+        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+      }
     },
     vue: {
       isProduction: {
@@ -37,6 +46,14 @@ export default defineUntypedSchema({
       template: {
         compilerOptions: {
           $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
+        }
+      },
+      script: {
+        propsDestructure: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure)
+        },
+        defineModel: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel)
         }
       }
     },

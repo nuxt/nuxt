@@ -38,6 +38,16 @@
       <ClientFallbackStatefulSetup />
       <ClientFallbackNonStatefulSetup />
       <ClientFallbackNonStateful />
+      <NuxtClientFallback keep-fallback>
+        <div>
+          <BreakInSetup />
+        </div>
+        <template #fallback>
+          <div id="keep-fallback">
+            keep fallback in client
+          </div>
+        </template>
+      </NuxtClientFallback>
     </div>
     <button id="increment-count" @click="multiplier++">
       increment count

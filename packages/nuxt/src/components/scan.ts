@@ -1,7 +1,8 @@
+import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
-import { isIgnored } from '@nuxt/kit'
+import { isIgnored, useNuxt } from '@nuxt/kit'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
@@ -30,6 +31,25 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     const resolvedNames = new Map<string, string>()
 
     const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+
+    // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
+    if (files.length) {
+      const siblings = await readdir(dirname(dir.path)).catch(() => [] as string[])
+
+      const directory = basename(dir.path)
+      if (!siblings.includes(directory)) {
+        const directoryLowerCase = directory.toLowerCase()
+        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
+        if (caseCorrected) {
+          const nuxt = useNuxt()
+          const original = relative(nuxt.options.srcDir, dir.path)
+          const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), caseCorrected))
+          console.warn(`[nuxt] Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+          continue
+        }
+      }
+    }
+
     for (const _file of files) {
       const filePath = join(dir.path, _file)
 
@@ -72,30 +92,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
 
-      /**
-       * Array of fileName parts splitted by case, / or -
-       *
-       * @example third-component -> ['third', 'component']
-       * @example AwesomeComponent -> ['Awesome', 'Component']
-       */
-      const fileNameParts = splitByCase(fileName)
-
-      const componentNameParts: string[] = []
-
-      while (prefixParts.length &&
-        (prefixParts[0] || '').toLowerCase() !== (fileNameParts[0] || '').toLowerCase()
-      ) {
-        componentNameParts.push(prefixParts.shift()!)
-      }
-
-      const componentName = pascalCase(componentNameParts) + pascalCase(fileNameParts)
       const suffix = (mode !== 'all' ? `-${mode}` : '')
+      const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        console.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
-          `\n - ${filePath}` +
-          `\n - ${resolvedNames.get(componentName)}`
-        )
+        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
         continue
       }
       resolvedNames.set(componentName + suffix, filePath)
@@ -127,13 +128,58 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         component = (await dir.extendComponent(component)) || component
       }
 
-      // Ignore component if component is already defined (with same mode)
-      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
-        components.push(component)
+      // Ignore files like `~/components/index.vue` which end up not having a name at all
+      if (!componentName) {
+        console.warn(`[nuxt] Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        continue
       }
+
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      if (existingComponent) {
+        // Ignore component if component is already defined (with same mode)
+        warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        continue
+      }
+
+      components.push(component)
     }
     scannedPaths.push(dir.path)
   }
 
   return components
+}
+
+export function resolveComponentName (fileName: string, prefixParts: string[]) {
+  /**
+   * Array of fileName parts splitted by case, / or -
+   *
+   * @example third-component -> ['third', 'component']
+   * @example AwesomeComponent -> ['Awesome', 'Component']
+   */
+  const fileNameParts = splitByCase(fileName)
+  const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
+  const componentNameParts: string[] = [...prefixParts]
+  let index = prefixParts.length - 1
+  const matchedSuffix: string[] = []
+  while (index >= 0) {
+    matchedSuffix.unshift(...splitByCase(prefixParts[index] || '').map(p => p.toLowerCase()))
+    const matchedSuffixContent = matchedSuffix.join('/')
+    if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
+      // e.g Item/Item/Item.vue -> Item
+      (prefixParts[index].toLowerCase() === fileNamePartsContent &&
+        prefixParts[index + 1] &&
+        prefixParts[index] === prefixParts[index + 1])) {
+      componentNameParts.length = index
+    }
+    index--
+  }
+
+  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+}
+
+function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
+  console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+    `\n - ${filePath}` +
+    `\n - ${duplicatePath}`
+  )
 }

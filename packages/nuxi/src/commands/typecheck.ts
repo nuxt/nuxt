@@ -1,9 +1,10 @@
 import { execa } from 'execa'
 import { resolve } from 'pathe'
-import { tryResolveModule } from '../utils/esm'
 
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
+import { tryResolveModule } from '../utils/esm'
 import { loadKit } from '../utils/kit'
-import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -12,16 +13,17 @@ export default defineNuxtCommand({
     usage: 'npx nuxi typecheck [--log-level] [rootDir]',
     description: 'Runs `vue-tsc` to check types throughout your app.'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt, buildNuxt } = await loadKit(rootDir)
+    const { loadNuxt, buildNuxt, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args['log-level']
+        logLevel: args['log-level'],
+        ...(options?.overrides || {})
       }
     })
 

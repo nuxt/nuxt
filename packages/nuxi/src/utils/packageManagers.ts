@@ -6,7 +6,8 @@ import { findup } from './fs'
 export const packageManagerLocks = {
   yarn: 'yarn.lock',
   npm: 'package-lock.json',
-  pnpm: 'pnpm-lock.yaml'
+  pnpm: 'pnpm-lock.yaml',
+  bun: 'bun.lockb'
 }
 
 type PackageManager = keyof typeof packageManagerLocks

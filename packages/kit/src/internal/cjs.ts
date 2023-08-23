@@ -23,13 +23,13 @@ export interface RequireModuleOptions extends ResolveModuleOptions {
 }
 
 /** @deprecated Do not use CJS utils */
-export function isNodeModules (id: string) {
+function isNodeModules (id: string) {
   // TODO: Follow symlinks
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
 /** @deprecated Do not use CJS utils */
-export function clearRequireCache (id: string) {
+function clearRequireCache (id: string) {
   if (isNodeModules(id)) {
     return
   }
@@ -53,59 +53,27 @@ export function clearRequireCache (id: string) {
 }
 
 /** @deprecated Do not use CJS utils */
-export function scanRequireTree (id: string, files = new Set<string>()) {
-  if (isNodeModules(id) || files.has(id)) {
-    return files
-  }
-
-  const entry = getRequireCacheItem(id)
-
-  if (!entry) {
-    files.add(id)
-    return files
-  }
-
-  files.add(entry.id)
-
-  for (const child of entry.children) {
-    scanRequireTree(child.id, files)
-  }
-
-  return files
-}
-
-/** @deprecated Do not use CJS utils */
-export function getRequireCacheItem (id: string) {
+function getRequireCacheItem (id: string) {
   try {
     return _require.cache[id]
   } catch (e) {
   }
 }
 
-/** @deprecated Do not use CJS utils */
-export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
-  return normalize(_require.resolve(id, {
-    paths: ([] as string[]).concat(
-      // @ts-ignore
-      global.__NUXT_PREPATHS__,
-      opts.paths || [],
-      process.cwd(),
-      // @ts-ignore
-      global.__NUXT_PATHS__
-    ).filter(Boolean)
-  }))
+export function getModulePaths (paths?: string[] | string) {
+  return ([] as Array<string | undefined>).concat(
+    global.__NUXT_PREPATHS__,
+    paths || [],
+    process.cwd(),
+    global.__NUXT_PATHS__
+  ).filter(Boolean) as string[]
 }
 
 /** @deprecated Do not use CJS utils */
-export function tryResolveModule (path: string, opts: ResolveModuleOptions = {}): string | null {
-  try {
-    return resolveModule(path, opts)
-  } catch (error: any) {
-    if (error?.code !== 'MODULE_NOT_FOUND') {
-      throw error
-    }
-  }
-  return null
+export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
+  return normalize(_require.resolve(id, {
+    paths: getModulePaths(opts.paths)
+  }))
 }
 
 /** @deprecated Do not use CJS utils */
@@ -137,7 +105,7 @@ export function importModule (id: string, opts: RequireModuleOptions = {}) {
 export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
   try {
     return importModule(id, opts).catch(() => undefined)
-  } catch { }
+  } catch {}
 }
 
 /** @deprecated Do not use CJS utils */

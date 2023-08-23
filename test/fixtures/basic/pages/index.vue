@@ -11,18 +11,40 @@
     <div>Composable | star: {{ useNestedBar() }}</div>
     <DevOnly>Some dev-only info</DevOnly>
     <div><DevOnly>Some dev-only info</DevOnly></div>
+    <div>
+      <DevOnly>
+        Some dev-only info
+        <template #fallback>
+          Some prod-only info
+        </template>
+      </DevOnly>
+    </div>
     <div>Path: {{ $route.fullPath }}</div>
     <NuxtLink to="/">
       Link
     </NuxtLink>
+    <NuxtLink id="islands" to="/islands">
+      islands
+    </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal" to="/middleware-abort-non-fatal" :prefetch="false">
+      Middleware abort navigation
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal-error" to="/middleware-abort-non-fatal?error=someerror" :prefetch="false">
+      Middleware abort navigation with error
+    </NuxtLink>
+    Some value: {{ someValue }}
     <button @click="someValue++">
       Increment state
     </button>
+    <NuxtLink to="/no-scripts">
+      to no script
+    </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
+    <component :is="`global${'-'.toString()}sync`" />
     <Spin>Test</Spin>
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />
@@ -41,6 +63,11 @@ setupDevtoolsPlugin({}, () => {}) as any
 const config = useRuntimeConfig()
 
 const someValue = useState('val', () => 1)
+
+const NestedSugarCounter = resolveComponent('NestedSugarCounter')
+if (!NestedSugarCounter) {
+  throw new Error('Component not found')
+}
 
 definePageMeta({
   alias: '/some-alias',

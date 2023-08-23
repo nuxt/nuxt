@@ -1,7 +1,7 @@
 import type { defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent } from 'vue'
 
-// @ts-ignore
+// @ts-expect-error virtual file
 import * as islandComponents from '#build/components.islands.mjs'
 import { createError } from '#app/composables/error'
 
@@ -18,9 +18,10 @@ export default defineComponent({
     if (!component) {
       throw createError({
         statusCode: 404,
-        statusMessage: `Island component not found: ${JSON.stringify(component)}`
+        statusMessage: `Island component not found: ${props.context.name}`
       })
     }
-    return () => createVNode(component || 'span', props.context.props)
+
+    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
   }
 })

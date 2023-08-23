@@ -1,4 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
+import { loading as loadingTemplate } from '@nuxt/ui-templates'
 
 export default defineUntypedSchema({
   devServer: {
@@ -16,10 +17,7 @@ export default defineUntypedSchema({
      *   }
      * })
      * ```
-     *
-     *
-     * @type {false | { key: string; cert: string }}
-     *
+     * @type {boolean | { key: string; cert: string }}
      */
     https: false,
 
@@ -36,5 +34,12 @@ export default defineUntypedSchema({
      * dev server with the full URL (for module and internal use).
      */
     url: 'http://localhost:3000',
+
+    /**
+     * Template to show a loading screen
+     *
+     * @type {(data: { loading?: string }) => string}
+     */
+    loadingTemplate
   }
 })

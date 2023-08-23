@@ -5,25 +5,32 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
+import { createError } from './error'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
 async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, fn: (nuxtApp: NuxtApp) => Promise<Record<string, any>>) {
-  const nuxt = useNuxtApp()
+  const nuxtApp = useNuxtApp()
   const route = useRoute()
   const vm = getCurrentInstance()!
-  const { fetchKey } = vm.proxy!.$options
-  const key = typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey || route.fullPath
-  const { data } = await useAsyncData(`options:asyncdata:${key}`, () => fn(nuxt))
+  const { fetchKey, _fetchKeyBase } = vm.proxy!.$options
+  const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) ||
+    ([_fetchKeyBase, route.fullPath, route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type))].join(':'))
+  const { data, error } = await useAsyncData(`options:asyncdata:${key}`, () => nuxtApp.runWithContext(() => fn(nuxtApp)))
+  if (error.value) {
+    throw createError(error.value)
+  }
   if (data.value && typeof data.value === 'object') {
     Object.assign(await res, toRefs(reactive(data.value)))
-  } else if (process.dev) {
+  } else if (import.meta.dev) {
     console.warn('[nuxt] asyncData should return an object', data)
   }
 }
 
+/*! @__NO_SIDE_EFFECTS__ */
 export const defineNuxtComponent: typeof defineComponent =
-  function defineNuxtComponent (options: any): any {
+  function defineNuxtComponent (...args: any[]): any {
+    const [options, key] = args
     const { setup } = options
 
     // Avoid wrapping if no options api is used
@@ -36,9 +43,11 @@ export const defineNuxtComponent: typeof defineComponent =
 
     return {
       [NuxtComponentIndicator]: true,
+      _fetchKeyBase: key,
       ...options,
       setup (props, ctx) {
-        const res = setup?.(props, ctx) || {}
+        const nuxtApp = useNuxtApp()
+        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
 
         const promises: Promise<any>[] = []
         if (options.asyncData) {

@@ -1,14 +1,8 @@
-import { defineComponent, h } from 'vue'
-import type { Component } from 'vue'
+import { h } from 'vue'
+import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
-import { isString, isPromise, isArray } from '@vue/shared'
-
-const Fragment = defineComponent({
-  name: 'FragmentWrapper',
-  setup (_props, { slots }) {
-    return () => slots.default?.()
-  }
-})
+import { isString, isPromise, isArray, isObject } from '@vue/shared'
+import destr from 'destr'
 
 /**
  * Internal utility
@@ -16,7 +10,8 @@ const Fragment = defineComponent({
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
-  return { default: () => props ? h(component, props === true ? {} : props, slots) : h(Fragment, {}, slots) }
+  props = props === true ? {} : props
+  return { default: () => props ? h(component, props, slots) : slots.default?.() }
 }
 
 // eslint-disable-next-line no-use-before-define
@@ -49,4 +44,117 @@ export function createBuffer () {
       }
     }
   }
+}
+
+const TRANSLATE_RE = /&(nbsp|amp|quot|lt|gt);/g
+const NUMSTR_RE = /&#(\d+);/gi
+export function decodeHtmlEntities (html: string) {
+  const translateDict = {
+    nbsp: ' ',
+    amp: '&',
+    quot: '"',
+    lt: '<',
+    gt: '>'
+  } as const
+  return html.replace(TRANSLATE_RE, function (_, entity: keyof typeof translateDict) {
+    return translateDict[entity]
+  }).replace(NUMSTR_RE, function (_, numStr: string) {
+    const num = parseInt(numStr, 10)
+    return String.fromCharCode(num)
+  })
+}
+
+/**
+ * helper for NuxtIsland to generate a correct array for scoped data
+ */
+export function vforToArray (source: any): any[] {
+  if (isArray(source)) {
+    return source
+  } else if (isString(source)) {
+    return source.split('')
+  } else if (typeof source === 'number') {
+    if (import.meta.dev && !Number.isInteger(source)) {
+      console.warn(`The v-for range expect an integer value but got ${source}.`)
+    }
+    const array = []
+    for (let i = 0; i < source; i++) {
+      array[i] = i
+    }
+    return array
+  } else if (isObject(source)) {
+    if (source[Symbol.iterator as any]) {
+      return Array.from(source as Iterable<any>, item =>
+        item
+      )
+    } else {
+      const keys = Object.keys(source)
+      const array = new Array(keys.length)
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i]
+        array[i] = source[key]
+      }
+      return array
+    }
+  }
+  return []
+}
+
+/**
+ * Retrieve the HTML content from an element
+ * Handles `<!--[-->` Fragment elements
+ *
+ * @param element the element to retrieve the HTML
+ * @param withoutSlots purge all slots from the HTML string retrieved
+ * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
+ */
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false) {
+  if (element) {
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element, [], withoutSlots)
+    }
+    if (withoutSlots) {
+      const clone = element.cloneNode(true)
+      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      return [clone.outerHTML]
+    }
+    return [element.outerHTML]
+  }
+  return []
+}
+
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
+  if (element && element.nodeName) {
+    if (isEndFragment(element)) {
+      return blocks
+    } else if (!isStartFragment(element)) {
+      const clone = element.cloneNode(true) as Element
+      if (withoutSlots) {
+        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+      }
+      blocks.push(clone.outerHTML)
+    }
+
+    getFragmentChildren(element.nextSibling, blocks, withoutSlots)
+  }
+  return blocks
+}
+
+function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
+
+export function getSlotProps (html: string) {
+  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
+  const data: Record<string, any> = {}
+  for (const slot of slotsDivs) {
+    const [_, slotName, json] = slot
+    const slotData = destr(decodeHtmlEntities(json))
+    data[slotName] = slotData
+  }
+  return data
 }

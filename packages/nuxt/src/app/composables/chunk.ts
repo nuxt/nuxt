@@ -29,7 +29,7 @@ export interface ReloadNuxtAppOptions {
 }
 
 export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
-  if (process.server) { return }
+  if (import.meta.server) { return }
   const path = options.path || window.location.pathname
 
   let handledPath: Record<string, any> = {}

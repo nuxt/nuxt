@@ -1,9 +1,10 @@
-import { buildNuxt } from '@nuxt/kit'
 import { relative, resolve } from 'pathe'
-import consola from 'consola'
-import { clearDir } from '../utils/fs'
+import { consola } from 'consola'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
+import { clearBuildDir } from '../utils/fs'
 import { loadKit } from '../utils/kit'
-import { writeTypes } from '../utils/prepare'
 import { defineNuxtCommand } from './index'
 
 export default defineNuxtCommand({
@@ -12,19 +13,20 @@ export default defineNuxtCommand({
     usage: 'npx nuxi prepare [--log-level] [rootDir]',
     description: 'Prepare nuxt for development/build'
   },
-  async invoke (args) {
+  async invoke (args, options = {}) {
     process.env.NODE_ENV = process.env.NODE_ENV || 'production'
     const rootDir = resolve(args._[0] || '.')
 
-    const { loadNuxt } = await loadKit(rootDir)
+    const { loadNuxt, buildNuxt, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
     const nuxt = await loadNuxt({
       rootDir,
       overrides: {
         _prepare: true,
-        logLevel: args['log-level']
+        logLevel: args['log-level'],
+        ...(options.overrides || {})
       }
     })
-    await clearDir(nuxt.options.buildDir)
+    await clearBuildDir(nuxt.options.buildDir)
 
     await buildNuxt(nuxt)
     await writeTypes(nuxt)

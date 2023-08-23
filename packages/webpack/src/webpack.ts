@@ -6,10 +6,11 @@ import type { OutputFileSystem } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Watching } from 'webpack'
-
-import type { Nuxt } from '@nuxt/schema'
+import { defu } from 'defu'
+import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
+
 import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
@@ -21,11 +22,12 @@ import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './ut
 // TODO: Support plugins
 // const plugins: string[] = []
 
-export async function bundle (nuxt: Nuxt) {
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   registerVirtualModules()
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
     const ctx = createWebpackConfigContext(nuxt)
+    ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
   })
@@ -35,8 +37,7 @@ export async function bundle (nuxt: Nuxt) {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
-  // Configure compilers
-  const compilers = webpackConfigs.map((config) => {
+  for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
       sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
@@ -49,7 +50,12 @@ export async function bundle (nuxt: Nuxt) {
       rootDir: nuxt.options.rootDir,
       composables: nuxt.options.optimization.keyedComposables
     }))
+  }
 
+  await nuxt.callHook('webpack:configResolved', webpackConfigs)
+
+  // Configure compilers
+  const compilers = webpackConfigs.map((config) => {
     // Create compiler
     const compiler = webpack(config)
 
@@ -69,7 +75,8 @@ export async function bundle (nuxt: Nuxt) {
 
   // Start Builds
   if (nuxt.options.dev) {
-    return Promise.all(compilers.map(c => compile(c)))
+    await Promise.all(compilers.map(c => compile(c)))
+    return
   }
 
   for (const c of compilers) {
@@ -90,7 +97,7 @@ async function createDevMiddleware (compiler: Compiler) {
     ...nuxt.options.webpack.devMiddleware
   })
 
-  // @ts-ignore
+  // @ts-expect-error need better types for `pify`
   nuxt.hook('close', () => pify(devMiddleware.close.bind(devMiddleware))())
 
   const { client: _client, ...hotMiddlewareOptions } = nuxt.options.webpack.hotMiddleware || {}
@@ -115,13 +122,11 @@ async function createDevMiddleware (compiler: Compiler) {
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
-  const { name } = compiler.options
-
-  await nuxt.callHook('webpack:compile', { name: name!, compiler })
+  await nuxt.callHook('webpack:compile', { name: compiler.options.name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('webpack:compiled', { name: name!, compiler, stats })
+    await nuxt.callHook('webpack:compiled', { name: compiler.options.name!, compiler, stats })
   })
 
   // --- Dev Build ---
@@ -133,13 +138,15 @@ async function compile (compiler: Compiler) {
     })
 
     // Client build
-    if (name === 'client') {
+    if (compiler.options.name === 'client') {
       return new Promise((resolve, reject) => {
         compiler.hooks.done.tap('nuxt-dev', () => { resolve(null) })
         compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
         // Start watch
         createDevMiddleware(compiler).then((devMiddleware) => {
-          compilersWatching.push(devMiddleware.context.watching)
+          if (devMiddleware.context.watching) {
+            compilersWatching.push(devMiddleware.context.watching)
+          }
         })
       })
     }

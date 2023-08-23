@@ -1,8 +1,9 @@
 import { isAbsolute, relative } from 'pathe'
-import { genDynamicImport, genExport, genImport, genObjectFromRawEntries } from 'knitwork'
-import type { Component, Nuxt, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import { genDynamicImport } from 'knitwork'
+import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
-export interface ComponentsTemplateContext {
+interface ComponentsTemplateContext {
+  app: NuxtApp
   nuxt: Nuxt
   options: {
     getComponents: (mode?: 'client' | 'server' | 'all') => Component[]
@@ -10,7 +11,7 @@ export interface ComponentsTemplateContext {
   }
 }
 
-export type ImportMagicCommentsOptions = {
+type ImportMagicCommentsOptions = {
   chunkName: string
   prefetch?: boolean | number
   preload?: boolean | number
@@ -25,68 +26,61 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
   ].filter(Boolean).join(', ')
 }
 
+const emptyComponentsPlugin = `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:global-components',
+})
+`
+
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
-  getContents ({ options }) {
-    const globalComponents = options.getComponents().filter(c => c.global === true)
+  getContents ({ app }) {
+    const lazyGlobalComponents = new Set<string>()
+    const syncGlobalComponents = new Set<string>()
+    for (const component of app.components) {
+      if (component.global === 'sync') {
+        syncGlobalComponents.add(component.pascalName)
+      } else if (component.global) {
+        lazyGlobalComponents.add(component.pascalName)
+      }
+    }
+    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { return emptyComponentsPlugin }
 
-    return `import { defineAsyncComponent } from 'vue'
-import { defineNuxtPlugin } from '#app/nuxt'
+    const lazyComponents = [...lazyGlobalComponents]
+    const syncComponents = [...syncGlobalComponents]
 
-const components = ${genObjectFromRawEntries(globalComponents.map((c) => {
-  const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-  const comment = createImportMagicComments(c)
+    return `import { defineNuxtPlugin } from '#app/nuxt'
+import { ${[...lazyComponents.map(c => 'Lazy' + c), ...syncComponents].join(', ')} } from '#components'
+const lazyGlobalComponents = [
+  ${lazyComponents.map(c => `["${c}", Lazy${c}]`).join(',\n')},
+  ${syncComponents.map(c => `["${c}", ${c}]`).join(',\n')}
+]
 
-  return [c.pascalName, `defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`]
-}))}
-
-export default defineNuxtPlugin(nuxtApp => {
-  for (const name in components) {
-    nuxtApp.vueApp.component(name, components[name])
-    nuxtApp.vueApp.component('Lazy' + name, components[name])
+export default defineNuxtPlugin({
+  name: 'nuxt:global-components',
+  setup (nuxtApp) {
+    for (const [name, component] of lazyGlobalComponents) {
+      nuxtApp.vueApp.component(name, component)
+      nuxtApp.vueApp.component('Lazy' + name, component)
+    }
   }
 })
 `
   }
 }
 
-export const componentsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
-  // components.[server|client].mjs'
-  getContents ({ options }) {
-    const imports = new Set<string>()
-    imports.add('import { defineAsyncComponent } from \'vue\'')
-
-    let num = 0
-    const components = options.getComponents(options.mode).filter(c => !c.island).flatMap((c) => {
-      const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-      const comment = createImportMagicComments(c)
-
-      const isClient = c.mode === 'client'
-      const definitions = []
-      if (isClient) {
-        num++
-        const identifier = `__nuxt_component_${num}`
-        imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
-        imports.add(genImport(c.filePath, [{ name: c.export, as: identifier }]))
-        definitions.push(`export const ${c.pascalName} = /* #__PURE__ */ createClientOnly(${identifier})`)
-      } else {
-        definitions.push(genExport(c.filePath, [{ name: c.export, as: c.pascalName }]))
-      }
-      definitions.push(`export const Lazy${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${isClient ? `createClientOnly(${exp})` : exp}))`)
-      return definitions
-    })
-    return [
-      ...imports,
-      ...components,
-      `export const componentNames = ${JSON.stringify(options.getComponents().filter(c => !c.island).map(c => c.pascalName))}`
-    ].join('\n')
+export const componentNamesTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+  filename: 'component-names.mjs',
+  getContents ({ app }) {
+    return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
   }
 }
 
 export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   // components.islands.mjs'
-  getContents ({ options }) {
-    const components = options.getComponents()
+  getContents ({ app }) {
+    const components = app.components
     const islands = components.filter(component =>
       component.island ||
       // .server components without a corresponding .client component will need to be rendered as an island
@@ -104,9 +98,9 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
 export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.d.ts',
-  getContents: ({ options, nuxt }) => {
+  getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
-    const componentTypes = options.getComponents().filter(c => !c.island).map(c => [
+    const componentTypes = app.components.filter(c => !c.island).map(c => [
       c.pascalName,
       `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')

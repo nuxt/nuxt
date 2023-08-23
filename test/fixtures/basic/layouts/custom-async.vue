@@ -2,6 +2,7 @@
   <div>
     Custom Async Layout:
     <slot />
+    <ComponentWithRef />
   </div>
 </template>
 

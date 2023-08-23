@@ -14,12 +14,12 @@ const links = [
   { name: 'nuxt-link-trailing-slash' },
   { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
   { query: { 'without-state': 'true' } }
-]
+] as const
 
 const route = useRoute()
 const windowState = computed(() => {
   console.log(route.fullPath)
-  return process.client ? window.history.state.foo : ''
+  return import.meta.client ? window.history.state.foo : ''
 })
 </script>
 

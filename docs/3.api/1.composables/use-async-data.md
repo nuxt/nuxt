@@ -1,22 +1,26 @@
 ---
 description: useAsyncData provides access to data that resolves asynchronously.
 ---
-# `useAsyncData`
+# useAsyncData
 
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
+
+::alert{type=warning}
+[`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+::
 
 ## Type
 
 ```ts [Signature]
-function useAsyncData(
+function useAsyncData<DataT, DataE>(
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): AsyncData<DataT>
-function useAsyncData(
+): AsyncData<DataT, DataE>
+function useAsyncData<DataT, DataE>(
   key: string,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): Promise<AsyncData<DataT>>
+): Promise<AsyncData<DataT, DataE>
 
 type AsyncDataOptions<DataT> = {
   server?: boolean
@@ -28,24 +32,25 @@ type AsyncDataOptions<DataT> = {
   immediate?: boolean
 }
 
-interface RefreshOptions {
-  dedupe?: boolean
-}
-
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
   pending: Ref<boolean>
-  execute: () => Promise<void>
-  refresh: (opts?: RefreshOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
+};
+
+interface AsyncDataExecuteOptions {
+  dedupe?: boolean
 }
 
-
+type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
 ## Params
 
-* **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
+* **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of [`useAsyncData`](/docs/api/composables/use-async-data) will be generated for you.
 * **handler**: an asynchronous function that returns a value
 * **options**:
   * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
@@ -60,15 +65,16 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 
 ## Return Values
 
-* **data**: the result of the asynchronous function that is passed in
-* **pending**: a boolean indicating whether the data is still being fetched
-* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function
-* **error**: an error object if the data fetching failed
+* **data**: the result of the asynchronous function that is passed in.
+* **pending**: a boolean indicating whether the data is still being fetched.
+* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function.
+* **error**: an error object if the data fetching failed.
+* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::alert{type=warning}
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await `useAsyncData` on the client side, `data` will remain `null` within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `null` within `<script setup>`.
 ::
 
 ## Example
@@ -99,7 +105,7 @@ const { data: posts } = await useAsyncData(
 ```
 
 ::alert{type=warning}
-`useAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useAsyncData`.
+[`useAsyncData`](/docs/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/api/composables/use-async-data) .
 ::
 
 ::ReadMore{link="/docs/getting-started/data-fetching"}

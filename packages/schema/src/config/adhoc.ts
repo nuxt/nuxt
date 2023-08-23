@@ -34,6 +34,7 @@ export default defineUntypedSchema({
     /**
      * An array of custom directories that will be auto-imported.
      * Note that this option will not override the default directories (~/composables, ~/utils).
+     *
      * @example
      * ```js
      * imports: {
@@ -57,20 +58,19 @@ export default defineUntypedSchema({
    * Manually disable nuxt telemetry.
    *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
-   *
-   * @type {boolean}
-  */
+   * @type {boolean | Record<string, any>}
+   */
   telemetry: undefined,
 
   /**
    * Enable Nuxt DevTools for development.
-   * 
+   *
    * This is an experimental feature.
    * Breaking changes for devtools might not reflect on the version of Nuxt.
-   * 
+   *
    * @see  [Nuxt DevTools](https://devtools.nuxtjs.org/) for more information.
    * @experimental
-   * @type {boolean | { enabled: boolean }}
+   * @type {boolean | { enabled: boolean, [key: string]: any }}
    */
   devtools: false
 })

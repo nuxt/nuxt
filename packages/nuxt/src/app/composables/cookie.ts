@@ -1,8 +1,8 @@
 import type { Ref } from 'vue'
-import { ref, watch } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { appendHeader } from 'h3'
+import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
@@ -27,20 +27,41 @@ const CookieDefaults: CookieOptions<any> = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
 
-export function useCookie <T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
   const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
 
-  if (process.client) {
-    const callback = () => { writeClientCookie(name, cookie.value, opts as CookieSerializeOptions) }
+  if (import.meta.client) {
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
+
+    const callback = () => {
+      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+      channel?.postMessage(toRaw(cookie.value))
+    }
+
+    let watchPaused = false
+
+    if (channel) {
+      channel.onmessage = (event) => {
+        watchPaused = true
+        cookie.value = event.data
+        nextTick(() => { watchPaused = false })
+      }
+    }
+
     if (opts.watch) {
-      watch(cookie, callback, { deep: opts.watch !== 'shallow' })
+      watch(cookie, () => {
+        if (watchPaused) { return }
+        callback()
+      },
+      { deep: opts.watch !== 'shallow' })
     } else {
       callback()
     }
-  } else if (process.server) {
+  } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
@@ -48,9 +69,8 @@ export function useCookie <T = string | null | undefined> (name: string, _opts?:
       }
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
-    nuxtApp.hooks.hookOnce('app:redirected', () => {
-      // don't write cookie subsequently when app:rendered is called
-      unhook()
+    nuxtApp.hooks.hookOnce('app:error', () => {
+      unhook() // don't write cookie subsequently when app:rendered is called
       return writeFinalCookieValue()
     })
   }
@@ -59,9 +79,9 @@ export function useCookie <T = string | null | undefined> (name: string, _opts?:
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
-  if (process.server) {
-    return parse(useRequestEvent()?.req.headers.cookie || '', opts)
-  } else if (process.client) {
+  if (import.meta.server) {
+    return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
+  } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
 }
@@ -74,14 +94,23 @@ function serializeCookie (name: string, value: any, opts: CookieSerializeOptions
 }
 
 function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
-  if (process.client) {
+  if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
   }
 }
 
 function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
-    // TODO: Try to smart join with existing Set-Cookie headers
-    appendHeader(event, 'Set-Cookie', serializeCookie(name, value, opts))
+    // update if value is set
+    if (value !== null && value !== undefined) {
+      return setCookie(event, name, value, opts)
+    }
+
+    // delete if cookie exists in browser and value is null/undefined
+    if (getCookie(event, name) !== undefined) {
+      return deleteCookie(event, name, opts)
+    }
+
+    // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
 }

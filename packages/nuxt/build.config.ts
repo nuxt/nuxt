@@ -29,7 +29,6 @@ export default defineBuildConfig({
   externals: [
     'nuxt',
     'nuxt/schema',
-    '@vue/reactivity',
     '@vue/shared',
     '@unhead/vue'
   ]

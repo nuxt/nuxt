@@ -3,5 +3,10 @@
 </template>
 
 <script setup>
-await navigateTo('https://example.com/', { external: true, replace: true })
+if (useRoute().path === '/navigate-to-external') {
+  useNuxtApp().hook('app:rendered', () => {
+    throw new Error('this should not run')
+  })
+}
+await navigateTo({ path: 'https://example.com/', query: { redirect: false }, hash: '#test' }, { external: true, replace: true })
 </script>

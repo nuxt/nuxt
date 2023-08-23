@@ -16,7 +16,7 @@ export default defineUntypedSchema({
       }
       const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
-        webpack: '@nuxt/webpack-builder',
+        webpack: '@nuxt/webpack-builder'
       }
       return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
     }
@@ -36,7 +36,7 @@ export default defineUntypedSchema({
         server: true,
         client: await get('dev')
       })
-    },
+    }
   },
 
   /**
@@ -81,7 +81,7 @@ export default defineUntypedSchema({
      * You can provide your own templates which will be rendered based
      * on Nuxt configuration. This feature is specially useful for using with modules.
      *
-     * Templates are rendered using [`lodash.template`](https://lodash.com/docs/4.17.15#template).
+     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      *
      * @example
      * ```js
@@ -96,6 +96,7 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
+     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -111,7 +112,6 @@ export default defineUntypedSchema({
      * }
      * ```
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
-     *
      */
     analyze: {
       $resolve: async (val, get) => {
@@ -119,13 +119,14 @@ export default defineUntypedSchema({
           return val ?? false
         }
         const rootDir = await get('rootDir')
+        const analyzeDir = await get('analyzeDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(rootDir, '.nuxt/stats', '{name}.html')
+          filename: join(analyzeDir, '{name}.html')
         }
       }
-    },
+    }
   },
 
   /**
@@ -141,15 +142,16 @@ export default defineUntypedSchema({
      *
      * The key will be unique based on the location of the function being invoked within the file.
      *
-     * @type {Array<{ name: string, argumentLength: number }>}
+     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: (val) => [
+      $resolve: val => [
+        { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 }
       ].concat(val).filter(Boolean)
     },
 
@@ -168,21 +170,40 @@ export default defineUntypedSchema({
       composables: {
         server: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
-              '#app': ['definePayloadReviver']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  '#app': ['definePayloadReviver', 'definePageMeta']
+                }
           )
         },
         client: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-              '#app': ['definePayloadReducer']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+                  '#app': ['definePayloadReducer', 'definePageMeta']
+                }
           )
         }
       }
     },
+
+    /**
+     * Options passed directly to the transformer from `unctx` that preserves async context
+     * after `await`.
+     *
+     * @type {typeof import('unctx/transform').TransformerOptions}
+     */
+    asyncTransforms: {
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      objectDefinitions: {
+        defineNuxtComponent: ['asyncData', 'setup'],
+        defineNuxtPlugin: ['setup'],
+        definePageMeta: ['middleware', 'validate']
+      }
+    }
   }
 })

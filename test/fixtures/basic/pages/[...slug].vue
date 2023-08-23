@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>[...slug].vue</h1>
-    <div>catchall at {{ $route.params.slug[0] }}</div>
+    <div>catchall at {{ route.params.slug?.[0] }}</div>
     <div>Middleware ran: {{ !!($route.meta.override as any)?.includes('extended middleware') }}</div>
   </div>
 </template>
@@ -11,4 +11,8 @@ definePageMeta({
   middleware: ['override'],
   validate: to => to.path !== '/forbidden'
 })
+const route = useRoute('slug')
+if (route.path.includes('navigate-some-path')) {
+  throw createError('navigate-some-path setup running')
+}
 </script>

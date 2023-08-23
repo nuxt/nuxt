@@ -31,6 +31,9 @@
       ],
       "#internal/nitro/utils": [
         "./node_modules/nitropack/dist/runtime/utils"
+      ],
+      "#vue-router": [
+        "./node_modules/vue-router"
       ]
     }
   },
@@ -41,6 +44,7 @@
     "**/examples/**",
     "**/docs/**",
     "**/playground/**",
-    "**/test/fixtures/**"
+    "**/test/fixtures/**",
+    "test/nuxt/**"
   ]
 }
