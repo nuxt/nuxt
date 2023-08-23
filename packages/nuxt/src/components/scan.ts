@@ -95,10 +95,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
-          `\n - ${filePath}` +
-          `\n - ${resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)}`
-        )
+        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
         continue
       }
       resolvedNames.set(componentName + suffix, filePath)
@@ -139,10 +136,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
       if (existingComponent) {
         // Ignore component if component is already defined (with same mode)
-        console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
-          `\n - ${filePath}` +
-          `\n - ${existingComponent.filePath}`
-        )
+        warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
         continue
       }
 
@@ -180,4 +174,11 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
   }
 
   return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+}
+
+function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
+  console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+    `\n - ${filePath}` +
+    `\n - ${duplicatePath}`
+  )
 }
