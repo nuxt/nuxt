@@ -64,7 +64,7 @@
     "happy-dom": "10.10.4",
     "jiti": "1.19.3",
     "markdownlint-cli": "^0.33.0",
-    "nitropack": "2.5.2",
+    "nitropack": "2.6.0",
     "nuxi": "workspace:*",
     "nuxt": "workspace:*",
     "nuxt-vitest": "0.10.2",

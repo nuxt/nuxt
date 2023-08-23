@@ -163,18 +163,17 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
 
     const viteMiddleware = defineEventHandler(async (event) => {
-      // Workaround: vite devmiddleware modifies req.url
-      const originalURL = event.node.req.url!
-
       const viteRoutes = viteServer.middlewares.stack.map(m => m.route).filter(r => r.length > 1)
-      if (!originalURL.startsWith(clientConfig.base!) && !viteRoutes.some(route => originalURL.startsWith(route))) {
+      if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
       }
 
+      // Workaround: vite devmiddleware modifies req.url
+      const _originalPath = event.node.req.url
       await new Promise((resolve, reject) => {
         viteServer.middlewares.handle(event.node.req, event.node.res, (err: Error) => {
-          event.node.req.url = originalURL
+          event.node.req.url = _originalPath
           return err ? reject(err) : resolve(null)
         })
       })
