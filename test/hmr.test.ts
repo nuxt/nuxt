@@ -86,15 +86,17 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     })
 
     it('should hot reload route rules', async () => {
-      const res = await fetch('/route-rules/inline')
-      expect(res.headers.get('x-extend')).toBe('added in routeRules')
+      await expectWithPolling(
+        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'added in routeRules').catch(() => null),
+        true
+      )
 
       // write new page route
       const file = await fsp.readFile(join(fixturePath, 'pages/route-rules/inline.vue'), 'utf8')
       await fsp.writeFile(join(fixturePath, 'pages/route-rules/inline.vue'), file.replace('added in routeRules', 'edited in dev'))
 
       await expectWithPolling(
-        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev'),
+        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev').catch(() => null),
         true
       )
     })
