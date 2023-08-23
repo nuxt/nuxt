@@ -19,7 +19,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
       const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"95.7k"')
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"96.4k"')
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
           "_nuxt/entry.js",
@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"64.6k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"305k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"2348k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"1822k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -55,33 +55,12 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
-        "cookie-es",
-        "debug",
-        "defu",
-        "destr",
         "devalue",
         "estree-walker",
-        "h3",
-        "has-flag",
         "hookable",
-        "http-graceful-shutdown",
-        "iron-webcrypto",
-        "klona",
-        "ms",
-        "node-fetch-native",
-        "ofetch",
-        "ohash",
-        "pathe",
-        "radix3",
-        "scule",
         "source-map-js",
-        "supports-color",
         "ufo",
-        "uncrypto",
-        "unctx",
-        "unenv",
         "unhead",
-        "unstorage",
         "vue",
         "vue-bundle-renderer",
       ]
@@ -92,10 +71,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"370k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"611k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"613k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"70.9k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -106,31 +85,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
-        "cookie-es",
-        "debug",
-        "defu",
-        "destr",
         "devalue",
-        "h3",
-        "has-flag",
         "hookable",
-        "http-graceful-shutdown",
-        "iron-webcrypto",
-        "klona",
-        "ms",
-        "node-fetch-native",
-        "ofetch",
-        "ohash",
-        "pathe",
-        "radix3",
-        "scule",
-        "supports-color",
-        "ufo",
-        "uncrypto",
-        "unctx",
-        "unenv",
         "unhead",
-        "unstorage",
       ]
     `)
   })
