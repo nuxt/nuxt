@@ -15,7 +15,7 @@ function useFetch(
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT>>
 
-type UseFetchOptions = {
+type UseFetchOptions<DataT> = {
   key?: string
   method?: string
   query?: SearchParams
