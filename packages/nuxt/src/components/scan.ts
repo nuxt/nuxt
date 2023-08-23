@@ -136,12 +136,17 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      // Ignore component if component is already defined (with same mode)
-      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
-        components.push(component)
-      } else {
-        console.warn(`[nuxt] \`<${component.pascalName}>\` is already defined, so \`~/${relative(srcDir, filePath)}\` will be ignored.`)
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      if (existingComponent) {
+        // Ignore component if component is already defined (with same mode)
+        console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+          `\n - ${filePath}` +
+          `\n - ${existingComponent.filePath}`
+        )
+        continue
       }
+
+      components.push(component)
     }
     scannedPaths.push(dir.path)
   }
