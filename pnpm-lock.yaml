@@ -207,8 +207,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       unimport:
-        specifier: ^3.1.3
-        version: 3.1.3(rollup@3.28.1)
+        specifier: ^3.2.0
+        version: 3.2.0(rollup@3.28.1)
       untyped:
         specifier: ^1.4.0
         version: 1.4.0
@@ -368,14 +368,14 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 18.17.8
       '@unhead/dom':
-        specifier: ^1.3.5
-        version: 1.3.5
+        specifier: ^1.3.7
+        version: 1.3.7
       '@unhead/ssr':
-        specifier: ^1.3.5
-        version: 1.3.5
+        specifier: ^1.3.7
+        version: 1.3.7
       '@unhead/vue':
-        specifier: ^1.3.5
-        version: 1.3.5(vue@3.3.4)
+        specifier: ^1.3.7
+        version: 1.3.7(vue@3.3.4)
       '@vue/shared':
         specifier: ^3.3.4
         version: 3.3.4
@@ -488,8 +488,8 @@ importers:
         specifier: ^1.7.3
         version: 1.7.3
       unimport:
-        specifier: ^3.1.3
-        version: 3.1.3(rollup@3.28.1)
+        specifier: ^3.2.0
+        version: 3.2.0(rollup@3.28.1)
       unplugin:
         specifier: ^1.4.0
         version: 1.4.0
@@ -564,8 +564,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       unimport:
-        specifier: ^3.1.3
-        version: 3.1.3(rollup@3.28.1)
+        specifier: ^3.2.0
+        version: 3.2.0(rollup@3.28.1)
       untyped:
         specifier: ^1.4.0
         version: 1.4.0
@@ -583,8 +583,8 @@ importers:
         specifier: 8.0.5
         version: 8.0.5
       '@unhead/schema':
-        specifier: 1.3.5
-        version: 1.3.5
+        specifier: 1.3.7
+        version: 1.3.7
       '@vitejs/plugin-vue':
         specifier: 4.3.3
         version: 4.3.3(vite@4.4.9)(vue@3.3.4)
@@ -3260,41 +3260,41 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
-  /@unhead/dom@1.3.5:
-    resolution: {integrity: sha512-WwwiJ85VugfvCgydizuOXlGGbVUY+JLOB1Ls7gEqJO2WIMGSKYA+5ILn17UmCUXGBVWpLdELbedjkTmxIdXPJw==}
+  /@unhead/dom@1.3.7:
+    resolution: {integrity: sha512-utDjimElXvPrpArysKbrUFWacF4exwXB5tOZ9H3SUJOJxIPtz4GZZgkPTPv+UHV9Z+21MP/a6dFldc5j9EAO4A==}
     dependencies:
-      '@unhead/schema': 1.3.5
-      '@unhead/shared': 1.3.5
+      '@unhead/schema': 1.3.7
+      '@unhead/shared': 1.3.7
     dev: false
 
-  /@unhead/schema@1.3.5:
-    resolution: {integrity: sha512-K1ubX/0pFGhjhiPRBemWl94ca6fyZYAQP5DUSwyW+VMqjWqzlE5rdjtUU0vsmHQOaFRFUCpTX4w4dtHdv3ut+Q==}
+  /@unhead/schema@1.3.7:
+    resolution: {integrity: sha512-C0+wA2ZZl4d2Aj0z3mFoDKDTv/22z0Tu5giXj+T+iEmfAir9k6kH2UrrCDMkHUP/mRnBSEg1URBrFq2al34VKg==}
     dependencies:
       hookable: 5.5.3
       zhead: 2.0.10
 
-  /@unhead/shared@1.3.5:
-    resolution: {integrity: sha512-r5diAXP9qxhZz3Nvxjk69dkhsdduvW+cPnOdzPWhpbCk1lHugGz+if09AX+M7NoAlLJQBmqFiFkTZS/JrtTZhg==}
+  /@unhead/shared@1.3.7:
+    resolution: {integrity: sha512-73bs2B5wCMCr+X81qbEVPwFd/7pN8SXSgsSSwq9KkhmB+hC3bipiDST+Fe1h7F80lZ4iu9EwjrNxNlXw+tLjsw==}
     dependencies:
-      '@unhead/schema': 1.3.5
+      '@unhead/schema': 1.3.7
     dev: false
 
-  /@unhead/ssr@1.3.5:
-    resolution: {integrity: sha512-5akS3enT8kZxxaL8PPJh7uK/vCfJ8SI7A6JO8RvF9SOUfv3pwqvw5GboKiAgzEbIf1oDzka/vDGaLD8TvtJSCw==}
+  /@unhead/ssr@1.3.7:
+    resolution: {integrity: sha512-6FNA2h4AA3I52YQUJ7JqAi0JmixFTa/hM9UWoLDGu9FpFJKiQfRX4s1bm8RPaLC+HTR/GhGdUcwkT4gxU54SLg==}
     dependencies:
-      '@unhead/schema': 1.3.5
-      '@unhead/shared': 1.3.5
+      '@unhead/schema': 1.3.7
+      '@unhead/shared': 1.3.7
     dev: false
 
-  /@unhead/vue@1.3.5(vue@3.3.4):
-    resolution: {integrity: sha512-9i5dvtk27BFqNrrTLv1A9hHfbAaKDn6NuzMI8945Js41A/uEs0kVAmvdtVMCL9s3dy6jWqme/Th4JUzVS5tl+g==}
+  /@unhead/vue@1.3.7(vue@3.3.4):
+    resolution: {integrity: sha512-ekvE592mAJxwoscCt/6Z2gwXHb4IzWIUsy/vcBXd/aEo0bOPww9qObCyS3/GxhknRdItDhJOwfO9CId+bSRG8Q==}
     peerDependencies:
       vue: '>=2.7 || >=3'
     dependencies:
-      '@unhead/schema': 1.3.5
-      '@unhead/shared': 1.3.5
+      '@unhead/schema': 1.3.7
+      '@unhead/shared': 1.3.7
       hookable: 5.5.3
-      unhead: 1.3.5
+      unhead: 1.3.7
       vue: 3.3.4
     dev: false
 
@@ -8123,7 +8123,7 @@ packages:
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.7.3
-      unimport: 3.1.3(rollup@3.28.1)
+      unimport: 3.2.0(rollup@3.28.1)
       unstorage: 1.9.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -10555,12 +10555,12 @@ packages:
       node-fetch-native: 1.4.0
       pathe: 1.1.1
 
-  /unhead@1.3.5:
-    resolution: {integrity: sha512-T7WBnrRvpvYw4PntaSfz45atpr83ZlZvZ5vULhbMZtiv/wlFYuknd/wWT8+EPfCJjVStyJX4MZ1DH8ux0h3QIQ==}
+  /unhead@1.3.7:
+    resolution: {integrity: sha512-XRkDIaIK325UyKwSqV6fDbFKJ4HYuT5mCEnIhUqNBtUYv6b7jdXzYTfUiZSb1ciJyTqvzRHFWDtmGtJo1L375Q==}
     dependencies:
-      '@unhead/dom': 1.3.5
-      '@unhead/schema': 1.3.5
-      '@unhead/shared': 1.3.5
+      '@unhead/dom': 1.3.7
+      '@unhead/schema': 1.3.7
+      '@unhead/shared': 1.3.7
       hookable: 5.5.3
     dev: false
 
@@ -10576,8 +10576,8 @@ packages:
       vfile: 5.3.7
     dev: true
 
-  /unimport@3.1.3(rollup@3.28.1):
-    resolution: {integrity: sha512-up4TE2yA+nMyyErGTjbYGVw95MriGa2hVRXQ3/JRp7984cwwqULcnBjHaovVpsO8tZc2j0fvgGu9yiBKOyxvYw==}
+  /unimport@3.2.0(rollup@3.28.1):
+    resolution: {integrity: sha512-9buxPxkNwxwxAlH/RfOFHxtQTUrlmBGi9Ai9HezY2yYbkoOhgJTYPI6+WqxI1EZphoM9cw1SHoCFRkXSb8/fjQ==}
     dependencies:
       '@rollup/pluginutils': 5.0.3(rollup@3.28.1)
       escape-string-regexp: 5.0.0
