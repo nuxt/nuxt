@@ -107,7 +107,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
 }
 
 const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
-function extractScriptContent (html: string) {
+export function extractScriptContent (html: string) {
   const match = html.match(SFC_SCRIPT_RE)
 
   if (match && match[1]) {
@@ -334,4 +334,16 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       return route
     }))
   }
+}
+
+export function pathToNitroGlob (path: string) {
+  if (!path) {
+    return null
+  }
+  // Ignore pages with multiple dynamic parameters.
+  if (path.indexOf(':') !== path.lastIndexOf(':')) {
+    return null
+  }
+
+  return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
 }

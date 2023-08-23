@@ -2,6 +2,7 @@ import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
 import { useRoute } from 'vue-router'
+import type { NitroRouteConfig } from 'nitropack'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
@@ -64,3 +65,15 @@ export const definePageMeta = (meta: PageMeta): void => {
     warnRuntimeUsage('definePageMeta')
   }
 }
+
+/**
+ * You can define route rules for the current page. Matching route rules will be created, based on the page's _path_.
+ *
+ * For example, a rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in
+ * `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
+ *
+ * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
+ * should set `routeRules` directly within your `nuxt.config`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const defineRouteRules = (rules: NitroRouteConfig): void => {}

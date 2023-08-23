@@ -52,6 +52,12 @@ describe('route rules', () => {
     await expectNoClientErrors('/route-rules/spa')
   })
 
+  it('should allow defining route rules inline', async () => {
+    const res = await fetch('/route-rules/inline')
+    expect(res.status).toEqual(200)
+    expect(res.headers.get('x-extend')).toEqual('added in routeRules')
+  })
+
   it('test noScript routeRules', async () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')

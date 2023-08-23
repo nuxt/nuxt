@@ -38,7 +38,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
-  // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -47,9 +46,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     experimental: {
-      // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
-      asyncContext: nuxt.options.experimental.asyncContext
+      asyncContext: nuxt.options.experimental.asyncContext,
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -120,6 +118,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+        ],
+        exclude: [
+          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+          // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
         ]
       }
     },
@@ -481,4 +484,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
   }
+}
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }

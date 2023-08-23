@@ -9,7 +9,7 @@ import {
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendResponseHeader, createError, getQuery, readBody, writeEarlyHints } from 'h3'
+import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
@@ -170,16 +170,16 @@ const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:preren
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
-  let url = event.node.req.url || ''
-  if (import.meta.prerender && event.node.req.url && await islandPropCache!.hasItem(event.node.req.url)) {
+  let url = event.path || ''
+  if (import.meta.prerender && event.path && await islandPropCache!.hasItem(event.path)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
-    url = await islandPropCache!.getItem(event.node.req.url) as string
+    url = await islandPropCache!.getItem(event.path) as string
   }
   url = url.substring('/__nuxt_island'.length + 1) || ''
   const [componentName, hashId] = url.split('?')[0].split('_')
 
   // TODO: Validate context
-  const context = event.node.req.method === 'GET' ? getQuery(event) : await readBody(event)
+  const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
 
   const ctx: NuxtIslandContext = {
     url: '/',
@@ -202,7 +202,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
-  const ssrError = event.node.req.url?.startsWith('/__nuxt_error')
+  const ssrError = event.path.startsWith('/__nuxt_error')
     ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
     : null
 
@@ -210,7 +210,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ssrError.statusCode = parseInt(ssrError.statusCode as any)
   }
 
-  if (ssrError && event.node.req.socket.readyState !== 'readOnly' /* direct request */) {
+  if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
     throw createError({
       statusCode: 404,
       statusMessage: 'Page Not Found: /__nuxt_error'
@@ -218,21 +218,23 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Check for island component rendering
-  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.node.req.url?.startsWith('/__nuxt_island'))
+  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.path.startsWith('/__nuxt_island'))
     ? await getIslandContext(event)
     : undefined
 
-  if (import.meta.prerender && islandContext && event.node.req.url && await islandCache!.hasItem(event.node.req.url)) {
-    return islandCache!.getItem(event.node.req.url) as Promise<Partial<RenderResponse>>
+  if (import.meta.prerender && islandContext && event.path && await islandCache!.hasItem(event.path)) {
+    return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
   }
 
   // Request url
-  let url = ssrError?.url as string || islandContext?.url || event.node.req.url!
+  let url = ssrError?.url as string || islandContext?.url || event.path
 
   // Whether we are rendering payload route
   const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
+
+    event._path = url
     event.node.req.url = url
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
       return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
@@ -435,8 +437,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
     const response = {
       body: JSON.stringify(islandResponse, null, 2),
-      statusCode: event.node.res.statusCode,
-      statusMessage: event.node.res.statusMessage,
+      statusCode: getResponseStatus(event),
+      statusMessage: getResponseStatusText(event),
       headers: {
         'content-type': 'application/json;charset=utf-8',
         'x-powered-by': 'Nuxt'
@@ -444,7 +446,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     } satisfies RenderResponse
     if (import.meta.prerender) {
       await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.node.req.url!)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.path)
     }
     return response
   }
@@ -452,8 +454,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Construct HTML response
   const response = {
     body: renderHTMLDocument(htmlContext),
-    statusCode: event.node.res.statusCode,
-    statusMessage: event.node.res.statusMessage,
+    statusCode: getResponseStatus(event),
+    statusMessage: getResponseStatusText(event),
     headers: {
       'content-type': 'text/html;charset=utf-8',
       'x-powered-by': 'Nuxt'
@@ -511,8 +513,8 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: ssrContext.event.node.res.statusCode,
-    statusMessage: ssrContext.event.node.res.statusMessage,
+    statusCode: getResponseStatus(ssrContext.event),
+    statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
       'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt'
