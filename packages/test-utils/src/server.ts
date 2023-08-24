@@ -17,7 +17,7 @@ export async function startServer () {
   ctx.url = 'http://127.0.0.1:' + port
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
-    ctx.serverProcess = execa(nuxiCLI, ['dev'], {
+    ctx.serverProcess = execa(nuxiCLI, ['dev', '--host'], {
       cwd: ctx.nuxt!.options.rootDir,
       stdio: 'inherit',
       env: {
