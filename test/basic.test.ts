@@ -889,6 +889,13 @@ describe('composable tree shaking', () => {
   })
 })
 
+describe('ignore list', () => {
+  it('should ignore composable files in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/composables')
+    expect(html).toContain('was import ignored: true')
+  })
+})
+
 describe('server tree shaking', () => {
   it('should work', async () => {
     const html = await $fetch('/client')
