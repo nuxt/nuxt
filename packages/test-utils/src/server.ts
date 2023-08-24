@@ -32,7 +32,7 @@ export async function startServer () {
     for (let i = 0; i < 50; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
-        const res = await $fetch(ctx.nuxt!.options.app.baseURL)
+        const res = await fetch(ctx.nuxt!.options.app.baseURL).then(r => r.text()).catch(() => '')
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
