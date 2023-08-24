@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const d = typeof useIgnoredImport
+const wasImportIgnored = typeof useIgnoredImport === 'undefined'
 </script>
 
 <template>
   <div>
-    was import ignored: {{ d === 'undefined' }}
+    was import ignored: {{ wasImportIgnored }}
   </div>
 </template>
