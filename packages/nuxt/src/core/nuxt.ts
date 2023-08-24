@@ -94,14 +94,14 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
@@ -113,7 +113,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('modules:done', () => {
     // Add unctx transform
     const options = {
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: nuxt.options.optimization.asyncTransforms
     }
     addVitePlugin(() => UnctxTransformPlugin.vite(options))
@@ -121,7 +121,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: nuxt.options.sourcemap.server,
+      sourcemap: !!nuxt.options.sourcemap.server,
       composables: nuxt.options.optimization.treeShake.composables.server
     }
     if (Object.keys(serverTreeShakeOptions.composables).length) {
@@ -129,7 +129,7 @@ async function initNuxt (nuxt: Nuxt) {
       addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
     const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.client,
       composables: nuxt.options.optimization.treeShake.composables.client
     }
     if (Object.keys(clientTreeShakeOptions.composables).length) {
@@ -140,8 +140,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
