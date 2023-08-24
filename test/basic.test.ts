@@ -1848,6 +1848,26 @@ describe.skipIf(isWindows)('useAsyncData', () => {
     await page.locator('#status5-values').getByText('idle,pending,success').waitFor()
     await page.close()
   })
+
+  it('data is null after navigation when immediate false', async () => {
+    const page = await createPage('/useAsyncData/immediate-remove-unmounted')
+    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/immediate-remove-unmounted')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
+
+    await page.click('#execute-btn')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
+
+    await page.click('#to-index')
+
+    await page.click('#to-immediate-remove-unmounted')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
+
+    await page.click('#execute-btn')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
+
+    await page.close()
+  })
 })
 
 describe.runIf(isDev())('component testing', () => {

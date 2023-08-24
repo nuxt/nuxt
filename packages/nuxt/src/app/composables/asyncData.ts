@@ -145,7 +145,7 @@ export function useAsyncData<
   const hasCachedData = () => getCachedData() !== undefined
 
   // Create or use a shared asyncData entity
-  if (!nuxt._asyncData[key]) {
+  if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),

@@ -26,6 +26,9 @@
     <NuxtLink id="islands" to="/islands">
       islands
     </NuxtLink>
+    <NuxtLink id="to-immediate-remove-unmounted" to="/useAsyncData/immediate-remove-unmounted">
+      Immediate remove unmounted
+    </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
