@@ -37,7 +37,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       }
     },
     css: {
-      devSourcemap: ctx.nuxt.options.sourcemap.server
+      devSourcemap: !!ctx.nuxt.options.sourcemap.server
     },
     define: {
       'process.server': true,
@@ -106,7 +106,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     plugins: [
       pureAnnotationsPlugin.vite({
-        sourcemap: ctx.nuxt.options.sourcemap.server,
+        sourcemap: !!ctx.nuxt.options.sourcemap.server,
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
       })
     ]
