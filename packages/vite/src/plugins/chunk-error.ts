@@ -1,4 +1,3 @@
-
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 

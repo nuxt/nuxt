@@ -128,17 +128,20 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         web: []
       }
     })
-    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir)
+    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir })
+        return resolveModule(result.id, {
+          url: ctx.nuxt.options.modulesDir,
+          conditions: ['node', 'import', 'require']
+        }).catch(() => false)
       }
       return false
     }
 
     return eventHandler(async (event) => {
-      const moduleId = decodeURI(event.node.req.url!).substring(1)
+      const moduleId = decodeURI(event.path).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
       }
@@ -161,6 +164,13 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
   return app
 }
 
+export type ViteNodeServerOptions = {
+  baseURL: string
+  root: string
+  entryPath: string
+  base: string
+}
+
 export async function initViteNodeServer (ctx: ViteBuildContext) {
   // Serialize and pass vite-node runtime options
   const viteNodeServerOptions = {
@@ -168,7 +178,7 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
     root: ctx.nuxt.options.srcDir,
     entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/'
-  }
+  } satisfies ViteNodeServerOptions
   process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')

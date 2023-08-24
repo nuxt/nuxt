@@ -8,15 +8,15 @@ import type { $Fetch, NitroFetchRequest } from 'nitropack'
 import { baseURL } from '#build/paths.mjs'
 
 import type { CreateOptions } from '#app'
-import { applyPlugins, createNuxtApp, normalizePlugins } from '#app/nuxt'
+import { applyPlugins, createNuxtApp } from '#app/nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
-import _plugins from '#build/plugins'
+import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appRootId } from '#build/nuxt.config.mjs'
+import { vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 if (!globalThis.$fetch) {
   globalThis.$fetch = $fetch.create({
@@ -26,9 +26,7 @@ if (!globalThis.$fetch) {
 
 let entry: Function
 
-const plugins = normalizePlugins(_plugins)
-
-if (process.server) {
+if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
 
@@ -47,10 +45,10 @@ if (process.server) {
   }
 }
 
-if (process.client) {
+if (import.meta.client) {
   // TODO: temporary webpack 5 HMR fix
   // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
-  if (process.dev && import.meta.webpackHot) {
+  if (import.meta.dev && import.meta.webpackHot) {
     import.meta.webpackHot.accept()
   }
 
@@ -77,7 +75,7 @@ if (process.client) {
     try {
       await nuxt.hooks.callHook('app:created', vueApp)
       await nuxt.hooks.callHook('app:beforeMount', vueApp)
-      vueApp.mount('#' + appRootId)
+      vueApp.mount(vueAppRootContainer)
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {

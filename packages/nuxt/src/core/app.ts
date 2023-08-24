@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
@@ -6,6 +6,7 @@ import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } fr
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
+import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -31,13 +32,21 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
   // Compile templates into vfs
+  // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  await Promise.all((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
-    .map(async (template) => {
-      const contents = await compileTemplate(template, templateContext)
 
+  const writes: Array<() => void> = []
+  await Promise.allSettled(filteredTemplates
+    .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
+      const mark = performance.mark(fullPath)
+      const contents = await compileTemplate(template, templateContext).catch((e) => {
+        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        throw e
+      })
+
       nuxt.vfs[fullPath] = contents
 
       const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
@@ -48,16 +57,29 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
       }
 
+      const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
+      const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+
+      if (nuxt.options.debug || setupTime > 500) {
+        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
+      }
+
       if (template.write) {
-        await fsp.mkdir(dirname(fullPath), { recursive: true })
-        await fsp.writeFile(fullPath, contents, 'utf8')
+        writes.push(() => {
+          mkdirSync(dirname(fullPath), { recursive: true })
+          writeFileSync(fullPath, contents, 'utf8')
+        })
       }
     }))
 
-  await nuxt.callHook('app:templatesGenerated', app)
+  // Write template files in single synchronous step to avoid (possible) additional
+  // runtime overhead of cascading HMRs from vite/webpack
+  for (const write of writes) { write() }
+
+  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
-export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
@@ -68,7 +90,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
+    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir)) ?? '@nuxt/ui-templates/templates/welcome.vue'
   }
 
   // Resolve root component
@@ -148,4 +170,22 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
       [key]: await resolvePath(resolveAlias(item[key]))
     }
   }))
+}
+
+export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
+  const _plugins: NuxtPlugin[] = []
+  for (const plugin of plugins) {
+    try {
+      const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
+      _plugins.push({
+        ...await extractMetadata(code),
+        ...plugin
+      })
+    } catch (e) {
+      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
+      _plugins.push(plugin)
+    }
+  }
+
+  return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }

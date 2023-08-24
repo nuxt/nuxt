@@ -1,10 +1,10 @@
 import type { CreateOptions } from '#app'
 
-const entry = process.server
+const entry = import.meta.server
   ? (ctx?: CreateOptions['ssrContext']) => import('#app/entry').then(m => m.default(ctx))
   : () => import('#app/entry').then(m => m.default)
 
-if (process.client) {
+if (import.meta.client) {
   entry()
 }
 

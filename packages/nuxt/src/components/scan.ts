@@ -38,7 +38,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       const directory = basename(dir.path)
       if (!siblings.includes(directory)) {
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directory.toLowerCase())
+        const directoryLowerCase = directory.toLowerCase()
+        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
         if (caseCorrected) {
           const nuxt = useNuxt()
           const original = relative(nuxt.options.srcDir, dir.path)
@@ -95,10 +96,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        console.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
-          `\n - ${filePath}` +
-          `\n - ${resolvedNames.get(componentName)}`
-        )
+        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
         continue
       }
       resolvedNames.set(componentName + suffix, filePath)
@@ -130,10 +128,20 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         component = (await dir.extendComponent(component)) || component
       }
 
-      // Ignore component if component is already defined (with same mode)
-      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
-        components.push(component)
+      // Ignore files like `~/components/index.vue` which end up not having a name at all
+      if (!componentName) {
+        console.warn(`[nuxt] Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        continue
       }
+
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      if (existingComponent) {
+        // Ignore component if component is already defined (with same mode)
+        warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        continue
+      }
+
+      components.push(component)
     }
     scannedPaths.push(dir.path)
   }
@@ -167,4 +175,11 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
   }
 
   return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+}
+
+function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
+  console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+    `\n - ${filePath}` +
+    `\n - ${duplicatePath}`
+  )
 }

@@ -26,6 +26,8 @@ export default defineComponent({
     }
   },
   setup (props, { slots }) {
+    // TODO: use computed values in useLoadingIndicator
+    // eslint-disable-next-line vue/no-setup-props-destructure
     const indicator = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle
@@ -37,15 +39,31 @@ export default defineComponent({
     const router = useRouter()
 
     globalMiddleware.unshift(indicator.start)
+    router.onError(() => {
+      indicator.finish()
+    })
     router.beforeResolve((to, from) => {
-      if (to === from) {
+      if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
         indicator.finish()
       }
     })
-    nuxtApp.hook('page:finish', indicator.finish)
-    nuxtApp.hook('vue:error', indicator.finish)
+
+    router.afterEach((_to, _from, failure) => {
+      if (failure) {
+        indicator.finish()
+      }
+    })
+
+    const unsubPage = nuxtApp.hook('page:finish', indicator.finish)
+    const unsubError = nuxtApp.hook('vue:error', indicator.finish)
+
     onBeforeUnmount(() => {
-      globalMiddleware.splice(globalMiddleware.indexOf(indicator.start, 1))
+      const index = globalMiddleware.indexOf(indicator.start)
+      if (index >= 0) {
+        globalMiddleware.splice(index, 1)
+      }
+      unsubPage()
+      unsubError()
       indicator.clear()
     })
 
@@ -85,7 +103,7 @@ function useLoadingIndicator (opts: {
   function start () {
     clear()
     progress.value = 0
-    if (opts.throttle && process.client) {
+    if (opts.throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
         _startTimer()
@@ -113,7 +131,7 @@ function useLoadingIndicator (opts: {
 
   function _hide () {
     clear()
-    if (process.client) {
+    if (import.meta.client) {
       setTimeout(() => {
         isLoading.value = false
         setTimeout(() => { progress.value = 0 }, 400)
@@ -122,7 +140,7 @@ function useLoadingIndicator (opts: {
   }
 
   function _startTimer () {
-    if (process.client) {
+    if (import.meta.client) {
       _timer = setInterval(() => { _increase(step.value) }, 100)
     }
   }

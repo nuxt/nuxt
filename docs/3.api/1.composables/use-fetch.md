@@ -4,16 +4,16 @@ This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
 ::alert{type=warning}
-`useFetch` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+[`useFetch`](/docs/api/composables/use-fetch) is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
 ## Type
 
 ```ts [Signature]
-function useFetch(
+function useFetch<DataT, ErrorT>(
   url: string | Request | Ref<string | Request> | () => string | Request,
   options?: UseFetchOptions<DataT>
-): Promise<AsyncData<DataT>>
+): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
   key?: string
@@ -38,11 +38,14 @@ type AsyncData<DataT, ErrorT> = {
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
 }
 
 interface AsyncDataExecuteOptions {
   dedupe?: boolean
 }
+
+type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
 ## Params
@@ -71,27 +74,30 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
 
 ::alert{type=warning}
-If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
+If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the [`useFetch`](/docs/api/composables/use-fetch) call will not match other [`useFetch`](/docs/api/composables/use-fetch) calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
 ::
 
 ## Return Values
 
 * **data**: the result of the asynchronous function that is passed in.
 * **pending**: a boolean indicating whether the data is still being fetched.
-* **refresh**/**execute** : a function that can be used to refresh the data returned by the `handler` function.
+* **refresh**/**execute**: a function that can be used to refresh the data returned by the `handler` function.
 * **error**: an error object if the data fetching failed.
+* **status**: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::alert{type=warning}
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await `useFetch` on client-side, `data` will remain null within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useFetch`](/docs/api/composables/use-fetch) on client-side, `data` will remain null within `<script setup>`.
 ::
 
 ## Example
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    pick: ['title']
+const route = useRoute()
+
+const { data, pending, error, refresh } = await useFetch(`https://api.nuxtjs.dev/mountains/${route.params.slug}`, {
+  pick: ['title']
 })
 ```
 
@@ -101,8 +107,8 @@ Using the `query` option, you can add search parameters to your query. This opti
 
 ```ts
 const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains',{
-    query: { param1, param2: 'value2' }
+const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains', {
+  query: { param1, param2: 'value2' }
 })
 ```
 
@@ -131,13 +137,13 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 ```
 
 ::alert{type=warning}
-`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+[`useFetch`](/docs/api/composables/use-fetch) is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
 
-::LinkExample{link="/docs/examples/other/use-custom-fetch-composable"}
+::LinkExample{link="/docs/examples/advanced/use-custom-fetch-composable"}
 ::
 
 :ReadMore{link="/docs/getting-started/data-fetching"}
 
-::LinkExample{link="/docs/examples/composables/use-fetch"}
+::LinkExample{link="/docs/examples/features/data-fetching"}
 ::

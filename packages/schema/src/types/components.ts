@@ -7,7 +7,7 @@ export interface Component {
   chunkName: string
   prefetch: boolean
   preload: boolean
-  global?: boolean
+  global?: boolean | 'sync'
   island?: boolean
   mode?: 'client' | 'server' | 'all'
   /**

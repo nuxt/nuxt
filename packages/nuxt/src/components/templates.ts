@@ -2,7 +2,7 @@ import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
 import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
-export interface ComponentsTemplateContext {
+interface ComponentsTemplateContext {
   app: NuxtApp
   nuxt: Nuxt
   options: {
@@ -11,7 +11,7 @@ export interface ComponentsTemplateContext {
   }
 }
 
-export type ImportMagicCommentsOptions = {
+type ImportMagicCommentsOptions = {
   chunkName: string
   prefetch?: boolean | number
   preload?: boolean | number
@@ -36,20 +36,25 @@ export default defineNuxtPlugin({
 export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
-    const globalComponents = new Set<string>()
+    const lazyGlobalComponents = new Set<string>()
+    const syncGlobalComponents = new Set<string>()
     for (const component of app.components) {
-      if (component.global) {
-        globalComponents.add(component.pascalName)
+      if (component.global === 'sync') {
+        syncGlobalComponents.add(component.pascalName)
+      } else if (component.global) {
+        lazyGlobalComponents.add(component.pascalName)
       }
     }
-    if (!globalComponents.size) { return emptyComponentsPlugin }
+    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { return emptyComponentsPlugin }
 
-    const components = [...globalComponents]
+    const lazyComponents = [...lazyGlobalComponents]
+    const syncComponents = [...syncGlobalComponents]
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { ${components.map(c => 'Lazy' + c).join(', ')} } from '#components'
+import { ${[...lazyComponents.map(c => 'Lazy' + c), ...syncComponents].join(', ')} } from '#components'
 const lazyGlobalComponents = [
-  ${components.map(c => `["${c}", Lazy${c}]`).join(',\n')}
+  ${lazyComponents.map(c => `["${c}", Lazy${c}]`).join(',\n')},
+  ${syncComponents.map(c => `["${c}", ${c}]`).join(',\n')}
 ]
 
 export default defineNuxtPlugin({

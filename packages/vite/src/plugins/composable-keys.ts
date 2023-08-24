@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { matchWithStringOrRegex } from '../utils'
 
-export interface ComposableKeysOptions {
+interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
@@ -141,14 +141,26 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
   }
 })
 
+/*
+* track scopes with unique keys. for example
+* ```js
+* // root scope, marked as ''
+* function a () { // '0'
+*   function b () {} // '0-0'
+*   function c () {} // '0-1'
+* }
+* function d () {} // '1'
+* // ''
+* ```
+* */
 class ScopeTracker {
+  // the top of the stack is not a part of current key, it is used for next level
   scopeIndexStack: number[]
   curScopeKey: string
 
   constructor () {
-    // top level
     this.scopeIndexStack = [0]
-    this.curScopeKey = '0'
+    this.curScopeKey = ''
   }
 
   getKey () {
@@ -173,8 +185,7 @@ class ScopedVarsCollector {
 
   constructor () {
     this.all = new Map()
-    // top level
-    this.curScopeKey = '0'
+    this.curScopeKey = ''
   }
 
   refresh (scopeKey: string) {
@@ -192,7 +203,7 @@ class ScopedVarsCollector {
 
   hasVar (scopeKey: string, name: string) {
     const indices = scopeKey.split('-').map(Number)
-    for (let i = indices.length; i > 0; i--) {
+    for (let i = indices.length; i >= 0; i--) {
       if (this.all.get(indices.slice(0, i).join('-'))?.has(name)) {
         return true
       }
@@ -224,7 +235,7 @@ class ScopedVarsCollector {
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
-function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
+export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
   const imports = findStaticImports(code)
   const names = new Set<string>()
   for (const i of imports) {
@@ -235,7 +246,7 @@ function detectImportNames (code: string, composableMeta: Record<string, { sourc
       if (source && matchWithStringOrRegex(i.specifier, source)) {
         return
       }
-      names.add(namedImports![name])
+      names.add(name)
     }
 
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)

@@ -1,19 +1,23 @@
-import type { NuxtApp } from '../nuxt'
+import type { NuxtApp, useNuxtApp } from '../nuxt'
+
+interface NuxtStaticBuildFlags {
+  browser: boolean
+  client: boolean
+  dev: boolean
+  server: boolean
+  test: boolean
+}
 
 declare global {
   namespace NodeJS {
-    interface Process {
-      browser: boolean
-      client: boolean
-      dev: boolean
-      mode: 'spa' | 'universal'
-      server: boolean
-      static: boolean
-    }
+    interface Process extends NuxtStaticBuildFlags {}
   }
+
+  interface ImportMeta extends NuxtStaticBuildFlags {}
 
   interface Window {
     __NUXT__?: Record<string, any>
+    useNuxtApp?: typeof useNuxtApp
   }
 }
 

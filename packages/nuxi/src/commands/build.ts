@@ -1,6 +1,9 @@
 import { relative, resolve } from 'pathe'
 import { consola } from 'consola'
-import { writeTypes } from '../utils/prepare'
+import type { Nitro } from 'nitropack'
+
+// we are deliberately inlining this code as a backup in case user has `@nuxt/schema<3.7`
+import { writeTypes as writeTypesLegacy } from '../../../kit/src/template'
 import { loadKit } from '../utils/kit'
 import { clearBuildDir } from '../utils/fs'
 import { overrideEnv } from '../utils/env'
@@ -19,7 +22,7 @@ export default defineNuxtCommand({
     const rootDir = resolve(args._[0] || '.')
     showVersions(rootDir)
 
-    const { loadNuxt, buildNuxt, useNitro } = await loadKit(rootDir)
+    const { loadNuxt, buildNuxt, useNitro, writeTypes = writeTypesLegacy } = await loadKit(rootDir)
 
     const nuxt = await loadNuxt({
       rootDir,
@@ -29,13 +32,19 @@ export default defineNuxtCommand({
       },
       overrides: {
         logLevel: args['log-level'],
+        // TODO: remove in 3.8
         _generate: args.prerender,
+        ...(args.prerender ? { nitro: { static: true } } : {}),
         ...(options?.overrides || {})
       }
     })
 
-    // Use ? for backward compatibility for Nuxt <= RC.10
-    const nitro = useNitro?.()
+    let nitro: Nitro | undefined
+    // In Bridge, if nitro is not enabled, useNitro will throw an error
+    try {
+      // Use ? for backward compatibility for Nuxt <= RC.10
+      nitro = useNitro?.()
+    } catch {}
 
     await clearBuildDir(nuxt.options.buildDir)
 

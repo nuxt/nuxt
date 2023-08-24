@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { join, resolve } from 'pathe'
-import { createApp, eventHandler, lazyEventHandler, toNodeListener } from 'h3'
+import { createApp, eventHandler, lazyEventHandler, send, toNodeListener } from 'h3'
 import { listen } from 'listhen'
 import type { NuxtAnalyzeMeta } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -77,7 +77,7 @@ export default defineNuxtCommand({
 
       const serveFile = (filePath: string) => lazyEventHandler(async () => {
         const contents = await fsp.readFile(filePath, 'utf-8')
-        return eventHandler((event) => { event.node.res.end(contents) })
+        return eventHandler(event => send(event, contents))
       })
 
       console.info('Starting stats server...')
