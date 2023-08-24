@@ -35,7 +35,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       }
     },
     css: {
-      devSourcemap: ctx.nuxt.options.sourcemap.client
+      devSourcemap: !!ctx.nuxt.options.sourcemap.client
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
@@ -78,11 +78,11 @@ export async function buildClient (ctx: ViteBuildContext) {
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir)
       }),
       runtimePathsPlugin({
-        sourcemap: ctx.nuxt.options.sourcemap.client
+        sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
       viteNodePlugin(ctx),
       pureAnnotationsPlugin.vite({
-        sourcemap: ctx.nuxt.options.sourcemap.client,
+        sourcemap: !!ctx.nuxt.options.sourcemap.client,
         functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
       })
     ],
@@ -102,7 +102,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
   if (ctx.nuxt.options.experimental.emitRouteChunkError) {
-    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
   // We want to respect users' own rollup output options
@@ -135,7 +135,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add type checking client panel
   if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
