@@ -55,7 +55,7 @@
     "rollup-plugin-visualizer": "^5.9.2",
     "std-env": "^3.4.3",
     "strip-literal": "^1.3.0",
-    "ufo": "^1.2.0",
+    "ufo": "^1.3.0",
     "unplugin": "^1.4.0",
     "vite": "^4.4.9",
     "vite-node": "^0.33.0",
