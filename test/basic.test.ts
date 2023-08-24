@@ -1852,26 +1852,19 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   it('data is null after navigation when immediate false', async () => {
     const page = await createPage('/useAsyncData/immediate-remove-unmounted')
     await page.waitForLoadState('networkidle')
-    expect(await page.locator('#immediate-data').textContent()).contains('null')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/immediate-remove-unmounted')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
 
     await page.click('#execute-btn')
-    await page.waitForResponse(response => response.url().includes('/api/random') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#immediate-data').textContent()).not.contains('null')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
 
-    // await page.goto(url('/'))
     await page.click('#to-index')
-    await page.waitForLoadState('networkidle')
 
-    // await page.goto(url('/useAsyncData/immediate-remove-unmounted'))
     await page.click('#to-immediate-remove-unmounted')
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#immediate-data').textContent()).contains('null')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
 
     await page.click('#execute-btn')
-    await page.waitForResponse(response => response.url().includes('/api/random') && response.status() === 200)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('#immediate-data').textContent()).not.contains('null')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
 
     await page.close()
   })
