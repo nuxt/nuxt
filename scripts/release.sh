@@ -10,7 +10,7 @@ pnpm build
 
 # Release packages
 for PKG in packages/* ; do
-  if [[ $p == "packages/nuxi" ]] ; then
+  if [[ $PKG == "packages/nuxi" ]] ; then
     continue
   fi
   pushd $PKG
