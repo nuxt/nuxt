@@ -11,7 +11,6 @@
         "ms-azuretools.vscode-docker",
         "dbaeumer.vscode-eslint",
         "github.vscode-github-actions",
-        "esbenp.prettier-vscode",
         "vue.volar"
       ]
     }
