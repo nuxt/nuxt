@@ -207,7 +207,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-  nitroConfig.ignore = resolveIgnorePatterns(nitroConfig.srcDir)
+  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir)]
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
