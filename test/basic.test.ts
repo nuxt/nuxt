@@ -894,6 +894,14 @@ describe('ignore list', () => {
     const html = await $fetch('/ignore/composables')
     expect(html).toContain('was import ignored: true')
   })
+  it('should ignore scanned nitro handlers in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/scanned')
+    expect(html).not.toContain('this should be ignored')
+  })
+  it.skipIf(isDev())('should ignore public assets in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/public-asset')
+    expect(html).not.toContain('this should be ignored')
+  })
 })
 
 describe('server tree shaking', () => {
