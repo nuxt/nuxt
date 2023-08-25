@@ -61,7 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        '#internal/nitro', '#internal/nitro/utils',
+        '#internal/nitro', '#internal/nitro/utils'
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
