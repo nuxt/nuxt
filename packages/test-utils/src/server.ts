@@ -17,7 +17,7 @@ export async function startServer () {
   ctx.url = 'http://127.0.0.1:' + port
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
-    ctx.serverProcess = execa(nuxiCLI, ['dev', '--host'], {
+    ctx.serverProcess = execa(nuxiCLI, ['dev'], {
       cwd: ctx.nuxt!.options.rootDir,
       stdio: 'inherit',
       env: {
@@ -29,10 +29,10 @@ export async function startServer () {
     })
     await waitForPort(port, { retries: 32 })
     let lastError
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
-        const res = await fetch(ctx.nuxt!.options.app.baseURL).then(r => r.text()).catch(() => '')
+        const res = await $fetch(ctx.nuxt!.options.app.baseURL)
         if (!res.includes('__NUXT_LOADING__')) {
           return
         }
