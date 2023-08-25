@@ -95,8 +95,8 @@ importers:
         specifier: 2.6.0
         version: 2.6.0
       nuxi:
-        specifier: npm:nuxi-ng@0.3.0-1692903287.87556d3
-        version: /nuxi-ng@0.3.0-1692903287.87556d3
+        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
+        version: /nuxi-ng@0.3.0-1692970235.c259efa
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -336,8 +336,8 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0
       nuxi:
-        specifier: npm:nuxi-ng@0.3.0-1692903287.87556d3
-        version: /nuxi-ng@0.3.0-1692903287.87556d3
+        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
+        version: /nuxi-ng@0.3.0-1692970235.c259efa
       nypm:
         specifier: ^0.3.1
         version: 0.3.1
@@ -896,7 +896,7 @@ importers:
     devDependencies:
       ofetch:
         specifier: latest
-        version: 1.3.2
+        version: 1.3.3
       vitest:
         specifier: 0.33.0
         version: 0.33.0(happy-dom@10.11.0)
@@ -2526,6 +2526,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -4355,7 +4356,7 @@ packages:
       execa: 8.0.1
       mri: 1.2.0
       node-fetch-native: 1.4.0
-      ofetch: 1.3.2
+      ofetch: 1.3.3
       open: 9.1.0
       pathe: 1.1.1
       pkg-types: 1.0.3
@@ -7947,6 +7948,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
     dev: true
@@ -8159,8 +8163,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi-ng@0.3.0-1692903287.87556d3:
-    resolution: {integrity: sha512-RXcsbgzceVHF0x4P55HvZuNuT/o5jb0F8ouDsXzmYeqdhrWhTiDSYyfg88kD+/8dXX15MGadW3UP803ZvkxSKw==}
+  /nuxi-ng@0.3.0-1692970235.c259efa:
+    resolution: {integrity: sha512-/yp+V+Vpype1fau39yktrkFu2UZ2jo5bSdvDB8lI3LEdYT7sF9zg+6HqP+0OAV4Vnmst6ATxwY+pZiK+ds5mig==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
@@ -8293,6 +8297,13 @@ packages:
 
   /ofetch@1.3.2:
     resolution: {integrity: sha512-XphiqMCUugscBfS7EjEfe8s3Hb5kfrTqdk9QAYl9z/wvhI3g97EpQdldqd0zAWqQXInHEqkRBQ08reMFHQwjDA==}
+    dependencies:
+      destr: 2.0.1
+      node-fetch-native: 1.4.0
+      ufo: 1.3.0
+
+  /ofetch@1.3.3:
+    resolution: {integrity: sha512-s1ZCMmQWXy4b5K/TW9i/DtiN8Ku+xCiHcjQ6/J/nDdssirrQNOoB165Zu8EqLMA2lln1JUth9a0aW9Ap2ctrUg==}
     dependencies:
       destr: 2.0.1
       node-fetch-native: 1.4.0
@@ -10661,7 +10672,7 @@ packages:
       lru-cache: 10.0.1
       mri: 1.2.0
       node-fetch-native: 1.4.0
-      ofetch: 1.3.2
+      ofetch: 1.3.3
       ufo: 1.3.0
     transitivePeerDependencies:
       - supports-color
@@ -10933,7 +10944,7 @@ packages:
       h3: 1.8.0
       happy-dom: 10.11.0
       magic-string: 0.30.3
-      ofetch: 1.3.2
+      ofetch: 1.3.3
       unenv: 1.7.3
       vitest: 0.33.0(happy-dom@10.11.0)
       vue: 3.3.4
