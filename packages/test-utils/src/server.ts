@@ -29,7 +29,7 @@ export async function startServer () {
     })
     await waitForPort(port, { retries: 32 })
     let lastError
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 150; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
         const res = await $fetch(ctx.nuxt!.options.app.baseURL)
