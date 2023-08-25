@@ -3,7 +3,7 @@
 {
   "name": "nitro-devcontainer",
   "forwardPorts": [3000],
-  "image": "node:18",
+  "dockerFile": "Dockerfile",
   "features": {},
   "customizations": {
     "vscode": {
@@ -17,6 +17,6 @@
       ]
     }
   },
-  "postStartCommand": "corepack enable && pnpm install && pnpm build:stub",
+  "postStartCommand": "pnpm install && pnpm build:stub",
   "mounts": ["type=volume,target=${containerWorkspaceFolder}/node_modules"]
 }
