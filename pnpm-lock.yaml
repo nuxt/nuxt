@@ -10,7 +10,6 @@ overrides:
   '@nuxt/test-utils': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
-  nuxi: workspace:*
   nuxt: workspace:*
   vite: 4.4.9
   vue: 3.3.4
@@ -96,8 +95,8 @@ importers:
         specifier: 2.6.0
         version: 2.6.0
       nuxi:
-        specifier: workspace:*
-        version: link:packages/nuxi
+        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
+        version: /nuxi-ng@0.3.0-1692970235.c259efa
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -241,109 +240,6 @@ importers:
         specifier: 5.88.2
         version: 5.88.2
 
-  packages/nuxi:
-    optionalDependencies:
-      fsevents:
-        specifier: ~2.3.3
-        version: 2.3.3
-    devDependencies:
-      '@nuxt/kit':
-        specifier: workspace:*
-        version: link:../kit
-      '@nuxt/schema':
-        specifier: workspace:*
-        version: link:../schema
-      '@types/clear':
-        specifier: 0.1.2
-        version: 0.1.2
-      '@types/flat':
-        specifier: 5.0.2
-        version: 5.0.2
-      '@types/mri':
-        specifier: 1.1.1
-        version: 1.1.1
-      '@types/semver':
-        specifier: 7.5.0
-        version: 7.5.0
-      c12:
-        specifier: 1.4.2
-        version: 1.4.2
-      chokidar:
-        specifier: 3.5.3
-        version: 3.5.3
-      clear:
-        specifier: 0.1.0
-        version: 0.1.0
-      clipboardy:
-        specifier: 3.0.0
-        version: 3.0.0
-      colorette:
-        specifier: 2.0.20
-        version: 2.0.20
-      consola:
-        specifier: 3.2.3
-        version: 3.2.3
-      deep-object-diff:
-        specifier: 1.1.9
-        version: 1.1.9
-      defu:
-        specifier: 6.1.2
-        version: 6.1.2
-      destr:
-        specifier: 2.0.1
-        version: 2.0.1
-      execa:
-        specifier: 7.2.0
-        version: 7.2.0
-      flat:
-        specifier: 5.0.2
-        version: 5.0.2
-      giget:
-        specifier: 1.1.2
-        version: 1.1.2
-      h3:
-        specifier: 1.8.0
-        version: 1.8.0
-      jiti:
-        specifier: 1.19.3
-        version: 1.19.3
-      listhen:
-        specifier: 1.4.0
-        version: 1.4.0
-      mlly:
-        specifier: 1.4.0
-        version: 1.4.0
-      mri:
-        specifier: 1.2.0
-        version: 1.2.0
-      nitropack:
-        specifier: 2.6.0
-        version: 2.6.0
-      ohash:
-        specifier: 1.1.3
-        version: 1.1.3
-      pathe:
-        specifier: 1.1.1
-        version: 1.1.1
-      perfect-debounce:
-        specifier: 1.0.0
-        version: 1.0.0
-      pkg-types:
-        specifier: 1.0.3
-        version: 1.0.3
-      scule:
-        specifier: 1.0.0
-        version: 1.0.0
-      semver:
-        specifier: 7.5.4
-        version: 7.5.4
-      ufo:
-        specifier: 1.3.0
-        version: 1.3.0
-      unbuild:
-        specifier: latest
-        version: 2.0.0(typescript@5.2.2)
-
   packages/nuxt:
     dependencies:
       '@nuxt/devalue':
@@ -440,8 +336,8 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0
       nuxi:
-        specifier: workspace:*
-        version: link:../nuxi
+        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
+        version: /nuxi-ng@0.3.0-1692970235.c259efa
       nypm:
         specifier: ^0.3.1
         version: 0.3.1
@@ -2630,6 +2526,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -2921,10 +2818,6 @@ packages:
       '@types/webpack': 4.41.33
     dev: true
 
-  /@types/flat@5.0.2:
-    resolution: {integrity: sha512-3zsplnP2djeps5P9OyarTxwRpMLoe5Ash8aL9iprw0JxB+FAHjY+ifn4yZUuW4/9hqtnmor6uvjSRzJhiVbrEQ==}
-    dev: true
-
   /@types/fs-extra@11.0.1:
     resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
@@ -2993,10 +2886,6 @@ packages:
     resolution: {integrity: sha512-DT+iNIRNX884cx0/Q1ja7NyUPpZuv0KPyL5rGNxm1WC1OtHstl7n4Jb7nk+xacNShQMbczJjt8uFzznpp6kYBg==}
     dependencies:
       '@types/unist': 2.0.7
-    dev: true
-
-  /@types/mri@1.1.1:
-    resolution: {integrity: sha512-nJOuiTlsvmClSr3+a/trTSx4DTuY/VURsWGKSf/eeavh0LRMqdsK60ti0TlwM5iHiGOK3/Ibkxsbr7i9rzGreA==}
     dev: true
 
   /@types/ms@0.7.31:
@@ -4573,6 +4462,7 @@ packages:
 
   /clear@0.1.0:
     resolution: {integrity: sha512-qMjRnoL+JDPJHeLePZJuao6+8orzHMGP04A8CdwCNsKhRbOnKRjefxONR7bwILT3MHecxKBjHkKL/tkZ8r4Uzw==}
+    dev: false
 
   /clipboardy@3.0.0:
     resolution: {integrity: sha512-Su+uU5sr1jkUy1sGRpLKjKrvEOVXgSgiSInwa/qeID6aJ07yh+5NWc3h2QfjHjBnfX4LhtFcuAWKUsJ3r+fjbg==}
@@ -4991,10 +4881,6 @@ packages:
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
-
-  /deep-object-diff@1.1.9:
-    resolution: {integrity: sha512-Rn+RuwkmkDwCi2/oXOFS9Gsr5lJZu/yTGpK7wAaAIE75CC+LCGEZHpY6VQJa/RoJcrmaA/docWJZvYohlNkWPA==}
-    dev: true
 
   /deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
@@ -8062,6 +7948,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
     dev: true
@@ -8273,6 +8162,13 @@ packages:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
     dependencies:
       boolbase: 1.0.0
+
+  /nuxi-ng@0.3.0-1692970235.c259efa:
+    resolution: {integrity: sha512-/yp+V+Vpype1fau39yktrkFu2UZ2jo5bSdvDB8lI3LEdYT7sF9zg+6HqP+0OAV4Vnmst6ATxwY+pZiK+ds5mig==}
+    engines: {node: ^14.18.0 || >=16.10.0}
+    hasBin: true
+    optionalDependencies:
+      fsevents: 2.3.3
 
   /nuxt-component-meta@0.5.3:
     resolution: {integrity: sha512-+MHUrESdr+Si9PdbkxQrzQv+X6RdRd/ffmFWVVsZAHA7X9vGoNAYxwvoB1Pbs15TaPtFBWA1P5a4VGqtp+bhAg==}
