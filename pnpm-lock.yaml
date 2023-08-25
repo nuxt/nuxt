@@ -2526,7 +2526,6 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
-      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -4447,11 +4446,6 @@ packages:
   /ci-info@3.8.0:
     resolution: {integrity: sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==}
     engines: {node: '>=8'}
-
-  /citty@0.1.2:
-    resolution: {integrity: sha512-Me9nf0/BEmMOnuQzMOVXgpzkMUNbd0Am8lTl/13p0aRGAoLGk5T5sdet/42CrIGmWdG67BgHUhcKK1my1ujUEg==}
-    dependencies:
-      consola: 3.2.3
 
   /citty@0.1.3:
     resolution: {integrity: sha512-tb6zTEb2BDSrzFedqFYFUKUuKNaxVJWCm7o02K4kADGkBDyyiz7D40rDMpguczdZyAN3aetd5fhpB01HkreNyg==}
@@ -7124,7 +7118,7 @@ packages:
     dependencies:
       '@parcel/watcher': 2.3.0
       '@parcel/watcher-wasm': 2.3.0-alpha.3
-      citty: 0.1.2
+      citty: 0.1.3
       clipboardy: 3.0.0
       consola: 3.2.3
       defu: 6.1.2
@@ -7899,7 +7893,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      citty: 0.1.2
+      citty: 0.1.3
       defu: 6.1.2
       esbuild: 0.18.20
       fs-extra: 11.1.1
@@ -7952,9 +7946,6 @@ packages:
     resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
-
-  /napi-wasm@1.1.0:
-    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
 
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
@@ -10421,7 +10412,7 @@ packages:
       '@rollup/plugin-replace': 5.0.2(rollup@3.28.1)
       '@rollup/pluginutils': 5.0.3(rollup@3.28.1)
       chalk: 5.3.0
-      citty: 0.1.2
+      citty: 0.1.3
       consola: 3.2.3
       defu: 6.1.2
       esbuild: 0.19.2
