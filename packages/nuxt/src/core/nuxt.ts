@@ -16,7 +16,7 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
-import { UnctxTransformPlugin } from './plugins/unctx'
+import { UnctxTransformPlugin, UnctxTransformPluginOptions } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
@@ -110,12 +110,15 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
-  nuxt.hook('modules:done', () => {
+  nuxt.hook('modules:done', async () => {
     // Add unctx transform
     const options = {
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-      transformerOptions: nuxt.options.optimization.asyncTransforms
-    }
+      transformerOptions: {
+        ...nuxt.options.optimization.asyncTransforms,
+        helperModule: await tryResolveModule('unctx', nuxt.options.modulesDir) ?? 'unctx'
+      }
+    } satisfies UnctxTransformPluginOptions
     addVitePlugin(() => UnctxTransformPlugin.vite(options))
     addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
 
