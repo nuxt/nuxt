@@ -20,6 +20,7 @@ export interface Component {
    * This prevent the component to be transformed with a `createClientOnly()` client-side if the mode is `client`
    * An example is the `<NuxtClientFallback>` component which handles it's hydration client-side
    */
+  /** @internal */
   noClientOnlyTransform?: boolean
 }
 
