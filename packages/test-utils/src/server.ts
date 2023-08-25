@@ -22,6 +22,7 @@ export async function startServer () {
       stdio: 'inherit',
       env: {
         ...process.env,
+        _PORT: String(port),
         PORT: String(port),
         NITRO_PORT: String(port),
         NODE_ENV: 'development'
