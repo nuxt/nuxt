@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import ignore from 'ignore'
-import { join, relative } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
 
 /**
@@ -16,14 +16,7 @@ export function isIgnored (pathname: string): boolean {
 
   if (!nuxt._ignore) {
     nuxt._ignore = ignore(nuxt.options.ignoreOptions)
-    const resolvedIgnore = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
-
-    nuxt._ignore.add(resolvedIgnore)
-
-    const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
-    if (existsSync(nuxtignoreFile)) {
-      nuxt._ignore.add(readFileSync(nuxtignoreFile, 'utf-8'))
-    }
+    nuxt._ignore.add(resolveIgnorePatterns())
   }
 
   const cwds = nuxt.options._layers?.map(layer => layer.cwd).sort((a, b) => b.length - a.length)
@@ -33,6 +26,31 @@ export function isIgnored (pathname: string): boolean {
     return false
   }
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
+}
+
+export function resolveIgnorePatterns (relativePath?: string): string[] {
+  const nuxt = tryUseNuxt()
+
+  // Happens with CLI reloads
+  if (!nuxt) {
+    return []
+  }
+
+  if (!nuxt._ignorePatterns) {
+    nuxt._ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
+
+    const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
+    if (existsSync(nuxtignoreFile)) {
+      const contents = readFileSync(nuxtignoreFile, 'utf-8')
+      nuxt._ignorePatterns.push(...contents.trim().split(/\r?\n/))
+    }
+  }
+
+  if (relativePath) {
+    return nuxt._ignorePatterns.map(p => p.startsWith('*') || p.startsWith('!*') ? p : relative(relativePath, resolve(nuxt.options.rootDir, p)))
+  }
+
+  return nuxt._ignorePatterns
 }
 
 /**

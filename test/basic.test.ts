@@ -52,6 +52,12 @@ describe('route rules', () => {
     await expectNoClientErrors('/route-rules/spa')
   })
 
+  it('should allow defining route rules inline', async () => {
+    const res = await fetch('/route-rules/inline')
+    expect(res.status).toEqual(200)
+    expect(res.headers.get('x-extend')).toEqual('added in routeRules')
+  })
+
   it('test noScript routeRules', async () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')
@@ -880,6 +886,21 @@ describe('composable tree shaking', () => {
     expect(pageErrors).toEqual([])
 
     await page.close()
+  })
+})
+
+describe('ignore list', () => {
+  it('should ignore composable files in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/composables')
+    expect(html).toContain('was import ignored: true')
+  })
+  it('should ignore scanned nitro handlers in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/scanned')
+    expect(html).not.toContain('this should be ignored')
+  })
+  it.skipIf(isDev())('should ignore public assets in .nuxtignore', async () => {
+    const html = await $fetch('/ignore/public-asset')
+    expect(html).not.toContain('this should be ignored')
   })
 })
 
@@ -1840,6 +1861,26 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
     const page = await createPage('/useAsyncData/status')
     await page.locator('#status5-values').getByText('idle,pending,success').waitFor()
+    await page.close()
+  })
+
+  it('data is null after navigation when immediate false', async () => {
+    const page = await createPage('/useAsyncData/immediate-remove-unmounted')
+    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/immediate-remove-unmounted')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
+
+    await page.click('#execute-btn')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
+
+    await page.click('#to-index')
+
+    await page.click('#to-immediate-remove-unmounted')
+    expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
+
+    await page.click('#execute-btn')
+    expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
+
     await page.close()
   })
 })

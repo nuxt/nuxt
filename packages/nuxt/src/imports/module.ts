@@ -1,4 +1,4 @@
-import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
@@ -82,8 +82,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transform to inject imports in production mode
-    addVitePlugin(() => TransformPlugin.vite({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => TransformPlugin.webpack({ ctx, options, sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(() => TransformPlugin.vite({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addWebpackPlugin(() => TransformPlugin.webpack({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
@@ -92,7 +92,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         // Clear old imports
         imports.length = 0
         // Scan `composables/`
-        const composableImports = await scanDirExports(composablesDirs)
+        const composableImports = await scanDirExports(composablesDirs, {
+          fileFilter: file => !isIgnored(file)
+        })
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
         }

@@ -3,7 +3,7 @@ import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger } from '@nuxt/kit'
+import { logger, resolveIgnorePatterns } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -31,11 +31,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     : [/node_modules/]
 
   const spaLoadingTemplate = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
-  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && !existsSync(spaLoadingTemplate)) {
+  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && typeof spaLoadingTemplate !== 'boolean' && !existsSync(spaLoadingTemplate)) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
-  // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -44,9 +43,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
     experimental: {
-      // @ts-expect-error `typescriptBundlerResolution` coming in next nitro version
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
-      asyncContext: nuxt.options.experimental.asyncContext
+      asyncContext: nuxt.options.experimental.asyncContext,
+      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -91,7 +89,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#spa-template': () => {
         if (!spaLoadingTemplate) { return 'export const template = ""' }
         try {
-          return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
+          if (spaLoadingTemplate !== true) {
+            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
+          }
         } catch {}
         return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }
@@ -117,6 +117,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+        ],
+        exclude: [
+          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+          // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
         ]
       }
     },
@@ -204,6 +209,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
+  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir)]
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
@@ -404,4 +410,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
   }
+}
+
+function relativeWithDot (from: string, to: string) {
+  return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
