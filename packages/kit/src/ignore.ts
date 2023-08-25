@@ -42,7 +42,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
     if (existsSync(nuxtignoreFile)) {
       const contents = readFileSync(nuxtignoreFile, 'utf-8')
-      nuxt._ignorePatterns.push(...contents.trim().split('\n'))
+      nuxt._ignorePatterns.push(...contents.trim().split(/\r?\n/))
     }
   }
 
