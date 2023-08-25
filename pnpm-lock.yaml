@@ -95,8 +95,8 @@ importers:
         specifier: 2.6.0
         version: 2.6.0
       nuxi:
-        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
-        version: /nuxi-ng@0.3.0-1692970235.c259efa
+        specifier: 3.7.0
+        version: 3.7.0
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -336,8 +336,8 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0
       nuxi:
-        specifier: npm:nuxi-ng@0.3.0-1692970235.c259efa
-        version: /nuxi-ng@0.3.0-1692970235.c259efa
+        specifier: ^3.7.0
+        version: 3.7.0
       nypm:
         specifier: ^0.3.1
         version: 0.3.1
@@ -8163,8 +8163,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi-ng@0.3.0-1692970235.c259efa:
-    resolution: {integrity: sha512-/yp+V+Vpype1fau39yktrkFu2UZ2jo5bSdvDB8lI3LEdYT7sF9zg+6HqP+0OAV4Vnmst6ATxwY+pZiK+ds5mig==}
+  /nuxi@3.7.0:
+    resolution: {integrity: sha512-FZEwNCGeEdE+CyKCoThZm+Lv+u4TnbClTyYvvby3a2joK5t8nc7upNiZ7hsd+xoOeNuZW7CZHsQp9szJm2ev9Q==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
