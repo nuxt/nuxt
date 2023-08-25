@@ -15,7 +15,6 @@ import { transpile } from './utils/transpile'
 export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
-  const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir).then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -62,11 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        '#internal/nitro', '#internal/nitro/utils',
-        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/ssr', '@unhead/vue', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
-        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...nitroDependencies
+        '#internal/nitro', '#internal/nitro/utils'
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -111,6 +106,17 @@ export async function buildServer (ctx: ViteBuildContext) {
       })
     ]
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
+
+  if (!ctx.nuxt.options.dev) {
+    const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
+      .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
+    serverConfig.ssr!.external!.push(
+      // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
+      'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
+      // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
+      ...nitroDependencies
+    )
+  }
 
   serverConfig.customLogger = createViteLogger(serverConfig)
 
