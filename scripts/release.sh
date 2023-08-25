@@ -10,6 +10,9 @@ pnpm build
 
 # Release packages
 for PKG in packages/* ; do
+  if [[ $p == "packages/nuxi" ]] ; then
+    continue
+  fi
   pushd $PKG
   TAG="latest"
   echo "⚡ Publishing $PKG with tag $TAG"
