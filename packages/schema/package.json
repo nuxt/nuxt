@@ -16,6 +16,7 @@
       "types": "./dist/builder-env.d.ts",
       "import": "./dist/builder-env.mjs"
     },
+    "./schema/config.schema.json": "./schema/config.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
