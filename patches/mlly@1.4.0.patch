@@ -1,0 +1,26 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index be9b792e38350077ce0b788d73525df56f88f8da..38be38460aece60f7ee03d670adc5fb30b89ea40 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -2513,7 +2513,7 @@ async function isValidNodeImport(id, _options = {}) {
+   }
+   const code = options.code || await fs.promises.readFile(resolvedPath, "utf8").catch(() => {
+   }) || "";
+-  return hasCJSSyntax(code) || !hasESMSyntax(code);
++  return !hasESMSyntax(code);
+ }
+ 
+ exports.DYNAMIC_IMPORT_RE = DYNAMIC_IMPORT_RE;
+diff --git a/dist/index.mjs b/dist/index.mjs
+index fd89659917314e7f1f1cde8886ac67b67fa28db1..acf8c926c944adb9ba69acb4425f18327f788480 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -2503,7 +2503,7 @@ async function isValidNodeImport(id, _options = {}) {
+   }
+   const code = options.code || await promises.readFile(resolvedPath, "utf8").catch(() => {
+   }) || "";
+-  return hasCJSSyntax(code) || !hasESMSyntax(code);
++  return !hasESMSyntax(code);
+ }
+ 
+ export { DYNAMIC_IMPORT_RE, ESM_STATIC_IMPORT_RE, EXPORT_DECAL_RE, EXPORT_DECAL_TYPE_RE, createCommonJS, createResolve, detectSyntax, evalModule, fileURLToPath, findDynamicImports, findExportNames, findExports, findStaticImports, findTypeExports, findTypeImports, getProtocol, hasCJSSyntax, hasESMSyntax, interopDefault, isNodeBuiltin, isValidNodeImport, loadModule, loadURL, lookupNodeModuleSubpath, normalizeid, parseNodeModulePath, parseStaticImport, parseTypeImport, resolve, resolveImports, resolveModuleExportNames, resolvePath, resolvePathSync, resolveSync, sanitizeFilePath, sanitizeURIComponent, toDataURL, transformModule };

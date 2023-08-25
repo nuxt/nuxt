@@ -86,5 +86,10 @@
   "packageManager": "pnpm@8.6.12",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "mlly@1.4.0": "patches/mlly@1.4.0.patch"
+    }
   }
 }
