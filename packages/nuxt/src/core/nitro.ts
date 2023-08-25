@@ -31,7 +31,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     : [/node_modules/]
 
   const spaLoadingTemplate = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
-  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && !existsSync(spaLoadingTemplate)) {
+  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && typeof spaLoadingTemplate !== 'boolean' && !existsSync(spaLoadingTemplate)) {
     console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
   }
 
@@ -89,7 +89,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#spa-template': () => {
         if (!spaLoadingTemplate) { return 'export const template = ""' }
         try {
-          return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
+          if (spaLoadingTemplate !== true) {
+            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
+          }
         } catch {}
         return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
       }
