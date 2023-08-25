@@ -59,6 +59,7 @@ export interface Nuxt {
   // Private fields.
   _version: string
   _ignore?: Ignore
+  _ignorePatterns?: string[]
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions
