@@ -17,11 +17,12 @@ export async function startServer () {
   ctx.url = 'http://127.0.0.1:' + port
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
-    ctx.serverProcess = execa(nuxiCLI, ['dev'], {
+    ctx.serverProcess = execa(nuxiCLI, ['_dev'], {
       cwd: ctx.nuxt!.options.rootDir,
       stdio: 'inherit',
       env: {
         ...process.env,
+        _PORT: String(port),
         PORT: String(port),
         NITRO_PORT: String(port),
         NODE_ENV: 'development'
@@ -29,7 +30,7 @@ export async function startServer () {
     })
     await waitForPort(port, { retries: 32 })
     let lastError
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 150; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
         const res = await $fetch(ctx.nuxt!.options.app.baseURL)

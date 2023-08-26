@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: () => {
-    if (process.server || useNuxtApp().isHydrating) { return }
+    if (import.meta.server || useNuxtApp().isHydrating) { return }
     return abortNavigation({
       fatal: true
     })

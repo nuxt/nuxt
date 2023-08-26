@@ -17,10 +17,7 @@ export default defineUntypedSchema({
      *   }
      * })
      * ```
-     *
-     *
      * @type {boolean | { key: string; cert: string }}
-     *
      */
     https: false,
 
@@ -43,6 +40,6 @@ export default defineUntypedSchema({
      *
      * @type {(data: { loading?: string }) => string}
      */
-    loadingTemplate: loadingTemplate
+    loadingTemplate
   }
 })

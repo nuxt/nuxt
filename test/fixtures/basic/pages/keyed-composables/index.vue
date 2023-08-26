@@ -2,21 +2,21 @@
 import { useCustomKeyedComposable } from '~/other-composables-folder/custom-keyed-composable'
 
 const useLocalState = () => useState(() => {
-  if (process.client) { console.error('running usestate') }
+  if (import.meta.client) { console.error('running usestate') }
   return { foo: Math.random() }
 })
 const useStateTest1 = useLocalState()
 const useStateTest2 = useLocalState()
 
 const useLocalAsyncData = () => useAsyncData(() => {
-  if (process.client) { console.error('running asyncdata') }
+  if (import.meta.client) { console.error('running asyncdata') }
   return Promise.resolve({ foo: Math.random() })
 }, { transform: data => data.foo })
 const { data: useAsyncDataTest1 } = await useLocalAsyncData()
 const { data: useAsyncDataTest2 } = await useLocalAsyncData()
 
 const useLocalLazyAsyncData = () => useLazyAsyncData(() => {
-  if (process.client) { console.error('running asyncdata') }
+  if (import.meta.client) { console.error('running asyncdata') }
   return Promise.resolve({ foo: Math.random() })
 }, { transform: data => data.foo })
 const { data: useLazyAsyncDataTest1 } = await useLocalLazyAsyncData()
@@ -24,7 +24,7 @@ const { data: useLazyAsyncDataTest2 } = await useLocalLazyAsyncData()
 
 const useLocalFetch = () => useFetch('/api/counter', {
   transform: (data) => {
-    if (process.client) { console.error('running client-side transform') }
+    if (import.meta.client) { console.error('running client-side transform') }
     return data.count
   }
 })

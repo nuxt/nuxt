@@ -1,5 +1,5 @@
 import type { NuxtHooks } from './hooks'
-import type { Nuxt } from "./nuxt"
+import type { Nuxt } from './nuxt'
 import type { NuxtCompatibility } from './compatibility'
 
 export interface ModuleMeta {
