@@ -79,6 +79,7 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+    let hasContent = false
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
@@ -239,6 +240,7 @@ export default defineComponent({
 
     return () => {
       if ((!html.value || error.value) && slots.fallback) {
+        hasContent = false
         return [slots.fallback({ error: error.value })]
       }
       const nodes = [createVNode(Fragment, {
@@ -260,7 +262,7 @@ export default defineComponent({
             }))
           }
         }
-        if (import.meta.client && canLoadClientComponent.value) {
+        if (import.meta.client && canLoadClientComponent.value && (hasContent || nuxtApp.isHydrating)) {
           for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
             // @ts-expect-error _ is the component's default export in build chunks
             const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
@@ -272,6 +274,7 @@ export default defineComponent({
             nodes.push(vnode)
           }
         }
+        hasContent = true
       }
       return nodes
     }
