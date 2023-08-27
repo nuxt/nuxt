@@ -38,7 +38,7 @@ async function loadComponents (source = '/', paths: Record<string, string>) {
       promises.push((async () => {
         const chunkSource = join(source, paths[component])
         const c = await import(chunkSource).then(m => m.default || m)
-        components!.set(component, c.default ?? c)
+        components!.set(component, c)
       })())
     }
   }
@@ -208,6 +208,7 @@ export default defineComponent({
         }
         nonReactivePayload.teleports = res.teleports
         nonReactivePayload.chunks = res.chunks
+        hasContent = true
 
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
@@ -234,7 +235,7 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating) {
       await fetchComponent()
-    } else if (nuxtApp.isHydrating && canLoadClientComponent.value) {
+    } else if ((canLoadClientComponent.value) && !props.lazy) {
       await loadComponents(props.source, nonReactivePayload.chunks)
     }
 
