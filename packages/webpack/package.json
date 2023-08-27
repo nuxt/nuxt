@@ -32,7 +32,7 @@
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "fs-extra": "^11.1.1",
-    "h3": "^1.8.0",
+    "h3": "^1.8.1",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
     "magic-string": "^0.30.3",
