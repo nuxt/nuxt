@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.6.5",
+  "version": "3.7.0",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -16,6 +16,7 @@
       "types": "./dist/builder-env.d.ts",
       "import": "./dist/builder-env.mjs"
     },
+    "./schema/config.schema.json": "./schema/config.schema.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -38,7 +39,7 @@
     "esbuild-loader": "4.0.1",
     "h3": "1.8.0",
     "ignore": "5.2.4",
-    "nitropack": "2.6.0",
+    "nitropack": "2.6.1",
     "unbuild": "latest",
     "unctx": "2.3.1",
     "vite": "4.4.9",
