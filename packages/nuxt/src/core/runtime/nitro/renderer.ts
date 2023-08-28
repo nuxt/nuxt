@@ -29,7 +29,7 @@ import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
 // eslint-disable-next-line import/no-restricted-paths
-import { prerenderPath } from '#app/composables/ssr'
+import { addPrerenderRoute } from '#app/composables/ssr'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -316,7 +316,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    prerenderPath(joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
+    addPrerenderRoute(joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }

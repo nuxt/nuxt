@@ -29,7 +29,7 @@ describe('composables', () => {
       'useError',
       'onNuxtReady',
       'setResponseStatus',
-      'prerenderPath',
+      'addPrerenderRoute',
       'useRequestEvent',
       'useRequestFetch',
       'useRequestHeaders',
@@ -175,7 +175,7 @@ describe('ssr composables', () => {
     expect(useRequestEvent()).toBeUndefined()
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
-    expect(prerenderPath('/')).toBeUndefined()
+    expect(addPrerenderRoute('/')).toBeUndefined()
   })
 })
 
