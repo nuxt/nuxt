@@ -67,8 +67,7 @@ function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNorm
 
   if (!isSamePath) {
     return true
-  }
-  if (isSamePath && JSON.stringify(from.params) !== JSON.stringify(to.params)) {
+  } else if (JSON.stringify(from.params) !== JSON.stringify(to.params)) {
     return true
   }
   return false
