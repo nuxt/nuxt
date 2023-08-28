@@ -1452,11 +1452,7 @@ describe('server components/islands', () => {
 
     const text = (await page.innerText('pre')).replace(/nuxt-ssr-client="([^"]*)"/g, (_, content) => `nuxt-ssr-client="${content.split('-')[0]}"`)
 
-    if (isWebpack) {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <div class=\\"sugar-counter\\" nuxt-client=\\"\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <div class=\\"sugar-counter\\" nuxt-client=\\"\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
-    } else {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
-    }
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
@@ -1719,12 +1715,42 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
-    const { props, teleports, chunks } = result
     result.props = {}
     result.teleports = {}
     result.chunks = {}
     result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
-    if (isWebpack) {
+
+    expect(result).toMatchInlineSnapshot(`
+        {
+          "chunks": {},
+          "head": {
+            "link": [],
+            "style": [],
+          },
+          "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+          "props": {},
+          "state": {},
+          "teleports": {},
+        }
+      `)
+  })
+
+  if (!isWebpack) {
+    it('render server component with selective client hydration', async () => {
+      const result: NuxtIslandResponse = await $fetch('/__nuxt_island/ServerWithClient')
+      if (isDev()) {
+        result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
+      }
+      const { props, teleports, chunks } = result
+      result.props = {}
+      result.teleports = {}
+      result.chunks = {}
+      result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
+
+      const propsEntries = Object.entries(props)
+      const teleportsEntries = Object.entries(teleports)
+      const chunksEntries = Object.entries(chunks)
+
       expect(result).toMatchInlineSnapshot(`
         {
           "chunks": {},
@@ -1732,29 +1758,12 @@ describe('component islands', () => {
             "link": [],
             "style": [],
           },
-          "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <div class=\\"sugar-counter\\" nuxt-client> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+          "html": "<div nuxt-ssr-component-uid> ServerWithClient.server.vue : <p>count: 0</p> This is not interactive <div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\"'nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "props": {},
           "state": {},
           "teleports": {},
         }
       `)
-    } else {
-      expect(result).toMatchInlineSnapshot(`
-      {
-        "chunks": {},
-        "head": {
-          "link": [],
-          "style": [],
-        },
-        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\"'nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
-        "props": {},
-        "state": {},
-        "teleports": {},
-      }
-    `)
-      const propsEntries = Object.entries(props)
-      const teleportsEntries = Object.entries(teleports)
-      const chunksEntries = Object.entries(chunks)
       expect(propsEntries).toHaveLength(1)
       expect(teleportsEntries).toHaveLength(1)
       expect(propsEntries[0][0].startsWith('SugarCounter-')).toBeTruthy()
@@ -1766,8 +1775,8 @@ describe('component islands', () => {
       }
     `)
       expect(teleportsEntries[0][1]).toMatchInlineSnapshot('"<div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
-    }
-  })
+    })
+  }
 
   it('renders pure components', async () => {
     const result: NuxtIslandResponse = await $fetch(withQuery('/__nuxt_island/PureComponent', {
