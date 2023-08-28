@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
 import fs from 'node:fs'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
@@ -7,6 +7,8 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { hash } from 'ohash'
+import { resolvePath } from '@nuxt/kit'
+import { basename } from 'pathe'
 import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -145,52 +147,96 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
   return {
     name: 'componentsChunkPlugin',
     vite: {
-      config (config) {
+      async  config (config) {
         const components = options.getComponents()
         config.build = config.build || {}
         config.build.rollupOptions = config.build.rollupOptions || {}
         config.build.rollupOptions.output = config.build.rollupOptions.output || {}
-        const componentManualChunk = (id: string) => {
-          if (components.some(c => c.mode !== 'server' && !c.island && c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
-            return basename(id)
+        config.build.rollupOptions.input = config.build.rollupOptions.input || {}
+        config.build.lib = {
+          entry: {},
+          formats: ['es'],
+          fileName: '[name].mjs',
+          name: 'components'
+        }
+        for (const component of components) {
+          if (component.mode === 'client' || component.mode === 'all') {
+            // (config.build.lib.entry as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
+            (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
           }
         }
-        if (Array.isArray(config.build.rollupOptions.output)) {
-          config.build.rollupOptions.output.forEach((output) => {
-            output.manualChunks = componentManualChunk
-          })
-        } else {
-          config.build.rollupOptions.output.manualChunks = componentManualChunk
-        }
+
+        // const componentManualChunk = (id: string) => {
+        //   if (components.some(c => c.mode !== 'server' && !c.island && c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
+        //     return basename(id)
+        //   }
+        // }
+        // if (Array.isArray(config.build.rollupOptions.output)) {
+        //   config.build.rollupOptions.output.forEach((output) => {
+        //     output.manualChunks = componentManualChunk
+        //   })
+        // } else {
+        //   config.build.rollupOptions.output.manualChunks = componentManualChunk
+        // }
       },
 
-      generateBundle (_opts, bundle) {
-        const components = options.getComponents()
-        const componentsChunks = Object.entries(bundle).filter(([_chunkPath, chunkInfo]) => {
-          if (chunkInfo.type !== 'chunk') { return false }
-          return components.some((component) => {
+      async generateBundle (_opts, bundle) {
+        const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
+        const pathAssociation: Record<string, string> = {}
+        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
+          if (chunkInfo.type !== 'chunk') { continue }
+
+          for (const component of components) {
             if (chunkInfo.facadeModuleId) {
               const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
 
-              const isPath = component.filePath === pathname
-              if (isPath) { return true }
+              const isPath = await resolvePath(component.filePath) === pathname
+              if (isPath) {
+                chunkInfo.isEntry = false
+                pathAssociation[component.pascalName] = chunkPath
+              }
             }
 
-            return chunkInfo.moduleIds.map((path) => {
-              return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
-            }).includes(component.filePath)
-          })
-        })
+            // const isWithinChunk = chunkInfo.moduleIds.map((path) => {
+            //   return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
+            // }).includes(component.filePath)
 
-        fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
-          if (chunkInfo.type === 'chunk' && chunkInfo.name && chunkInfo.exports.length > 0) { return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath }) }
-          return acc
-        }, {}))}`)
+            // if (isWithinChunk) {
+            //   pathAssociation[component.pascalName] = chunkPath
+            // }
+          }
+        }
+        // const componentsChunks = Object.entries(bundle).reduce((acc, [_chunkPath, chunkInfo]) => {
+        //   if (chunkInfo.type !== 'chunk') { return acc }
+        //   for (const component of components) {
+        //     if (chunkInfo.facadeModuleId) {
+        //       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
+
+        //       const isPath = component.filePath === pathname
+        //       if (isPath) { return true }
+        //     }
+
+        //      chunkInfo.moduleIds.map((path) => {
+        //       return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
+        //     }).includes(component.filePath)
+        //   }
+
+        //   return acc
+        // }, {})
+
+        // fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
+        //   if (chunkInfo.type === 'chunk' && chunkInfo.name && chunkInfo.exports.length > 0) {
+        //     return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath })
+        //    }
+        //   return acc
+        // }, {}))}`)
+
+        fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
       }
     }
   }
 })
 
-function withoutClientSuffixAndExtension (filePath: string): string {
-  return filePath.replace(/(\.client)?\.(vue|ts|js)$/, '')
-}
+// function withoutClientSuffixAndExtension (filePath: string): string {
+//   return filePath.replace(/(\.client)?\.(vue|ts|js)$/, '')
+// }
