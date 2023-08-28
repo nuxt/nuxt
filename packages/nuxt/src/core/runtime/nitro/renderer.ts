@@ -9,7 +9,7 @@ import {
 import type { RenderResponse } from 'nitropack'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
+import { createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'

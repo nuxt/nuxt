@@ -1,7 +1,6 @@
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
