@@ -37,6 +37,7 @@ const appPreset = defineUnimportPreset({
     'useRequestURL',
     'setResponseStatus',
     'setPageLayout',
+    'prerenderPath',
     'onNuxtReady',
     'useRouter',
     'useRoute',

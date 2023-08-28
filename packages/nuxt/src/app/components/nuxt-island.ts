@@ -11,7 +11,7 @@ import type { FetchResponse } from 'ofetch'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { useRequestEvent } from '#app/composables/ssr'
+import { prerenderPath, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -113,7 +113,7 @@ export default defineComponent({
 
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
-        appendResponseHeader(event, 'x-nitro-prerender', url)
+        prerenderPath(url)
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
@@ -126,7 +126,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', hints)
+          prerenderPath(hints)
         }
       }
       setPayload(key, result)
