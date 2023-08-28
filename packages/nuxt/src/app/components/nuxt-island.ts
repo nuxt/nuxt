@@ -171,7 +171,7 @@ export default defineComponent({
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating) {
+    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     }
 
