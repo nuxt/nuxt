@@ -1,6 +1,7 @@
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
+import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -112,7 +113,7 @@ export default defineComponent({
 
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
-        addPrerenderRoutes(url)
+        appendResponseHeader(event, 'x-nitro-prerender', url)
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
