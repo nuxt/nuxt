@@ -8,6 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
 /* eslint-disable import/no-restricted-paths */
+import defu from 'defu'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -283,6 +284,12 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
+
+    if (!nuxt.options.ssr) {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API

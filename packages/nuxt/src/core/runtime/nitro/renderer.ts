@@ -259,7 +259,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
       event.context.nuxt?.noSSR ||
-      routeOptions.ssr === false ||
+      (routeOptions.ssr === false && !islandContext) ||
       (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     head,
     error: !!ssrError,
