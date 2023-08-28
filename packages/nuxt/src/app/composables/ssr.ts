@@ -36,8 +36,9 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   return _setResponseStatus(useRequestEvent(), arg1, arg2 as string | undefined)
 }
 
-export function prerenderPath (path: string) {
+export function prerenderPath (path: string | string[]) {
   if (!process.server || !process.env.prerender) { return }
 
-  appendHeader(useRequestEvent(), 'x-nitro-prerender', path)
+  const paths = Array.isArray(path) ? path : [path]
+  appendHeader(useRequestEvent(), 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }
