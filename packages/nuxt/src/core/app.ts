@@ -187,5 +187,9 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     }
   }
 
-  return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
+  return _plugins.sort((a, b) => {
+    const sortMapResult = (a.order ?? orderMap.default) - (b.order ?? orderMap.default)
+    if (sortMapResult !== 0) { return sortMapResult }
+    return a.src!.localeCompare(b.src!)
+  })
 }
