@@ -152,12 +152,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build.rollupOptions = config.build.rollupOptions || {}
         config.build.rollupOptions.output = config.build.rollupOptions.output || {}
         config.build.rollupOptions.input = config.build.rollupOptions.input || {}
-        config.build.lib = {
-          entry: {},
-          formats: ['es'],
-          fileName: '[name].mjs',
-          name: 'components'
-        }
+
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
             // (config.build.lib.entry as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
@@ -188,7 +183,6 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
           for (const component of components) {
             if (chunkInfo.facadeModuleId) {
               const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
-
               const isPath = await resolvePath(component.filePath) === pathname
               if (isPath) {
                 chunkInfo.isEntry = false
