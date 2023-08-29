@@ -1,5 +1,5 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'pathe'
+import { basename, dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -129,8 +129,9 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.plugins = [
     ...nuxt.options.plugins.map(normalizePlugin)
   ]
+  const plugins: NuxtPlugin[] = []
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    app.plugins.push(...[
+    plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
@@ -140,6 +141,13 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
+  app.plugins.push(...plugins.sort((a, b) => {
+    const sortMapResult = (a.order ?? orderMap.default) - (b.order ?? orderMap.default)
+    if (sortMapResult !== 0) { return sortMapResult }
+
+    // TODO: update this when TODO in L139 is resolved
+    return basename(a.src).localeCompare(basename(b.src))
+  }))
 
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
@@ -187,9 +195,5 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     }
   }
 
-  return _plugins.sort((a, b) => {
-    const sortMapResult = (a.order ?? orderMap.default) - (b.order ?? orderMap.default)
-    if (sortMapResult !== 0) { return sortMapResult }
-    return a.src!.localeCompare(b.src!)
-  })
+  return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }
