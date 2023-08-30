@@ -81,7 +81,7 @@ export default defineComponent({
     }
   }
 }) as unknown as DefineComponent<{
-  name?: unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']
+  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined;
 }>
 
 const LayoutProvider = defineComponent({
