@@ -90,6 +90,7 @@ Vue.use(Router)
 export const routerOptions = {
   mode: '<%= router.mode %>',
   base: '<%= router.base %>',
+  routerPrefixForChangeableBase: '<%= router.routerPrefixForChangeableBase %>',
   linkActiveClass: '<%= router.linkActiveClass %>',
   linkExactActiveClass: '<%= router.linkExactActiveClass %>',
   scrollBehavior,
@@ -102,7 +103,11 @@ export const routerOptions = {
 }
 
 export function createRouter (ssrContext, config) {
-  const base = (config._app && config._app.basePath) || routerOptions.base
+  let base = (config._app && config._app.basePath) || routerOptions.base
+  if (ssrContext === null && routerOptions.routerPrefixForChangeableBase) {
+    const path = decodeURI(window.location.pathname)
+    base = path.substring(0, path.indexOf(routerOptions.routerPrefixForChangeableBase) + 1)
+  }
   const router = new Router({ ...routerOptions, base  })
 
   // TODO: remove in Nuxt 3
