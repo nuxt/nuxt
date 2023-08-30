@@ -121,7 +121,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         // by default, give priority to scanned components
-        priority: 1
+        priority: dir.priority ?? 1
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -135,9 +135,15 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
-        // Ignore component if component is already defined (with same mode)
-        warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        const existingPriority = existingComponent.priority ?? 0
+        const newPriority = component.priority ?? 0
+
+        if (newPriority >= existingPriority) {
+          warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        }
+
         continue
       }
 
