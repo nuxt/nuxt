@@ -15,10 +15,10 @@ export default defineNuxtModule({
         file: resolver.resolve('../runtime/page.vue')
       }, {
         path: '/big-page-1',
-        file: '@/modules/page-extend/pages/big-page.vue'
+        file: resolver.resolve('./pages/big-page.vue')
       }, {
         path: '/big-page-2',
-        file: '@/modules/page-extend/pages/big-page.vue'
+        file: resolver.resolve('./pages/big-page.vue')
       })
     })
   }
