@@ -141,12 +141,16 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
+
+  // sort scanned plugins by order and name
+  const pluginNameRegex = /\/index\.[cm]?[jt]s$/
   app.plugins.push(...plugins.sort((a, b) => {
     const sortMapResult = (a.order ?? orderMap.default) - (b.order ?? orderMap.default)
     if (sortMapResult !== 0) { return sortMapResult }
 
-    // TODO: update this when TODO in L139 is resolved
-    return basename(a.src).localeCompare(basename(b.src))
+    const aName = pluginNameRegex.test(a.src) ? basename(dirname(a.src)) : basename(a.src)
+    const bName = pluginNameRegex.test(b.src) ? basename(dirname(b.src)) : basename(b.src)
+    return aName.localeCompare(bName)
   }))
 
   // Normalize and de-duplicate plugins and middleware
