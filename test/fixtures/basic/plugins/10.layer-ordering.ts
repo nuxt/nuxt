@@ -3,8 +3,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (!nuxtApp.$layerPluginPre) {
       throw createError('layer plugin failed to run before end project plugin')
     }
-    if (nuxtApp.$layerPluginPost) {
-      throw createError('layer plugin failed to run after end project plugin')
+    if (!nuxtApp.$layerPluginPost) {
+      throw createError('layer plugin failed to run before end project plugin')
     }
   }
 })
