@@ -4,10 +4,10 @@ import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
+import type { NuxtMiddleware } from '@nuxt/schema/src'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
-import {NuxtMiddleware} from "@nuxt/schema/src";
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
