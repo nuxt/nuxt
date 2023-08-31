@@ -7,6 +7,7 @@ import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } fr
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+import {NuxtMiddleware} from "@nuxt/schema/src";
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -117,13 +118,21 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve middleware/ from all config layers
   app.middleware = []
+  // Track global middlewares so we can apply a sorting mechanism to them
+  const globalMiddlewares: NuxtMiddleware[] = []
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
     const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
-    app.middleware.push(...middlewareFiles.map((file) => {
-      const name = getNameFromPath(file)
-      return { name, path: file, global: hasSuffix(file, '.global') }
-    }))
+    for (const path of middlewareFiles) {
+      const global = hasSuffix(path, '.global')
+      const name = getNameFromPath(path)
+      if (global) {
+        globalMiddlewares.push({ name, path, global })
+      } else {
+        app.middleware.push({ name, path, global })
+      }
+    }
   }
+  app.middleware.unshift(...globalMiddlewares.sort((a, b) => a.name.localeCompare(b.name)))
 
   // Resolve plugins
   app.plugins = [
