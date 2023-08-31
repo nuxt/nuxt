@@ -965,6 +965,10 @@ describe('extends support', () => {
       const html = await $fetch('/override')
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
     })
+    it('global middlewares sorting', async () => {
+      const html = await $fetch('/global-middlewares-sorting')
+      expect(html).toContain('Global Middlewares Sorting')
+    })
   })
 
   describe('composables', () => {
