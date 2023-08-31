@@ -1,5 +1,5 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
