@@ -125,33 +125,32 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }))
   }
 
-  // Resolve plugins
-  app.plugins = [
-    ...nuxt.options.plugins.map(normalizePlugin)
-  ]
-  const plugins: NuxtPlugin[] = []
+  // Re-initialise plugins
+  app.plugins = nuxt.options.plugins.map(normalizePlugin)
+
+  // Track scanned plugins separately so we can apply a sorting mechanism to them
+  const scannedPlugins: [string, NuxtPlugin][] = []
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    plugins.push(...[
-      ...(config.plugins || []),
-      ...config.srcDir
-        ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
-        ])
-        : []
-    ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
+    for (const plugin of config.plugins || []) {
+      app.plugins.push(normalizePlugin(plugin as NuxtPlugin | string))
+    }
+
+    if (config.srcDir) {
+      const pluginDir = join(config.srcDir, config.dir?.plugins || 'plugins')
+      for (const file of await resolveFiles(pluginDir, [
+        '*.{ts,js,mjs,cjs,mts,cts}',
+        '*/index.*{ts,js,mjs,cjs,mts,cts}' // TODO: remove, only scan top-level plugins #18418
+      ])) {
+        scannedPlugins.push([file.replace(pluginDir, ''), normalizePlugin(file)])
+      }
+    }
   }
 
-  // sort scanned plugins by order and name
-  const pluginNameRegex = /\/index\.[cm]?[jt]s$/
-  app.plugins.push(...plugins.sort((a, b) => {
-    const sortMapResult = (a.order ?? orderMap.default) - (b.order ?? orderMap.default)
-    if (sortMapResult !== 0) { return sortMapResult }
-
-    const aName = pluginNameRegex.test(a.src) ? basename(dirname(a.src)) : basename(a.src)
-    const bName = pluginNameRegex.test(b.src) ? basename(dirname(b.src)) : basename(b.src)
-    return aName.localeCompare(bName)
-  }))
+  // Sort scanned plugins by their names so a scanned `01.plugin.ts` will always run before finished `02.plugin.ts`
+  // and append to the plugin array
+  for (const [_name, plugin] of scannedPlugins.sort(([a], [b]) => a.localeCompare(b))) {
+    app.plugins.push(plugin)
+  }
 
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
