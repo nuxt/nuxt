@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-await new Promise(resolve => setTimeout(resolve, 100))
+await new Promise(resolve => setTimeout(resolve, 200))
 </script>

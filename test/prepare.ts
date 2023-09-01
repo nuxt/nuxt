@@ -13,7 +13,7 @@ await Promise.all([
   // clear nuxt build files
   ...dirs.map(dir => fs.remove(`${dir}/.nuxt`)),
   // clear vite cache
-  ...dirs.map(dir => fs.remove(`${dir}/node_modules/.vite`), { force: true })
+  ...dirs.map(dir => fs.remove(`${dir}/node_modules/.cache`), { force: true })
 ])
 
 await Promise.all(

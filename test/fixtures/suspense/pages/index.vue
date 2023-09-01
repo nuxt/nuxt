@@ -15,8 +15,9 @@
 </template>
 
 <script setup>
-function trigger () {
+async function trigger () {
   document.getElementById('btn-a').click()
+  await new Promise(resolve => setTimeout(resolve, 10))
   document.getElementById('btn-b').click()
 }
 </script>
