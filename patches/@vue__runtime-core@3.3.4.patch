@@ -1,0 +1,47 @@
+diff --git a/dist/runtime-core.esm-bundler.js b/dist/runtime-core.esm-bundler.js
+index 860d66fd0429aae7b94a0aa2b4e35ecfb06546e4..48648328b68cc49e3fad49ef829d474120c590ee 100644
+--- a/dist/runtime-core.esm-bundler.js
++++ b/dist/runtime-core.esm-bundler.js
+@@ -1152,17 +1152,21 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotSc
+   if (pendingBranch) {
+     suspense.pendingBranch = newBranch;
+     if (isSameVNodeType(newBranch, pendingBranch)) {
+-      patch(
+-        pendingBranch,
+-        newBranch,
+-        suspense.hiddenContainer,
+-        null,
+-        parentComponent,
+-        suspense,
+-        isSVG,
+-        slotScopeIds,
+-        optimized
+-      );
++      // When the previous pending is not yet resolved (e.g. double click the link),
++      // the `pendingBranch.el` is not yet fulfilled, will causing the `patch` to fail.
++      if (pendingBranch.el) {
++        patch(
++          pendingBranch,
++          newBranch,
++          suspense.hiddenContainer,
++          null,
++          parentComponent,
++          suspense,
++          isSVG,
++          slotScopeIds,
++          optimized
++        );
++      }
+       if (suspense.deps <= 0) {
+         suspense.resolve();
+       } else if (isInFallback) {
+@@ -6119,6 +6123,9 @@ function baseCreateRenderer(options, createHydrationFns) {
+   const move = (vnode, container, anchor, moveType, parentSuspense = null) => {
+     const { el, type, transition, children, shapeFlag } = vnode;
+     if (shapeFlag & 6) {
++      // This I am not yet sure why, but it can be undefined in some conditions
++      if (!vnode.component)
++        return
+       move(vnode.component.subTree, container, anchor, moveType);
+       return;
+     }
