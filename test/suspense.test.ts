@@ -20,7 +20,7 @@ await setup({
 })
 
 describe('suspense multiple nav', () => {
-  it.only('should not throw error', async () => {
+  it('should not throw error', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/')
     await page.waitForLoadState('networkidle')
 
