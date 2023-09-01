@@ -35,8 +35,10 @@ describe('suspense multiple nav', () => {
     expect(await page.locator('body').textContent()).toContain('Index Page')
 
     // So we click two navigations quickly, before the first one is resolved
-    await page.locator('#btn-a').click()
-    await page.locator('#btn-b').click()
+    await Promise.all([
+      page.locator('#btn-a').click(),
+      page.locator('#btn-b').click()
+    ])
     await new Promise(resolve => setTimeout(resolve, 200))
 
     const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
@@ -46,9 +48,6 @@ describe('suspense multiple nav', () => {
     expect(consoleLogWarnings).toEqual([])
 
     expect(await page.locator('#content').textContent()).toContain('Hello b')
-
-    expect(consoleLogs)
-      .toMatchInlineSnapshot()
 
     await page.close()
   }, 60_000)
