@@ -39,15 +39,14 @@ describe('suspense multiple nav', () => {
       page.locator('#btn-a').click(),
       page.locator('#btn-b').click()
     ])
-    await new Promise(resolve => setTimeout(resolve, 200))
+
+    expect.soft(await page.locator('#content').textContent()).toContain('Hello b')
 
     const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
     const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
-    expect(pageErrors).toEqual([])
-    expect(consoleLogErrors).toEqual([])
-    expect(consoleLogWarnings).toEqual([])
-
-    expect(await page.locator('#content').textContent()).toContain('Hello b')
+    expect.soft(pageErrors).toEqual([])
+    expect.soft(consoleLogErrors).toEqual([])
+    expect.soft(consoleLogWarnings).toEqual([])
 
     await page.close()
   }, 60_000)
