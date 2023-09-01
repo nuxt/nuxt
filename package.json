@@ -19,7 +19,8 @@
     "play:build": "nuxi build playground",
     "play:preview": "nuxi preview playground",
     "test": "pnpm test:fixtures && pnpm test:fixtures:payload && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm typecheck",
-    "test:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && vitest run --dir test",
+    "test:prepare": "esno ./test/prepare.ts",
+    "test:fixtures": "pnpm run test:prepare && vitest run --dir test",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:runtime": "vitest -c vitest.nuxt.config.ts",
@@ -56,6 +57,7 @@
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jsdoc": "41.1.2",
     "eslint-plugin-no-only-tests": "3.1.0",
+    "esno": "^0.17.0",
     "execa": "7.2.0",
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
@@ -89,7 +91,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "vue@3.3.4": "patches/vue@3.3.4.patch"
+      "vue@3.3.4": "patches/vue@3.3.4.patch",
+      "@vue/runtime-core@3.3.4": "patches/@vue__runtime-core@3.3.4.patch"
     }
   }
 }

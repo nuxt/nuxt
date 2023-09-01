@@ -7,5 +7,8 @@
   "dependencies": {
     "nuxt": "workspace:*",
     "vue": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest"
   }
 }
