@@ -1,0 +1,127 @@
+diff --git a/dist/vue.esm-browser.js b/dist/vue.esm-browser.js
+index 37c9dd322dbca8a3f3a3888895b76a56d3d834a1..dfec94e1f6bcedf75f944b11b6203b2a1039d8f4 100644
+--- a/dist/vue.esm-browser.js
++++ b/dist/vue.esm-browser.js
+@@ -2620,17 +2620,21 @@ function patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotSc
+   if (pendingBranch) {
+     suspense.pendingBranch = newBranch;
+     if (isSameVNodeType(newBranch, pendingBranch)) {
+-      patch(
+-        pendingBranch,
+-        newBranch,
+-        suspense.hiddenContainer,
+-        null,
+-        parentComponent,
+-        suspense,
+-        isSVG,
+-        slotScopeIds,
+-        optimized
+-      );
++      // When the previous pending is not yet resolved (e.g. double click the link),
++      // the `pendingBranch.el` is not yet fulfilled, will causing the `patch` to fail.
++      if (pendingBranch.el) {
++        patch(
++          pendingBranch,
++          newBranch,
++          suspense.hiddenContainer,
++          null,
++          parentComponent,
++          suspense,
++          isSVG,
++          slotScopeIds,
++          optimized
++        );
++      }
+       if (suspense.deps <= 0) {
+         suspense.resolve();
+       } else if (isInFallback) {
+@@ -3092,14 +3096,14 @@ function watchPostEffect(effect, options) {
+   return doWatch(
+     effect,
+     null,
+-    extend({}, options, { flush: "post" }) 
++    extend({}, options, { flush: "post" })
+   );
+ }
+ function watchSyncEffect(effect, options) {
+   return doWatch(
+     effect,
+     null,
+-    extend({}, options, { flush: "sync" }) 
++    extend({}, options, { flush: "sync" })
+   );
+ }
+ const INITIAL_WATCHER_VALUE = {};
+@@ -4327,7 +4331,7 @@ const publicPropertiesMap = (
+     $options: (i) => resolveMergedOptions(i) ,
+     $forceUpdate: (i) => i.f || (i.f = () => queueJob(i.update)),
+     $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
+-    $watch: (i) => instanceWatch.bind(i) 
++    $watch: (i) => instanceWatch.bind(i)
+   })
+ );
+ const isReservedPrefix = (key) => key === "_" || key === "$";
+@@ -7520,6 +7524,9 @@ function baseCreateRenderer(options, createHydrationFns) {
+   const move = (vnode, container, anchor, moveType, parentSuspense = null) => {
+     const { el, type, transition, children, shapeFlag } = vnode;
+     if (shapeFlag & 6) {
++      // This I am not yet sure why, but it can be undefined in some conditions
++      if (!vnode.component)
++        return
+       move(vnode.component.subTree, container, anchor, moveType);
+       return;
+     }
+@@ -8757,7 +8764,7 @@ function getAttrsProxy(instance) {
+         warn(`setupContext.attrs is readonly.`);
+         return false;
+       }
+-    } 
++    }
+   ));
+ }
+ function getSlotsProxy(instance) {
+@@ -10822,7 +10829,7 @@ const CREATE_TEXT = Symbol(`createTextVNode` );
+ const CREATE_STATIC = Symbol(`createStaticVNode` );
+ const RESOLVE_COMPONENT = Symbol(`resolveComponent` );
+ const RESOLVE_DYNAMIC_COMPONENT = Symbol(
+-  `resolveDynamicComponent` 
++  `resolveDynamicComponent`
+ );
+ const RESOLVE_DIRECTIVE = Symbol(`resolveDirective` );
+ const RESOLVE_FILTER = Symbol(`resolveFilter` );
+@@ -14974,7 +14981,7 @@ function createDOMCompilerError(code, loc) {
+   return createCompilerError(
+     code,
+     loc,
+-    DOMErrorMessages 
++    DOMErrorMessages
+   );
+ }
+ const DOMErrorMessages = {
+@@ -15287,7 +15294,7 @@ const ignoreSideEffectTags = (node, context) => {
+ 
+ const DOMNodeTransforms = [
+   transformStyle,
+-  ...[transformTransition] 
++  ...[transformTransition]
+ ];
+ const DOMDirectiveTransforms = {
+   cloak: noopDirectiveTransform,
+@@ -15316,7 +15323,7 @@ function compile(template, options = {}) {
+         DOMDirectiveTransforms,
+         options.directiveTransforms || {}
+       ),
+-      transformHoist: null 
++      transformHoist: null
+     })
+   );
+ }
+@@ -15350,7 +15357,7 @@ function compileToFunction(template, options) {
+     {
+       hoistStatic: true,
+       onError: onError ,
+-      onWarn: (e) => onError(e, true) 
++      onWarn: (e) => onError(e, true)
+     },
+     options
+   );

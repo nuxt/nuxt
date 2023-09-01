@@ -86,5 +86,10 @@
   "packageManager": "pnpm@8.6.12",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "vue@3.3.4": "patches/vue@3.3.4.patch"
+    }
   }
 }

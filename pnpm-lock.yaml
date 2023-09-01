@@ -15,6 +15,11 @@ overrides:
   vue: 3.3.4
   magic-string: ^0.30.3
 
+patchedDependencies:
+  vue@3.3.4:
+    hash: m4bnp2rqumwkce3i5cfby7vm7y
+    path: patches/vue@3.3.4.patch
+
 importers:
 
   .:
@@ -138,7 +143,7 @@ importers:
         version: 0.10.2(happy-dom@10.11.0)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-eslint-parser:
         specifier: 9.3.1
         version: 9.3.1(eslint@8.48.0)
@@ -397,7 +402,7 @@ importers:
         version: 1.4.0
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-bundle-renderer:
         specifier: ^2.0.0
         version: 2.0.0
@@ -513,7 +518,7 @@ importers:
         version: 4.4.9(@types/node@18.17.11)
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-bundle-renderer:
         specifier: 2.0.0
         version: 2.0.0
@@ -561,7 +566,7 @@ importers:
         version: 1.3.0
       vue:
         specifier: ^3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     devDependencies:
       '@jest/globals':
         specifier: 29.6.4
@@ -701,7 +706,7 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   packages/webpack:
     dependencies:
@@ -858,7 +863,7 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   playground:
     dependencies:
@@ -867,7 +872,7 @@ importers:
         version: link:../packages/nuxt
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   test/fixtures/basic:
     dependencies:
@@ -886,7 +891,7 @@ importers:
         version: 1.4.0
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   test/fixtures/basic-types:
     dependencies:
@@ -902,7 +907,7 @@ importers:
         version: 0.33.0(happy-dom@10.11.0)
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-router:
         specifier: latest
         version: 4.2.4(vue@3.3.4)
@@ -914,7 +919,7 @@ importers:
         version: link:../../../packages/nuxt
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   test/fixtures/minimal-types:
     dependencies:
@@ -923,13 +928,22 @@ importers:
         version: link:../../../packages/nuxt
       vue:
         specifier: 3.3.4
-        version: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   test/fixtures/runtime-compiler:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+
+  test/fixtures/suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+      vue:
+        specifier: 3.3.4
+        version: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
 packages:
 
@@ -1982,7 +1996,7 @@ packages:
       vue: '>=3'
     dependencies:
       '@iconify/types': 2.0.0
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     dev: true
 
   /@ioredis/commands@1.2.0:
@@ -2526,6 +2540,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -3201,7 +3216,7 @@ packages:
       '@unhead/shared': 1.3.9
       hookable: 5.5.3
       unhead: 1.3.9
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     dev: false
 
   /@unocss/reset@0.50.8:
@@ -3239,7 +3254,7 @@ packages:
       '@babel/plugin-transform-typescript': 7.22.10(@babel/core@7.22.10)
       '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.22.10)
       vite: 4.4.9(@types/node@18.17.11)
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     transitivePeerDependencies:
       - supports-color
 
@@ -3251,7 +3266,7 @@ packages:
       vue: ^3.2.25
     dependencies:
       vite: 4.4.9(@types/node@18.17.11)
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   /@vitest/expect@0.33.0:
     resolution: {integrity: sha512-sVNf+Gla3mhTCxNJx+wJLDPp/WcstOe0Ksqz4Vec51MmgMth/ia0MGFEkIZmVGeTL5HtjYR4Wl/ZxBxBXZJTzQ==}
@@ -3362,7 +3377,7 @@ packages:
       ast-kit: 0.9.4(rollup@3.28.1)
       local-pkg: 0.4.3
       magic-string-ast: 0.3.0
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     transitivePeerDependencies:
       - rollup
     dev: false
@@ -3477,7 +3492,7 @@ packages:
     dependencies:
       '@vue/compiler-ssr': 3.3.4
       '@vue/shared': 3.3.4
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   /@vue/shared@3.3.4:
     resolution: {integrity: sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==}
@@ -3492,7 +3507,7 @@ packages:
         optional: true
     dependencies:
       js-beautify: 1.14.9
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-component-type-helpers: 1.8.4
     dev: true
 
@@ -7947,6 +7962,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
     dev: true
@@ -10936,7 +10954,7 @@ packages:
       ofetch: 1.3.3
       unenv: 1.7.4
       vitest: 0.33.0(happy-dom@10.11.0)
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       vue-router: 4.2.4(vue@3.3.4)
       whatwg-fetch: 3.6.17
     transitivePeerDependencies:
@@ -11094,7 +11112,7 @@ packages:
       '@vue/composition-api':
         optional: true
     dependencies:
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
     dev: true
 
   /vue-devtools-stub@0.1.0:
@@ -11133,7 +11151,7 @@ packages:
     dependencies:
       chalk: 4.1.2
       hash-sum: 2.0.0
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
       watchpack: 2.4.0
       webpack: 5.88.2
 
@@ -11143,7 +11161,7 @@ packages:
       vue: ^3.2.0
     dependencies:
       '@vue/devtools-api': 6.5.0
-      vue: 3.3.4
+      vue: 3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y)
 
   /vue-template-compiler@2.7.14:
     resolution: {integrity: sha512-zyA5Y3ArvVG0NacJDkkzJuPQDF8RFeRlzV2vLeSnhSpieO6LK2OVbdLPi5MPPs09Ii+gMO8nY4S3iKQxBxDmWQ==}
@@ -11162,7 +11180,7 @@ packages:
       semver: 7.5.4
       typescript: 5.2.2
 
-  /vue@3.3.4:
+  /vue@3.3.4(patch_hash=m4bnp2rqumwkce3i5cfby7vm7y):
     resolution: {integrity: sha512-VTyEYn3yvIeY1Py0WaYGZsXnz3y5UnGi62GjVEqvEGPl6nxbOrCXbVOTQWBEJUqAyTUk2uJ5JLVnYJ6ZzGbrSw==}
     dependencies:
       '@vue/compiler-dom': 3.3.4
@@ -11170,6 +11188,7 @@ packages:
       '@vue/runtime-dom': 3.3.4
       '@vue/server-renderer': 3.3.4(vue@3.3.4)
       '@vue/shared': 3.3.4
+    patched: true
 
   /walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
