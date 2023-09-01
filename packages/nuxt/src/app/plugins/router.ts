@@ -58,7 +58,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
   }
 }
 
-type RouteGuardReturn = void | Error | string | false
+type RouteGuardReturn = void | Error | string | boolean
 
 interface RouteGuard {
   (to: Route, from: Route): RouteGuardReturn | Promise<RouteGuardReturn>
@@ -130,7 +130,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           // Cancel navigation
           if (result === false || result instanceof Error) { return }
           // Redirect
-          if (result) { return handleNavigation(result, true) }
+          if (typeof result === 'string' && result.length) { return handleNavigation(result, true) }
         }
 
         for (const handler of hooks['resolve:before']) {
@@ -250,6 +250,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
                 return nuxtApp.runWithContext(() => showError(error))
               }
             }
+            if (result === true) { continue }
             if (result || result === false) { return result }
           }
         }
