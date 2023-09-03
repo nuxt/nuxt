@@ -23,7 +23,7 @@ import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from
 import { useNitroApp } from '#internal/nitro/app'
 
 import type { Link, Script } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
+import { createServerHead, setFailedInjectionHandler as setFailedHeadInjectionHandler } from '@unhead/vue'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
@@ -247,6 +247,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const head = createServerHead({
     plugins: unheadPlugins
   })
+  if (process.dev) {
+    setFailedHeadInjectionHandler(() => {
+      console.warn('Unhead has fallen back to a shared context. Consider wrapping your code with nuxtApp.runWithContext. Learn more at https://nuxt.com/docs/getting-started/seo-meta#pitfalls.')
+      // dump stacktrace, we don't want to trigger a blocking SSR error
+      // remove the Error on first line
+      console.warn(new Error().stack!.split('\n').slice(5).join('\n'))
+    })
+  }
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
   head.push(appHead, headEntryOptions)
