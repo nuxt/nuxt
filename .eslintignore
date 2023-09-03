@@ -12,6 +12,9 @@ examples/pug-stylus-coffee/**/*.*
 examples/web-worker/**/*.*
 examples/vue-class-component/**/*.*
 
+## vue with typescript
+test/fixtures/vue-tsc/**/*.vue
+
 # Packages
 
 # vue-app

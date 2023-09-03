@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "module": "ES2022",
+        "moduleResolution": "Node",
+        "noEmit": true,
+        "target": "ES2022",
+        "types": [
+            "../../../packages/types",
+            "./types/vue",
+        ],
+        "strict": true,
+        "traceResolution": true,
+    },
+    "include": [
+        "./components/*.vue",
+        "./pages/*.vue",
+    ],
+    "vueCompilerOptions": {
+        "strictTemplates": true,
+        "target": 2.7
+    }
+}
