@@ -11,7 +11,6 @@
             "./types/vue",
         ],
         "strict": true,
-        "traceResolution": true,
     },
     "include": [
         "./components/*.vue",
