@@ -38,7 +38,9 @@ export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends Nux
   dst: string
 }
 
-export type NuxtTypeTemplate<Options = Record<string, any>> = Omit<NuxtTemplate<Options>, 'write'>
+export interface NuxtTypeTemplate<Options = Record<string, any>> extends Omit<NuxtTemplate<Options>, 'write'> {
+  write?: true
+}
 
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
 export interface NuxtPluginTemplate<Options = Record<string, any>> extends _TemplatePlugin<Options> { }
