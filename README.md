@@ -1,113 +1,52 @@
+[![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
 
-[![Nuxt banner](./.github/assets/banner.png)](https://nuxt.com)
+# Nuxt
 
-# 👋 Welcome to Nuxt
-
-
-Nuxt's goal is to make web development intuitive and performant, with a great developer experience.<br>Learn more in the ['What is Nuxt?'](https://nuxt.com/docs/getting-started/introduction) section of our documentation.
-
-
- <p>
+<p>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
-  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Open%20Documentation-18181B?logo=nuxt.js" alt="Website"></a>
-  <a href="https://volta.net/nuxt/nuxt?utm_source=nuxt_readme"><img src="https://user-images.githubusercontent.com/904724/209143798-32345f6c-3cf8-4e06-9659-f4ace4a6acde.svg" alt="Volta board"></a>
- </p>
+  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt%20Docs-18181B?logo=nuxt.js" alt="Website"></a>
+  <a href="https://chat.nuxt.dev"><img src="https://img.shields.io/badge/Nuxt%20Discord-18181B?logo=discord" alt="Discord"></a>
+</p>
 
-<table>
-<thead>
-<tr>
-<th width="2000" colspan="2">
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/docs"><img src="./.github/assets/documentation.png"></a>
-  </td>
-  <td valign="top">
-    <h3>Documentation</h3>
-    <p>
-      We highly recommend you take a look at <a href="https://nuxt.com">the Nuxt documentation</a> to level up.
-    </p>
-  </td>
-</tr>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/modules"><img src="./.github/assets/modules.png"></a>
-  </td>
-  <td valign="top">
-    <h3>Modules</h3>
-    <p>
-      Discover our <a href="https://nuxt.com/modules">list of modules</a> to supercharge your Nuxt project. Created by the Nuxt team and community.
-    </p>
-  </td>
-</tr>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/docs/examples/hello-world"><img src="./.github/assets/examples.png"></a>
-  </td>
-  <td>
-    <h3>Examples</h3>
-    <p>
-      Explore different ways of using Nuxt features and get inspired with <a href="https://nuxt.com/docs/examples/hello-world">our list of examples</a>.
-    </p>
-  </td>
-</tr>
-</tbody>
-</table>
+Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.
 
-<table>
-<thead>
-<tr>
-<th width="2000" colspan="2">
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/docs/community/reporting-bugs"><img src="./.github/assets/reporting-bugs.png"></a>
-  </td>
-  <td valign="top">
-    <h3>Reporting bugs</h3>
-    <p>
-      Check out the <a href="https://nuxt.com/docs/community/reporting-bugs">Reporting Bugs</a> page.</p>
-    </p>
-  </td>
-</tr>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/docs/community/contribution"><img src="./.github/assets/suggestions.png"></a>
-  </td>
-  <td valign="top">
-    <h3>Suggestions</h3>
-    <p>
-      Check out the <a href="https://nuxt.com/docs/community/contribution">Contribution</a> page.
-    </p>
-  </td>
-</tr>
-<tr>
-  <td width="80" align="center" valign="top">
-    <br>
-    <a href="https://nuxt.com/docs/community/getting-help"><img src="./.github/assets/questions.png"></a>
-  </td>
-  <td valign="top">
-    <h3>Questions</h3>
-    <p>
-      Check out the <a href="https://nuxt.com/docs/community/getting-help">Getting Help</a> page.
-    </p>
-  </td>
-</tr>
-</tbody>
-</table>
+It provides a number of features that make it easy to build fast, SEO-friendly, and scalable web applications, including:
+- Server-side rendering, Static Site Generation or Hybrid Rendering
+- Automatic routing with code-splitting
+- State management
+- SEO Optimization
+- Extandable with [100+ modules](https://nuxt.com/modules)
+- Deployment to a variety of hosting platforms
+- ...[and much more](https://nuxt.com) 🚀
+
+## Getting Started
+
+Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
+
+```bash
+npx nuxi@latest nuxi init <my-project>
+```
+
+Discover also [nuxt.new](https://nuxt.new): Open a Nuxt starter on CodeSandbox, StackBlitz or locally to get up and running in a few seconds.
+
+## Documentation
+
+We highly recommend you take a look at the [Nuxt documentation](https://nuxt.com/docs) to level up. It’s a great resource for learning more about the framework. It covers everything from getting started to advanced topics.
+
+## Modules
+
+Discover our [list of modules](https://nuxt.com/modules) to supercharge your Nuxt project, created by the Nuxt team and community.
+
+## Contribute
+
+We invite you to contribute and help improve Nuxt 💚
+
+Here are a few ways you can get involved:
+- **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/community/reporting-bugs) to learn how to submit a bug report.
+- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/community/contribution#creating-an-issue) to share your suggestions.
+- **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/community/getting-help) provides resources to help you out.
 
 ## Local Development
 
