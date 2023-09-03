@@ -249,9 +249,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   })
   if (process.dev) {
     setFailedHeadInjectionHandler(() => {
-      console.warn('Unhead has fallen back to a shared context. Consider wrapping your code with nuxtApp.runWithContext. Learn more at https://nuxt.com/docs/getting-started/seo-meta#pitfalls.')
-      // dump stacktrace, we don't want to trigger a blocking SSR error
-      // remove the Error on first line
+      console.warn('Unhead has fallen back to a shared context that may have unexpected behavior. Consider wrapping your code with nuxtApp.runWithContext. Learn more at https://nuxt.com/docs/getting-started/seo-meta#pitfalls.')
+      // dump stacktrace to help debugging, we don't want to trigger a blocking SSR error
       console.warn(new Error().stack!.split('\n').slice(5).join('\n'))
     })
   }
