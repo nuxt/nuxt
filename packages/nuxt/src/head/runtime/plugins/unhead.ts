@@ -27,6 +27,8 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
       // wait for new page before unpausing dom updates (triggered after suspense resolved)
       nuxtApp.hooks.hook('page:finish', syncHead)
+      // unpause on error
+      nuxtApp.hooks.hook('app:error', syncHead)
       // unpause the DOM once the mount suspense is resolved
       nuxtApp.hooks.hook('app:suspense:resolve', syncHead)
     }

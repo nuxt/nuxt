@@ -179,6 +179,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             }
           }
 
+          if (result === true) { continue }
           if (result || result === false) {
             return result
           }
