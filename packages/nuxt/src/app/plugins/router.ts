@@ -4,7 +4,6 @@ import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
-import { useState } from '../composables/state'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
@@ -226,12 +225,12 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       named: {}
     }
 
-    const initialLayout = useState('_layout')
+    const initialLayout = nuxtApp.payload.state._layout
     nuxtApp.hooks.hookOnce('app:created', async () => {
       router.beforeEach(async (to, from) => {
         to.meta = reactive(to.meta || {})
-        if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-          to.meta.layout = initialLayout.value
+        if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+          to.meta.layout = initialLayout
         }
         nuxtApp._processingMiddleware = true
 
