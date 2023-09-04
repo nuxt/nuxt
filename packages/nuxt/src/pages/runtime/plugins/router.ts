@@ -134,11 +134,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    const initialLayout = useState('_layout')
+    const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
       to.meta = reactive(to.meta)
-      if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-        to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
+      if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+        to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
       }
       nuxtApp._processingMiddleware = true
 
