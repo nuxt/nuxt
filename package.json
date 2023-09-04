@@ -24,13 +24,14 @@
     "ls-lint": "npx @ls-lint/ls-lint",
     "nuxt": "jiti ./packages/cli/bin/nuxt-cli.js",
     "pkg": "jiti ./scripts/pkg.js",
-    "test": "yarn test:fixtures && yarn test:dev && yarn test:unit && yarn test:types",
+    "test": "yarn test:fixtures && yarn test:dev && yarn test:unit && yarn test:types && yarn test:vue-types",
     "test:dev": "jest test/dev --forceExit --runInBand",
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint && yarn ls-lint",
     "test:types": "tsc -p packages/types/test",
-    "test:unit": "jest packages --forceExit"
+    "test:unit": "jest packages --forceExit",
+    "test:vue-types": "vue-tsc -p  ./test/fixtures/vue-tsc/tsconfig.json"
   },
   "devDependencies": {
     "@babel/core": "7.22.11",
@@ -86,7 +87,8 @@
     "sass-loader": "^10.1.1",
     "sort-package-json": "2.5.1",
     "typescript": "5.2.2",
-    "vue-jest": "4.0.1"
+    "vue-jest": "4.0.1",
+    "vue-tsc": "^1.8.8"
   },
   "packageManager": "yarn@1.22.19"
 }

@@ -85,6 +85,9 @@ jobs:
 
       - name: test types
         run: yarn test:types
+
+      - name: test types with vue-tsc
+        run: yarn test:vue-types
     needs: setup
 
   audit:
