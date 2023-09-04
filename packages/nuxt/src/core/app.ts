@@ -2,7 +2,7 @@ import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
-import type { Nuxt, NuxtApp, NuxtMiddleware, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
@@ -115,23 +115,15 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // Resolve middleware/ from all config layers
+  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  // Track global middlewares so we can apply a sorting mechanism to them
-  const globalMiddlewares: NuxtMiddleware[] = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
-    for (const path of middlewareFiles) {
-      const global = hasSuffix(path, '.global')
-      const name = getNameFromPath(path)
-      if (global) {
-        globalMiddlewares.push({ name, path, global })
-      } else {
-        app.middleware.push({ name, path, global })
-      }
-    }
+    app.middleware.push(...middlewareFiles.map((file) => {
+      const name = getNameFromPath(file)
+      return { name, path: file, global: hasSuffix(file, '.global') }
+    }))
   }
-  app.middleware.unshift(...globalMiddlewares.sort((a, b) => a.name.localeCompare(b.name)))
 
   // Resolve plugins
   app.plugins = [
