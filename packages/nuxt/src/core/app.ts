@@ -125,12 +125,12 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }))
   }
 
-  // Re-initialise plugins
-  app.plugins = []
-  let idx = 0
-  // Sort Plugins: layers plugins first then project plugins
+  // Resolve plugins, first extended layers and then base
+  app.plugins = [
+    ...nuxt.options.plugins.map(normalizePlugin)
+  ]
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
-    app.plugins[idx++ === (nuxt.options._layers.length - 1) ? 'push' : 'unshift'](...[
+    app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
@@ -140,7 +140,6 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
-  app.plugins.unshift(...nuxt.options.plugins.map(normalizePlugin))
 
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
