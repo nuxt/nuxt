@@ -22,7 +22,7 @@ import type { HeadEntryOptions } from '@unhead/schema'
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
-import type { Link, Script } from '@unhead/vue'
+import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
@@ -495,7 +495,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-async function renderInlineStyles (usedModules: Set<string> | string[]) {
+async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
@@ -505,7 +505,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]) {
       }
     }
   }
-  return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
+  return Array.from(inlinedStyles).map(style => ({ innerHTML: style, tagPriority: 5 }))
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
