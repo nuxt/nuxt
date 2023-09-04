@@ -349,12 +349,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 2. Styles
+  head.push({ style: inlinedStyles })
   head.push({
     link: Object.values(styles)
       .map(resource =>
         ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       ),
-    style: inlinedStyles
   }, headEntryOptions)
 
   if (!NO_SCRIPTS) {
@@ -505,7 +505,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
       }
     }
   }
-  return Array.from(inlinedStyles).map(style => ({ innerHTML: style, tagPriority: 5 }))
+  return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
