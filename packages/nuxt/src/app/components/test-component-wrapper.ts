@@ -11,7 +11,7 @@ export default (url: string) => defineComponent({
 
   async setup (props, { attrs }) {
     const query = parseQuery(parseURL(url).search)
-    const urlProps = query.props ? destr(query.props as string) : {}
+    const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
     const path = resolve(query.path as string)
     if (!path.startsWith(devRootDir)) {
       throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
