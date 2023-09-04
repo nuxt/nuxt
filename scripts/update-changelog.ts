@@ -4,7 +4,7 @@ import { inc } from 'semver'
 import { generateMarkDown, loadChangelogConfig } from 'changelogen'
 import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
 
-const releaseBranch = process.env.BRANCH || 'main'
+const releaseBranch = process.env.GITHUB_REF_NAME || 'main'
 
 async function main () {
   const workspace = await loadWorkspace(process.cwd())
