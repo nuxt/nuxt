@@ -1,4 +1,5 @@
 export default defineNuxtRouteMiddleware((to) => {
-  to.meta.globalMiddleware = to.meta.globalMiddleware || []
-  to.meta.globalMiddleware.push('b.global')
+  if (to.path === '/middleware/ordering' && !useNuxtApp().extendsMiddleware) {
+    return createError('extendsMiddleware not set in layer')
+  }
 })

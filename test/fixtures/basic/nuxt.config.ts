@@ -10,12 +10,6 @@ declare module 'nitropack' {
   }
 }
 
-declare module 'vue-router' {
-  interface RouteMeta {
-    globalMiddleware?: string[]
-  }
-}
-
 export default defineNuxtConfig({
   app: {
     pageTransition: true,

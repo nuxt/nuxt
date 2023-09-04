@@ -966,8 +966,8 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
     })
     it('global middlewares sorting', async () => {
-      const html = await $fetch('/global-middlewares-sorting')
-      expect(html).toContain('Global Middlewares Sorting')
+      const html = await $fetch('/middleware/ordering')
+      expect(html).toContain('catchall at middleware')
     })
   })
 
