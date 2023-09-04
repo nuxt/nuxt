@@ -1,3 +1,3 @@
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(() => {
   useNuxtApp().extendsMiddleware = true
 })
