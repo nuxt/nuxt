@@ -4,7 +4,6 @@ import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
-import { useState } from '../composables/state'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
