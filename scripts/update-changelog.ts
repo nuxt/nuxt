@@ -4,6 +4,8 @@ import { inc } from 'semver'
 import { generateMarkDown, loadChangelogConfig } from 'changelogen'
 import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
 
+const releaseBranch = process.env.BRANCH || 'main'
+
 async function main () {
   const workspace = await loadWorkspace(process.cwd())
   const config = await loadChangelogConfig(process.cwd(), {
@@ -39,7 +41,7 @@ async function main () {
   const releaseNotes = [
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
     '## 👉 Changelog',
-    changelog.replace(/^## v.*?\n/, '').replace('...main', `...v${newVersion}`)
+    changelog.replace(/^## v.*?\n/, '').replace(`...${releaseBranch}`, `...v${newVersion}`)
   ].join('\n')
 
   // Create a PR with release notes if none exists
@@ -52,7 +54,7 @@ async function main () {
       body: {
         title: `v${newVersion}`,
         head: `v${newVersion}`,
-        base: 'main',
+        base: releaseBranch,
         body: releaseNotes,
         draft: true
       }

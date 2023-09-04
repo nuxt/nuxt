@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 2.x
 
 permissions:
   pull-requests: write
