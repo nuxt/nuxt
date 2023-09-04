@@ -14,7 +14,6 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
-import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
