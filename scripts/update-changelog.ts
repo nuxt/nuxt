@@ -1,15 +1,13 @@
 import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
-import { generateMarkDown, loadChangelogConfig } from 'changelogen'
+import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
 
-const releaseBranch = process.env.GITHUB_REF_NAME || 'main'
-
 async function main () {
+  const releaseBranch = await getCurrentGitBranch()
   const workspace = await loadWorkspace(process.cwd())
-  const config = await loadChangelogConfig(process.cwd(), {
-  })
+  const config = await loadChangelogConfig(process.cwd(), {})
 
   const commits = await getLatestCommits().then(commits => commits.filter(
     c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking)
