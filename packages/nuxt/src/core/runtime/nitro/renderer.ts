@@ -354,7 +354,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     link: Object.values(styles)
       .map(resource =>
         ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
-      ),
+      )
   }, headEntryOptions)
 
   if (!NO_SCRIPTS) {
