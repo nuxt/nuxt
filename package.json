@@ -88,7 +88,7 @@
     "sort-package-json": "2.5.1",
     "typescript": "5.2.2",
     "vue-jest": "4.0.1",
-    "vue-tsc": "^1.8.8"
+    "vue-tsc": "1.8.8"
   },
   "packageManager": "yarn@1.22.19"
 }
