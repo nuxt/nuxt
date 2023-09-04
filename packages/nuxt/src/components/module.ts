@@ -114,9 +114,9 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate({ ...componentsTypeTemplate })
+    addTemplate(componentsTypeTemplate)
     // components.plugin.mjs
-    addPluginTemplate({ ...componentsPluginTemplate } as any)
+    addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
     addTemplate({ ...componentNamesTemplate, options: { mode: 'all' } })
     // components.islands.mjs

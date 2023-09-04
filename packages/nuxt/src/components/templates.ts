@@ -33,7 +33,7 @@ export default defineNuxtPlugin({
 })
 `
 
-export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
