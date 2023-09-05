@@ -32,7 +32,7 @@
     "@types/file-loader": "5.0.1",
     "@types/pug": "2.0.6",
     "@types/sass-loader": "8.0.5",
-    "@unhead/schema": "1.3.9",
+    "@unhead/schema": "1.5.2",
     "@vitejs/plugin-vue": "4.3.3",
     "@vitejs/plugin-vue-jsx": "3.0.2",
     "@vue/compiler-core": "3.3.4",
