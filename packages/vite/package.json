@@ -18,7 +18,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/schema": "workspace:../schema",
+    "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.2",
     "@types/estree": "1.0.1",
     "@types/fs-extra": "11.0.1",
@@ -26,7 +26,7 @@
     "vue": "3.3.4"
   },
   "dependencies": {
-    "@nuxt/kit": "workspace:../kit",
+    "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^5.0.2",
     "@vitejs/plugin-vue": "^4.3.4",
     "@vitejs/plugin-vue-jsx": "^3.0.2",

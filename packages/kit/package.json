@@ -20,7 +20,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/schema": "workspace:../schema",
+    "@nuxt/schema": "workspace:*",
     "c12": "^1.4.2",
     "consola": "^3.2.3",
     "defu": "^6.1.2",

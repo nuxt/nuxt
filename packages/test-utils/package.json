@@ -22,8 +22,8 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/kit": "workspace:../kit",
-    "@nuxt/schema": "workspace:../schema",
+    "@nuxt/kit": "workspace:*",
+    "@nuxt/schema": "workspace:*",
     "consola": "^3.2.3",
     "defu": "^6.1.2",
     "execa": "^7.2.0",
