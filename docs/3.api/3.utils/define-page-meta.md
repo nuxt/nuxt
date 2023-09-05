@@ -25,6 +25,7 @@ definePageMeta(meta: PageMeta) => void
 interface PageMeta {
   validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
   redirect?: RouteRecordRedirectOption
+  path?: string
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
@@ -44,6 +45,12 @@ interface PageMeta {
 - **Type**: `PageMeta`
 
   An object accepting the following page metadata:
+
+  **`path`**
+
+  - **Type**: `string`
+
+    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
