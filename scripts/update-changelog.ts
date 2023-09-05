@@ -1,13 +1,13 @@
 import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
-import { generateMarkDown, loadChangelogConfig } from 'changelogen'
+import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
 
 async function main () {
+  const releaseBranch = await getCurrentGitBranch()
   const workspace = await loadWorkspace(process.cwd())
-  const config = await loadChangelogConfig(process.cwd(), {
-  })
+  const config = await loadChangelogConfig(process.cwd(), {})
 
   const commits = await getLatestCommits().then(commits => commits.filter(
     c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking)
@@ -39,7 +39,7 @@ async function main () {
   const releaseNotes = [
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
     '## 👉 Changelog',
-    changelog.replace(/^## v.*?\n/, '').replace('...main', `...v${newVersion}`)
+    changelog.replace(/^## v.*?\n/, '').replace(`...${releaseBranch}`, `...v${newVersion}`)
   ].join('\n')
 
   // Create a PR with release notes if none exists
@@ -52,7 +52,7 @@ async function main () {
       body: {
         title: `v${newVersion}`,
         head: `v${newVersion}`,
-        base: 'main',
+        base: releaseBranch,
         body: releaseNotes,
         draft: true
       }
