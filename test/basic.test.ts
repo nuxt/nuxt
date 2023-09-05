@@ -1323,7 +1323,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   })
 })
 
-describe.only('server components/islands', () => {
+describe('server components/islands', () => {
   it('/islands', async () => {
     const { page } = await renderPage('/islands')
     await page.locator('#increase-pure-component').click()
