@@ -1,4 +1,4 @@
-import {createHead as createClientHead, setHeadInjectionHandler} from '@unhead/vue'
+import { createHead as createClientHead, setHeadInjectionHandler } from '@unhead/vue'
 import { renderDOMHead } from '@unhead/dom'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useNuxtApp } from '#app'
