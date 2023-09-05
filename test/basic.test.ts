@@ -983,6 +983,11 @@ describe('extends support', () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Plugin | foo: String generated from foo plugin!')
     })
+
+    it('respects plugin ordering within layers', async () => {
+      const html = await $fetch('/plugins/ordering')
+      expect(html).toContain('catchall at plugins')
+    })
   })
 
   describe('server', () => {
