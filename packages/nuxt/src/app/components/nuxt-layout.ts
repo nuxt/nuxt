@@ -26,7 +26,6 @@ const LayoutLoader = defineComponent({
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
 
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => h(LayoutComponent, props.layoutProps, context.slots)
@@ -103,7 +102,7 @@ const LayoutProvider = defineComponent({
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
+
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
