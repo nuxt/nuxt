@@ -1386,7 +1386,7 @@ describe('server components/islands', () => {
     await page.getByText('Go to page without lazy server component').click()
 
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"2\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"3\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
