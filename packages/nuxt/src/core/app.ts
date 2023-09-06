@@ -125,11 +125,11 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }))
   }
 
-  // Resolve plugins
+  // Resolve plugins, first extended layers and then base
   app.plugins = [
     ...nuxt.options.plugins.map(normalizePlugin)
   ]
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
