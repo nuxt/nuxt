@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 2.x
-      - ci/2.x-changelog
 
 permissions:
   pull-requests: write
