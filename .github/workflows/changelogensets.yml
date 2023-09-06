@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 2.x
+      - ci/2.x-changelog
+
+permissions:
+  pull-requests: write
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
+
+jobs:
+  update-changelog:
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v2.')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "yarn"
+
+      - name: install
+        run: yarn --check-files --frozen-lockfile --non-interactive
+
+      - run: yarn jiti ./scripts/update-changelog.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
