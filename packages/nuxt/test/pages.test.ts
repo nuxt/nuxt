@@ -350,7 +350,9 @@ describe('pages:generateRoutesFromFiles', () => {
       files: [
         { path: `${pagesDir}/param.vue` },
         { path: `${pagesDir}/param/index.vue` },
-        { path: `${pagesDir}/param/index/index.vue` }
+        { path: `${pagesDir}/param/index/index.vue` },
+        { path: `${pagesDir}/param/index/sibling.vue` },
+        { path: `${pagesDir}/param/sibling.vue` }
       ],
       output: [
         {
@@ -362,10 +364,22 @@ describe('pages:generateRoutesFromFiles', () => {
                   file: 'pages/param/index/index.vue',
                   name: 'param-index',
                   path: ''
+                },
+                {
+                  children: [],
+                  file: 'pages/param/index/sibling.vue',
+                  name: 'param-index-sibling',
+                  path: 'sibling'
                 }
               ],
               file: 'pages/param/index.vue',
               path: ''
+            },
+            {
+              children: [],
+              file: 'pages/param/sibling.vue',
+              name: 'param-sibling',
+              path: 'sibling'
             }
           ],
           file: 'pages/param.vue',
