@@ -22,7 +22,7 @@ import type { HeadEntryOptions } from '@unhead/schema'
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
-import type { Link, Script } from '@unhead/vue'
+import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
@@ -349,12 +349,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 2. Styles
+  head.push({ style: inlinedStyles })
   head.push({
     link: Object.values(styles)
       .map(resource =>
         ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
-      ),
-    style: inlinedStyles
+      )
   }, headEntryOptions)
 
   if (!NO_SCRIPTS) {
@@ -495,7 +495,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 </html>`
 }
 
-async function renderInlineStyles (usedModules: Set<string> | string[]) {
+async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
