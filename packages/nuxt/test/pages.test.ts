@@ -322,6 +322,28 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         }
       ]
+    },
+    {
+      description: 'should not merge required param as a child of optional param',
+      files: [
+        { path: `${pagesDir}/[[foo]].vue` },
+        { path: `${pagesDir}/[foo].vue` }
+      ],
+      output: [
+        {
+          name: 'foo',
+          path: '/:foo?',
+          file: `${pagesDir}/[[foo]].vue`,
+          children: [
+          ]
+        },
+        {
+          name: 'foo',
+          path: '/:foo()',
+          file: `${pagesDir}/[foo].vue`,
+          children: []
+        }
+      ]
     }
   ]
 

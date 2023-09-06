@@ -80,7 +80,8 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
+      const path = getRoutePath(tokens)
+      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
         parent = child.children
@@ -88,7 +89,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       } else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       } else if (segmentName !== 'index') {
-        route.path += getRoutePath(tokens)
+        route.path += path
       }
     }
 
