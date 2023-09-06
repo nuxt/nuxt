@@ -331,11 +331,14 @@ describe('pages:generateRoutesFromFiles', () => {
         test.files.map(file => [file.path, 'template' in file ? file.template : ''])
       ) as Record<string, string>
 
+      let result
       try {
-        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
-        expect(result).to.deep.equal(test.output)
+        result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
       } catch (error: any) {
         expect(error.message).toEqual(test.error)
+      }
+      if (result) {
+        expect(result).toEqual(test.output)
       }
     })
   }
