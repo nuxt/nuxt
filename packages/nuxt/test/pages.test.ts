@@ -344,6 +344,34 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         }
       ]
+    },
+    {
+      description: 'should correctly merge nested routes',
+      files: [
+        { path: `${pagesDir}/param.vue` },
+        { path: `${pagesDir}/param/index.vue` },
+        { path: `${pagesDir}/param/index/index.vue` }
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [],
+                  file: 'pages/param/index/index.vue',
+                  name: 'param-index',
+                  path: ''
+                }
+              ],
+              file: 'pages/param/index.vue',
+              path: ''
+            }
+          ],
+          file: 'pages/param.vue',
+          path: '/param'
+        }
+      ]
     }
   ]
 
