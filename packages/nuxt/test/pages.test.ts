@@ -352,6 +352,9 @@ describe('pages:generateRoutesFromFiles', () => {
         { path: `${pagesDir}/param/index.vue` },
         { path: `${pagesDir}/param/index/index.vue` },
         { path: `${pagesDir}/param/index/sibling.vue` },
+        { path: `${pagesDir}/wrapper-expose/other.vue` },
+        { path: `${pagesDir}/wrapper-expose/other/index.vue` },
+        { path: `${pagesDir}/wrapper-expose/other/sibling.vue` },
         { path: `${pagesDir}/param/sibling.vue` }
       ],
       output: [
@@ -384,6 +387,24 @@ describe('pages:generateRoutesFromFiles', () => {
           ],
           file: 'pages/param.vue',
           path: '/param'
+        },
+        {
+          children: [
+            {
+              children: [],
+              file: 'pages/wrapper-expose/other/index.vue',
+              name: 'wrapper-expose-other',
+              path: ''
+            },
+            {
+              children: [],
+              file: 'pages/wrapper-expose/other/sibling.vue',
+              name: 'wrapper-expose-other-sibling',
+              path: 'sibling'
+            }
+          ],
+          file: 'pages/wrapper-expose/other.vue',
+          path: '/wrapper-expose/other'
         }
       ]
     }
