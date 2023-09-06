@@ -86,7 +86,7 @@ export default defineComponent({
       ssrHTML.value = renderedHTML
     }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     const html = computed(() => {

@@ -31,7 +31,6 @@ export default defineComponent({
   setup (props, ctx) {
     const mounted = ref(false)
     // This is deliberate - `uid` should not be provided by user but by a transform plugin and will not be reactive.
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const ssrFailed = useState(`${props.uid}`)
 
     if (ssrFailed.value) {
