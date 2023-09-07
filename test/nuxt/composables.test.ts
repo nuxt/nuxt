@@ -124,6 +124,44 @@ describe('useAsyncData', () => {
     await refreshNuxtData('key')
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
+
+  it('should use default while pending', async () => {
+    const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
+    const { data, pending } = promise
+
+    expect(pending.value).toBe(true)
+    expect(data.value).toMatchInlineSnapshot('"default"')
+
+    await promise
+    expect(data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('should use default after reject', async () => {
+    const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
+    expect(data.value).toMatchInlineSnapshot('"default"')
+  })
+
+  it('should be synced with useNuxtData', async () => {
+    const { data: nuxtData } = useNuxtData('nuxtdata-sync')
+    const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
+    const { data: fetchData } = promise
+
+    // useNuxtData called before useAsyncData, leads to skipping the default
+    expect(fetchData.value).toBeNull()
+    expect(nuxtData.value).toBeNull()
+
+    nuxtData.value = 'before-fetch'
+    expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
+
+    await promise
+    expect(fetchData.value).toMatchInlineSnapshot('"test"')
+    expect(nuxtData.value).toMatchInlineSnapshot('"test"')
+
+    nuxtData.value = 'new value'
+    expect(fetchData.value).toMatchInlineSnapshot('"new value"')
+    fetchData.value = 'another value'
+    expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
 })
 
 describe('errors', () => {

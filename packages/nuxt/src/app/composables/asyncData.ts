@@ -120,20 +120,8 @@ export function useAsyncData<
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
-  // toRef to make sure asyncData and useNuxtData are synced
-  const getCachedData = () => nuxt.isHydrating ? toRef(nuxt.payload.data, key) : nuxt.static.data[key]
-  const hasCachedData = () => unref(getCachedData()) !== undefined
+  const { getCachedData, hasCachedData } = ensureAsyncDataEntry(key, options.default)
 
-  // Create or use a shared asyncData entity
-  if (!nuxt._asyncData[key]) {
-    nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default!()),
-      pending: ref(!hasCachedData()),
-      error: toRef(nuxt.payload._errors, key),
-      status: ref('idle')
-    }
-  }
-  // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, DataE>
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
@@ -297,12 +285,10 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
   const nuxt = useNuxtApp()
 
   // Initialize value when key is not already set
-  if (!(key in nuxt.payload.data)) {
-    nuxt.payload.data[key] = null
-  }
+  ensureAsyncDataEntry(key)
 
   return {
-    data: toRef(nuxt.payload.data, key)
+    data: toRef(nuxt._asyncData[key]!, 'data')
   }
 }
 
@@ -351,4 +337,26 @@ function pick (obj: Record<string, any>, keys: string[]) {
     (newObj as any)[key] = obj[key]
   }
   return newObj
+}
+
+function ensureAsyncDataEntry (
+  key: string,
+  defaultFn: () => unknown = getDefault
+) {
+  const nuxt = useNuxtApp()
+  const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  const hasCachedData = () => getCachedData() !== undefined
+
+  // Create or use a shared asyncData entity
+  if (!nuxt._asyncData[key]) {
+    nuxt._asyncData[key] = {
+      data: ref(getCachedData() ?? defaultFn()),
+      pending: ref(!hasCachedData()),
+      error: toRef(nuxt.payload._errors, key),
+      status: ref('idle')
+    }
+  }
+  // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
+
+  return { getCachedData, hasCachedData }
 }
