@@ -40,7 +40,7 @@
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
     "fs-extra": "^11.1.1",
-    "get-port-please": "^3.0.2",
+    "get-port-please": "^3.1.1",
     "h3": "^1.8.1",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.3",
