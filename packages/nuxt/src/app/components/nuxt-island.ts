@@ -174,7 +174,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     }
-    console.log(html.value, error.value)
+
     return () => {
       if ((!html.value || error.value) && slots.fallback) {
         return [slots.fallback({ error: error.value })]
