@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 
 export const createServerComponent = (name: string) => {
@@ -7,8 +7,8 @@ export const createServerComponent = (name: string) => {
     inheritAttrs: false,
     props: { lazy: Boolean },
     setup (props, { attrs, slots }) {
-      // #23051
-      const attrsWithoutVueDataAttr = Object.entries(attrs).reduce<Record<string, string>>((acc, [key, value]) => key.startsWith('data-v-') ? acc : Object.assign(acc, { [key]: value }), {})
+      // #23051 - remove data-v attributes
+      const attrsWithoutVueDataAttr = computed(() => Object.entries(attrs).reduce<Record<string, string>>((acc, [key, value]) => key.startsWith('data-v-') ? acc : Object.assign(acc, { [key]: value }), {}))
       return () => h(NuxtIsland, {
         name,
         lazy: props.lazy,
