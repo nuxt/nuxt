@@ -85,7 +85,7 @@ export function useFetch<
     return unref(r)
   })
 
-  const _key = opts.key || hash([autoKey, unref(opts.method), unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
+  const _key = opts.key || hash([autoKey, opts.method ? unref(opts.method).toUpperCase() : '', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
   }
