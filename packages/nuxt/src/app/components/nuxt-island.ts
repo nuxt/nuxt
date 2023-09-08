@@ -123,7 +123,7 @@ export default defineComponent({
     }
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     const html = computed(() => {
@@ -167,7 +167,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(import.meta.dev && import.meta.client ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
@@ -233,7 +233,7 @@ export default defineComponent({
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating) {
+    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if ((canLoadClientComponent.value) && !props.lazy) {
       await loadComponents(props.source, nonReactivePayload.chunks)

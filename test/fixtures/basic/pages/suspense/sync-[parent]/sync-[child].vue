@@ -1,5 +1,5 @@
 <script setup lang="ts">
-console.log('[sync] [sync]')
+process.client && console.log('[sync] [sync]')
 const route = useRoute('suspense-sync-parent-sync-child')
 </script>
 

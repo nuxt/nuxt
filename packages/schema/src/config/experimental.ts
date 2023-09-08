@@ -232,10 +232,24 @@ export default defineUntypedSchema({
     asyncContext: false,
 
     /**
-     * Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * Use new experimental head optimisations:
+     * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @see https://rviscomi.github.io/capo.js/user/rules/
+     * @see https://github.com/nuxt/nuxt/discussions/22632
      */
-    headCapoPlugin: false
+    headNext: false,
+
+    /**
+     * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
+     *
+     * Rules are converted (based on the path) and applied for server requests. For example, a rule
+     * defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in `~/pages/foo/[id].vue`
+     * will be applied to `/foo/**` requests.
+     *
+     * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
+     * should set `routeRules` directly within your `nuxt.config`.
+     */
+    inlineRouteRules: false
   }
 })

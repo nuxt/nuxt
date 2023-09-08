@@ -173,9 +173,11 @@ export default defineUntypedSchema({
 
     /**
      * Customize Nuxt root element id.
+     *
+     * @type {string | false}
      */
     rootId: {
-      $resolve: val => val || '__nuxt'
+      $resolve: val => val === false ? false : val || '__nuxt'
     },
 
     /**
@@ -239,10 +241,10 @@ export default defineUntypedSchema({
    * }
    * </style>
    * ```
-   * @type {string | false}
+   * @type {string | boolean}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? null)
+    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? false)
   },
 
   /**

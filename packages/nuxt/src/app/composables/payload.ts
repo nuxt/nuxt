@@ -56,10 +56,12 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 
 async function _importPayload (payloadURL: string) {
   if (import.meta.server) { return null }
+  const payloadPromise = renderJsonPayloads
+    ? fetch(payloadURL).then(res => res.text().then(parsePayload))
+    : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
+
   try {
-    return renderJsonPayloads
-      ? parsePayload(await fetch(payloadURL).then(res => res.text()))
-      : await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
+    return await payloadPromise
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }
@@ -122,7 +124,7 @@ export function definePayloadReducer (
  */
 export function definePayloadReviver (
   name: string,
-  revive: (data: string) => any | undefined
+  revive: (data: any) => any | undefined
 ) {
   if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')

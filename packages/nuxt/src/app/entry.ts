@@ -16,7 +16,7 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appRootId } from '#build/nuxt.config.mjs'
+import { vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 if (!globalThis.$fetch) {
   globalThis.$fetch = $fetch.create({
@@ -75,7 +75,7 @@ if (import.meta.client) {
     try {
       await nuxt.hooks.callHook('app:created', vueApp)
       await nuxt.hooks.callHook('app:beforeMount', vueApp)
-      vueApp.mount('#' + appRootId)
+      vueApp.mount(vueAppRootContainer)
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {

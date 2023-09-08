@@ -1,6 +1,7 @@
 import { addDependency } from 'nypm'
 import { resolvePackageJSON } from 'pkg-types'
 import { logger } from '@nuxt/kit'
+import { isCI } from 'std-env'
 import prompts from 'prompts'
 
 export async function ensurePackageInstalled (rootDir: string, name: string, searchPaths?: string[]) {
@@ -9,6 +10,9 @@ export async function ensurePackageInstalled (rootDir: string, name: string, sea
   }
 
   logger.info(`Package ${name} is missing`)
+  if (isCI) {
+    return false
+  }
 
   const { confirm } = await prompts({
     type: 'confirm',

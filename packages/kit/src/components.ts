@@ -12,6 +12,7 @@ export async function addComponentsDir (dir: ComponentsDir) {
   const nuxt = useNuxt()
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
   nuxt.options.components = nuxt.options.components || []
+  dir.priority ||= 0
   nuxt.hook('components:dirs', (dirs) => { dirs.push(dir) })
 }
 

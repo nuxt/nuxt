@@ -115,11 +115,11 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate({ ...componentsTypeTemplate })
+    addTemplate(componentsTypeTemplate)
     // components.plugin.mjs
-    addPluginTemplate({ ...componentsPluginTemplate } as any)
+    addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
-    addTemplate({ ...componentNamesTemplate, options: { mode: 'all' } })
+    addTemplate(componentNamesTemplate)
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
@@ -209,16 +209,16 @@ export default defineNuxtModule<ComponentsOptions>({
       config.plugins = config.plugins || []
       if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents
         }))
       }
       config.plugins.push(clientFallbackAutoIdPlugin.vite({
-        sourcemap: nuxt.options.sourcemap[mode],
+        sourcemap: !!nuxt.options.sourcemap[mode],
         rootDir: nuxt.options.rootDir
       }))
       config.plugins.push(loaderPlugin.vite({
-        sourcemap: nuxt.options.sourcemap[mode],
+        sourcemap: !!nuxt.options.sourcemap[mode],
         getComponents,
         mode,
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
@@ -266,16 +266,16 @@ export default defineNuxtModule<ComponentsOptions>({
         config.plugins = config.plugins || []
         if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
-            sourcemap: nuxt.options.sourcemap[mode],
+            sourcemap: !!nuxt.options.sourcemap[mode],
             getComponents
           }))
         }
         config.plugins.push(clientFallbackAutoIdPlugin.webpack({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           rootDir: nuxt.options.rootDir
         }))
         config.plugins.push(loaderPlugin.webpack({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,

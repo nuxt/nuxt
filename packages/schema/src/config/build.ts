@@ -25,7 +25,7 @@ export default defineUntypedSchema({
   /**
    * Whether to generate sourcemaps.
    *
-   * @type {boolean | { server?: boolean, client?: boolean }}
+   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
     $resolve: async (val, get) => {

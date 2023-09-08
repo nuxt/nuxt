@@ -1,4 +1,5 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
+import destr from 'destr'
 import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
 import { createError } from '#app/composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
@@ -8,8 +9,8 @@ import { componentIslands } from '#build/nuxt.config.mjs'
 
 const revivers: Record<string, (data: any) => any> = {
   NuxtError: data => createError(data),
-  EmptyShallowRef: data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : JSON.parse(data)),
-  EmptyRef: data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : JSON.parse(data)),
+  EmptyShallowRef: data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data)),
+  EmptyRef: data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data)),
   ShallowRef: data => shallowRef(data),
   ShallowReactive: data => shallowReactive(data),
   Ref: data => ref(data),
