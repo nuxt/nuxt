@@ -117,7 +117,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(import.meta.dev && import.meta.client ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
@@ -174,7 +174,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     }
-
+    console.log(html.value, error.value)
     return () => {
       if ((!html.value || error.value) && slots.fallback) {
         return [slots.fallback({ error: error.value })]
