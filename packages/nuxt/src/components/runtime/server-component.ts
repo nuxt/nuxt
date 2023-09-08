@@ -12,7 +12,7 @@ export const createServerComponent = (name: string) => {
       return () => h(NuxtIsland, {
         name,
         lazy: props.lazy,
-        props: attrsWithoutVueDataAttr
+        props: attrsWithoutVueDataAttr.value
       }, slots)
     }
   })
