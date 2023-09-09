@@ -8,13 +8,11 @@ export const createServerComponent = (name: string) => {
     props: { lazy: Boolean },
     setup (props, { attrs, slots }) {
       return () => {
-        // #23051 - remove data-v attributes
-        const attrsWithoutVueDataAttr = Object.fromEntries(Object.entries(attrs).filter(([key]) => !key.startsWith('data-v-')))
-
-        h(NuxtIsland, {
+        return h(NuxtIsland, {
           name,
           lazy: props.lazy,
-          props: attrsWithoutVueDataAttr
+          // #23051 - remove data-v attributes
+          props: Object.fromEntries(Object.entries(attrs).filter(([key]) => !key.startsWith('data-v-')))
         }, slots)
       }
     }
