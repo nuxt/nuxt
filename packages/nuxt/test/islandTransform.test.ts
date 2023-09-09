@@ -68,7 +68,7 @@ describe('islandTransform - server and island components', () => {
               </template>
               <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import TeleportIfClient from '#app/components/TeleportIfClient'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
               
               </script>"
@@ -99,7 +99,7 @@ describe('islandTransform - server and island components', () => {
               </template>
               <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import TeleportIfClient from '#app/components/TeleportIfClient'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
               
               </script>"
@@ -129,13 +129,13 @@ describe('islandTransform - server and island components', () => {
                 <!-- should not be wrapped by TeleportIfClient -->
                 <HelloWorld />
                 <!-- should be wrapped by TeleportIfClient -->
-                <TeleportIfClient to=\\"HelloWorld-5tg8bjdS1w\\"  :nuxt-client=\\"true\\"><HelloWorld /></TeleportIfClient>
+                <NuxtTeleportSsrClient to=\\"HelloWorld-5tg8bjdS1w\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
             
             <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import TeleportIfClient from '#app/components/TeleportIfClient'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
             import HelloWorld from './HelloWorld.vue'
             </script>
             "
@@ -163,13 +163,13 @@ describe('islandTransform - server and island components', () => {
                 <!-- should not be wrapped by TeleportIfClient -->
                 <HelloWorld />
                 <!-- should be wrapped by TeleportIfClient with a rootDir attr -->
-                <TeleportIfClient to=\\"HelloWorld-vxDirZrUwF\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></TeleportIfClient>
+                <NuxtTeleportSsrClient to=\\"HelloWorld-vxDirZrUwF\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
             
             <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import TeleportIfClient from '#app/components/TeleportIfClient'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
             import HelloWorld from './HelloWorld.vue'
             </script>
             "
@@ -207,7 +207,7 @@ describe('islandTransform - server and island components', () => {
             
             <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import TeleportIfClient from '#app/components/TeleportIfClient'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
             import HelloWorld from './HelloWorld.vue'
             
             const someData = 'some data'
@@ -215,7 +215,7 @@ describe('islandTransform - server and island components', () => {
             "
       `)
 
-      expect(spyOnWarn).toHaveBeenCalledWith('nuxt-client attribute and client components within islands is only supported in vite mode. file: hello.server.vue')
+      expect(spyOnWarn).toHaveBeenCalledWith('nuxt-client attribute and client components within islands is only supported with Vite. file: hello.server.vue')
     })
   })
 })
