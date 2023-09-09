@@ -605,6 +605,7 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
   return html
 }
 
+// TODO merge with replaceServerOnlyComponentsSlots once slots are refactored
 function replaceClientTeleport (ssrContext: NuxtSSRContext, html: string) {
   const { teleports, islandContext } = ssrContext
 

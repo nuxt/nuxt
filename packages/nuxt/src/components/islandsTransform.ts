@@ -13,7 +13,7 @@ import { isVue } from '../core/utils'
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
     /**
-     * passed down to `TeleportIfClient`
+     * passed down to `NuxtTeleportSsrClient`
      * should be done only in dev mode as we use build:manifest result in production
      */
     rootDir?: string
@@ -54,7 +54,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const s = new MagicString(code)
 
       s.replace(SCRIPT_RE, (full) => {
-        return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport TeleportIfClient from \'#app/components/TeleportIfClient\''
+        return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportSsrClient from \'#app/components/nuxt-teleport-ssr-client\''
       })
 
       let hasNuxtClient = false
@@ -106,14 +106,14 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-              s.overwrite(node.loc[0].start, node.loc[1].end, `<TeleportIfClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</TeleportIfClient>`)
+              s.overwrite(node.loc[0].start, node.loc[1].end, `<NuxtTeleportSsrClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportSsrClient>`)
             }
           }
         }
       })
 
       if (!isVite && hasNuxtClient) {
-        console.warn(`nuxt-client attribute and client components within islands is only supported in vite mode. file: ${id}`)
+        console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
       }
 
       if (s.hasChanged()) {
@@ -152,7 +152,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build.rollupOptions = config.build.rollupOptions || {}
         config.build.rollupOptions.output = config.build.rollupOptions.output || {}
         config.build.rollupOptions.input = config.build.rollupOptions.input || {}
-        // don't use 'strict', this would create another entry chunk for the entry file, causing the ssr styles to not detect everything
+        // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
         config.build.rollupOptions.preserveEntrySignatures = 'allow-extension'
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
@@ -160,19 +160,6 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
             (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
           }
         }
-
-        // const componentManualChunk = (id: string) => {
-        //   if (components.some(c => c.mode !== 'server' && !c.island && c.filePath === parseURL(decodeURIComponent(pathToFileURL(id).href)).pathname)) {
-        //     return basename(id)
-        //   }
-        // }
-        // if (Array.isArray(config.build.rollupOptions.output)) {
-        //   config.build.rollupOptions.output.forEach((output) => {
-        //     output.manualChunks = componentManualChunk
-        //   })
-        // } else {
-        //   config.build.rollupOptions.output.manualChunks = componentManualChunk
-        // }
       },
 
       async generateBundle (_opts, bundle) {
@@ -186,44 +173,13 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
               const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
               const isPath = await resolvePath(component.filePath) === pathname
               if (isPath) {
+                // avoid importing the component chunk in all pages
                 chunkInfo.isEntry = false
                 pathAssociation[component.pascalName] = chunkPath
               }
             }
-
-            // const isWithinChunk = chunkInfo.moduleIds.map((path) => {
-            //   return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
-            // }).includes(component.filePath)
-
-            // if (isWithinChunk) {
-            //   pathAssociation[component.pascalName] = chunkPath
-            // }
           }
         }
-        // const componentsChunks = Object.entries(bundle).reduce((acc, [_chunkPath, chunkInfo]) => {
-        //   if (chunkInfo.type !== 'chunk') { return acc }
-        //   for (const component of components) {
-        //     if (chunkInfo.facadeModuleId) {
-        //       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
-
-        //       const isPath = component.filePath === pathname
-        //       if (isPath) { return true }
-        //     }
-
-        //      chunkInfo.moduleIds.map((path) => {
-        //       return parseURL(decodeURIComponent(pathToFileURL(path).href)).pathname
-        //     }).includes(component.filePath)
-        //   }
-
-        //   return acc
-        // }, {})
-
-        // fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(componentsChunks.reduce((acc, [chunkPath, chunkInfo]) => {
-        //   if (chunkInfo.type === 'chunk' && chunkInfo.name && chunkInfo.exports.length > 0) {
-        //     return Object.assign(acc, { [withoutClientSuffixAndExtension(chunkInfo.name)]: chunkPath })
-        //    }
-        //   return acc
-        // }, {}))}`)
 
         fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
       }

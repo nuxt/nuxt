@@ -265,8 +265,7 @@ export default defineComponent({
         }
         if (import.meta.client && canLoadClientComponent.value && (hasContent || nuxtApp.isHydrating)) {
           for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
-            // @ts-expect-error _ is the component's default export in build chunks
-            const component = components!.get(id.split('-')[0])!._ ?? components!.get(id.split('-')[0])!
+            const component = components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
               default: () => {
                 return [h(component, props)]

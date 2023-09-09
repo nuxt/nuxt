@@ -12,10 +12,10 @@ type ExtendedComponent = Component & {
 
 /**
  * component only used with componentsIsland
- * this teleport the component in SSR only if
+ * this teleport the component in SSR only if it needs to be hydrated on client
  */
 export default defineComponent({
-  name: 'TeleportIfClient',
+  name: 'NuxtTeleportSsrClient',
   props: {
     to: {
       type: String,
@@ -49,9 +49,8 @@ export default defineComponent({
     } else {
       islandContext.chunks[slotType.__name] = paths[slotType.__name]
     }
-    // todo chunk path in production
+
     islandContext.propsData[props.to] = slot.props || {}
-    // todo set prop in payload
     return () => {
       if (props.nuxtClient) {
         return [h('div', {
