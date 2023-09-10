@@ -244,7 +244,7 @@ export default defineUntypedSchema({
    * @type {string | boolean}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? false)
+    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val
   },
 
   /**
