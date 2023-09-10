@@ -194,27 +194,27 @@ describe('pages:generateRoutesFromFiles', () => {
         },
         {
           children: [],
-          path: "/optional/:opt?",
-          name: "optional-opt",
+          path: '/optional/:opt?',
+          name: 'optional-opt',
           file: `${pagesDir}/optional/[[opt]].vue`
         },
         {
           children: [],
-          path: "/optional/prefix-:opt?",
-          name: "optional-prefix-opt",  
+          path: '/optional/prefix-:opt?',
+          name: 'optional-prefix-opt',
           file: `${pagesDir}/optional/prefix-[[opt]].vue`
         },
-        
+
         {
           children: [],
-          path: "/optional/:opt?-postfix",
-          name: "optional-opt-postfix",
+          path: '/optional/:opt?-postfix',
+          name: 'optional-opt-postfix',
           file: `${pagesDir}/optional/[[opt]]-postfix.vue`
         },
         {
           children: [],
-          path: "/optional/prefix-:opt?-postfix",
-          name: "optional-prefix-opt-postfix",
+          path: '/optional/prefix-:opt?-postfix',
+          name: 'optional-prefix-opt-postfix',
           file: `${pagesDir}/optional/prefix-[[opt]]-postfix.vue`
         },
         {
