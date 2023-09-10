@@ -111,9 +111,9 @@ describe('islandTransform - server and island components', () => {
     it('test transform with vite', async () => {
       const result = await viteTransform(`<template>
       <div>
-        <!-- should not be wrapped by TeleportIfClient -->
+        <!-- should not be wrapped by NuxtTeleportSsrClient -->
         <HelloWorld />
-        <!-- should be wrapped by TeleportIfClient -->
+        <!-- should be wrapped by NuxtTeleportSsrClient -->
         <HelloWorld nuxt-client />
       </div>
     </template>
@@ -126,9 +126,9 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <!-- should not be wrapped by TeleportIfClient -->
+                <!-- should not be wrapped by NuxtTeleportSsrClient -->
                 <HelloWorld />
-                <!-- should be wrapped by TeleportIfClient -->
+                <!-- should be wrapped by NuxtTeleportSsrClient -->
                 <NuxtTeleportSsrClient to=\\"HelloWorld-5tg8bjdS1w\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
@@ -145,9 +145,9 @@ describe('islandTransform - server and island components', () => {
     it('test transform with vite in dev', async () => {
       const result = await viteTransform(`<template>
       <div>
-        <!-- should not be wrapped by TeleportIfClient -->
+        <!-- should not be wrapped by NuxtTeleportSsrClient -->
         <HelloWorld />
-        <!-- should be wrapped by TeleportIfClient with a rootDir attr -->
+        <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
         <HelloWorld nuxt-client />
       </div>
     </template>
@@ -160,9 +160,9 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <!-- should not be wrapped by TeleportIfClient -->
+                <!-- should not be wrapped by NuxtTeleportSsrClient -->
                 <HelloWorld />
-                <!-- should be wrapped by TeleportIfClient with a rootDir attr -->
+                <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
                 <NuxtTeleportSsrClient to=\\"HelloWorld-vxDirZrUwF\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
@@ -180,10 +180,10 @@ describe('islandTransform - server and island components', () => {
       const spyOnWarn = vi.spyOn(console, 'warn')
       const result = await webpackTransform(`<template>
       <div>
-        <!-- should not be wrapped by TeleportIfClient -->
+        <!-- should not be wrapped by NuxtTeleportSsrClient -->
         <HelloWorld />
     
-        <!-- should be not wrapped by TeleportIfClient for now -->
+        <!-- should be not wrapped by NuxtTeleportSsrClient for now -->
         <HelloWorld nuxt-client />
       </div>
     </template>
@@ -197,10 +197,10 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <!-- should not be wrapped by TeleportIfClient -->
+                <!-- should not be wrapped by NuxtTeleportSsrClient -->
                 <HelloWorld />
             
-                <!-- should be not wrapped by TeleportIfClient for now -->
+                <!-- should be not wrapped by NuxtTeleportSsrClient for now -->
                 <HelloWorld nuxt-client />
               </div>
             </template>
