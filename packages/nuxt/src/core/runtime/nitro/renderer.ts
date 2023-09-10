@@ -497,15 +497,15 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
-  const inlinedStyles: Style[] = []
+  const inlinedStyles: Record<string, string> = {}
   for (const mod of usedModules) {
     if (mod in styleMap) {
       for (const style of await styleMap[mod]()) {
-        inlinedStyles.push({ key: mod, innerHTML: style })
+        inlinedStyles[mod] = style
       }
     }
   }
-  return inlinedStyles
+  return Object.values(inlinedStyles).map(style => ({ innerHTML: style }))
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
