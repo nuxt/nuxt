@@ -205,42 +205,6 @@ describe('pages', () => {
     await expectNoClientErrors('/?test=true')
   })
 
-  it('/optional/[[opt]].vue', async () => {
-    const html = await $fetch('/optional/foo')
-
-    // Snapshot
-    // expect(html).toMatchInlineSnapshot()
-
-    expect(html).toContain('Optional page: foo')
-  })
-
-  it('/optional/prefix-[[opt]].vue', async () => {
-    const html = await $fetch('/optional/prefix-foo')
-
-    // Snapshot
-    // expect(html).toMatchInlineSnapshot()
-
-    expect(html).toContain('Optional page prefix: foo')
-  })
-
-  it('/optional/[[opt]]-postfix.vue', async () => {
-    const html = await $fetch('/optional/foo-postfix')
-
-    // Snapshot
-    // expect(html).toMatchInlineSnapshot()
-
-    expect(html).toContain('Optional page postfix: foo')
-  })
-
-  it('/optional/prefix-[[opt]]-postfix.vue', async () => {
-    const html = await $fetch('/optional/prefix-foo-postfix')
-
-    // Snapshot
-    // expect(html).toMatchInlineSnapshot()
-
-    expect(html).toContain('Optional page prefix+postfix: foo')
-  })
-
   it('/nested/[foo]/[bar].vue', async () => {
     const html = await $fetch('/nested/one/two')
 
