@@ -129,7 +129,7 @@ describe('islandTransform - server and island components', () => {
                 <!-- should not be wrapped by NuxtTeleportSsrClient -->
                 <HelloWorld />
                 <!-- should be wrapped by NuxtTeleportSsrClient -->
-                <NuxtTeleportSsrClient to=\\"HelloWorld-5tg8bjdS1w\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                <NuxtTeleportSsrClient to=\\"HelloWorld-f7leoLqQIs\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
             
@@ -163,7 +163,7 @@ describe('islandTransform - server and island components', () => {
                 <!-- should not be wrapped by NuxtTeleportSsrClient -->
                 <HelloWorld />
                 <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
-                <NuxtTeleportSsrClient to=\\"HelloWorld-vxDirZrUwF\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                <NuxtTeleportSsrClient to=\\"HelloWorld-k4BKF0fec1\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
               </div>
             </template>
             
