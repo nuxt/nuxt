@@ -420,6 +420,10 @@ function spaLoadingTemplate (nuxt: Nuxt) {
     return defaultSpaLoadingTemplate({})
   }
 
+  if (nuxt.options.spaLoadingTemplate === null) {
+    return ''
+  }
+
   console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
   return ''
 }
