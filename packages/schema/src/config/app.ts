@@ -189,12 +189,11 @@ export default defineUntypedSchema({
   },
 
   /**
-   * A path to an HTML file, the contents of which will be inserted into any HTML page
+   * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
-   *
-   * By default Nuxt will look in `~/app/spa-loading-template.html` for this file.
-   *
-   * You can set this to `false` to disable any loading indicator.
+   * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
+   * - If it is false, no SPA loading indicator will be loaded.
+   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    *
@@ -244,7 +243,7 @@ export default defineUntypedSchema({
    * @type {string | boolean}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : (val ?? false)
+    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val
   },
 
   /**
