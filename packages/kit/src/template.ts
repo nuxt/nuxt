@@ -117,6 +117,7 @@ export async function writeTypes (nuxt: Nuxt) {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
       jsx: 'preserve',
+      jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
       moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
@@ -124,6 +125,11 @@ export async function writeTypes (nuxt: Nuxt) {
       isolatedModules: true,
       useDefineForClassFields: true,
       strict: nuxt.options.typescript?.strict ?? true,
+      noImplicitThis: true,
+      esModuleInterop: true,
+      // TODO: enable by default in v3.8
+      // types: [],
+      // verbatimModuleSyntax: true,
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,
