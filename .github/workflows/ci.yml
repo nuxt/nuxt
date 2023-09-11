@@ -170,7 +170,7 @@ jobs:
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
         context: ['async', 'default']
-        node: [16]
+        node: [18]
         exclude:
           - env: 'dev'
             builder: 'webpack'
