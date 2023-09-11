@@ -351,6 +351,91 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         }
       ]
+    },
+    {
+      description: 'should not merge required param as a child of optional param',
+      files: [
+        { path: `${pagesDir}/[[foo]].vue` },
+        { path: `${pagesDir}/[foo].vue` }
+      ],
+      output: [
+        {
+          name: 'foo',
+          path: '/:foo?',
+          file: `${pagesDir}/[[foo]].vue`,
+          children: [
+          ]
+        },
+        {
+          name: 'foo',
+          path: '/:foo()',
+          file: `${pagesDir}/[foo].vue`,
+          children: []
+        }
+      ]
+    },
+    {
+      description: 'should correctly merge nested routes',
+      files: [
+        { path: `${pagesDir}/param.vue` },
+        { path: `${pagesDir}/param/index.vue` },
+        { path: `${pagesDir}/param/index/index.vue` },
+        { path: `${pagesDir}/param/index/sibling.vue` },
+        { path: `${pagesDir}/wrapper-expose/other.vue` },
+        { path: `${pagesDir}/wrapper-expose/other/index.vue` },
+        { path: `${pagesDir}/wrapper-expose/other/sibling.vue` },
+        { path: `${pagesDir}/param/sibling.vue` }
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [],
+                  file: 'pages/param/index/index.vue',
+                  name: 'param-index',
+                  path: ''
+                },
+                {
+                  children: [],
+                  file: 'pages/param/index/sibling.vue',
+                  name: 'param-index-sibling',
+                  path: 'sibling'
+                }
+              ],
+              file: 'pages/param/index.vue',
+              path: ''
+            },
+            {
+              children: [],
+              file: 'pages/param/sibling.vue',
+              name: 'param-sibling',
+              path: 'sibling'
+            }
+          ],
+          file: 'pages/param.vue',
+          path: '/param'
+        },
+        {
+          children: [
+            {
+              children: [],
+              file: 'pages/wrapper-expose/other/index.vue',
+              name: 'wrapper-expose-other',
+              path: ''
+            },
+            {
+              children: [],
+              file: 'pages/wrapper-expose/other/sibling.vue',
+              name: 'wrapper-expose-other-sibling',
+              path: 'sibling'
+            }
+          ],
+          file: 'pages/wrapper-expose/other.vue',
+          path: '/wrapper-expose/other'
+        }
+      ]
     }
   ]
 
@@ -360,11 +445,14 @@ describe('pages:generateRoutesFromFiles', () => {
         test.files.map(file => [file.path, 'template' in file ? file.template : ''])
       ) as Record<string, string>
 
+      let result
       try {
-        const result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
-        expect(result).to.deep.equal(test.output)
+        result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
       } catch (error: any) {
         expect(error.message).toEqual(test.error)
+      }
+      if (result) {
+        expect(result).toEqual(test.output)
       }
     })
   }
