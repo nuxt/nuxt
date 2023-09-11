@@ -1,6 +1,6 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
-import type { Ref } from 'vue'
+import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
@@ -85,7 +85,7 @@ export function useFetch<
     return unref(r)
   })
 
-  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
+  const _key = opts.key || hash([autoKey, unref(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
   }
