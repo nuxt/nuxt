@@ -28,7 +28,7 @@ export async function startServer () {
         NODE_ENV: 'development'
       }
     })
-    await waitForPort(port, { retries: 32 })
+    await waitForPort(port, { retries: 10, host: '127.0.0.1' }).catch(() => {})
     let lastError
     for (let i = 0; i < 150; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -55,7 +55,7 @@ export async function startServer () {
         NODE_ENV: 'test'
       }
     })
-    await waitForPort(port, { retries: 8 })
+    await waitForPort(port, { retries: 8, host: '127.0.0.1' })
   }
 }
 
