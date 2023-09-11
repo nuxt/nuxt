@@ -421,5 +421,5 @@ function spaLoadingTemplate (options: Nuxt['options']) {
   }
 
   console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${options.spaLoadingTemplate}\`.`)
-  return '';
+  return ''
 }
