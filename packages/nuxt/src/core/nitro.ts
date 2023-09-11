@@ -30,11 +30,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
 
-  const spaLoadingTemplate = nuxt.options.spaLoadingTemplate ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
-  if (spaLoadingTemplate && nuxt.options.spaLoadingTemplate && typeof spaLoadingTemplate !== 'boolean' && !existsSync(spaLoadingTemplate)) {
-    console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${spaLoadingTemplate}\`.`)
-  }
-
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -86,15 +81,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#spa-template': () => {
-        if (!spaLoadingTemplate) { return 'export const template = ""' }
-        try {
-          if (spaLoadingTemplate !== true) {
-            return `export const template = ${JSON.stringify(readFileSync(spaLoadingTemplate, 'utf-8'))}`
-          }
-        } catch {}
-        return `export const template = ${JSON.stringify(defaultSpaLoadingTemplate({}))}`
-      }
+      '#spa-template': () => `export const template = ${JSON.stringify(spaLoadingTemplate(nuxt))}`
     },
     routeRules: {
       '/__nuxt_error': { cache: false }
@@ -414,4 +401,25 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
+}
+
+function spaLoadingTemplate (nuxt: Nuxt) {
+  if (nuxt.options.spaLoadingTemplate === false) { return '' }
+
+  const spaLoadingTemplate = typeof nuxt.options.spaLoadingTemplate === 'string'
+    ? nuxt.options.spaLoadingTemplate
+    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+
+  try {
+    if (existsSync(spaLoadingTemplate)) {
+      return readFileSync(spaLoadingTemplate, 'utf-8')
+    }
+  } catch {}
+
+  if (nuxt.options.spaLoadingTemplate === true) {
+    return defaultSpaLoadingTemplate({})
+  }
+
+  console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
+  return ''
 }
