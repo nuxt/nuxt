@@ -81,7 +81,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#spa-template': () => `export const template = ${JSON.stringify(spaLoadingTemplate(nuxt.options))}`
+      '#spa-template': () => `export const template = ${JSON.stringify(spaLoadingTemplate(nuxt))}`
     },
     routeRules: {
       '/__nuxt_error': { cache: false }
@@ -403,12 +403,12 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
-function spaLoadingTemplate (options: Nuxt['options']) {
-  if (options.spaLoadingTemplate === false) { return '' }
+function spaLoadingTemplate (nuxt: Nuxt) {
+  if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = typeof options.spaLoadingTemplate === 'string'
-    ? options.spaLoadingTemplate
-    : resolve(options.srcDir, 'app/spa-loading-template.html')
+  const spaLoadingTemplate = typeof nuxt.options.spaLoadingTemplate === 'string'
+    ? nuxt.options.spaLoadingTemplate
+    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
 
   try {
     if (existsSync(spaLoadingTemplate)) {
@@ -416,10 +416,10 @@ function spaLoadingTemplate (options: Nuxt['options']) {
     }
   } catch {}
 
-  if (options.spaLoadingTemplate === true) {
+  if (nuxt.options.spaLoadingTemplate === true) {
     return defaultSpaLoadingTemplate({})
   }
 
-  console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${options.spaLoadingTemplate}\`.`)
+  console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
   return ''
 }
