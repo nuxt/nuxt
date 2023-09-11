@@ -199,30 +199,45 @@ export default defineUntypedSchema({
    *
    * @example ~/app/spa-loading-template.html
    * ```html
-   * <!-- https://gist.github.com/davidglezz/85a2e6185edbd0873a5a2bdb2ce1cd36 -->
+   * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
    * <div class="loader"></div>
    * <style>
-   *   .loader {
-   *     --size: 5rem;
-   *     --weight: .5rem;
-   *     --background: rgba(127, 127, 127, .1);
-   *     --color: rgba(127, 127, 127, .9);
-   *     --duration: 1s;
-   *     position: fixed;
-   *     top: calc(50% - var(--size) / 2);
-   *     left: calc(50% - var(--size) / 2);
-   *     width: var(--size);
-   *     height: var(--size);
-   *     box-sizing: border-box;
-   *     border: solid var(--weight) var(--background);
-   *     border-top-color: var(--color);
-   *     border-radius: 50%;
-   *     animation: loader var(--duration) linear infinite;
-   *   }
+   * .loader {
+   *   display: block;
+   *   position: fixed;
+   *   z-index: 1031;
+   *   top: 50%;
+   *   left: 50%;
+   *   transform: translate(-50%, -50%);
+   *   width: 18px;
+   *   height: 18px;
+   *   box-sizing: border-box;
+   *   border: solid 2px transparent;
+   *   border-top-color: #000;
+   *   border-left-color: #000;
+   *   border-bottom-color: #efefef;
+   *   border-right-color: #efefef;
+   *   border-radius: 50%;
+   *   -webkit-animation: loader 400ms linear infinite;
+   *   animation: loader 400ms linear infinite;
+   * }
    *
-   *   @keyframes loader {
-   *     to { transform: rotate(360deg); }
+   * \@-webkit-keyframes loader {
+   *   0% {
+   *     -webkit-transform: translate(-50%, -50%) rotate(0deg);
    *   }
+   *   100% {
+   *     -webkit-transform: translate(-50%, -50%) rotate(360deg);
+   *   }
+   * }
+   * \@keyframes loader {
+   *   0% {
+   *     transform: translate(-50%, -50%) rotate(0deg);
+   *   }
+   *   100% {
+   *     transform: translate(-50%, -50%) rotate(360deg);
+   *   }
+   * }
    * </style>
    * ```
    * @type {string | boolean}
