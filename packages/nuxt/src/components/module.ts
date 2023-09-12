@@ -42,20 +42,20 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
-    const normalizeDirs = (dir: any, cwd: string): ComponentsDir[] => {
+    const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
       if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd)).flat().sort(compareDirByPathLength)
+        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
       }
       if (dir === true || dir === undefined) {
         return [
-          { path: resolve(cwd, 'components/islands'), island: true },
-          { path: resolve(cwd, 'components/global'), global: true },
-          { path: resolve(cwd, 'components') }
+          { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
+          { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
+          { priority: options?.priority || 0, path: resolve(cwd, 'components') }
         ]
       }
       if (typeof dir === 'string') {
         return [
-          { path: resolve(cwd, resolveAlias(dir)) }
+          { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) }
         ]
       }
       if (!dir) {
@@ -63,6 +63,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
+        priority: options?.priority || 0,
         ..._dir,
         path: resolve(cwd, resolveAlias(_dir.path))
       }))
@@ -72,7 +73,7 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir))
+        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
         .flat()
 
       await nuxt.callHook('components:dirs', allDirs)

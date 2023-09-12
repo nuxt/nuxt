@@ -981,6 +981,7 @@ describe('extends support', () => {
       const html = await $fetch('/override')
       expect(html).toContain('Extended layout from bar')
       expect(html).toContain('Extended page from bar')
+      expect(html).toContain('This child page should not be overridden by bar')
     })
   })
 
