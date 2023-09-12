@@ -23,13 +23,13 @@ export async function startServer () {
       stdio: 'inherit',
       env: {
         ...process.env,
-        _PORT: String(port),
+        _PORT: String(port), // Used by internal _dev command
         PORT: String(port),
-        NITRO_PORT: String(port),
+        HOST: 'host',
         NODE_ENV: 'development'
       }
     })
-    await waitForPort(port, { retries: 10, host }).catch(() => {})
+    await waitForPort(port, { retries: 32, host }).catch(() => {})
     let lastError
     for (let i = 0; i < 150; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -52,11 +52,11 @@ export async function startServer () {
       env: {
         ...process.env,
         PORT: String(port),
-        NITRO_PORT: String(port),
+        HOST: host,
         NODE_ENV: 'test'
       }
     })
-    await waitForPort(port, { retries: 8, host })
+    await waitForPort(port, { retries: 20, host })
   }
 }
 
