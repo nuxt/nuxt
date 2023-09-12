@@ -33,6 +33,11 @@ interface SegmentToken {
   value: string
 }
 
+interface ScannedFile {
+  relativePath: string
+  absolutePath: string
+}
+
 export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
@@ -40,30 +45,30 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
   )
 
-  const allRoutes = (await Promise.all(
-    pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
-      // Sort to make sure parent are listed first
-      files.sort()
-      return generateRoutesFromFiles(files, dir, nuxt.options.experimental.typedPages, nuxt.vfs)
-    })
-  )).flat()
+  const scannedFiles: ScannedFile[] = []
+  for (const dir of pagesDirs) {
+    const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+  }
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+
+  const allRoutes = await generateRoutesFromFiles(scannedFiles, nuxt.options.experimental.typedPages, nuxt.vfs)
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: string[], pagesDir: string, shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
-    const segments = relative(pagesDir, file)
-      .replace(new RegExp(`${escapeRE(extname(file))}$`), '')
+    const segments = file.relativePath
+      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
 
     const route: NuxtPage = {
       name: '',
       path: '',
-      file,
+      file: file.absolutePath,
       children: []
     }
 
@@ -94,7 +99,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
     }
 
     if (shouldExtractBuildMeta && vfs) {
-      const fileContent = file in vfs ? vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+      const fileContent = file.absolutePath in vfs ? vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
       const overrideRouteName = await getRouteName(fileContent)
       if (overrideRouteName) {
         route.name = overrideRouteName
