@@ -5,6 +5,7 @@ import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
+  const layerDir = 'layer/pages'
   const tests: Array<{
     description: string
     files: Array<{ path: string; template?: string; }>
@@ -176,7 +177,7 @@ describe('pages:generateRoutesFromFiles', () => {
         {
           children: [],
           name: 'slug',
-          file: 'pages/[slug].vue',
+          file: `${pagesDir}/[slug].vue`,
           path: '/:slug()'
         },
         {
@@ -189,7 +190,7 @@ describe('pages:generateRoutesFromFiles', () => {
               children: []
             }
           ],
-          file: 'pages/[[foo]]',
+          file: `${pagesDir}/[[foo]]`,
           path: '/:foo?'
         },
         {
@@ -220,7 +221,7 @@ describe('pages:generateRoutesFromFiles', () => {
         {
           children: [],
           name: 'bar',
-          file: 'pages/[bar]/index.vue',
+          file: `${pagesDir}/[bar]/index.vue`,
           path: '/:bar()'
         },
         {
@@ -378,11 +379,11 @@ describe('pages:generateRoutesFromFiles', () => {
       description: 'should correctly merge nested routes',
       files: [
         { path: `${pagesDir}/param.vue` },
-        { path: `${pagesDir}/param/index.vue` },
+        { path: `${layerDir}/param/index.vue` },
         { path: `${pagesDir}/param/index/index.vue` },
-        { path: `${pagesDir}/param/index/sibling.vue` },
+        { path: `${layerDir}/param/index/sibling.vue` },
         { path: `${pagesDir}/wrapper-expose/other.vue` },
-        { path: `${pagesDir}/wrapper-expose/other/index.vue` },
+        { path: `${layerDir}/wrapper-expose/other/index.vue` },
         { path: `${pagesDir}/wrapper-expose/other/sibling.vue` },
         { path: `${pagesDir}/param/sibling.vue` }
       ],
@@ -393,46 +394,46 @@ describe('pages:generateRoutesFromFiles', () => {
               children: [
                 {
                   children: [],
-                  file: 'pages/param/index/index.vue',
+                  file: `${pagesDir}/param/index/index.vue`,
                   name: 'param-index',
                   path: ''
                 },
                 {
                   children: [],
-                  file: 'pages/param/index/sibling.vue',
+                  file: `${layerDir}/param/index/sibling.vue`,
                   name: 'param-index-sibling',
                   path: 'sibling'
                 }
               ],
-              file: 'pages/param/index.vue',
+              file: `${layerDir}/param/index.vue`,
               path: ''
             },
             {
               children: [],
-              file: 'pages/param/sibling.vue',
+              file: `${pagesDir}/param/sibling.vue`,
               name: 'param-sibling',
               path: 'sibling'
             }
           ],
-          file: 'pages/param.vue',
+          file: `${pagesDir}/param.vue`,
           path: '/param'
         },
         {
           children: [
             {
               children: [],
-              file: 'pages/wrapper-expose/other/index.vue',
+              file: `${layerDir}/wrapper-expose/other/index.vue`,
               name: 'wrapper-expose-other',
               path: ''
             },
             {
               children: [],
-              file: 'pages/wrapper-expose/other/sibling.vue',
+              file: `${pagesDir}/wrapper-expose/other/sibling.vue`,
               name: 'wrapper-expose-other-sibling',
               path: 'sibling'
             }
           ],
-          file: 'pages/wrapper-expose/other.vue',
+          file: `${pagesDir}/wrapper-expose/other.vue`,
           path: '/wrapper-expose/other'
         }
       ]
@@ -447,7 +448,10 @@ describe('pages:generateRoutesFromFiles', () => {
 
       let result
       try {
-        result = await generateRoutesFromFiles(test.files.map(file => file.path), pagesDir, true, vfs)
+        result = await generateRoutesFromFiles(test.files.map(file => ({
+          absolutePath: file.path,
+          relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
+        })), true, vfs)
       } catch (error: any) {
         expect(error.message).toEqual(test.error)
       }
