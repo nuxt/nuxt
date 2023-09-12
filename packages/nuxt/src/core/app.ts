@@ -126,9 +126,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve plugins, first extended layers and then base
-  app.plugins = [
-    ...nuxt.options.plugins.map(normalizePlugin)
-  ]
+  app.plugins = []
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     app.plugins.push(...[
       ...(config.plugins || []),
@@ -139,6 +137,14 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
+  }
+
+  // Add back plugins not specified in layers or user config
+  for (const p of nuxt.options.plugins) {
+    const plugin = normalizePlugin(p)
+    if (!app.plugins.some(p => p.src === plugin.src)) {
+      app.plugins.unshift(plugin)
+    }
   }
 
   // Normalize and de-duplicate plugins and middleware
