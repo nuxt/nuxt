@@ -95,8 +95,8 @@ importers:
         specifier: 2.6.3
         version: 2.6.3
       nuxi:
-        specifier: 3.7.3
-        version: 3.7.3
+        specifier: 3.8.3
+        version: 3.8.3
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -336,8 +336,8 @@ importers:
         specifier: ^2.6.3
         version: 2.6.3
       nuxi:
-        specifier: ^3.7.3
-        version: 3.7.3
+        specifier: ^3.8.3
+        version: 3.8.3
       nypm:
         specifier: ^0.3.3
         version: 0.3.3
@@ -2526,6 +2526,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -7927,6 +7928,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -8140,8 +8144,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.7.3:
-    resolution: {integrity: sha512-Cg+ygRmhonE6PwAtDeKvKU/0VRqEyzmSSoJYfr0MzwIxQYrBSnLvw0z3UgJl/8MgFKjiZ5Y4wBUEiRsUw8O6uw==}
+  /nuxi@3.8.3:
+    resolution: {integrity: sha512-LS1KlxQhQDt+WREENAG44zfO91uiPYDcorQ7xlcaV0ejV65v7Eub94FTmJ6JNXL2boHhc+raODtJBClW2uYyJw==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
