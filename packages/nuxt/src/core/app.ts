@@ -108,7 +108,8 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts/ from all config layers
   app.layouts = {}
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file)
       app.layouts[name] = app.layouts[name] || { name, file }
@@ -118,7 +119,8 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve middleware/ from all config layers
   app.middleware = []
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
       const name = getNameFromPath(file)
       return { name, path: file, global: hasSuffix(file, '.global') }
@@ -128,12 +130,13 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve plugins, first extended layers and then base
   app.plugins = []
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*.{ts,js,mjs,cjs,mts,cts}`,
+          `${pluginDir}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
