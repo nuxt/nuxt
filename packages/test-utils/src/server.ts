@@ -25,7 +25,7 @@ export async function startServer () {
         ...process.env,
         _PORT: String(port), // Used by internal _dev command
         PORT: String(port),
-        HOST: 'host',
+        HOST: host,
         NODE_ENV: 'development'
       }
     })
