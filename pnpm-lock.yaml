@@ -95,8 +95,8 @@ importers:
         specifier: 2.6.2
         version: 2.6.2
       nuxi:
-        specifier: 3.7.3
-        version: 3.7.3
+        specifier: 3.8.3
+        version: 3.8.3
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -8188,21 +8188,12 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.7.3:
-    resolution: {integrity: sha512-Cg+ygRmhonE6PwAtDeKvKU/0VRqEyzmSSoJYfr0MzwIxQYrBSnLvw0z3UgJl/8MgFKjiZ5Y4wBUEiRsUw8O6uw==}
-    engines: {node: ^14.18.0 || >=16.10.0}
-    hasBin: true
-    optionalDependencies:
-      fsevents: 2.3.3
-    dev: true
-
   /nuxi@3.8.3:
     resolution: {integrity: sha512-LS1KlxQhQDt+WREENAG44zfO91uiPYDcorQ7xlcaV0ejV65v7Eub94FTmJ6JNXL2boHhc+raODtJBClW2uYyJw==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
       fsevents: 2.3.3
-    dev: false
 
   /nuxt-component-meta@0.5.3:
     resolution: {integrity: sha512-+MHUrESdr+Si9PdbkxQrzQv+X6RdRd/ffmFWVVsZAHA7X9vGoNAYxwvoB1Pbs15TaPtFBWA1P5a4VGqtp+bhAg==}
