@@ -170,6 +170,7 @@ export default defineNuxtModule<ComponentsOptions>({
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
             ...component,
+            _raw: true,
             mode: 'server',
             filePath: resolve(distDir, 'app/components/server-placeholder'),
             chunkName: 'components/' + component.kebabName
