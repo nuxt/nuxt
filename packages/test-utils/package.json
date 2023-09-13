@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.7.2",
+  "version": "3.7.3",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
