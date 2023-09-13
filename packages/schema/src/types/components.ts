@@ -17,11 +17,12 @@ export interface Component {
    */
   priority?: number
   /**
-   * This prevent the component to be transformed with a `createClientOnly()` client-side if the mode is `client`
-   * An example is the `<NuxtClientFallback>` component which handles it's hydration client-side
+   * Allow bypassing client/server transforms for internal Nuxt components like
+   * ServerPlaceholder and NuxtClientFallback.
+   *
+   * @internal
    */
-  /** @internal */
-  noClientOnlyTransform?: boolean
+  _raw?: boolean
 }
 
 export interface ScanDir {

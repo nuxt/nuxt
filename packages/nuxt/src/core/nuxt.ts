@@ -265,14 +265,15 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
-      mode: 'client',
-      noClientOnlyTransform: true
+      mode: 'client'
     })
 
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
       mode: 'server'
