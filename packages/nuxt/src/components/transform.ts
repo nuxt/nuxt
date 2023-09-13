@@ -6,8 +6,8 @@ import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import { normalize, resolve } from 'pathe'
-import type { getComponentsT } from './module'
 import { distDir } from '../dirs'
+import type { getComponentsT } from './module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
