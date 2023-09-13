@@ -1,6 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { Component, Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 
 interface ComponentsTemplateContext {
   app: NuxtApp
@@ -33,7 +33,7 @@ export default defineNuxtPlugin({
 })
 `
 
-export const componentsPluginTemplate: NuxtPluginTemplate = {
+export const componentsPluginTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
