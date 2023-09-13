@@ -123,7 +123,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       https: ctx.nuxt.options.devServer.https,
       hmr: {
         protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',
-        port: hmrPort
+        port: hmrPort,
+        host: ctx.nuxt.options.devServer.host
       }
     })
   }
