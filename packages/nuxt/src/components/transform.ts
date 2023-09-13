@@ -30,7 +30,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}`
         : c.filePath
 
-      const mode = c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
+      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
 
       return [
         {
