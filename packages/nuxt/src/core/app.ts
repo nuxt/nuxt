@@ -143,7 +143,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Add back plugins not specified in layers or user config
-  for (const p of nuxt.options.plugins) {
+  for (const p of [...nuxt.options.plugins].reverse()) {
     const plugin = normalizePlugin(p)
     if (!app.plugins.some(p => p.src === plugin.src)) {
       app.plugins.unshift(plugin)
