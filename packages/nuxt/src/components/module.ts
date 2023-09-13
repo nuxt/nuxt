@@ -38,7 +38,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const getComponents: getComponentsT = (mode) => {
       return (mode && mode !== 'all')
-        ? context.components.filter(c => c.mode === mode || c.mode === 'all')
+        ? context.components.filter(c => c.mode === mode || c.mode === 'all' || (c.mode === 'server' && !context.components.some(otherComponent => otherComponent.mode !== 'server' && otherComponent.pascalName === c.pascalName)))
         : context.components
     }
 
