@@ -33,37 +33,42 @@ interface SegmentToken {
   value: string
 }
 
+interface ScannedFile {
+  relativePath: string
+  absolutePath: string
+}
+
 export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
   )
 
-  const allRoutes = (await Promise.all(
-    pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
-      // Sort to make sure parent are listed first
-      files.sort()
-      return generateRoutesFromFiles(files, dir, nuxt.options.experimental.typedPages, nuxt.vfs)
-    })
-  )).flat()
+  const scannedFiles: ScannedFile[] = []
+  for (const dir of pagesDirs) {
+    const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+  }
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+
+  const allRoutes = await generateRoutesFromFiles(scannedFiles, nuxt.options.experimental.typedPages, nuxt.vfs)
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: string[], pagesDir: string, shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
-    const segments = relative(pagesDir, file)
-      .replace(new RegExp(`${escapeRE(extname(file))}$`), '')
+    const segments = file.relativePath
+      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
 
     const route: NuxtPage = {
       name: '',
       path: '',
-      file,
+      file: file.absolutePath,
       children: []
     }
 
@@ -80,7 +85,8 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
+      const path = route.path + getRoutePath(tokens).replace(/\/index$/, '/')
+      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
         parent = child.children
@@ -93,7 +99,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
     }
 
     if (shouldExtractBuildMeta && vfs) {
-      const fileContent = file in vfs ? vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+      const fileContent = file.absolutePath in vfs ? vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
       const overrideRouteName = await getRouteName(fileContent)
       if (overrideRouteName) {
         route.name = overrideRouteName
@@ -107,7 +113,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
 }
 
 const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
-function extractScriptContent (html: string) {
+export function extractScriptContent (html: string) {
   const match = html.match(SFC_SCRIPT_RE)
 
   if (match && match[1]) {
@@ -220,7 +226,7 @@ function parseSegment (segment: string) {
         if (c === '[' && state === SegmentParserState.dynamic) {
           state = SegmentParserState.optional
         }
-        if (c === ']' && (state !== SegmentParserState.optional || buffer[buffer.length - 1] === ']')) {
+        if (c === ']' && (state !== SegmentParserState.optional || segment[i - 1] === ']')) {
           if (!buffer) {
             throw new Error('Empty param')
           } else {
@@ -334,4 +340,16 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       return route
     }))
   }
+}
+
+export function pathToNitroGlob (path: string) {
+  if (!path) {
+    return null
+  }
+  // Ignore pages with multiple dynamic parameters.
+  if (path.indexOf(':') !== path.lastIndexOf(':')) {
+    return null
+  }
+
+  return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
 }

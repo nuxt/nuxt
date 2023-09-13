@@ -132,13 +132,13 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir })
+        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir }).catch(() => false)
       }
       return false
     }
 
     return eventHandler(async (event) => {
-      const moduleId = decodeURI(event.node.req.url!).substring(1)
+      const moduleId = decodeURI(event.path).substring(1)
       if (moduleId === '/') {
         throw createError({ statusCode: 400 })
       }

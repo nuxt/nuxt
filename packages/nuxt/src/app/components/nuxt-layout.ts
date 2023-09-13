@@ -23,6 +23,9 @@ const LayoutLoader = defineComponent({
     layoutProps: Object
   },
   async setup (props, context) {
+    // This is a deliberate hack - this component must always be called with an explicit key to ensure
+    // that setup reruns when the name changes.
+
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => h(LayoutComponent, props.layoutProps, context.slots)
@@ -53,7 +56,7 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      if (process.dev && layout.value && !hasLayout && layout.value !== 'default') {
+      if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {
         console.warn(`Invalid layout \`${layout.value}\` selected.`)
       }
 
@@ -77,7 +80,7 @@ export default defineComponent({
     }
   }
 }) as unknown as DefineComponent<{
-  name?: unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']
+  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined;
 }>
 
 const LayoutProvider = defineComponent({
@@ -99,7 +102,7 @@ const LayoutProvider = defineComponent({
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
+
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
@@ -108,7 +111,7 @@ const LayoutProvider = defineComponent({
     }
 
     let vnode: VNode | undefined
-    if (process.dev && process.client) {
+    if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
@@ -124,14 +127,14 @@ const LayoutProvider = defineComponent({
 
     return () => {
       if (!name || (typeof name === 'string' && !(name in layouts))) {
-        if (process.dev && process.client && props.hasTransition) {
+        if (import.meta.dev && import.meta.client && props.hasTransition) {
           vnode = context.slots.default?.() as VNode | undefined
           return vnode
         }
         return context.slots.default?.()
       }
 
-      if (process.dev && process.client && props.hasTransition) {
+      if (import.meta.dev && import.meta.client && props.hasTransition) {
         vnode = h(
           // @ts-expect-error seems to be an issue in vue types
           LayoutLoader,

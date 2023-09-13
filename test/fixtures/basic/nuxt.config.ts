@@ -146,6 +146,13 @@ export default defineNuxtConfig({
         filePath: '~/other-components-folder/named-export'
       })
     },
+    'components:extend' (components) {
+      for (const comp of components) {
+        if (comp.pascalName === 'GlobalSync') {
+          comp.global = 'sync'
+        }
+      }
+    },
     'vite:extendConfig' (config) {
       config.plugins!.push({
         name: 'nuxt:server',
@@ -179,7 +186,6 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     polyfillVueUseHead: true,
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
@@ -188,7 +194,9 @@ export default defineNuxtConfig({
     reactivityTransform: true,
     treeshakeClientOnly: true,
     payloadExtraction: true,
-    headCapoPlugin: true
+    asyncContext: process.env.TEST_CONTEXT === 'async',
+    headNext: true,
+    inlineRouteRules: true
   },
   appConfig: {
     fromNuxtConfig: true,

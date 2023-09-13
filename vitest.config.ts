@@ -11,6 +11,9 @@ export default defineConfig({
       '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')
     }
   },
+  define: {
+    'process.env.NUXT_ASYNC_CONTEXT': 'false'
+  },
   test: {
     globalSetup: './test/setup.ts',
     testTimeout: isWindows ? 60000 : 10000,

@@ -1,4 +1,3 @@
-
 <template>
   <div>
     stateful setup {{ state }}

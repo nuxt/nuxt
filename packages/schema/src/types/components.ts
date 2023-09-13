@@ -7,7 +7,7 @@ export interface Component {
   chunkName: string
   prefetch: boolean
   preload: boolean
-  global?: boolean
+  global?: boolean | 'sync'
   island?: boolean
   mode?: 'client' | 'server' | 'all'
   /**
@@ -91,6 +91,14 @@ export interface ComponentsDir extends ScanDir {
    * By default ('auto') it will set transpile: true if node_modules/ is in path.
    */
   transpile?: 'auto' | boolean
+  /**
+   * This number allows configuring the behavior of overriding Nuxt components.
+   * It will be inherited by any components within the directory.
+   *
+   * If multiple components are provided with the same name, then higher priority
+   * components will be used instead of lower priority components.
+   */
+  priority?: number
 }
 
 export interface ComponentsOptions {

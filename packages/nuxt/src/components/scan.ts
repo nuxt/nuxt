@@ -38,7 +38,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       const directory = basename(dir.path)
       if (!siblings.includes(directory)) {
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directory.toLowerCase())
+        const directoryLowerCase = directory.toLowerCase()
+        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
         if (caseCorrected) {
           const nuxt = useNuxt()
           const original = relative(nuxt.options.srcDir, dir.path)
@@ -95,10 +96,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const componentName = resolveComponentName(fileName, prefixParts)
 
       if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
-          `\n - ${filePath}` +
-          `\n - ${resolvedNames.get(componentName)}`
-        )
+        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
         continue
       }
       resolvedNames.set(componentName + suffix, filePath)
@@ -123,7 +121,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         // by default, give priority to scanned components
-        priority: 1
+        priority: dir.priority ?? 1
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -136,10 +134,25 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
       // Ignore component if component is already defined (with same mode)
-      if (!components.some(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))) {
-        components.push(component)
+      if (existingComponent) {
+        const existingPriority = existingComponent.priority ?? 0
+        const newPriority = component.priority ?? 0
+
+        // Replace component if priority is higher
+        if (newPriority > existingPriority) {
+          components.splice(components.indexOf(existingComponent), 1, component)
+        }
+        // Warn if a user-defined (or prioritised) component conflicts with a previously scanned component
+        if (newPriority > 0 && newPriority === existingPriority) {
+          warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        }
+
+        continue
       }
+
+      components.push(component)
     }
     scannedPaths.push(dir.path)
   }
@@ -173,4 +186,11 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
   }
 
   return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+}
+
+function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
+  console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+    `\n - ${filePath}` +
+    `\n - ${duplicatePath}`
+  )
 }

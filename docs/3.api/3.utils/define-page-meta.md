@@ -25,6 +25,8 @@ definePageMeta(meta: PageMeta) => void
 interface PageMeta {
   validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
   redirect?: RouteRecordRedirectOption
+  name?: string
+  path?: string
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
@@ -44,6 +46,18 @@ interface PageMeta {
 - **Type**: `PageMeta`
 
   An object accepting the following page metadata:
+
+  **`name`**
+
+  - **Type**: `string`
+
+    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/guide/directory-structure/pages).
+
+  **`path`**
+
+  - **Type**: `string`
+
+    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -99,7 +113,7 @@ interface PageMeta {
 
     Validate whether a given route can validly be rendered with this page. Return true if it is valid, or false if not. If another match can't be found, this will mean a 404. You can also directly return an object with `statusCode`/`statusMessage` to respond immediately with an error (other matches will not be checked).
 
-  **`scrollTopTop`**
+  **`scrollToTop`**
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 

@@ -42,20 +42,20 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
-    const normalizeDirs = (dir: any, cwd: string): ComponentsDir[] => {
+    const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
       if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd)).flat().sort(compareDirByPathLength)
+        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
       }
       if (dir === true || dir === undefined) {
         return [
-          { path: resolve(cwd, 'components/islands'), island: true },
-          { path: resolve(cwd, 'components/global'), global: true },
-          { path: resolve(cwd, 'components') }
+          { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
+          { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
+          { priority: options?.priority || 0, path: resolve(cwd, 'components') }
         ]
       }
       if (typeof dir === 'string') {
         return [
-          { path: resolve(cwd, resolveAlias(dir)) }
+          { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) }
         ]
       }
       if (!dir) {
@@ -63,6 +63,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
+        priority: options?.priority || 0,
         ..._dir,
         path: resolve(cwd, resolveAlias(_dir.path))
       }))
@@ -72,7 +73,7 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir))
+        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
         .flat()
 
       await nuxt.callHook('components:dirs', allDirs)
@@ -114,11 +115,11 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate({ ...componentsTypeTemplate })
+    addTemplate(componentsTypeTemplate)
     // components.plugin.mjs
-    addPluginTemplate({ ...componentsPluginTemplate } as any)
+    addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
-    addTemplate({ ...componentNamesTemplate, options: { mode: 'all' } })
+    addTemplate(componentNamesTemplate)
     // components.islands.mjs
     if (nuxt.options.experimental.componentIslands) {
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
@@ -208,16 +209,16 @@ export default defineNuxtModule<ComponentsOptions>({
       config.plugins = config.plugins || []
       if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents
         }))
       }
       config.plugins.push(clientFallbackAutoIdPlugin.vite({
-        sourcemap: nuxt.options.sourcemap[mode],
+        sourcemap: !!nuxt.options.sourcemap[mode],
         rootDir: nuxt.options.rootDir
       }))
       config.plugins.push(loaderPlugin.vite({
-        sourcemap: nuxt.options.sourcemap[mode],
+        sourcemap: !!nuxt.options.sourcemap[mode],
         getComponents,
         mode,
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
@@ -252,16 +253,16 @@ export default defineNuxtModule<ComponentsOptions>({
         config.plugins = config.plugins || []
         if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
-            sourcemap: nuxt.options.sourcemap[mode],
+            sourcemap: !!nuxt.options.sourcemap[mode],
             getComponents
           }))
         }
         config.plugins.push(clientFallbackAutoIdPlugin.webpack({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           rootDir: nuxt.options.rootDir
         }))
         config.plugins.push(loaderPlugin.webpack({
-          sourcemap: nuxt.options.sourcemap[mode],
+          sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,

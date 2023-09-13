@@ -14,7 +14,6 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
-import { useState } from '#app/composables/state'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
@@ -57,7 +56,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routerBase += '#'
     }
 
-    const history = routerOptions.history?.(routerBase) ?? (process.client
+    const history = routerOptions.history?.(routerBase) ?? (import.meta.client
       ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
       : createMemoryHistory(routerBase)
     )
@@ -65,7 +64,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = process.server
+    const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
@@ -124,7 +123,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const error = useError()
 
     try {
-      if (process.server) {
+      if (import.meta.server) {
         await router.push(initialURL)
       }
 
@@ -134,15 +133,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    const initialLayout = useState('_layout')
+    const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
       to.meta = reactive(to.meta)
-      if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-        to.meta.layout = initialLayout.value as Exclude<PageMeta['layout'], Ref | false>
+      if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+        to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
       }
       nuxtApp._processingMiddleware = true
 
-      if (process.client || !nuxtApp.ssrContext?.islandContext) {
+      if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
         type MiddlewareDef = string | RouteMiddleware
         const middlewareEntries = new Set<MiddlewareDef>([...globalMiddleware, ...nuxtApp._middleware.global])
         for (const component of to.matched) {
@@ -161,14 +160,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
-            if (process.dev) {
+            if (import.meta.dev) {
               throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
             }
             throw new Error(`Unknown route middleware: '${entry}'.`)
           }
 
           const result = await nuxtApp.runWithContext(() => middleware(to, from))
-          if (process.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+          if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
             if (result === false || result instanceof Error) {
               const error = result || createError({
                 statusCode: 404,
@@ -179,6 +178,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             }
           }
 
+          if (result === true) { continue }
           if (result || result === false) {
             return result
           }
@@ -191,20 +191,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
-      if (process.client && !nuxtApp.isHydrating && error.value) {
+      if (import.meta.client && !nuxtApp.isHydrating && error.value) {
         // Clear any existing errors
         await nuxtApp.runWithContext(clearError)
       }
-      if (process.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+      if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
       }
-      if (to.matched.length === 0 && (!process.server || !nuxtApp.ssrContext?.islandContext)) {
+      if (to.matched.length === 0 && (!import.meta.server || !nuxtApp.ssrContext?.islandContext)) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (process.server && to.redirectedFrom && to.fullPath !== initialURL) {
+      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })

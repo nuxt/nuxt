@@ -24,7 +24,7 @@ useHeadSafe({
 // <meta content="0;javascript:alert(1)">
 ```
 
-Read more on [unhead documentation](https://unhead.harlanzw.com/guide/composables/use-head-safe).
+Read more on [unhead documentation](https://unhead.unjs.io/usage/composables/use-head-safe).
 
 ## Type
 
