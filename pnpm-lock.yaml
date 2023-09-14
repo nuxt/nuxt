@@ -14,6 +14,8 @@ overrides:
   vite: 4.4.9
   vue: 3.3.4
   magic-string: ^0.30.3
+  nuxi: npm:nuxi-edge@3.9.0-1694719718.9de6d4c
+  listhen: ^1.5.2
 
 importers:
 
@@ -95,8 +97,8 @@ importers:
         specifier: 2.6.3
         version: 2.6.3
       nuxi:
-        specifier: 3.8.3
-        version: 3.8.3
+        specifier: npm:nuxi-edge@3.9.0-1694719718.9de6d4c
+        version: /nuxi-edge@3.9.0-1694719718.9de6d4c
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -336,8 +338,8 @@ importers:
         specifier: ^2.6.3
         version: 2.6.3
       nuxi:
-        specifier: ^3.8.3
-        version: 3.8.3
+        specifier: npm:nuxi-edge@3.9.0-1694719718.9de6d4c
+        version: /nuxi-edge@3.9.0-1694719718.9de6d4c
       nypm:
         specifier: ^0.3.3
         version: 0.3.3
@@ -2283,7 +2285,7 @@ packages:
       detab: 3.0.2
       json5: 2.2.3
       knitwork: 1.0.0
-      listhen: 1.5.0
+      listhen: 1.5.2
       mdast-util-to-hast: 12.3.0
       mdurl: 1.0.1
       ohash: 1.1.3
@@ -7068,8 +7070,8 @@ packages:
       uc.micro: 1.0.6
     dev: true
 
-  /listhen@1.5.0:
-    resolution: {integrity: sha512-qiCsszmva2NnayRCNV7G5TZz0AUQcCfJOhwlEDL58TXebt9nEHxYamsW0qvg88hTDwO/zm0YlU0YOzOx/FMW5w==}
+  /listhen@1.5.2:
+    resolution: {integrity: sha512-hcOLr0z3vd3KzjOm2F2fX47faCWu9ldFrthhOPJ65kcu7Yr2wq/NiXOU62DH++FnkSnGbDk+O7Xf6MXQ4UUiHg==}
     hasBin: true
     dependencies:
       '@parcel/watcher': 2.3.0
@@ -7085,6 +7087,7 @@ packages:
       mlly: 1.4.2
       node-forge: 1.3.1
       pathe: 1.1.1
+      std-env: 3.4.3
       ufo: 1.3.0
       untun: 0.1.2
       uqr: 0.1.2
@@ -7966,7 +7969,7 @@ packages:
       jiti: 1.20.0
       klona: 2.0.6
       knitwork: 1.0.0
-      listhen: 1.5.0
+      listhen: 1.5.2
       magic-string: 0.30.3
       mime: 3.0.0
       mlly: 1.4.2
@@ -8127,8 +8130,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.8.3:
-    resolution: {integrity: sha512-LS1KlxQhQDt+WREENAG44zfO91uiPYDcorQ7xlcaV0ejV65v7Eub94FTmJ6JNXL2boHhc+raODtJBClW2uYyJw==}
+  /nuxi-edge@3.9.0-1694719718.9de6d4c:
+    resolution: {integrity: sha512-7FodULP7gSsyPTNvllmAOwFnL10UT8J1bKkHu9cmTgTI46qOOYPJOq+DRAP8luEocM/8qZX3SzzCb2cQrTYozg==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
@@ -10594,7 +10597,7 @@ packages:
       destr: 2.0.1
       h3: 1.8.1
       ioredis: 5.3.2
-      listhen: 1.5.0
+      listhen: 1.5.2
       lru-cache: 10.0.1
       mri: 1.2.0
       node-fetch-native: 1.4.0
