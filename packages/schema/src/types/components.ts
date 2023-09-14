@@ -16,6 +16,13 @@ export interface Component {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * Allow bypassing client/server transforms for internal Nuxt components like
+   * ServerPlaceholder and NuxtClientFallback.
+   *
+   * @internal
+   */
+  _raw?: boolean
 }
 
 export interface ScanDir {

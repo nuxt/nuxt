@@ -38,7 +38,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const getComponents: getComponentsT = (mode) => {
       return (mode && mode !== 'all')
-        ? context.components.filter(c => c.mode === mode || c.mode === 'all')
+        ? context.components.filter(c => c.mode === mode || c.mode === 'all' || (c.mode === 'server' && !context.components.some(otherComponent => otherComponent.mode !== 'server' && otherComponent.pascalName === c.pascalName)))
         : context.components
     }
 
@@ -170,6 +170,7 @@ export default defineNuxtModule<ComponentsOptions>({
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
             ...component,
+            _raw: true,
             mode: 'server',
             filePath: resolve(distDir, 'app/components/server-placeholder'),
             chunkName: 'components/' + component.kebabName
