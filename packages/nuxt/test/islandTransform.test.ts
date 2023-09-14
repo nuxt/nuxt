@@ -20,10 +20,9 @@ const getComponents = () => [{
 const pluginVite = islandsTransform.raw({
   getComponents
 }, { framework: 'vite' }) as Plugin
- 
 
 const viteTransform = async (source: string, id: string) => {
-  const result = await ( pluginVite .transform! as Function)(source, id)
+  const result = await (pluginVite.transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -156,6 +155,5 @@ describe('islandTransform - server and island components', () => {
             "
       `)
     })
-
   })
 })
