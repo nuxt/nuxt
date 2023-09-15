@@ -103,7 +103,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsconfigPath: 'tsconfig.server.json',
       tsConfig: {
         include: [
-          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+          ...nuxt.options.modulesDir.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server'))
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
