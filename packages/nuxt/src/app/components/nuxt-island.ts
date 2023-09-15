@@ -45,6 +45,14 @@ async function loadComponents (source = '/', paths: Record<string, string>) {
   await Promise.all(promises)
 }
 
+function emptyPayload () {
+  return {
+    chunks: {},
+    props: {},
+    teleports: {}
+  }
+}
+
 export default defineComponent({
   name: 'NuxtIsland',
   props: {
@@ -79,7 +87,6 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
-    let hasContent = false
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
@@ -102,14 +109,11 @@ export default defineComponent({
         ...result
       }
     }
-
     // needs to be non-reactive because we don't want to trigger re-renders
     // at hydration, we only retrieve props/chunks/teleports from payload. See the reviver at nuxt\src\app\plugins\revive-payload.client.ts
-    const rawPayload = toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? {
-      chunks: {},
-      props: {},
-      teleports: {}
-    }
+    // If not hydrating, fetchComponent() will set it
+    const rawPayload = nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? emptyPayload() : emptyPayload()
+
     const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks'| 'props' | 'teleports'> = {
       chunks: rawPayload.chunks,
       props: rawPayload.props,
@@ -208,13 +212,11 @@ export default defineComponent({
         }
         nonReactivePayload.teleports = res.teleports
         nonReactivePayload.chunks = res.chunks
-        hasContent = true
 
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
           await nextTick()
         }
-
         setUid()
       } catch (e) {
         error.value = e
@@ -235,14 +237,13 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if ((canLoadClientComponent.value) && !props.lazy) {
+    } else if (canLoadClientComponent.value) {
       await loadComponents(props.source, nonReactivePayload.chunks)
     }
 
     return () => {
-      if ((!html.value || error.value) && slots.fallback) {
-        hasContent = false
-        return [slots.fallback({ error: error.value })]
+      if (!html.value || error.value) {
+        return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
       }
       const nodes = [createVNode(Fragment, {
         key: key.value
@@ -263,7 +264,7 @@ export default defineComponent({
             }))
           }
         }
-        if (import.meta.client && canLoadClientComponent.value && (hasContent || nuxtApp.isHydrating)) {
+        if (import.meta.client && canLoadClientComponent.value) {
           for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
             const component = components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
@@ -274,7 +275,6 @@ export default defineComponent({
             nodes.push(vnode)
           }
         }
-        hasContent = true
       }
       return nodes
     }

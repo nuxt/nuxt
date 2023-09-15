@@ -7,6 +7,7 @@ import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
+import type { ConsoleMessage } from 'playwright-core'
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
@@ -1419,12 +1420,16 @@ describe('server components/islands', () => {
   })
 
   it('lazy server components', async () => {
+    const logs: ConsoleMessage[] = []
+
     const { page } = await renderPage('/server-components/lazy/start')
+
+    page.on('console', (msg) => { if (msg.type() === 'error') { logs.push(msg) } })
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page with lazy server component').click()
 
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"> Loading server component </section><section id=\\"no-fallback\\"><div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"> Loading server component </section><section id=\\"no-fallback\\"><div></div></section><div></div>"')
     expect(text).not.toContain('async component that was very long')
     expect(text).toContain('Loading server component')
 
@@ -1433,6 +1438,13 @@ describe('server components/islands', () => {
     // await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
     await page.waitForFunction(() => (document.querySelector('#no-fallback') as HTMLElement)?.innerText?.includes('async component'))
     await page.waitForFunction(() => (document.querySelector('#fallback') as HTMLElement)?.innerText?.includes('async component'))
+
+    // test navigating back and forth for lazy <ServerWithClient> component (should not trigger any issue)
+    await page.goBack({ waitUntil: 'networkidle' })
+    await page.getByText('Go to page with lazy server component').click()
+    await page.waitForLoadState('networkidle')
+
+    expect(logs).toHaveLength(0)
 
     await page.close()
   })
@@ -1444,7 +1456,7 @@ describe('server components/islands', () => {
 
     const text = (await page.innerText('pre')).replace(/nuxt-ssr-client="([^"]*)"/g, (_, content) => `nuxt-ssr-client="${content.split('-')[0]}"`)
 
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"2\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"3\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"4\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"5\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><div nuxt-ssr-component-uid=\\"3\\"> ServerWithClient.server.vue : <p>count: 0</p> This is not interactive <div class=\\"sugar-counter\\"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class=\\"interactive-component-wrapper\\" style=\\"border:solid 1px red;\\"> The component bellow is not a slot but declared as interactive <!--[--><div style=\\"display: contents;\\" nuxt-ssr-client=\\"SugarCounter\\"></div><!--teleport start--><!--teleport end--><!--]--></div></div>"')
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
