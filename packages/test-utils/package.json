@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@jest/globals": "29.7.0",
-    "playwright-core": "1.37.1",
+    "playwright-core": "1.38.0",
     "unbuild": "latest",
     "vitest": "0.33.0"
   },

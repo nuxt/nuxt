@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/fs-extra": "11.0.1",
+    "@types/fs-extra": "11.0.2",
     "@types/hash-sum": "1.0.0",
     "@types/lodash-es": "4.17.9",
     "@types/pify": "5.0.1",
