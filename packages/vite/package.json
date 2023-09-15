@@ -21,7 +21,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.2",
     "@types/estree": "1.0.1",
-    "@types/fs-extra": "11.0.1",
+    "@types/fs-extra": "11.0.2",
     "unbuild": "latest",
     "vue": "3.3.4"
   },
@@ -35,7 +35,7 @@
     "consola": "^3.2.3",
     "cssnano": "^6.0.1",
     "defu": "^6.1.2",
-    "esbuild": "^0.19.2",
+    "esbuild": "^0.19.3",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",

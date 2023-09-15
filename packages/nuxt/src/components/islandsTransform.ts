@@ -26,7 +26,7 @@ interface ComponentChunkOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
-const HAS_SLOT_OR_CLIENT_RE = /(<slot[ /])|(nuxt-client)/
+const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 

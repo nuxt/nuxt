@@ -105,38 +105,71 @@ describe('islandTransform - server and island components', () => {
               </script>"
       `)
     })
-  })
 
-  describe('nuxt-client', () => {
-    it('test transform with vite', async () => {
+    it('expect slot transform with fallback and no name to match inline snapshot #23209', async () => {
       const result = await viteTransform(`<template>
       <div>
-        <!-- should not be wrapped by NuxtTeleportSsrClient -->
-        <HelloWorld />
-        <!-- should be wrapped by NuxtTeleportSsrClient -->
-        <HelloWorld nuxt-client />
+        <UCard>
+          <template #header>
+            <h3>Partial Hydration Example - Server - {{ count }}</h3>
+          </template>
+          <template #default>
+            <p>message: {{ message }}</p>
+            <p>Below is the slot I want to be hydrated on the client</p>
+            <div>
+              <slot>
+                This is the default content of the slot, I should not see this after
+                the client loading has completed.
+              </slot>
+            </div>
+            <p>Above is the slot I want to be hydrated on the client</p>
+          </template>
+        </UCard>
       </div>
     </template>
     
     <script setup lang="ts">
-    import HelloWorld from './HelloWorld.vue'
+    export interface Props {
+      count?: number;
+    }
+    const props = withDefaults(defineProps<Props>(), { count: 0 });
+    
+    const message = "Hello World";
     </script>
-    `, 'hello.server.vue')
+    `
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <!-- should not be wrapped by NuxtTeleportSsrClient -->
-                <HelloWorld />
-                <!-- should be wrapped by NuxtTeleportSsrClient -->
-                <NuxtTeleportSsrClient to=\\"HelloWorld-f7leoLqQIs\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                <UCard>
+                  <template #header>
+                    <h3>Partial Hydration Example - Server - {{ count }}</h3>
+                  </template>
+                  <template #default>
+                    <p>message: {{ message }}</p>
+                    <p>Below is the slot I want to be hydrated on the client</p>
+                    <div>
+                      <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"default\\" ><div nuxt-slot-fallback-start=\\"default\\"/>
+                        This is the default content of the slot, I should not see this after
+                        the client loading has completed.
+                      <div nuxt-slot-fallback-end/></div>
+                    </div>
+                    <p>Above is the slot I want to be hydrated on the client</p>
+                  </template>
+                </UCard>
               </div>
             </template>
             
             <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
-            import HelloWorld from './HelloWorld.vue'
+            export interface Props {
+              count?: number;
+            }
+            const props = withDefaults(defineProps<Props>(), { count: 0 });
+            
+            const message = \\"Hello World\\";
             </script>
             "
       `)
