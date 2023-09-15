@@ -1,8 +1,8 @@
 <script setup lang="ts">
-console.log('[async]')
+process.client && console.log('[async]')
 const route = useRoute('suspense-async-parent')
 await new Promise(resolve => setTimeout(resolve, 100))
-console.log('[async] running async data')
+process.client && console.log('[async] running async data')
 </script>
 
 <template>

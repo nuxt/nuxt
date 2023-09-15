@@ -8,5 +8,5 @@
 
 <script setup>
 await Promise.resolve()
-console.log('isHydrating: ' + useNuxtApp().isHydrating)
+process.client && console.log('isHydrating: ' + useNuxtApp().isHydrating)
 </script>
