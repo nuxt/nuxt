@@ -223,7 +223,7 @@ describe('url', () => {
   })
 })
 
-describe('app manifests', () => {
+describe.skipIf(process.env.TEST_MANIFEST !== 'manifest')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
     delete manifest.timestamp

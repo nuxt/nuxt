@@ -170,9 +170,12 @@ jobs:
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
         context: ['async', 'default']
+        manifest: ['manifest-on', 'manifest-off']
         node: [18]
         exclude:
           - env: 'dev'
+            builder: 'webpack'
+          - manifest: 'manifest-off'
             builder: 'webpack'
 
     timeout-minutes: 15
@@ -231,6 +234,7 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
+          TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || runner.os == 'Windows' }}
 
