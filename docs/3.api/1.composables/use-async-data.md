@@ -25,11 +25,11 @@ function useAsyncData<DataT, DataE>(
 type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
+  immediate?: boolean
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
   watch?: WatchSource[]
-  immediate?: boolean
 }
 
 type AsyncData<DataT, ErrorT> = {
@@ -53,13 +53,13 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 * **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of [`useAsyncData`](/docs/api/composables/use-async-data) will be generated for you.
 * **handler**: an asynchronous function that returns a value
 * **options**:
-  * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
-  * _default_: a factory function to set the default value of the data, before the async function resolves - particularly useful with the `lazy: true` option
   * _server_: whether to fetch the data on the server (defaults to `true`)
+  * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
+  * _immediate_: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
+  * _default_: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   * _transform_: a function that can be used to alter `handler` function result after resolving
   * _pick_: only pick specified keys in this array from the `handler` function result
   * _watch_: watch reactive sources to auto-refresh
-  * _immediate_: When set to `false`, will prevent the request from firing immediately. (defaults to `true`)
 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 

@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { Nuxt, NuxtTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
@@ -34,7 +34,7 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
  * Renders given types using lodash template during build into the project buildDir
  * and register them as types.
  */
-export function addTypeTemplate (_template: NuxtTemplate<any>) {
+export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -117,6 +117,7 @@ export async function writeTypes (nuxt: Nuxt) {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
       jsx: 'preserve',
+      jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
       moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
@@ -124,6 +125,11 @@ export async function writeTypes (nuxt: Nuxt) {
       isolatedModules: true,
       useDefineForClassFields: true,
       strict: nuxt.options.typescript?.strict ?? true,
+      noImplicitThis: true,
+      esModuleInterop: true,
+      // TODO: enable by default in v3.8
+      // types: [],
+      // verbatimModuleSyntax: true,
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,

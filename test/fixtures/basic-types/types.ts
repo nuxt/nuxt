@@ -7,7 +7,7 @@ import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLink, NuxtPage, WithTypes } from '#components'
+import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -206,6 +206,13 @@ describe('layouts', () => {
     definePageMeta({ layout: 'override' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
+  })
+
+  it('allows typing layouts', () => {
+    h(NuxtLayout, { name: 'custom' })
+
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { name: 'invalid-layout' })
   })
 })
 

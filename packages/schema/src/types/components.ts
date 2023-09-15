@@ -16,6 +16,13 @@ export interface Component {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * Allow bypassing client/server transforms for internal Nuxt components like
+   * ServerPlaceholder and NuxtClientFallback.
+   *
+   * @internal
+   */
+  _raw?: boolean
 }
 
 export interface ScanDir {
@@ -85,6 +92,14 @@ export interface ComponentsDir extends ScanDir {
    * By default ('auto') it will set transpile: true if node_modules/ is in path.
    */
   transpile?: 'auto' | boolean
+  /**
+   * This number allows configuring the behavior of overriding Nuxt components.
+   * It will be inherited by any components within the directory.
+   *
+   * If multiple components are provided with the same name, then higher priority
+   * components will be used instead of lower priority components.
+   */
+  priority?: number
 }
 
 export interface ComponentsOptions {
