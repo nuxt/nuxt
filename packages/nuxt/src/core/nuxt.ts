@@ -190,9 +190,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
-      `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
+      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -264,6 +265,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
       mode: 'client'
@@ -271,6 +273,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
       mode: 'server'

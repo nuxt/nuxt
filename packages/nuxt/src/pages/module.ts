@@ -28,7 +28,7 @@ export default defineNuxtModule({
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
 
     const pagesDirs = nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
     )
 
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
@@ -54,10 +54,13 @@ export default defineNuxtModule({
     nuxt.options.pages = await isPagesEnabled()
 
     // Restart Nuxt when pages dir is added or removed
-    const restartPaths = nuxt.options._layers.flatMap(layer => [
-      join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
-      join(layer.config.srcDir || layer.cwd, layer.config.dir?.pages || 'pages')
-    ])
+    const restartPaths = nuxt.options._layers.flatMap((layer) => {
+      const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
+      return [
+        join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
+        join(layer.config.srcDir || layer.cwd, pagesDir)
+      ]
+    })
 
     nuxt.hooks.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
@@ -178,11 +181,14 @@ export default defineNuxtModule({
     })
 
     // Regenerate templates when adding or removing pages
-    const updateTemplatePaths = nuxt.options._layers.flatMap(l => [
-      join(l.config.srcDir || l.cwd, l.config.dir?.pages || 'pages') + '/',
-      join(l.config.srcDir || l.cwd, l.config.dir?.layouts || 'layouts') + '/',
-      join(l.config.srcDir || l.cwd, l.config.dir?.middleware || 'middleware') + '/'
-    ])
+    const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
+      const dir = (l.config.rootDir === nuxt.options.rootDir ? nuxt.options : l.config).dir
+      return [
+        join(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
+        join(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
+        join(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/'
+      ]
+    })
 
     nuxt.hook('builder:watch', async (event, relativePath) => {
       if (event === 'change') { return }

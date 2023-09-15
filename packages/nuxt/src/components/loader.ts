@@ -48,7 +48,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
 
-          const isServerOnly = component.mode === 'server' &&
+          const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
@@ -59,7 +59,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             return identifier
           }
 
-          const isClientOnly = component.mode === 'client' && component.pascalName !== 'NuxtClientFallback'
+          const isClientOnly = !component._raw && component.mode === 'client'
           if (isClientOnly) {
             imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
             identifier += '_client'

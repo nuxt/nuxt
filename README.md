@@ -26,7 +26,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
 
 ```bash
-npx nuxi@latest nuxi init <my-project>
+npx nuxi@latest init <my-project>
 ```
 
 Discover also [nuxt.new](https://nuxt.new): Open a Nuxt starter on CodeSandbox, StackBlitz or locally to get up and running in a few seconds.
