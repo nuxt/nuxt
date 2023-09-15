@@ -10,6 +10,9 @@ pnpm build
 
 # Release packages
 for PKG in packages/* ; do
+  if [[ $PKG == "packages/nuxi" ]] ; then
+    continue
+  fi
   pushd $PKG
   TAG="latest"
   if [ "$PKG" == "packages/nuxt" ]; then

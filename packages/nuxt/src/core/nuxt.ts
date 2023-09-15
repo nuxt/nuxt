@@ -8,6 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
 /* eslint-disable import/no-restricted-paths */
+import defu from 'defu'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -16,6 +17,7 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
+import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
@@ -110,12 +112,15 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
-  nuxt.hook('modules:done', () => {
+  nuxt.hook('modules:done', async () => {
     // Add unctx transform
     const options = {
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-      transformerOptions: nuxt.options.optimization.asyncTransforms
-    }
+      transformerOptions: {
+        ...nuxt.options.optimization.asyncTransforms,
+        helperModule: await tryResolveModule('unctx', nuxt.options.modulesDir) ?? 'unctx'
+      }
+    } satisfies UnctxTransformPluginOptions
     addVitePlugin(() => UnctxTransformPlugin.vite(options))
     addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
 
@@ -185,9 +190,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
-      `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
+      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -259,6 +265,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
       mode: 'client'
@@ -266,6 +273,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
       mode: 'server'
@@ -279,6 +287,12 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
+
+    if (!nuxt.options.ssr) {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API

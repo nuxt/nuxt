@@ -10,7 +10,6 @@ const props = defineProps({
 })
 
 // Deliberately prevent reactive update when error is cleared
-// eslint-disable-next-line vue/no-setup-props-destructure
 const _error = props.error
 
 // TODO: extract to a separate utility
