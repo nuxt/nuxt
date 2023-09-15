@@ -52,7 +52,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 ```
 
-### `callhook(name, ...args)`
+### `callHook(name, ...args)`
 
 `callHook` returns a promise when called with any of the existing hooks.
 
