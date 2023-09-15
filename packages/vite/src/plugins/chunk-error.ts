@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 
 const vitePreloadHelperId = '\0vite/preload-helper'
 
+// TODO: remove this function when we upgrade to vite 5
 export function chunkErrorPlugin (options: { sourcemap?: boolean }): Plugin {
   return {
     name: 'nuxt:chunk-error',
