@@ -23,6 +23,6 @@ const lazy = useRoute().query.lazy === 'true'
       <AsyncServerComponent :lazy="lazy" :count="42" />
     </section>
 
-    <ServerWithClient :lazy="lazy" /> 
+    <ServerWithClient :lazy="lazy" />
   </div>
 </template>
