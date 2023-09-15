@@ -752,12 +752,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    // TODO: remove when we update CI to node v18
-    if (process.version.startsWith('v16')) {
-      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
-    } else {
-      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
-    }
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -987,6 +982,7 @@ describe('extends support', () => {
       const html = await $fetch('/override')
       expect(html).toContain('Extended layout from bar')
       expect(html).toContain('Extended page from bar')
+      expect(html).toContain('This child page should not be overridden by bar')
     })
   })
 

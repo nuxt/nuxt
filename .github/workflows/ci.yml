@@ -42,7 +42,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -79,14 +79,14 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@00e563ead9f72a8461b24876bee2d0c2e8bd2ee8 # v2.21.5
+        uses: github/codeql-action/init@701f152f28d4350ad289a5e31435e9ab6169a7ca # v2.21.6
         with:
           languages: javascript
           queries: +security-and-quality
@@ -98,7 +98,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@00e563ead9f72a8461b24876bee2d0c2e8bd2ee8 # v2.21.5
+        uses: github/codeql-action/analyze@701f152f28d4350ad289a5e31435e9ab6169a7ca # v2.21.6
         with:
           category: "/language:javascript"
 
@@ -118,7 +118,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -146,7 +146,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -170,7 +170,7 @@ jobs:
         env: ['dev', 'built']
         builder: ['vite', 'webpack']
         context: ['async', 'default']
-        node: [16]
+        node: [18]
         exclude:
           - env: 'dev'
             builder: 'webpack'
@@ -204,7 +204,7 @@ jobs:
           echo "PLAYWRIGHT_VERSION=$env:PLAYWRIGHT_VERSION" >> $env:GITHUB_ENV
 
       - name: Cache Playwright's binary
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
         with:
           key: ${{ runner.os }}-playwright-bin-v1-${{ env.PLAYWRIGHT_VERSION }}
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
@@ -256,7 +256,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
@@ -295,7 +295,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 20.5
+          node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies

@@ -65,8 +65,10 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       // [vite] Re-export any script imports
       const scriptImport = imports.find(i => parseMacroQuery(i.specifier).type === 'script')
       if (scriptImport) {
-        const specifier = rewriteQuery(scriptImport.specifier)
-        s.overwrite(0, code.length, `export { default } from ${JSON.stringify(specifier)}`)
+        const reorderedQuery = rewriteQuery(scriptImport.specifier)
+        // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
+        const quotedSpecifier = getQuotedSpecifier(scriptImport.code)?.replace(scriptImport.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+        s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
         return result()
       }
 
@@ -77,8 +79,10 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           continue
         }
 
-        const specifier = rewriteQuery(match.specifier)
-        s.overwrite(0, code.length, `export { default } from ${JSON.stringify(specifier)}`)
+        const reorderedQuery = rewriteQuery(match.specifier)
+        // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
+        const quotedSpecifier = getQuotedSpecifier(match.code)?.replace(match.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+        s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
         return result()
       }
 
@@ -182,4 +186,8 @@ function parseMacroQuery (id: string) {
     return { macro: 'true', ...query }
   }
   return query
+}
+
+function getQuotedSpecifier (id: string) {
+  return id.match(/(["']).*\1/)?.[0]
 }
