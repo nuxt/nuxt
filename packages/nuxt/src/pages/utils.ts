@@ -52,7 +52,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   }
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
 
-  const allRoutes = await generateRoutesFromFiles(scannedFiles, nuxt.options.experimental.typedPages, nuxt.vfs)
+  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
 
   return uniqueBy(allRoutes, 'path')
 }
