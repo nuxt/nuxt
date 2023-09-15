@@ -113,6 +113,13 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
+  const modules = nuxt.options._installedModules
+    .filter(m => m.entryPath)
+    .map(m => m.entryPath.startsWith(rootDirWithSlash)
+      ? m.entryPath.split('/index.ts')[0]
+      : rootDirWithSlash + 'node_modules/' + m.entryPath
+    )
+
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
@@ -144,10 +151,11 @@ export async function writeTypes (nuxt: Nuxt) {
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...nuxt.options.modulesDir.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
+      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
-      ...nuxt.options.modulesDir.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+      ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]

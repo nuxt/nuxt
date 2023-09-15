@@ -1,6 +1,7 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
+import { withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
 import { logger, resolveIgnorePatterns } from '@nuxt/kit'
@@ -29,6 +30,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const modules = nuxt.options._installedModules
+    .filter(m => m.entryPath)
+    .map(m => m.entryPath.startsWith(rootDirWithSlash)
+      ? m.entryPath.split('/index.ts')[0]
+      : rootDirWithSlash + 'node_modules/' + m.entryPath
+    )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
@@ -104,7 +114,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
-          ...nuxt.options.modulesDir.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server'))
+          ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server'))
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
