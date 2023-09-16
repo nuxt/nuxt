@@ -80,6 +80,7 @@ export default defineUntypedSchema({
    * ------| static/
    * ------| store/
    * ------| server/
+   * ------| app.config.js
    * ```
    */
   srcDir: {
