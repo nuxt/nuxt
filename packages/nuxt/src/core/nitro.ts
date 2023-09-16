@@ -4,7 +4,7 @@ import { join, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolveIgnorePatterns } from '@nuxt/kit'
+import { logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -33,12 +33,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modules = nuxt.options._installedModules
-    .filter(m => m.entryPath)
-    .map(m => m.entryPath.startsWith(rootDirWithSlash)
-      ? m.entryPath.split('/index.ts')[0]
-      : rootDirWithSlash + 'node_modules/' + m.entryPath
-    )
+  const modules = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => m.entryPath)
+  )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,

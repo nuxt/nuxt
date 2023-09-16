@@ -10,6 +10,7 @@ import { readPackageJSON } from 'pkg-types'
 import { tryResolveModule } from './internal/esm'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
+import { resolveNuxtModule } from './resolve'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
@@ -113,12 +114,11 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modules = nuxt.options._installedModules
-    .filter(m => m.entryPath)
-    .map(m => m.entryPath.startsWith(rootDirWithSlash)
-      ? m.entryPath.split('/index.ts')[0]
-      : rootDirWithSlash + 'node_modules/' + m.entryPath
-    )
+  const modules = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => m.entryPath)
+  )
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
