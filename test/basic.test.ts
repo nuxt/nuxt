@@ -1007,9 +1007,14 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
     })
 
-    it('extends bar/middleware/override over foo/middleware/override', async () => {
+    // theme is added after layers
+    it('extends foo/middleware/override over bar/middleware/override', async () => {
       const html = await $fetch('/override')
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
+    })
+    it('global middlewares sorting', async () => {
+      const html = await $fetch('/middleware/ordering')
+      expect(html).toContain('catchall at middleware')
     })
   })
 
