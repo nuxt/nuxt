@@ -99,14 +99,15 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
                 s.appendLeft(startingIndex + loc[1].start, '<div nuxt-slot-fallback-end/>')
               }
             }
-          } else if ('nuxt-client' in node.attributes) {
+          } else if ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes) {
             hasNuxtClient = true
+            const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
             if (isVite) {
               // handle granular interactivity
               const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-              s.overwrite(node.loc[0].start, node.loc[1].end, `<NuxtTeleportSsrClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${node.attributes['nuxt-client'] || 'true'}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportSsrClient>`)
+              s.overwrite(node.loc[0].start, node.loc[1].end, `<NuxtTeleportSsrClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportSsrClient>`)
             }
           }
         }
