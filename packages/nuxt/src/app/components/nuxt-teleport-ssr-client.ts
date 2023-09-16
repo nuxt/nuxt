@@ -35,31 +35,28 @@ export default defineComponent({
     }
   },
   setup (props, { slots }) {
-    const app = useNuxtApp()
+    if (!props.nuxtClient) { return () => slots.default!() }
 
+    const app = useNuxtApp()
     const islandContext = app.ssrContext!.islandContext!
 
-    const slot = slots.default!()[0]
-    const slotType = (slot.type as ExtendedComponent)
-
-    if (process.dev) {
-      const path = '_nuxt/' + relative(props.rootDir, slotType.__file)
-
-      islandContext.chunks[slotType.__name] = path
-    } else {
-      islandContext.chunks[slotType.__name] = paths[slotType.__name]
-    }
-
-    islandContext.propsData[props.to] = slot.props || {}
     return () => {
-      if (props.nuxtClient) {
-        return [h('div', {
-          style: 'display: contents;',
-          'nuxt-ssr-client': props.to
-        }, []), h(Teleport, { to: props.to }, slot)]
+      const slot = slots.default!()[0]
+      const slotType = (slot.type as ExtendedComponent)
+
+      if (process.dev) {
+        const path = '_nuxt/' + relative(props.rootDir, slotType.__file)
+        islandContext.chunks[slotType.__name] = path
+      } else {
+        islandContext.chunks[slotType.__name] = paths[slotType.__name]
       }
 
-      return slot
+      islandContext.propsData[props.to] = slot.props || {}
+
+      return [h('div', {
+        style: 'display: contents;',
+        'nuxt-ssr-client': props.to
+      }, []), h(Teleport, { to: props.to }, slot)]
     }
   }
 })
