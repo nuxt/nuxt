@@ -1,0 +1,37 @@
+name: Check links with Lychee
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      # Cache lychee results (e.g. to avoid hitting rate limits)
+      - name: Restore lychee cache
+        uses: actions/cache@v3
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      # check links with Lychee
+      - uses: actions/checkout@v3
+
+      - name: Lychee link checker
+        uses: lycheeverse/lychee-action@v1
+        with:
+          # arguments with file types to check
+          args: >-
+            --cache
+            --verbose
+            --no-progress
+            --max-cache-age=1d
+            './**/*.md'
+            './**/*.html'
+          # fail the action on broken links
+          fail: true
+        env:
+          # to be used in case rate limits are surpassed
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
