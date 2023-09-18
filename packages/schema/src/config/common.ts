@@ -80,6 +80,9 @@ export default defineUntypedSchema({
    * ------| static/
    * ------| store/
    * ------| server/
+   * ------| app.config.ts
+   * ------| app.vue
+   * ------| error.vue
    * ```
    */
   srcDir: {
