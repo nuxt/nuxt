@@ -197,7 +197,7 @@ export default defineNuxtConfig({
     asyncContext: process.env.TEST_CONTEXT === 'async',
     // TODO: remove this in v3.8
     payloadExtraction: true,
-    appManifest: process.env.TEST_MANIFEST === 'manifest',
+    appManifest: process.env.TEST_MANIFEST === 'manifest-on',
     headNext: true,
     inlineRouteRules: true
   },
