@@ -4,6 +4,8 @@ import { loadPayload } from '#app/composables/payload'
 import { onNuxtReady } from '#app/composables/ready'
 import { useRouter } from '#app/composables/router'
 import { getAppManifest } from '#app/composables/manifest'
+// @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -26,7 +28,7 @@ export default defineNuxtPlugin({
           await loadPayload(url)
         }
       })
-      if (navigator.connection?.effectiveType !== 'slow-2g') {
+      if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
         setTimeout(getAppManifest, 1000)
       }
     })
