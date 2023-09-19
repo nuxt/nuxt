@@ -73,7 +73,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return to
     }
 
-
     const path = 'path' in to ? to.path : resolve(to).path
 
     return {
