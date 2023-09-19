@@ -5,6 +5,7 @@ import { getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h
 import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
+import { logger } from '@nuxt/kit'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
@@ -31,7 +32,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`
     ].filter(Boolean).join(' ')
-    console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+    logger.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   if (event.handled) { return }
