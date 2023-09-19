@@ -116,9 +116,9 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // Resolve middleware/ from all config layers
+  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
