@@ -10,7 +10,7 @@
 <script setup lang="ts">
 
 function foo () {
-  process.client && console.log('bar')
+  console.log('bar')
 }
 
 defineExpose({

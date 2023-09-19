@@ -16,7 +16,7 @@
 const count = ref(0)
 
 function logFoo () {
-  process.client && console.log('bar')
+  console.log('bar')
 }
 
 defineExpose({

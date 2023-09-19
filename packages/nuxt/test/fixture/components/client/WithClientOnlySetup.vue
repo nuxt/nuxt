@@ -107,8 +107,10 @@ const { woooooo, What = isThis } = defineAsyncComponent(async () => {
   return {}
 })
 
-// eslint-disable-next-line no-console
-process.client && console.log(woooooo)
+if (import.meta.client) {
+  // eslint-disable-next-line no-console
+  console.log(woooooo)
+}
 
 const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {
   if (import.meta.client) {
@@ -134,8 +136,10 @@ const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
   return {}
 })
 
-// eslint-disable-next-line no-console
-process.client && console.log(DontRemoveThisSinceItIsUsedInSetup.props)
+if (import.meta.client) {
+  // eslint-disable-next-line no-console
+  console.log(DontRemoveThisSinceItIsUsedInSetup.props)
+}
 </script>
 
 <style scoped>
