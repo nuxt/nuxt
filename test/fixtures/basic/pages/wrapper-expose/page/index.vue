@@ -10,7 +10,8 @@
 <script setup lang="ts">
 
 function foo () {
-  console.log('bar')
+  // eslint-disable-next-line no-console
+  process.client && console.log('bar')
 }
 
 defineExpose({

@@ -18,7 +18,8 @@ const links = [
 
 const route = useRoute()
 const windowState = computed(() => {
-  console.log(route.fullPath)
+  // eslint-disable-next-line no-console
+  process.client && console.log(route.fullPath)
   return import.meta.client ? window.history.state.foo : ''
 })
 </script>

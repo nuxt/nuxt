@@ -16,7 +16,8 @@
 const count = ref(0)
 
 function logHello () {
-  console.log('world')
+  // eslint-disable-next-line no-console
+  process.client && console.log('world')
 }
 
 defineExpose({

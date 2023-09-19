@@ -2,11 +2,13 @@ import '~/assets/plugin.css'
 
 export class OnMountedMethod {
   public onMounted () {
-    console.log('public onMounted')
+    // eslint-disable-next-line no-console
+    process.client && console.log('public onMounted')
   }
 
   onBeforeMount () {
-    console.log('onBeforeMount')
+    // eslint-disable-next-line no-console
+    process.client && console.log('onBeforeMount')
   }
 }
 export default defineNuxtPlugin(() => {

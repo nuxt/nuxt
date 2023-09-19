@@ -1,7 +1,9 @@
 <script setup lang="ts">
+// eslint-disable-next-line no-console
 process.client && console.log('[async] [async]')
 const route = useRoute('suspense-async-parent-async-child')
 await new Promise(resolve => setTimeout(resolve, 500))
+// eslint-disable-next-line no-console
 process.client && console.log(`[async] [${route.params.parent}] [async] [${route.params.child}] running async data`)
 const data = route.params
 </script>

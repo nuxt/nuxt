@@ -16,7 +16,8 @@
 const count = ref(0)
 
 function logFoo () {
-  console.log('bar')
+  // eslint-disable-next-line no-console
+  process.client && console.log('bar')
 }
 
 defineExpose({
