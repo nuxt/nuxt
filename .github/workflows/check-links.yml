@@ -2,7 +2,17 @@ name: Check links with Lychee
 
 on:
   push:
+    paths:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
   pull_request:
+    paths:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
