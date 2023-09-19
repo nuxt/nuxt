@@ -39,7 +39,6 @@
     "magic-string": "^0.30.3"
   },
   "devDependencies": {
-    "@actions/core": "1.10.1",
     "@nuxt/test-utils": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "12.1.0",
@@ -47,9 +46,7 @@
     "@types/node": "18.17.17",
     "@types/semver": "7.5.2",
     "case-police": "0.6.1",
-    "chalk": "5.3.0",
     "changelogen": "0.5.5",
-    "cheerio": "1.0.0-rc.12",
     "consola": "3.2.3",
     "devalue": "4.3.2",
     "eslint": "8.49.0",
