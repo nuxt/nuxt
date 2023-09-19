@@ -9,8 +9,9 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
-
 import { logger } from '@nuxt/kit'
+
+// eslint-disable-next-line import/no-restricted-paths
 import type { ObjectPlugin, PluginMeta } from '#app'
 
 const internalOrderMap = {

@@ -43,7 +43,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
       const contents = await compileTemplate(template, templateContext).catch((e) => {
-        logger.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
