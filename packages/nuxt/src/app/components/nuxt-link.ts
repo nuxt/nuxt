@@ -65,8 +65,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     const normalizeTrailingSlash = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
     if (typeof to === 'string') {
-      return normalizeTrailingSlash(to, true)
+      const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
+      const hasFragment = to.includes('#')
+      if (!hasProtocolDifferentFromHttp && !hasFragment) {
+        return normalizeTrailingSlash(to, true)
+      }
+      return to
     }
+
 
     const path = 'path' in to ? to.path : resolve(to).path
 
