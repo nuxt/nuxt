@@ -9,7 +9,7 @@ import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
-const firstNonUndefined = <T>(...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
+const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
 
@@ -218,8 +218,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
                     const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => { }),
-                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => { })
+                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
+                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
                     ])
                     prefetched.value = true
                   })
