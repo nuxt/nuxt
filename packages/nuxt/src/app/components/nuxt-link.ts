@@ -47,7 +47,7 @@ export type NuxtLinkProps = {
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink(options: NuxtLinkOptions) {
+export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
   const checkPropConflicts = (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void => {
@@ -163,7 +163,7 @@ export function defineNuxtLink(options: NuxtLinkOptions) {
         required: false
       }
     },
-    setup(props, { slots }) {
+    setup (props, { slots }) {
       const router = useRouter()
 
       // Resolving `to` value from `to` and `href` props
@@ -289,14 +289,14 @@ export function defineNuxtLink(options: NuxtLinkOptions) {
           return slots.default({
             href,
             navigate,
-            get route() {
+            get route () {
               if (!href) { return undefined }
 
               const url = parseURL(href)
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
-                get query() { return parseQuery(url.search) },
+                get query () { return parseQuery(url.search) },
                 hash: url.hash,
                 // stub properties for compat with vue-router
                 params: {},
@@ -341,7 +341,7 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
-function useObserver(): { observe: ObserveFn } | undefined {
+function useObserver (): { observe: ObserveFn } | undefined {
   if (import.meta.server) { return }
 
   const nuxtApp = useNuxtApp()
@@ -382,7 +382,7 @@ function useObserver(): { observe: ObserveFn } | undefined {
   return _observer
 }
 
-function isSlowConnection() {
+function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
