@@ -9,7 +9,7 @@ import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
-const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
+const firstNonUndefined = <T>(...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
 
@@ -47,7 +47,7 @@ export type NuxtLinkProps = {
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: NuxtLinkOptions) {
+export function defineNuxtLink(options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
   const checkPropConflicts = (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void => {
@@ -63,17 +63,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return to
     }
 
-    const normalizeTrailingSlash = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
     if (typeof to === 'string') {
-      const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
-      if (hasProtocolDifferentFromHttp) {
-        return to
-      }
-      const [link, fragment] = to.split('#')
-      if (fragment) {
-        return `${normalizeTrailingSlash(link, true)}#${fragment}`
-      }
-      return normalizeTrailingSlash(to, true)
+      return applyTrailingSlashBehavior(to, options.trailingSlash)
     }
 
     const path = 'path' in to ? to.path : resolve(to).path
@@ -81,7 +72,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     return {
       ...to,
       name: undefined, // named routes would otherwise always override trailing slash behavior
-      path: normalizeTrailingSlash(path, true)
+      path: applyTrailingSlashBehavior(path, options.trailingSlash)
     }
   }
 
@@ -172,7 +163,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         required: false
       }
     },
-    setup (props, { slots }) {
+    setup(props, { slots }) {
       const router = useRouter()
 
       // Resolving `to` value from `to` and `href` props
@@ -227,8 +218,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
                     const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
-                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
+                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => { }),
+                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => { })
                     ])
                     prefetched.value = true
                   })
@@ -298,14 +289,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return slots.default({
             href,
             navigate,
-            get route () {
+            get route() {
               if (!href) { return undefined }
 
               const url = parseURL(href)
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
-                get query () { return parseQuery(url.search) },
+                get query() { return parseQuery(url.search) },
                 hash: url.hash,
                 // stub properties for compat with vue-router
                 params: {},
@@ -332,11 +323,25 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
 export default defineNuxtLink({ componentName: 'NuxtLink' })
 
+// -- NuxtLink utils --
+function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
+  const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
+  const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
+  if (hasProtocolDifferentFromHttp) {
+    return to
+  }
+  const [link, fragment] = to.split('#')
+  if (fragment) {
+    return `${normalizeFn(link, true)}#${fragment}`
+  }
+  return normalizeFn(to, true)
+}
+
 // --- Prefetching utils ---
 type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
-function useObserver (): { observe: ObserveFn } | undefined {
+function useObserver(): { observe: ObserveFn } | undefined {
   if (import.meta.server) { return }
 
   const nuxtApp = useNuxtApp()
@@ -377,7 +382,7 @@ function useObserver (): { observe: ObserveFn } | undefined {
   return _observer
 }
 
-function isSlowConnection () {
+function isSlowConnection() {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
