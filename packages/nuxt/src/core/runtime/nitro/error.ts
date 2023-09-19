@@ -31,7 +31,6 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`
     ].filter(Boolean).join(' ')
-
     console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
