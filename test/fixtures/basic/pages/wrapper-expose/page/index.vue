@@ -10,7 +10,6 @@
 <script setup lang="ts">
 
 function foo () {
-  // eslint-disable-next-line no-console
   process.client && console.log('bar')
 }
 

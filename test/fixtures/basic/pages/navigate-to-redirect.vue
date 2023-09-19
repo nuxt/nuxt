@@ -9,7 +9,6 @@ definePageMeta({
     return navigateTo({ path: '/' }, { redirectCode: 307 })
   }
 })
-// eslint-disable-next-line no-console
 process.client && console.log('running setup')
 useNuxtApp().hook('app:rendered', () => {
   throw new Error('this should not run')

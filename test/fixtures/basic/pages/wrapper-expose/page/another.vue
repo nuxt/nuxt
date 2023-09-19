@@ -12,7 +12,6 @@
 <script setup lang="ts">
 
 function hello () {
-  // eslint-disable-next-line no-console
   process.client && console.log('world')
 }
 

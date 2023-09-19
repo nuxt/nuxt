@@ -16,7 +16,6 @@
 const count = ref(0)
 
 function logFoo () {
-  // eslint-disable-next-line no-console
   process.client && console.log('bar')
 }
 

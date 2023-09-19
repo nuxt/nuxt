@@ -8,6 +8,5 @@
 
 <script setup>
 await Promise.resolve()
-// eslint-disable-next-line no-console
 process.client && console.log('isHydrating: ' + useNuxtApp().isHydrating)
 </script>

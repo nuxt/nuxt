@@ -3,7 +3,6 @@ definePageMeta({
   layout: 'custom2'
 })
 
-// eslint-disable-next-line no-console
 process.client && console.log('Running With Layout2 Page Setup')
 </script>
 <template>

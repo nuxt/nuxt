@@ -8,7 +8,6 @@
 </template>
 
 <script setup>
-// eslint-disable-next-line no-console
 process.client && console.log('Running Child Setup')
 const route = useRoute()
 

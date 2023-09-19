@@ -45,7 +45,6 @@ declare module 'vue-router' {
 }
 
 const warnRuntimeUsage = (method: string) => {
-  // eslint-disable-next-line no-console
   console.warn(
     `${method}() is a compiler-hint helper that is only usable inside ` +
     'the script block of a single file component which is also a page. Its arguments should be ' +

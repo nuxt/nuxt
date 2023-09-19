@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { componentNames } from '#components'
 
-// eslint-disable-next-line no-console
 process.client && console.log(componentNames)
 
 // @ts-expect-error this is not usable outside a pages directory

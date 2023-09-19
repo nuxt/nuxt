@@ -3,7 +3,6 @@ import { useCustomKeyedComposable } from '~/other-composables-folder/custom-keye
 
 const useLocalState = () => useState(() => {
   if (import.meta.client) {
-    // eslint-disable-next-line no-console
     process.client && console.error('running usestate')
   }
   return { foo: Math.random() }
@@ -13,7 +12,6 @@ const useStateTest2 = useLocalState()
 
 const useLocalAsyncData = () => useAsyncData(() => {
   if (import.meta.client) {
-    // eslint-disable-next-line no-console
     process.client && console.error('running asyncdata')
   }
   return Promise.resolve({ foo: Math.random() })
@@ -23,7 +21,6 @@ const { data: useAsyncDataTest2 } = await useLocalAsyncData()
 
 const useLocalLazyAsyncData = () => useLazyAsyncData(() => {
   if (import.meta.client) {
-  // eslint-disable-next-line no-console
     process.client && console.error('running asyncdata')
   }
   return Promise.resolve({ foo: Math.random() })
@@ -34,7 +31,6 @@ const { data: useLazyAsyncDataTest2 } = await useLocalLazyAsyncData()
 const useLocalFetch = () => useFetch('/api/counter', {
   transform: (data) => {
     if (import.meta.client) {
-      // eslint-disable-next-line no-console
       process.client && console.error('running client-side transform')
     }
     return data.count

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// eslint-disable-next-line no-console
 process.client && console.log('[sync]')
 const route = useRoute('suspense-async-parent')
 </script>
