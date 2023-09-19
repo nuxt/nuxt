@@ -19,3 +19,9 @@ console.warn = (arg0: any, ...args: any[]) => {
   }
   _warn(...args)
 }
+
+// for (const t of ['uncaughtException', 'unhandledRejection'] as const) {
+//   process.on(t, (err) => {
+//     console.error(`[nuxt test suite] [${t}]`, err)
+//   })
+// }
