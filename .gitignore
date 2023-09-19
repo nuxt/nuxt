@@ -17,6 +17,9 @@ packages/*/LICENSE
 .tmp
 .cache
 
+# Lychee cache
+.lycheecache
+
 # Generated dirs
 dist
 .nuxt
