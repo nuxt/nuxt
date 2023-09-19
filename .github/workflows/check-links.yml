@@ -1,0 +1,51 @@
+name: Check links with Lychee
+
+on:
+  push:
+    paths:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      # Cache lychee results (e.g. to avoid hitting rate limits)
+      - name: Restore lychee cache
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      # check links with Lychee
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+
+      - name: Lychee link checker
+        uses: lycheeverse/lychee-action@ec7614d7605b47efb08dc370f6d0a71884cba944 # for v1.8.0
+        with:
+          # arguments with file types to check
+          args: >-
+            --cache
+            --verbose
+            --no-progress
+            --max-cache-age=1d
+            './**/*.md'
+            './**/*.html'
+          # fail the action on broken links
+          fail: true
+        env:
+          # to be used in case rate limits are surpassed
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
