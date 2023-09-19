@@ -134,7 +134,8 @@ const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
   return {}
 })
 
-console.log(DontRemoveThisSinceItIsUsedInSetup.props)
+// eslint-disable-next-line no-console
+process.client && console.log(DontRemoveThisSinceItIsUsedInSetup.props)
 </script>
 
 <style scoped>
