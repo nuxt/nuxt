@@ -243,3 +243,13 @@ Vue currently only supports async context restoration for `<script setup>` for a
 ##### Remaining Issues
 
 The `unjs/unctx` transformation to automatically restore context seems buggy with `try/catch` statements containing `await` which ultimately needs to be solved in order to remove the requirement of the workaround suggested above.
+
+##### Native Async Context
+
+Using a new experimental feature, it is possible to enable native async context support using [Node.js `AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and new unctx support to make async context available **natively** to **any nested async composable** without needing a transform or manual passing/calling with context.
+
+::alert{type=warning}
+Native async context support works currently in Bun and Node.
+::
+
+:ReadMore{link="/docs/guide/going-further/experimental-features#asynccontext"}
