@@ -93,11 +93,13 @@ const crawler = {
       })
     }
   },
+  /* eslint-disable jsdoc/valid-types */
   /**
    * @param {Error | null} error
    * @param {import('ofetch').FetchResponse<any> & { $: import('cheerio').CheerioAPI | null }} res
    * @param {() => void} done
    */
+  /* eslint-enable jsdoc/valid-types */
   callback (error, res, done) {
     const $ = res.$
     const uri = res.url

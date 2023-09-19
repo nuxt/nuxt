@@ -1,7 +1,7 @@
 import { parseNodeModulePath, resolvePath } from 'mlly'
 import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
-import { resolveAlias } from '@nuxt/kit'
+import { logger, resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 import { pkgDir } from '../../dirs'
@@ -23,7 +23,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
         // TODO: respect nitro runtime conditions
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
       }).catch(() => {
-        console.log('[nuxt] Could not resolve id', id, importer)
+        logger.log('Could not resolve id', id, importer)
         return null
       })
     }

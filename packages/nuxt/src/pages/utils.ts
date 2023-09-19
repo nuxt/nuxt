@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath } from 'ufo'
-import { resolveFiles, useNuxt } from '@nuxt/kit'
+import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -273,7 +273,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
       if (names.has(route.name)) {
         const existingRoute = findRouteByName(route.name, routes)
         const extra = existingRoute?.name ? `is the same as \`${existingRoute.file}\`` : 'is a duplicate'
-        console.warn(`[nuxt] Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+        logger.warn(`Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
       }
     }
 
