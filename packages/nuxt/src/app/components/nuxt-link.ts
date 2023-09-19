@@ -73,7 +73,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       if (fragment) {
         return `${normalizeTrailingSlash(link, true)}#${fragment}`
       }
-      return to
+      return normalizeTrailingSlash(to, true)
     }
 
     const path = 'path' in to ? to.path : resolve(to).path
