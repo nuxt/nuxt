@@ -107,6 +107,7 @@ export function useFetch<
     pick,
     watch,
     immediate,
+    strategy,
     ...fetchOptions
   } = opts
 
@@ -118,6 +119,7 @@ export function useFetch<
   const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
     server,
     lazy,
+    strategy,
     default: defaultFn,
     transform,
     pick,
@@ -188,7 +190,7 @@ export function useLazyFetch<
 
   return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
-    lazy: true
+    strategy: 'lazy'
   },
   // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)

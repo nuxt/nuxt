@@ -15,7 +15,7 @@ import type { MergeHead, VueHeadClient } from '@unhead/vue'
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
-import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
+import type { AsyncDataRequestStatus, AsyncDataStrategy } from '../app/composables/asyncData'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -97,7 +97,7 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
-  _asyncDataPromises: Record<string, Promise<any> | undefined>
+  _asyncDataPromises: Record<string, Promise<any> & { strategy?: AsyncDataStrategy } | undefined>
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>

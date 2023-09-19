@@ -2,6 +2,7 @@ import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } fro
 import type { Ref, VNode } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
 import { PageRouteSymbol } from '#app/components/injections'
+import { useNuxtApp } from '#app/nuxt'
 
 export const RouteProvider = defineComponent({
   name: 'RouteProvider',
@@ -48,10 +49,19 @@ export const RouteProvider = defineComponent({
     return () => {
       if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
-        return vnode
+        return [vnode, h(ResolvePendingPromises)]
       }
 
-      return h(props.vnode, { ref: props.vnodeRef })
+      return [h(props.vnode, { ref: props.vnodeRef }), h(ResolvePendingPromises)]
     }
   }
+})
+
+const ResolvePendingPromises = defineComponent({
+  async setup () {
+    const nuxtApp = useNuxtApp()
+    const promises = Object.values(nuxtApp._asyncDataPromises).filter(p => p?.strategy !== 'lazy')
+    await (Promise.allSettled?.(promises) ?? Promise.all(promises).catch(() => {}))
+  },
+  render: () => null
 })

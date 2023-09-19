@@ -31,6 +31,8 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+export type AsyncDataStrategy = 'lazy' | 'parallel' | 'blocking'
+
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
@@ -38,7 +40,9 @@ export interface AsyncDataOptions<
   DefaultT = null,
 > {
   server?: boolean
+  /** @deprecated Use strategy: 'lazy' */
   lazy?: boolean
+  strategy?: AsyncDataStrategy
   default?: () => DefaultT | Ref<DefaultT>
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
@@ -135,7 +139,7 @@ export function useAsyncData<
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
 
-  options.lazy = options.lazy ?? false
+  options.strategy = options.strategy || (options.lazy ? 'lazy' : 'blocking')
   options.immediate = options.immediate ?? true
 
   // Setup nuxt instance payload
@@ -213,7 +217,7 @@ export function useAsyncData<
         }
         delete nuxt._asyncDataPromises[key]
       })
-    nuxt._asyncDataPromises[key] = promise
+    nuxt._asyncDataPromises[key] = Object.assign(promise, { strategy: options.strategy })
     return nuxt._asyncDataPromises[key]
   }
 
@@ -251,7 +255,7 @@ export function useAsyncData<
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.lazy) && options.immediate) {
+    } else if (instance && ((nuxt.payload.serverRendered && nuxt.isHydrating) || options.strategy === 'lazy') && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
@@ -274,7 +278,7 @@ export function useAsyncData<
 
   // Allow directly awaiting on asyncData
   const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, DataE>
-  Object.assign(asyncDataPromise, asyncData)
+  Object.assign(options.strategy === 'blocking' ? asyncDataPromise : Promise.resolve(asyncData), asyncData)
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, DataE>
 }
@@ -332,7 +336,7 @@ export function useLazyAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
   // @ts-expect-error we pass an extra argument to prevent a key being injected
-  return useAsyncData(key, handler, { ...options, lazy: true }, null)
+  return useAsyncData(key, handler, { ...options, strategy: 'lazy' }, null)
 }
 
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
