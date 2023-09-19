@@ -1,4 +1,5 @@
 import { joinURL } from 'ufo'
+import type { RouteLocationNormalized } from 'vue-router'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { reloadNuxtApp } from '#app/composables/chunk'
@@ -14,11 +15,19 @@ export default defineNuxtPlugin({
     router.beforeEach(() => { chunkErrors.clear() })
     nuxtApp.hook('app:chunkError', ({ error }) => { chunkErrors.add(error) })
 
+    function reloadAppAtPath (to: RouteLocationNormalized) {
+      const isHash = 'href' in to && (to.href as string).startsWith('#')
+      const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
+      reloadNuxtApp({ path, persistState: true })
+    }
+
+    nuxtApp.hook('app:manifest:update', () => {
+      router.beforeResolve(reloadAppAtPath)
+    })
+
     router.onError((error, to) => {
       if (chunkErrors.has(error)) {
-        const isHash = 'href' in to && (to.href as string).startsWith('#')
-        const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
-        reloadNuxtApp({ path, persistState: true })
+        reloadAppAtPath(to)
       }
     })
   }

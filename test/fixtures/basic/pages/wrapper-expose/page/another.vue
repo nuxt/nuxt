@@ -12,7 +12,7 @@
 <script setup lang="ts">
 
 function hello () {
-  process.client && console.log('world')
+  console.log('world')
 }
 
 defineExpose({

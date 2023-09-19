@@ -1,6 +1,6 @@
 <script setup lang="ts">
 function exposedFunc () {
-  process.client && console.log('ok')
+  console.log('ok')
 }
 
 defineExpose({ exposedFunc })
@@ -8,7 +8,7 @@ defineExpose({ exposedFunc })
 await new Promise(resolve => setTimeout(resolve, 300))
 
 onMounted(() => {
-  process.client && console.log('mounted')
+  console.log('mounted')
 })
 </script>
 
