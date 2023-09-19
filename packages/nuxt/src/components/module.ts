@@ -1,6 +1,6 @@
 import { statSync } from 'node:fs'
 import { normalize, relative, resolve } from 'pathe'
-import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -86,7 +86,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          console.warn('Components directory not found: `' + dirPath + '`')
+          logger.warn('Components directory not found: `' + dirPath + '`')
         }
 
         return {
@@ -156,7 +156,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (componentDirs.some(dir => dir.path === path)) {
-        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })

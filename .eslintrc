@@ -26,7 +26,7 @@
     ],
     "no-only-tests/no-only-tests": "error",
     "unicorn/prefer-node-protocol": "error",
-    "no-console": "off",
+    "no-console": "warn",
     "vue/multi-word-component-names": "off",
     "vue/one-component-per-file": "off",
     "vue/require-default-prop": "off",
@@ -120,6 +120,12 @@
             }
           ]
         }
+    },
+    {
+      "files": ["packages/nuxt/src/app/**", "test/**", "**/runtime/**"],
+      "rules": {
+        "no-console": "off"
+      }
     }
   ],
   "settings": {

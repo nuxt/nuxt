@@ -2,6 +2,7 @@ import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
+import { logger } from './logger'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
@@ -57,7 +58,7 @@ export async function addComponent (opts: AddComponentOptions) {
       // but we warn if they are equal.
       if (newPriority === existingPriority) {
         const name = existingComponent.pascalName || existingComponent.kebabName
-        console.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
+        logger.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
       }
       Object.assign(existingComponent, component)
     } else {

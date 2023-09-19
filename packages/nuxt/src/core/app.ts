@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -43,7 +43,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
       const contents = await compileTemplate(template, templateContext).catch((e) => {
-        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
@@ -61,7 +61,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
       if (nuxt.options.debug || setupTime > 500) {
-        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
+        logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
       if (template.write) {
@@ -191,7 +191,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         ...plugin
       })
     } catch (e) {
-      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
+      logger.warn(`Could not resolve \`${plugin.src}\`.`)
       _plugins.push(plugin)
     }
   }
