@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-console.log('Running Child Setup')
+process.client && console.log('Running Child Setup')
 const route = useRoute()
 
 definePageMeta({
