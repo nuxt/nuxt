@@ -1,6 +1,9 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { describe, expect, it, vi } from 'vitest'
+import { defineEventHandler } from 'h3'
+
+import { registerEndpoint } from 'nuxt-vitest/utils'
 
 import * as composables from '#app/composables'
 
@@ -10,10 +13,23 @@ import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
+import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
 }))
+
+const timestamp = Date.now()
+registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
+  id: 'test',
+  timestamp
+})))
+registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
+  id: 'test',
+  timestamp,
+  matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
+  prerendered: ['/specific-prerendered']
+})))
 
 describe('composables', () => {
   it('are all tested', () => {
@@ -27,10 +43,13 @@ describe('composables', () => {
       'clearError',
       'showError',
       'useError',
+      'getAppManifest',
+      'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
       'useRequestEvent',
       'useRequestFetch',
+      'isPrerendered',
       'useRequestHeaders',
       'clearNuxtState',
       'useState',
@@ -43,7 +62,6 @@ describe('composables', () => {
       'defineNuxtRouteMiddleware',
       'definePayloadReducer',
       'definePayloadReviver',
-      'isPrerendered',
       'loadPayload',
       'navigateTo',
       'onBeforeRouteLeave',
@@ -202,5 +220,41 @@ describe('url', () => {
     expect(url.hostname).toMatchInlineSnapshot('"localhost"')
     expect(url.port).toMatchInlineSnapshot('"3000"')
     expect(url.protocol).toMatchInlineSnapshot('"http:"')
+  })
+})
+
+describe.skipIf(process.env.TEST_MANIFEST !== 'manifest-on')('app manifests', () => {
+  it('getAppManifest', async () => {
+    const manifest = await getAppManifest()
+    delete manifest.timestamp
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "id": "test",
+        "matcher": {
+          "dynamic": {},
+          "static": {
+            "/": null,
+            "/pre": null,
+          },
+          "wildcard": {
+            "/pre": {
+              "prerender": true,
+            },
+          },
+        },
+        "prerendered": [
+          "/specific-prerendered",
+        ],
+      }
+    `)
+  })
+  it('getRouteRules', async () => {
+    const rules = await getRouteRules('/')
+    expect(rules).toMatchInlineSnapshot('{}')
+  })
+  it('isPrerendered', async () => {
+    expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
+    expect(await isPrerendered('/prerendered/test')).toBeTruthy()
+    expect(await isPrerendered('/test')).toBeFalsy()
   })
 })

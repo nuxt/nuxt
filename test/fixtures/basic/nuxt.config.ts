@@ -56,7 +56,8 @@ export default defineNuxtConfig({
       routes: [
         '/random/a',
         '/random/b',
-        '/random/c'
+        '/random/c',
+        '/prefetch/server-components'
       ]
     }
   },
@@ -193,8 +194,10 @@ export default defineNuxtConfig({
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
+    // TODO: remove this in v3.8
+    payloadExtraction: true,
+    appManifest: process.env.TEST_MANIFEST === 'manifest-on',
     headNext: true,
     inlineRouteRules: true
   },
