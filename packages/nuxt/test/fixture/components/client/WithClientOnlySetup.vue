@@ -107,7 +107,8 @@ const { woooooo, What = isThis } = defineAsyncComponent(async () => {
   return {}
 })
 
-console.log(woooooo)
+// eslint-disable-next-line no-console
+process.client && console.log(woooooo)
 
 const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {
   if (import.meta.client) {
