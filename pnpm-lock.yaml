@@ -14,6 +14,7 @@ overrides:
   vite: 4.4.9
   vue: 3.3.4
   magic-string: ^0.30.3
+  nuxi: npm:nuxi-edge@3.9.0-1695127199.7809345
 
 importers:
 
@@ -95,8 +96,8 @@ importers:
         specifier: 2.6.3
         version: 2.6.3
       nuxi:
-        specifier: 3.8.4
-        version: 3.8.4
+        specifier: npm:nuxi-edge@3.9.0-1695127199.7809345
+        version: /nuxi-edge@3.9.0-1695127199.7809345
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -336,8 +337,8 @@ importers:
         specifier: ^2.6.3
         version: 2.6.3
       nuxi:
-        specifier: ^3.8.4
-        version: 3.8.4
+        specifier: npm:nuxi-edge@3.9.0-1695127199.7809345
+        version: /nuxi-edge@3.9.0-1695127199.7809345
       nypm:
         specifier: ^0.3.3
         version: 0.3.3
@@ -8130,8 +8131,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.8.4:
-    resolution: {integrity: sha512-YQAH2msfL1PeaDuk880jQAJdtF1hpuYaTQ7j8Ombl+SyyamcB9VTx0gbkNyZj7wmJQYxfiV6a42nlGQ7cJDO+g==}
+  /nuxi-edge@3.9.0-1695127199.7809345:
+    resolution: {integrity: sha512-xM3AHAPfuRK0Qj2xPnKmG3x2eQ+2x/6Y1BQbFyz0gLm1JRX8zKiLtUsG1+448rgHFGmxqKB67Gd+pW09kncpaA==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
