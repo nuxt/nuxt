@@ -73,7 +73,7 @@ export function vforToArray (source: any): any[] {
   } else if (isString(source)) {
     return source.split('')
   } else if (typeof source === 'number') {
-    if (process.dev && !Number.isInteger(source)) {
+    if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
     const array = []
@@ -99,25 +99,42 @@ export function vforToArray (source: any): any[] {
   return []
 }
 
-export function getFragmentHTML (element: RendererNode | null) {
+/**
+ * Retrieve the HTML content from an element
+ * Handles `<!--[-->` Fragment elements
+ *
+ * @param element the element to retrieve the HTML
+ * @param withoutSlots purge all slots from the HTML string retrieved
+ * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
+ */
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false) {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
-      return getFragmentChildren(element)
+      return getFragmentChildren(element, [], withoutSlots)
+    }
+    if (withoutSlots) {
+      const clone = element.cloneNode(true)
+      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      return [clone.outerHTML]
     }
     return [element.outerHTML]
   }
   return []
 }
 
-function getFragmentChildren (element: RendererNode | null, blocks: string[] = []) {
+function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
   if (element && element.nodeName) {
     if (isEndFragment(element)) {
       return blocks
     } else if (!isStartFragment(element)) {
-      blocks.push(element.outerHTML)
+      const clone = element.cloneNode(true) as Element
+      if (withoutSlots) {
+        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+      }
+      blocks.push(clone.outerHTML)
     }
 
-    getFragmentChildren(element.nextSibling, blocks)
+    getFragmentChildren(element.nextSibling, blocks, withoutSlots)
   }
   return blocks
 }

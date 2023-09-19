@@ -1,16 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { generateRoutesFromFiles } from '../src/pages/utils'
+import type { NuxtPage } from 'nuxt/schema'
+import { generateRoutesFromFiles, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
-  const tests = [
+  const layerDir = 'layer/pages'
+  const tests: Array<{
+    description: string
+    files: Array<{ path: string; template?: string; }>
+    output?: NuxtPage[]
+    error?: string
+  }> = [
     {
       description: 'should generate correct routes for index pages',
       files: [
-        `${pagesDir}/index.vue`,
-        `${pagesDir}/parent/index.vue`,
-        `${pagesDir}/parent/child/index.vue`
+        { path: `${pagesDir}/index.vue` },
+        { path: `${pagesDir}/parent/index.vue` },
+        { path: `${pagesDir}/parent/child/index.vue` }
       ],
       output: [
         {
@@ -36,8 +43,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct routes for parent/child',
       files: [
-        `${pagesDir}/parent.vue`,
-        `${pagesDir}/parent/child.vue`
+        { path: `${pagesDir}/parent.vue` },
+        { path: `${pagesDir}/parent/child.vue` }
       ],
       output: [
         {
@@ -58,8 +65,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should not generate colliding route names when hyphens are in file name',
       files: [
-        `${pagesDir}/parent/[child].vue`,
-        `${pagesDir}/parent-[child].vue`
+        { path: `${pagesDir}/parent/[child].vue` },
+        { path: `${pagesDir}/parent-[child].vue` }
       ],
       output: [
         {
@@ -79,8 +86,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct id for catchall (order 1)',
       files: [
-        `${pagesDir}/[...stories].vue`,
-        `${pagesDir}/stories/[id].vue`
+        { path: `${pagesDir}/[...stories].vue` },
+        { path: `${pagesDir}/stories/[id].vue` }
       ],
       output: [
         {
@@ -100,8 +107,8 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct id for catchall (order 2)',
       files: [
-        `${pagesDir}/stories/[id].vue`,
-        `${pagesDir}/[...stories].vue`
+        { path: `${pagesDir}/stories/[id].vue` },
+        { path: `${pagesDir}/[...stories].vue` }
       ],
       output: [
         {
@@ -121,7 +128,7 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct route for snake_case file',
       files: [
-        `${pagesDir}/snake_case.vue`
+        { path: `${pagesDir}/snake_case.vue` }
       ],
       output: [
         {
@@ -134,7 +141,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct route for kebab-case file',
-      files: [`${pagesDir}/kebab-case.vue`],
+      files: [{ path: `${pagesDir}/kebab-case.vue` }],
       output: [
         {
           name: 'kebab-case',
@@ -147,14 +154,18 @@ describe('pages:generateRoutesFromFiles', () => {
     {
       description: 'should generate correct dynamic routes',
       files: [
-        `${pagesDir}/index.vue`,
-        `${pagesDir}/[slug].vue`,
-        `${pagesDir}/[[foo]]`,
-        `${pagesDir}/[[foo]]/index.vue`,
-        `${pagesDir}/[bar]/index.vue`,
-        `${pagesDir}/nonopt/[slug].vue`,
-        `${pagesDir}/opt/[[slug]].vue`,
-        `${pagesDir}/[[sub]]/route-[slug].vue`
+        { path: `${pagesDir}/index.vue` },
+        { path: `${pagesDir}/[slug].vue` },
+        { path: `${pagesDir}/[[foo]]` },
+        { path: `${pagesDir}/[[foo]]/index.vue` },
+        { path: `${pagesDir}/optional/[[opt]].vue` },
+        { path: `${pagesDir}/optional/prefix-[[opt]].vue` },
+        { path: `${pagesDir}/optional/[[opt]]-postfix.vue` },
+        { path: `${pagesDir}/optional/prefix-[[opt]]-postfix.vue` },
+        { path: `${pagesDir}/[bar]/index.vue` },
+        { path: `${pagesDir}/nonopt/[slug].vue` },
+        { path: `${pagesDir}/opt/[[slug]].vue` },
+        { path: `${pagesDir}/[[sub]]/route-[slug].vue` }
       ],
       output: [
         {
@@ -166,7 +177,7 @@ describe('pages:generateRoutesFromFiles', () => {
         {
           children: [],
           name: 'slug',
-          file: 'pages/[slug].vue',
+          file: `${pagesDir}/[slug].vue`,
           path: '/:slug()'
         },
         {
@@ -179,13 +190,38 @@ describe('pages:generateRoutesFromFiles', () => {
               children: []
             }
           ],
-          file: 'pages/[[foo]]',
+          file: `${pagesDir}/[[foo]]`,
           path: '/:foo?'
         },
         {
           children: [],
+          path: '/optional/:opt?',
+          name: 'optional-opt',
+          file: `${pagesDir}/optional/[[opt]].vue`
+        },
+        {
+          children: [],
+          path: '/optional/prefix-:opt?',
+          name: 'optional-prefix-opt',
+          file: `${pagesDir}/optional/prefix-[[opt]].vue`
+        },
+
+        {
+          children: [],
+          path: '/optional/:opt?-postfix',
+          name: 'optional-opt-postfix',
+          file: `${pagesDir}/optional/[[opt]]-postfix.vue`
+        },
+        {
+          children: [],
+          path: '/optional/prefix-:opt?-postfix',
+          name: 'optional-prefix-opt-postfix',
+          file: `${pagesDir}/optional/prefix-[[opt]]-postfix.vue`
+        },
+        {
+          children: [],
           name: 'bar',
-          file: 'pages/[bar]/index.vue',
+          file: `${pagesDir}/[bar]/index.vue`,
           path: '/:bar()'
         },
         {
@@ -210,7 +246,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [`${pagesDir}/[...slug].vue`, `${pagesDir}/index.vue`],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
       output: [
         {
           name: 'slug',
@@ -228,24 +264,24 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should throw unfinished param error for dynamic route',
-      files: [`${pagesDir}/[slug.vue`],
+      files: [{ path: `${pagesDir}/[slug.vue` }],
       error: 'Unfinished param "slug"'
     },
     {
       description: 'should throw empty param error for dynamic route',
       files: [
-        `${pagesDir}/[].vue`
+        { path: `${pagesDir}/[].vue` }
       ],
       error: 'Empty param'
     },
     {
       description: 'should only allow "_" & "." as special character for dynamic route',
       files: [
-        `${pagesDir}/[a1_1a].vue`,
-        `${pagesDir}/[b2.2b].vue`,
-        `${pagesDir}/[b2]_[2b].vue`,
-        `${pagesDir}/[[c3@3c]].vue`,
-        `${pagesDir}/[[d4-4d]].vue`
+        { path: `${pagesDir}/[a1_1a].vue` },
+        { path: `${pagesDir}/[b2.2b].vue` },
+        { path: `${pagesDir}/[b2]_[2b].vue` },
+        { path: `${pagesDir}/[[c3@3c]].vue` },
+        { path: `${pagesDir}/[[d4-4d]].vue` }
       ],
       output: [
         {
@@ -281,9 +317,32 @@ describe('pages:generateRoutesFromFiles', () => {
       ]
     },
     {
+      description: 'should properly override route name if definePageMeta name override is defined.',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              name: 'home'
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'home',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: []
+        }
+      ]
+    },
+    {
       description: 'should allow pages with `:` in their path',
       files: [
-        `${pagesDir}/test:name.vue`
+        { path: `${pagesDir}/test:name.vue` }
       ],
       output: [
         {
@@ -293,15 +352,111 @@ describe('pages:generateRoutesFromFiles', () => {
           children: []
         }
       ]
+    },
+    {
+      description: 'should not merge required param as a child of optional param',
+      files: [
+        { path: `${pagesDir}/[[foo]].vue` },
+        { path: `${pagesDir}/[foo].vue` }
+      ],
+      output: [
+        {
+          name: 'foo',
+          path: '/:foo?',
+          file: `${pagesDir}/[[foo]].vue`,
+          children: [
+          ]
+        },
+        {
+          name: 'foo',
+          path: '/:foo()',
+          file: `${pagesDir}/[foo].vue`,
+          children: []
+        }
+      ]
+    },
+    {
+      description: 'should correctly merge nested routes',
+      files: [
+        { path: `${pagesDir}/param.vue` },
+        { path: `${layerDir}/param/index.vue` },
+        { path: `${pagesDir}/param/index/index.vue` },
+        { path: `${layerDir}/param/index/sibling.vue` },
+        { path: `${pagesDir}/wrapper-expose/other.vue` },
+        { path: `${layerDir}/wrapper-expose/other/index.vue` },
+        { path: `${pagesDir}/wrapper-expose/other/sibling.vue` },
+        { path: `${pagesDir}/param/sibling.vue` }
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [],
+                  file: `${pagesDir}/param/index/index.vue`,
+                  name: 'param-index',
+                  path: ''
+                },
+                {
+                  children: [],
+                  file: `${layerDir}/param/index/sibling.vue`,
+                  name: 'param-index-sibling',
+                  path: 'sibling'
+                }
+              ],
+              file: `${layerDir}/param/index.vue`,
+              path: ''
+            },
+            {
+              children: [],
+              file: `${pagesDir}/param/sibling.vue`,
+              name: 'param-sibling',
+              path: 'sibling'
+            }
+          ],
+          file: `${pagesDir}/param.vue`,
+          path: '/param'
+        },
+        {
+          children: [
+            {
+              children: [],
+              file: `${layerDir}/wrapper-expose/other/index.vue`,
+              name: 'wrapper-expose-other',
+              path: ''
+            },
+            {
+              children: [],
+              file: `${pagesDir}/wrapper-expose/other/sibling.vue`,
+              name: 'wrapper-expose-other-sibling',
+              path: 'sibling'
+            }
+          ],
+          file: `${pagesDir}/wrapper-expose/other.vue`,
+          path: '/wrapper-expose/other'
+        }
+      ]
     }
   ]
 
   for (const test of tests) {
     it(test.description, async () => {
-      if (test.error) {
-        expect(() => generateRoutesFromFiles(test.files, pagesDir)).to.throws(test.error)
-      } else {
-        expect(await generateRoutesFromFiles(test.files, pagesDir)).to.deep.equal(test.output)
+      const vfs = Object.fromEntries(
+        test.files.map(file => [file.path, 'template' in file ? file.template : ''])
+      ) as Record<string, string>
+
+      let result
+      try {
+        result = await generateRoutesFromFiles(test.files.map(file => ({
+          absolutePath: file.path,
+          relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
+        })), true, vfs)
+      } catch (error: any) {
+        expect(error.message).toEqual(test.error)
+      }
+      if (result) {
+        expect(result).toEqual(test.output)
       }
     })
   }
@@ -407,4 +562,21 @@ describe('pages:generateRouteKey', () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
+})
+
+const pathToNitroGlobTests = {
+  '/': '/',
+  '/:id': '/**',
+  '/:id()': '/**',
+  '/:id?': '/**',
+  '/some-:id?': '/**',
+  '/other/some-:id?': '/other/**',
+  '/other/some-:id()-more': '/other/**',
+  '/other/nested': '/other/nested'
+}
+
+describe('pages:pathToNitroGlob', () => {
+  it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
+    expect(pathToNitroGlob(path)).to.equal(expected)
+  })
 })

@@ -26,8 +26,17 @@
     <NuxtLink id="islands" to="/islands">
       islands
     </NuxtLink>
+    <NuxtLink id="to-immediate-remove-unmounted" to="/useAsyncData/immediate-remove-unmounted">
+      Immediate remove unmounted
+    </NuxtLink>
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal" to="/middleware-abort-non-fatal" :prefetch="false">
+      Middleware abort navigation
+    </NuxtLink>
+    <NuxtLink id="middleware-abort-non-fatal-error" to="/middleware-abort-non-fatal?error=someerror" :prefetch="false">
+      Middleware abort navigation with error
     </NuxtLink>
     Some value: {{ someValue }}
     <button @click="someValue++">
@@ -38,11 +47,15 @@
     </NuxtLink>
     <NestedSugarCounter :multiplier="2" />
     <CustomComponent />
+    <component :is="`global${'-'.toString()}sync`" />
     <Spin>Test</Spin>
     <component :is="`test${'-'.toString()}global`" />
     <component :is="`with${'-'.toString()}suffix`" />
     <ClientWrapped ref="clientRef" style="color: red;" class="client-only" />
     <ServerOnlyComponent class="server-only" style="background-color: gray;" />
+    <NuxtLink to="/big-page-1">
+      to big 1
+    </NuxtLink>
   </div>
 </template>
 

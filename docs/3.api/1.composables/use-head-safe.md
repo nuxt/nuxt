@@ -8,7 +8,7 @@ The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/compo
 
 ## Usage
 
-You can pass all the same values as `useHead`
+You can pass all the same values as [`useHead`](/docs/api/composables/use-head)
 
 ```ts
 useHeadSafe({
@@ -24,7 +24,7 @@ useHeadSafe({
 // <meta content="0;javascript:alert(1)">
 ```
 
-Read more on [unhead documentation](https://unhead.harlanzw.com/guide/composables/use-head-safe).
+Read more on [unhead documentation](https://unhead.unjs.io/usage/composables/use-head-safe).
 
 ## Type
 

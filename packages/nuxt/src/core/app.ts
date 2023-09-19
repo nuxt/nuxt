@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
@@ -32,13 +32,21 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
   // Compile templates into vfs
+  // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  await Promise.all((app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
     .filter(template => !options.filter || options.filter(template))
-    .map(async (template) => {
-      const contents = await compileTemplate(template, templateContext)
 
+  const writes: Array<() => void> = []
+  await Promise.allSettled(filteredTemplates
+    .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
+      const mark = performance.mark(fullPath)
+      const contents = await compileTemplate(template, templateContext).catch((e) => {
+        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        throw e
+      })
+
       nuxt.vfs[fullPath] = contents
 
       const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
@@ -49,13 +57,26 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
       }
 
+      const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
+      const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+
+      if (nuxt.options.debug || setupTime > 500) {
+        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
+      }
+
       if (template.write) {
-        await fsp.mkdir(dirname(fullPath), { recursive: true })
-        await fsp.writeFile(fullPath, contents, 'utf8')
+        writes.push(() => {
+          mkdirSync(dirname(fullPath), { recursive: true })
+          writeFileSync(fullPath, contents, 'utf8')
+        })
       }
     }))
 
-  await nuxt.callHook('app:templatesGenerated', app)
+  // Write template files in single synchronous step to avoid (possible) additional
+  // runtime overhead of cascading HMRs from vite/webpack
+  for (const write of writes) { write() }
+
+  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
 async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
@@ -69,7 +90,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!
+    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir)) ?? '@nuxt/ui-templates/templates/welcome.vue'
   }
 
   // Resolve root component
@@ -87,37 +108,46 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts/ from all config layers
   app.layouts = {}
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file)
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
 
-  // Resolve middleware/ from all config layers
+  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
       const name = getNameFromPath(file)
       return { name, path: file, global: hasSuffix(file, '.global') }
     }))
   }
 
-  // Resolve plugins
-  app.plugins = [
-    ...nuxt.options.plugins.map(normalizePlugin)
-  ]
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  // Resolve plugins, first extended layers and then base
+  app.plugins = []
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*.{ts,js,mjs,cjs,mts,cts}`,
+          `${pluginDir}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
+  }
+
+  // Add back plugins not specified in layers or user config
+  for (const p of [...nuxt.options.plugins].reverse()) {
+    const plugin = normalizePlugin(p)
+    if (!app.plugins.some(p => p.src === plugin.src)) {
+      app.plugins.unshift(plugin)
+    }
   }
 
   // Normalize and de-duplicate plugins and middleware

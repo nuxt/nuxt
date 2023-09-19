@@ -34,7 +34,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     // override the component render (non script setup component)
     clone.render = (ctx: any, ...args: any[]) => {
       if (ctx.mounted$) {
-        const res = component.render!(ctx, ...args)
+        const res = component.render?.bind(ctx)(ctx, ...args)
         return (res.children === null || typeof res.children === 'string')
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)

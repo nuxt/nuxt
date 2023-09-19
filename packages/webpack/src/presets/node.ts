@@ -1,15 +1,13 @@
 import type { WebpackConfigContext } from '../utils/config'
 
 export function node (ctx: WebpackConfigContext) {
-  const { config } = ctx
+  ctx.config.target = 'node'
+  ctx.config.node = false
 
-  config.target = 'node'
-  config.node = false
+  ctx.config.experiments!.outputModule = true
 
-  config.experiments!.outputModule = true
-
-  config.output = {
-    ...config.output,
+  ctx.config.output = {
+    ...ctx.config.output,
     chunkFilename: '[name].mjs',
     chunkFormat: 'module',
     chunkLoading: 'import',
@@ -28,8 +26,8 @@ export function node (ctx: WebpackConfigContext) {
     }
   }
 
-  config.performance = {
-    ...config.performance,
+  ctx.config.performance = {
+    ...ctx.config.performance,
     hints: false,
     maxEntrypointSize: Infinity,
     maxAssetSize: Infinity
