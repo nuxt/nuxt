@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import chokidar from 'chokidar'
-import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
@@ -93,6 +93,7 @@ function createGranularWatcher () {
   const nuxt = useNuxt()
 
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
 
@@ -131,6 +132,7 @@ function createGranularWatcher () {
     watcher.on('ready', () => {
       pending--
       if (nuxt.options.debug && !pending) {
+        // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
@@ -140,6 +142,7 @@ function createGranularWatcher () {
 async function createParcelWatcher () {
   const nuxt = useNuxt()
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
   const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
@@ -162,6 +165,7 @@ async function createParcelWatcher () {
       })
       watcher.then((subscription) => {
         if (nuxt.options.debug) {
+          // eslint-disable-next-line no-console
           console.timeEnd('[nuxt] builder:parcel:watch')
         }
         nuxt.hook('close', () => subscription.unsubscribe())
@@ -169,7 +173,7 @@ async function createParcelWatcher () {
     }
     return true
   }
-  console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+  logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
   return false
 }
 

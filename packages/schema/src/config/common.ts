@@ -80,6 +80,9 @@ export default defineUntypedSchema({
    * ------| static/
    * ------| store/
    * ------| server/
+   * ------| app.config.ts
+   * ------| app.vue
+   * ------| error.vue
    * ```
    */
   srcDir: {
@@ -471,7 +474,9 @@ export default defineUntypedSchema({
    *
    * @type {typeof import('../src/types/config').AppConfig}
    */
-  appConfig: {},
+  appConfig: {
+    nuxt: {}
+  },
 
   $schema: {}
 })

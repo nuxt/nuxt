@@ -18,6 +18,7 @@ emit('some-event', '42')
 // @ts-expect-error an invalid argument
 emit('some-event', 42)
 // @ts-expect-error an unknown event
+// eslint-disable-next-line vue/require-explicit-emits
 emit('unknown-event', 42)
 </script>
 
