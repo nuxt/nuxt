@@ -2,10 +2,11 @@ import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
 import { useRoute } from 'vue-router'
+import type { NitroRouteConfig } from 'nitropack'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
-  [key: string]: any
+  [key: string]: unknown
   /**
    * Validate whether a given route can validly be rendered with this page.
    *
@@ -14,7 +15,7 @@ export interface PageMeta {
    * statusCode/statusMessage to respond immediately with an error (other matches
    * will not be checked).
    */
-  validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
+  validate?: (route: RouteLocationNormalized) => boolean | Partial<NuxtError> | Promise<boolean | Partial<NuxtError>>
   /**
    * Where to redirect if the route is directly matched. The redirection happens
    * before any navigation guard and triggers a new navigation with the new
@@ -36,23 +37,24 @@ export interface PageMeta {
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
-  scrollToTop?: boolean
+  scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
 }
 
 declare module 'vue-router' {
   interface RouteMeta extends UnwrapRef<PageMeta> {}
 }
 
-const warnRuntimeUsage = (method: string) =>
+const warnRuntimeUsage = (method: string) => {
   console.warn(
     `${method}() is a compiler-hint helper that is only usable inside ` +
     'the script block of a single file component which is also a page. Its arguments should be ' +
     'compiled away and passing it at runtime has no effect.'
   )
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
-  if (process.dev) {
+  if (import.meta.dev) {
     const component = getCurrentInstance()?.type
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
@@ -64,3 +66,15 @@ export const definePageMeta = (meta: PageMeta): void => {
     warnRuntimeUsage('definePageMeta')
   }
 }
+
+/**
+ * You can define route rules for the current page. Matching route rules will be created, based on the page's _path_.
+ *
+ * For example, a rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in
+ * `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
+ *
+ * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
+ * should set `routeRules` directly within your `nuxt.config`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const defineRouteRules = (rules: NitroRouteConfig): void => {}

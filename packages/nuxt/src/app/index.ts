@@ -4,6 +4,7 @@ export * from './nuxt'
 export * from './composables/index'
 export * from './components/index'
 export * from './config'
+export * from './compat/idle-callback'
 
 // eslint-disable-next-line import/no-restricted-paths
 export type { PageMeta } from '../pages/runtime/index'

@@ -5,6 +5,8 @@ set -xe
 # Restore all git changes
 git restore -s@ -SW  -- packages examples
 
+TAG=${1:-latest}
+
 # Bump versions to edge
 pnpm jiti ./scripts/bump-edge
 
@@ -18,10 +20,13 @@ fi
 
 # Release packages
 for p in packages/* ; do
+  if [[ $p == "packages/nuxi" ]] ; then
+    continue
+  fi
   pushd $p
   echo "Publishing $p"
   cp ../../LICENSE .
   cp ../../README.md .
-  pnpm publish --access public --no-git-checks
+  pnpm publish --access public --no-git-checks --tag $TAG
   popd
 done

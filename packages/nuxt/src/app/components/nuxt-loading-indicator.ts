@@ -1,5 +1,9 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
+import { useRouter } from '#app/composables/router'
+
+// @ts-expect-error virtual file
+import { globalMiddleware } from '#build/middleware'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
@@ -22,6 +26,7 @@ export default defineComponent({
     }
   },
   setup (props, { slots }) {
+    // TODO: use computed values in useLoadingIndicator
     const indicator = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle
@@ -30,9 +35,36 @@ export default defineComponent({
     // Hook to app lifecycle
     // TODO: Use unified loading API
     const nuxtApp = useNuxtApp()
-    nuxtApp.hook('page:start', indicator.start)
-    nuxtApp.hook('page:finish', indicator.finish)
-    onBeforeUnmount(indicator.clear)
+    const router = useRouter()
+
+    globalMiddleware.unshift(indicator.start)
+    router.onError(() => {
+      indicator.finish()
+    })
+    router.beforeResolve((to, from) => {
+      if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
+        indicator.finish()
+      }
+    })
+
+    router.afterEach((_to, _from, failure) => {
+      if (failure) {
+        indicator.finish()
+      }
+    })
+
+    const unsubPage = nuxtApp.hook('page:finish', indicator.finish)
+    const unsubError = nuxtApp.hook('vue:error', indicator.finish)
+
+    onBeforeUnmount(() => {
+      const index = globalMiddleware.indexOf(indicator.start)
+      if (index >= 0) {
+        globalMiddleware.splice(index, 1)
+      }
+      unsubPage()
+      unsubError()
+      indicator.clear()
+    })
 
     return () => h('div', {
       class: 'nuxt-loading-indicator',
@@ -70,7 +102,7 @@ function useLoadingIndicator (opts: {
   function start () {
     clear()
     progress.value = 0
-    if (opts.throttle && process.client) {
+    if (opts.throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
         _startTimer()
@@ -98,7 +130,7 @@ function useLoadingIndicator (opts: {
 
   function _hide () {
     clear()
-    if (process.client) {
+    if (import.meta.client) {
       setTimeout(() => {
         isLoading.value = false
         setTimeout(() => { progress.value = 0 }, 400)
@@ -107,7 +139,7 @@ function useLoadingIndicator (opts: {
   }
 
   function _startTimer () {
-    if (process.client) {
+    if (import.meta.client) {
       _timer = setInterval(() => { _increase(step.value) }, 100)
     }
   }

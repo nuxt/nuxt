@@ -1,12 +1,12 @@
 import { Script, createContext } from 'node:vm'
 import { expect } from 'vitest'
-import type { Page } from 'playwright'
+import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
-import { createPage, getBrowser, url, useTestContext } from '@nuxt/test-utils'
+import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
 
-export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
+export const isRenderingJson = true
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -17,6 +17,7 @@ export async function renderPage (path = '/') {
   const browser = await getBrowser()
   const page = await browser.newPage({})
   const pageErrors: Error[] = []
+  const requests: string[] = []
   const consoleLogs: { type: string, text: string }[] = []
 
   page.on('console', (message) => {
@@ -28,14 +29,23 @@ export async function renderPage (path = '/') {
   page.on('pageerror', (err) => {
     pageErrors.push(err)
   })
+  page.on('request', (req) => {
+    try {
+      requests.push(req.url().replace(url('/'), '/'))
+    } catch (err) {
+      // TODO
+    }
+  })
 
   if (path) {
     await page.goto(url(path), { waitUntil: 'networkidle' })
+    await page.waitForFunction(() => window.useNuxtApp?.())
   }
 
   return {
     page,
     pageErrors,
+    requests,
     consoleLogs
   }
 }
@@ -58,6 +68,11 @@ export async function expectNoClientErrors (path: string) {
   await page.close()
 }
 
+export async function gotoPath (page: Page, path: string) {
+  await page.goto(url(path))
+  await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, path)
+}
+
 type EqualityVal = string | number | boolean | null | undefined | RegExp
 export async function expectWithPolling (
   get: () => Promise<EqualityVal> | EqualityVal,
@@ -76,32 +91,13 @@ export async function expectWithPolling (
   expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
 }
 
-export async function withLogs (callback: (page: Page, logs: string[]) => Promise<void>) {
-  let done = false
-  const page = await createPage()
-  const logs: string[] = []
-  page.on('console', (msg) => {
-    const text = msg.text()
-    if (done && !text.includes('[vite] server connection lost')) {
-      throw new Error(`Test finished prematurely before log: [${msg.type()}] ${text}`)
-    }
-    logs.push(text)
-  })
-
-  try {
-    await callback(page, logs)
-  } finally {
-    done = true
-    await page.close()
-  }
-}
-
 const revivers = {
   NuxtError: (data: any) => createError(data),
   EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
   EmptyRef: (data: any) => ref(JSON.parse(data)),
   ShallowRef: (data: any) => shallowRef(data),
   ShallowReactive: (data: any) => shallowReactive(data),
+  Island: (key: any) => key,
   Ref: (data: any) => ref(data),
   Reactive: (data: any) => reactive(data),
   // test fixture reviver only

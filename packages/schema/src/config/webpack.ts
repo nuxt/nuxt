@@ -41,12 +41,11 @@ export default defineUntypedSchema({
     profile: process.argv.includes('--profile'),
 
     /**
-     * Enables Common CSS Extraction using
-     * [Vue Server Renderer guidelines](https://ssr.vuejs.org/guide/css.html).
+     * Enables Common CSS Extraction.
      *
-     * Using [extract-css-chunks-webpack-plugin](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/) under the hood, your CSS will be extracted
+     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
-     * JavaScript separately and is worth trying if you have a lot of global or shared CSS.
+     * JavaScript separately.
      *
      * @example
      * ```js
@@ -66,7 +65,6 @@ export default defineUntypedSchema({
      * Extracting into multiple CSS files is better for caching and preload isolation. It
      * can also improve page performance by downloading and resolving only those resources
      * that are needed.
-     *
      * @example
      * ```js
      * export default {
@@ -114,17 +112,33 @@ export default defineUntypedSchema({
      * as most browsers will cache the asset and not detect the changes on first load.
      *
      * This example changes fancy chunk names to numerical ids:
-     *
      * @example
      * ```js
      * filenames: {
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
+     * @type {
+     *  Record<
+     *    string,
+     *    string |
+     *    ((
+     *      ctx: {
+     *        nuxt: import('../src/types/nuxt').Nuxt,
+     *        options: import('../src/types/nuxt').Nuxt['options'],
+     *        name: string,
+     *        isDev: boolean,
+     *        isServer: boolean,
+     *        isClient: boolean,
+     *        alias: { [index: string]: string | false | string[] },
+     *        transpile: RegExp[]
+     *      }) => string)
+     *  >
+     * }
      */
     filenames: {
-      app: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
-      chunk: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
+      app: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
+      chunk: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
       css: ({ isDev }: { isDev: boolean }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
@@ -148,12 +162,60 @@ export default defineUntypedSchema({
         }
         return val
       },
+
+      /**
+       * See https://github.com/esbuild-kit/esbuild-loader
+       *
+       * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
+       */
+      esbuild: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @default
+       * ```ts
+       * { esModule: false }
+       * ```
+       */
       file: { esModule: false },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       fontUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://github.com/webpack-contrib/file-loader#options
+       *
+       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @default
+       * ```ts
+       * { esModule: false, limit: 1000  }
+       * ```
+       */
       imgUrl: { esModule: false, limit: 1000 },
+
+      /**
+       * See: https://pugjs.org/api/reference.html#options
+       *
+       * @type {typeof import('pug')['Options']}
+       */
       pugPlain: {},
+
+      /**
+       * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
+       *
+       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
+       */
       vue: {
-        productionMode: { $resolve: async (val, get) => val ?? !(await get('dev')) },
         transformAssetUrls: {
           video: 'src',
           source: 'src',
@@ -161,32 +223,65 @@ export default defineUntypedSchema({
           embed: 'src'
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
+        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) }
       },
+
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false
       },
+
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false,
         modules: {
           localIdentName: '[local]_[hash:base64:5]'
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/less-loader#options
+       */
       less: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       *
+       * @type {typeof import('sass-loader')['Options']}
+       * @default
+       * ```ts
+       * {
+       *   sassOptions: {
+       *     indentedSyntax: true
+       *   }
+       * }
+       * ```
+       */
       sass: {
         sassOptions: {
           indentedSyntax: true
         }
       },
+
+      /**
+       * See: https://github.com/webpack-contrib/sass-loader#options
+       *
+       * @type {typeof import('sass-loader')['Options']}
+       */
       scss: {},
+
+      /**
+       * See: https://github.com/webpack-contrib/stylus-loader#options
+       */
       stylus: {},
+
       vueStyle: {}
     },
 
@@ -208,20 +303,6 @@ export default defineUntypedSchema({
     plugins: [],
 
     /**
-     * Terser plugin options.
-     *
-     * Set to false to disable this plugin, or pass an object of options.
-     *
-     * @see [terser-webpack-plugin documentation](https://github.com/webpack-contrib/terser-webpack-plugin).
-     *
-     * @note Enabling sourceMap will leave `//# sourceMappingURL` linking comment at
-     * the end of each output file if webpack `config.devtool` is set to `source-map`.
-     *
-     * @type {false | typeof import('terser-webpack-plugin').BasePluginOptions & typeof import('terser-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
-     */
-    terser: {},
-
-    /**
      * Hard-replaces `typeof process`, `typeof window` and `typeof document` to tree-shake bundle.
      */
     aggressiveCodeRemoval: false,
@@ -232,7 +313,6 @@ export default defineUntypedSchema({
      * Defaults to true when `extractCSS` is enabled.
      *
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     *
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
     optimizeCSS: {
@@ -241,6 +321,7 @@ export default defineUntypedSchema({
 
     /**
      * Configure [webpack optimization](https://webpack.js.org/configuration/optimization/).
+     *
      * @type {false | typeof import('webpack').Configuration['optimization']}
      */
     optimization: {
@@ -270,11 +351,12 @@ export default defineUntypedSchema({
         plugins: {
           $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
         }
-      },
+      }
     },
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
+     *
      * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
@@ -283,6 +365,7 @@ export default defineUntypedSchema({
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
+     *
      * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
      */
     hotMiddleware: {},
@@ -294,8 +377,16 @@ export default defineUntypedSchema({
 
     /**
      * Filters to hide build warnings.
+     *
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
+
+    /**
+     * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
+     *
+     * @type {false | typeof import('webpack').Configuration['experiments']}
+     */
+    experiments: {}
   }
 })

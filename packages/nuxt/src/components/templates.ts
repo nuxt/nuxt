@@ -2,7 +2,7 @@ import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
 import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
-export interface ComponentsTemplateContext {
+interface ComponentsTemplateContext {
   app: NuxtApp
   nuxt: Nuxt
   options: {
@@ -11,7 +11,7 @@ export interface ComponentsTemplateContext {
   }
 }
 
-export type ImportMagicCommentsOptions = {
+type ImportMagicCommentsOptions = {
   chunkName: string
   prefetch?: boolean | number
   preload?: boolean | number
@@ -33,16 +33,28 @@ export default defineNuxtPlugin({
 })
 `
 
-export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
-    const globalComponents = app.components.filter(c => c.global)
-    if (!globalComponents.length) { return emptyComponentsPlugin }
+    const lazyGlobalComponents = new Set<string>()
+    const syncGlobalComponents = new Set<string>()
+    for (const component of app.components) {
+      if (component.global === 'sync') {
+        syncGlobalComponents.add(component.pascalName)
+      } else if (component.global) {
+        lazyGlobalComponents.add(component.pascalName)
+      }
+    }
+    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { return emptyComponentsPlugin }
+
+    const lazyComponents = [...lazyGlobalComponents]
+    const syncComponents = [...syncGlobalComponents]
 
     return `import { defineNuxtPlugin } from '#app/nuxt'
-import { ${globalComponents.map(c => 'Lazy' + c.pascalName).join(', ')} } from '#components'
+import { ${[...lazyComponents.map(c => 'Lazy' + c), ...syncComponents].join(', ')} } from '#components'
 const lazyGlobalComponents = [
-  ${globalComponents.map(c => `["${c.pascalName}", Lazy${c.pascalName}]`).join(',\n')}
+  ${lazyComponents.map(c => `["${c}", Lazy${c}]`).join(',\n')},
+  ${syncComponents.map(c => `["${c}", ${c}]`).join(',\n')}
 ]
 
 export default defineNuxtPlugin({
@@ -58,7 +70,7 @@ export default defineNuxtPlugin({
   }
 }
 
-export const componentNamesTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+export const componentNamesTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
     return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`

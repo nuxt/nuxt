@@ -2,9 +2,9 @@ import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
+import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
-import { tryResolveModule } from './internal/cjs'
 import { isIgnored } from './ignore'
 
 export interface ResolvePathOptions {
@@ -71,7 +71,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Try to resolve as module id
-  const resolveModulePath = tryResolveModule(_path, { paths: [cwd, ...modulesDir] })
+  const resolveModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
   if (resolveModulePath) {
     return resolveModulePath
   }
@@ -131,6 +131,22 @@ export function createResolver (base: string | URL): Resolver {
     resolve: (...path) => resolve(base as string, ...path),
     resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
   }
+}
+
+export async function resolveNuxtModule (base: string, paths: string[]) {
+  const resolved = []
+  const resolver = createResolver(base)
+
+  for (const path of paths) {
+    if (path.startsWith(base)) {
+      resolved.push(path.split('/index.ts')[0])
+    } else {
+      const resolvedPath = await resolver.resolvePath(path)
+      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+    }
+  }
+
+  return resolved
 }
 
 // --- Internal ---

@@ -13,67 +13,59 @@ export function style (ctx: WebpackConfigContext) {
 }
 
 function minimizer (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
-  if (options.webpack.optimizeCSS && Array.isArray(config.optimization!.minimizer)) {
-    config.optimization!.minimizer.push(new CssMinimizerPlugin({
-      ...options.webpack.optimizeCSS
+  if (ctx.userConfig.optimizeCSS && Array.isArray(ctx.config.optimization!.minimizer)) {
+    ctx.config.optimization!.minimizer.push(new CssMinimizerPlugin({
+      ...ctx.userConfig.optimizeCSS
     }))
   }
 }
 
 function extractCSS (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
   // CSS extraction
-  if (options.webpack.extractCSS) {
-    config.plugins!.push(new MiniCssExtractPlugin({
+  if (ctx.userConfig.extractCSS) {
+    ctx.config.plugins!.push(new MiniCssExtractPlugin({
       filename: fileName(ctx, 'css'),
       chunkFilename: fileName(ctx, 'css'),
-      ...options.webpack.extractCSS === true ? {} : options.webpack.extractCSS
+      ...ctx.userConfig.extractCSS === true ? {} : ctx.userConfig.extractCSS
     }))
   }
 }
 
 function loaders (ctx: WebpackConfigContext) {
-  const { config, options } = ctx
-
   // CSS
-  config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
+  ctx.config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
 
   // PostCSS
-  config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
+  ctx.config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
 
   // Less
-  const lessLoader = { loader: 'less-loader', options: options.webpack.loaders.less }
-  config.module!.rules!.push(createdStyleRule('less', /\.less$/i, lessLoader, ctx))
+  const lessLoader = { loader: 'less-loader', options: ctx.userConfig.loaders.less }
+  ctx.config.module!.rules!.push(createdStyleRule('less', /\.less$/i, lessLoader, ctx))
 
   // Sass (TODO: optional dependency)
-  const sassLoader = { loader: 'sass-loader', options: options.webpack.loaders.sass }
-  config.module!.rules!.push(createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
+  const sassLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.sass }
+  ctx.config.module!.rules!.push(createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
 
-  const scssLoader = { loader: 'sass-loader', options: options.webpack.loaders.scss }
-  config.module!.rules!.push(createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
+  const scssLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.scss }
+  ctx.config.module!.rules!.push(createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
 
   // Stylus
-  const stylusLoader = { loader: 'stylus-loader', options: options.webpack.loaders.stylus }
-  config.module!.rules!.push(createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
+  const stylusLoader = { loader: 'stylus-loader', options: ctx.userConfig.loaders.stylus }
+  ctx.config.module!.rules!.push(createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
 }
 
 function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
-  const { options } = ctx
-
   const styleLoaders = [
     createPostcssLoadersRule(ctx),
     processorLoader
   ].filter(Boolean)
 
-  options.webpack.loaders.css.importLoaders =
-    options.webpack.loaders.cssModules.importLoaders =
+  ctx.userConfig.loaders.css.importLoaders =
+    ctx.userConfig.loaders.cssModules.importLoaders =
     styleLoaders.length
 
-  const cssLoaders = createCssLoadersRule(ctx, options.webpack.loaders.css)
-  const cssModuleLoaders = createCssLoadersRule(ctx, options.webpack.loaders.cssModules)
+  const cssLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.css)
+  const cssModuleLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.cssModules)
 
   return {
     test,
@@ -92,11 +84,9 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx
 }
 
 function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any) {
-  const { options } = ctx
-
   const cssLoader = { loader: 'css-loader', options: cssLoaderOptions }
 
-  if (options.webpack.extractCSS) {
+  if (ctx.userConfig.extractCSS) {
     if (ctx.isServer) {
       // https://webpack.js.org/loaders/css-loader/#exportonlylocals
       if (cssLoader.options.modules) {
@@ -124,11 +114,9 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
 }
 
 function createPostcssLoadersRule (ctx: WebpackConfigContext) {
-  const { options, nuxt } = ctx
+  if (!ctx.options.postcss) { return }
 
-  if (!options.postcss) { return }
-
-  const config = getPostcssConfig(nuxt)
+  const config = getPostcssConfig(ctx.nuxt)
 
   if (!config) {
     return

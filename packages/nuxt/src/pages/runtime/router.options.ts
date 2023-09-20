@@ -2,6 +2,7 @@ import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
 import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
+import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -12,13 +13,17 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
+    // @ts-expect-error untyped, nuxt-injected option
+    const behavior = useRouter().options?.scrollBehaviorType ?? 'auto'
 
     // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
     // savedPosition is only available for popstate navigations (back button)
     let position: ScrollPosition = savedPosition || undefined
 
+    const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
+
     // Scroll to top if route is changed by default
-    if (!position && from && to && to.meta.scrollToTop !== false && _isDifferentRoute(from, to)) {
+    if (!position && from && to && routeAllowsScrollToTop !== false && _isDifferentRoute(from, to)) {
       position = { left: 0, top: 0 }
     }
 
@@ -28,7 +33,7 @@ export default <RouterConfig> {
         return { left: 0, top: 0 }
       }
       if (to.hash) {
-        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash) }
+        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
       }
     }
 
@@ -39,7 +44,7 @@ export default <RouterConfig> {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
         await nextTick()
         if (to.hash) {
-          position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash) }
+          position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
         }
         resolve(position)
       })
@@ -57,13 +62,6 @@ function _getHashElementScrollMarginTop (selector: string): number {
   return 0
 }
 
-function _isDifferentRoute (a: RouteLocationNormalized, b: RouteLocationNormalized): boolean {
-  const samePageComponent = a.matched[0] === b.matched[0]
-  if (!samePageComponent) {
-    return true
-  }
-  if (samePageComponent && JSON.stringify(a.params) !== JSON.stringify(b.params)) {
-    return true
-  }
-  return false
+function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
+  return to.path !== from.path || JSON.stringify(from.params) !== JSON.stringify(to.params)
 }

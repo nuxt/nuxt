@@ -5,6 +5,15 @@ on:
   schedule:
     - cron:  '0 0 * * *'
 
+# https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+
+permissions:
+  contents: read
+
 jobs:
   nightly:
     if: github.repository_owner == 'nuxt'
@@ -12,13 +21,13 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           ref: '2.x'
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
@@ -30,8 +39,6 @@ jobs:
         run: yarn run audit
       - name: build
         run: yarn test:fixtures -i
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"
       - name: lint app
         run: yarn lint:app
       - name: test types

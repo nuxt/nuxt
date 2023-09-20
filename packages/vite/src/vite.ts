@@ -1,12 +1,14 @@
+import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { join, resolve } from 'pathe'
-import type { Nuxt, ViteConfig } from '@nuxt/schema'
+import { dirname, join, resolve } from 'pathe'
+import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -14,6 +16,7 @@ import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
+import { ssrStylesPlugin } from './plugins/ssr-styles'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -23,10 +26,31 @@ export interface ViteBuildContext {
   ssrServer?: vite.ViteDevServer
 }
 
-export async function bundle (nuxt: Nuxt) {
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry ||
     (nuxt.options.vite.devBundler === 'vite-node' && nuxt.options.dev)
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+
+  let allowDirs = [
+    nuxt.options.appDir,
+    nuxt.options.workspaceDir,
+    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...Object.values(nuxt.apps).flatMap(app => [
+      ...app.components.map(c => dirname(c.filePath)),
+      ...app.plugins.map(p => dirname(p.src)),
+      ...app.middleware.map(m => dirname(m.path)),
+      ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
+      dirname(nuxt.apps.default.rootComponent!),
+      dirname(nuxt.apps.default.errorComponent!)
+    ])
+  ].filter(d => d && existsSync(d))
+
+  for (const dir of allowDirs) {
+    allowDirs = allowDirs.filter(d => !d.startsWith(dir) || d === dir)
+  }
+
+  const { $client, $server, ...viteConfig } = nuxt.options.vite
+
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -51,7 +75,10 @@ export async function bundle (nuxt: Nuxt) {
           exclude: ['nuxt/app']
         },
         css: resolveCSSOptions(nuxt),
-        define: { __NUXT_VERSION__: JSON.stringify(nuxt._version) },
+        define: {
+          __NUXT_VERSION__: JSON.stringify(nuxt._version),
+          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+        },
         build: {
           copyPublicDir: false,
           rollupOptions: {
@@ -72,7 +99,7 @@ export async function bundle (nuxt: Nuxt) {
         },
         plugins: [
           composableKeysPlugin.vite({
-            sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,
             composables: nuxt.options.optimization.keyedComposables
           }),
@@ -88,14 +115,11 @@ export async function bundle (nuxt: Nuxt) {
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: [
-              nuxt.options.appDir,
-              ...nuxt.options._layers.map(l => l.config.rootDir)
-            ]
+            allow: [...new Set(allowDirs)]
           }
         }
       } satisfies ViteConfig,
-      nuxt.options.vite
+      viteConfig
     )
   }
 
@@ -106,8 +130,6 @@ export async function bundle (nuxt: Nuxt) {
     ctx.config.build!.watch = undefined
   }
 
-  await nuxt.callHook('vite:extend', ctx)
-
   // Add type-checking
   if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
@@ -115,7 +137,49 @@ export async function bundle (nuxt: Nuxt) {
       vueTsc: {
         tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
       }
-    }), { client: !nuxt.options.ssr, server: nuxt.options.ssr })
+    }), { server: nuxt.options.ssr })
+  }
+
+  await nuxt.callHook('vite:extend', ctx)
+
+  nuxt.hook('vite:extendConfig', (config) => {
+    config.plugins!.push(replace({
+      preventAssignment: true,
+      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.')))
+    }))
+  })
+
+  if (!ctx.nuxt.options.dev) {
+    const chunksWithInlinedCSS = new Set<string>()
+    const clientCSSMap = {}
+
+    nuxt.hook('vite:extendConfig', (config, { isServer }) => {
+      config.plugins!.push(ssrStylesPlugin({
+        srcDir: ctx.nuxt.options.srcDir,
+        clientCSSMap,
+        chunksWithInlinedCSS,
+        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        components: ctx.nuxt.apps.default.components,
+        globalCSS: ctx.nuxt.options.css,
+        mode: isServer ? 'server' : 'client',
+        entry: ctx.entry
+      }))
+    })
+
+    // Remove CSS entries for files that will have inlined styles
+    ctx.nuxt.hook('build:manifest', (manifest) => {
+      for (const key in manifest) {
+        const entry = manifest[key]
+        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
+        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
+          // @ts-expect-error internal key
+          entry._globalCSS = true
+        }
+        if (shouldRemoveCSS && entry.css) {
+          entry.css = []
+        }
+      }
+    })
   }
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {

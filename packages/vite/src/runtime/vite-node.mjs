@@ -7,6 +7,8 @@ import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
+
+// eslint-disable-next-line jsdoc/valid-types
 /** @type {(ssrContext: import('#app').NuxtSSRContext) => Promise<any>} */
 let render
 
@@ -15,6 +17,7 @@ export default async (ssrContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   process.server = true
+  import.meta.server = true
 
   // Invalidate cache for files changed since last rendering
   const invalidates = await viteNodeFetch('/invalidates')
@@ -33,15 +36,10 @@ export default async (ssrContext) => {
 }
 
 function createRunner () {
-  const _importers = new Map()
   return new ViteNodeRunner({
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
-    // @ts-expect-error https://github.com/vitest-dev/vitest/pull/3312
-    resolveId (id, importer) { _importers.set(id, importer) },
     async fetchModule (id) {
-      const importer = _importers.get(id)
-      _importers.delete(id)
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
       return await viteNodeFetch('/module/' + encodeURI(id)).catch((err) => {
         const errorData = err?.data?.data
@@ -50,7 +48,7 @@ function createRunner () {
         }
         let _err
         try {
-          const { message, stack } = formatViteError(errorData, id, importer)
+          const { message, stack } = formatViteError(errorData, id)
           _err = createError({
             statusMessage: 'Vite Error',
             message,
@@ -75,9 +73,8 @@ function createRunner () {
 /**
  * @param errorData {any}
  * @param id {string}
- * @param importer {string}
  */
-function formatViteError (errorData, id, importer) {
+function formatViteError (errorData, id) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
 
@@ -100,7 +97,7 @@ function formatViteError (errorData, id, importer) {
 
   const stack = [
     message,
-    `at ${loc} ${importer ? `(imported from ${importer})` : ''}`,
+    `at ${loc}`,
     errorData.stack
   ].filter(Boolean).join('\n')
 

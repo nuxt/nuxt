@@ -19,8 +19,8 @@ If you throw an error created with `createError`:
 
 ### Example
 
-```vue [pages/movies/[slug].vue]
-<script setup>
+```vue [pages/movies/[slug\\].vue]
+<script setup lang="ts">
 const route = useRoute()
 const { data } = await useFetch(`/api/movies/${route.params.slug}`)
 if (!data.value) {
@@ -41,7 +41,7 @@ export default eventHandler(() => {
     statusCode: 404,
     statusMessage: 'Page Not Found'
   })
-}
+})
 ```
 
 ::ReadMore{link="/docs/getting-started/error-handling"}
