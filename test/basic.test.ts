@@ -1758,9 +1758,9 @@ describe('component islands', () => {
       result.chunks = {}
       result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
 
-      const propsEntries = Object.entries(props)
-      const teleportsEntries = Object.entries(teleports)
-      const chunksEntries = Object.entries(chunks)
+      const propsEntries = Object.entries(props || {})
+      const teleportsEntries = Object.entries(teleports || {})
+      const chunksEntries = Object.entries(chunks || {})
 
       expect(result).toMatchInlineSnapshot(`
         {
