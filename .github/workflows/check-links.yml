@@ -19,7 +19,7 @@ on:
 permissions: {}
 
 jobs:
-  linkChecker:
+  link-checker:
     runs-on: ubuntu-latest
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
