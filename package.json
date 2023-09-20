@@ -37,8 +37,8 @@
     "vite": "4.4.9",
     "vue": "3.3.4",
     "magic-string": "^0.30.3",
-    "nuxi": "npm:nuxi-edge@3.9.0-1695216296.d6a9904",
-    "listhen": "^1.5.3"
+    "nuxi": "npm:nuxi-edge@3.9.0-1695217699.68ba094",
+    "listhen": "^1.5.5"
   },
   "devDependencies": {
     "@nuxt/test-utils": "workspace:*",
