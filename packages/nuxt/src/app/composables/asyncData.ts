@@ -40,11 +40,11 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
+  dataStore?: (key: string) => any
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
-  forcePayloadExtraction?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -68,7 +68,6 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-const getDefault = () => null
 export function useAsyncData<
   ResT,
   DataE = Error,
@@ -132,27 +131,29 @@ export function useAsyncData<
     throw new TypeError('[nuxt] [asyncData] handler must be a function.')
   }
 
+  // Setup nuxt instance payload
+  const nuxt = useNuxtApp()
+
+  // Used to get default values
+  const getDefault = () => null
+  const getDataStore = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+
   // Apply defaults
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
+  options.dataStore = options.dataStore ?? getDataStore
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
-  options.forcePayloadExtraction = options.forcePayloadExtraction ?? false
-
-  // Setup nuxt instance payload
-  const nuxt = useNuxtApp()
-
-  const getCachedData = () => (nuxt.isHydrating || options.forcePayloadExtraction) ? nuxt.payload.data[key] : nuxt.static.data[key]
-  const hasCachedData = () => getCachedData() !== undefined
+  const hasCachedData = () => ![null, undefined].includes(options.dataStore?.(key))
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt.payload._errors[key] ??= null
 
     nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default!()),
+      data: ref(options.dataStore?.(key) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
@@ -172,7 +173,7 @@ export function useAsyncData<
     }
     // Avoid fetching same key that is already fetched
     if ((opts._initial || (nuxt.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return getCachedData()
+      return options.dataStore?.(key)
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
