@@ -134,10 +134,10 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-      if (import.meta.client && !canLoadClientComponent.value && Object.keys(nonReactivePayload.teleports).length) {
-        for (const key in nonReactivePayload.teleports) {
+      if (import.meta.client && !canLoadClientComponent.value) {
+        for (const [key, value] of Object.entries(nonReactivePayload.teleports || {})) {
           html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
-            return full + nonReactivePayload.teleports[key]
+            return full + value
           })
         }
       }
@@ -205,7 +205,7 @@ export default defineComponent({
         error.value = null
 
         if (import.meta.client) {
-          if (canLoadClientComponent.value) {
+          if (canLoadClientComponent.value && res.chunks) {
             await loadComponents(props.source, res.chunks)
           }
           nonReactivePayload.props = res.props
@@ -237,7 +237,7 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if (canLoadClientComponent.value) {
+    } else if (canLoadClientComponent.value && nonReactivePayload.chunks) {
       await loadComponents(props.source, nonReactivePayload.chunks)
     }
 

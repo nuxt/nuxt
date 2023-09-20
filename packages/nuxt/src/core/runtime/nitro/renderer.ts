@@ -72,9 +72,9 @@ export interface NuxtIslandResponse {
     link: (Record<string, string>)[]
     style: ({ innerHTML: string, key: string })[]
   }
-  chunks: Record<string, string>
-  props: Record<string, Record<string, any>>
-  teleports: Record<string, string>
+  chunks?: Record<string, string>
+  props?: Record<string, Record<string, any>>
+  teleports?: Record<string, string>
 }
 
 export interface NuxtRenderResponse {
