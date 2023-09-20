@@ -32,8 +32,8 @@ importers:
         specifier: 11.0.2
         version: 11.0.2
       '@types/node':
-        specifier: 18.17.17
-        version: 18.17.17
+        specifier: 18.17.18
+        version: 18.17.18
       '@types/semver':
         specifier: 7.5.2
         version: 7.5.2
@@ -74,8 +74,8 @@ importers:
         specifier: 1.8.1
         version: 1.8.1
       happy-dom:
-        specifier: 12.0.1
-        version: 12.0.1
+        specifier: 12.1.2
+        version: 12.1.2
       jiti:
         specifier: 1.20.0
         version: 1.20.0
@@ -93,7 +93,7 @@ importers:
         version: link:packages/nuxt
       nuxt-vitest:
         specifier: 0.10.5
-        version: 0.10.5(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.3.4)(happy-dom@12.0.1)(vite@4.4.9)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.10.5(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.3.4)(happy-dom@12.1.2)(vite@4.4.9)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
       ofetch:
         specifier: 1.3.3
         version: 1.3.3
@@ -120,13 +120,13 @@ importers:
         version: 1.3.0
       vite:
         specifier: 4.4.9
-        version: 4.4.9(@types/node@18.17.17)
+        version: 4.4.9(@types/node@18.17.18)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(happy-dom@12.0.1)
+        version: 0.33.0(happy-dom@12.1.2)
       vitest-environment-nuxt:
         specifier: 0.10.5
-        version: 0.10.5(happy-dom@12.0.1)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
+        version: 0.10.5(happy-dom@12.1.2)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -144,7 +144,7 @@ importers:
     devDependencies:
       '@nuxt-themes/docus':
         specifier: 1.14.6
-        version: 1.14.6(nuxt@packages+nuxt)(postcss@8.4.29)(vue@3.3.4)
+        version: 1.14.6(nuxt@packages+nuxt)(postcss@8.4.30)(vue@3.3.4)
 
   packages/kit:
     dependencies:
@@ -223,10 +223,10 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vite:
         specifier: 4.4.9
-        version: 4.4.9(@types/node@18.17.17)
+        version: 4.4.9(@types/node@18.17.18)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(happy-dom@12.0.1)
+        version: 0.33.0(happy-dom@12.1.2)
       webpack:
         specifier: 5.88.2
         version: 5.88.2
@@ -243,8 +243,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@nuxt/telemetry':
-        specifier: ^2.4.1
-        version: 2.4.1
+        specifier: ^2.5.0
+        version: 2.5.0
       '@nuxt/ui-templates':
         specifier: ^1.3.1
         version: 1.3.1
@@ -253,7 +253,7 @@ importers:
         version: link:../vite
       '@types/node':
         specifier: ^14.18.0 || >=16.10.0
-        version: 18.17.17
+        version: 18.17.18
       '@unhead/dom':
         specifier: ^1.7.4
         version: 1.7.4
@@ -416,10 +416,10 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vite:
         specifier: 4.4.9
-        version: 4.4.9(@types/node@18.17.17)
+        version: 4.4.9(@types/node@18.17.18)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(happy-dom@12.0.1)
+        version: 0.33.0(happy-dom@12.1.2)
 
   packages/schema:
     dependencies:
@@ -458,8 +458,8 @@ importers:
         version: 1.4.0
     devDependencies:
       '@nuxt/telemetry':
-        specifier: 2.4.1
-        version: 2.4.1
+        specifier: 2.5.0
+        version: 2.5.0
       '@types/file-loader':
         specifier: 5.0.2
         version: 5.0.2
@@ -501,7 +501,7 @@ importers:
         version: 2.3.1
       vite:
         specifier: 4.4.9
-        version: 4.4.9(@types/node@18.17.17)
+        version: 4.4.9(@types/node@18.17.18)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -565,7 +565,7 @@ importers:
         version: 2.0.0(typescript@5.2.2)
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(happy-dom@12.0.1)
+        version: 0.33.0(happy-dom@12.1.2)
 
   packages/vite:
     dependencies:
@@ -583,7 +583,7 @@ importers:
         version: 3.0.2(vite@4.4.9)(vue@3.3.4)
       autoprefixer:
         specifier: ^10.4.15
-        version: 10.4.15(postcss@8.4.29)
+        version: 10.4.15(postcss@8.4.30)
       clear:
         specifier: ^0.1.0
         version: 0.1.0
@@ -592,7 +592,7 @@ importers:
         version: 3.2.3
       cssnano:
         specifier: ^6.0.1
-        version: 6.0.1(postcss@8.4.29)
+        version: 6.0.1(postcss@8.4.30)
       defu:
         specifier: ^6.1.2
         version: 6.1.2
@@ -639,14 +639,14 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       postcss:
-        specifier: ^8.4.29
-        version: 8.4.29
+        specifier: ^8.4.30
+        version: 8.4.30
       postcss-import:
         specifier: ^15.1.0
-        version: 15.1.0(postcss@8.4.29)
+        version: 15.1.0(postcss@8.4.30)
       postcss-url:
         specifier: ^10.1.3
-        version: 10.1.3(postcss@8.4.29)
+        version: 10.1.3(postcss@8.4.30)
       rollup-plugin-visualizer:
         specifier: ^5.9.2
         version: 5.9.2(rollup@3.29.1)
@@ -664,10 +664,10 @@ importers:
         version: 1.5.0
       vite:
         specifier: 4.4.9
-        version: 4.4.9(@types/node@18.17.17)
+        version: 4.4.9(@types/node@18.17.18)
       vite-node:
         specifier: ^0.33.0
-        version: 0.33.0(@types/node@18.17.17)
+        version: 0.33.0(@types/node@18.17.18)
       vite-plugin-checker:
         specifier: ^0.6.2
         version: 0.6.2(eslint@8.49.0)(typescript@5.2.2)(vite@4.4.9)(vue-tsc@1.8.11)
@@ -704,7 +704,7 @@ importers:
         version: link:../kit
       autoprefixer:
         specifier: ^10.4.15
-        version: 10.4.15(postcss@8.4.29)
+        version: 10.4.15(postcss@8.4.30)
       css-loader:
         specifier: ^6.8.1
         version: 6.8.1(webpack@5.88.2)
@@ -713,7 +713,7 @@ importers:
         version: 5.0.1(webpack@5.88.2)
       cssnano:
         specifier: ^6.0.1
-        version: 6.0.1(postcss@8.4.29)
+        version: 6.0.1(postcss@8.4.30)
       defu:
         specifier: ^6.1.2
         version: 6.1.2
@@ -766,17 +766,17 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       postcss:
-        specifier: ^8.4.29
-        version: 8.4.29
+        specifier: ^8.4.30
+        version: 8.4.30
       postcss-import:
         specifier: ^15.1.0
-        version: 15.1.0(postcss@8.4.29)
+        version: 15.1.0(postcss@8.4.30)
       postcss-loader:
         specifier: ^7.3.3
-        version: 7.3.3(postcss@8.4.29)(webpack@5.88.2)
+        version: 7.3.3(postcss@8.4.30)(webpack@5.88.2)
       postcss-url:
         specifier: ^10.1.3
-        version: 10.1.3(postcss@8.4.29)
+        version: 10.1.3(postcss@8.4.30)
       pug-plain-loader:
         specifier: ^1.1.0
         version: 1.1.0(pug@3.0.2)
@@ -890,7 +890,7 @@ importers:
         version: 1.3.3
       vitest:
         specifier: 0.33.0
-        version: 0.33.0(happy-dom@12.0.1)
+        version: 0.33.0(happy-dom@12.1.2)
       vue:
         specifier: 3.3.4
         version: 3.3.4
@@ -2000,7 +2000,7 @@ packages:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       jest-mock: 29.7.0
     dev: true
 
@@ -2027,7 +2027,7 @@ packages:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -2081,7 +2081,7 @@ packages:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       '@types/yargs': 17.0.24
       chalk: 4.1.2
 
@@ -2172,12 +2172,12 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  /@nuxt-themes/docus@1.14.6(nuxt@packages+nuxt)(postcss@8.4.29)(vue@3.3.4):
+  /@nuxt-themes/docus@1.14.6(nuxt@packages+nuxt)(postcss@8.4.30)(vue@3.3.4):
     resolution: {integrity: sha512-tkSG7j0jhVo53wEpK9V48hIvaK0XEzVU64hXhFfnIMv6LJu99cKOC//boebPbN9qLbJmkBdo4IAIJ0tN5MD0qw==}
     dependencies:
-      '@nuxt-themes/elements': 0.9.4(postcss@8.4.29)(vue@3.3.4)
-      '@nuxt-themes/tokens': 1.9.1(postcss@8.4.29)(vue@3.3.4)
-      '@nuxt-themes/typography': 0.11.0(postcss@8.4.29)(vue@3.3.4)
+      '@nuxt-themes/elements': 0.9.4(postcss@8.4.30)(vue@3.3.4)
+      '@nuxt-themes/tokens': 1.9.1(postcss@8.4.30)(vue@3.3.4)
+      '@nuxt-themes/typography': 0.11.0(postcss@8.4.30)(vue@3.3.4)
       '@nuxt/content': 2.7.2
       '@nuxthq/studio': 0.13.4
       '@vueuse/integrations': 10.3.0(focus-trap@7.5.2)(fuse.js@6.6.2)(vue@3.3.4)
@@ -2215,10 +2215,10 @@ packages:
       - vue
     dev: true
 
-  /@nuxt-themes/elements@0.9.4(postcss@8.4.29)(vue@3.3.4):
+  /@nuxt-themes/elements@0.9.4(postcss@8.4.30)(vue@3.3.4):
     resolution: {integrity: sha512-d7XgHc/gjMpre26+N76APL1vlnQHiZTOk61GC4I/ZYQuioSfoKuoIP+Ixrr0QgM22j4MRBtAaBnDAg1wRJrDCQ==}
     dependencies:
-      '@nuxt-themes/tokens': 1.9.1(postcss@8.4.29)(vue@3.3.4)
+      '@nuxt-themes/tokens': 1.9.1(postcss@8.4.30)(vue@3.3.4)
       '@vueuse/core': 9.13.0(vue@3.3.4)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -2228,12 +2228,12 @@ packages:
       - vue
     dev: true
 
-  /@nuxt-themes/tokens@1.9.1(postcss@8.4.29)(vue@3.3.4):
+  /@nuxt-themes/tokens@1.9.1(postcss@8.4.30)(vue@3.3.4):
     resolution: {integrity: sha512-5C28kfRvKnTX8Tux+xwyaf+2pxKgQ53dC9l6C33sZwRRyfUJulGDZCFjKbuNq4iqVwdGvkFSQBYBYjFAv6t75g==}
     dependencies:
       '@nuxtjs/color-mode': 3.3.0
       '@vueuse/core': 9.13.0(vue@3.3.4)
-      pinceau: 0.18.9(postcss@8.4.29)
+      pinceau: 0.18.9(postcss@8.4.30)
     transitivePeerDependencies:
       - '@vue/composition-api'
       - postcss
@@ -2242,13 +2242,13 @@ packages:
       - vue
     dev: true
 
-  /@nuxt-themes/typography@0.11.0(postcss@8.4.29)(vue@3.3.4):
+  /@nuxt-themes/typography@0.11.0(postcss@8.4.30)(vue@3.3.4):
     resolution: {integrity: sha512-TqyvD7sDWnqGmL00VtuI7JdmNTPL5/g957HCAWNzcNp+S20uJjW/FXSdkM76d4JSVDHvBqw7Wer3RsqVhqvA4w==}
     dependencies:
       '@nuxtjs/color-mode': 3.3.0
       nuxt-config-schema: 0.4.6
       nuxt-icon: 0.3.3(vue@3.3.4)
-      pinceau: 0.18.9(postcss@8.4.29)
+      pinceau: 0.18.9(postcss@8.4.30)
       ufo: 1.3.0
     transitivePeerDependencies:
       - postcss
@@ -2330,8 +2330,8 @@ packages:
       webpack: 5.88.2
     dev: false
 
-  /@nuxt/telemetry@2.4.1:
-    resolution: {integrity: sha512-Cj+4sXjO5pZNW2sX7Y+djYpf4pZwgYF3rV/YHLWIOq9nAjo2UcDXjh1z7qnhkoUkvJN3lHnvhnCNhfAioe6k/A==}
+  /@nuxt/telemetry@2.5.0:
+    resolution: {integrity: sha512-7vZyOHfCAZg1PuCwy3B87MQOezW4pf8BC3gNDL92FW24BuLF0dl/BbFfxPeRxvjivuj5kkNM78x/qzNRCKfZgw==}
     hasBin: true
     dependencies:
       '@nuxt/kit': link:packages/kit
@@ -2753,7 +2753,7 @@ packages:
   /@types/connect@3.4.35:
     resolution: {integrity: sha512-cdeYyv4KWoEgpBISTxWvqYsVy444DOqehiF3fM3ne10AmJ62RSyNkUnxMJXHQWRQQX2eR94m5y1IZyDwBjV9FQ==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
     dev: true
 
   /@types/debug@4.1.8:
@@ -2787,13 +2787,13 @@ packages:
     resolution: {integrity: sha512-c0hrgAOVYr21EX8J0jBMXGLMgJqVf/v6yxi0dLaJboW9aQPh16Id+z6w2Tx1hm+piJOLv8xPfVKZCLfjPw/IMQ==}
     dependencies:
       '@types/jsonfile': 6.1.1
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
     dev: true
 
   /@types/graceful-fs@4.1.6:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
     dev: true
 
   /@types/hash-sum@1.0.0:
@@ -2809,7 +2809,7 @@ packages:
   /@types/http-proxy@1.17.11:
     resolution: {integrity: sha512-HC8G7c1WmaF2ekqpnFq626xd3Zz0uvaqFmBJNRZCGEZCXkvSdJoNFn/8Ygbd9fKNQj8UzLdCETaI0UWPAjK7IA==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
 
   /@types/istanbul-lib-coverage@2.0.4:
     resolution: {integrity: sha512-z/QT1XN4K4KYuslS23k62yDIDLwLFkzxOuMplDtObz0+y7VqJCaO2o+SPwHCvLFZh7xazvvoor2tA/hPz9ee7g==}
@@ -2834,7 +2834,7 @@ packages:
   /@types/jsonfile@6.1.1:
     resolution: {integrity: sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
     dev: true
 
   /@types/lodash-es@4.17.9:
@@ -2860,11 +2860,11 @@ packages:
   /@types/node-sass@4.11.3:
     resolution: {integrity: sha512-wXPCn3t9uu5rR4zXNSLasZHQMuRzUKBsdi4MsgT8uq4Lp1gQQo+T2G23tGj4SSgDHeNBle6vGseZtM2XV/X9bw==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
     dev: true
 
-  /@types/node@18.17.17:
-    resolution: {integrity: sha512-cOxcXsQ2sxiwkykdJqvyFS+MLQPLvIdwh5l6gNg8qF6s+C7XSkEWOZjK+XhUZd+mYvHV/180g2cnCcIl4l06Pw==}
+  /@types/node@18.17.18:
+    resolution: {integrity: sha512-/4QOuy3ZpV7Ya1GTRz5CYSz3DgkKpyUptXuQ5PPce7uuyJAOR7r9FhkmxJfvcNUXyklbC63a+YvB3jxy7s9ngw==}
 
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -2892,7 +2892,7 @@ packages:
   /@types/sass-loader@8.0.5:
     resolution: {integrity: sha512-3b3lQ+UwWanaPBzOcP1YeNTR4q0Klt2UEezhdIjDXkTnQ93F+fnv+z1tMsQBAopY0b+c5ATN5pHQ+vfzxaRnFg==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       '@types/node-sass': 4.11.3
       '@types/webpack': 4.41.33
       sass: 1.64.2
@@ -2939,7 +2939,7 @@ packages:
   /@types/webpack-bundle-analyzer@4.6.0:
     resolution: {integrity: sha512-XeQmQCCXdZdap+A/60UKmxW5Mz31Vp9uieGlHB3T4z/o2OLVLtTI3bvTuS6A2OWd/rbAAQiGGWIEFQACu16szA==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       tapable: 2.2.1
       webpack: 5.88.2
     transitivePeerDependencies:
@@ -2965,7 +2965,7 @@ packages:
   /@types/webpack-sources@3.2.0:
     resolution: {integrity: sha512-Ft7YH3lEVRQ6ls8k4Ff1oB4jN6oy/XmU6tQISKdhfh+1mR+viZFphS6WL0IrtDOzvefmJg5a0s7ZQoRXwqTEFg==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       '@types/source-list-map': 0.1.2
       source-map: 0.7.4
     dev: true
@@ -2979,7 +2979,7 @@ packages:
   /@types/webpack@4.41.33:
     resolution: {integrity: sha512-PPajH64Ft2vWevkerISMtnZ8rTs4YmRbs+23c402J0INmxDKCrhZNvwZYtzx96gY2wAtXdrK1BS2fiC8MlLr3g==}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       '@types/tapable': 1.0.8
       '@types/uglify-js': 3.17.1
       '@types/webpack-sources': 3.2.0
@@ -3198,7 +3198,7 @@ packages:
       '@babel/core': 7.22.10
       '@babel/plugin-transform-typescript': 7.22.10(@babel/core@7.22.10)
       '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.22.10)
-      vite: 4.4.9(@types/node@18.17.17)
+      vite: 4.4.9(@types/node@18.17.18)
       vue: 3.3.4
     transitivePeerDependencies:
       - supports-color
@@ -3210,7 +3210,7 @@ packages:
       vite: 4.4.9
       vue: 3.3.4
     dependencies:
-      vite: 4.4.9(@types/node@18.17.17)
+      vite: 4.4.9(@types/node@18.17.18)
       vue: 3.3.4
 
   /@vitest/expect@0.33.0:
@@ -3255,7 +3255,7 @@ packages:
       pathe: 1.1.1
       picocolors: 1.0.0
       sirv: 2.0.3
-      vitest: 0.33.0(happy-dom@12.0.1)
+      vitest: 0.33.0(happy-dom@12.1.2)
     dev: true
 
   /@vitest/utils@0.33.0:
@@ -3373,7 +3373,7 @@ packages:
       '@vue/shared': 3.3.4
       estree-walker: 2.0.2
       magic-string: 0.30.3
-      postcss: 8.4.29
+      postcss: 8.4.30
       source-map-js: 1.0.2
 
   /@vue/compiler-ssr@3.3.4:
@@ -4006,7 +4006,7 @@ packages:
   /async@3.2.4:
     resolution: {integrity: sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==}
 
-  /autoprefixer@10.4.15(postcss@8.4.29):
+  /autoprefixer@10.4.15(postcss@8.4.30):
     resolution: {integrity: sha512-KCuPB8ZCIqFdA4HwKXsvz7j6gvSDNhDP7WnUjBleRkKjPdvCmHFuQ77ocavI8FT6NdvlBnE2UFr2H4Mycn8Vew==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
@@ -4018,7 +4018,7 @@ packages:
       fraction.js: 4.2.0
       normalize-range: 0.1.2
       picocolors: 1.0.0
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -4574,13 +4574,13 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  /css-declaration-sorter@6.4.1(postcss@8.4.29):
+  /css-declaration-sorter@6.4.1(postcss@8.4.30):
     resolution: {integrity: sha512-rtdthzxKuyq6IzqX6jEcIzQF/YqccluefyCYheovBOLhFT/drQA9zj/UbRAa9J7C0o6EG6u3E6g+vKkay7/k3g==}
     engines: {node: ^10 || ^12 || >=14}
     peerDependencies:
       postcss: ^8.0.9
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
   /css-loader@6.8.1(webpack@5.88.2):
@@ -4589,12 +4589,12 @@ packages:
     peerDependencies:
       webpack: ^5.0.0
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.29)
-      postcss: 8.4.29
-      postcss-modules-extract-imports: 3.0.0(postcss@8.4.29)
-      postcss-modules-local-by-default: 4.0.3(postcss@8.4.29)
-      postcss-modules-scope: 3.0.0(postcss@8.4.29)
-      postcss-modules-values: 4.0.0(postcss@8.4.29)
+      icss-utils: 5.1.0(postcss@8.4.30)
+      postcss: 8.4.30
+      postcss-modules-extract-imports: 3.0.0(postcss@8.4.30)
+      postcss-modules-local-by-default: 4.0.3(postcss@8.4.30)
+      postcss-modules-scope: 3.0.0(postcss@8.4.30)
+      postcss-modules-values: 4.0.0(postcss@8.4.30)
       postcss-value-parser: 4.2.0
       semver: 7.5.4
       webpack: 5.88.2
@@ -4626,9 +4626,9 @@ packages:
         optional: true
     dependencies:
       '@jridgewell/trace-mapping': 0.3.18
-      cssnano: 6.0.1(postcss@8.4.29)
+      cssnano: 6.0.1(postcss@8.4.30)
       jest-worker: 29.7.0
-      postcss: 8.4.29
+      postcss: 8.4.30
       schema-utils: 4.2.0
       serialize-javascript: 6.0.1
       webpack: 5.88.2
@@ -4674,62 +4674,62 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
-  /cssnano-preset-default@6.0.1(postcss@8.4.29):
+  /cssnano-preset-default@6.0.1(postcss@8.4.30):
     resolution: {integrity: sha512-7VzyFZ5zEB1+l1nToKyrRkuaJIx0zi/1npjvZfbBwbtNTzhLtlvYraK/7/uqmX2Wb2aQtd983uuGw79jAjLSuQ==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      css-declaration-sorter: 6.4.1(postcss@8.4.29)
-      cssnano-utils: 4.0.0(postcss@8.4.29)
-      postcss: 8.4.29
-      postcss-calc: 9.0.1(postcss@8.4.29)
-      postcss-colormin: 6.0.0(postcss@8.4.29)
-      postcss-convert-values: 6.0.0(postcss@8.4.29)
-      postcss-discard-comments: 6.0.0(postcss@8.4.29)
-      postcss-discard-duplicates: 6.0.0(postcss@8.4.29)
-      postcss-discard-empty: 6.0.0(postcss@8.4.29)
-      postcss-discard-overridden: 6.0.0(postcss@8.4.29)
-      postcss-merge-longhand: 6.0.0(postcss@8.4.29)
-      postcss-merge-rules: 6.0.1(postcss@8.4.29)
-      postcss-minify-font-values: 6.0.0(postcss@8.4.29)
-      postcss-minify-gradients: 6.0.0(postcss@8.4.29)
-      postcss-minify-params: 6.0.0(postcss@8.4.29)
-      postcss-minify-selectors: 6.0.0(postcss@8.4.29)
-      postcss-normalize-charset: 6.0.0(postcss@8.4.29)
-      postcss-normalize-display-values: 6.0.0(postcss@8.4.29)
-      postcss-normalize-positions: 6.0.0(postcss@8.4.29)
-      postcss-normalize-repeat-style: 6.0.0(postcss@8.4.29)
-      postcss-normalize-string: 6.0.0(postcss@8.4.29)
-      postcss-normalize-timing-functions: 6.0.0(postcss@8.4.29)
-      postcss-normalize-unicode: 6.0.0(postcss@8.4.29)
-      postcss-normalize-url: 6.0.0(postcss@8.4.29)
-      postcss-normalize-whitespace: 6.0.0(postcss@8.4.29)
-      postcss-ordered-values: 6.0.0(postcss@8.4.29)
-      postcss-reduce-initial: 6.0.0(postcss@8.4.29)
-      postcss-reduce-transforms: 6.0.0(postcss@8.4.29)
-      postcss-svgo: 6.0.0(postcss@8.4.29)
-      postcss-unique-selectors: 6.0.0(postcss@8.4.29)
+      css-declaration-sorter: 6.4.1(postcss@8.4.30)
+      cssnano-utils: 4.0.0(postcss@8.4.30)
+      postcss: 8.4.30
+      postcss-calc: 9.0.1(postcss@8.4.30)
+      postcss-colormin: 6.0.0(postcss@8.4.30)
+      postcss-convert-values: 6.0.0(postcss@8.4.30)
+      postcss-discard-comments: 6.0.0(postcss@8.4.30)
+      postcss-discard-duplicates: 6.0.0(postcss@8.4.30)
+      postcss-discard-empty: 6.0.0(postcss@8.4.30)
+      postcss-discard-overridden: 6.0.0(postcss@8.4.30)
+      postcss-merge-longhand: 6.0.0(postcss@8.4.30)
+      postcss-merge-rules: 6.0.1(postcss@8.4.30)
+      postcss-minify-font-values: 6.0.0(postcss@8.4.30)
+      postcss-minify-gradients: 6.0.0(postcss@8.4.30)
+      postcss-minify-params: 6.0.0(postcss@8.4.30)
+      postcss-minify-selectors: 6.0.0(postcss@8.4.30)
+      postcss-normalize-charset: 6.0.0(postcss@8.4.30)
+      postcss-normalize-display-values: 6.0.0(postcss@8.4.30)
+      postcss-normalize-positions: 6.0.0(postcss@8.4.30)
+      postcss-normalize-repeat-style: 6.0.0(postcss@8.4.30)
+      postcss-normalize-string: 6.0.0(postcss@8.4.30)
+      postcss-normalize-timing-functions: 6.0.0(postcss@8.4.30)
+      postcss-normalize-unicode: 6.0.0(postcss@8.4.30)
+      postcss-normalize-url: 6.0.0(postcss@8.4.30)
+      postcss-normalize-whitespace: 6.0.0(postcss@8.4.30)
+      postcss-ordered-values: 6.0.0(postcss@8.4.30)
+      postcss-reduce-initial: 6.0.0(postcss@8.4.30)
+      postcss-reduce-transforms: 6.0.0(postcss@8.4.30)
+      postcss-svgo: 6.0.0(postcss@8.4.30)
+      postcss-unique-selectors: 6.0.0(postcss@8.4.30)
     dev: false
 
-  /cssnano-utils@4.0.0(postcss@8.4.29):
+  /cssnano-utils@4.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-Z39TLP+1E0KUcd7LGyF4qMfu8ZufI0rDzhdyAMsa/8UyNUU8wpS0fhdBxbQbv32r64ea00h4878gommRVg2BHw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /cssnano@6.0.1(postcss@8.4.29):
+  /cssnano@6.0.1(postcss@8.4.30):
     resolution: {integrity: sha512-fVO1JdJ0LSdIGJq68eIxOqFpIJrZqXUsBt8fkrBcztCQqAjQD51OhZp7tc0ImcbwXD4k7ny84QTV90nZhmqbkg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      cssnano-preset-default: 6.0.1(postcss@8.4.29)
+      cssnano-preset-default: 6.0.1(postcss@8.4.30)
       lilconfig: 2.1.0
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
   /csso@5.0.5:
@@ -6172,8 +6172,8 @@ packages:
       uncrypto: 0.1.3
       unenv: 1.7.4
 
-  /happy-dom@12.0.1:
-    resolution: {integrity: sha512-kBH54b92GFP3pn9tdMBAtjNHoddE4om6vfFoTme2PCG6u/YYiYKas2yxJCd5MAINX+pYfalfpUKQHVQDTljLnw==}
+  /happy-dom@12.1.2:
+    resolution: {integrity: sha512-Ee0MdMXAMzfmZ4gLe33iKt8Rza5Fkyr+DxtHzCiBihTkI8JoX2XOfPdSsKDr0JAoMNYdMrFqIDYBoHq5DJqDXg==}
     dependencies:
       css.escape: 1.5.1
       entities: 4.5.0
@@ -6385,13 +6385,13 @@ packages:
       safer-buffer: 2.1.2
     dev: true
 
-  /icss-utils@5.1.0(postcss@8.4.29):
+  /icss-utils@5.1.0(postcss@8.4.30):
     resolution: {integrity: sha512-soFhflCVWLfRNOPU3iv5Z9VUdT44xFRbzjLsEzSr5AQmgqPMTHdU3PMT1Cf1ssx8fLNJDA1juftYl+PUcv3MqA==}
     engines: {node: ^10 || ^12 || >= 14}
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
   /ignore@5.2.4:
@@ -6774,7 +6774,7 @@ packages:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.6
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -6817,7 +6817,7 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       jest-util: 29.7.0
     dev: true
 
@@ -6859,7 +6859,7 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       chalk: 4.1.2
       ci-info: 3.8.0
       graceful-fs: 4.2.11
@@ -6869,7 +6869,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -6877,7 +6877,7 @@ packages:
     resolution: {integrity: sha512-eIz2msL/EzL9UFTFFx7jBTkeZfku0yUAyZZZmJ93H2TYEiroIx2PQjEXcwYtYl8zXCxb+PAmA2hLIt/6ZEkPHw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -8119,7 +8119,7 @@ packages:
       - vue
     dev: true
 
-  /nuxt-vitest@0.10.5(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.3.4)(happy-dom@12.0.1)(vite@4.4.9)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
+  /nuxt-vitest@0.10.5(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.3.4)(happy-dom@12.1.2)(vite@4.4.9)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-C2VPccMHA/NdYzpFyOw+Wvl+k1LM8gy++yNO7fxJtHBMQEAcZgtq/CS/mPI6oTnOBJC+THjKr51CW0Qk+6CkzQ==}
     peerDependencies:
       '@vitejs/plugin-vue': '*'
@@ -8135,9 +8135,9 @@ packages:
       get-port-please: 3.1.1
       perfect-debounce: 1.0.0
       std-env: 3.4.3
-      vite: 4.4.9(@types/node@18.17.17)
-      vitest: 0.33.0(happy-dom@12.0.1)
-      vitest-environment-nuxt: 0.10.5(happy-dom@12.0.1)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
+      vite: 4.4.9(@types/node@18.17.18)
+      vitest: 0.33.0(happy-dom@12.1.2)
+      vitest-environment-nuxt: 0.10.5(happy-dom@12.1.2)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4)
     transitivePeerDependencies:
       - '@testing-library/vue'
       - '@vue/server-renderer'
@@ -8473,7 +8473,7 @@ packages:
     engines: {node: '>=14.16'}
     dev: false
 
-  /pinceau@0.18.9(postcss@8.4.29):
+  /pinceau@0.18.9(postcss@8.4.30):
     resolution: {integrity: sha512-GJ+l8a5Y+7PP/diwuajJhd2QONTIFkk2YXjrVTh7QKC3sMQEphpLH6ZJfXSeeSonQ0/BnhrrMi9a5e14mmqXug==}
     dependencies:
       '@unocss/reset': 0.50.8
@@ -8488,9 +8488,9 @@ packages:
       ohash: 1.1.3
       paneer: 0.1.0
       pathe: 1.1.1
-      postcss-custom-properties: 13.1.4(postcss@8.4.29)
-      postcss-dark-theme-class: 0.7.3(postcss@8.4.29)
-      postcss-nested: 6.0.1(postcss@8.4.29)
+      postcss-custom-properties: 13.1.4(postcss@8.4.30)
+      postcss-dark-theme-class: 0.7.3(postcss@8.4.30)
+      postcss-nested: 6.0.1(postcss@8.4.30)
       recast: 0.22.0
       scule: 1.0.0
       style-dictionary-esm: 1.3.7
@@ -8525,18 +8525,18 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /postcss-calc@9.0.1(postcss@8.4.29):
+  /postcss-calc@9.0.1(postcss@8.4.30):
     resolution: {integrity: sha512-TipgjGyzP5QzEhsOZUaIkeO5mKeMFpebWzRogWG/ysonUlnHcq5aJe0jOjpfzUU8PeSaBQnrE8ehR0QA5vs8PQ==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.2
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-colormin@6.0.0(postcss@8.4.29):
+  /postcss-colormin@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-EuO+bAUmutWoZYgHn2T1dG1pPqHU6L4TjzPlu4t1wZGXQ/fxV16xg2EJmYi0z+6r+MGV1yvpx1BHkUaRrPa2bw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
@@ -8545,22 +8545,22 @@ packages:
       browserslist: 4.21.10
       caniuse-api: 3.0.0
       colord: 2.9.3
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-convert-values@6.0.0(postcss@8.4.29):
+  /postcss-convert-values@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-U5D8QhVwqT++ecmy8rnTb+RL9n/B806UVaS3m60lqle4YDFcpbS3ae5bTQIh3wOGUSDHSEtMYLs/38dNG7EYFw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
       browserslist: 4.21.10
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-custom-properties@13.1.4(postcss@8.4.29):
+  /postcss-custom-properties@13.1.4(postcss@8.4.30):
     resolution: {integrity: sha512-iSAdaZrM3KMec8cOSzeTUNXPYDlhqsMJHpt62yrjwG6nAnMtRHPk5JdMzGosBJtqEahDolvD5LNbcq+EZ78o5g==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
@@ -8569,53 +8569,53 @@ packages:
       '@csstools/cascade-layer-name-parser': 1.0.4(@csstools/css-parser-algorithms@2.3.1)(@csstools/css-tokenizer@2.2.0)
       '@csstools/css-parser-algorithms': 2.3.1(@csstools/css-tokenizer@2.2.0)
       '@csstools/css-tokenizer': 2.2.0
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: true
 
-  /postcss-dark-theme-class@0.7.3(postcss@8.4.29):
+  /postcss-dark-theme-class@0.7.3(postcss@8.4.30):
     resolution: {integrity: sha512-M9vtfh8ORzQsVdT9BWb+xpEDAzC7nHBn7wVc988/JkEVLPupKcUnV0jw7RZ8sSj0ovpqN1POf6PLdt19JCHfhQ==}
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.2.14
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: true
 
-  /postcss-discard-comments@6.0.0(postcss@8.4.29):
+  /postcss-discard-comments@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-p2skSGqzPMZkEQvJsgnkBhCn8gI7NzRH2683EEjrIkoMiwRELx68yoUJ3q3DGSGuQ8Ug9Gsn+OuDr46yfO+eFw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-discard-duplicates@6.0.0(postcss@8.4.29):
+  /postcss-discard-duplicates@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-bU1SXIizMLtDW4oSsi5C/xHKbhLlhek/0/yCnoMQany9k3nPBq+Ctsv/9oMmyqbR96HYHxZcHyK2HR5P/mqoGA==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-discard-empty@6.0.0(postcss@8.4.29):
+  /postcss-discard-empty@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-b+h1S1VT6dNhpcg+LpyiUrdnEZfICF0my7HAKgJixJLW7BnNmpRH34+uw/etf5AhOlIhIAuXApSzzDzMI9K/gQ==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-discard-overridden@6.0.0(postcss@8.4.29):
+  /postcss-discard-overridden@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-4VELwssYXDFigPYAZ8vL4yX4mUepF/oCBeeIT4OXsJPYOtvJumyz9WflmJWTfDwCUcpDR+z0zvCWBXgTx35SVw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
   /postcss-import-resolver@2.0.0:
@@ -8624,19 +8624,19 @@ packages:
       enhanced-resolve: 4.5.0
     dev: false
 
-  /postcss-import@15.1.0(postcss@8.4.29):
+  /postcss-import@15.1.0(postcss@8.4.30):
     resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       postcss: ^8.0.0
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.4
     dev: false
 
-  /postcss-loader@7.3.3(postcss@8.4.29)(webpack@5.88.2):
+  /postcss-loader@7.3.3(postcss@8.4.30)(webpack@5.88.2):
     resolution: {integrity: sha512-YgO/yhtevGO/vJePCQmTxiaEwER94LABZN0ZMT4A0vsak9TpO+RvKRs7EmJ8peIlB9xfXCsS7M8LjqncsUZ5HA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -8645,23 +8645,23 @@ packages:
     dependencies:
       cosmiconfig: 8.2.0
       jiti: 1.20.0
-      postcss: 8.4.29
+      postcss: 8.4.30
       semver: 7.5.4
       webpack: 5.88.2
     dev: false
 
-  /postcss-merge-longhand@6.0.0(postcss@8.4.29):
+  /postcss-merge-longhand@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-4VSfd1lvGkLTLYcxFuISDtWUfFS4zXe0FpF149AyziftPFQIWxjvFSKhA4MIxMe4XM3yTDgQMbSNgzIVxChbIg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
-      stylehacks: 6.0.0(postcss@8.4.29)
+      stylehacks: 6.0.0(postcss@8.4.30)
     dev: false
 
-  /postcss-merge-rules@6.0.1(postcss@8.4.29):
+  /postcss-merge-rules@6.0.1(postcss@8.4.30):
     resolution: {integrity: sha512-a4tlmJIQo9SCjcfiCcCMg/ZCEe0XTkl/xK0XHBs955GWg9xDX3NwP9pwZ78QUOWB8/0XCjZeJn98Dae0zg6AAw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
@@ -8669,208 +8669,208 @@ packages:
     dependencies:
       browserslist: 4.21.10
       caniuse-api: 3.0.0
-      cssnano-utils: 4.0.0(postcss@8.4.29)
-      postcss: 8.4.29
+      cssnano-utils: 4.0.0(postcss@8.4.30)
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: false
 
-  /postcss-minify-font-values@6.0.0(postcss@8.4.29):
+  /postcss-minify-font-values@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-zNRAVtyh5E8ndZEYXA4WS8ZYsAp798HiIQ1V2UF/C/munLp2r1UGHwf1+6JFu7hdEhJFN+W1WJQKBrtjhFgEnA==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-minify-gradients@6.0.0(postcss@8.4.29):
+  /postcss-minify-gradients@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-wO0F6YfVAR+K1xVxF53ueZJza3L+R3E6cp0VwuXJQejnNUH0DjcAFe3JEBeTY1dLwGa0NlDWueCA1VlEfiKgAA==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
       colord: 2.9.3
-      cssnano-utils: 4.0.0(postcss@8.4.29)
-      postcss: 8.4.29
+      cssnano-utils: 4.0.0(postcss@8.4.30)
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-minify-params@6.0.0(postcss@8.4.29):
+  /postcss-minify-params@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-Fz/wMQDveiS0n5JPcvsMeyNXOIMrwF88n7196puSuQSWSa+/Ofc1gDOSY2xi8+A4PqB5dlYCKk/WfqKqsI+ReQ==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
       browserslist: 4.21.10
-      cssnano-utils: 4.0.0(postcss@8.4.29)
-      postcss: 8.4.29
+      cssnano-utils: 4.0.0(postcss@8.4.30)
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-minify-selectors@6.0.0(postcss@8.4.29):
+  /postcss-minify-selectors@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-ec/q9JNCOC2CRDNnypipGfOhbYPuUkewGwLnbv6omue/PSASbHSU7s6uSQ0tcFRVv731oMIx8k0SP4ZX6be/0g==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: false
 
-  /postcss-modules-extract-imports@3.0.0(postcss@8.4.29):
+  /postcss-modules-extract-imports@3.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-bdHleFnP3kZ4NYDhuGlVK+CMrQ/pqUm8bx/oGL93K6gVwiclvX5x0n76fYMKuIGKzlABOy13zsvqjb0f92TEXw==}
     engines: {node: ^10 || ^12 || >= 14}
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-modules-local-by-default@4.0.3(postcss@8.4.29):
+  /postcss-modules-local-by-default@4.0.3(postcss@8.4.30):
     resolution: {integrity: sha512-2/u2zraspoACtrbFRnTijMiQtb4GW4BvatjaG/bCjYQo8kLTdevCUlwuBHx2sCnSyrI3x3qj4ZK1j5LQBgzmwA==}
     engines: {node: ^10 || ^12 || >= 14}
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.29)
-      postcss: 8.4.29
+      icss-utils: 5.1.0(postcss@8.4.30)
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-modules-scope@3.0.0(postcss@8.4.29):
+  /postcss-modules-scope@3.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-hncihwFA2yPath8oZ15PZqvWGkWf+XUfQgUGamS4LqoP1anQLOsOJw0vr7J7IwLpoY9fatA2qiGUGmuZL0Iqlg==}
     engines: {node: ^10 || ^12 || >= 14}
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: false
 
-  /postcss-modules-values@4.0.0(postcss@8.4.29):
+  /postcss-modules-values@4.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-RDxHkAiEGI78gS2ofyvCsu7iycRv7oqw5xMWn9iMoR0N/7mf9D50ecQqUo5BZ9Zh2vH4bCUR/ktCqbB9m8vJjQ==}
     engines: {node: ^10 || ^12 || >= 14}
     peerDependencies:
       postcss: ^8.1.0
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.29)
-      postcss: 8.4.29
+      icss-utils: 5.1.0(postcss@8.4.30)
+      postcss: 8.4.30
     dev: false
 
-  /postcss-nested@6.0.1(postcss@8.4.29):
+  /postcss-nested@6.0.1(postcss@8.4.30):
     resolution: {integrity: sha512-mEp4xPMi5bSWiMbsgoPfcP74lsWLHkQbZc3sY+jWYd65CUwXrUaTp0fmNpa01ZcETKlIgUdFN/MpS2xZtqL9dQ==}
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.2.14
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: true
 
-  /postcss-normalize-charset@6.0.0(postcss@8.4.29):
+  /postcss-normalize-charset@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-cqundwChbu8yO/gSWkuFDmKrCZ2vJzDAocheT2JTd0sFNA4HMGoKMfbk2B+J0OmO0t5GUkiAkSM5yF2rSLUjgQ==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-normalize-display-values@6.0.0(postcss@8.4.29):
+  /postcss-normalize-display-values@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-Qyt5kMrvy7dJRO3OjF7zkotGfuYALETZE+4lk66sziWSPzlBEt7FrUshV6VLECkI4EN8Z863O6Nci4NXQGNzYw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-positions@6.0.0(postcss@8.4.29):
+  /postcss-normalize-positions@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-mPCzhSV8+30FZyWhxi6UoVRYd3ZBJgTRly4hOkaSifo0H+pjDYcii/aVT4YE6QpOil15a5uiv6ftnY3rm0igPg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-repeat-style@6.0.0(postcss@8.4.29):
+  /postcss-normalize-repeat-style@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-50W5JWEBiOOAez2AKBh4kRFm2uhrT3O1Uwdxz7k24aKtbD83vqmcVG7zoIwo6xI2FZ/HDlbrCopXhLeTpQib1A==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-string@6.0.0(postcss@8.4.29):
+  /postcss-normalize-string@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-KWkIB7TrPOiqb8ZZz6homet2KWKJwIlysF5ICPZrXAylGe2hzX/HSf4NTX2rRPJMAtlRsj/yfkrWGavFuB+c0w==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-timing-functions@6.0.0(postcss@8.4.29):
+  /postcss-normalize-timing-functions@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-tpIXWciXBp5CiFs8sem90IWlw76FV4oi6QEWfQwyeREVwUy39VSeSqjAT7X0Qw650yAimYW5gkl2Gd871N5SQg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-unicode@6.0.0(postcss@8.4.29):
+  /postcss-normalize-unicode@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-ui5crYkb5ubEUDugDc786L/Me+DXp2dLg3fVJbqyAl0VPkAeALyAijF2zOsnZyaS1HyfPuMH0DwyY18VMFVNkg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
       browserslist: 4.21.10
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-url@6.0.0(postcss@8.4.29):
+  /postcss-normalize-url@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-98mvh2QzIPbb02YDIrYvAg4OUzGH7s1ZgHlD3fIdTHLgPLRpv1ZTKJDnSAKr4Rt21ZQFzwhGMXxpXlfrUBKFHw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-normalize-whitespace@6.0.0(postcss@8.4.29):
+  /postcss-normalize-whitespace@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-7cfE1AyLiK0+ZBG6FmLziJzqQCpTQY+8XjMhMAz8WSBSCsCNNUKujgIgjCAmDT3cJ+3zjTXFkoD15ZPsckArVw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-ordered-values@6.0.0(postcss@8.4.29):
+  /postcss-ordered-values@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-K36XzUDpvfG/nWkjs6d1hRBydeIxGpKS2+n+ywlKPzx1nMYDYpoGbcjhj5AwVYJK1qV2/SDoDEnHzlPD6s3nMg==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      cssnano-utils: 4.0.0(postcss@8.4.29)
-      postcss: 8.4.29
+      cssnano-utils: 4.0.0(postcss@8.4.30)
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
-  /postcss-reduce-initial@6.0.0(postcss@8.4.29):
+  /postcss-reduce-initial@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-s2UOnidpVuXu6JiiI5U+fV2jamAw5YNA9Fdi/GRK0zLDLCfXmSGqQtzpUPtfN66RtCbb9fFHoyZdQaxOB3WxVA==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
@@ -8878,16 +8878,16 @@ packages:
     dependencies:
       browserslist: 4.21.10
       caniuse-api: 3.0.0
-      postcss: 8.4.29
+      postcss: 8.4.30
     dev: false
 
-  /postcss-reduce-transforms@6.0.0(postcss@8.4.29):
+  /postcss-reduce-transforms@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-FQ9f6xM1homnuy1wLe9lP1wujzxnwt1EwiigtWwuyf8FsqqXUDUp2Ulxf9A5yjlUOTdCJO6lonYjg1mgqIIi2w==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
     dev: false
 
@@ -8898,28 +8898,28 @@ packages:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  /postcss-svgo@6.0.0(postcss@8.4.29):
+  /postcss-svgo@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-r9zvj/wGAoAIodn84dR/kFqwhINp5YsJkLoujybWG59grR/IHx+uQ2Zo+IcOwM0jskfYX3R0mo+1Kip1VSNcvw==}
     engines: {node: ^14 || ^16 || >= 18}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-value-parser: 4.2.0
       svgo: 3.0.2
     dev: false
 
-  /postcss-unique-selectors@6.0.0(postcss@8.4.29):
+  /postcss-unique-selectors@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-EPQzpZNxOxP7777t73RQpZE5e9TrnCrkvp7AH7a0l89JmZiPnS82y216JowHXwpBCQitfyxrof9TK3rYbi7/Yw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: false
 
-  /postcss-url@10.1.3(postcss@8.4.29):
+  /postcss-url@10.1.3(postcss@8.4.30):
     resolution: {integrity: sha512-FUzyxfI5l2tKmXdYc6VTu3TWZsInayEKPbiyW+P6vmmIrrb4I6CGX0BFoewgYHLK+oIL5FECEK02REYRpBvUCw==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -8928,15 +8928,15 @@ packages:
       make-dir: 3.1.0
       mime: 2.5.2
       minimatch: 3.0.8
-      postcss: 8.4.29
+      postcss: 8.4.30
       xxhashjs: 0.2.2
     dev: false
 
   /postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  /postcss@8.4.29:
-    resolution: {integrity: sha512-cbI+jaqIeu/VGqXEarWkRCCffhjgXc0qjBtXpqJhTBohMUjUQnbBr0xqX3vEKudc4iviTewcJo5ajcec5+wdJw==}
+  /postcss@8.4.30:
+    resolution: {integrity: sha512-7ZEao1g4kd68l97aWG/etQKPKq07us0ieSZ2TnFDk11i0ZfDW2AwKHYU8qv4MZKqN2fdBfg+7q0ES06UA73C1g==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.3.6
@@ -9902,14 +9902,14 @@ packages:
       tinycolor2: 1.6.0
     dev: true
 
-  /stylehacks@6.0.0(postcss@8.4.29):
+  /stylehacks@6.0.0(postcss@8.4.30):
     resolution: {integrity: sha512-+UT589qhHPwz6mTlCLSt/vMNTJx8dopeJlZAlBMJPWA3ORqu6wmQY7FBXf+qD+FsqoBJODyqNxOUP3jdntFRdw==}
     engines: {node: ^14 || ^16 || >=18.0}
     peerDependencies:
       postcss: ^8.2.15
     dependencies:
       browserslist: 4.21.10
-      postcss: 8.4.29
+      postcss: 8.4.30
       postcss-selector-parser: 6.0.13
     dev: false
 
@@ -10669,7 +10669,7 @@ packages:
       vfile-message: 3.1.4
     dev: true
 
-  /vite-node@0.33.0(@types/node@18.17.17):
+  /vite-node@0.33.0(@types/node@18.17.18):
     resolution: {integrity: sha512-19FpHYbwWWxDr73ruNahC+vtEdza52kA90Qb3La98yZ0xULqV8A5JLNPUff0f5zID4984tW7l3DH2przTJUZSw==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -10679,7 +10679,7 @@ packages:
       mlly: 1.4.2
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.9(@types/node@18.17.17)
+      vite: 4.4.9(@types/node@18.17.18)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -10736,7 +10736,7 @@ packages:
       strip-ansi: 6.0.1
       tiny-invariant: 1.3.1
       typescript: 5.2.2
-      vite: 4.4.9(@types/node@18.17.17)
+      vite: 4.4.9(@types/node@18.17.18)
       vscode-languageclient: 7.0.0
       vscode-languageserver: 7.0.0
       vscode-languageserver-textdocument: 1.0.8
@@ -10744,7 +10744,7 @@ packages:
       vue-tsc: 1.8.11(typescript@5.2.2)
     dev: false
 
-  /vite@4.4.9(@types/node@18.17.17):
+  /vite@4.4.9(@types/node@18.17.18):
     resolution: {integrity: sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -10772,14 +10772,14 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       esbuild: 0.18.20
-      postcss: 8.4.29
+      postcss: 8.4.30
       rollup: 3.29.1
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitest-environment-nuxt@0.10.5(happy-dom@12.0.1)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
+  /vitest-environment-nuxt@0.10.5(happy-dom@12.1.2)(vitest@0.33.0)(vue-router@4.2.4)(vue@3.3.4):
     resolution: {integrity: sha512-78kVcG/xmI9IcnioJyhY6RasRVMC8ahzzqymPGuMXwMR0twkYMxWwEgQY7eAcb8FPlb24lXYO9l605IXB8X2xA==}
     peerDependencies:
       '@testing-library/vue': 7.0.0
@@ -10801,20 +10801,20 @@ packages:
       defu: 6.1.2
       estree-walker: 3.0.3
       h3: 1.8.1
-      happy-dom: 12.0.1
+      happy-dom: 12.1.2
       local-pkg: 0.4.3
       magic-string: 0.30.3
       ofetch: 1.3.3
       ufo: 1.3.0
       unenv: 1.7.4
-      vitest: 0.33.0(happy-dom@12.0.1)
+      vitest: 0.33.0(happy-dom@12.1.2)
       vue: 3.3.4
       vue-router: 4.2.4(vue@3.3.4)
     transitivePeerDependencies:
       - '@vue/server-renderer'
     dev: true
 
-  /vitest@0.33.0(happy-dom@12.0.1):
+  /vitest@0.33.0(happy-dom@12.1.2):
     resolution: {integrity: sha512-1CxaugJ50xskkQ0e969R/hW47za4YXDUfWJDxip1hwbnhUjYolpfUn2AMOulqG/Dtd9WYAtkHmM/m3yKVrEejQ==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -10847,7 +10847,7 @@ packages:
     dependencies:
       '@types/chai': 4.3.5
       '@types/chai-subset': 1.3.3
-      '@types/node': 18.17.17
+      '@types/node': 18.17.18
       '@vitest/expect': 0.33.0
       '@vitest/runner': 0.33.0
       '@vitest/snapshot': 0.33.0
@@ -10858,7 +10858,7 @@ packages:
       cac: 6.7.14
       chai: 4.3.7
       debug: 4.3.4
-      happy-dom: 12.0.1
+      happy-dom: 12.1.2
       local-pkg: 0.4.3
       magic-string: 0.30.3
       pathe: 1.1.1
@@ -10867,8 +10867,8 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.9(@types/node@18.17.17)
-      vite-node: 0.33.0(@types/node@18.17.17)
+      vite: 4.4.9(@types/node@18.17.18)
+      vite-node: 0.33.0(@types/node@18.17.18)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
