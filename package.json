@@ -57,11 +57,11 @@
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
     "h3": "1.8.1",
-    "happy-dom": "12.1.2",
+    "happy-dom": "12.1.5",
     "jiti": "1.20.0",
     "markdownlint-cli": "^0.33.0",
     "nitropack": "2.6.3",
-    "nuxi": "3.8.4",
+    "nuxi": "3.9.0",
     "nuxt": "workspace:*",
     "nuxt-vitest": "0.10.5",
     "ofetch": "1.3.3",
@@ -78,7 +78,7 @@
     "vue": "3.3.4",
     "vue-eslint-parser": "9.3.1",
     "vue-router": "4.2.4",
-    "vue-tsc": "1.8.11"
+    "vue-tsc": "1.8.13"
   },
   "packageManager": "pnpm@8.7.6",
   "engines": {
