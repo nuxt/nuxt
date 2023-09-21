@@ -4,8 +4,11 @@ import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
+import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { useRoute } from '#app/composables'
+
 // @ts-expect-error virtual import
-import { renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -13,19 +16,24 @@ interface LoadPayloadOptions {
 }
 
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
-  if (import.meta.server) { return null }
+  if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
-  if (cache[payloadURL]) {
+  if (payloadURL in cache) {
     return cache[payloadURL]
   }
-  cache[payloadURL] = _importPayload(payloadURL).then((payload) => {
-    if (!payload) {
-      delete cache[payloadURL]
+  cache[payloadURL] = isPrerendered().then((prerendered) => {
+    if (!prerendered) {
+      cache[payloadURL] = null
       return null
     }
-    return payload
+    return _importPayload(payloadURL).then((payload) => {
+      if (payload) { return payload }
+
+      delete cache[payloadURL]
+      return null
+    })
   })
   return cache[payloadURL]
 }
@@ -55,7 +63,7 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 }
 
 async function _importPayload (payloadURL: string) {
-  if (import.meta.server) { return null }
+  if (import.meta.server || !payloadExtraction) { return null }
   const payloadPromise = renderJsonPayloads
     ? fetch(payloadURL).then(res => res.text().then(parsePayload))
     : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
@@ -68,10 +76,19 @@ async function _importPayload (payloadURL: string) {
   return null
 }
 
-export function isPrerendered () {
+export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   const nuxtApp = useNuxtApp()
-  return !!nuxtApp.payload.prerenderedAt
+  if (nuxtApp.payload.prerenderedAt) {
+    return true
+  }
+  if (!appManifest) { return false }
+  const manifest = await getAppManifest()
+  if (manifest.prerendered.includes(url)) {
+    return true
+  }
+  const rules = await getRouteRules(url)
+  return !!rules.prerender
 }
 
 let payloadCache: any = null

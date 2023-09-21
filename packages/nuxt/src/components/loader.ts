@@ -5,6 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
+import { logger } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -54,7 +55,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
             if (!options.experimentalComponentIslands) {
-              console.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
+              logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
             return identifier
           }

@@ -16,6 +16,7 @@ import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
 import type { RouteMiddleware } from '../../app'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
+import type { NuxtAppManifestMeta } from '#app/composables'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -35,6 +36,7 @@ export interface RuntimeNuxtHooks {
   'app:error:cleared': (options: { redirect?: string }) => HookResult
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
+  'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
@@ -115,7 +117,7 @@ interface _NuxtApp {
   /** @internal */
   _observer?: { observe: (element: Element, callback: () => void) => () => void }
   /** @internal */
-  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any>>
+  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any> | null>
 
   /** @internal */
   _appConfig: AppConfig

@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import { inc } from 'semver'
+import { consola } from 'consola'
 import { determineBumpType, loadWorkspace } from './_utils'
 
 const nightlyPackages = {
@@ -34,6 +35,6 @@ async function main () {
 }
 
 main().catch((err) => {
-  console.error(err)
+  consola.error(err)
   process.exit(1)
 })

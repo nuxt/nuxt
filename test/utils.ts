@@ -30,7 +30,11 @@ export async function renderPage (path = '/') {
     pageErrors.push(err)
   })
   page.on('request', (req) => {
-    requests.push(req.url().replace(url('/'), '/'))
+    try {
+      requests.push(req.url().replace(url('/'), '/'))
+    } catch (err) {
+      // TODO
+    }
   })
 
   if (path) {

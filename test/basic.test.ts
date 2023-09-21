@@ -11,6 +11,7 @@ import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isTestingAppManifest = process.env.TEST_MANIFEST === 'manifest-on'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -1007,9 +1008,14 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
     })
 
-    it('extends bar/middleware/override over foo/middleware/override', async () => {
+    // theme is added after layers
+    it('extends foo/middleware/override over bar/middleware/override', async () => {
       const html = await $fetch('/override')
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
+    })
+    it('global middlewares sorting', async () => {
+      const html = await $fetch('/middleware/ordering')
+      expect(html).toContain('catchall at middleware')
     })
   })
 
@@ -1617,18 +1623,24 @@ describe('app config', () => {
   it('should work', async () => {
     const html = await $fetch('/app-config')
 
-    const expectedAppConfig = {
+    const expectedAppConfig: Record<string, any> = {
       fromNuxtConfig: true,
       nested: {
         val: 2
       },
+      nuxt: {},
       fromLayer: true,
       userConfig: 123
     }
-
-    expect(html).toContain(JSON.stringify(expectedAppConfig))
+    if (isTestingAppManifest) {
+      expectedAppConfig.nuxt.buildId = 'test'
+    }
+    expect.soft(html.replace(/"nuxt":\{"buildId":"[^"]+"\}/, '"nuxt":{"buildId":"test"}')).toContain(JSON.stringify(expectedAppConfig))
 
     const serverAppConfig = await $fetch('/api/app-config')
+    if (isTestingAppManifest) {
+      serverAppConfig.appConfig.nuxt.buildId = 'test'
+    }
     expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })

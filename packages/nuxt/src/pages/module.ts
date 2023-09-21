@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -67,7 +67,7 @@ export default defineNuxtModule({
       if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
         const newSetting = await isPagesEnabled()
         if (nuxt.options.pages !== newSetting) {
-          console.info('Pages', newSetting ? 'enabled' : 'disabled')
+          logger.info('Pages', newSetting ? 'enabled' : 'disabled')
           return nuxt.callHook('restart')
         }
       }
@@ -275,7 +275,7 @@ export default defineNuxtModule({
           if (extractedRule) {
             if (!glob) {
               const relativePath = relative(nuxt.options.srcDir, path)
-              console.error(`[nuxt] Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
+              logger.error(`Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
               return
             }
 
@@ -286,9 +286,9 @@ export default defineNuxtModule({
         } catch (e: any) {
           if (e.toString().includes('Error parsing route rules')) {
             const relativePath = relative(nuxt.options.srcDir, path)
-            console.error(`[nuxt] Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+            logger.error(`Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
           } else {
-            console.error(e)
+            logger.error(e)
           }
         }
       }
