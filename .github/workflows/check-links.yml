@@ -1,12 +1,6 @@
 name: Check links with Lychee
 
 on:
-  push:
-    paths:
-      - "docs/**"
-      - "*.md"
-    branches:
-      - main
   pull_request:
     paths:
       - "docs/**"
