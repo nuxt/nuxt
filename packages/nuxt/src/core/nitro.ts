@@ -3,10 +3,10 @@ import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
-import { joinURL } from 'ufo'
+import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolveIgnorePatterns } from '@nuxt/kit'
+import { logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -32,6 +32,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const modules = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => m.entryPath)
+  )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
@@ -106,7 +114,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsconfigPath: 'tsconfig.server.json',
       tsConfig: {
         include: [
-          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+          ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server'))
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
