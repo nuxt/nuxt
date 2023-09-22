@@ -80,6 +80,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
         },
         build: {
+          reportCompressedSize: false,
           copyPublicDir: false,
           rollupOptions: {
             output: {
