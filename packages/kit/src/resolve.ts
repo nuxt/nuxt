@@ -133,6 +133,22 @@ export function createResolver (base: string | URL): Resolver {
   }
 }
 
+export async function resolveNuxtModule (base: string, paths: string[]) {
+  const resolved = []
+  const resolver = createResolver(base)
+
+  for (const path of paths) {
+    if (path.startsWith(base)) {
+      resolved.push(path.split('/index.ts')[0])
+    } else {
+      const resolvedPath = await resolver.resolvePath(path)
+      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+    }
+  }
+
+  return resolved
+}
+
 // --- Internal ---
 
 async function existsSensitive (path: string) {

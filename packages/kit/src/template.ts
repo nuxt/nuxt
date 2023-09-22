@@ -10,6 +10,7 @@ import { readPackageJSON } from 'pkg-types'
 import { tryResolveModule } from './internal/esm'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
+import { resolveNuxtModule } from './resolve'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
@@ -113,6 +114,12 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
+  const modules = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => m.entryPath)
+  )
+
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
@@ -143,10 +150,12 @@ export async function writeTypes (nuxt: Nuxt) {
       ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
-      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
+      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
+      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
