@@ -142,7 +142,9 @@ export function useAsyncData<
   const nuxt = useNuxtApp()
 
   const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
-  const hasCachedData = () => getCachedData() !== undefined
+  const hasCachedData = () => nuxt.isHydrating
+    ? (nuxt.payload.data[key] !== null && nuxt.payload.data[key] !== undefined)
+    : nuxt.static.data[key] !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
