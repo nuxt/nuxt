@@ -48,6 +48,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
@@ -55,7 +56,8 @@ export default defineNuxtConfig({
       routes: [
         '/random/a',
         '/random/b',
-        '/random/c'
+        '/random/c',
+        '/prefetch/server-components'
       ]
     }
   },
@@ -63,7 +65,7 @@ export default defineNuxtConfig({
     keyedComposables: [
       {
         name: 'useCustomKeyedComposable',
-        source: 'pages/keyed-composables/index.vue',
+        source: '~/other-composables-folder/custom-keyed-composable',
         argumentLength: 1
       }
     ]
@@ -145,6 +147,13 @@ export default defineNuxtConfig({
         filePath: '~/other-components-folder/named-export'
       })
     },
+    'components:extend' (components) {
+      for (const comp of components) {
+        if (comp.pascalName === 'GlobalSync') {
+          comp.global = 'sync'
+        }
+      }
+    },
     'vite:extendConfig' (config) {
       config.plugins!.push({
         name: 'nuxt:server',
@@ -178,7 +187,6 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     polyfillVueUseHead: true,
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
@@ -186,7 +194,12 @@ export default defineNuxtConfig({
     componentIslands: true,
     reactivityTransform: true,
     treeshakeClientOnly: true,
-    payloadExtraction: true
+    asyncContext: process.env.TEST_CONTEXT === 'async',
+    // TODO: remove this in v3.8
+    payloadExtraction: true,
+    appManifest: process.env.TEST_MANIFEST === 'manifest-on',
+    headNext: true,
+    inlineRouteRules: true
   },
   appConfig: {
     fromNuxtConfig: true,

@@ -5,8 +5,8 @@
 You can use `useNuxtApp()` within composables, plugins and components.
 
 ```vue [app.vue]
-<script setup>
-  const nuxtApp = useNuxtApp()
+<script setup lang="ts">
+const nuxtApp = useNuxtApp()
 </script>
 ```
 
@@ -52,7 +52,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 ```
 
-### `callhook(name, ...args)`
+### `callHook(name, ...args)`
 
 `callHook` returns a promise when called with any of the existing hooks.
 
@@ -87,21 +87,19 @@ await nuxtApp.callHook('my-plugin:init')
 `payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - **serverRendered** (boolean) - Indicates if response is server-side-rendered.
-- **data** (object) - When you fetch the data from an API endpoint using either `useFetch` or `useAsyncData`, resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
+- **data** (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
 ```vue [app.vue]
-export default defineComponent({
-  async setup() {
-    const { data } = await useAsyncData('count', () => $fetch('/api/count'))
-  }
-})
+<script setup lang="ts">
+const { data } = await useAsyncData('count', () => $fetch('/api/count'))
+</script>
 ```
 
-After fetching the value of `count` using `useAsyncData` in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
+After fetching the value of `count` using [`useAsyncData`](/docs/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there. The value of `count` is updated whenever the page count increases.
 
 When accessing the same `payload.data` from [ssrcontext](#ssrcontext), you can access the same value on the server side as well.
 
-- **state** (object) - When you use `useState` composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
+- **state** (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
 ```js [plugins/my-plugin.ts]
 export const useColor = () => useState<string>('color', () => 'pink')
@@ -146,3 +144,112 @@ export default defineComponent({
   }
 })
 ```
+
+### `runWithContext`
+
+::alert
+
+<p>
+
+You are likely here because you got a "Nuxt instance unavailable" message. Please use this method sparingly, and report
+examples that are causing issues, so that it can ultimately be solved at the framework level.
+
+</p>
+
+::
+
+The `runWithContext` method is meant to be used to call a function and give it an explicit Nuxt context. Typically, the
+Nuxt context is passed around implicitly and you do not need to worry about this. However, when working with complex
+`async`/`await` scenarios in middleware/plugins, you can run into instances where the current instance has been unset
+after an async call.
+
+```js
+export default defineNuxtRouteMiddleware(async (to, from) => {
+  const nuxtApp = useNuxtApp()
+  let user
+  try {
+    user = await fetchUser()
+    // the Vue/Nuxt compiler loses context here because of the try/catch block.
+  } catch (e) {
+    user = null
+  }
+  if (!user) {
+    // apply the correct Nuxt context to our `navigateTo` call.  
+    return nuxtApp.runWithContext(() => navigateTo('/auth'))
+  }
+})
+```
+
+#### Usage
+
+```js
+const result = nuxtApp.runWithContext(() => functionWithContext())
+```
+
+##### `functionWithContext`
+
+Any function that requires the context of the current Nuxt application. This context will be correctly applied automatically.
+
+##### Return value
+
+`runWithContext` will return whatever is returned by `functionWithContext`.
+
+#### A Deeper Explanation of Context
+
+##### Background
+
+Vue.js Composition API (and Nuxt composables similarly) work by depending on an implicit context. During the lifecycle, Vue sets the temporary instance of the current component (and Nuxt temporary instance of nuxtApp) to a global variable and unsets it in same tick. When rendering on the server side, there are multiple requests from different users and nuxtApp running in a same global context. Because of this, Nuxt and Vue immediately unset this global instance to avoid leaking a shared reference between two users or components.
+
+What it does mean? The Composition API and Nuxt Composables are only available during lifecycle and in same tick before any async operation:
+
+```js
+// --- Vue internal ---
+const _vueInstance = null
+const getCurrentInstance = () => _vueInstance
+// ---
+
+// Vue / Nuxt sets a global variable referencing to current component in _vueInstance when calling setup()
+async function setup() {
+  getCurrentInstance() // Works
+  await someAsyncOperation() // Vue unsets the context in same tick before async operation!
+  getCurrentInstance() // null
+}
+```
+
+The classic solution to this, is caching the current instance on first call to a local variable like `const instance = getCurrentInstance()` and use it in the next composable call but the issue is that any nested composable calls now needs to explicitly accept the instance as an argument and not depend on the implicit context of composition-api. This is design limitation with composables and not an issue per-se.
+
+To overcome this limitation, Vue does some behind the scenes work when compiling our application code and restores context after each call for `<script setup>`:
+
+```js
+const __instance = getCurrentInstance() // Generated by Vue compiler
+getCurrentInstance() // Works!
+await someAsyncOperation() // Vue unsets the context
+__restoreInstance(__instance) // Generated by Vue compiler
+getCurrentInstance() // Still works!
+```
+
+For a better description of what Vue actually does, see [unjs/unctx#2 (comment)](https://github.com/unjs/unctx/issues/2#issuecomment-942193723).
+
+##### Solution
+
+This is where `runWithContext` can be used to restore context, similarly to how `<script setup>` works.
+
+Nuxt 3 internally uses [unjs/unctx](https://github.com/unjs/unctx) to support composables similar to Vue for plugins and middleware. This enables composables like `navigateTo()` to work without directly passing `nuxtApp` to them - bringing the DX and performance benefits of Composition API to the whole Nuxt framework.
+
+Nuxt composables have the same design as the Vue Composition API and therefore need a similar solution to magically do this transform. Check out [unjs/unctx#2](https://github.com/unjs/unctx/issues/2) (proposal), [unjs/unctx#4](https://github.com/unjs/unctx/pull/4) (transform implementation), and [nuxt/framework#3884](https://github.com/nuxt/framework/pull/3884) (Integration to Nuxt).
+
+Vue currently only supports async context restoration for `<script setup>` for async/await usage. In Nuxt 3, the transform support for `defineNuxtPlugin()` and `defineNuxtRouteMiddleware()` was added, which means when you use them Nuxt automatically transforms them with context restoration.
+
+##### Remaining Issues
+
+The `unjs/unctx` transformation to automatically restore context seems buggy with `try/catch` statements containing `await` which ultimately needs to be solved in order to remove the requirement of the workaround suggested above.
+
+##### Native Async Context
+
+Using a new experimental feature, it is possible to enable native async context support using [Node.js `AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and new unctx support to make async context available **natively** to **any nested async composable** without needing a transform or manual passing/calling with context.
+
+::alert{type=warning}
+Native async context support works currently in Bun and Node.
+::
+
+:ReadMore{link="/docs/guide/going-further/experimental-features#asynccontext"}

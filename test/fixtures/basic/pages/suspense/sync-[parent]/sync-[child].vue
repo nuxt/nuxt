@@ -1,10 +1,12 @@
 <script setup lang="ts">
-console.log('[sync] [sync]')
+if (import.meta.client) {
+  console.log('[sync] [sync]')
+}
 const route = useRoute('suspense-sync-parent-sync-child')
 </script>
 
 <template>
-  <div>
+  <div :id="'child' + route.path.replace(/[/-]+/g, '-')">
     Sync child: {{ route.params.parent }} - {{ route.params.child }}
   </div>
 </template>

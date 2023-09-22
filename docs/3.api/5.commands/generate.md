@@ -15,3 +15,7 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The root directory of the application to generate
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
+
+::alert{type=info}
+Read more about [pre-rendering and static hosting](/docs/getting-started/deployment#static-hosting).
+::

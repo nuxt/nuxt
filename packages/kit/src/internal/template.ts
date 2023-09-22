@@ -4,8 +4,10 @@ import { template as lodashTemplate } from 'lodash-es'
 import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
+import { logger } from '../logger'
 
 /** @deprecated */
+// TODO: Remove support for compiling ejs templates in v4
 export async function compileTemplate (template: NuxtTemplate, ctx: any) {
   const data = { ...ctx, options: template.options }
   if (template.src) {
@@ -13,7 +15,7 @@ export async function compileTemplate (template: NuxtTemplate, ctx: any) {
       const srcContents = await fsp.readFile(template.src, 'utf-8')
       return lodashTemplate(srcContents, {})(data)
     } catch (err) {
-      console.error('Error compiling template: ', template)
+      logger.error('Error compiling template: ', template)
       throw err
     }
   }

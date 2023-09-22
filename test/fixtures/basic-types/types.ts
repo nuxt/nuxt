@@ -7,7 +7,7 @@ import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLink, NuxtPage, WithTypes } from '#components'
+import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -56,9 +56,9 @@ describe('API routes', () => {
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
-    // @ts-expect-error TODO: remove when fixed upstream: https://github.com/unjs/nitro/pull/1247
     expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'POST' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     // @ts-expect-error not a valid method
     useFetch('/api/hey', { method: 'PATCH' })
@@ -115,6 +115,21 @@ describe('middleware', () => {
       // @ts-expect-error Must return error or string
       abortNavigation(true)
     }, { global: true })
+  })
+  it('handles return types of validate', () => {
+    definePageMeta({
+      validate: async () => {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        // eslint-disable-next-line
+        if (0) {
+          return createError({
+            statusCode: 404,
+            statusMessage: 'resource-type-not-found'
+          })
+        }
+        return true
+      }
+    })
   })
 })
 
@@ -191,6 +206,13 @@ describe('layouts', () => {
     definePageMeta({ layout: 'override' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
+  })
+
+  it('allows typing layouts', () => {
+    h(NuxtLayout, { name: 'custom' })
+
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { name: 'invalid-layout' })
   })
 })
 
@@ -309,6 +331,33 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
+  it('correct types when using ResT type-assertion with default function', () => {
+    // @ts-expect-error default type should match generic type
+    useFetch<string>('/test', { default: () => 0 })
+    // @ts-expect-error default type should match generic type
+    useLazyFetch<string>('/test', { default: () => 0 })
+    // @ts-expect-error default type should match generic type
+    useAsyncData<string>(() => $fetch('/test'), { default: () => 0 })
+    // @ts-expect-error default type should match generic type
+    useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 0 })
+
+    expectTypeOf(useFetch<string>('/test', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
+
+    // transform must match the explicit generic because of typescript limiations microsoft/TypeScript#14400
+    expectTypeOf(useFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useLazyFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
+
+    expectTypeOf(useFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+  })
+
   it('infer request url string literal from server/api routes', () => {
     // request can accept dynamic string type
     const dynamicStringUrl = 'https://example.com/api'
@@ -376,6 +425,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      nuxt: { buildId: string }
       fromLayer: boolean
       fromNuxtConfig: boolean
       nested: {

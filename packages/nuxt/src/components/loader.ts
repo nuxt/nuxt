@@ -5,6 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
+import { logger } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -31,7 +32,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] })
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
     },
     transform (code) {
       const components = options.getComponents()
@@ -48,18 +49,18 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
 
-          const isServerOnly = component.mode === 'server' &&
+          const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
             if (!options.experimentalComponentIslands) {
-              console.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
+              logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
             return identifier
           }
 
-          const isClientOnly = component.mode === 'client' && component.pascalName !== 'NuxtClientFallback'
+          const isClientOnly = !component._raw && component.mode === 'client'
           if (isClientOnly) {
             imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
             identifier += '_client'

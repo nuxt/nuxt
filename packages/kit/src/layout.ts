@@ -6,7 +6,7 @@ import { useNuxt } from './context'
 import { logger } from './logger'
 import { addTemplate } from './template'
 
-export function addLayout (this: any, template: NuxtTemplate, name?: string) {
+export function addLayout (this: any, template: NuxtTemplate | string, name?: string) {
   const nuxt = useNuxt()
   const { filename, src } = addTemplate(template)
   const layoutName = kebabCase(name || parse(filename).name).replace(/["']/g, '')

@@ -1,4 +1,3 @@
-
 <template>
   <div>
     <ClientOnlyScript class="client-only-script" foo="bar" />

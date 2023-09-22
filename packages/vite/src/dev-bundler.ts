@@ -78,7 +78,7 @@ ${genDynamicImport(path, { wrapper: false })}
 
   // Transform
   const res: SSRTransformResult = await opts.viteServer.transformRequest(id, { ssr: true }).catch((err) => {
-    console.warn(`[SSR] Error transforming ${id}:`, err)
+    logger.warn(`[SSR] Error transforming ${id}:`, err)
     // console.error(err)
   }) as SSRTransformResult || { code: '', map: {}, deps: [], dynamicDeps: [] }
 
@@ -229,7 +229,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   const viteServer = ctx.ssrServer!
   const options: TransformOptions = {
     viteServer,
-    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir)
+    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
   }
 
   // Build and watch

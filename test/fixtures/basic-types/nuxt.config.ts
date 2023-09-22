@@ -2,15 +2,9 @@ import { addTypeTemplate } from 'nuxt/kit'
 
 export default defineNuxtConfig({
   experimental: {
-    typedPages: true
-  },
-  typescript: {
-    strict: true,
-    tsConfig: {
-      compilerOptions: {
-        moduleResolution: process.env.MODULE_RESOLUTION
-      }
-    }
+    typedPages: true,
+    appManifest: true,
+    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler'
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
@@ -35,14 +29,6 @@ export default defineNuxtConfig({
     }
   },
   modules: [
-    function (_, nuxt) {
-      // TODO: remove in v3.7
-      if (process.env.TS_BASE_URL === 'without-base-url') {
-        nuxt.hook('prepare:types', ({ tsConfig }) => {
-          delete tsConfig.compilerOptions!.baseUrl
-        })
-      }
-    },
     function () {
       addTypeTemplate({
         filename: 'test.d.ts',

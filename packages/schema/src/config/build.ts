@@ -2,6 +2,7 @@ import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
+import { consola } from 'consola'
 
 export default defineUntypedSchema({
   /**
@@ -16,7 +17,7 @@ export default defineUntypedSchema({
       }
       const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
-        webpack: '@nuxt/webpack-builder',
+        webpack: '@nuxt/webpack-builder'
       }
       return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
     }
@@ -25,7 +26,7 @@ export default defineUntypedSchema({
   /**
    * Whether to generate sourcemaps.
    *
-   * @type {boolean | { server?: boolean, client?: boolean }}
+   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
     $resolve: async (val, get) => {
@@ -36,7 +37,7 @@ export default defineUntypedSchema({
         server: true,
         client: await get('dev')
       })
-    },
+    }
   },
 
   /**
@@ -50,7 +51,7 @@ export default defineUntypedSchema({
   logLevel: {
     $resolve: (val) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
-        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+        consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val ?? (isTest ? 'silent' : 'info')
     }
@@ -96,7 +97,6 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
-     *
      * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
@@ -113,7 +113,6 @@ export default defineUntypedSchema({
      * }
      * ```
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
-     *
      */
     analyze: {
       $resolve: async (val, get) => {
@@ -128,7 +127,7 @@ export default defineUntypedSchema({
           filename: join(analyzeDir, '{name}.html')
         }
       }
-    },
+    }
   },
 
   /**
@@ -147,13 +146,13 @@ export default defineUntypedSchema({
      * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: (val) => [
+      $resolve: val => [
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 }
       ].concat(val).filter(Boolean)
     },
 
@@ -172,18 +171,22 @@ export default defineUntypedSchema({
       composables: {
         server: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
-              '#app': ['definePayloadReviver', 'definePageMeta']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  '#app': ['definePayloadReviver', 'definePageMeta']
+                }
           )
         },
         client: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-              '#app': ['definePayloadReducer', 'definePageMeta']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+                  '#app': ['definePayloadReducer', 'definePageMeta']
+                }
           )
         }
       }
@@ -193,7 +196,7 @@ export default defineUntypedSchema({
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
      *
-     * @type {typeof import('unctx').TransformerOptions}
+     * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],

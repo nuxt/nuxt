@@ -83,7 +83,28 @@ export function useAsyncData<
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
@@ -124,7 +145,7 @@ export function useAsyncData<
   const hasCachedData = () => getCachedData() !== undefined
 
   // Create or use a shared asyncData entity
-  if (!nuxt._asyncData[key]) {
+  if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
@@ -201,7 +222,7 @@ export function useAsyncData<
   const fetchOnServer = options.server !== false && nuxt.payload.serverRendered
 
   // Server side
-  if (process.server && fetchOnServer && options.immediate) {
+  if (import.meta.server && fetchOnServer && options.immediate) {
     const promise = initialFetch()
     if (getCurrentInstance()) {
       onServerPrefetch(() => promise)
@@ -211,7 +232,7 @@ export function useAsyncData<
   }
 
   // Client side
-  if (process.client) {
+  if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
     if (instance && !instance._nuxtOnBeforeMountCbs) {
@@ -272,12 +293,34 @@ export function useLazyAsyncData<
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useLazyAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+export function useLazyAsyncData<
+  ResT,
+  DataE = Error,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  key: string,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -306,7 +349,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
 }
 
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
-  if (process.server) {
+  if (import.meta.server) {
     return Promise.resolve()
   }
 
