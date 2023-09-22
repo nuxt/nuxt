@@ -18,14 +18,19 @@ interface TemplateContext {
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
-  getContents: () =>
-    [
+  getContents: ({ nuxt }) => {
+    if (!nuxt.options.typescript.shim) {
+      return ''
+    }
+
+    return [
       'declare module \'*.vue\' {',
       '  import { DefineComponent } from \'vue\'',
       '  const component: DefineComponent<{}, {}, any>',
       '  export default component',
       '}'
     ].join('\n')
+  }
 }
 
 // TODO: Use an alias
