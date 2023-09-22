@@ -27,6 +27,7 @@ const appPreset = defineUnimportPreset({
     'reloadNuxtApp',
     'useRuntimeConfig',
     'useState',
+    'useId',
     'clearNuxtState',
     'useFetch',
     'useLazyFetch',
