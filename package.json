@@ -83,7 +83,7 @@
     "request": "2.88.2",
     "rimraf": "4.4.1",
     "rollup": "3.28.1",
-    "rollup-plugin-esbuild": "5.0.0",
+    "rollup-plugin-esbuild": "6.0.1",
     "rollup-plugin-license": "3.0.1",
     "sass": "1.66.1",
     "sass-loader": "^10.1.1",
