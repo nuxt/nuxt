@@ -100,12 +100,12 @@
     "unenv": "^1.7.4",
     "unimport": "^3.3.0",
     "unplugin": "^1.5.0",
-    "unplugin-vue-router": "^0.6.4",
+    "unplugin-vue-router": "^0.7.0",
     "untyped": "^1.4.0",
     "vue": "^3.3.4",
     "vue-bundle-renderer": "^2.0.0",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.2.4"
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
