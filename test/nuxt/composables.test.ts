@@ -53,7 +53,8 @@ describe('composables', () => {
       'useRequestHeaders',
       'clearNuxtState',
       'useState',
-      'useRequestURL'
+      'useRequestURL',
+      'useId'
     ]
     const skippedComposables: string[] = [
       'abortNavigation',
@@ -210,6 +211,13 @@ describe('useState', () => {
     expect(state.value).toBe('test')
     clearNuxtState()
     expect.soft(state.value).toBeUndefined()
+  })
+})
+
+describe('useId', () => {
+  it('default', () => {
+    expect(useId()).not.toBe(useId())
+    expect(useId()).toBeTypeOf('string')
   })
 })
 
