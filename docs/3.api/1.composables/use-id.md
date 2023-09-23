@@ -6,10 +6,8 @@ description: The useId composable creates a unique id.
 # `useId`
 
 ```ts
-useId<T>(key: string): DeepReadonly<Ref<string>>
+useId<T>(): string
 ```
-
-* **key**: A unique key that ensures that the id is unique.
 
 ```vue
 <script setup lang="ts">
