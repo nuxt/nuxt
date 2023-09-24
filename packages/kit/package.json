@@ -42,7 +42,7 @@
   "devDependencies": {
     "@types/hash-sum": "1.0.0",
     "@types/lodash-es": "4.17.9",
-    "@types/semver": "7.5.1",
+    "@types/semver": "7.5.2",
     "lodash-es": "4.17.21",
     "nitropack": "2.6.3",
     "unbuild": "latest",
