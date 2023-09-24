@@ -1,9 +1,12 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
+import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
+import { randomUUID } from 'uncrypto'
+import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolveIgnorePatterns } from '@nuxt/kit'
+import { logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -29,6 +32,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const modules = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => m.entryPath)
+  )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
     debug: nuxt.options.debug,
@@ -103,7 +114,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsconfigPath: 'tsconfig.server.json',
       tsConfig: {
         include: [
-          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts')
+          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+          ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server'))
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
@@ -197,6 +209,80 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
   nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir)]
+
+  // Add app manifest handler and prerender configuration
+  if (nuxt.options.experimental.appManifest) {
+    // @ts-expect-error untyped nuxt property
+    const buildId = nuxt.options.appConfig.nuxt!.buildId ||= randomUUID()
+    const buildTimestamp = Date.now()
+
+    const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
+    const tempDir = join(nuxt.options.buildDir, 'manifest')
+
+    nitroConfig.publicAssets!.unshift(
+      // build manifest
+      {
+        dir: join(tempDir, 'meta'),
+        maxAge: 31536000 /* 1 year */,
+        baseURL: joinURL(manifestPrefix, 'meta')
+      },
+      // latest build
+      {
+        dir: tempDir,
+        maxAge: 1,
+        baseURL: manifestPrefix
+      }
+    )
+
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      const routeRules = {} as Record<string, any>
+      const _routeRules = nitro.options.routeRules
+      for (const key in _routeRules) {
+        if (key === '/__nuxt_error') { continue }
+        const filteredRules = Object.entries(_routeRules[key])
+          .filter(([key, value]) => ['prerender', 'redirect'].includes(key) && value)
+          .map(([key, value]: any) => {
+            if (key === 'redirect') {
+              return [key, typeof value === 'string' ? value : value.to]
+            }
+            return [key, value]
+          })
+        if (filteredRules.length > 0) {
+          routeRules[key] = Object.fromEntries(filteredRules)
+        }
+      }
+
+      // Add pages prerendered but not covered by route rules
+      const prerenderedRoutes = new Set<string>()
+      const routeRulesMatcher = toRouteMatcher(
+        createRadixRouter({ routes: routeRules })
+      )
+      const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+      for (const route of nitro._prerenderedRoutes || []) {
+        if (!route.error && route.route.endsWith(payloadSuffix)) {
+          const url = route.route.slice(0, -payloadSuffix.length) || '/'
+          const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+          if (!rules.prerender) {
+            prerenderedRoutes.add(url)
+          }
+        }
+      }
+
+      const manifest = {
+        id: buildId,
+        timestamp: buildTimestamp,
+        matcher: exportMatcher(routeRulesMatcher),
+        prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
+      }
+
+      await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
+      await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
+        id: buildId,
+        timestamp: buildTimestamp
+      }))
+      await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+    })
+  }
 
   // Add fallback server for `ssr: false`
   if (!nuxt.options.ssr) {
@@ -421,7 +507,7 @@ function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate) {
-    console.warn(`[nuxt] Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
+    logger.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
   }
 
   return ''

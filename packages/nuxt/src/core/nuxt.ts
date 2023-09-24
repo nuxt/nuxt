@@ -1,7 +1,7 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
@@ -89,6 +89,16 @@ async function initNuxt (nuxt: Nuxt) {
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
+
+  if (nuxt.options.experimental.appManifest) {
+    addRouteMiddleware({
+      name: 'manifest-route-rule',
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
+      global: true
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+  }
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
@@ -295,6 +305,11 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // Add prerender payload support
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
+
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
@@ -389,7 +404,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
     if (isFileChange && RESTART_RE.test(path)) {
-      console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      logger.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
   })
@@ -406,7 +421,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Add prerender payload support
   const nitro = useNitro()
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
   nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
