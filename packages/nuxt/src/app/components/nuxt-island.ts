@@ -50,8 +50,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const propsForHash = props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {}
-    const hashId = computed(() => hash([props.name, propsForHash, props.context, props.source]))
+    const propsForHash = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
+    const hashId = computed(() => hash([props.name, propsForHash.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
