@@ -20,7 +20,7 @@ jobs:
     name: Semantic pull request
     steps:
       - name: Validate PR title
-        uses: amannn/action-semantic-pull-request@c3cd5d1ea3580753008872425915e343e351ab54 # v5.2.0
+        uses: amannn/action-semantic-pull-request@47b15d52c5c30e94a17ec87eb8dd51ff5221fed9 # v5.3.0
         with:
           scopes: |
             kit
