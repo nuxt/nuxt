@@ -30,8 +30,8 @@
   "devDependencies": {
     "@nuxt/telemetry": "2.5.0",
     "@types/file-loader": "5.0.2",
-    "@types/pug": "2.0.6",
-    "@types/sass-loader": "8.0.5",
+    "@types/pug": "2.0.7",
+    "@types/sass-loader": "8.0.6",
     "@unhead/schema": "1.7.4",
     "@vitejs/plugin-vue": "4.3.4",
     "@vitejs/plugin-vue-jsx": "3.0.2",

@@ -20,7 +20,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.2",
-    "@types/estree": "1.0.1",
+    "@types/estree": "1.0.2",
     "@types/fs-extra": "11.0.2",
     "unbuild": "latest",
     "vue": "3.3.4"
