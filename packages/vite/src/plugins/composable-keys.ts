@@ -104,7 +104,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
               if (stringTypes.includes(node.arguments[0]?.type)) { return }
               break
 
-            case 'useId':
+            case 'getUniqueID':
               if (stringTypes.includes(node.arguments[0]?.type)) { return }
               break
 

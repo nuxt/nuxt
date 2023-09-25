@@ -54,7 +54,7 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'useId'
+      'getUniqueID'
     ]
     const skippedComposables: string[] = [
       'abortNavigation',
@@ -214,10 +214,10 @@ describe('useState', () => {
   })
 })
 
-describe('useId', () => {
+describe('getUniqueID', () => {
   it('default', () => {
-    expect(useId()).not.toBe(useId())
-    expect(useId()).toBeTypeOf('string')
+    expect(getUniqueID()).not.toBe(getUniqueID())
+    expect(getUniqueID()).toBeTypeOf('string')
   })
 })
 
