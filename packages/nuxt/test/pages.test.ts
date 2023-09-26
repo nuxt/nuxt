@@ -437,6 +437,28 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/wrapper-expose/other'
         }
       ]
+    },
+    {
+      description: 'should handle trailing slashes with index routes',
+      files: [
+        { path: `${pagesDir}/index/index.vue` },
+        { path: `${pagesDir}/index/index/all.vue` }
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [],
+              file: `${pagesDir}/index/index/all.vue`,
+              name: 'index-index-all',
+              path: 'all'
+            }
+          ],
+          file: `${pagesDir}/index/index.vue`,
+          name: 'index',
+          path: '/'
+        }
+      ]
     }
   ]
 
