@@ -104,10 +104,6 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
               if (stringTypes.includes(node.arguments[0]?.type)) { return }
               break
 
-            case 'getUniqueID':
-              if (stringTypes.includes(node.arguments[0]?.type)) { return }
-              break
-
             case 'useFetch':
             case 'useLazyFetch':
               if (stringTypes.includes(node.arguments[1]?.type)) { return }
