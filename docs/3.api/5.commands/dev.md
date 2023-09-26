@@ -26,6 +26,8 @@ Option        | Default          | Description
 
 The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.
 
+Additionally to the above options, `nuxi` can pass options through to `listhen`, e.g. `--qr=false` to turn off the dev server QR code. You can find the list of `listhen` options in the README of the [listhen repository](https://github.com/unjs/listhen).
+
 This command sets `process.env.NODE_ENV` to `development`.
 
 ::alert{type="info"}
