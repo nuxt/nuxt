@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -109,7 +109,7 @@
   },
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
-    "@types/estree": "1.0.1",
+    "@types/estree": "1.0.2",
     "@types/fs-extra": "11.0.2",
     "@vitejs/plugin-vue": "4.3.4",
     "unbuild": "latest",
