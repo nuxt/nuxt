@@ -8,7 +8,7 @@ description: The getUniqueID utility returns a unique identifier.
 The `getUniqueID` utility returns a unique identifier.
 
 ```ts
-getUniqueID<T>(): string
+getUniqueID(): string
 ```
 
 ```vue
