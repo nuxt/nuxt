@@ -373,11 +373,11 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       nuxtApp.payload.data[key] = undefined
     }
     if (key in nuxtApp.payload._errors) {
-      nuxtApp.payload._errors[key] = undefined
+      nuxtApp.payload._errors[key] = null
     }
     if (nuxtApp._asyncData[key]) {
       nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = undefined
+      nuxtApp._asyncData[key]!.error.value = null
       nuxtApp._asyncData[key]!.pending.value = false
       nuxtApp._asyncData[key]!.status.value = 'idle'
     }
