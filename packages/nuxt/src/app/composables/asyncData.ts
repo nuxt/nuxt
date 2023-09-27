@@ -149,7 +149,7 @@ export function useAsyncData<
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
-      error: toRef(nuxt.payload._errors, key),
+      error: ref(nuxt.payload._errors[key] ?? null),
       status: ref('idle')
     }
   }
