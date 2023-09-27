@@ -33,7 +33,7 @@ describe('runtime server component', () => {
     expect(vi.mocked(h).mock.lastCall![1]?.props).toBeTypeOf('object')
     expect(vi.mocked(h).mock.lastCall![1]?.props).toMatchInlineSnapshot(`
       {
-        "data-v-123": '',
+        "data-v-123": "",
         "test": 1,
       }
     `)
