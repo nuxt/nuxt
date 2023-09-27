@@ -81,7 +81,7 @@ export interface NuxtPayload {
     description: string
     data?: any
   } | null
-  _errors: Record<string, NuxtError | undefined>
+  _errors: Record<string, NuxtError | null>
   [key: string]: unknown
 }
 
@@ -104,7 +104,7 @@ interface _NuxtApp {
   _asyncData: Record<string, {
     data: Ref<any>
     pending: Ref<boolean>
-    error: Ref<any>
+    error: Ref<Error | null>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
 

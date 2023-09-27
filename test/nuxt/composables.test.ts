@@ -125,6 +125,14 @@ describe('useAsyncData', () => {
     expect(pending.value).toBe(false)
   })
 
+  // https://github.com/nuxt/nuxt/issues/23411
+  it('should initialize with error set to null when immediate: false', async () => {
+    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
+    expect(error.value).toBe(null)
+    await execute()
+    expect(error.value).toBe(null)
+  })
+
   it('should be accessible with useNuxtData', async () => {
     await useAsyncData('key', () => Promise.resolve('test'))
     const data = useNuxtData('key')
