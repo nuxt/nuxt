@@ -127,7 +127,9 @@ describe('useAsyncData', () => {
 
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
-    const { error } = await useAsyncData(() => '', { immediate: false })
+    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
+    expect(error.value).toBe(null)
+    await execute()
     expect(error.value).toBe(null)
   })
 
