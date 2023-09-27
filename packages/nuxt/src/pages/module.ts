@@ -96,7 +96,7 @@ export default defineNuxtModule({
     }
 
     addTemplate({
-      filename: 'vue-router.mjs',
+      filename: 'vue-router-stub.mjs',
       // TODO: use `vue-router/auto` when we have support for page metadata
       getContents: () => 'export * from \'vue-router\';'
     })
