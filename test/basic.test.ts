@@ -11,7 +11,7 @@ import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
-const isTestingAppManifest = process.env.TEST_MANIFEST === 'manifest-on'
+const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),

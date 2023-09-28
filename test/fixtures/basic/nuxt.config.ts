@@ -195,7 +195,7 @@ export default defineNuxtConfig({
     reactivityTransform: true,
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST === 'manifest-on',
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     headNext: true,
     inlineRouteRules: true
   },
