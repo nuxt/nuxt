@@ -1,5 +1,5 @@
-import type { Ref } from 'vue'
-import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
+import type { Ref, UnwrapRef } from 'vue'
+import { computed, getCurrentInstance, onUnmounted, ref } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -15,14 +15,12 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string): T
   encode?(value: T): string
   default?: () => T | Ref<T>
-  watch?: boolean | 'shallow'
 }
 
 export interface CookieRef<T> extends Ref<T> {}
 
 const CookieDefaults: CookieOptions<any> = {
   path: '/',
-  watch: true,
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 }
@@ -37,30 +35,20 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
 
-    const callback = () => {
-      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(toRaw(cookie.value))
-    }
-
-    let watchPaused = false
-
     if (channel) {
       channel.onmessage = (event) => {
-        watchPaused = true
         cookie.value = event.data
-        nextTick(() => { watchPaused = false })
       }
     }
 
-    if (opts.watch) {
-      watch(cookie, () => {
-        if (watchPaused) { return }
-        callback()
-      },
-      { deep: opts.watch !== 'shallow' })
-    } else {
-      callback()
-    }
+    return computed<UnwrapRef<T> | undefined>({
+      get: () => cookie.value,
+      set: (val) => {
+        cookie.value = val
+        writeClientCookie(name, val, opts as CookieSerializeOptions)
+        channel?.postMessage(val)
+      }
+    }) as CookieRef<T>
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
