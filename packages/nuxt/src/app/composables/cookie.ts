@@ -1,4 +1,4 @@
-import type { Ref, MaybeRef } from 'vue'
+import type { MaybeRef, Ref } from 'vue'
 import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
