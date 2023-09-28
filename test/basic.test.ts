@@ -41,6 +41,17 @@ describe('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 2 })
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
   })
+
+  it('should auto-import', async () => {
+    const res = await $fetch('/api/auto-imports')
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "autoImported": "utils",
+        "fromServerDir": "test-utils",
+        "thisIs": "serverAutoImported",
+      }
+    `)
+  })
 })
 
 describe('route rules', () => {
