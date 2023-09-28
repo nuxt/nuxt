@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -30,8 +30,8 @@
   "devDependencies": {
     "@nuxt/telemetry": "2.5.0",
     "@types/file-loader": "5.0.2",
-    "@types/pug": "2.0.6",
-    "@types/sass-loader": "8.0.5",
+    "@types/pug": "2.0.7",
+    "@types/sass-loader": "8.0.6",
     "@unhead/schema": "1.7.4",
     "@vitejs/plugin-vue": "4.3.4",
     "@vitejs/plugin-vue-jsx": "3.0.2",
@@ -46,7 +46,7 @@
     "vue": "3.3.4",
     "vue-bundle-renderer": "2.0.0",
     "vue-loader": "17.2.2",
-    "vue-router": "4.2.4",
+    "vue-router": "4.2.5",
     "webpack": "5.88.2",
     "webpack-dev-middleware": "6.1.1"
   },

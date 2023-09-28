@@ -75,11 +75,11 @@ export default defineNuxtModule({
 
     // adds support for #vue-router alias (used for types) with and without pages integration
     addTemplate({
-      filename: 'vue-router.d.ts',
+      filename: 'vue-router-stub.d.ts',
       getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
     })
 
-    nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router')
+    nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router-stub')
 
     if (!nuxt.options.pages) {
       addPlugin(resolve(distDir, 'app/plugins/router'))
@@ -96,7 +96,7 @@ export default defineNuxtModule({
     }
 
     addTemplate({
-      filename: 'vue-router.mjs',
+      filename: 'vue-router-stub.mjs',
       // TODO: use `vue-router/auto` when we have support for page metadata
       getContents: () => 'export * from \'vue-router\';'
     })
@@ -451,7 +451,7 @@ export default defineNuxtModule({
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
       references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'vue-router.d.ts') })
+      references.push({ path: resolve(nuxt.options.buildDir, 'vue-router-stub.d.ts') })
     })
   }
 })

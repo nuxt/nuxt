@@ -1,4 +1,4 @@
-import { addServerHandler, createResolver, defineNuxtModule } from 'nuxt/kit'
+import { addServerHandler, addServerImports, addServerImportsDir, createResolver, defineNuxtModule } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
@@ -11,5 +11,16 @@ export default defineNuxtModule({
       handler: resolver.resolve('./runtime/handler'),
       route: '/auto-registered-module'
     })
+
+    addServerImports([{
+      from: resolver.resolve('./runtime/some-server-import'),
+      name: 'serverAutoImported',
+      as: 'autoimportedFunction'
+    }, {
+      from: resolver.resolve('./runtime/some-server-import'),
+      name: 'someUtils'
+    }])
+
+    addServerImportsDir(resolver.resolve('./runtime/server'))
   }
 })

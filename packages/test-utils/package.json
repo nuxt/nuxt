@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/test-utils",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@jest/globals": "29.7.0",
-    "playwright-core": "1.38.0",
+    "playwright-core": "1.38.1",
     "unbuild": "latest",
     "vitest": "0.33.0"
   },
