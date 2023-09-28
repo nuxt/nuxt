@@ -1,5 +1,5 @@
-import type { ComputedRef, DefineComponent, PropType } from 'vue'
-import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, resolveComponent } from 'vue'
+import type { ComputedRef, DefineComponent, InjectionKey, PropType } from 'vue'
+import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw } from '#vue-router'
 import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
@@ -12,6 +12,7 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
+const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 export type NuxtLinkOptions = {
   componentName?: string
@@ -233,6 +234,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             unobserve?.()
             unobserve = null
           })
+        }
+      }
+
+      if (import.meta.dev && import.meta.server && !props.custom) {
+        const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
+        if (isNuxtLinkChild) {
+          console.log('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
+        } else {
+          provide(NuxtLinkDevKeySymbol, true)
         }
       }
 
