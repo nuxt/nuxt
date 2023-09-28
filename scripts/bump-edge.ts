@@ -1,11 +1,12 @@
 import { execSync } from 'node:child_process'
 import { inc } from 'semver'
+import { consola } from 'consola'
 import { determineBumpType, loadWorkspace } from './_utils'
 
 const nightlyPackages = {
   nitropack: 'nitropack-edge',
   h3: 'h3-nightly',
-  nuxi: 'nuxi-ng'
+  nuxi: 'nuxi-edge'
 }
 
 async function main () {
@@ -34,6 +35,6 @@ async function main () {
 }
 
 main().catch((err) => {
-  console.error(err)
+  consola.error(err)
   process.exit(1)
 })

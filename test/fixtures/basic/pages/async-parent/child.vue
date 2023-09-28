@@ -6,7 +6,9 @@
 
 <script setup>
 await Promise.resolve()
-console.log('isHydrating: ' + useNuxtApp().isHydrating)
+if (import.meta.client) {
+  console.log('isHydrating: ' + useNuxtApp().isHydrating)
+}
 definePageMeta({
   layout: 'custom-async'
 })

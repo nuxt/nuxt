@@ -11,6 +11,7 @@ import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isTestingAppManifest = process.env.TEST_MANIFEST === 'manifest-on'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -39,6 +40,17 @@ describe('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 1 })
     expect(await $fetch('/api/counter')).toEqual({ count: 2 })
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
+  })
+
+  it('should auto-import', async () => {
+    const res = await $fetch('/api/auto-imports')
+    expect(res).toMatchInlineSnapshot(`
+      {
+        "autoImported": "utils",
+        "fromServerDir": "test-utils",
+        "thisIs": "serverAutoImported",
+      }
+    `)
   })
 })
 
@@ -533,6 +545,56 @@ describe('nuxt links', () => {
 
     await page.close()
   })
+
+  it('expect scroll to top on routes with same component', async () => {
+    // #22402
+    const page = await createPage('/big-page-1')
+    await page.setViewportSize({
+      width: 1000,
+      height: 1000
+    })
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('#big-page-2').scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await page.locator('#big-page-2').click()
+    await page.waitForURL(url => url.href.includes('/big-page-2'))
+    await page.waitForTimeout(25)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    await page.locator('#big-page-1').scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await page.locator('#big-page-1').click()
+    await page.waitForURL(url => url.href.includes('/big-page-1'))
+    await page.waitForTimeout(25)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.close()
+  })
+
+  it('expect scroll to top on nested pages', async () => {
+    // #20523
+    const page = await createPage('/nested/foo/test')
+    await page.setViewportSize({
+      width: 1000,
+      height: 1000
+    })
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('#user-test').scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await page.locator('#user-test').click()
+    await page.waitForURL(url => url.href.includes('/nested/foo/user-test'))
+    await page.waitForTimeout(25)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    await page.locator('#test').scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await page.locator('#test').click()
+    await page.waitForURL(url => url.href.includes('/nested/foo/test'))
+    await page.waitForTimeout(25)
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
@@ -701,12 +763,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    // TODO: remove when we update CI to node v18
-    if (process.version.startsWith('v16')) {
-      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
-    } else {
-      expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
-    }
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -936,6 +993,7 @@ describe('extends support', () => {
       const html = await $fetch('/override')
       expect(html).toContain('Extended layout from bar')
       expect(html).toContain('Extended page from bar')
+      expect(html).toContain('This child page should not be overridden by bar')
     })
   })
 
@@ -961,9 +1019,14 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
     })
 
-    it('extends bar/middleware/override over foo/middleware/override', async () => {
+    // theme is added after layers
+    it('extends foo/middleware/override over bar/middleware/override', async () => {
       const html = await $fetch('/override')
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
+    })
+    it('global middlewares sorting', async () => {
+      const html = await $fetch('/middleware/ordering')
+      expect(html).toContain('catchall at middleware')
     })
   })
 
@@ -982,6 +1045,11 @@ describe('extends support', () => {
     it('extends foo/plugins/foo', async () => {
       const html = await $fetch('/foo')
       expect(html).toContain('Plugin | foo: String generated from foo plugin!')
+    })
+
+    it('respects plugin ordering within layers', async () => {
+      const html = await $fetch('/plugins/ordering')
+      expect(html).toContain('catchall at plugins')
     })
   })
 
@@ -1381,7 +1449,7 @@ describe('server components/islands', () => {
     await page.getByText('Go to page without lazy server component').click()
 
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"0\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"1\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"2\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"3\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
@@ -1566,18 +1634,24 @@ describe('app config', () => {
   it('should work', async () => {
     const html = await $fetch('/app-config')
 
-    const expectedAppConfig = {
+    const expectedAppConfig: Record<string, any> = {
       fromNuxtConfig: true,
       nested: {
         val: 2
       },
+      nuxt: {},
       fromLayer: true,
       userConfig: 123
     }
-
-    expect(html).toContain(JSON.stringify(expectedAppConfig))
+    if (isTestingAppManifest) {
+      expectedAppConfig.nuxt.buildId = 'test'
+    }
+    expect.soft(html.replace(/"nuxt":\{"buildId":"[^"]+"\}/, '"nuxt":{"buildId":"test"}')).toContain(JSON.stringify(expectedAppConfig))
 
     const serverAppConfig = await $fetch('/api/app-config')
+    if (isTestingAppManifest) {
+      serverAppConfig.appConfig.nuxt.buildId = 'test'
+    }
     expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })

@@ -2,7 +2,7 @@ import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
 import { pascalCase, splitByCase } from 'scule'
-import { isIgnored, useNuxt } from '@nuxt/kit'
+import { isIgnored, logger, useNuxt } from '@nuxt/kit'
 // eslint-disable-next-line vue/prefer-import-from-vue
 import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
@@ -44,7 +44,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
           const nuxt = useNuxt()
           const original = relative(nuxt.options.srcDir, dir.path)
           const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), caseCorrected))
-          console.warn(`[nuxt] Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+          logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
           continue
         }
       }
@@ -121,7 +121,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         // by default, give priority to scanned components
-        priority: 1
+        priority: dir.priority ?? 1
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -130,14 +130,25 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!componentName) {
-        console.warn(`[nuxt] Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
         continue
       }
 
       const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
-        // Ignore component if component is already defined (with same mode)
-        warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        const existingPriority = existingComponent.priority ?? 0
+        const newPriority = component.priority ?? 0
+
+        // Replace component if priority is higher
+        if (newPriority > existingPriority) {
+          components.splice(components.indexOf(existingComponent), 1, component)
+        }
+        // Warn if a user-defined (or prioritised) component conflicts with a previously scanned component
+        if (newPriority > 0 && newPriority === existingPriority) {
+          warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+        }
+
         continue
       }
 
@@ -178,7 +189,7 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  console.warn(`[nuxt] Two component files resolving to the same name \`${componentName}\`:\n` +
+  logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
     `\n - ${duplicatePath}`
   )

@@ -9,7 +9,7 @@ description: The preview command starts a server to preview your application aft
 npx nuxi preview [rootDir] [--dotenv]
 ```
 
-The `preview` command starts a server to preview your Nuxt application after running the `build` command.
+The `preview` command starts a server to preview your Nuxt application after running the `build` command. The `start` command is an alias for `preview`. When running your application in production refer to the [Deployment section](/docs/getting-started/deployment).
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
