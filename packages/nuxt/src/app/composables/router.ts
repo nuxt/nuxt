@@ -7,7 +7,6 @@ import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-import { useState } from './state'
 
 import type { PageMeta } from '#app'
 import { PageRouteSymbol } from '#app/components/injections'
@@ -222,14 +221,14 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 }
 
 export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
+  const nuxtApp = useNuxtApp()
   if (import.meta.server) {
-    if (import.meta.dev && getCurrentInstance() && useState('_layout').value !== layout) {
+    if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
       console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
     }
-    useState('_layout').value = layout
+    nuxtApp.payload.state._layout = layout
   }
-  const nuxtApp = useNuxtApp()
-  if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && useState('_layout').value !== layout) {
+  if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()

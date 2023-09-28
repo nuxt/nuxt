@@ -18,8 +18,11 @@ const links = [
 
 const route = useRoute()
 const windowState = computed(() => {
-  console.log(route.fullPath)
-  return import.meta.client ? window.history.state.foo : ''
+  if (import.meta.client) {
+    console.log(route.fullPath)
+    return window.history.state.foo
+  }
+  return ''
 })
 </script>
 

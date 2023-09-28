@@ -50,7 +50,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
+    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
+    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
@@ -86,7 +87,7 @@ export default defineComponent({
       ssrHTML.value = renderedHTML
     }
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? randomUUID())
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
     const html = computed(() => {
@@ -117,7 +118,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(import.meta.dev && import.meta.client ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
@@ -171,7 +172,7 @@ export default defineComponent({
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating) {
+    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     }
 

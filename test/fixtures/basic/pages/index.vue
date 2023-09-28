@@ -53,6 +53,9 @@
     <component :is="`with${'-'.toString()}suffix`" />
     <ClientWrapped ref="clientRef" style="color: red;" class="client-only" />
     <ServerOnlyComponent class="server-only" style="background-color: gray;" />
+    <NuxtLink to="/big-page-1">
+      to big 1
+    </NuxtLink>
   </div>
 </template>
 

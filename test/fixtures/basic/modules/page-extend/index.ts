@@ -12,7 +12,13 @@ export default defineNuxtModule({
       pages.push({
         name: 'page-extend',
         path: '/page-extend',
-        file: resolver.resolve('./runtime/page.vue')
+        file: resolver.resolve('../runtime/page.vue')
+      }, {
+        path: '/big-page-1',
+        file: resolver.resolve('./pages/big-page.vue')
+      }, {
+        path: '/big-page-2',
+        file: resolver.resolve('./pages/big-page.vue')
       })
     })
   }

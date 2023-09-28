@@ -5,12 +5,14 @@ import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
-import { normalize } from 'pathe'
+import { normalize, resolve } from 'pathe'
+import { distDir } from '../dirs'
 import type { getComponentsT } from './module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
 export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
+  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
   const componentUnimport = createUnimport({
     imports: [
       {
@@ -25,18 +27,20 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     const components = getComponents(mode)
     return components.flatMap((c): Import[] => {
       const withMode = (mode: string | undefined) => mode
-        ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}`
+        ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}`
         : c.filePath
+
+      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
 
       return [
         {
           as: c.pascalName,
-          from: withMode(c.mode === 'client' ? 'client' : undefined),
+          from: withMode(mode),
           name: 'default'
         },
         {
           as: 'Lazy' + c.pascalName,
-          from: withMode([c.mode === 'client' ? 'client' : '', 'async'].filter(Boolean).join(',')),
+          from: withMode([mode, 'async'].filter(Boolean).join(',')),
           name: 'default'
         }
       ]
@@ -79,6 +83,15 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
               'import { defineAsyncComponent } from "vue"',
               'import { createClientOnly } from "#app/components/client-only"',
               `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`
+            ].join('\n'),
+            map: null
+          }
+        } else if (mode === 'server' || mode === 'server,async') {
+          const name = query.nuxt_component_name
+          return {
+            code: [
+              `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
+              `export default createServerComponent(${JSON.stringify(name)})`
             ].join('\n'),
             map: null
           }

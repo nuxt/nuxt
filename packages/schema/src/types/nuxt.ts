@@ -18,7 +18,11 @@ export interface NuxtPlugin {
   order?: number
 }
 
-export interface NuxtTemplate<Options = Record<string, any>> {
+// Internal type for simpler NuxtTemplate interface extension
+
+type TemplateDefaultOptions = Record<string, any>
+
+export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** resolved output file path (generated) */
   dst?: string
   /** The target filename once the template is copied into the Nuxt buildDir */
@@ -33,13 +37,17 @@ export interface NuxtTemplate<Options = Record<string, any>> {
   write?: boolean
 }
 
-export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends NuxtTemplate<Options> {
+export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string
 }
 
+export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write'> {
+  write?: true
+}
+
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
-export interface NuxtPluginTemplate<Options = Record<string, any>> extends _TemplatePlugin<Options> { }
+export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
 
 export interface NuxtApp {
   mainComponent?: string | null

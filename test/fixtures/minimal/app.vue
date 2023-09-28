@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { componentNames } from '#components'
-console.log(componentNames)
+
+// prevent treeshaking of #components import
+defineExpose({ componentNames })
+
 // @ts-expect-error this is not usable outside a pages directory
 definePageMeta({
   // this should be fully tree-shaken out
