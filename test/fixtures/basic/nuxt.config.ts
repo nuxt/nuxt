@@ -195,8 +195,6 @@ export default defineNuxtConfig({
     reactivityTransform: true,
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
-    // TODO: remove this in v3.8
-    payloadExtraction: true,
     appManifest: process.env.TEST_MANIFEST === 'manifest-on',
     headNext: true,
     inlineRouteRules: true
