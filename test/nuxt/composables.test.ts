@@ -257,6 +257,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
         "prerendered": [
           "/specific-prerendered",
         ],
+        "version": 1,
       }
     `)
   })
