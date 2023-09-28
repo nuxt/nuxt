@@ -45,7 +45,7 @@ export function addServerPlugin (plugin: string) {
 /**
  * Adds routes to be prerendered
  */
-export function addPrerenderRoutes (routes: string | string[]) {
+export function prerenderRoutes (routes: string | string[]) {
   const nuxt = useNuxt()
   if (!Array.isArray(routes)) {
     routes = [routes]

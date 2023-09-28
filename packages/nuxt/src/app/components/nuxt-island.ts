@@ -11,7 +11,7 @@ import type { FetchResponse } from 'ofetch'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { addPrerenderRoutes, useRequestEvent } from '#app/composables/ssr'
+import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -127,7 +127,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          addPrerenderRoutes(hints)
+          prerenderRoutes(hints)
         }
       }
       setPayload(key, result)

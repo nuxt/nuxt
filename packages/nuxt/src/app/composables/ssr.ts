@@ -36,7 +36,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   return _setResponseStatus(useRequestEvent(), arg1, arg2 as string | undefined)
 }
 
-export function addPrerenderRoutes (path: string | string[]) {
+export function prerenderRoutes (path: string | string[]) {
   if (!process.server || !process.env.prerender) { return }
 
   const paths = Array.isArray(path) ? path : [path]
