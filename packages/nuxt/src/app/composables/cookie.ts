@@ -1,10 +1,9 @@
-import type { Ref } from 'vue'
+import type { Ref, MaybeRef } from 'vue'
 import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
-import destr from 'destr'
 import { isEqual } from 'ohash'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
@@ -39,7 +38,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(toRaw(cookie.value))
+      channel?.postMessage(prepareStructuredClone(cookie.value))
     }
 
     let watchPaused = false
@@ -113,4 +112,8 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
+}
+
+function prepareStructuredClone (value: MaybeRef<any>): any {
+  return JSON.parse(JSON.stringify(toRaw(value)))
 }
