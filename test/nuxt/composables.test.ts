@@ -21,10 +21,12 @@ vi.mock('#app/compat/idle-callback', () => ({
 
 const timestamp = Date.now()
 registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
+  version: 1,
   id: 'test',
   timestamp
 })))
 registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
+  version: 1,
   id: 'test',
   timestamp,
   matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
