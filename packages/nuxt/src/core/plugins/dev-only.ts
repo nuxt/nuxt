@@ -9,9 +9,10 @@ interface DevOnlyPluginOptions {
   sourcemap?: boolean
 }
 
-export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta) => {
-  const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
+const DEVONLY_COMP_SINGLE_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/
+const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
 
+export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta) => {
   return {
     name: 'nuxt:server-devonly:transform',
     enforce: 'pre',
@@ -25,8 +26,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta
       }
     },
     transform (code) {
-      if (!DEVONLY_COMP_RE.test(code)) { return }
-      DEVONLY_COMP_RE.lastIndex = 0
+      if (!DEVONLY_COMP_SINGLE_RE.test(code)) { return }
 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
