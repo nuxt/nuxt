@@ -31,9 +31,9 @@ describe('runtime server component', () => {
     expect(h).toHaveBeenCalledOnce()
     if (!vi.mocked(h).mock.lastCall) { throw new Error('no last call') }
     expect(vi.mocked(h).mock.lastCall![1]?.props).toBeTypeOf('object')
-    expect(Object.keys(vi.mocked(h).mock.lastCall![1]?.props)).not.toContain('data-v-123')
     expect(vi.mocked(h).mock.lastCall![1]?.props).toMatchInlineSnapshot(`
       {
+        "data-v-123": "",
         "test": 1,
       }
     `)

@@ -146,6 +146,8 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
+    nuxt.payload._errors[key] ??= null
+
     nuxt._asyncData[key] = {
       data: ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
@@ -153,6 +155,7 @@ export function useAsyncData<
       status: ref('idle')
     }
   }
+
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, DataE>
 
@@ -373,11 +376,11 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       nuxtApp.payload.data[key] = undefined
     }
     if (key in nuxtApp.payload._errors) {
-      nuxtApp.payload._errors[key] = undefined
+      nuxtApp.payload._errors[key] = null
     }
     if (nuxtApp._asyncData[key]) {
       nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = undefined
+      nuxtApp._asyncData[key]!.error.value = null
       nuxtApp._asyncData[key]!.pending.value = false
       nuxtApp._asyncData[key]!.status.value = 'idle'
     }

@@ -11,7 +11,7 @@ import type { FetchResponse } from 'ofetch'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { getFragmentHTML, getSlotProps } from './utils'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { useRequestEvent } from '#app/composables/ssr'
+import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -50,7 +50,8 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const hashId = computed(() => hash([props.name, props.props, props.context, props.source]))
+    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
+    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
@@ -126,7 +127,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', hints)
+          prerenderRoutes(hints)
         }
       }
       setPayload(key, result)

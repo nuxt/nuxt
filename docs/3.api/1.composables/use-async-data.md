@@ -51,7 +51,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ## Params
 
 * **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of [`useAsyncData`](/docs/api/composables/use-async-data) will be generated for you.
-* **handler**: an asynchronous function that returns a value
+* **handler**: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side
 * **options**:
   * _server_: whether to fetch the data on the server (defaults to `true`)
   * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
