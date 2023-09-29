@@ -20,12 +20,12 @@ export interface CookieOptions<T = any> extends _CookieOptions {
 
 export interface CookieRef<T> extends Ref<T> {}
 
-const CookieDefaults: CookieOptions<any> = {
+const CookieDefaults = {
   path: '/',
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
-}
+} satisfies CookieOptions<any>
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
@@ -39,7 +39,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(opts.encode ? opts.encode(cookie.value) : CookieDefaults.encode!(cookie.value))
+      channel?.postMessage(opts.encode(cookie.value as T))
     }
 
     let watchPaused = false
@@ -47,7 +47,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (channel) {
       channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = opts.decode ? opts.decode(event.data) : CookieDefaults.decode!(event.data)
+        cookie.value = opts.decode(event.data)
         nextTick(() => { watchPaused = false })
       }
     }
