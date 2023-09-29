@@ -91,9 +91,8 @@ export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
     config.imports = config.imports || {}
-    config.imports.autoImport = true
     if (Array.isArray(config.imports.imports)) {
-      config.imports.imports = [...config.imports.imports, ...imports]
+      config.imports.imports.push(...imports)
     } else {
       config.imports.imports = [config.imports.imports, ...imports]
     }
