@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -20,12 +20,12 @@ export interface CookieOptions<T = any> extends _CookieOptions {
 
 export interface CookieRef<T> extends Ref<T> {}
 
-const CookieDefaults: CookieOptions<any> = {
+const CookieDefaults = {
   path: '/',
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
-}
+} satisfies CookieOptions<any>
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
@@ -39,7 +39,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(toRaw(cookie.value))
+      channel?.postMessage(opts.encode(cookie.value as T))
     }
 
     let watchPaused = false
@@ -47,7 +47,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (channel) {
       channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = event.data
+        cookie.value = opts.decode(event.data)
         nextTick(() => { watchPaused = false })
       }
     }
@@ -65,7 +65,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts)
+        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
       }
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
