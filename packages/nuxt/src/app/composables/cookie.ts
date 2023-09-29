@@ -1,5 +1,5 @@
-import type { MaybeRef, Ref } from 'vue'
-import { getCurrentInstance, nextTick, onUnmounted, ref, toRaw, watch } from 'vue'
+import type { Ref } from 'vue'
+import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -20,11 +20,14 @@ export interface CookieOptions<T = any> extends _CookieOptions {
 
 export interface CookieRef<T> extends Ref<T> {}
 
+const defaultEncoder = (val: any) => destr(decodeURIComponent(val))
+const defaultDecoder = (val: any) => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+
 const CookieDefaults: CookieOptions<any> = {
   path: '/',
   watch: true,
-  decode: val => destr(decodeURIComponent(val)),
-  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+  decode: defaultEncoder,
+  encode: defaultDecoder
 }
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
@@ -39,7 +42,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(prepareStructuredClone(cookie.value))
+      channel?.postMessage(opts.encode ? opts.encode(cookie.value) : defaultEncoder(cookie.value))
     }
 
     let watchPaused = false
@@ -47,7 +50,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (channel) {
       channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = event.data
+        cookie.value = opts.decode ? opts.decode(event.data) : defaultDecoder(event.data)
         nextTick(() => { watchPaused = false })
       }
     }
@@ -113,8 +116,4 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
-}
-
-function prepareStructuredClone (value: MaybeRef<any>): any {
-  return JSON.parse(JSON.stringify(toRaw(value)))
 }
