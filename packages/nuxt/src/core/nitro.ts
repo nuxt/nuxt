@@ -269,7 +269,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       }
 
       const manifest = {
-        version: 1,
         id: buildId,
         timestamp: buildTimestamp,
         matcher: exportMatcher(routeRulesMatcher),
@@ -278,7 +277,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
       await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
       await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
-        version: 1,
         id: buildId,
         timestamp: buildTimestamp
       }))
