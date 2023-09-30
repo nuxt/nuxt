@@ -20,7 +20,7 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.8 when nitro has support for mocking traced dependencies
+    // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
@@ -210,8 +210,7 @@ export default defineUntypedSchema({
     /**
      * Use app manifests to respect route rules on client-side.
      */
-    // TODO: enable by default in v3.8
-    appManifest: false,
+    appManifest: true,
 
     // This is enabled when `experimental.payloadExtraction` is set to `true`.
     // appManifest: {
