@@ -9,6 +9,6 @@
     "preview": "nuxt preview"
   },
   "devDependencies": {
-    "@nuxt-themes/docus": "1.14.8"
+    "@nuxt-themes/docus": "1.14.9"
   }
 }

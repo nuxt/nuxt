@@ -36,14 +36,14 @@
     "nuxt": "workspace:*",
     "vite": "4.4.9",
     "vue": "3.3.4",
-    "magic-string": "^0.30.3"
+    "magic-string": "^0.30.4"
   },
   "devDependencies": {
     "@nuxt/test-utils": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "12.1.0",
     "@types/fs-extra": "11.0.2",
-    "@types/node": "18.18.0",
+    "@types/node": "18.18.1",
     "@types/semver": "7.5.3",
     "case-police": "0.6.1",
     "changelogen": "0.5.5",
@@ -57,7 +57,7 @@
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
     "h3": "1.8.2",
-    "happy-dom": "12.2.1",
+    "happy-dom": "12.5.0",
     "jiti": "1.20.0",
     "markdownlint-cli": "^0.33.0",
     "nitropack": "2.6.3",
