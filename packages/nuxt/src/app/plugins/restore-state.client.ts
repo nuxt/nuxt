@@ -1,3 +1,4 @@
+import destr from 'destr'
 import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
 
 export default defineNuxtPlugin({
@@ -9,7 +10,7 @@ export default defineNuxtPlugin({
         const state = sessionStorage.getItem('nuxt:reload:state')
         if (state) {
           sessionStorage.removeItem('nuxt:reload:state')
-          Object.assign(nuxtApp.payload.state, JSON.parse(state)?.state)
+          Object.assign(nuxtApp.payload.state, destr<Record<string, any>>(state)?.state)
         }
       } catch {}
     }

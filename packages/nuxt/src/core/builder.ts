@@ -2,13 +2,14 @@ import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import chokidar from 'chokidar'
-import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
+import { checkForExternalConfigurationFiles } from './external-config-files'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -43,7 +44,7 @@ export async function build (nuxt: Nuxt) {
 
   await nuxt.callHook('build:before')
   if (!nuxt.options._prepare) {
-    await bundle(nuxt)
+    await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
     await nuxt.callHook('build:done')
   }
 
@@ -92,6 +93,7 @@ function createGranularWatcher () {
   const nuxt = useNuxt()
 
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
 
@@ -130,6 +132,7 @@ function createGranularWatcher () {
     watcher.on('ready', () => {
       pending--
       if (nuxt.options.debug && !pending) {
+        // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
@@ -139,6 +142,7 @@ function createGranularWatcher () {
 async function createParcelWatcher () {
   const nuxt = useNuxt()
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
   const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
@@ -161,6 +165,7 @@ async function createParcelWatcher () {
       })
       watcher.then((subscription) => {
         if (nuxt.options.debug) {
+          // eslint-disable-next-line no-console
           console.timeEnd('[nuxt] builder:parcel:watch')
         }
         nuxt.hook('close', () => subscription.unsubscribe())
@@ -168,7 +173,7 @@ async function createParcelWatcher () {
     }
     return true
   }
-  console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+  logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
   return false
 }
 
@@ -178,23 +183,23 @@ async function bundle (nuxt: Nuxt) {
       ? await loadBuilder(nuxt, nuxt.options.builder)
       : nuxt.options.builder
 
-    return bundle(nuxt)
+    await bundle(nuxt)
   } catch (error: any) {
     await nuxt.callHook('build:error', error)
 
     if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error([
-        'Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.'
-      ].join('\n'))
+      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.')
     }
 
     throw error
   }
 }
 
-async function loadBuilder (nuxt: Nuxt, builder: string) {
+async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
-  if (builderPath) {
-    return import(pathToFileURL(builderPath).href)
+
+  if (!builderPath) {
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/configuration/nuxt-config#builder\``)
   }
+  return import(pathToFileURL(builderPath).href)
 }

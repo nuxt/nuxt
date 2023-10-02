@@ -21,7 +21,7 @@ if (status4.value !== 'success') {
 }
 
 const { status: status5 } = await useAsyncData(() => Promise.resolve(true), { server: false })
-if (process.server && status5.value !== 'idle') {
+if (import.meta.server && status5.value !== 'idle') {
   throw new Error('status5 should be "idle" server side')
 }
 

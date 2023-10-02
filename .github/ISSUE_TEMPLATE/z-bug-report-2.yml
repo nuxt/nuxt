@@ -10,7 +10,7 @@ body:
 
         Please use a template below to create a minimal reproduction
         👉 https://stackblitz.com/github/nuxt/starter/tree/v2
-        👉 https://codesandbox.io/p/github/nuxt/starter/v2
+        👉 https://codesandbox.io/s/github/nuxt/starter/v2
   - type: textarea
     id: bug-env
     attributes:

@@ -7,7 +7,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Watching } from 'webpack'
 import { defu } from 'defu'
-import type { Nuxt } from '@nuxt/schema'
+import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
 
@@ -22,7 +22,7 @@ import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './ut
 // TODO: Support plugins
 // const plugins: string[] = []
 
-export async function bundle (nuxt: Nuxt) {
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   registerVirtualModules()
 
   const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
@@ -39,14 +39,14 @@ export async function bundle (nuxt: Nuxt) {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     config.plugins!.push(composableKeysPlugin.webpack({
-      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server'],
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
       rootDir: nuxt.options.rootDir,
       composables: nuxt.options.optimization.keyedComposables
     }))
@@ -75,7 +75,8 @@ export async function bundle (nuxt: Nuxt) {
 
   // Start Builds
   if (nuxt.options.dev) {
-    return Promise.all(compilers.map(c => compile(c)))
+    await Promise.all(compilers.map(c => compile(c)))
+    return
   }
 
   for (const c of compilers) {

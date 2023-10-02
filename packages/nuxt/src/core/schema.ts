@@ -6,7 +6,7 @@ import chokidar from 'chokidar'
 import { interopDefault } from 'mlly'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, logger, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
   resolveSchema as resolveUntypedSchema
@@ -76,7 +76,7 @@ export default defineNuxtModule({
           }
           return
         }
-        console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+        logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
@@ -106,8 +106,8 @@ export default defineNuxtModule({
           try {
             loadedConfig = _resolveSchema(filePath)
           } catch (err) {
-            console.warn(
-              '[nuxt-config-schema] Unable to load schema from',
+            logger.warn(
+              'Unable to load schema from',
               filePath,
               err
             )

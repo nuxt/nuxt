@@ -9,7 +9,7 @@ import { useRouter } from './router'
  * @param components Pascal-cased name or names of components to prefetch
  */
 export const preloadComponents = async (components: string | string[]) => {
-  if (process.server) { return }
+  if (import.meta.server) { return }
   const nuxtApp = useNuxtApp()
 
   components = Array.isArray(components) ? components : [components]
@@ -35,7 +35,7 @@ function _loadAsyncComponent (component: Component) {
 }
 
 export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>; _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
-  if (process.server) { return }
+  if (import.meta.server) { return }
 
   const { path, matched } = router.resolve(to)
 

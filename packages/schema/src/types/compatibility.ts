@@ -3,7 +3,6 @@ export interface NuxtCompatibility {
    * Required nuxt version in semver format.
    *
    * @example `^2.14.0` or `>=3.0.0-27219851.6e49637`.
-   *
    */
   nuxt?: string
 
@@ -12,7 +11,7 @@ export interface NuxtCompatibility {
    *
    * - `true`:  When using Nuxt 2, using bridge module is required.
    * - `false`: When using Nuxt 2, using bridge module is not supported.
-  */
+   */
   bridge?: boolean
 }
 

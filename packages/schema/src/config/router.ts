@@ -11,7 +11,6 @@ export default defineUntypedSchema({
      *
      * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
      * @type {typeof import('../src/types/router').RouterConfigSerializable}
-     *
      */
     options: {}
   }

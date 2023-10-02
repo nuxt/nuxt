@@ -18,7 +18,7 @@ export default defineComponent({
     if (!component) {
       throw createError({
         statusCode: 404,
-        statusMessage: `Island component not found: ${JSON.stringify(component)}`
+        statusMessage: `Island component not found: ${props.context.name}`
       })
     }
 

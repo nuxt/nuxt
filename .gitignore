@@ -4,6 +4,7 @@ jspm_packages
 
 package-lock.json
 packages/*/README.md
+!packages/nuxi/README.md
 packages/*/LICENSE
 */**/yarn.lock
 /.yarn
@@ -15,6 +16,9 @@ packages/*/LICENSE
 .temp
 .tmp
 .cache
+
+# Lychee cache
+.lycheecache
 
 # Generated dirs
 dist
@@ -68,3 +72,4 @@ Temporary Items
 .netlify
 
 fixtures-temp
+.pnpm-store

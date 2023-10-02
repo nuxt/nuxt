@@ -15,18 +15,18 @@ if (called.value !== 0) {
   throw new Error('Handled should have not been called')
 }
 
-if (process.server && data.value !== null) {
+if (import.meta.server && data.value !== null) {
   throw new Error('Initial data should be null: ' + data.value)
 }
 
 await execute()
 await execute()
 
-if (process.server && called.value as number !== 2) {
+if (import.meta.server && called.value as number !== 2) {
   throw new Error('Should have been called once after execute (server) but called ' + called.value + ' times')
 }
 
-if (process.client && called.value as number !== 2) {
+if (import.meta.client && called.value as number !== 2) {
   throw new Error('Should have been called once after execute (client) but called ' + called.value + ' times')
 }
 

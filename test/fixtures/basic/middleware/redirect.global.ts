@@ -20,7 +20,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return false
   }
   const pluginPath = nuxtApp.$path()
-  if (process.server && !/redirect|navigate/.test(pluginPath) && to.path !== pluginPath) {
+  if (import.meta.server && !/redirect|navigate/.test(pluginPath) && to.path !== pluginPath) {
     throw new Error('plugin did not run before middleware')
   }
 })

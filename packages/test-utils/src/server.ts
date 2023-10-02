@@ -13,23 +13,25 @@ const kit: typeof _kit = _kit.default || _kit
 export async function startServer () {
   const ctx = useTestContext()
   await stopServer()
-  const port = ctx.options.port || await getRandomPort()
-  ctx.url = 'http://127.0.0.1:' + port
+  const host = '127.0.0.1'
+  const port = ctx.options.port || await getRandomPort(host)
+  ctx.url = `http://${host}:${port}`
   if (ctx.options.dev) {
     const nuxiCLI = await kit.resolvePath('nuxi/cli')
-    ctx.serverProcess = execa(nuxiCLI, ['dev'], {
+    ctx.serverProcess = execa(nuxiCLI, ['_dev'], {
       cwd: ctx.nuxt!.options.rootDir,
       stdio: 'inherit',
       env: {
         ...process.env,
+        _PORT: String(port), // Used by internal _dev command
         PORT: String(port),
-        NITRO_PORT: String(port),
+        HOST: host,
         NODE_ENV: 'development'
       }
     })
-    await waitForPort(port, { retries: 32 })
+    await waitForPort(port, { retries: 32, host }).catch(() => {})
     let lastError
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 150; i++) {
       await new Promise(resolve => setTimeout(resolve, 100))
       try {
         const res = await $fetch(ctx.nuxt!.options.app.baseURL)
@@ -50,11 +52,11 @@ export async function startServer () {
       env: {
         ...process.env,
         PORT: String(port),
-        NITRO_PORT: String(port),
+        HOST: host,
         NODE_ENV: 'test'
       }
     })
-    await waitForPort(port, { retries: 8 })
+    await waitForPort(port, { retries: 20, host })
   }
 }
 

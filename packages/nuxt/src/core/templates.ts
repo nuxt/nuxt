@@ -18,14 +18,19 @@ interface TemplateContext {
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
-  getContents: () =>
-    [
+  getContents: ({ nuxt }) => {
+    if (!nuxt.options.typescript.shim) {
+      return ''
+    }
+
+    return [
       'declare module \'*.vue\' {',
       '  import { DefineComponent } from \'vue\'',
       '  const component: DefineComponent<{}, {}, any>',
       '  export default component',
       '}'
     ].join('\n')
+  }
 }
 
 // TODO: Use an alias
@@ -280,9 +285,17 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents: async ({ app, nuxt }) => {
     return `
+import { updateAppConfig } from '#app'
 import { defuFn } from '${await _resolveId('defu')}'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+
+// Vite - webpack is handled directly in #app/config
+if (import.meta.hot) {
+  import.meta.hot.accept((newModule) => {
+    updateAppConfig(newModule.default)
+  })
+}
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
@@ -313,7 +326,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '}',
 
       // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
-      'if (process.client) {',
+      'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
       '}'
@@ -329,8 +342,12 @@ export const nuxtConfigTemplate = {
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
+      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
+      `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
+      `export const remoteComponentIslands = ${ctx.nuxt.options.experimental.componentIslands === 'local+remote'}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
-      `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`
+      `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
+      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`
     ].join('\n\n')
   }
 }

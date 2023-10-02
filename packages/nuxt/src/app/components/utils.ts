@@ -73,7 +73,7 @@ export function vforToArray (source: any): any[] {
   } else if (isString(source)) {
     return source.split('')
   } else if (typeof source === 'number') {
-    if (process.dev && !Number.isInteger(source)) {
+    if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
     const array = []

@@ -2,6 +2,7 @@ import { parseURL } from 'ufo'
 import { defineComponent, h } from 'vue'
 import { parseQuery } from 'vue-router'
 import { resolve } from 'pathe'
+import destr from 'destr'
 // @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
 
@@ -10,7 +11,7 @@ export default (url: string) => defineComponent({
 
   async setup (props, { attrs }) {
     const query = parseQuery(parseURL(url).search)
-    const urlProps = query.props ? JSON.parse(query.props as string) : {}
+    const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
     const path = resolve(query.path as string)
     if (!path.startsWith(devRootDir)) {
       throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)

@@ -7,7 +7,7 @@ import type { AppConfig, RuntimeValue } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLink, NuxtPage, WithTypes } from '#components'
+import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -56,9 +56,9 @@ describe('API routes', () => {
   it('works with useFetch', () => {
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useFetch('/api/hey').data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
-    // @ts-expect-error TODO: remove when fixed upstream: https://github.com/unjs/nitro/pull/1247
     expectTypeOf(useFetch('/api/hey', { method: 'GET' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'get' }).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
+    expectTypeOf(useFetch('/api/hey', { method: 'POST' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     expectTypeOf(useFetch('/api/hey', { method: 'post' }).data).toEqualTypeOf<Ref<{ method: 'post' } | null>>()
     // @ts-expect-error not a valid method
     useFetch('/api/hey', { method: 'PATCH' })
@@ -206,6 +206,13 @@ describe('layouts', () => {
     definePageMeta({ layout: 'override' })
     // @ts-expect-error Invalid layout
     definePageMeta({ layout: 'invalid-layout' })
+  })
+
+  it('allows typing layouts', () => {
+    h(NuxtLayout, { name: 'custom' })
+
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { name: 'invalid-layout' })
   })
 })
 
@@ -418,6 +425,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      nuxt: { buildId: string }
       fromLayer: boolean
       fromNuxtConfig: boolean
       nested: {

@@ -1,0 +1,13 @@
+# Cache the results of Lychee if ran locally in order to minimise the chance of rate limiting
+cache = true
+# Ignore all private link (such as localhost) to avoid errors
+exclude_all_private = true
+# HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
+accept = [200, 429]
+# Explicitly exclude some URLs
+exclude = [
+  "https://twitter.nuxt.dev/",
+  "https://github.com/nuxt/nuxt.com",
+  "https://github.com/nuxt/translations/discussions/4",
+  '(https?:\/\/github\.com\/)(.*\/)(generate)'
+]

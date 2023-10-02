@@ -3,7 +3,7 @@ definePageMeta({
   layout: 'custom-async'
 })
 
-if (process.client && !useNuxtApp().isHydrating) {
+if (import.meta.client && !useNuxtApp().isHydrating) {
   throw createError({
     fatal: true,
     message: '`useNuxtApp().isHydrating` is false by the time we run page setup'

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ShouldNotBeKeyed } from '~/other-composables-folder/local'
+
 function localScopedComposables () {
   const _assert = (key?: string) => key ?? 'was not keyed'
 
@@ -39,11 +41,15 @@ function localScopedComposables () {
     })()]
   }
 
+  function fromNonComponentFile () {
+    return [_assert(ShouldNotBeKeyed)]
+  }
+
   function useCustomKeyedComposable (arg?: string) {
     return _assert(arg)
   }
 
-  return [...basic(), ...hoisting(), ...complex(), ...deeperScope(), useCustomKeyedComposable()]
+  return [...basic(), ...hoisting(), ...complex(), ...deeperScope(), ...fromNonComponentFile(), useCustomKeyedComposable()]
 }
 const skippedLocalScopedComposables = localScopedComposables().every(res => res === 'was not keyed')
 </script>

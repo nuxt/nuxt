@@ -3,6 +3,7 @@ import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
+import { logger } from './logger'
 
 /**
  * Normalize a nuxt plugin object
@@ -22,7 +23,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   // TODO: only scan top-level files #18418
   const nonTopLevelPlugin = plugin.src.match(/\/plugins\/[^/]+\/index\.[^/]+$/i)
   if (nonTopLevelPlugin && nonTopLevelPlugin.length > 0 && !useNuxt().options.plugins.find(i => (typeof i === 'string' ? i : i.src).endsWith(nonTopLevelPlugin[0]))) {
-    console.warn(`[warn] [nuxt] [deprecation] You are using a plugin that is within a subfolder of your plugins directory without adding it to your config explicitly. You can move it to the top-level plugins directory, or include the file '~${nonTopLevelPlugin[0]}' in your plugins config (https://nuxt.com/docs/api/configuration/nuxt-config#plugins-1) to remove this warning.`)
+    logger.warn(`[deprecation] You are using a plugin that is within a subfolder of your plugins directory without adding it to your config explicitly. You can move it to the top-level plugins directory, or include the file '~${nonTopLevelPlugin[0]}' in your plugins config (https://nuxt.com/docs/api/configuration/nuxt-config#plugins-1) to remove this warning.`)
   }
 
   // Normalize full path to plugin

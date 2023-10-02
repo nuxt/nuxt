@@ -5,11 +5,15 @@ export const createServerComponent = (name: string) => {
   return defineComponent({
     name,
     inheritAttrs: false,
-    setup (_props, { attrs, slots }) {
-      return () => h(NuxtIsland, {
-        name,
-        props: attrs
-      }, slots)
+    props: { lazy: Boolean },
+    setup (props, { attrs, slots }) {
+      return () => {
+        return h(NuxtIsland, {
+          name,
+          lazy: props.lazy,
+          props: attrs
+        }, slots)
+      }
     }
   })
 }

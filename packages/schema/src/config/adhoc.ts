@@ -34,6 +34,7 @@ export default defineUntypedSchema({
     /**
      * An array of custom directories that will be auto-imported.
      * Note that this option will not override the default directories (~/composables, ~/utils).
+     *
      * @example
      * ```js
      * imports: {
@@ -57,9 +58,8 @@ export default defineUntypedSchema({
    * Manually disable nuxt telemetry.
    *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
-   *
    * @type {boolean | Record<string, any>}
-  */
+   */
   telemetry: undefined,
 
   /**

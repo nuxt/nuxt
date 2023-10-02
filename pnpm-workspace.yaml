@@ -2,3 +2,4 @@ packages:
   - "packages/**"
   - "playground"
   - "test/fixtures/*"
+  - ".website"

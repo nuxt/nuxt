@@ -14,7 +14,7 @@ export const showError = (_err: string | Error | Partial<NuxtError>) => {
   try {
     const nuxtApp = useNuxtApp()
     const error = useError()
-    if (process.client) {
+    if (import.meta.client) {
       nuxtApp.hooks.callHook('app:error', err)
     }
     error.value = error.value || err

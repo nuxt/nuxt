@@ -24,7 +24,7 @@ export default defineUntypedSchema({
      * @type {'vite' | 'webpack' | 'shared' | false | undefined}
      */
     builder: {
-      $resolve: async (val, get) => val ?? null
+      $resolve: val => val ?? null
     },
 
     /**
@@ -39,13 +39,13 @@ export default defineUntypedSchema({
      * Requires to install `typescript` and `vue-tsc` as dev dependencies.
      *
      * @see https://nuxt.com/docs/guide/concepts/typescript
-     *
      * @type {boolean | 'build'}
      */
     typeCheck: false,
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
+     *
      * @type {typeof import('pkg-types')['TSConfig']}
      */
     tsConfig: {},

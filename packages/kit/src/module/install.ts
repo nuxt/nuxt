@@ -7,6 +7,7 @@ import { useNuxt } from '../context'
 import { requireModule } from '../internal/cjs'
 import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
+import { logger } from '../logger'
 
 /** Installs a module on a Nuxt instance. */
 export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
@@ -25,6 +26,10 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
 
   if (typeof moduleToInstall === 'string') {
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
+    const directory = getDirectory(moduleToInstall)
+    if (directory !== moduleToInstall) {
+      nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
+    }
   }
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
@@ -37,15 +42,19 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
 
 // --- Internal ---
 
-export const normalizeModuleTranspilePath = (p: string) => {
+function getDirectory (p: string) {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
-    p = isAbsolute(p) && lstatSync(p).isFile() ? dirname(p) : p
+    return isAbsolute(p) && lstatSync(p).isFile() ? dirname(p) : p
   } catch (e) {
     // maybe the path is absolute but does not exist, allow this to bubble up
   }
-  return p.split('node_modules/').pop() as string
+  return p
+}
+
+export const normalizeModuleTranspilePath = (p: string) => {
+  return getDirectory(p).split('node_modules/').pop() as string
 }
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
@@ -57,7 +66,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       // Prefer ESM resolution if possible
       nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
     } catch (error: unknown) {
-      console.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
+      logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
       throw error
     }
     // nuxt-module-builder generates a module.json with metadata including the version
