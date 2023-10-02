@@ -64,6 +64,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     })
     return unsub
   }
+  // https://github.com/nuxt/nuxt/tree/main/packages/kit/src/module/define.ts#L111-L113
+  nuxt.hooks = nuxt
 
   return nuxt as Nuxt
 }
