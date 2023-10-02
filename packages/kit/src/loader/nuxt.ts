@@ -57,11 +57,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Mock new hookable methods
   nuxt.removeHook ||= nuxt.clearHook.bind(nuxt)
   nuxt.removeAllHooks ||= nuxt.clearHooks.bind(nuxt)
-  nuxt.hookOnce ||= (name: string, fn: (...args: any[]) => any) => {
+  nuxt.hookOnce ||= (name: string, fn: (...args: any[]) => any, ...hookArgs: any[]) => {
     const unsub = nuxt.hook(name, (...args: any[]) => {
       unsub()
       return fn(...args)
-    })
+    }, ...hookArgs)
     return unsub
   }
   // https://github.com/nuxt/nuxt/tree/main/packages/kit/src/module/define.ts#L111-L113
