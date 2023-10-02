@@ -441,14 +441,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
 
-  // Nuxt DevTools is currently opt-in
-  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
+  const isDevToolsEnabled = typeof options.devtools === 'boolean'
+    ? options.devtools
+    : options.devtools?.enabled !== false
+
+  if (isDevToolsEnabled) {
+    if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
       options._modules.push('@nuxt/devtools')
-    } else {
-      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
     }
   }
+
+  console.log({ isDevToolsEnabled })
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {

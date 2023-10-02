@@ -72,5 +72,5 @@ export default defineUntypedSchema({
    * @experimental
    * @type {boolean | { enabled: boolean, [key: string]: any }}
    */
-  devtools: false
+  devtools: {}
 })
