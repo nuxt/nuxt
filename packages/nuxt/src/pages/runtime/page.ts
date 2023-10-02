@@ -60,6 +60,7 @@ export default defineComponent({
             if (import.meta.client && vnode && !hasSameChildren) {
               return vnode
             }
+            done()
             return
           }
 
