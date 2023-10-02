@@ -54,6 +54,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     envConfig: opts.dotenv // TODO: Backward format conversion
   })
 
+  // Mock new hookable methods
+  nuxt.removeHook = nuxt.clearHook.bind(nuxt)
+  nuxt.removeAllHooks = nuxt.clearHooks.bind(nuxt)
+  nuxt.hookOnce = (name: string, fn: (...args: any[]) => any) => {
+    const unsub = nuxt.hook(name, (...args: any[]) => {
+      unsub()
+      return fn(...args)
+    })
+    return unsub
+  }
+
   return nuxt as Nuxt
 }
 
