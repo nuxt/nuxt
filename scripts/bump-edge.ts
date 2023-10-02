@@ -27,7 +27,7 @@ async function main () {
         pkg.data.dependencies[name] = `npm:${nightlyName}@latest`
       }
     }
-    const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
+    const newname = pkg.data.name + '-nightly'
     workspace.rename(pkg.data.name, newname)
   }
 
