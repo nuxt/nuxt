@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
+import { resolve } from 'pathe'
 import { importModule, tryImportModule } from '../internal/esm'
 import type { LoadNuxtConfigOptions } from './config'
 
@@ -18,6 +19,58 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   config?: LoadNuxtConfigOptions['overrides']
 }
 
+export interface ImportNuxtPackageOptions {
+  cwd?: string
+  version?: 2 | 3
+}
+
+const nuxtPackages = {
+  2: ['nuxt-edge', 'nuxt'],
+  3: ['nuxt3', 'nuxt'],
+  any: ['nuxt3', 'nuxt', 'nuxt-edge']
+}
+
+export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 3 }): Promise<{ version: 3, exports: T }>
+export async function importNuxtPackage<T = any> (opts: Omit<ImportNuxtPackageOptions, 'version'> & { version: 2 }): Promise<{ version: 2, exports: T }>
+export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions): Promise<{ version: 2 | 3, exports: T }>
+export async function importNuxtPackage<T = any> (opts: ImportNuxtPackageOptions = {}): Promise<{ version: 2 | 3, exports: T }> {
+  if (!opts.cwd?.startsWith('file://')) {
+    opts.cwd = resolve('.', opts.cwd || process.cwd())
+  }
+  opts.cwd = pathToFileURL(opts.cwd).href
+
+  const packages = nuxtPackages[opts.version || 'any'] || nuxtPackages.any
+
+  const nearestNuxtPkg = await Promise.all(packages
+    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
+    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
+
+  if (!nearestNuxtPkg) {
+    throw new Error(`Cannot find any Nuxt version from ${opts.cwd}`)
+  }
+
+  const pkg = await readPackageJSON(nearestNuxtPkg)
+  const majorVersion = parseInt((pkg.version || '').split('.')[0])
+
+  if (opts.version && opts.version !== majorVersion) {
+    throw new Error(`Nearest Nuxt version in ${opts.cwd} is ${majorVersion} which does not match the requested version: ${opts.version}.`)
+  }
+
+  // Nuxt 3
+  if (majorVersion === 3) {
+    return {
+      version: 3,
+      exports: await importModule((pkg as any)._name || pkg.name, opts.cwd)
+    }
+  }
+
+  // Nuxt 2
+  return {
+    version: 2,
+    exports: await tryImportModule('nuxt-edge', opts.cwd) || await importModule('nuxt', opts.cwd)
+  }
+}
+
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
   opts.cwd = opts.cwd || opts.rootDir
@@ -26,47 +79,27 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt', 'nuxt-edge']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
-    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
-  if (!nearestNuxtPkg) {
-    throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
-  }
-  const pkg = await readPackageJSON(nearestNuxtPkg)
-  const majorVersion = parseInt((pkg.version || '').split('.')[0])
-
-  const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
+  const { version, exports: pkg } = await importNuxtPackage({ cwd: opts.cwd })
 
   // Nuxt 3
-  if (majorVersion === 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
-    const nuxt = await loadNuxt(opts)
-    return nuxt
+  if (version === 3) {
+    return await (pkg as typeof import('nuxt')).loadNuxt(opts) as Nuxt
   }
 
   // Nuxt 2
-  const { loadNuxt } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
-  const nuxt = await loadNuxt({
+  return await pkg.loadNuxt({
     rootDir: opts.cwd,
     for: opts.dev ? 'dev' : 'build',
     configOverrides: opts.overrides,
     ready: opts.ready,
     envConfig: opts.dotenv // TODO: Backward format conversion
-  })
-
-  return nuxt as Nuxt
+  }) as Nuxt
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   const rootDir = pathToFileURL(nuxt.options.rootDir).href
 
-  // Nuxt 3
-  if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
-    return build(nuxt)
-  }
+  const { exports } = await importNuxtPackage({ cwd: rootDir, version: nuxt.options._majorVersion as 3 })
 
-  // Nuxt 2
-  const { build } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
-  return build(nuxt)
+  return exports.build(nuxt)
 }
