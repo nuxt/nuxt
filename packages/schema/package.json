@@ -28,11 +28,11 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/telemetry": "2.5.0",
+    "@nuxt/telemetry": "2.5.2",
     "@types/file-loader": "5.0.2",
     "@types/pug": "2.0.7",
     "@types/sass-loader": "8.0.6",
-    "@unhead/schema": "1.7.4",
+    "@unhead/schema": "1.7.5",
     "@vitejs/plugin-vue": "4.3.4",
     "@vitejs/plugin-vue-jsx": "3.0.2",
     "@vue/compiler-core": "3.3.4",
