@@ -7,17 +7,6 @@ export default defineVitestConfig({
   },
   test: {
     dir: './test/nuxt',
-    environment: 'nuxt',
-    environmentOptions: {
-      nuxt: {
-        overrides: {
-          appConfig: {
-            nuxt: {
-              buildId: 'test'
-            }
-          }
-        }
-      }
-    }
+    environment: 'nuxt'
   }
 })
