@@ -3,6 +3,7 @@ import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { isNuxt2 } from './compatibility'
+import { logger } from './logger'
 
 export function extendPages (cb: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()
@@ -54,7 +55,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
         if (options.override === true) {
           app.middleware[find] = middleware
         } else {
-          console.warn(`'${middleware.name}' middleware already exists at '${app.middleware[find].path}'. You can set \`override: true\` to replace it.`)
+          logger.warn(`'${middleware.name}' middleware already exists at '${app.middleware[find].path}'. You can set \`override: true\` to replace it.`)
         }
       } else {
         app.middleware.push(middleware)

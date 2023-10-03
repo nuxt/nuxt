@@ -20,7 +20,7 @@ export default defineUntypedSchema({
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.8 when nitro has support for mocking traced dependencies
+    // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
@@ -120,11 +120,11 @@ export default defineUntypedSchema({
     noVueServer: false,
 
     /**
-     * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
+     * When this option is enabled (by default) payload of pages that are prerendered are extracted
      *
      * @type {boolean | undefined}
      */
-    payloadExtraction: undefined,
+    payloadExtraction: true,
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
@@ -206,6 +206,16 @@ export default defineUntypedSchema({
 
     /** Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router). */
     typedPages: false,
+
+    /**
+     * Use app manifests to respect route rules on client-side.
+     */
+    appManifest: true,
+
+    // This is enabled when `experimental.payloadExtraction` is set to `true`.
+    // appManifest: {
+    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
+    // },
 
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.

@@ -27,7 +27,12 @@ export function server (ctx: WebpackConfigContext) {
 function serverPreset (ctx: WebpackConfigContext) {
   ctx.config.output!.filename = 'server.mjs'
 
-  ctx.config.devtool = ctx.nuxt.options.sourcemap.server ? ctx.isDev ? 'cheap-module-source-map' : 'source-map' : false
+  if (ctx.nuxt.options.sourcemap.server) {
+    const prefix = ctx.nuxt.options.sourcemap.server === 'hidden' ? 'hidden-' : ''
+    ctx.config.devtool = prefix + ctx.isDev ? 'cheap-module-source-map' : 'source-map'
+  } else {
+    ctx.config.devtool = false
+  }
 
   ctx.config.optimization = {
     splitChunks: false,

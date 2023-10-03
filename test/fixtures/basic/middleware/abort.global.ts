@@ -4,4 +4,5 @@ export default defineNuxtRouteMiddleware((to) => {
       statusCode: 401
     })
   }
+  return true
 })

@@ -80,6 +80,9 @@ export default defineUntypedSchema({
    * ------| static/
    * ------| store/
    * ------| server/
+   * ------| app.config.ts
+   * ------| app.vue
+   * ------| error.vue
    * ```
    */
   srcDir: {
@@ -348,7 +351,7 @@ export default defineUntypedSchema({
       '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
       '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
       '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{vercel,netlify,output,git,cache,data}',
+      '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
       relative(await get('rootDir'), await get('analyzeDir')),
       relative(await get('rootDir'), await get('buildDir')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
@@ -471,7 +474,9 @@ export default defineUntypedSchema({
    *
    * @type {typeof import('../src/types/config').AppConfig}
    */
-  appConfig: {},
+  appConfig: {
+    nuxt: {}
+  },
 
   $schema: {}
 })

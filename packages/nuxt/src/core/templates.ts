@@ -18,14 +18,19 @@ interface TemplateContext {
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
-  getContents: () =>
-    [
+  getContents: ({ nuxt }) => {
+    if (!nuxt.options.typescript.shim) {
+      return ''
+    }
+
+    return [
       'declare module \'*.vue\' {',
       '  import { DefineComponent } from \'vue\'',
       '  const component: DefineComponent<{}, {}, any>',
       '  export default component',
       '}'
     ].join('\n')
+  }
 }
 
 // TODO: Use an alias
@@ -337,6 +342,8 @@ export const nuxtConfigTemplate = {
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
+      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
+      `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const remoteComponentIslands = ${ctx.nuxt.options.experimental.componentIslands === 'local+remote'}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,

@@ -8,6 +8,7 @@ import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
+import { logger } from '@nuxt/kit'
 
 export interface PageMetaPluginOptions {
   dev?: boolean
@@ -65,8 +66,10 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       // [vite] Re-export any script imports
       const scriptImport = imports.find(i => parseMacroQuery(i.specifier).type === 'script')
       if (scriptImport) {
-        const specifier = rewriteQuery(scriptImport.specifier)
-        s.overwrite(0, code.length, `export { default } from ${JSON.stringify(specifier)}`)
+        const reorderedQuery = rewriteQuery(scriptImport.specifier)
+        // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
+        const quotedSpecifier = getQuotedSpecifier(scriptImport.code)?.replace(scriptImport.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+        s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
         return result()
       }
 
@@ -77,8 +80,10 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           continue
         }
 
-        const specifier = rewriteQuery(match.specifier)
-        s.overwrite(0, code.length, `export { default } from ${JSON.stringify(specifier)}`)
+        const reorderedQuery = rewriteQuery(match.specifier)
+        // Avoid using JSON.stringify which can add extra escapes to paths with non-ASCII characters
+        const quotedSpecifier = getQuotedSpecifier(match.code)?.replace(match.specifier, reorderedQuery) ?? JSON.stringify(reorderedQuery)
+        s.overwrite(0, code.length, `export { default } from ${quotedSpecifier}`)
         return result()
       }
 
@@ -86,7 +91,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         if (!code) {
           s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-          console.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+          logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
         } else {
           s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
         }
@@ -182,4 +187,8 @@ function parseMacroQuery (id: string) {
     return { macro: 'true', ...query }
   }
   return query
+}
+
+function getQuotedSpecifier (id: string) {
+  return id.match(/(["']).*\1/)?.[0]
 }

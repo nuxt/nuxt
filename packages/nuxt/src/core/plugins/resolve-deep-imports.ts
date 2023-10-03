@@ -1,17 +1,18 @@
 import { parseNodeModulePath, resolvePath } from 'mlly'
 import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
-import { resolveAlias } from '@nuxt/kit'
+import { logger, resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 import { pkgDir } from '../../dirs'
 
 export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
+  const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite']
   return {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
     async resolveId (id, importer, options) {
-      if (!importer || isAbsolute(id) || !isAbsolute(importer) || id.startsWith('virtual:') || id.startsWith('/__skip_vite')) {
+      if (!importer || isAbsolute(id) || !isAbsolute(importer) || exclude.some(e => id.startsWith(e))) {
         return
       }
       id = normalize(id)
@@ -22,7 +23,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
         // TODO: respect nitro runtime conditions
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
       }).catch(() => {
-        console.log('[nuxt] Could not resolve id', id, importer)
+        logger.log('Could not resolve id', id, importer)
         return null
       })
     }

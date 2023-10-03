@@ -1,3 +1,4 @@
+import { consola } from 'consola'
 import { loadWorkspace } from './_utils'
 
 async function main () {
@@ -16,6 +17,6 @@ async function main () {
 }
 
 main().catch((err) => {
-  console.error(err)
+  consola.error(err)
   process.exit(1)
 })

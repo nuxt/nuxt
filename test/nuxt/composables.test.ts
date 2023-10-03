@@ -1,6 +1,9 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { describe, expect, it, vi } from 'vitest'
+import { defineEventHandler } from 'h3'
+
+import { registerEndpoint } from 'nuxt-vitest/utils'
 
 import * as composables from '#app/composables'
 
@@ -10,10 +13,23 @@ import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
+import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
 }))
+
+const timestamp = Date.now()
+registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
+  id: 'test',
+  timestamp
+})))
+registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
+  id: 'test',
+  timestamp,
+  matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
+  prerendered: ['/specific-prerendered']
+})))
 
 describe('composables', () => {
   it('are all tested', () => {
@@ -27,10 +43,14 @@ describe('composables', () => {
       'clearError',
       'showError',
       'useError',
+      'getAppManifest',
+      'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
+      'prerenderRoutes',
       'useRequestEvent',
       'useRequestFetch',
+      'isPrerendered',
       'useRequestHeaders',
       'clearNuxtState',
       'useState',
@@ -43,7 +63,6 @@ describe('composables', () => {
       'defineNuxtRouteMiddleware',
       'definePayloadReducer',
       'definePayloadReviver',
-      'isPrerendered',
       'loadPayload',
       'navigateTo',
       'onBeforeRouteLeave',
@@ -105,6 +124,14 @@ describe('useAsyncData', () => {
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/23411
+  it('should initialize with error set to null when immediate: false', async () => {
+    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
+    expect(error.value).toBe(null)
+    await execute()
+    expect(error.value).toBe(null)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -174,6 +201,7 @@ describe('ssr composables', () => {
     expect(useRequestEvent()).toBeUndefined()
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
+    expect(prerenderRoutes('/')).toBeUndefined()
   })
 })
 
@@ -186,12 +214,50 @@ describe('useState', () => {
     useState('key', () => 'value')
     expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skey', 'value'])
   })
+})
 
-  it.todo('clearNuxtState', () => {
-    const state = useState(() => 'test')
+describe('clearNuxtState', () => {
+  it('clears state in payload for single key', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
+    clearNuxtState(key)
+    expect(state.value).toBeUndefined()
+  })
+
+  it('clears state in payload for array of keys', () => {
+    const key1 = 'clearNuxtState-test'
+    const key2 = 'clearNuxtState-test2'
+    const state1 = useState(key1, () => 'test')
+    const state2 = useState(key2, () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+    clearNuxtState([key1, 'other'])
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBe('test')
+    clearNuxtState([key1, key2])
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBeUndefined()
+  })
+
+  it('clears state in payload for function', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    expect(state.value).toBe('test')
+    clearNuxtState(() => false)
+    expect(state.value).toBe('test')
+    clearNuxtState(k => k === key)
+    expect(state.value).toBeUndefined()
+  })
+
+  it('clears all state when no key is provided', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test2', () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
     clearNuxtState()
-    expect.soft(state.value).toBeUndefined()
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBeUndefined()
   })
 })
 
@@ -202,5 +268,41 @@ describe('url', () => {
     expect(url.hostname).toMatchInlineSnapshot('"localhost"')
     expect(url.port).toMatchInlineSnapshot('"3000"')
     expect(url.protocol).toMatchInlineSnapshot('"http:"')
+  })
+})
+
+describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
+  it('getAppManifest', async () => {
+    const manifest = await getAppManifest()
+    delete manifest.timestamp
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "id": "test",
+        "matcher": {
+          "dynamic": {},
+          "static": {
+            "/": null,
+            "/pre": null,
+          },
+          "wildcard": {
+            "/pre": {
+              "prerender": true,
+            },
+          },
+        },
+        "prerendered": [
+          "/specific-prerendered",
+        ],
+      }
+    `)
+  })
+  it('getRouteRules', async () => {
+    const rules = await getRouteRules('/')
+    expect(rules).toMatchInlineSnapshot('{}')
+  })
+  it('isPrerendered', async () => {
+    expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
+    expect(await isPrerendered('/prerendered/test')).toBeTruthy()
+    expect(await isPrerendered('/test')).toBeFalsy()
   })
 })

@@ -2,6 +2,7 @@ import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
+import { consola } from 'consola'
 
 export default defineUntypedSchema({
   /**
@@ -25,7 +26,7 @@ export default defineUntypedSchema({
   /**
    * Whether to generate sourcemaps.
    *
-   * @type {boolean | { server?: boolean, client?: boolean }}
+   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
     $resolve: async (val, get) => {
@@ -50,7 +51,7 @@ export default defineUntypedSchema({
   logLevel: {
     $resolve: (val) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
-        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+        consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val ?? (isTest ? 'silent' : 'info')
     }

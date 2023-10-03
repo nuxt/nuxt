@@ -20,9 +20,7 @@ export const RouteProvider = defineComponent({
   },
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.renderKey
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousRoute = props.route
 
     // Provide a reactive route within the page

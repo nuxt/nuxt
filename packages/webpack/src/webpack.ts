@@ -39,14 +39,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server']
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server']
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     config.plugins!.push(composableKeysPlugin.webpack({
-      sourcemap: nuxt.options.sourcemap[config.name as 'client' | 'server'],
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
       rootDir: nuxt.options.rootDir,
       composables: nuxt.options.optimization.keyedComposables
     }))

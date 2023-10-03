@@ -11,7 +11,7 @@ interface ServerOnlyComponentTransformPluginOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
-const HAS_SLOT_RE = /<slot[ /]/
+const HAS_SLOT_RE = /<slot[^>]*>/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions) => {

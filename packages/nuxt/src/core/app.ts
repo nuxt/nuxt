@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -43,7 +43,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
       const contents = await compileTemplate(template, templateContext).catch((e) => {
-        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
@@ -61,7 +61,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
       if (nuxt.options.debug || setupTime > 500) {
-        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
+        logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
       if (template.write) {
@@ -108,37 +108,46 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts/ from all config layers
   app.layouts = {}
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file)
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
 
-  // Resolve middleware/ from all config layers
+  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
       const name = getNameFromPath(file)
       return { name, path: file, global: hasSuffix(file, '.global') }
     }))
   }
 
-  // Resolve plugins
-  app.plugins = [
-    ...nuxt.options.plugins.map(normalizePlugin)
-  ]
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  // Resolve plugins, first extended layers and then base
+  app.plugins = []
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*.{ts,js,mjs,cjs,mts,cts}`,
+          `${pluginDir}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
+  }
+
+  // Add back plugins not specified in layers or user config
+  for (const p of [...nuxt.options.plugins].reverse()) {
+    const plugin = normalizePlugin(p)
+    if (!app.plugins.some(p => p.src === plugin.src)) {
+      app.plugins.unshift(plugin)
+    }
   }
 
   // Normalize and de-duplicate plugins and middleware
@@ -182,7 +191,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         ...plugin
       })
     } catch (e) {
-      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
+      logger.warn(`Could not resolve \`${plugin.src}\`.`)
       _plugins.push(plugin)
     }
   }

@@ -99,7 +99,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
         plugins: [
           composableKeysPlugin.vite({
-            sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,
             composables: nuxt.options.optimization.keyedComposables
           }),

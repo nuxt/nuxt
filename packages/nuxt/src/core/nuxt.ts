@@ -1,13 +1,14 @@
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
 /* eslint-disable import/no-restricted-paths */
+import defu from 'defu'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -16,6 +17,7 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
+import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
@@ -88,20 +90,30 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
 
+  if (nuxt.options.experimental.appManifest) {
+    addRouteMiddleware({
+      name: 'manifest-route-rule',
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
+      global: true
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+  }
+
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1)
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
@@ -110,18 +122,21 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
-  nuxt.hook('modules:done', () => {
+  nuxt.hook('modules:done', async () => {
     // Add unctx transform
     const options = {
-      sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client,
-      transformerOptions: nuxt.options.optimization.asyncTransforms
-    }
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      transformerOptions: {
+        ...nuxt.options.optimization.asyncTransforms,
+        helperModule: await tryResolveModule('unctx', nuxt.options.modulesDir) ?? 'unctx'
+      }
+    } satisfies UnctxTransformPluginOptions
     addVitePlugin(() => UnctxTransformPlugin.vite(options))
     addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
 
     // Add composable tree-shaking optimisations
     const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: nuxt.options.sourcemap.server,
+      sourcemap: !!nuxt.options.sourcemap.server,
       composables: nuxt.options.optimization.treeShake.composables.server
     }
     if (Object.keys(serverTreeShakeOptions.composables).length) {
@@ -129,7 +144,7 @@ async function initNuxt (nuxt: Nuxt) {
       addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
     }
     const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: nuxt.options.sourcemap.client,
+      sourcemap: !!nuxt.options.sourcemap.client,
       composables: nuxt.options.optimization.treeShake.composables.client
     }
     if (Object.keys(clientTreeShakeOptions.composables).length) {
@@ -140,8 +155,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client }))
+    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
@@ -185,9 +200,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${config.dir?.modules || 'modules'}/*{${nuxt.options.extensions.join(',')}}`,
-      `${config.dir?.modules || 'modules'}/*/index{${nuxt.options.extensions.join(',')}}`
+      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -259,6 +275,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.client'),
       mode: 'client'
@@ -266,6 +283,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     addComponent({
       name: 'NuxtClientFallback',
+      _raw: true,
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/client-fallback.server'),
       mode: 'server'
@@ -279,6 +297,17 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
+
+    if (!nuxt.options.ssr) {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
+  }
+
+  // Add prerender payload support
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API
@@ -375,7 +404,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
     if (isFileChange && RESTART_RE.test(path)) {
-      console.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
+      logger.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
     }
   })
@@ -392,7 +421,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Add prerender payload support
   const nitro = useNitro()
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    console.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
   nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)

@@ -2,7 +2,8 @@ import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
 import { getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
-import { useNitroApp, useRuntimeConfig } from '#internal/nitro'
+import { useRuntimeConfig } from '#internal/nitro'
+import { useNitroApp } from '#internal/nitro/app'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {

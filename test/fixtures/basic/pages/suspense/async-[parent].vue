@@ -1,8 +1,12 @@
 <script setup lang="ts">
-console.log('[async]')
+if (import.meta.client) {
+  console.log('[async]')
+}
 const route = useRoute('suspense-async-parent')
 await new Promise(resolve => setTimeout(resolve, 100))
-console.log('[async] running async data')
+if (import.meta.client) {
+  console.log('[async] running async data')
+}
 </script>
 
 <template>

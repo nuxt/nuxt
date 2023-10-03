@@ -1,3 +1,4 @@
+import destr from 'destr'
 import { useNuxtApp } from '#app/nuxt'
 
 export interface ReloadNuxtAppOptions {
@@ -34,7 +35,7 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
 
   let handledPath: Record<string, any> = {}
   try {
-    handledPath = JSON.parse(sessionStorage.getItem('nuxt:reload') || '{}')
+    handledPath = destr(sessionStorage.getItem('nuxt:reload') || '{}')
   } catch {}
 
   if (options.force || handledPath?.path !== path || handledPath?.expires < Date.now()) {
