@@ -39,7 +39,7 @@ export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => 
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: nuxt.options.sourcemap
+          map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
             ? s.generateMap({ hires: true })
             : undefined
         }
