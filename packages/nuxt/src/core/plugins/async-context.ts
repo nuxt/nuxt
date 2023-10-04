@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
-import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
+import type { Nuxt } from '@nuxt/schema'
 import { isVue } from '../utils'
 
 export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
