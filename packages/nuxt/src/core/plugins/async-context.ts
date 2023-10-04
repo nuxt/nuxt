@@ -1,8 +1,9 @@
 import { createUnplugin } from 'unplugin'
 import type { Nuxt } from '@nuxt/schema'
+import MagicString from 'magic-string'
 import { isVue } from '../utils'
 
-export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() => {
+export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   const virtualFileId = '\0vue-async-context'
   return {
     name: 'nuxt:vue-async-context',
@@ -32,12 +33,16 @@ export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() =>
       if (!code.includes('_withAsyncContext')) {
         return
       }
-      // TODO
-      code = `import { withAsyncContext as _withAsyncContext } from "${virtualFileId}";` +
-            code.replace(/withAsyncContext as _withAsyncContext,?/g, '')
-      return {
-        code,
-        map: null
+      const s = new MagicString(code)
+      s.prepend(`import { withAsyncContext as _withAsyncContext } from "${virtualFileId}";\n`)
+      s.replace(/withAsyncContext as _withAsyncContext,?/, '')
+      if (s.hasChanged()) {
+        return {
+          code: s.toString(),
+          map: nuxt.options.sourcemap
+            ? s.generateMap({ hires: true })
+            : undefined
+        }
       }
     }
   }
