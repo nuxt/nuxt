@@ -19,12 +19,10 @@ export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() =>
         return
       }
       return `
-        import { withAsyncContext as withVueAsyncContext } from 'vue'
-        import { useNuxtApp } from '#app'
+        import { withAsyncContext as withVueAsyncContext, getCurrentInstance } from 'vue'
         export function withAsyncContext(fn) {
           return withVueAsyncContext(() => {
-            let nuxtApp
-            try { nuxtApp = useNuxtApp() } catch {}
+            const nuxtApp = getCurrentInstance()?.appContext.app.$nuxt
             return nuxtApp ? nuxtApp.runWithContext(fn) : fn()
           })
         }
@@ -35,7 +33,8 @@ export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() =>
         return
       }
       // TODO
-      code = `import { withAsyncContext as _withAsyncContext } from "${virtualFileId}";${code.replace(/withAsyncContext as _withAsyncContext,?/g, '')}`
+      code = `import { withAsyncContext as _withAsyncContext } from "${virtualFileId}";` +
+            code.replace(/withAsyncContext as _withAsyncContext,?/g, '')
       return {
         code,
         map: null
