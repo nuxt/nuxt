@@ -11,7 +11,7 @@ const cookie = useCookie(name, options)
 ```
 
 ::alert{icon=👉}
-`useCookie` only works during `setup` or `Lifecycle Hooks`.
+`useCookie` only works during `setup`, plugins, and `Lifecycle Hooks`.
 ::
 
 ::alert{icon=😌}
