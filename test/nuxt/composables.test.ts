@@ -229,6 +229,11 @@ describe('getUniqueID', () => {
     expect(getUniqueID()).not.toBe(getUniqueID())
     expect(getUniqueID()).toBeTypeOf('string')
   })
+  it('local', () => {
+    const count = Math.random()
+    const collect = new Array(count).fill(undefined).map(() => getUniqueID())
+    expect(new Set(collect).size).toBe(count)
+  })
 })
 
 describe('url', () => {

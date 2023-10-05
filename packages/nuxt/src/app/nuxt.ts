@@ -82,6 +82,7 @@ export interface NuxtPayload {
     data?: any
   } | null
   _errors: Record<string, NuxtError | null>
+  localIds: Record<string, number>
   [key: string]: unknown
 }
 

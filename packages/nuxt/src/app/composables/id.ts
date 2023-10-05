@@ -1,5 +1,5 @@
+import { useNuxtApp } from '../nuxt'
 const getUniqueIDKeyPrefix = '$id'
-
 export function getUniqueID(): string
 export function getUniqueID (...args: any): string {
   const key = args[0]
@@ -7,5 +7,10 @@ export function getUniqueID (...args: any): string {
     throw new TypeError(`[nuxt] [getUniqueID] key must be a string: ${key}}`)
   }
 
-  return getUniqueIDKeyPrefix + key
+  const nuxt = useNuxtApp()
+  const localId = (nuxt.payload?.localIds?.[key] ?? 0) + 1
+  nuxt.payload.localIds = nuxt.payload.localIds ?? {}
+  nuxt.payload.localIds[key] = localId
+
+  return getUniqueIDKeyPrefix + key + ':' + localId.toString(32)
 }
