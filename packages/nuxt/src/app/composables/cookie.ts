@@ -1,86 +1,86 @@
-import type { Ref } from "vue";
+import type { Ref } from 'vue'
 import {
   customRef,
   getCurrentInstance,
   nextTick,
   onUnmounted,
-  watch,
-} from "vue";
-import type { CookieParseOptions, CookieSerializeOptions } from "cookie-es";
-import { parse, serialize } from "cookie-es";
-import { deleteCookie, getCookie, getRequestHeader, setCookie } from "h3";
-import type { H3Event } from "h3";
-import destr from "destr";
-import { isEqual } from "ohash";
-import { useNuxtApp } from "../nuxt";
-import { useRequestEvent } from "./ssr";
+  watch
+} from 'vue'
+import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
+import { parse, serialize } from 'cookie-es'
+import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
+import type { H3Event } from 'h3'
+import destr from 'destr'
+import { isEqual } from 'ohash'
+import { useNuxtApp } from '../nuxt'
+import { useRequestEvent } from './ssr'
 
 type _CookieOptions = Omit<
   CookieSerializeOptions & CookieParseOptions,
-  "decode" | "encode"
+  'decode' | 'encode'
 >;
 
 export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string): T;
   encode?(value: T): string;
   default?: () => T | Ref<T>;
-  watch?: boolean | "shallow";
+  watch?: boolean | 'shallow';
 }
 
 export interface CookieRef<T> extends Ref<T> {}
 
 const CookieDefaults = {
-  path: "/",
+  path: '/',
   watch: true,
-  decode: (val) => destr(decodeURIComponent(val)),
-  encode: (val) =>
-    encodeURIComponent(typeof val === "string" ? val : JSON.stringify(val)),
-} satisfies CookieOptions<any>;
+  decode: val => destr(decodeURIComponent(val)),
+  encode: val =>
+    encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+} satisfies CookieOptions<any>
 
-export function useCookie<T = string | null | undefined>(
+export function useCookie<T = string | null | undefined> (
   name: string,
   _opts?: CookieOptions<T>
 ): CookieRef<T> {
-  const opts = { ...CookieDefaults, ..._opts };
-  const cookies = readRawCookies(opts) || {};
+  const opts = { ...CookieDefaults, ..._opts }
+  const cookies = readRawCookies(opts) || {}
 
-  let delay: number | undefined = undefined;
+  let delay: number | undefined
   if (opts.maxAge) {
-    delay = opts.maxAge * 1000; //convert to ms for setTimeout
+    delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    delay = opts.expires.getTime() - new Date().getTime(); // getTime() already return time in ms
+    delay = opts.expires.getTime() - new Date().getTime() // getTime() already return time in ms
   }
   const cookie = useCustomCookieRef<T | undefined>(
     (cookies[name] as any) ?? opts.default?.(),
     delay
-  );
+  )
 
   if (import.meta.client) {
     const channel =
-      typeof BroadcastChannel === "undefined"
+      typeof BroadcastChannel === 'undefined'
         ? null
-        : new BroadcastChannel(`nuxt:cookies:${name}`);
+        : new BroadcastChannel(`nuxt:cookies:${name}`)
     if (getCurrentInstance()) {
       onUnmounted(() => {
-        channel?.close();
-      });
+        channel?.close()
+      })
     }
 
     const callback = () => {
-      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions);
-      channel?.postMessage(opts.encode(cookie.value as T));
-    };
+      writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+      channel?.postMessage(opts.encode(cookie.value as T))
+    }
 
-    let watchPaused = false;
+    let watchPaused = false
 
     if (channel) {
       channel.onmessage = (event) => {
-        watchPaused = true;
-        cookie.value = opts.decode(event.data);
+        watchPaused = true
+        cookie.value = opts.decode(event.data)
         nextTick(() => {
-          watchPaused = false;
-        });
-      };
+          watchPaused = false
+        })
+      }
     }
 
     if (opts.watch) {
@@ -88,17 +88,17 @@ export function useCookie<T = string | null | undefined>(
         cookie,
         () => {
           if (watchPaused) {
-            return;
+            return
           }
-          callback();
+          callback()
         },
-        { deep: opts.watch !== "shallow" }
-      );
+        { deep: opts.watch !== 'shallow' }
+      )
     } else {
-      callback();
+      callback()
     }
   } else if (import.meta.server) {
-    const nuxtApp = useNuxtApp();
+    const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
         writeServerCookie(
@@ -106,54 +106,54 @@ export function useCookie<T = string | null | undefined>(
           name,
           cookie.value,
           opts as CookieOptions<any>
-        );
+        )
       }
-    };
+    }
     const unhook = nuxtApp.hooks.hookOnce(
-      "app:rendered",
+      'app:rendered',
       writeFinalCookieValue
-    );
-    nuxtApp.hooks.hookOnce("app:error", () => {
-      unhook(); // don't write cookie subsequently when app:rendered is called
-      return writeFinalCookieValue();
-    });
+    )
+    nuxtApp.hooks.hookOnce('app:error', () => {
+      unhook() // don't write cookie subsequently when app:rendered is called
+      return writeFinalCookieValue()
+    })
   }
 
-  return cookie as CookieRef<T>;
+  return cookie as CookieRef<T>
 }
 
-function readRawCookies(
+function readRawCookies (
   opts: CookieOptions = {}
 ): Record<string, string> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent(), "cookie") || "", opts);
+    return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
   } else if (import.meta.client) {
-    return parse(document.cookie, opts);
+    return parse(document.cookie, opts)
   }
 }
 
-function serializeCookie(
+function serializeCookie (
   name: string,
   value: any,
   opts: CookieSerializeOptions = {}
 ) {
   if (value === null || value === undefined) {
-    return serialize(name, value, { ...opts, maxAge: -1 });
+    return serialize(name, value, { ...opts, maxAge: -1 })
   }
-  return serialize(name, value, opts);
+  return serialize(name, value, opts)
 }
 
-function writeClientCookie(
+function writeClientCookie (
   name: string,
   value: any,
   opts: CookieSerializeOptions = {}
 ) {
   if (import.meta.client) {
-    document.cookie = serializeCookie(name, value, opts);
+    document.cookie = serializeCookie(name, value, opts)
   }
 }
 
-function writeServerCookie(
+function writeServerCookie (
   event: H3Event,
   name: string,
   value: any,
@@ -162,12 +162,12 @@ function writeServerCookie(
   if (event) {
     // update if value is set
     if (value !== null && value !== undefined) {
-      return setCookie(event, name, value, opts);
+      return setCookie(event, name, value, opts)
     }
 
     // delete if cookie exists in browser and value is null/undefined
     if (getCookie(event, name) !== undefined) {
-      return deleteCookie(event, name, opts);
+      return deleteCookie(event, name, opts)
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
@@ -175,25 +175,25 @@ function writeServerCookie(
 }
 
 // custom ref that will update the value to undefined if the cookie expire
-function useCustomCookieRef<T>(value: T | undefined, delay?: number) {
-  let timeout: string | number | NodeJS.Timeout | undefined;
+function useCustomCookieRef<T> (value: T | undefined, delay?: number) {
+  let timeout: string | number | NodeJS.Timeout | undefined
   return customRef((track, trigger) => {
     return {
-      get() {
-        track();
-        return value;
+      get () {
+        track()
+        return value
       },
-      set(newValue) {
-        value = newValue;
-        clearTimeout(timeout);
+      set (newValue) {
+        value = newValue
+        clearTimeout(timeout)
         if (delay) {
           timeout = setTimeout(() => {
-            value = undefined;
-            trigger();
-          }, delay);
+            value = undefined
+            trigger()
+          }, delay)
         }
-        trigger();
-      },
-    };
-  });
+        trigger()
+      }
+    }
+  })
 }
