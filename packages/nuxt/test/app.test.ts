@@ -2,12 +2,12 @@ import { fileURLToPath } from 'node:url'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it } from 'vitest'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { createApp, resolveApp } from '../src/core/app'
 import { loadNuxt } from '../src'
 
-const repoRoot = withoutTrailingSlash(fileURLToPath(new URL('../../../', import.meta.url)))
+const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
 describe('resolveApp', () => {
   afterAll(async () => {
