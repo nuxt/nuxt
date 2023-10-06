@@ -1,11 +1,5 @@
 import type { Ref } from 'vue'
-import {
-  customRef,
-  getCurrentInstance,
-  nextTick,
-  onUnmounted,
-  watch
-} from 'vue'
+import { customRef, getCurrentInstance, nextTick, onUnmounted, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -15,16 +9,13 @@ import { isEqual } from 'ohash'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
-type _CookieOptions = Omit<
-  CookieSerializeOptions & CookieParseOptions,
-  'decode' | 'encode'
->;
+type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
-  decode?(value: string): T;
-  encode?(value: T): string;
-  default?: () => T | Ref<T>;
-  watch?: boolean | 'shallow';
+  decode?(value: string): T
+  encode?(value: T): string
+  default?: () => T | Ref<T>
+  watch?: boolean | 'shallow'
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -33,14 +24,10 @@ const CookieDefaults = {
   path: '/',
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
-  encode: val =>
-    encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
-export function useCookie<T = string | null | undefined> (
-  name: string,
-  _opts?: CookieOptions<T>
-): CookieRef<T> {
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
@@ -56,15 +43,8 @@ export function useCookie<T = string | null | undefined> (
   )
 
   if (import.meta.client) {
-    const channel =
-      typeof BroadcastChannel === 'undefined'
-        ? null
-        : new BroadcastChannel(`nuxt:cookies:${name}`)
-    if (getCurrentInstance()) {
-      onUnmounted(() => {
-        channel?.close()
-      })
-    }
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
@@ -77,23 +57,16 @@ export function useCookie<T = string | null | undefined> (
       channel.onmessage = (event) => {
         watchPaused = true
         cookie.value = opts.decode(event.data)
-        nextTick(() => {
-          watchPaused = false
-        })
+        nextTick(() => { watchPaused = false })
       }
     }
 
     if (opts.watch) {
-      watch(
-        cookie,
-        () => {
-          if (watchPaused) {
-            return
-          }
-          callback()
-        },
-        { deep: opts.watch !== 'shallow' }
-      )
+      watch(cookie, () => {
+        if (watchPaused) { return }
+        callback()
+      },
+      { deep: opts.watch !== 'shallow' })
     } else {
       callback()
     }
@@ -101,18 +74,10 @@ export function useCookie<T = string | null | undefined> (
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(
-          useRequestEvent(nuxtApp),
-          name,
-          cookie.value,
-          opts as CookieOptions<any>
-        )
+        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
       }
     }
-    const unhook = nuxtApp.hooks.hookOnce(
-      'app:rendered',
-      writeFinalCookieValue
-    )
+    const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called
       return writeFinalCookieValue()
@@ -122,9 +87,7 @@ export function useCookie<T = string | null | undefined> (
   return cookie as CookieRef<T>
 }
 
-function readRawCookies (
-  opts: CookieOptions = {}
-): Record<string, string> | undefined {
+function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
   if (import.meta.server) {
     return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
   } else if (import.meta.client) {
@@ -132,33 +95,20 @@ function readRawCookies (
   }
 }
 
-function serializeCookie (
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function serializeCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (value === null || value === undefined) {
     return serialize(name, value, { ...opts, maxAge: -1 })
   }
   return serialize(name, value, opts)
 }
 
-function writeClientCookie (
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
   }
 }
 
-function writeServerCookie (
-  event: H3Event,
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
     // update if value is set
     if (value !== null && value !== undefined) {
