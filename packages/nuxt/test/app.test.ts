@@ -101,7 +101,6 @@ describe('resolveApp', () => {
       }
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
-    // TODO: support overriding named plugins
     expect(fixturePlugins).toMatchInlineSnapshot(`
       [
         "<rootDir>/layer1/plugins/02.plugin.ts",
