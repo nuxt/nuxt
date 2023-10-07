@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@rollup/plugin-replace": "^5.0.2",
-    "@vitejs/plugin-vue": "^4.3.4",
+    "@rollup/plugin-replace": "^5.0.3",
+    "@vitejs/plugin-vue": "^4.4.0",
     "@vitejs/plugin-vue-jsx": "^3.0.2",
     "autoprefixer": "^10.4.16",
     "clear": "^0.1.0",
@@ -57,7 +57,7 @@
     "strip-literal": "^1.3.0",
     "ufo": "^1.3.1",
     "unplugin": "^1.5.0",
-    "vite": "^4.4.9",
+    "vite": "^4.4.11",
     "vite-node": "^0.33.0",
     "vite-plugin-checker": "^0.6.2",
     "vue-bundle-renderer": "^2.0.0"

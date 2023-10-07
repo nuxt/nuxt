@@ -21,11 +21,11 @@ vi.mock('#app/compat/idle-callback', () => ({
 
 const timestamp = Date.now()
 registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'test',
+  id: 'override',
   timestamp
 })))
-registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
-  id: 'test',
+registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
+  id: 'override',
   timestamp,
   matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
   prerendered: ['/specific-prerendered']
@@ -277,7 +277,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "test",
+        "id": "override",
         "matcher": {
           "dynamic": {},
           "static": {
