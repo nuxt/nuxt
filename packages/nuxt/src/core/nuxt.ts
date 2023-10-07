@@ -305,6 +305,57 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // TODO: should we also check for static?
+  // TODO: move this to a helper function?
+  if (nuxt.options.ssr && !nuxt.options._generate && nuxt.options.experimental.httpClientHints.enabled) {
+    const {
+      viewportSize = false,
+      prefersColorScheme = false,
+      prefersReducedMotion = false,
+      prefersColorSchemeCookie: cookie
+    } = nuxt.options.experimental.httpClientHints
+
+    if (viewportSize || prefersColorScheme || prefersReducedMotion) {
+      nuxt.options.runtimeConfig = nuxt.options.runtimeConfig || {}
+      nuxt.options.runtimeConfig.public = nuxt.options.runtimeConfig.public || {}
+      if (cookie) {
+        const {
+          path = nuxt.options.app.baseURL ?? '/',
+          name = 'color-scheme',
+          defaultTheme = 'dark',
+          darkThemeName = 'dark',
+          lightThemeName = 'light',
+          themeNames = ['dark', 'light'],
+          useBrowserThemeOnly = false
+        } = cookie
+        // TODO: verify that the theme names are valid
+        nuxt.options.runtimeConfig.public.httpClientHints = {
+          viewportSize,
+          prefersColorScheme,
+          prefersReducedMotion,
+          prefersColorSchemeCookie: {
+            path,
+            name,
+            defaultTheme,
+            darkThemeName,
+            lightThemeName,
+            themeNames,
+            useBrowserThemeOnly
+          }
+        }
+      } else {
+        nuxt.options.runtimeConfig.public.httpClientHints = {
+          viewportSize,
+          prefersColorScheme,
+          prefersReducedMotion
+        }
+      }
+
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/http-client-hints/http-client-hints.client'))
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/http-client-hints/http-client-hints.server'))
+    }
+  }
+
   // Add prerender payload support
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))

@@ -260,6 +260,29 @@ export default defineUntypedSchema({
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
      * should set `routeRules` directly within your `nuxt.config`.
      */
-    inlineRouteRules: false
+    inlineRouteRules: false,
+
+    /**
+     * [HTTP Client Hints](https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints) configuration.
+     *
+     * @type {typeof import('../src/types/http-client-hints').HttpClientHints}
+     */
+    httpClientHints: {
+      enabled: false,
+      viewportSize: false,
+      prefersReducedMotion: false,
+      prefersColorScheme: false,
+      prefersColorSchemeOptions: {
+        path: {
+          $resolve: async (val, get) => val || await get('app.baseURL') || '/'
+        },
+        name: 'color-scheme',
+        defaultTheme: 'dark',
+        darkThemeName: 'dark',
+        lightThemeName: 'light',
+        themeNames: ['dark', 'light'],
+        useBrowserThemeOnly: false
+      }
+    }
   }
 })
