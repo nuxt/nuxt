@@ -441,13 +441,16 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
 
-  const isDevToolsEnabled = typeof options.devtools === 'boolean'
-    ? options.devtools
-    : options.devtools?.enabled !== false
+  // Nuxt DevTools only works for Vite
+  if (options.builder === '@nuxt/vite-builder') {
+    const isDevToolsEnabled = typeof options.devtools === 'boolean'
+      ? options.devtools
+      : options.devtools?.enabled !== false
 
-  if (isDevToolsEnabled) {
-    if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
-      options._modules.push('@nuxt/devtools')
+    if (isDevToolsEnabled) {
+      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
+        options._modules.push('@nuxt/devtools')
+      }
     }
   }
 
