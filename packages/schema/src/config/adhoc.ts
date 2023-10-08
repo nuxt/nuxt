@@ -66,7 +66,7 @@ export default defineUntypedSchema({
    * Enable Nuxt DevTools for development.
    *
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
-   * @type { enabled: boolean, [key: string]: any }
+   * @type { { enabled: boolean, [key: string]: any } }
    */
   devtools: {}
 })
