@@ -451,8 +451,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
-  console.log({ isDevToolsEnabled })
-
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
     if (!await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/webpack-builder', options.modulesDir))) {

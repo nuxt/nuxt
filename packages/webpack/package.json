@@ -35,7 +35,7 @@
     "h3": "^1.8.2",
     "hash-sum": "^2.0.0",
     "lodash-es": "^4.17.21",
-    "magic-string": "^0.30.3",
+    "magic-string": "^0.30.4",
     "memfs": "^4.5.0",
     "mini-css-extract-plugin": "^2.7.6",
     "mlly": "^1.4.2",
@@ -58,7 +58,7 @@
     "webpack-bundle-analyzer": "^4.9.1",
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.4",
-    "webpack-virtual-modules": "^0.5.0",
+    "webpack-virtual-modules": "^0.6.0",
     "webpackbar": "^5.0.2"
   },
   "devDependencies": {
