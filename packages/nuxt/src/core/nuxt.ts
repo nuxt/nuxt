@@ -77,7 +77,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
-  // Add plugin normalisation plugin
+  // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
@@ -391,7 +391,7 @@ async function initNuxt (nuxt: Nuxt) {
     const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        // Test (normalised) strings against absolute path and relative path to any layer `srcDir`
+        // Test (normalized) strings against absolute path and relative path to any layer `srcDir`
         if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
         continue
       }
