@@ -1,27 +1,22 @@
-import type { IncomingHttpHeaders, ServerResponse } from 'node:http'
 import { readonly } from 'vue'
+import { setResponseHeader } from 'h3'
 import type { HttpClientHintsConfiguration, HttpClientHintsRequest } from './types'
 import { type Browser, parseUserAgent } from './detect-browser'
 import { NuxtHTTPClientHintsState } from './types'
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { useCookie } from '#app/composables/cookie'
 import { useState } from '#app/composables/state'
-import { useRequestEvent } from '#app/composables/ssr'
+import { useRequestEvent, useRequestHeaders } from '#app/composables/ssr'
 
 export default defineNuxtPlugin<{ httpClientHints: HttpClientHintsRequest }>({
   name: 'nuxt:http-client-hints:server',
   enforce: 'pre',
   setup () {
-    const event = useRequestEvent()
     const httpClientHintsConfiguration = useRuntimeConfig().public.httpClientHints as HttpClientHintsConfiguration
     const httpClientHints = useState<HttpClientHintsRequest>(NuxtHTTPClientHintsState)
 
-    const request = event.node.req
-    const response = event.node.res
-
-    const requestHeaders = request.headers ?? {}
-
-    const userAgentHeader = readClientHeader('user-agent', requestHeaders)
+    const requestHeaders = useRequestHeaders<string>(HttpRequestHeaders)
+    const userAgentHeader = requestHeaders['user-agent']
 
     // 1. extract browser info
     const userAgent = userAgentHeader
@@ -29,8 +24,8 @@ export default defineNuxtPlugin<{ httpClientHints: HttpClientHintsRequest }>({
       : null
     // 2. prepare client hints request
     const clientHintsRequest = collectClientHints(userAgent, httpClientHintsConfiguration, requestHeaders)
-    // 3. write client hints response headers
-    writeClientHintsResponseHeaders(clientHintsRequest, httpClientHintsConfiguration, response)
+    // 3. write client hints response headers when required
+    writeClientHintsResponseHeaders(clientHintsRequest, httpClientHintsConfiguration)
     httpClientHints.value = clientHintsRequest
     // 4. send the theme cookie to the client when required
     httpClientHints.value.colorSchemeCookie = writeThemeCookie(
@@ -82,19 +77,14 @@ const allowedBrowsers: [browser: Browser, features: BrowserFeatures][] = [
   }]
 ]
 
-const AcceptClientHintsRequestHeaders = Object.entries(AcceptClientHintsHeaders).reduce((acc, [key, value]) => {
-  acc[key as AcceptClientHintsHeadersKey] = value.toLowerCase()
+const AcceptClientHintsRequestHeaders: Record<AcceptClientHintsHeadersKey, Lowercase<string>> = Object.entries(AcceptClientHintsHeaders).reduce((acc, [key, value]) => {
+  acc[key as AcceptClientHintsHeadersKey] = value.toLowerCase() as Lowercase<string>
   return acc
-}, {} as Record<AcceptClientHintsHeadersKey, string>)
+}, {} as Record<AcceptClientHintsHeadersKey, Lowercase<string>>)
+
+const HttpRequestHeaders = Array.from(Object.values(AcceptClientHintsRequestHeaders)).concat('user-agent', 'cookie')
 
 const ClientHeaders = ['Accept-CH', 'Vary', 'Critical-CH']
-
-function readClientHeader (name: string, headers: IncomingHttpHeaders) {
-  const value = headers[name]
-  if (Array.isArray(value)) { return value[0] }
-
-  return value
-}
 
 function browserFeatureAvailable (userAgent: ReturnType<typeof parseUserAgent>, feature: AcceptClientHintsHeadersKey) {
   if (userAgent == null || userAgent.type !== 'browser') { return false }
@@ -146,7 +136,7 @@ function lookupClientHints (
 function collectClientHints (
   userAgent: ReturnType<typeof parseUserAgent>,
   httpClientHintsConfiguration: HttpClientHintsConfiguration,
-  headers: IncomingHttpHeaders
+  headers: { [key in Lowercase<string>]?: string | undefined }
 ) {
   // collect client hints
   const hints = lookupClientHints(userAgent, httpClientHintsConfiguration)
@@ -154,7 +144,7 @@ function collectClientHints (
   if (httpClientHintsConfiguration.prefersColorScheme) {
     if (httpClientHintsConfiguration.prefersColorSchemeCookie) {
       const cookieName = httpClientHintsConfiguration.prefersColorSchemeCookie.name
-      const cookieValue = readClientHeader('cookie', headers)?.split(';').find(c => c.trim().startsWith(`${cookieName}=`))
+      const cookieValue = headers.cookie?.split(';').find(c => c.trim().startsWith(`${cookieName}=`))
       if (cookieValue) {
         const value = cookieValue.split('=')?.[1].trim()
         if (httpClientHintsConfiguration.prefersColorSchemeCookie.themeNames.includes(value)) {
@@ -165,7 +155,7 @@ function collectClientHints (
     }
     if (!hints.colorSchemeFromCookie) {
       const value = hints.prefersColorSchemeAvailable
-        ? readClientHeader(AcceptClientHintsRequestHeaders.prefersColorScheme, headers)?.toLowerCase()
+        ? headers[AcceptClientHintsRequestHeaders.prefersColorScheme]?.toLowerCase()
         : undefined
       if (value === 'dark' || value === 'light' || value === 'no-preference') {
         hints.prefersColorScheme = value
@@ -186,7 +176,7 @@ function collectClientHints (
   }
 
   if (hints.prefersReducedMotionAvailable && httpClientHintsConfiguration.prefersReducedMotion) {
-    const value = readClientHeader(AcceptClientHintsRequestHeaders.prefersReducedMotion, headers)?.toLowerCase()
+    const value = headers[AcceptClientHintsRequestHeaders.prefersReducedMotion]
     if (value === 'no-preference' || value === 'reduce') {
       hints.prefersReducedMotion = value
       hints.firstRequest = false
@@ -194,7 +184,7 @@ function collectClientHints (
   }
 
   if (hints.viewportHeightAvailable && httpClientHintsConfiguration.viewportSize) {
-    const header = readClientHeader(AcceptClientHintsRequestHeaders.viewportHeight, headers)
+    const header = headers[AcceptClientHintsRequestHeaders.viewportHeight]
     if (header) {
       hints.firstRequest = false
       try {
@@ -208,7 +198,7 @@ function collectClientHints (
   }
 
   if (hints.viewportWidthAvailable && httpClientHintsConfiguration.viewportSize) {
-    const header = readClientHeader(AcceptClientHintsRequestHeaders.viewportWidth, headers)
+    const header = headers[AcceptClientHintsRequestHeaders.viewportWidth]
     if (header) {
       hints.firstRequest = false
       try {
@@ -230,19 +220,9 @@ function writeClientHintHeaders (key: string, headers: Record<string, string[]>)
   })
 }
 
-function withNuxtAppRendered (callback: () => void) {
-  const nuxtApp = useNuxtApp()
-  const unhook = nuxtApp.hooks.hookOnce('app:rendered', callback)
-  nuxtApp.hooks.hookOnce('app:error', () => {
-    unhook()
-    return callback()
-  })
-}
-
 function writeClientHintsResponseHeaders (
   clientHintsRequest: HttpClientHintsRequest,
-  httpClientHintsConfiguration: HttpClientHintsConfiguration,
-  response: ServerResponse
+  httpClientHintsConfiguration: HttpClientHintsConfiguration
 ) {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Critical-CH
   // Each header listed in the Critical-CH header should also be present in the Accept-CH and Vary headers.
@@ -260,11 +240,17 @@ function writeClientHintsResponseHeaders (
 
   if (Object.keys(headers).length === 0) { return }
 
-  // TODO: review Vary on first request (https://developer.mozilla.org/en-US/docs/Web/HTTP/Client_hints#critical_client_hints)
-  withNuxtAppRendered(() => {
+  const nuxtApp = useNuxtApp()
+  const callback = () => {
+    const event = useRequestEvent(nuxtApp)
     Object.entries(headers).forEach(([key, value]) => {
-      response.setHeader(key, value)
+      setResponseHeader(event, key, value)
     })
+  }
+  const unhook = nuxtApp.hooks.hookOnce('app:rendered', callback)
+  nuxtApp.hooks.hookOnce('app:error', () => {
+    unhook()
+    return callback()
   })
 }
 
