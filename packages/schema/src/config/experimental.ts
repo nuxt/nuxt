@@ -235,7 +235,7 @@ export default defineUntypedSchema({
     watcher: 'chokidar-granular',
 
     /**
-     * Enable native async context to be accessable for nested composables
+     * Enable native async context to be accessible for nested composables
      *
      * @see https://github.com/nuxt/nuxt/pull/20918
      */
