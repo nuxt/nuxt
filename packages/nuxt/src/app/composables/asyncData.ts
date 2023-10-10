@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, toRef, unref, watch } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -44,6 +44,7 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
+  shallow?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -137,6 +138,7 @@ export function useAsyncData<
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
+  options.shallow = options.shallow ?? false
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
@@ -149,7 +151,9 @@ export function useAsyncData<
     nuxt.payload._errors[key] ??= null
 
     nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default!()),
+      data: options.shallow 
+        ? shallowRef(getCachedData() ?? options.default!())
+        : ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
