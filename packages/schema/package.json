@@ -45,7 +45,7 @@
     "vite": "4.4.11",
     "vue": "3.3.4",
     "vue-bundle-renderer": "2.0.0",
-    "vue-loader": "17.2.2",
+    "vue-loader": "17.3.0",
     "vue-router": "4.2.5",
     "webpack": "5.88.2",
     "webpack-dev-middleware": "6.1.1"
