@@ -27,7 +27,7 @@ Because the data inside [`useState`](/docs/api/composables/use-state) will be se
 
 ## Using `shallowRef`
 
-If you don't need your state to be deeply reactive, you can combine `useState` with [`shallowRef`](https://vuejs.org/api/reactivity-advanced.html#shallowref). This is usefull for performance optimizations of large data structures
+If you don't need your state to be deeply reactive, you can combine `useState` with [`shallowRef`](https://vuejs.org/api/reactivity-advanced.html#shallowref). This can improve performance when your state contains large objects and arrays.
 
 ```ts
 const state = useState('my-shallow-state', () => shallowRef({ deep: 'not reactive' }))
