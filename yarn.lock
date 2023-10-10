@@ -2834,10 +2834,10 @@
     "@types/source-list-map" "*"
     source-map "^0.7.3"
 
-"@types/webpack@4.41.33", "@types/webpack@^4", "@types/webpack@^4.41.8":
-  version "4.41.33"
-  resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.41.33.tgz#16164845a5be6a306bcbe554a8e67f9cac215ffc"
-  integrity sha512-PPajH64Ft2vWevkerISMtnZ8rTs4YmRbs+23c402J0INmxDKCrhZNvwZYtzx96gY2wAtXdrK1BS2fiC8MlLr3g==
+"@types/webpack@^4", "@types/webpack@^4.41.33", "@types/webpack@^4.41.8":
+  version "4.41.34"
+  resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.41.34.tgz#8cf616be84b39c8fb26f9459d4470a5514df2477"
+  integrity sha512-CN2aOGrR3zbMc2v+cKqzaClYP1ldkpPOgtdNvgX+RmlWCSWxHxpzz6WSCVQZRkF8D60ROlkRzAoEpgjWQ+bd2g==
   dependencies:
     "@types/node" "*"
     "@types/tapable" "^1"
