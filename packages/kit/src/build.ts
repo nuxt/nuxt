@@ -28,7 +28,7 @@ export interface ExtendConfigOptions {
    */
   client?: boolean
   /**
-   * Prepends the plugin to the array with `unshit()` instead of `push()`.
+   * Prepends the plugin to the array with `unshift()` instead of `push()`.
    */
   prepend?: boolean
 }

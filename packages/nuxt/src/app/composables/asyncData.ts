@@ -151,7 +151,7 @@ export function useAsyncData<
     nuxt.payload._errors[key] ??= null
 
     nuxt._asyncData[key] = {
-      data: options.shallow 
+      data: options.shallow
         ? shallowRef(getCachedData() ?? options.default!())
         : ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),

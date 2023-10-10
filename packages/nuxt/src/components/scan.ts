@@ -144,7 +144,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         if (newPriority > existingPriority) {
           components.splice(components.indexOf(existingComponent), 1, component)
         }
-        // Warn if a user-defined (or prioritised) component conflicts with a previously scanned component
+        // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
           warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
         }
