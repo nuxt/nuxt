@@ -730,8 +730,8 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.88.2)
       fork-ts-checker-webpack-plugin:
-        specifier: ^8.0.0
-        version: 8.0.0(typescript@5.2.2)(webpack@5.88.2)
+        specifier: ^9.0.0
+        version: 9.0.0(typescript@5.2.2)(webpack@5.88.2)
       fs-extra:
         specifier: ^11.1.1
         version: 11.1.1
@@ -5918,8 +5918,8 @@ packages:
       signal-exit: 4.1.0
     dev: true
 
-  /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.2.2)(webpack@5.88.2):
-    resolution: {integrity: sha512-mX3qW3idpueT2klaQXBzrIM/pHw+T0B/V9KHEvNrqijTq9NFnMZU6oreVxDYcf33P8a5cW+67PjodNHthGnNVg==}
+  /fork-ts-checker-webpack-plugin@9.0.0(typescript@5.2.2)(webpack@5.88.2):
+    resolution: {integrity: sha512-Kw3JjsfGs0piB0V2Em8gCuo51O3p4KyCOK0Tn8X57oq2mSNBrMmONALRBw5frcmWsOVU7iELXXsJ+FVxJeQuhA==}
     engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
     peerDependencies:
       typescript: '>3.6.0'
