@@ -26,6 +26,7 @@ type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
+  shallow?: boolean
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -60,6 +61,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
   * _transform_: a function that can be used to alter `handler` function result after resolving
   * _pick_: only pick specified keys in this array from the `handler` function result
   * _watch_: watch reactive sources to auto-refresh
+  * _shallow_: return data in a shallow ref, instead of a deep ref object. This is useful when you want to fine-tune reactivity.
 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 
