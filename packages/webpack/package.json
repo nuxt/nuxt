@@ -30,7 +30,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "file-loader": "^6.2.0",
-    "fork-ts-checker-webpack-plugin": "^8.0.0",
+    "fork-ts-checker-webpack-plugin": "^9.0.0",
     "fs-extra": "^11.1.1",
     "h3": "^1.8.2",
     "hash-sum": "^2.0.0",
