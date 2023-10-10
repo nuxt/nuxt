@@ -329,7 +329,6 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
   }
 
-  // Add experimental automatic view transition api support
   if (nuxt.options.experimental.asyncDataShallow) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/async-data-shallow'))
   }
