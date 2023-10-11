@@ -11,7 +11,7 @@ import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
-const isTestingAppManifest = process.env.TEST_MANIFEST === 'manifest-on'
+const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -1896,8 +1896,8 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
     const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
-    const [key, serialisedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
-    expect(serialisedComponent).toEqual(key)
+    const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
+    expect(serializedComponent).toEqual(key)
   })
 })
 

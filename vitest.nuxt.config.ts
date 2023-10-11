@@ -13,7 +13,7 @@ export default defineVitestConfig({
         overrides: {
           appConfig: {
             nuxt: {
-              buildId: 'test'
+              buildId: 'override'
             }
           }
         }
