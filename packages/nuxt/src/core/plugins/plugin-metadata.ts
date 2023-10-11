@@ -132,7 +132,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       }
 
       let wrapped = false
-      let importName = ''
+      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
         walk(this.parse(code, {
@@ -141,7 +141,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         }) as Node, {
           enter (_node) {
             if (_node.type === 'ImportSpecifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
-              importName = _node.local.name
+              wrapperNames.add(_node.local.name)
             }
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
@@ -154,7 +154,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
             if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
             const node = _node as CallExpression & { start: number, end: number }
             const name = 'name' in node.callee && node.callee.name
-            if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin' && name !== importName) { return }
+            if (!name || !wrapperNames.has(name)) { return }
             wrapped = true
 
             if (node.arguments[0].type !== 'ObjectExpression') {
