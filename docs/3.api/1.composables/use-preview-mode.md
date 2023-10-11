@@ -19,7 +19,7 @@ const { enabled, state } = usePreviewMode({ controls: true })
 
 ### Custom `enable` check
 
-You can specify different check for enabling preview mode. By default [`usePreviewMode`](/docs/api/composables/use-preview-mode) composable will only check if `preview` param in url is equal to `true`.
+You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`).
 
 ```js
 const enabled = usePreviewMode({
