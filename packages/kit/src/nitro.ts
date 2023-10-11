@@ -67,7 +67,6 @@ export function addPrerenderRoutes (routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
- *
  * @example
  *
  * ```ts
