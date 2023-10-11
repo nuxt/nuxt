@@ -9,7 +9,6 @@ export default defineUntypedSchema({
      * This is often necessary when using dynamic routes.
      *
      * It is preferred to use `nitro.prerender.routes`.
-     *
      * @example
      * ```js
      * routes: ['/users/1', '/users/2', '/users/3']
@@ -20,7 +19,6 @@ export default defineUntypedSchema({
 
     /**
      * This option is no longer used. Instead, use `nitro.prerender.ignore`.
-     *
      * @deprecated
      */
     exclude: []
