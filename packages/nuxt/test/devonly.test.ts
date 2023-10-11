@@ -13,14 +13,24 @@ describe('test devonly transform ', () => {
   it('test dev only treeshaking', async () => {
     const result = await viteTransform(`<template>
     <div>
+      <LazyDevOnly>
+        <SomeDevOnlyComponent></SomeDevOnlyComponent>
+      </LazyDevOnly>
+    </div>
+    <SomeComponent>
+      <lazy-dev-only>
+        test
+      </lazy-dev-only>
+    </SomeComponent>
+    <div>
       <DevOnly>
-        <SomeDevOnlyComponent></SomeDevOnlyComponent>   
+        <SomeDevOnlyComponent></SomeDevOnlyComponent>
       </DevOnly>
     </div>
     <SomeComponent>
-        <dev-only>
-          test
-        </dev-only>
+      <dev-only>
+        test
+      </dev-only>
     </SomeComponent>
     </template>`, 'some id')
 
@@ -30,12 +40,20 @@ describe('test devonly transform ', () => {
             
           </div>
           <SomeComponent>
-              
+            
+          </SomeComponent>
+          <div>
+            
+          </div>
+          <SomeComponent>
+            
           </SomeComponent>
           </template>"
     `)
 
     expect(result).not.toContain('dev-only')
     expect(result).not.toContain('DevOnly')
+    expect(result).not.toContain('lazy-dev-only')
+    expect(result).not.toContain('LazyDevOnly')
   })
 })
