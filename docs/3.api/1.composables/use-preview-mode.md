@@ -5,7 +5,7 @@ description: "Use usePreviewMode to check and control preview mode in Nuxt"
 
 # `usePreviewMode`
 
-You can use built-in [`usePreviewMode`](/docs/api/composables/use-preview-mode) composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force update necessary [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) to rerender preview content.
+You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) to rerender preview content.
 
 ```js
 // Just check if preview mode is enabled
