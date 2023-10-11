@@ -15,14 +15,7 @@ export async function ensurePackageInstalled (
   name: string,
   options: EnsurePackageInstalledOptions
 ) {
-  const {
-    rootDir,
-    searchPaths,
-    // In StackBlitz we install packages automatically by default
-    prompt = !isStackblitz
-  } = options
-
-  if (await resolvePackageJSON(name, { url: searchPaths }).catch(() => null)) {
+  if (await resolvePackageJSON(name, { url: options.searchPaths }).catch(() => null)) {
     return true
   }
 
@@ -31,7 +24,8 @@ export async function ensurePackageInstalled (
     return false
   }
 
-  if (!prompt) {
+  // In StackBlitz we install packages automatically by default
+  if (options.prompt === true || (options.prompt !== false && !isStackblitz)) {
     const confirm = await logger.prompt(`Do you want to install ${name} package?`, {
       type: 'confirm',
       name: 'confirm',
@@ -46,7 +40,7 @@ export async function ensurePackageInstalled (
   logger.info(`Installing ${name}...`)
   try {
     await addDependency(name, {
-      cwd: rootDir,
+      cwd: options.rootDir,
       dev: true
     })
     logger.success(`Installed ${name}`)
