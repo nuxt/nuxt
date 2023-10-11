@@ -20,7 +20,6 @@ export default defineUntypedSchema({
      * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      *
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
-     *
      * @type {'vite' | 'webpack' | 'shared' | false | undefined}
      */
     builder: {
@@ -37,7 +36,6 @@ export default defineUntypedSchema({
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`.
      * Requires to install `typescript` and `vue-tsc` as dev dependencies.
-     *
      * @see https://nuxt.com/docs/guide/concepts/typescript
      * @type {boolean | 'build'}
      */
@@ -45,7 +43,6 @@ export default defineUntypedSchema({
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
-     *
      * @type {typeof import('pkg-types')['TSConfig']}
      */
     tsConfig: {},

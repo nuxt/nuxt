@@ -7,7 +7,6 @@ import { consola } from 'consola'
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   *
    * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
@@ -25,7 +24,6 @@ export default defineUntypedSchema({
 
   /**
    * Whether to generate sourcemaps.
-   *
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
@@ -45,7 +43,6 @@ export default defineUntypedSchema({
    *
    * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
-   *
    * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
@@ -67,7 +64,6 @@ export default defineUntypedSchema({
      * dependency's file name.
      *
      * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
-     *
      * @example
      * ```js
      transpile: [({ isLegacy }) => isLegacy && 'ky']
@@ -83,7 +79,6 @@ export default defineUntypedSchema({
      * on Nuxt configuration. This feature is specially useful for using with modules.
      *
      * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
-     *
      * @example
      * ```js
      * templates: [
@@ -105,7 +100,6 @@ export default defineUntypedSchema({
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-     *
      * @example
      * ```js
      * analyze: {
@@ -142,7 +136,6 @@ export default defineUntypedSchema({
      * and client. You will need to take steps to handle this additional key.
      *
      * The key will be unique based on the location of the function being invoked within the file.
-     *
      * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
@@ -162,7 +155,6 @@ export default defineUntypedSchema({
     treeShake: {
       /**
        * Tree shake composables from the server or client builds.
-       *
        * @example
        * ```js
        * treeShake: { client: { myPackage: ['useServerOnlyComposable'] } }
@@ -195,7 +187,6 @@ export default defineUntypedSchema({
     /**
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
-     *
      * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
