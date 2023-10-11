@@ -443,7 +443,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt DevTools is currently opt-in
   if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
+    if (await import('./features').then(r => r.ensurePackageInstalled('@nuxt/devtools', {
+      rootDir: options.rootDir,
+      searchPaths: options.modulesDir
+    }))) {
       options._modules.push('@nuxt/devtools')
     } else {
       logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
@@ -452,7 +455,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/webpack-builder', options.modulesDir))) {
+    if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+      rootDir: options.rootDir,
+      searchPaths: options.modulesDir
+    }))) {
       logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
     }
   }
