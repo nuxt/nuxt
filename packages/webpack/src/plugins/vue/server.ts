@@ -1,4 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
+// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import { extractQueryPartJS, isJS, validate } from './util'
 

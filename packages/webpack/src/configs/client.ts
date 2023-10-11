@@ -1,5 +1,6 @@
 import querystring from 'node:querystring'
 import { resolve } from 'pathe'
+// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'

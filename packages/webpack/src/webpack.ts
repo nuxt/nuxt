@@ -1,4 +1,5 @@
 import pify from 'pify'
+// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
