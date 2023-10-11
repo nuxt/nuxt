@@ -42,7 +42,7 @@ export default defineNuxtConfig({
   nitro: {
     esbuild: {
       options: {
-        // in order to test bigint serialisation
+        // in order to test bigint serialization
         target: 'es2022'
       }
     },
@@ -128,7 +128,7 @@ export default defineNuxtConfig({
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'webpack:config' (configs) {
-      // in order to test bigint serialisation we need to set target to a more modern one
+      // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
         const esbuildRules = config.module!.rules!.filter(
           rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
@@ -195,9 +195,7 @@ export default defineNuxtConfig({
     reactivityTransform: true,
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
-    // TODO: remove this in v3.8
-    payloadExtraction: true,
-    appManifest: process.env.TEST_MANIFEST === 'manifest-on',
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     headNext: true,
     inlineRouteRules: true
   },
