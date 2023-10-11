@@ -30,7 +30,7 @@ const enabled = usePreviewMode({
 ```
 
 ::alert{icon=👉}
-This check should be performed on top level [`usePreviewMode`](/docs/api/composables/use-preview-mode) call as top level components run first.
+This check should be performed on top level `usePreviewMode` call as top level components run first.
 ::
 
 ### Modify default state
