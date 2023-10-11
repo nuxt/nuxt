@@ -5,13 +5,23 @@ import { isCI, provider } from 'std-env'
 
 const isStackblitz = provider === 'stackblitz'
 
+export interface EnsurePackageInstalledOptions {
+  rootDir: string
+  searchPaths?: string[]
+  prompt?: boolean
+}
+
 export async function ensurePackageInstalled (
-  rootDir: string,
   name: string,
-  searchPaths?: string[],
-  // In StackBlitz we install packages automatically by default
-  prompt = !isStackblitz
+  options: EnsurePackageInstalledOptions
 ) {
+  const {
+    rootDir,
+    searchPaths,
+    // In StackBlitz we install packages automatically by default
+    prompt = !isStackblitz
+  } = options
+
   if (await resolvePackageJSON(name, { url: searchPaths }).catch(() => null)) {
     return true
   }
