@@ -10,7 +10,7 @@ interface DevOnlyPluginOptions {
 }
 
 const DEVONLY_COMP_SINGLE_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/
-const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly)>/g
+const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/g
 
 export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions, meta) => {
   return {
