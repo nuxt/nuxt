@@ -216,5 +216,4 @@ export default defineEventHandler(event => {
 })
 ```
 
-::LinkExample{link="/docs/examples/advanced/use-cookie"}
-::
+:link-example{to="/docs/examples/advanced/use-cookie"}
