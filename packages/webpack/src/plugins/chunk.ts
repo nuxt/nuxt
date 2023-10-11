@@ -1,5 +1,4 @@
 import type { Compiler } from 'webpack'
-// eslint-disable-next-line import/default
 import webpack from 'webpack'
 
 const pluginName = 'ChunkErrorPlugin'

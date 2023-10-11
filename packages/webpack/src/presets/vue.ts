@@ -1,6 +1,5 @@
 import { resolve } from 'pathe'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
-// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'

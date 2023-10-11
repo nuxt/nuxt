@@ -1,5 +1,4 @@
 import { isAbsolute } from 'pathe'
-// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'

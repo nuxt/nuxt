@@ -3,7 +3,6 @@ import { normalize, resolve } from 'pathe'
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
-// eslint-disable-next-line import/default
 import webpack from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
