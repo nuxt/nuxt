@@ -5,7 +5,6 @@ import { useRouter } from './router'
 
 /**
  * Preload a component or components that have been globally registered.
- *
  * @param components Pascal-cased name or names of components to prefetch
  */
 export const preloadComponents = async (components: string | string[]) => {
@@ -18,7 +17,6 @@ export const preloadComponents = async (components: string | string[]) => {
 
 /**
  * Prefetch a component or components that have been globally registered.
- *
  * @param components Pascal-cased name or names of components to prefetch
  */
 export const prefetchComponents = (components: string | string[]) => {
