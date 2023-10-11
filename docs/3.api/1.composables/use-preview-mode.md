@@ -19,19 +19,16 @@ const { enabled, state } = usePreviewMode({ controls: true })
 
 ### Custom `enable` check
 
-You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`).
+You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`). You can wrap the `usePreviewMode` into custom composable, to keep options consistent across usages and prevent any errors.
 
 ```js
-const enabled = usePreviewMode({
-  shouldEnable: () => {
-    return !!route.query.customPreview
-  }
-});
-```
-
-::alert{icon=👉}
-This check should be performed on top level `usePreviewMode` call as top level components run first.
-::
+export function useMyPreviewMode () {
+  return usePreviewMode({
+    shouldEnable: () => {
+      return !!route.query.customPreview
+    }
+  });
+}```
 
 ### Modify default state
 
