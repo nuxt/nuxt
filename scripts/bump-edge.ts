@@ -6,7 +6,7 @@ import { determineBumpType, loadWorkspace } from './_utils'
 const nightlyPackages = {
   nitropack: 'nitropack-edge',
   h3: 'h3-nightly',
-  nuxi: 'nuxi-edge'
+  nuxi: 'nuxi-nightly'
 }
 
 async function main () {
