@@ -9,7 +9,7 @@ Reproductions make it possible for us to triage and fix issues quickly with a re
 
 ### What will happen?
 
-If you've provided a reproduction, we'll remove the label and try to reproduce the issue. If we can, we'll mark it as a bug and prioritise it based on its severity and how many people we think it might affect.
+If you've provided a reproduction, we'll remove the label and try to reproduce the issue. If we can, we'll mark it as a bug and prioritize it based on its severity and how many people we think it might affect.
 
 If `needs reproduction` labeled issues don't receive any substantial activity (e.g., new comments featuring a reproduction link), we'll close them. That's not because we don't care! At any point, feel free to comment with a reproduction and we'll reopen it.
 

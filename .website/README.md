@@ -2,7 +2,7 @@
 
 This is a temporary directory until we open source the repository for nuxt.com.
 
-The goal is to simplify the contribution in the meantine to the documentation by having the possibility to preview the changes locally.
+The goal is to simplify the contribution in the meantime to the documentation by having the possibility to preview the changes locally.
 
 ## Setup
 

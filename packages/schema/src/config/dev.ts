@@ -5,7 +5,6 @@ export default defineUntypedSchema({
   devServer: {
     /**
      * Whether to enable HTTPS.
-     *
      * @example
      * ```
      * export default defineNuxtConfig({
@@ -37,7 +36,6 @@ export default defineUntypedSchema({
 
     /**
      * Template to show a loading screen
-     *
      * @type {(data: { loading?: string }) => string}
      */
     loadingTemplate

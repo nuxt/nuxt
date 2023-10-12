@@ -8,7 +8,6 @@ export default defineUntypedSchema({
      * Options for configuring PostCSS plugins.
      *
      * https://postcss.org/
-     *
      * @type {Record<string, any>}
      */
     plugins: {
