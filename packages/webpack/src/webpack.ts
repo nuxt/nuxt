@@ -5,7 +5,7 @@ import { defineEventHandler, fromNodeMiddleware } from 'h3'
 import type { OutputFileSystem } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
-import type { Compiler, Watching } from 'webpack'
+import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
@@ -163,7 +163,7 @@ async function compile (compiler: Compiler) {
   }
 
   // --- Production Build ---
-  const stats = await new Promise<webpack.Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
+  const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
     const error = new Error('Nuxt build error')
