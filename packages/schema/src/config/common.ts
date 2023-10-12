@@ -12,6 +12,7 @@ export default defineUntypedSchema({
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
+   *
    * @type {string|string[]}
    */
   extends: null,
@@ -22,6 +23,7 @@ export default defineUntypedSchema({
    * Value should be a string pointing to source directory or config path relative to current config.
    *
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
+   *
    * @type {string}
    */
   theme: null,
@@ -55,6 +57,7 @@ export default defineUntypedSchema({
    * Define the source directory of your Nuxt application.
    *
    * If a relative path is specified, it will be relative to the `rootDir`.
+   *
    * @example
    * ```js
    * export default {
@@ -102,6 +105,7 @@ export default defineUntypedSchema({
    *
    * Many tools assume that `.nuxt` is a hidden directory (because it starts
    * with a `.`). If that is a problem, you can use this option to prevent that.
+   *
    * @example
    * ```js
    * export default {
@@ -120,6 +124,7 @@ export default defineUntypedSchema({
    * The configuration path is relative to `options.rootDir` (default is current working directory).
    *
    * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
+   *
    * @example
    * ```js
    * export default {
@@ -185,6 +190,7 @@ export default defineUntypedSchema({
    *
    * Nuxt tries to resolve each item in the modules array using node require path
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
+   *
    * @note Modules are executed sequentially so the order is important.
    * @example
    * ```js
@@ -265,6 +271,7 @@ export default defineUntypedSchema({
   /**
    * You can improve your DX by defining additional aliases to access custom directories
    * within your JavaScript and CSS.
+   *
    * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
    * @note These aliases will be automatically added to the generated `.nuxt/tsconfig.json` so you can get full
@@ -316,6 +323,7 @@ export default defineUntypedSchema({
 
   /**
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).
+   *
    * @see [node-ignore](https://github.com/kaelzhang/node-ignore)
    * @example
    * ```js
@@ -356,6 +364,7 @@ export default defineUntypedSchema({
    * It is an array of strings or regular expressions. Strings should be either absolute paths or
    * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
    * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
+   *
    * @type {Array<string | RegExp>}
    */
   watch: {
@@ -370,6 +379,7 @@ export default defineUntypedSchema({
     rewatchOnRawEvents: undefined,
     /**
      * `watchOptions` to pass directly to webpack.
+     *
      * @see [webpack@4 watch options](https://v4.webpack.js.org/configuration/watch/#watchoptions).
      */
     webpack: {
@@ -377,6 +387,7 @@ export default defineUntypedSchema({
     },
     /**
      * Options to pass directly to `chokidar`.
+     *
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
      */
     chokidar: {
@@ -392,8 +403,9 @@ export default defineUntypedSchema({
    *
    * For ease of configuration, you can also structure them as an hierarchical
    * object in `nuxt.config` (as below).
+   *
    * @example
-   * ```js'node:fs'
+   * ```js
    * import fs from 'node:fs'
    * import path from 'node:path'
    * export default {
@@ -426,6 +438,7 @@ export default defineUntypedSchema({
    *
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment
    * variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
+   *
    * @example
    * ```js
    * export default {
@@ -458,6 +471,7 @@ export default defineUntypedSchema({
    *
    * For programmatic usage and type support, you can directly provide app config with this option.
    * It will be merged with `app.config` file as default value.
+   *
    * @type {typeof import('../src/types/config').AppConfig}
    */
   appConfig: {
