@@ -155,6 +155,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
+        'nuxt-nightly/dist',
         distDir
       ],
       traceInclude: [

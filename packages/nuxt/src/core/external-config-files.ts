@@ -5,7 +5,6 @@ import { generateApp as _generateApp } from './app'
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
  * and warns the user about them.
- *
  * @see {@link https://nuxt.com/docs/getting-started/configuration#external-configuration-files}
  */
 export async function checkForExternalConfigurationFiles () {

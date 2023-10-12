@@ -20,7 +20,7 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
   }
 
   // Macro
-  if (query.macro && (!opts.type || opts.type.includes('script'))) {
+  if (query.macro && (search === '?macro=true' || !opts.type || opts.type.includes('script'))) {
     return true
   }
 

@@ -111,7 +111,6 @@ export interface ComponentsOptions {
    * but they can also be used dynamically, for example `<component :is="`icon-${myIcon}`">`.
    *
    * This can be overridden by an individual component directory entry.
-   *
    * @default false
    */
   global?: boolean

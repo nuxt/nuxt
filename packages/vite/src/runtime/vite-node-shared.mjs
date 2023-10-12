@@ -2,7 +2,6 @@
 import { Agent as HTTPSAgent } from 'node:https'
 import { $fetch } from 'ofetch'
 
-// eslint-disable-next-line jsdoc/valid-types
 /** @type {import('../vite-node').ViteNodeServerOptions} */
 export const viteNodeOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
 

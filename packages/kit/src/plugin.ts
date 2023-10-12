@@ -48,7 +48,6 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * to use plugin only in client or server side.
  *
  * Note: By default plugin is prepended to the plugins array. You can use second argument to append (push) instead.
- *
  * @example
  * ```js
  * addPlugin({

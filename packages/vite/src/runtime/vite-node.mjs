@@ -8,7 +8,6 @@ import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
 
-// eslint-disable-next-line jsdoc/valid-types
 /** @type {(ssrContext: import('#app').NuxtSSRContext) => Promise<any>} */
 let render
 
