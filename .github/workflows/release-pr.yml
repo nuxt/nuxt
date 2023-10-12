@@ -61,5 +61,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `:rocket: Release triggered! You can now install [nuxt@npm:nuxt3@pr-${{ github.event.issue.number }}](https://www.npmjs.com/package/nuxt3/v/pr-${{ github.event.issue.number }})`
+              body: `:rocket: Release triggered! You can now install [nuxt@npm:nuxt-nightly@pr-${{ github.event.issue.number }}](https://www.npmjs.com/package/nuxt-nightly/v/pr-${{ github.event.issue.number }})`
             })
