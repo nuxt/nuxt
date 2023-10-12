@@ -441,15 +441,16 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
 
-  // Nuxt DevTools is currently opt-in
-  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled('@nuxt/devtools', {
-      rootDir: options.rootDir,
-      searchPaths: options.modulesDir
-    }))) {
-      options._modules.push('@nuxt/devtools')
-    } else {
-      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+  // Nuxt DevTools only works for Vite
+  if (options.builder === '@nuxt/vite-builder') {
+    const isDevToolsEnabled = typeof options.devtools === 'boolean'
+      ? options.devtools
+      : options.devtools?.enabled !== false // enabled by default unless explicitly disabled
+
+    if (isDevToolsEnabled) {
+      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
+        options._modules.push('@nuxt/devtools')
+      }
     }
   }
 
