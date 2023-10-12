@@ -34,8 +34,8 @@
     "test:vue-types": "vue-tsc -p  ./test/fixtures/vue-tsc/tsconfig.json"
   },
   "devDependencies": {
-    "@babel/core": "7.23.0",
-    "@babel/preset-env": "7.22.20",
+    "@babel/core": "7.23.2",
+    "@babel/preset-env": "7.23.2",
     "@ls-lint/ls-lint": "2.1.0",
     "@nuxtjs/eslint-config": "12.0.0",
     "@nuxtjs/eslint-config-typescript": "12.1.0",
@@ -85,7 +85,7 @@
     "rollup": "3.29.4",
     "rollup-plugin-esbuild": "6.1.0",
     "rollup-plugin-license": "3.1.0",
-    "sass": "1.69.2",
+    "sass": "1.69.3",
     "sass-loader": "^10.1.1",
     "semver": "7.5.4",
     "sort-package-json": "2.6.0",
