@@ -18,7 +18,6 @@ export function extendPages (cb: NuxtHooks['pages:extend']) {
 export interface ExtendRouteRulesOptions {
   /**
    * Override route rule config
-   *
    * @default false
    */
   override?: boolean
@@ -39,7 +38,6 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
 export interface AddRouteMiddlewareOptions {
   /**
    * Override existing middleware with the same name, if it exists
-   *
    * @default false
    */
   override?: boolean

@@ -81,7 +81,7 @@ export interface NuxtPayload {
     description: string
     data?: any
   } | null
-  _errors: Record<string, NuxtError | undefined>
+  _errors: Record<string, NuxtError | null>
   [key: string]: unknown
 }
 
@@ -104,7 +104,7 @@ interface _NuxtApp {
   _asyncData: Record<string, {
     data: Ref<any>
     pending: Ref<boolean>
-    error: Ref<any>
+    error: Ref<Error | null>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
 
@@ -163,7 +163,6 @@ export interface PluginEnvContext {
   /**
    * This enable the plugin for islands components.
    * Require `experimental.componentsIslands`.
-   *
    * @default true
    */
   islands?: boolean
@@ -186,7 +185,6 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
   env?: PluginEnvContext
   /**
    * Execute plugin in parallel with other parallel plugins.
-   *
    * @default false
    */
   parallel?: boolean
@@ -361,7 +359,6 @@ export function isNuxtPlugin (plugin: unknown) {
 
 /**
  * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
- *
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
