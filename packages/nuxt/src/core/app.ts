@@ -152,7 +152,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Resolve app.config
