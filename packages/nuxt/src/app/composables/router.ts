@@ -182,6 +182,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Client-side redirection using vue-router
   if (isExternal) {
+    // Run any cleanup steps for the current scope, like ending BroadcastChannel
+    nuxtApp._scope.stop()
     if (options?.replace) {
       location.replace(toPath)
     } else {
