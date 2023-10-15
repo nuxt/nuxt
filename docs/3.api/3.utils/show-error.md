@@ -2,7 +2,7 @@
 
 Nuxt provides a quick and simple way to show a full screen error page if needed.
 
-Within your pages, components and plugins you can use `showError` to show an error.
+Within a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope you can use `showError` to show an error.
 
 **Parameters:**
 
