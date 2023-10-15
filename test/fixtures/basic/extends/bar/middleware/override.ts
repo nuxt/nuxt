@@ -1,3 +1,3 @@
 export default defineNuxtRouteMiddleware((to) => {
-  to.meta.override = 'This middleware should be overridden by bar'
+  to.meta.override = 'Injected by extended middleware from bar'
 })
