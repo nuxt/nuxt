@@ -18,8 +18,11 @@ surround: false
   ::card{icon="i-ph-terminal-window-duotone" title="Commands" to="/docs/api/commands/add"}
   List of Nuxt CLI commands to init, analyze, build, and preview your application.
   ::
+  ::card{icon="i-ph-toolbox-duotone" title="Nuxt Kit" to="/docs/api/kit/modules"}
+  Understand Nuxt Kit utilities to create modules and control Nuxt.
+  ::
   ::card{icon="i-ph-brain-duotone" title="Advanced" to="/docs/api/advanced/hooks"}
-  Go deep in Nuxt internals with hooks and kit utilities.
+  Go deep in Nuxt internals with Nuxt lifecycle hooks.
   ::
   ::card{icon="i-ph-gear-duotone" title="Nuxt Configuration" to="/docs/api/nuxt-config"}
   Explore all Nuxt configuration options to customize your application.

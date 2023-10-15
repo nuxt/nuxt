@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
+    "@nuxt/devtools": "1.0.0-beta.1",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.5.2",

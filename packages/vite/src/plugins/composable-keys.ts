@@ -18,7 +18,7 @@ interface ComposableKeysOptions {
 }
 
 const stringTypes = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/nuxt3?\//
+const NUXT_LIB_RE = /node_modules\/(nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {

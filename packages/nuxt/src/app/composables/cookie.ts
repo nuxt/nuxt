@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentInstance, nextTick, onUnmounted, ref, watch } from 'vue'
+import { getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -35,7 +35,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
-    if (getCurrentInstance()) { onUnmounted(() => { channel?.close() }) }
+    if (getCurrentScope()) { onScopeDispose(() => { channel?.close() }) }
 
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)

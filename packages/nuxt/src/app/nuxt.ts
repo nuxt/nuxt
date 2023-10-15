@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, hasInjectionContext, reactive } from 'vue'
-import type { App, Ref, VNode, onErrorCaptured } from 'vue'
+import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
+import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
@@ -98,6 +98,8 @@ interface _NuxtApp {
 
   [key: string]: unknown
 
+  /** @internal */
+  _scope: EffectScope
   /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
@@ -202,6 +204,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
+    _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
     versions: {
@@ -217,7 +220,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {}
     },
-    runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
+    runWithContext: (fn: any) => nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn)),
     isHydrating: import.meta.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
