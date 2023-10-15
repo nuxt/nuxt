@@ -6,7 +6,7 @@ description: useAsyncData provides access to data that resolves asynchronously.
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
 ::alert{type=warning}
-[`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+[`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in a [Nuxt context](https://nuxt.com/docs/guide/going-further/nuxt-app#the-nuxt-context) scope. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
 ## Type
