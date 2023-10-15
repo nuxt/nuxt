@@ -5,7 +5,7 @@ description: "You can use useRequestEvent to access the incoming request."
 
 # `useRequestEvent`
 
-Within your pages, components, and plugins you can use `useRequestEvent` to access the incoming request.
+Within a [Nuxt context](https://nuxt.com/docs/guide/going-further/nuxt-app#the-nuxt-context) scope you can use `useRequestEvent` to access the incoming request.
 
 ```js
 // Get underlying request event
