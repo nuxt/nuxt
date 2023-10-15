@@ -28,7 +28,7 @@ Some templates support additional modifier flags to add a suffix (like `.client`
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `components/TheHeader.vue`
 npx nuxi add component TheHeader
 ```
@@ -37,7 +37,7 @@ npx nuxi add component TheHeader
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `composables/foo.ts`
 npx nuxi add composable foo
 ```
@@ -46,7 +46,7 @@ npx nuxi add composable foo
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `layouts/custom.vue`
 npx nuxi add layout custom
 ```
@@ -57,7 +57,7 @@ npx nuxi add layout custom
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `plugins/analytics.ts`
 npx nuxi add plugin analytics
 ```
@@ -66,12 +66,12 @@ npx nuxi add plugin analytics
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `pages/about.vue`
 npx nuxi add page about
 ```
 
-```bash
+```bash [Terminal]
 # Generates `pages/category/[id].vue`
 npx nuxi add page "category/[id]"
 ```
@@ -82,7 +82,7 @@ npx nuxi add page "category/[id]"
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `middleware/auth.ts`
 npx nuxi add middleware auth
 ```
@@ -93,7 +93,7 @@ npx nuxi add middleware auth
 
 Example:
 
-```bash
+```bash [Terminal]
 # Generates `server/api/hello.ts`
 npx nuxi add api hello
 ```
