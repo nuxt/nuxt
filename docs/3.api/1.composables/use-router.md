@@ -5,7 +5,7 @@ description: "The useRouter composable returns the router instance."
 
 # `useRouter`
 
-The [`useRouter`](/docs/api/composables/use-router)  composable returns the router instance and must be called in a setup function, plugin, or route middleware.
+The [`useRouter`](/docs/api/composables/use-router)  composable returns the router instance and must be called in a [Nuxt context](https://nuxt.com/docs/guide/going-further/nuxt-app#the-nuxt-context) scope.
 
 Within the template of a Vue component, you can access the router using `$router` instead.
 
