@@ -34,6 +34,7 @@
     "fs-extra": "^11.1.1",
     "h3": "^1.8.2",
     "hash-sum": "^2.0.0",
+    "klona": "^2.0.6",
     "magic-string": "^0.30.4",
     "memfs": "^4.6.0",
     "mini-css-extract-plugin": "^2.7.6",

@@ -744,6 +744,9 @@ importers:
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
+      klona:
+        specifier: ^2.0.6
+        version: 2.0.6
       magic-string:
         specifier: ^0.30.4
         version: 0.30.4
@@ -1266,6 +1269,7 @@ packages:
   /@babel/highlight@7.22.20:
     resolution: {integrity: sha512-dkdMCN3py0+ksCgYmGG8jKeGA/8Tk+gJwSYYlFGxG5lmhfKNoAy004YpLxpS1W2J8m/EK2Ew+yOs9pVRwO89mg==}
     engines: {node: '>=6.9.0'}
+    requiresBuild: true
     dependencies:
       '@babel/helper-validator-identifier': 7.22.20
       chalk: 2.4.2
