@@ -107,6 +107,7 @@ export function useFetch<
     pick,
     watch,
     immediate,
+    deep,
     ...fetchOptions
   } = opts
 
@@ -122,6 +123,7 @@ export function useFetch<
     transform,
     pick,
     immediate,
+    deep,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
