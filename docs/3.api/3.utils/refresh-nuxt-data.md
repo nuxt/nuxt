@@ -1,5 +1,5 @@
 ---
-title: "refreshNuxtData"
+title: 'refreshNuxtData'
 description: refreshNuxtData refetches all data from the server and updates the page.
 links:
   - label: Source Code
@@ -8,9 +8,9 @@ links:
     size: xs
 ---
 
-# `refreshNuxtData`
-
+::callout
 `refreshNuxtData` re-fetches all data from the server and updates the page as well as invalidates the cache of [`useAsyncData`](/docs/api/composables/use-async-data) , `useLazyAsyncData`, [`useFetch`](/docs/api/composables/use-fetch) and `useLazyFetch`.
+::
 
 ## Type
 
@@ -26,9 +26,7 @@ refreshNuxtData(keys?: string | string[])
 
     `refreshNuxtData` accepts a single or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) are re-fetched when no `keys` are specified.
 
-## Examples
-
-### Refresh All data
+## Refresh All Data
 
 This example below refreshes all data being fetched using [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) on the current page.
 
@@ -54,7 +52,7 @@ const refreshAll = async () => {
 </template>
 ```
 
-### Refresh Specific Data
+## Refresh Specific Data
 
 This example below refreshes only data where the key matches to `count`.
 
@@ -72,5 +70,4 @@ const refresh = () => refreshNuxtData('count')
 </template>
 ```
 
-::ReadMore{link="/docs/getting-started/data-fetching"}
-::
+:read-more{to="/docs/getting-started/data-fetching"}

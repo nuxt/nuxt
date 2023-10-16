@@ -1,4 +1,5 @@
 ---
+title: 'setResponseStatus'
 description: setResponseStatus sets the statusCode (and optionally the statusMessage) of the response.
 links:
   - label: Source Code
@@ -7,13 +8,9 @@ links:
     size: xs
 ---
 
-# `setResponseStatus`
-
 Nuxt provides composables and utilities for first-class server-side-rendering support.
 
 `setResponseStatus` sets the statusCode (and optionally the statusMessage) of the response.
-
-`setResponseStatus` can only be called within component setup functions, plugins, and route middleware.
 
 ```js
 const event = useRequestEvent()
@@ -25,6 +22,8 @@ setResponseStatus(event, 404)
 setResponseStatus(event, 404, 'Page Not Found')
 ```
 
-::alert{icon=👉}
+::callout
 In the browser, `setResponseStatus` will have no effect.
 ::
+
+:read-more{to="/docs/getting-started/error-handling"}
