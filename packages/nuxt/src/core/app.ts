@@ -79,7 +79,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
-async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+/** @internal */
+export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
@@ -151,7 +152,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Resolve app.config

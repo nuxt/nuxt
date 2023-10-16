@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, toRef, unref, watch } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -44,6 +44,7 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
+  deep?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -148,13 +149,18 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
+    nuxt.payload._errors[key] ??= null
+
+    const _ref = options.deep !== true ? shallowRef : ref
+
     nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default!()),
+      data: _ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
     }
   }
+
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, DataE>
 
@@ -375,11 +381,11 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       nuxtApp.payload.data[key] = undefined
     }
     if (key in nuxtApp.payload._errors) {
-      nuxtApp.payload._errors[key] = undefined
+      nuxtApp.payload._errors[key] = null
     }
     if (nuxtApp._asyncData[key]) {
       nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = undefined
+      nuxtApp._asyncData[key]!.error.value = null
       nuxtApp._asyncData[key]!.pending.value = false
       nuxtApp._asyncData[key]!.status.value = 'idle'
     }

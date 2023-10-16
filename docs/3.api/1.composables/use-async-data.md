@@ -26,6 +26,7 @@ type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
+  deep?: boolean
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -51,7 +52,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ## Params
 
 * **key**: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of [`useAsyncData`](/docs/api/composables/use-async-data) will be generated for you.
-* **handler**: an asynchronous function that returns a value
+* **handler**: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side
 * **options**:
   * _server_: whether to fetch the data on the server (defaults to `true`)
   * _lazy_: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
@@ -60,6 +61,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
   * _transform_: a function that can be used to alter `handler` function result after resolving
   * _pick_: only pick specified keys in this array from the `handler` function result
   * _watch_: watch reactive sources to auto-refresh
+  * _deep_: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 
